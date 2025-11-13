@@ -19,11 +19,16 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+
+// import LoginDesign from "./src/Component/Login.jsx"
+// import CreateAccount from "./src/Component/CreateAccount.jsx"
+
 import SplashScreen from './src/Component/WelcomScreen/SplashScreen';
 import LandingScreen from './src/Component/WelcomScreen/LandingScreen'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import SplashText from './src/Component/WelcomScreen/SplashText';
+
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -43,6 +48,7 @@ function AppContent() {
   return (
 
     <View style={styles.container}>
+
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
@@ -53,6 +59,7 @@ function AppContent() {
           <Navigation.Screen name="LandingScreen" component={LandingScreen} />
         </Navigation.Navigator>
       </NavigationContainer>
+
     </View>
   );
 }
