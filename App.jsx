@@ -11,6 +11,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import SplashScreen from './src/Component/Spashscreen'
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -28,8 +29,8 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
+      <SplashScreen
+        templateFileName="App.jsx"
         safeAreaInsets={safeAreaInsets}
       />
     </View>
