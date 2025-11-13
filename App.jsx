@@ -20,6 +20,8 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import SplashScreen from './src/Component/SplashScreen'; // Added semicolon
+import LoginDesign from "./src/Component/Login.jsx"
+import CreateAccount from "./src/Component/CreateAccount.jsx"
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -37,7 +39,9 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <SplashScreen />
+      {/* <SplashScreen /> */}
+      {/* <LoginDesign/> */}
+      <CreateAccount/>
     </View>
   );
 }
