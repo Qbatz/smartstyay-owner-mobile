@@ -5,11 +5,11 @@ import splashimg from "../../Assets/Images/splash.png";
 const { width } = Dimensions.get("window");
 
 export default function SplashScreen({ navigation }) {
-  const scaleAnim = useRef(new Animated.Value(1.5)).current; 
+  const scaleAnim = useRef(new Animated.Value(1.5)).current;
 
   useEffect(() => {
     Animated.timing(scaleAnim, {
-      toValue: 1,        
+      toValue: 1,
       duration: 1000,
       useNativeDriver: true,
     }).start();
