@@ -19,7 +19,11 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import SplashScreen from './src/Component/SplashScreen'; // Added semicolon
+import SplashScreen from './src/Component/WelcomScreen/SplashScreen'; 
+import LandingScreen from './src/Component/WelcomScreen/LandingScreen'
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import SplashText from './src/Component/WelcomScreen/SplashText';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -33,11 +37,24 @@ function App() {
 }
 
 function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  
+  const Navigation = createStackNavigator();
 
   return (
-    <View style={styles.container}>
-      <SplashScreen />
+    // <View style={styles.container}>
+    //   <LandingScreen />
+    // </View>
+     <View style={styles.container}>
+      <NavigationContainer>
+        <Navigation.Navigator
+          screenOptions={{ headerShown: false }}
+          initialRouteName="SplashText"
+        >
+          <Navigation.Screen name="SplashText" component={SplashText} />
+          <Navigation.Screen name="SplashScreen" component={SplashScreen} />
+          <Navigation.Screen name="LandingScreen" component={LandingScreen} />
+        </Navigation.Navigator>
+      </NavigationContainer>
     </View>
   );
 }
