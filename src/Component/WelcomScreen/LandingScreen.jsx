@@ -12,6 +12,7 @@ import RectangleImg from "../../Assets/Images/Rectangle.png";
 import Screen1Img from "../../Assets/Images/ORGANIZEDIMG.png";
 import Screen2Img from "../../Assets/Images/BillOverviewimg.png";
 import Screen3Img from "../../Assets/Images/amnitesimg.png";
+import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
@@ -37,6 +38,7 @@ const slides = [
 ];
 
 export default function LandingScreen() {
+    const navigation = useNavigation();
     return (
         <View style={styles.container}>
 
@@ -65,7 +67,10 @@ export default function LandingScreen() {
             </View>
 
 
-            <TouchableOpacity style={styles.button}>
+           <TouchableOpacity 
+  style={styles.button} 
+  onPress={() => navigation.replace("LoginDesign")}
+>
                 <Text style={styles.buttonText}>Login with Credentials</Text>
             </TouchableOpacity>
 

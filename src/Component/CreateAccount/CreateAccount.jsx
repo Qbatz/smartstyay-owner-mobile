@@ -11,12 +11,14 @@ import {
   Platform,
 } from "react-native";
 
-import SmartstayIcon from "../Assets/Images/Sm_Icon.png";
-import EyeIcon from "../Assets/Images/EyeIcon.png";
-import Eye from "../Assets/Images/Eye.png";
-import WaveImage from "../Assets/Images/CreateAccount_Rectangle.png";
+import SmartstayIcon from "../../Assets/Images/Sm_Icon.png";
+import EyeIcon from "../../Assets/Images/EyeIcon.png";
+import Eye from "../../Assets/Images/Eye.png";
+import WaveImage from "../../Assets/Images/CreateAccount_Rectangle.png";
+import { useNavigation } from "@react-navigation/native";
 
 export default function CreateAccount() {
+   const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -108,7 +110,7 @@ export default function CreateAccount() {
             </TouchableOpacity>
 
             <Text style={styles.footerText}>
-              Already have an account? <Text style={styles.signInText}>Sign In</Text>
+              Already have an account? <Text style={styles.signInText}  onPress={() => navigation.replace("LoginDesign")}>Sign In</Text>
             </Text>
 
           </View>

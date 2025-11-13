@@ -8,14 +8,15 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import SmartstayIcon from "../Assets/Images/Sm_Icon.png"
-import EyeIcon from "../Assets/Images/EyeIcon.png";
-import WaveImage from "../Assets/Images/login_Rectangle.png";
+import SmartstayIcon from "../../Assets/Images/Sm_Icon.png"
+import EyeIcon from "../../Assets/Images/EyeIcon.png";
+import WaveImage from "../../Assets/Images/login_Rectangle.png";
+import { useNavigation } from "@react-navigation/native";
 
 
 export default function LoginDesign() {
   
- 
+   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -76,14 +77,20 @@ export default function LoginDesign() {
             <Text style={styles.forgot}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton}>
+          <TouchableOpacity style={styles.loginButton}  onPress={() => navigation.replace("VerifyAccountScreen")}>
             <Text style={styles.loginText}>Log in</Text>
           </TouchableOpacity>
 
-          <Text style={styles.registerText}>
-            Not Registered yet?{" "}
-            <Text style={styles.registerLink}>Create Account</Text>
-          </Text>
+         <Text style={styles.registerText}>
+  Not Registered yet?{" "}
+  <Text
+    style={styles.registerLink}
+    onPress={() => navigation.replace("CreateAccount")}
+  >
+    Create Account
+  </Text>
+</Text>
+
         </View>
       </ScrollView>
 
