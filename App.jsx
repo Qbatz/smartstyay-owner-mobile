@@ -5,13 +5,21 @@
  * @format
  */
 
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ *
+ * @format
+ */
+
+import React from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import SplashScreen from './src/Component/Spashscreen'
+import SplashScreen from './src/Component/SplashScreen'; // Added semicolon
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -29,10 +37,7 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <SplashScreen
-        templateFileName="App.jsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+      <SplashScreen />
     </View>
   );
 }
