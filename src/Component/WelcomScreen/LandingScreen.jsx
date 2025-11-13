@@ -83,9 +83,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
 
-    // 🔥 FIXED: Give REAL HEIGHT so swiper can scroll
+    
     swiperContainer: {
-        height: height * 0.65,    // instead of flex: 1
+        height: height * 0.65,    
         width: "100%",
         marginTop: 60,
     },

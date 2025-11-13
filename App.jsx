@@ -19,7 +19,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import SplashScreen from './src/Component/WelcomScreen/SplashScreen'; 
+import SplashScreen from './src/Component/WelcomScreen/SplashScreen';
 import LandingScreen from './src/Component/WelcomScreen/LandingScreen'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -37,14 +37,12 @@ function App() {
 }
 
 function AppContent() {
-  
+
   const Navigation = createStackNavigator();
 
   return (
-    // <View style={styles.container}>
-    //   <LandingScreen />
-    // </View>
-     <View style={styles.container}>
+
+    <View style={styles.container}>
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
