@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
 
     bottomGradient: {
         width: "110%",
-        height: 280,
+        height: 240,
         position: "absolute",
         bottom: 0,
         alignSelf: "center",

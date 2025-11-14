@@ -30,7 +30,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import SplashText from './src/Component/WelcomScreen/SplashText';
 import CreateAccount from './src/Component/CreateAccount/CreateAccount';
 import LoginDesign from './src/Component/CreateAccount/Login'
-import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp'
+import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp';
 
 
 
