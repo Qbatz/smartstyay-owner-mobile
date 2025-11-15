@@ -31,7 +31,7 @@ import SplashText from './src/Component/WelcomScreen/SplashText';
 import CreateAccount from './src/Component/CreateAccount/CreateAccount';
 import LoginDesign from './src/Component/CreateAccount/Login'
 import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp';
-
+import MyTabs from "./src/Component/Tabs/BottomTabs"
 
 
 function App() {
@@ -56,7 +56,7 @@ function AppContent() {
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="SplashText"
+          initialRouteName="MyTabs"
         >
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
@@ -64,6 +64,7 @@ function AppContent() {
            <Navigation.Screen name="CreateAccount" component={CreateAccount} />
              <Navigation.Screen name="LoginDesign" component={LoginDesign} />
               <Navigation.Screen name="VerifyAccountScreen" component={VerifyAccountScreen} />
+                <Navigation.Screen name="MyTabs" component={MyTabs} />
         </Navigation.Navigator>
       </NavigationContainer>
 
