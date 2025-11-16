@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,22 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 
+import Profile from "../../Assets/Images/profile.png";
+import EditPin from "../../Assets/Images/EditPin.png";
+import SearchIcon from "../../Assets/Images/Asset_search.png";
+import InProfile from "../../Assets/Images/inActiveuser.png";
+import ActiveCheckout from "../../Assets/Images/ActiveCheckout.png";
+import ActiveWalkin from "../../Assets/Images/ActiveWalkin.png";
+import CheckoutIcon from "../../Assets/Images/checkout.png";
+import WalkinIcon from "../../Assets/Images/walkin.png";
+import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 
 export default function Tenants() {
+  const [activeTab, setActiveTab] = useState("Tenants");
+
   const tenants = [
     {
       id: 1,
@@ -19,9 +31,7 @@ export default function Tenants() {
       room: "203",
       bed: "03",
       date: "01/06",
-      avatar: require("../../Assets/Images/profile.png"),
-      status: "active",
-      month: "This Month",
+      profile: Profile,
     },
     {
       id: 2,
@@ -30,52 +40,130 @@ export default function Tenants() {
       room: "203",
       bed: "03",
       date: "01/06",
-      avatar: require("../../Assets/Images/profile.png"),
-      status: "active",
-      month: "This Month",
+      profile: Profile,
     },
     {
       id: 3,
       name: "Lokesh",
+      floor: "",
       room: "--",
       bed: "--",
-      date: "01/06",
-      avatar: require("../../Assets/Images/profile.png"),
-      status: "inactive",
-      month: "This Month",
+      date: "",
+      profile: InProfile,
     },
     {
       id: 4,
       name: "Ajay Kannan R",
+      floor: "",
       room: "--",
       bed: "--",
       date: "01/06/25",
-      avatar: require("../../Assets/Images/profile.png"),
-      status: "inactive",
-      month: "May 2025",
-    },
-    {
-      id: 5,
-      name: "Francis Xavier",
-      room: "203",
-      bed: "03",
-      date: "01/06/25",
-      avatar: require("../../Assets/Images/profile.png"),
-      status: "active",
-      month: "May 2025",
+      profile: InProfile,
     },
   ];
 
-  const grouped = tenants.reduce((acc, item) => {
-    (acc[item.month] = acc[item.month] || []).push(item);
-    return acc;
-  }, {});
+  const checkouts = [
+    { id: 1, name: "Karthik R", room: "105", date: "02/06/25" },
+    { id: 2, name: "Sundar V", room: "205", date: "03/06/25" },
+  ];
+
+  const walkins = [
+    { id: 1, name: "Mani R", date: "Today" },
+    { id: 2, name: "Ashok P", date: "Yesterday" },
+  ];
+
+  // --- RENDER TAB BUTTONS ---
+  const renderTab = (label, activeIcon, inactiveIcon) => (
+    <TouchableOpacity
+      key={label}
+      onPress={() => setActiveTab(label)}
+      style={styles.tabButton}
+      activeOpacity={0.7}
+    >
+      <View style={styles.tabInner}>
+        <Image
+          source={activeTab === label ? activeIcon : inactiveIcon}
+          style={styles.tabIcon}
+        />
+        <Text
+          style={[
+            styles.tabText,
+            { color: activeTab === label ? "#2D4EF5" : "#9CA3AF" },
+          ]}
+        >
+          {label}
+        </Text>
+      </View>
+      {activeTab === label && <View style={styles.activeUnderline} />}
+    </TouchableOpacity>
+  );
+
+  // --- RENDER TAB CONTENT ---
+  const renderContent = () => {
+    switch (activeTab) {
+      case "Tenants":
+        return (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>This Month</Text>
+            {tenants.map((item) => (
+              <View key={item.id} style={styles.tenantCard}>
+                <Image source={item.profile} style={styles.profileImg} />
+                <View style={styles.tenantInfo}>
+                  <Text style={styles.tenantName}>{item.name}</Text>
+                  <View style={styles.tenantDetails}>
+                    {item.floor ? (
+                      <Text style={styles.floorText}>{item.floor}</Text>
+                    ) : null}
+                    <Image source={EditPin} style={styles.iconSmall} />
+                    <Text style={styles.detailText}>{item.room}</Text>
+                    <Text style={styles.detailText}>{item.bed}</Text>
+                  </View>
+                </View>
+                {item.date ? (
+                  <Text style={styles.dateText}>{item.date}</Text>
+                ) : null}
+              </View>
+            ))}
+          </ScrollView>
+        );
+
+      case "Checkout":
+        return (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Recent Checkouts</Text>
+            {checkouts.map((item) => (
+              <View key={item.id} style={styles.checkoutCard}>
+                <Text style={styles.checkoutName}>{item.name}</Text>
+                <Text style={styles.checkoutRoom}>Room {item.room}</Text>
+                <Text style={styles.checkoutDate}>{item.date}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        );
+
+      case "Walkin":
+        return (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Recent Walk-ins</Text>
+            {walkins.map((item) => (
+              <View key={item.id} style={styles.walkinCard}>
+                <Text style={styles.walkinName}>{item.name}</Text>
+                <Text style={styles.walkinDate}>{item.date}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Search Bar */}
+    <SafeAreaView style={styles.container}>
+      {/* SEARCH BAR */}
       <View style={styles.searchBar}>
-        {/* <Ionicons name="search-outline" size={20} color="#6B7280" /> */}
+        <Image source={SearchIcon} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search Customers"
@@ -83,178 +171,193 @@ export default function Tenants() {
         />
       </View>
 
-      {/* Tabs */}
-      <View style={styles.tabRow}>
-        {[
-          { label: "Tenants", icon: "people-outline" },
-          { label: "Checkout", icon: "log-out-outline" },
-          { label: "Walkin", icon: "walk-outline" },
-        ].map((tab, index) => (
-          <TouchableOpacity key={index} style={styles.tab}>
-            {/* <Ionicons
-              name={tab.icon}
-              size={18}
-              color={tab.label === "Tenants" ? "#3B82F6" : "#6B7280"}
-            /> */}
-            <Text
-              style={[
-                styles.tabText,
-                tab.label === "Tenants" && styles.activeTabText,
-              ]}
-            >
-              {tab.label}
-            </Text>
-            {tab.label === "Tenants" && <View style={styles.activeBar} />}
-          </TouchableOpacity>
-        ))}
+      {/* TAB BAR */}
+      <View style={styles.tabContainer}>
+        {renderTab("Tenants", Profile, InProfile)}
+        {renderTab("Checkout", ActiveCheckout, CheckoutIcon)}
+        {renderTab("Walkin", ActiveWalkin, WalkinIcon)}
       </View>
 
-      {/* Tenants List */}
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {Object.entries(grouped).map(([month, list]) => (
-          <View key={month}>
-            <Text style={styles.sectionTitle}>{month}</Text>
-            {list.map((item) => (
-              <View key={item.id} style={styles.row}>
-                <View style={styles.avatarWrapper}>
-                  <Image source={item.avatar} style={styles.avatar} />
-                  <View
-                    style={[
-                      styles.statusDot,
-                      { backgroundColor: item.status === "active" ? "#22C55E" : "#EF4444" },
-                    ]}
-                  />
-                </View>
+      {/* TAB CONTENT */}
+      <View style={{ flex: 1 }}>{renderContent()}</View>
 
-                <View style={styles.info}>
-                  <Text style={styles.name}>{item.name}</Text>
-                  {item.floor && (
-                    <View style={styles.floorTag}>
-                      <Text style={styles.floorText}>{item.floor}</Text>
-                    </View>
-                  )}
-                  <View style={styles.iconRow}>
-                    {/* <Ionicons name="home-outline" size={16} color="#3B82F6" /> */}
-                    <Text style={styles.iconText}>{item.room}</Text>
-                    {/* <Ionicons
-                      name="bed-outline"
-                      size={16}
-                      color="#3B82F6"
-                      style={{ marginLeft: 8 }}
-                    /> */}
-                    <Text style={styles.iconText}>{item.bed}</Text>
-                  </View>
-                </View>
-
-                <Text style={styles.date}>{item.date}</Text>
-                {/* <Feather name="more-vertical" size={18} color="#6B7280" /> */}
-              </View>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Floating Buttons */}
-      <TouchableOpacity style={styles.filterButton}>
-        {/* <Ionicons name="options-outline" size={22} color="#3B82F6" /> */}
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.addButton}>
-        {/* <Ionicons name="add" size={26} color="#fff" /> */}
-      </TouchableOpacity>
-    </View>
+      {/* ADD BUTTON */}
+      {activeTab === "Tenants" && (
+        <TouchableOpacity style={styles.addButton}>
+          <Image source={TenAntAdd} style={styles.addIcon} />
+        </TouchableOpacity>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFF", padding: 12 },
-
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 15,
+  },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 25,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    marginTop: 15,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    elevation: 2,
-    marginBottom: 16,
+    height: 45,
+  },
+  searchIcon: {
+    width: 18,
+    height: 18,
+    tintColor: "#9CA3AF",
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
-    marginLeft: 6,
-    color: "#111827",
+    color: "#000",
+    fontSize: 15,
   },
-
-  tabRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 10 },
-  tab: { alignItems: "center", position: "relative" },
-  tabText: { fontSize: 13, color: "#6B7280", marginTop: 4 },
-  activeTabText: { color: "#3B82F6", fontWeight: "600" },
-  activeBar: {
-    height: 2,
-    backgroundColor: "#3B82F6",
-    width: 20,
-    borderRadius: 4,
-    marginTop: 4,
+  tabContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    marginTop: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
   },
-
-  sectionTitle: { fontSize: 13, fontWeight: "700", color: "#6B7280", marginTop: 10, marginBottom: 4 },
-
-  row: {
+  tabButton: {
+    alignItems: "center",
+    paddingBottom: 8,
+  },
+  tabInner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 10,
-    marginVertical: 4,
-    elevation: 1,
+    gap: 6,
+  },
+  tabIcon: {
+    width: 18,
+    height: 18,
+    resizeMode: "contain",
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  activeUnderline: {
+    height: 2,
+    width: "100%",
+    backgroundColor: "#2D4EF5",
+    marginTop: 6,
   },
 
-  avatarWrapper: { position: "relative" },
-  avatar: { width: 45, height: 45, borderRadius: 25 },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    position: "absolute",
-    bottom: 2,
-    right: 2,
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#6B7280",
+    marginTop: 20,
+    marginBottom: 10,
   },
 
-  info: { flex: 1, marginLeft: 10 },
-  name: { fontSize: 14, fontWeight: "600", color: "#111827" },
-  floorTag: {
-    backgroundColor: "#F4EAD7",
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
+  tenantCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  profileImg: {
+    width: 45,
+    height: 45,
+    borderRadius: 30,
+    marginRight: 10,
+  },
+  tenantInfo: {
+    flex: 1,
+  },
+  tenantName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#000",
+  },
+  tenantDetails: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 3,
+  },
+  floorText: {
+    fontSize: 11,
+    color: "#6B7280",
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    marginTop: 4,
+    marginRight: 6,
   },
-  floorText: { fontSize: 10, color: "#8B5E34" },
+  iconSmall: {
+    width: 13,
+    height: 13,
+    tintColor: "#2D4EF5",
+    marginHorizontal: 4,
+  },
+  detailText: {
+    fontSize: 12,
+    color: "#111827",
+    marginHorizontal: 2,
+  },
+  dateText: {
+    fontSize: 12,
+    color: "#9CA3AF",
+  },
 
-  iconRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
-  iconText: { fontSize: 12, color: "#374151", marginLeft: 4 },
+  // Checkout
+  checkoutCard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#E5E7EB",
+  },
+  checkoutName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  checkoutRoom: {
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  checkoutDate: {
+    fontSize: 12,
+    color: "#9CA3AF",
+  },
 
-  date: { fontSize: 12, color: "#6B7280", marginRight: 6 },
-
-  filterButton: {
-    position: "absolute",
-    right: 20,
-    bottom: 100,
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 30,
-    elevation: 4,
+ 
+  walkinCard: {
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#E5E7EB",
+  },
+  walkinName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  walkinDate: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 2,
   },
 
   addButton: {
     position: "absolute",
+    bottom: 25,
     right: 20,
-    bottom: 40,
-    backgroundColor: "#22C55E",
-    padding: 16,
-    borderRadius: 30,
-    elevation: 4,
+    width: 55,
+    height: 55,
+    borderRadius: 50,
+  },
+  addIcon: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
   },
 });
