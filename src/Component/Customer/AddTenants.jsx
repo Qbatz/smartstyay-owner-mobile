@@ -12,16 +12,40 @@ import {
     Modal
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import ArrowLeft from "../../Assets/Images/profile.png";
+import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
-import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from "react-native-dropdown-picker";
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+
 
 
 export default function AddTenant() {
     const navigation = useNavigation();
     const [step, setStep] = useState(1);
-    const [showStateModal, setShowStateModal] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    
+
+
+    const pickImage = () => {
+  let options = {
+    mediaType: 'photo',
+    maxWidth: 500,
+    maxHeight: 500,
+    quality: 0.7,
+  };
+
+  launchImageLibrary(options, (response) => {
+    if (response.didCancel) {
+      console.log('User cancelled');
+    } else if (response.errorMessage) {
+      console.log('Error:', response.errorMessage);
+    } else {
+      const source = { uri: response.assets[0].uri };
+      setSelectedImage(source); // save selected image
+    }
+  });
+};
 
     useFocusEffect(
         useCallback(() => {
@@ -182,14 +206,25 @@ const [items, setItems] = useState([
 
 
                             <View style={styles.profileWrapper}>
-                                <Image source={Profile} style={styles.profileImage} />
+                             <Image 
+  source={selectedImage ? selectedImage : Profile} 
+  style={styles.profileImage} 
+/>
 
-                                <TouchableOpacity style={styles.editIconWrapper}>
+
+                                {/* <TouchableOpacity style={styles.editIconWrapper}>
                                     <Image
                                         source={require("../../Assets/Images/edit.png")}
                                         style={styles.editIcon}
                                     />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
+                                <TouchableOpacity style={styles.editIconWrapper} onPress={pickImage}>
+  <Image
+    source={require("../../Assets/Images/edit.png")}
+    style={styles.editIcon}
+  />
+</TouchableOpacity>
+
                             </View>
 
                             {/* RIGHT SIDE - TEXT */}
@@ -301,7 +336,7 @@ const [items, setItems] = useState([
                 {/* STEP 2 */}
                 {step === 2 && (
                     <>
-                    <SafeAreaView style={styles.container}>
+                    <SafeAreaView style={styles.container1}>
   <ScrollView
     showsVerticalScrollIndicator={false}
     nestedScrollEnabled={true}
@@ -314,6 +349,24 @@ const [items, setItems] = useState([
                                 value={addressDetails.flat}
                                 onChangeText={(t) =>
                                     setAddressDetails({ ...addressDetails, flat: t })
+                                }
+                            />
+                               <Text style={styles.label}>Area , Street , Sector , Village *</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter Area"
+                                value={addressDetails.area}
+                                onChangeText={(t) =>
+                                    setAddressDetails({ ...addressDetails, area: t })
+                                }
+                            />
+                               <Text style={styles.label}>Landmark *</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Ex : Near SBI Bank"
+                                value={addressDetails.landmark}
+                                onChangeText={(t) =>
+                                    setAddressDetails({ ...addressDetails, landmark: t })
                                 }
                             />
 
@@ -397,10 +450,7 @@ const [items, setItems] = useState([
                                 onPress={() => navigation.goBack()}
                             >
                                 <Text
-                                    style={[
-                                        styles.primaryText,
-                                        !isAddressValid && styles.primaryTextDisabled
-                                    ]}
+                                    style={[styles.primaryText,]}
                                 >
                                     Create Tenant
                                 </Text>
@@ -424,6 +474,12 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         paddingHorizontal: 16,
         paddingVertical: 50
+    },
+     container1: {
+        flex: 1,
+        backgroundColor: "#fff",
+        paddingHorizontal: 16,
+        paddingVertical: 10
     },
     header: {
         flexDirection: "row",
@@ -552,7 +608,7 @@ picker: {
         marginTop: 4,
     },
     form: {
-        marginBottom: 20,
+        marginBottom: 10,
     },
     label: {
         fontSize: 14,
@@ -560,22 +616,13 @@ picker: {
         marginBottom: 6,
         marginTop: 4,
     },
+  
     input: {
         borderWidth: 1,
         borderColor: "#E5E7EB",
         borderRadius: 8,
         paddingHorizontal: 12,
-        paddingVertical: 10,
-        marginBottom: 12,
-        fontSize: 14,
-        color: "#111827",
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        height: 48,
+        height:50,
         fontSize: 14,
         backgroundColor: "#fff",
         marginBottom: 12,
