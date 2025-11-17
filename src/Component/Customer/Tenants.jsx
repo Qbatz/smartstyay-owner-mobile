@@ -24,6 +24,7 @@ import ActiveWalkin from "../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
+import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 
 
 export default function TenantsScreen({ route }) {
@@ -32,6 +33,11 @@ export default function TenantsScreen({ route }) {
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
 const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+const [showNotice, setShowNotice] = useState(false);
+const [reqDate, setReqDate] = useState("31/07/2025");
+const [outDate, setOutDate] = useState("30/08/2025");
+const [reason, setReason] = useState("");
 
 useLayoutEffect(() => {
   setShowTabBar(!showDetailModal);
@@ -123,9 +129,10 @@ const customerList = [
     <View style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>This Month</Text>
-
-        <TouchableOpacity style={styles.tenantRow} onPress={() => openCustomerDetails(customerList[0])}>
+<View style={styles.tenantRow}>
+        <TouchableOpacity  onPress={() => openCustomerDetails(customerList[0])}>
           <Image source={Profile} style={styles.profileImg} />
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>Rajkumar M</Text>
             <View style={styles.detailRow}>
@@ -141,14 +148,21 @@ const customerList = [
           <View style={styles.rightSection}>
             {/* <Text style={styles.dots}>⋯</Text> */}
 
-             <Image
-          source={Dots}
-          style={{width:30,height:30,transform: [{ rotate: "90deg" }],}}
-        />
+        <TouchableOpacity onPress={() => {
+  setSelectedCustomer(customerList[0]); 
+  setShowNotice(true);
+}}>
+  <Image
+    source={Dots}
+    style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+  />
+</TouchableOpacity>
+
             <Text style={styles.dateText}>01/06</Text>
             
           </View>
-        </TouchableOpacity>
+        
+        </View>
       </ScrollView>
 
       {/* Floating Buttons only for Tenants */}
@@ -213,6 +227,18 @@ const customerList = [
     </View>
   </View>
 )}
+<MoveNoticeModal
+  visible={showNotice}
+  onClose={() => setShowNotice(false)}
+  tenant={selectedCustomer}
+  requestDate={reqDate}
+  checkoutDate={outDate}
+  reason={reason}
+  setRequestDate={setReqDate}
+  setCheckoutDate={setOutDate}
+  setReason={setReason}
+  onMove={() => console.log("Move Clicked")}
+/>
 
       
     </SafeAreaView>
