@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useCallback } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
   Dimensions,
   StatusBar,
   Image,
+  BackHandler
 } from "react-native";
 
 import LinearGradient from "react-native-linear-gradient";
-
+import { useNavigation, useFocusEffect } from "@react-navigation/native"; 
 import PgImg from '../../Assets/Images/PgImg.png'
 import Bell from '../../Assets/Images/bell.png'
 import Profile from '../../Assets/Images/profile.png'
@@ -37,6 +38,7 @@ import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
 
+
 import {
   BarChart,
   LineChart,
@@ -51,6 +53,26 @@ const { width } = Dimensions.get("window");
 
 export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState("Dashboard");
+   const navigation = useNavigation();
+
+useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return true; 
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [navigation])
+);
 
 
   const tabs = [
