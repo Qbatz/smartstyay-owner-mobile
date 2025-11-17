@@ -8,8 +8,11 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+  BackHandler
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useLayoutEffect } from "react";
+
 
 import Profile from "../../Assets/Images/profile.png";
 import EditPin from "../../Assets/Images/EditPin.png";
@@ -23,15 +26,60 @@ import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
 
 
-export default function TenantsScreen() {
+export default function TenantsScreen({ route }) {
+  const { setShowTabBar } = route.params;
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
+  const [showDetailModal, setShowDetailModal] = useState(false);
+const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+useLayoutEffect(() => {
+  setShowTabBar(!showDetailModal);
+}, [showDetailModal]);
+
+// 🔥 FIX: Handle Android Back Button inside modal
+useLayoutEffect(() => {
+  const backAction = () => {
+    if (showDetailModal) {
+      setShowDetailModal(false);   // close modal
+      return true;                 // stop default back navigation
+    }
+    return false; // normal back
+  };
+
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => handler.remove();
+}, [showDetailModal]);
+
   
   const tabs = [
     { key: "Tenants", active: InProfile, inactive: Profile },
     { key: "Checkout", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Walkin", active: ActiveWalkin, inactive: WalkinIcon },
   ];
+
+
+const openCustomerDetails = (customer) => {
+  setSelectedCustomer(customer);
+  setShowDetailModal(true);
+};
+const customerList = [
+  {
+    id: 1,
+    name: "Rajkumar M",
+    img: Profile,
+    floor: "Ground Floor",
+    room: "203",
+    bed: "03",
+    email: "rajkumar001@gmail.com",
+    phone: "+91 98765 43210",
+    joinDate: "10 July 2025",
+  },
+];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,7 +124,7 @@ export default function TenantsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>This Month</Text>
 
-        <View style={styles.tenantRow}>
+        <TouchableOpacity style={styles.tenantRow} onPress={() => openCustomerDetails(customerList[0])}>
           <Image source={Profile} style={styles.profileImg} />
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>Rajkumar M</Text>
@@ -100,7 +148,7 @@ export default function TenantsScreen() {
             <Text style={styles.dateText}>01/06</Text>
             
           </View>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Floating Buttons only for Tenants */}
@@ -113,6 +161,59 @@ export default function TenantsScreen() {
       </TouchableOpacity>
     </View>
   )}
+
+
+ 
+{showDetailModal && (
+  <View style={styles.modalOverlay}>
+    <View style={styles.bottomSheet}>
+      <View style={styles.modalHandle} />
+
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Customer Details</Text>
+        <TouchableOpacity onPress={() => setShowDetailModal(false)}>
+          <Image source={Dots} style={{ width: 24, height: 24,transform: [{ rotate: "90deg" }] }} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.modalProfileRow}>
+        <Image source={selectedCustomer?.img} style={styles.modalProfileImg} />
+
+        <View style={{ marginLeft: 12 }}>
+          <Text style={styles.modalName}>{selectedCustomer?.name}</Text>
+
+          <View style={styles.detailRow}>
+            <View style={styles.floorBadge}>
+              <Text style={styles.floorText}>{selectedCustomer?.floor}</Text>
+            </View>
+            <Image source={EditPin} style={styles.iconSmall} />
+            <Text style={styles.detailText}>{selectedCustomer?.room}</Text>
+            <Image source={EditPin} style={styles.iconSmall} />
+            <Text style={styles.detailText}>{selectedCustomer?.bed}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Email */}
+      <Text style={styles.infoLabel}>Email ID</Text>
+      <Text style={styles.infoValue}>{selectedCustomer?.email}</Text>
+
+      {/* Phone */}
+      <Text style={styles.infoLabel}>Contact Number</Text>
+      <Text style={styles.infoValue}>{selectedCustomer?.phone}</Text>
+
+      {/* Join date */}
+      <Text style={styles.infoLabel}>Joining Date</Text>
+      <Text style={styles.infoValue}>{selectedCustomer?.joinDate}</Text>
+
+      {/* Unassigned Button */}
+      <TouchableOpacity style={styles.unassignBtn}>
+        <Text style={styles.unassignText}>Un Assigned</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+)}
+
       
     </SafeAreaView>
   );
@@ -254,4 +355,88 @@ activeText: {
     right: 10,
     bottom:110,
   },
+  modalOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "flex-end",
+},
+
+bottomSheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  height: "55%",
+},
+
+modalHandle: {
+  width: 60,
+  height: 4,
+  backgroundColor: "#ccc",
+  alignSelf: "center",
+  borderRadius: 100,
+  marginBottom: 15,
+},
+
+modalHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 20,
+},
+
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#111",
+},
+
+modalProfileRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 20,
+},
+
+modalProfileImg: {
+  width: 55,
+  height: 55,
+  borderRadius: 30,
+},
+
+modalName: {
+  fontSize: 17,
+  fontWeight: "600",
+  color: "#111",
+},
+
+infoLabel: {
+  marginTop: 15,
+  fontSize: 13,
+  color: "#6B7280",
+},
+
+infoValue: {
+  fontSize: 14,
+  color: "#111",
+  marginTop: 3,
+},
+
+unassignBtn: {
+  borderWidth: 1,
+  borderColor: "#111",
+  borderRadius: 15,
+  marginTop: 25,
+  paddingVertical: 12,
+  alignItems: "center",
+},
+
+unassignText: {
+  fontSize: 15,
+  fontWeight: "600",
+},
+
 });

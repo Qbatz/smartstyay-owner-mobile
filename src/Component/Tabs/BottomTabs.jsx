@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import { View, Image } from "react-native";
 import { useLinkBuilder, useTheme } from "@react-navigation/native";
 import { Text, PlatformPressable } from "@react-navigation/elements";
@@ -34,6 +34,7 @@ const icons = {
 function MyTabBar({ state, descriptors, navigation }) {
   const { colors } = useTheme();
   const { buildHref } = useLinkBuilder();
+  
 
   return (
     <View
@@ -78,42 +79,29 @@ function MyTabBar({ state, descriptors, navigation }) {
 }
 
 export default function MyTabs() {
-  return (
-    <Tab.Navigator 
+    const [showTabBar, setShowTabBar] = useState(true);
+ return (
+    <Tab.Navigator
+      id="MainTabs"
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <MyTabBar {...props} />}
+      tabBar={(props) =>
+        showTabBar ? <MyTabBar {...props} /> : null
+      }
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="customer" component={Tenant} />
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen} 
+        initialParams={{ setShowTabBar }}
+      />
+      <Tab.Screen 
+        name="customer" 
+        component={Tenant} 
+        initialParams={{ setShowTabBar }}
+      />
+      
       <Tab.Screen name="PG" component={PGList} />
       <Tab.Screen name="Complaints" component={Complaints} />
-      <Tab.Screen
-  name="More"
-  component={MoreStack}
-  options={{ headerShown: false }}
-  listeners={({ navigation, route }) => ({
-    state: () => {
-      const currentRoute = route?.state?.routes[route.state.index]?.name;
-
-      if (currentRoute === "Assets") {
-        navigation.setOptions({ tabBarStyle: { display: "none" } });
-      } else {
-        navigation.setOptions({
-          tabBarStyle: {
-            paddingVertical: 12,
-            backgroundColor: "#fff",
-            borderTopWidth: 1,
-            borderColor: "#fff",
-            elevation: 8,
-            borderTopLeftRadius: 30,
-            borderTopRightRadius: 30,
-          }
-        });
-      }
-    }
-  })}
-/>
-
+      <Tab.Screen name="More" component={MoreStack} />
     </Tab.Navigator>
   );
 }
