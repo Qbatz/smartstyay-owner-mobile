@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+TouchableWithoutFeedback,
+
   BackHandler
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -25,6 +27,7 @@ import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
 import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
+import ReassignBedModal from '../Customer/ReAssignBed';
 
 
 export default function TenantsScreen({ route }) {
@@ -33,24 +36,33 @@ export default function TenantsScreen({ route }) {
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
 const [selectedCustomer, setSelectedCustomer] = useState(null);
-
+const [showReAssignbed , setShowReAssignBed] = useState(false)
 const [showNotice, setShowNotice] = useState(false);
 const [reqDate, setReqDate] = useState("31/07/2025");
 const [outDate, setOutDate] = useState("30/08/2025");
 const [reason, setReason] = useState("");
+const [showMenu, setShowMenu] = useState(false);
+const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+const openMenu = (event) => {
+  const { pageX, pageY } = event.nativeEvent;
+
+  setPopupPosition({ x: pageX, y: pageY });
+  setShowMenu(true);
+};
+
 
 useLayoutEffect(() => {
   setShowTabBar(!showDetailModal);
 }, [showDetailModal]);
 
-// 🔥 FIX: Handle Android Back Button inside modal
+
 useLayoutEffect(() => {
   const backAction = () => {
     if (showDetailModal) {
-      setShowDetailModal(false);   // close modal
-      return true;                 // stop default back navigation
+      setShowDetailModal(false);   
+      return true;                 
     }
-    return false; // normal back
+    return false;
   };
 
   const handler = BackHandler.addEventListener(
@@ -73,6 +85,15 @@ const openCustomerDetails = (customer) => {
   setSelectedCustomer(customer);
   setShowDetailModal(true);
 };
+
+const handleShowReAssignBed = () => {
+  setShowReAssignBed(true)
+}
+
+const handlecloseReAssignbed = () => {
+   setShowReAssignBed(false)
+}
+
 const customerList = [
   {
     id: 1,
@@ -146,17 +167,16 @@ const customerList = [
             </View>
           </View>
           <View style={styles.rightSection}>
-            {/* <Text style={styles.dots}>⋯</Text> */}
+          
 
-        <TouchableOpacity onPress={() => {
-  setSelectedCustomer(customerList[0]); 
-  setShowNotice(true);
-}}>
+      
+ <TouchableOpacity onPress={openMenu}>
   <Image
     source={Dots}
     style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
   />
 </TouchableOpacity>
+
 
             <Text style={styles.dateText}>01/06</Text>
             
@@ -165,7 +185,7 @@ const customerList = [
         </View>
       </ScrollView>
 
-      {/* Floating Buttons only for Tenants */}
+     
       <TouchableOpacity style={styles.editButton}>
         <Image source={EditPin} style={{ width: 60, height: 60 }} />
       </TouchableOpacity>
@@ -179,54 +199,103 @@ const customerList = [
 
  
 {showDetailModal && (
-  <View style={styles.modalOverlay}>
-    <View style={styles.bottomSheet}>
-      <View style={styles.modalHandle} />
+  <TouchableOpacity
+    style={styles.modalOverlay}
+    activeOpacity={1}
+    onPress={() => setShowDetailModal(false)}   // 👉 tap outside closes modal
+  >
+    <TouchableWithoutFeedback>
+      <View style={styles.bottomSheet}>
+        <View style={styles.modalHandle} />
 
-      <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Customer Details</Text>
-        <TouchableOpacity onPress={() => setShowDetailModal(false)}>
-          <Image source={Dots} style={{ width: 24, height: 24,transform: [{ rotate: "90deg" }] }} />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Customer Details</Text>
+          <TouchableOpacity onPress={() => setShowDetailModal(false)}>
+            <Image
+              source={Dots}
+              style={{ width: 24, height: 24, transform: [{ rotate: "90deg" }] }}
+            />
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.modalProfileRow}>
-        <Image source={selectedCustomer?.img} style={styles.modalProfileImg} />
+        <View style={styles.modalProfileRow}>
+          <Image source={selectedCustomer?.img} style={styles.modalProfileImg} />
 
-        <View style={{ marginLeft: 12 }}>
-          <Text style={styles.modalName}>{selectedCustomer?.name}</Text>
+          <View style={{ marginLeft: 12 }}>
+            <Text style={styles.modalName}>{selectedCustomer?.name}</Text>
 
-          <View style={styles.detailRow}>
-            <View style={styles.floorBadge}>
-              <Text style={styles.floorText}>{selectedCustomer?.floor}</Text>
+            <View style={styles.detailRow}>
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorText}>{selectedCustomer?.floor}</Text>
+              </View>
+              <Image source={EditPin} style={styles.iconSmall} />
+              <Text style={styles.detailText}>{selectedCustomer?.room}</Text>
+              <Image source={EditPin} style={styles.iconSmall} />
+              <Text style={styles.detailText}>{selectedCustomer?.bed}</Text>
             </View>
-            <Image source={EditPin} style={styles.iconSmall} />
-            <Text style={styles.detailText}>{selectedCustomer?.room}</Text>
-            <Image source={EditPin} style={styles.iconSmall} />
-            <Text style={styles.detailText}>{selectedCustomer?.bed}</Text>
           </View>
         </View>
+
+        <Text style={styles.infoLabel}>Email ID</Text>
+        <Text style={styles.infoValue}>{selectedCustomer?.email}</Text>
+
+        <Text style={styles.infoLabel}>Contact Number</Text>
+        <Text style={styles.infoValue}>{selectedCustomer?.phone}</Text>
+
+        <Text style={styles.infoLabel}>Joining Date</Text>
+        <Text style={styles.infoValue}>{selectedCustomer?.joinDate}</Text>
+
+        <TouchableOpacity style={styles.unassignBtn}>
+          <Text style={styles.unassignText}>Un Assigned</Text>
+        </TouchableOpacity>
       </View>
+    </TouchableWithoutFeedback>
+  </TouchableOpacity>
+)}
 
-      {/* Email */}
-      <Text style={styles.infoLabel}>Email ID</Text>
-      <Text style={styles.infoValue}>{selectedCustomer?.email}</Text>
+    <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} />
 
-      {/* Phone */}
-      <Text style={styles.infoLabel}>Contact Number</Text>
-      <Text style={styles.infoValue}>{selectedCustomer?.phone}</Text>
 
-      {/* Join date */}
-      <Text style={styles.infoLabel}>Joining Date</Text>
-      <Text style={styles.infoValue}>{selectedCustomer?.joinDate}</Text>
+{showMenu && (
+  <TouchableOpacity
+    activeOpacity={1}
+    onPress={() => setShowMenu(false)}
+    style={styles.popupOverlay}
+  >
+    <View
+      style={[
+        styles.popupBox,
+        { top: popupPosition.y + 10, left: popupPosition.x - 180 },
+      ]}
+    >
+    
+      <TouchableOpacity style={styles.popupRow} onPress={handleShowReAssignBed} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Re-Assign Bed</Text>
+      </TouchableOpacity>
 
-      {/* Unassigned Button */}
-      <TouchableOpacity style={styles.unassignBtn}>
-        <Text style={styles.unassignText}>Un Assigned</Text>
+      
+      <TouchableOpacity
+        style={styles.popupRow}
+        onPress={() => {
+          setShowMenu(false);
+          setShowNotice(true); 
+        }}
+      >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Move to Notice Period</Text>
       </TouchableOpacity>
     </View>
-  </View>
+  </TouchableOpacity>
 )}
+
+
 <MoveNoticeModal
   visible={showNotice}
   onClose={() => setShowNotice(false)}
@@ -464,5 +533,44 @@ unassignText: {
   fontSize: 15,
   fontWeight: "600",
 },
+popupOverlay: {
+  position: "absolute",
+  top: 10,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "transparent",
+},
+
+popupBox: {
+  position: "absolute",
+  backgroundColor: "#fff",
+  paddingVertical: 10,
+  width: 200,
+  borderRadius: 12,
+  elevation: 10,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+},
+
+popupRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+},
+
+popupIcon: {
+  width: 20,
+  height: 20,
+  marginRight: 10,
+},
+
+popupText: {
+  fontSize: 14,
+  color: "#333",
+},
+
 
 });

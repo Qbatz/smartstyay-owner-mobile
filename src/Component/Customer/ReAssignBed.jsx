@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    maxHeight: "90%",
+    maxHeight: "95%",
     backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingTop: 10,
