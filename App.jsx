@@ -33,7 +33,8 @@ import LoginDesign from './src/Component/CreateAccount/Login'
 import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp';
 import MyTabs from "./src/Component/Tabs/BottomTabs";
 import AddTenant from "./src/Component/Customer/AddTenants";
-
+import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
+import AddWalkin from "./src/Component/Customer/AddWalkin";
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -67,6 +68,8 @@ function AppContent() {
               <Navigation.Screen name="VerifyAccountScreen" component={VerifyAccountScreen} />
                 <Navigation.Screen name="MyTabs" component={MyTabs} />
                 <Navigation.Screen name="AddTenant" component={AddTenant} />
+                  <Navigation.Screen name="TenantCheckin" component={TenantCheckin} />
+            <Navigation.Screen name="AddWalkin" component={AddWalkin} />
         </Navigation.Navigator>
       </NavigationContainer>
 
