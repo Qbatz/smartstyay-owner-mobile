@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,11 @@ import {
   ScrollView,
   Modal,
   BackHandler,
+  TouchableWithoutFeedback,
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { useFocusEffect } from "@react-navigation/native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import Profile from "../../Assets/Images/profile.png";
@@ -33,42 +35,45 @@ export default function MoveNoticeModal({
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
 
-  // 🔙 Close modal on mobile back button
-  useEffect(() => {
-    const backAction = () => {
-      if (visible) {
-        onClose();
-        return true;
-      }
-      return false;
-    };
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
 
-    return () => backHandler.remove();
-  }, [visible]);
+        console.log("Back Pressed - Modal Visible:", visible);
+
+        if (visible) {
+          onClose();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [visible])
+  );
+
 
 
   return (
     <>
-    
+
       <Modal visible={visible} transparent animationType="slide">
-    
-        <TouchableOpacity
-          style={styles.overlay}
-          activeOpacity={1}
-          onPress={onClose}
-        >
-         
+        <View style={styles.overlay}>
           <TouchableOpacity
+            style={{ flex: 1 }}
             activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-            style={styles.sheet}
-          >
-          
+            onPress={onClose}
+          />
+
+          {/* Bottom Sheet */}
+          <View style={styles.sheet}>
             <View style={styles.handle} />
 
             <Text style={styles.title}>Move to Notice Period?</Text>
@@ -77,7 +82,7 @@ export default function MoveNoticeModal({
               Notice Days : <Text style={{ color: "#2D6CDF" }}>30</Text>
             </Text>
 
-          
+            {/* CUSTOMER INFO */}
             <View style={styles.profileRow}>
               <Image source={tenant.img || Profile} style={styles.profileImg} />
               <View style={{ marginLeft: 12 }}>
@@ -97,9 +102,8 @@ export default function MoveNoticeModal({
               </View>
             </View>
 
-          
             <ScrollView showsVerticalScrollIndicator={false}>
-         
+              {/* Request Date */}
               <Text style={styles.label}>Request Date</Text>
               <TouchableOpacity
                 style={styles.inputBox}
@@ -134,7 +138,7 @@ export default function MoveNoticeModal({
               />
             </ScrollView>
 
-            {/* Footer Buttons */}
+            {/* FOOTER */}
             <View style={styles.footer}>
               <TouchableOpacity onPress={onClose}>
                 <Text style={styles.cancel}>Cancel</Text>
@@ -144,22 +148,23 @@ export default function MoveNoticeModal({
                 <Text style={styles.moveText}>Move</Text>
               </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
-      {/* ---------- REQUEST DATE PICKER ---------- */}
-      <Modal visible={openRequestPicker} transparent animationType="fade">
-        <TouchableOpacity
-          style={styles.calendarOverlay}
-          activeOpacity={1}
-          onPress={() => setOpenRequestPicker(false)}
-        >
+    
+      <Modal
+        visible={openRequestPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenRequestPicker(false)}
+      >
+        <View style={styles.calendarOverlay}>
           <TouchableOpacity
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-            style={styles.calendarBox}
-          >
+            style={styles.outsideTouch}
+            onPress={() => setOpenRequestPicker(false)}
+          />
+          <View style={styles.calendarBox}>
             <DatePicker
               mode="single"
               date={dayjs()}
@@ -168,22 +173,23 @@ export default function MoveNoticeModal({
                 setOpenRequestPicker(false);
               }}
             />
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
-      {/* ---------- CHECKOUT DATE PICKER ---------- */}
-      <Modal visible={openCheckoutPicker} transparent animationType="fade">
-        <TouchableOpacity
-          style={styles.calendarOverlay}
-          activeOpacity={1}
-          onPress={() => setOpenCheckoutPicker(false)}
-        >
+
+      <Modal
+        visible={openCheckoutPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenCheckoutPicker(false)}
+      >
+        <View style={styles.calendarOverlay}>
           <TouchableOpacity
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-            style={styles.calendarBox}
-          >
+            style={styles.outsideTouch}
+            onPress={() => setOpenCheckoutPicker(false)}
+          />
+          <View style={styles.calendarBox}>
             <DatePicker
               mode="single"
               date={dayjs()}
@@ -192,13 +198,13 @@ export default function MoveNoticeModal({
                 setOpenCheckoutPicker(false);
               }}
             />
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
+
     </>
   );
 }
-
 
 const styles = StyleSheet.create({
   overlay: {
@@ -206,6 +212,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
+
+  outsideCloseArea: {
+    flex: 1,
+  },
+
   sheet: {
     backgroundColor: "#fff",
     padding: 20,
@@ -213,6 +224,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     maxHeight: "80%",
   },
+
   handle: {
     width: 60,
     height: 4,
@@ -221,6 +233,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 15,
   },
+
   title: { fontSize: 18, fontWeight: "700", color: "#111" },
   noticeDays: { fontSize: 14, color: "#6B7280", marginVertical: 10 },
 
@@ -306,6 +319,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     padding: 20,
+  },
+  outsideTouch: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   calendarBox: {
     backgroundColor: "#fff",
