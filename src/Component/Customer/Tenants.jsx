@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ import ReassignBedModal from '../Customer/ReAssignBed';
 import CheckoutList from '../Customer/Checkout/CheckoutList';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import WalkinScreen from '../Customer/WalkIn/WalkinList'
 
 
 
@@ -53,12 +54,17 @@ const [status, setStatus] = useState("All");
 const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-const openMenu = (event) => {
-  const { pageX, pageY } = event.nativeEvent;
 
-  setPopupPosition({ x: pageX, y: pageY });
-  setShowMenu(true);
+const dotsRef = useRef(null);
+
+const openMenu = (item) => {
+  dotsRef.current.measure((fx, fy, width, height, px, py) => {
+    setPopupPosition({ x: px, y: py });
+    setSelectedCustomer(item);
+    setShowMenu(true);
+  });
 };
+
 const [fromDate, setFromDate] = useState(dayjs());
 const [toDate, setToDate] = useState(dayjs());
 
@@ -69,17 +75,26 @@ const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
 useLayoutEffect(() => {
-  setShowTabBar(!showDetailModal);
-}, [showDetailModal]);
+  setShowTabBar(!showDetailModal && !showFilter);
+}, [showDetailModal, showFilter]);
+
 
 
 useLayoutEffect(() => {
   const backAction = () => {
     if (showDetailModal) {
-      setShowDetailModal(false);   
-      return true;                 
+      setShowDetailModal(false);
+      return true;
     }
-    return false;
+
+    if (showFilter) {
+      setShowFilter(false);
+      return true;
+    }
+
+    
+
+    return false; // allow default back behavior
   };
 
   const handler = BackHandler.addEventListener(
@@ -88,7 +103,8 @@ useLayoutEffect(() => {
   );
 
   return () => handler.remove();
-}, [showDetailModal]);
+}, [showDetailModal, showFilter]);
+
 
   
   const tabs = [
@@ -165,7 +181,10 @@ const customerList = [
 
  {activeTab === "Tenants" && (
     <View style={{ flex: 1 }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+       showsVerticalScrollIndicator={false}
+       contentContainerStyle={{ paddingBottom: 50 }} 
+     >
         <Text style={styles.sectionTitle}>This Month</Text>
 <View style={styles.tenantRow}>
         <TouchableOpacity  onPress={() => openCustomerDetails(customerList[0])}>
@@ -187,7 +206,8 @@ const customerList = [
           
 
       
- <TouchableOpacity onPress={openMenu}>
+<TouchableOpacity ref={dotsRef} onPress={() => openMenu(customerList[0])}>
+
   <Image
     source={Dots}
     style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
@@ -200,6 +220,7 @@ const customerList = [
           </View>
         
         </View>
+        
       </ScrollView>
 
      
@@ -219,6 +240,9 @@ const customerList = [
 
 {activeTab === "Checkout" && (
    <CheckoutList/>
+  )}
+  {activeTab === "Walkin" && (
+   <WalkinScreen setShowTabBar = {setShowTabBar}/>
   )}
  
 {showDetailModal && (
@@ -301,23 +325,25 @@ const customerList = [
       </TouchableOpacity>
 
       
-      <TouchableOpacity
-        style={styles.popupRow}
-        onPress={() => {
-          setShowMenu(false);
-          setShowNotice(true); 
-        }}
-      >
-        <Image
-          source={require("../../Assets/Images/ReAssign.png")}
-          style={styles.popupIcon}
-        />
-        <Text style={styles.popupText}>Move to Notice Period</Text>
-      </TouchableOpacity>
+    <TouchableOpacity
+  style={styles.popupRow}
+  onPress={() => {
+    setShowMenu(false);
+    setShowNotice(true); 
+  }}
+>
+  <Image
+    source={require("../../Assets/Images/ReAssign.png")}
+    style={styles.popupIcon}
+  />
+  <Text style={styles.popupText}>Move to Notice Period</Text>
+</TouchableOpacity>
+
+
     </View>
   </TouchableOpacity>
 )}
-{/* ================= FILTER SHEET ================= */}
+
 {showFilter && (
   <TouchableOpacity
     style={styles.filterOverlay}
@@ -332,8 +358,8 @@ const customerList = [
         <View style={styles.filterHeader}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image
-              source={require("../../Assets/Images/profile.png")}
-              style={{ width: 18, height: 18, marginRight: 8 }}
+              source={EditPin}
+              style={{ width: 35, height: 35, marginRight: 8 }}
             />
             <Text style={styles.filterTitle}>Filter by</Text>
           </View>
@@ -367,10 +393,10 @@ const customerList = [
           </View>
         )}
 
-        {/* DATE ROW */}
+       
         <View style={styles.dateRow}>
 
-          {/* FROM DATE */}
+    
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>From</Text>
 
@@ -405,7 +431,7 @@ const customerList = [
           </View>
         </View>
 
-        {/* QUICK SELECT BUTTONS */}
+     
         <View style={styles.quickRow}>
           <TouchableOpacity style={styles.quickBtn}>
             <Text style={styles.quickText}>Today</Text>
@@ -420,7 +446,7 @@ const customerList = [
           </TouchableOpacity>
         </View>
 
-        {/* BOTTOM BUTTONS */}
+       
         <View style={styles.bottomButtons}>
           <TouchableOpacity style={styles.resetBtn}>
             <Text style={styles.resetText}>Reset All</Text>
@@ -434,7 +460,7 @@ const customerList = [
     </TouchableWithoutFeedback>
   </TouchableOpacity>
 )}
-{/* FROM DATE MODAL */}
+
 <Modal
   transparent
   visible={openFrom}
@@ -442,15 +468,11 @@ const customerList = [
   onRequestClose={() => setOpenFrom(false)}
 >
   <View style={styles.datePickerOverlay}>
-    
-    {/* OUTSIDE CLICK CLOSES */}
     <TouchableOpacity
       style={styles.outsideTouch}
       activeOpacity={1}
       onPress={() => setOpenFrom(false)}
     />
-
-    {/* DATE PICKER BOX */}
     <View style={styles.datePickerBox}>
       <TouchableWithoutFeedback>
         <View>
@@ -470,8 +492,6 @@ const customerList = [
 </Modal>
 
 
-
-{/* TO DATE MODAL */}
 <Modal
   transparent
   visible={openTo}
@@ -508,18 +528,21 @@ const customerList = [
 
 
 
-<MoveNoticeModal
-  visible={showNotice}
-  onClose={() => setShowNotice(false)}
-  tenant={selectedCustomer}
-  requestDate={reqDate}
-  checkoutDate={outDate}
-  reason={reason}
-  setRequestDate={setReqDate}
-  setCheckoutDate={setOutDate}
-  setReason={setReason}
-  onMove={() => console.log("Move Clicked")}
-/>
+{showNotice && (
+  <MoveNoticeModal
+    visible={showNotice}
+    onClose={() => setShowNotice(false)}
+    tenant={selectedCustomer}
+    requestDate={reqDate}
+    checkoutDate={outDate}
+    reason={reason}
+    setRequestDate={setReqDate}
+    setCheckoutDate={setOutDate}
+    setReason={setReason}
+    onMove={() => console.log("Move Clicked")}
+  />
+)}
+
 
       
     </SafeAreaView>
@@ -576,17 +599,7 @@ dropdownMenu: {
   overflow: "hidden",
   elevation: 5,
 },
-dateBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  padding: 14,
-  borderRadius: 10,
-  marginTop: 6,
-  backgroundColor: "#fff",
-},
+
 datePickerOverlay: {
   flex: 1,
   backgroundColor: "rgba(0,0,0,0.4)",
@@ -604,33 +617,12 @@ datePickerBox: {
 },
 
 
-calIcon: {
-  width: 20,
-  height: 20,
-  tintColor: "#2D6CDF",
-},
 
-modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.3)",
-  justifyContent: "center",
-  alignItems: "center",
-},
+calIcon: { width: 20, height: 20 },
 
-calendarBox: {
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  padding: 10,
-  width: "90%",
-  elevation: 10,
-},
-dateModalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.3)",
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 20,
-},
+
+
+
 
 
 dropdownItem: {
@@ -931,17 +923,20 @@ arrow: { fontSize: 18, color: "#555" },
 
 dateRow: { flexDirection: "row", marginTop: 10 },
 
+
 dateBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
   borderWidth: 1,
   borderColor: "#E5E7EB",
-  padding: 12,
+  padding: 14,
   borderRadius: 10,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
+  marginTop: 6,
+  backgroundColor: "#fff",
 },
 
-calIcon: { width: 20, height: 20 },
+
 
 quickRow: {
   flexDirection: "row",
