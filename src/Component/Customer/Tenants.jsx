@@ -9,6 +9,7 @@ import {
   TextInput,
   Image,
 TouchableWithoutFeedback,
+Modal,
 
   BackHandler
 } from "react-native";
@@ -28,6 +29,11 @@ import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
 import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 import ReassignBedModal from '../Customer/ReAssignBed';
+import CheckoutList from '../Customer/Checkout/CheckoutList';
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
+
+
 
 
 export default function TenantsScreen({ route }) {
@@ -42,6 +48,10 @@ const [reqDate, setReqDate] = useState("31/07/2025");
 const [outDate, setOutDate] = useState("30/08/2025");
 const [reason, setReason] = useState("");
 const [showMenu, setShowMenu] = useState(false);
+const [showFilter, setShowFilter] = useState(false);
+const [status, setStatus] = useState("All");
+const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 const openMenu = (event) => {
   const { pageX, pageY } = event.nativeEvent;
@@ -49,6 +59,13 @@ const openMenu = (event) => {
   setPopupPosition({ x: pageX, y: pageY });
   setShowMenu(true);
 };
+const [fromDate, setFromDate] = useState(dayjs());
+const [toDate, setToDate] = useState(dayjs());
+
+const [openFrom, setOpenFrom] = useState(false);
+const [openTo, setOpenTo] = useState(false);
+
+const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
 useLayoutEffect(() => {
@@ -75,7 +92,7 @@ useLayoutEffect(() => {
 
   
   const tabs = [
-    { key: "Tenants", active: InProfile, inactive: Profile },
+    { key: "Tenants", active: Profile, inactive: InProfile },
     { key: "Checkout", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Walkin", active: ActiveWalkin, inactive: WalkinIcon },
   ];
@@ -186,9 +203,13 @@ const customerList = [
       </ScrollView>
 
      
-      <TouchableOpacity style={styles.editButton}>
+      {/* <TouchableOpacity style={styles.editButton}>
         <Image source={EditPin} style={{ width: 60, height: 60 }} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
+    <Image source={EditPin} style={{ width: 60, height: 60 }} />
+</TouchableOpacity>
+
 
       <TouchableOpacity style={styles.addButton}  onPress={() => navigation.navigate("AddTenant")}>
         <Image source={TenAntAdd} style={{ width: 60, height: 60 }} />
@@ -196,7 +217,9 @@ const customerList = [
     </View>
   )}
 
-
+{activeTab === "Checkout" && (
+   <CheckoutList/>
+  )}
  
 {showDetailModal && (
   <TouchableOpacity
@@ -294,6 +317,195 @@ const customerList = [
     </View>
   </TouchableOpacity>
 )}
+{/* ================= FILTER SHEET ================= */}
+{showFilter && (
+  <TouchableOpacity
+    style={styles.filterOverlay}
+    activeOpacity={1}
+    onPress={() => setShowFilter(false)}   // close when clicking outside
+  >
+    <TouchableWithoutFeedback>
+      <View style={styles.filterSheet}>
+        <View style={styles.filterHandle} />
+
+        {/* Header */}
+        <View style={styles.filterHeader}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={require("../../Assets/Images/profile.png")}
+              style={{ width: 18, height: 18, marginRight: 8 }}
+            />
+            <Text style={styles.filterTitle}>Filter by</Text>
+          </View>
+        </View>
+
+        {/* STATUS DROPDOWN */}
+        <Text style={styles.label}>Status</Text>
+
+        <TouchableOpacity
+          style={styles.dropdownBox}
+          onPress={() => setShowStatusDropdown(!showStatusDropdown)}
+        >
+          <Text style={styles.dropdownText}>{status}</Text>
+          <Text style={styles.arrow}>⌄</Text>
+        </TouchableOpacity>
+
+        {showStatusDropdown && (
+          <View style={styles.dropdownMenu}>
+            {["All", "Active", "In-Active", "Checked Out", "Notice"].map((v) => (
+              <TouchableOpacity
+                key={v}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setStatus(v);
+                  setShowStatusDropdown(false);
+                }}
+              >
+                <Text style={styles.dropdownItemText}>{v}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* DATE ROW */}
+        <View style={styles.dateRow}>
+
+          {/* FROM DATE */}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>From</Text>
+
+            <TouchableOpacity
+              style={styles.dateBox}
+              onPress={() => setOpenFrom(true)}
+            >
+              <Text>{formatDate(fromDate)}</Text>
+              <Image
+                source={require("../../Assets/Images/calendar.png")}
+                style={styles.calIcon}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ width: 15 }} />
+
+          {/* TO DATE */}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>To</Text>
+
+            <TouchableOpacity
+              style={styles.dateBox}
+              onPress={() => setOpenTo(true)}
+            >
+              <Text>{formatDate(toDate)}</Text>
+              <Image
+                source={require("../../Assets/Images/calendar.png")}
+                style={styles.calIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* QUICK SELECT BUTTONS */}
+        <View style={styles.quickRow}>
+          <TouchableOpacity style={styles.quickBtn}>
+            <Text style={styles.quickText}>Today</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickBtn}>
+            <Text style={styles.quickText}>This Week</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickBtn}>
+            <Text style={styles.quickText}>This Month</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* BOTTOM BUTTONS */}
+        <View style={styles.bottomButtons}>
+          <TouchableOpacity style={styles.resetBtn}>
+            <Text style={styles.resetText}>Reset All</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.applyBtn}>
+            <Text style={styles.applyText}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  </TouchableOpacity>
+)}
+{/* FROM DATE MODAL */}
+<Modal
+  transparent
+  visible={openFrom}
+  animationType="fade"
+  onRequestClose={() => setOpenFrom(false)}
+>
+  <View style={styles.datePickerOverlay}>
+    
+    {/* OUTSIDE CLICK CLOSES */}
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenFrom(false)}
+    />
+
+    {/* DATE PICKER BOX */}
+    <View style={styles.datePickerBox}>
+      <TouchableWithoutFeedback>
+        <View>
+          <DatePicker
+            mode="single"
+            date={fromDate}
+            onChange={(d) => {
+              setFromDate(d.date);
+              setOpenFrom(false);
+            }}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+
+  </View>
+</Modal>
+
+
+
+{/* TO DATE MODAL */}
+<Modal
+  transparent
+  visible={openTo}
+  animationType="fade"
+  onRequestClose={() => setOpenTo(false)}
+>
+  <View style={styles.datePickerOverlay}>
+    
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenTo(false)}
+    />
+
+    <View style={styles.datePickerBox}>
+      <TouchableWithoutFeedback>
+        <View>
+          <DatePicker
+            mode="single"
+            date={toDate}
+            onChange={(d) => {
+              setToDate(d.date);
+              setOpenTo(false);
+            }}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+
+  </View>
+</Modal>
+
+
+
 
 
 <MoveNoticeModal
@@ -340,6 +552,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#111827",
   },
+  outsideTouch: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
 tabContainer: {
   flexDirection: "row",
   justifyContent: "space-around",
@@ -348,6 +567,82 @@ tabContainer: {
   borderBottomColor: "#E5E7EB",
   paddingBottom: 6,
 },
+dropdownMenu: {
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  marginTop: 5,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  overflow: "hidden",
+  elevation: 5,
+},
+dateBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  padding: 14,
+  borderRadius: 10,
+  marginTop: 6,
+  backgroundColor: "#fff",
+},
+datePickerOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+datePickerBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  elevation: 10,
+  zIndex: 999,
+},
+
+
+calIcon: {
+  width: 20,
+  height: 20,
+  tintColor: "#2D6CDF",
+},
+
+modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.3)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+calendarBox: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 10,
+  width: "90%",
+  elevation: 10,
+},
+dateModalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.3)",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+},
+
+
+dropdownItem: {
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+},
+
+dropdownItemText: {
+  fontSize: 14,
+  color: "#111",
+},
+
 
 tab: {
   alignItems: "center",
@@ -571,6 +866,130 @@ popupText: {
   fontSize: 14,
   color: "#333",
 },
+
+
+filterOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "flex-end",
+},
+
+filterSheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+},
+
+filterHandle: {
+  width: 60,
+  height: 4,
+  backgroundColor: "#ccc",
+  alignSelf: "center",
+  borderRadius: 50,
+  marginBottom: 20,
+},
+
+filterHeader: {
+  flexDirection: "row",
+  justifyContent: "flex-start",
+  marginBottom: 20,
+},
+
+filterTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+},
+
+label: {
+  fontSize: 13,
+  color: "#6B7280",
+  marginBottom: 6,
+  marginTop: 10,
+},
+
+dropdownBox: {
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  padding: 12,
+  borderRadius: 10,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+dropdownText: {
+  color: "#111",
+  fontSize: 15,
+},
+
+arrow: { fontSize: 18, color: "#555" },
+
+dateRow: { flexDirection: "row", marginTop: 10 },
+
+dateBox: {
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  padding: 12,
+  borderRadius: 10,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+calIcon: { width: 20, height: 20 },
+
+quickRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 20,
+},
+
+quickBtn: {
+  backgroundColor: "#F8F9FA",
+  paddingVertical: 10,
+  paddingHorizontal: 18,
+  borderRadius: 10,
+},
+
+quickText: { color: "#111", fontWeight: "500" },
+
+bottomButtons: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 25,
+},
+
+resetBtn: {
+  backgroundColor: "#F2F3FF",
+  paddingVertical: 12,
+  borderRadius: 10,
+  width: "48%",
+  alignItems: "center",
+},
+
+resetText: {
+  color: "#2D6CDF",
+  fontWeight: "600",
+},
+
+applyBtn: {
+  backgroundColor: "#2D6CDF",
+  paddingVertical: 12,
+  borderRadius: 10,
+  width: "48%",
+  alignItems: "center",
+},
+
+applyText: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
 
 
 });

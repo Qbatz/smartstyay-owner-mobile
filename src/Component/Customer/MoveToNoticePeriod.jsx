@@ -54,21 +54,21 @@ export default function MoveNoticeModal({
 
   return (
     <>
-      {/* ---------- MAIN MODAL ---------- */}
+    
       <Modal visible={visible} transparent animationType="slide">
-        {/* 🟥 OUTSIDE CLICK AREA */}
+    
         <TouchableOpacity
           style={styles.overlay}
           activeOpacity={1}
           onPress={onClose}
         >
-          {/* 🟦 CONTENT - STOP PROPAGATION */}
+         
           <TouchableOpacity
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
             style={styles.sheet}
           >
-            {/* Handle */}
+          
             <View style={styles.handle} />
 
             <Text style={styles.title}>Move to Notice Period?</Text>
@@ -77,7 +77,7 @@ export default function MoveNoticeModal({
               Notice Days : <Text style={{ color: "#2D6CDF" }}>30</Text>
             </Text>
 
-            {/* Tenant info */}
+          
             <View style={styles.profileRow}>
               <Image source={tenant.img || Profile} style={styles.profileImg} />
               <View style={{ marginLeft: 12 }}>
@@ -97,9 +97,9 @@ export default function MoveNoticeModal({
               </View>
             </View>
 
-            {/* Form */}
+          
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Request Date */}
+         
               <Text style={styles.label}>Request Date</Text>
               <TouchableOpacity
                 style={styles.inputBox}
