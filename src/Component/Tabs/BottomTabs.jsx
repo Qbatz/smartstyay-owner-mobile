@@ -107,8 +107,8 @@ export default function MyTabs() {
       />
       
       <Tab.Screen name="PG" component={PGList} />
-      <Tab.Screen name="Complaints" component={Complaints} />
-      <Tab.Screen name="More" component={MoreStack} />
+      <Tab.Screen name="Complaints" component={Complaints}  initialParams={{ setShowTabBar }}/>
+      <Tab.Screen name="More" component={MoreStack}   initialParams={{ setShowTabBar }}/>
     </Tab.Navigator>
   );
 }
