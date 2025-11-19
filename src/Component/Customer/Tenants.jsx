@@ -127,6 +127,17 @@ const handlecloseReAssignbed = () => {
    setShowReAssignBed(false)
 }
 
+const handleShowFinalSettlement = () => {
+navigation.navigate("FinalSettlement")
+}
+
+const handleShowTennantCheckin = () => {
+navigation.navigate("TenantCheckin")
+}
+const handleShowAddBooking = () => {
+navigation.navigate("AddBooking")
+}
+
 const customerList = [
   {
     id: 1,
@@ -315,6 +326,22 @@ const customerList = [
         { top: popupPosition.y + 10, left: popupPosition.x - 180 },
       ]}
     >
+
+     <TouchableOpacity style={styles.popupRow} onPress={handleShowAddBooking} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Add Booking</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.popupRow} onPress={handleShowTennantCheckin} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Tenant Check-in</Text>
+      </TouchableOpacity>
     
       <TouchableOpacity style={styles.popupRow} onPress={handleShowReAssignBed} >
         <Image
@@ -322,6 +349,14 @@ const customerList = [
           style={styles.popupIcon}
         />
         <Text style={styles.popupText}>Re-Assign Bed</Text>
+      </TouchableOpacity>
+
+        <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Final Settlemnent</Text>
       </TouchableOpacity>
 
       

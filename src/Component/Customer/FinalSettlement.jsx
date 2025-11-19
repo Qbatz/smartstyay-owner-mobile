@@ -1,0 +1,748 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+  Platform,LayoutAnimation
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import dayjs from "dayjs";
+
+import ArrowLeft from "../../Assets/Images/Arrow_left.png";
+import CalendarIcon from "../../Assets/Images/calendar.png";
+import Profile from "../../Assets/Images/User.png";
+import RoomIcon from "../../Assets/Images/Room_Icon.png";
+import BedIcon from "../../Assets/Images/Bed_Icon.png";
+import AddCircle from "../../Assets/Images/add-circle.png";
+import RemoveIcon from "../../Assets/Images/remove.png";
+import DirectionDownIcon from "../../Assets/Images/direction_down.png";
+
+export default function FinalSettlement({ navigation }) {
+
+  const [open, setOpen] = useState(false);
+
+  
+  const mockData = {
+    customer_name: "Daniel Balaji",
+    profile_image: "",
+
+    floor: "Ground Floor",
+    room: "003",
+    bed: "03",
+
+    joined_date: "22/10/2024",
+    req_checkout_date: "24/08/2025",
+
+    advance_amount: 8000,
+    monthly_rent: 4000,
+    booking_amount: 500,
+    advance_paid: 6000,
+
+    actual_checkout_date: "30/11/2025",
+    status: "Pending", 
+
+    last_reading: 230,
+    current_reading: 471.89,
+
+    deductions: [
+      { reason: "Miscellaneous", amount: "2000" },
+      { reason: "Other", amount: "1200" },
+    ],
+
+    invoices_pending: [{ invoice_no: "INV001", type: "Recurring", amount: 5000 }],
+
+    refundable_rent: [
+      { description: "Last Rent Paid (30 Days)", amount: 6000 },
+      { description: "Actual Stay Days (14 days ₹ 200)", amount: 2800 },
+      { description: "EB Amount", amount: 600 },
+      { description: "Food", amount: 2600 },
+    ],
+  };
+
+  const data = mockData;
+
+  const hasPending =
+    data.status === "Pending" && (data.invoices_pending || []).length > 0;
+
+  const [currentEB, setCurrentEB] = useState(
+    data.current_reading ? String(data.current_reading) : ""
+  );
+  const [showEBPicker, setShowEBPicker] = useState(false);
+
+  const [checkoutDate, setCheckoutDate] = useState("");
+  const [showCheckoutPicker, setShowCheckoutPicker] = useState(false);
+
+  const [maintenanceAmount, setMaintenanceAmount] = useState("");
+  const [nonRefundables, setNonRefundables] = useState([]);
+
+const addNonRefundable = () => {
+  setNonRefundables(prev => [
+    ...prev,
+    { reason: "", amount: "" }
+  ]);
+};
+
+const removeNonRefundable = (index) => {
+  setNonRefundables(prev => prev.filter((_, i) => i !== index));
+};
+
+  const onEBDatePick = (event, selected) => {
+    if (Platform.OS === "android") setShowEBPicker(false);
+  };
+
+  const onCheckoutDatePick = (event, selected) => {
+    if (Platform.OS === "android") setShowCheckoutPicker(false);
+    if (selected) {
+      const formatted = dayjs(selected).format("DD/MM/YYYY");
+      setCheckoutDate(formatted);
+    }
+  };
+
+  const toggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpen(!open);
+  };
+
+  const fmt = (v) =>
+    typeof v === "number" ? `₹ ${v.toLocaleString("en-IN")}` : `₹ ${v}`;
+
+  return (
+    <SafeAreaView style={styles.safe}>
+          <View style={styles.topHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={ArrowLeft} style={styles.backIcon} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Final Settlement</Text>
+      </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 , marginTop:20}}>
+        
+
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Image source={Profile} style={styles.profileImg} />
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={styles.name}>{data.customer_name}</Text>
+
+              <View style={styles.smallRow}>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{data.floor}</Text>
+                </View>
+
+                <Image source={RoomIcon} style={styles.smallIcon} />
+                <Text style={styles.badgeLabel}>{data.room}</Text>
+
+                <Image source={BedIcon} style={styles.smallIcon} />
+                <Text style={styles.badgeLabel}>{data.bed}</Text>
+              </View>
+            </View>
+          </View>
+<View style={styles.grid}>
+
+  <View style={styles.gridPair}>
+    <View  style={styles.gridCol}>
+      <Text style={styles.gridLabel}>Joined Date</Text>
+      <Text style={styles.gridValue}>{data.joined_date}</Text>
+    </View>
+
+    <View style={[styles.gridCol, { marginLeft:30}]}>
+      <Text style={styles.gridLabel}>Req Checkout Date</Text>
+      <Text style={styles.gridValue}>{data.req_checkout_date}</Text>
+    </View>
+  </View>
+
+  <View style={styles.gridPair}>
+    <View style={styles.gridCol}>
+      <Text style={styles.gridLabel}>Advance Amount</Text>
+      <Text style={styles.gridValue}>{fmt(data.advance_amount)}</Text>
+    </View>
+
+    <View style={[styles.gridCol, { marginLeft:30}]}>
+      <Text style={styles.gridLabel}>Monthly Rent</Text>
+      <Text style={styles.gridValue}>{fmt(data.monthly_rent)}</Text>
+    </View>
+  </View>
+
+  <View style={styles.gridPair}>
+    <View style={styles.gridCol}>
+      <Text style={styles.gridLabel}>Booking Amount</Text>
+      <Text style={styles.gridValue}>{fmt(data.booking_amount)}</Text>
+    </View>
+
+    <View style={[styles.gridCol, { marginLeft:30}]}>
+      <Text style={styles.gridLabel}>Advance Paid</Text>
+      <Text style={styles.gridValue}>{fmt(data.advance_paid)}</Text>
+    </View>
+  </View>
+
+  <View style={styles.gridPair}>
+    <View style={styles.gridCol}>
+      <Text style={styles.gridLabel}>Actual Checkout Date</Text>
+      <Text style={styles.gridValue}>{data.actual_checkout_date}</Text>
+    </View>
+
+    <View style={[styles.gridCol, { marginLeft:30}]}>
+      <Text style={styles.gridLabel}>Status</Text>
+      <Text
+        style={[
+          styles.gridValue,
+          { color: data.status === "Pending" ? "#E11D48" : "#16A34A" },
+        ]}
+      >
+        {data.status}
+      </Text>
+    </View>
+  </View>
+
+</View>
+
+        </View>
+
+         <View style={styles.ebHeaderRow}>
+  <Text style={styles.ebTitle}>
+    Current EB Reading <Text style={{ color: "red" }}>*</Text>
+  </Text>
+
+  <Text style={styles.lastReadingText}>
+    Last Reading : 230
+  </Text>
+</View>
+
+     
+        <View style={styles.inputWrap}>
+          <TextInput
+            style={styles.ebInput}
+            value={currentEB}
+            onChangeText={setCurrentEB}
+            keyboardType="numeric"
+            placeholder="Enter reading"
+          />
+        
+        </View>
+
+
+    
+
+      <View style={styles.nonRefundContainer}>
+        
+        <View style={styles.nonRefundHeader}>
+          <Text style={{ marginTop: 16, fontSize: 16, fontWeight: "700" , }}>Deductions</Text>
+      
+          <TouchableOpacity style={styles.addBtn} onPress={addNonRefundable}>
+            <View style={styles.iconCircle}>
+              <Image source={AddCircle} style={styles.iconImage} />
+            </View>
+            <Text style={styles.addText}>Add</Text>
+          </TouchableOpacity>
+        </View>
+      
+        <View style={styles.nonRefundRow}>
+          <View style={[styles.inputBox, { flex: 1 }]}>
+            <Text style={styles.fixedLabel}>Maintenance</Text>
+          </View>
+      
+          <View style={{ width: 120 }}>
+            <TextInput
+              value={maintenanceAmount}
+              onChangeText={setMaintenanceAmount}
+              keyboardType="numeric"
+              placeholder="Enter Amount"
+              style={styles.inputBox}
+            />
+          </View>
+        </View>
+      
+        {nonRefundables.map((item, index) => (
+          <View key={index} style={styles.nonRefundRow}>
+      
+            <TextInput
+              placeholder="Enter Reason"
+              value={item.reason}
+              onChangeText={(t) => {
+                const updated = [...nonRefundables];
+                updated[index].reason = t;
+                setNonRefundables(updated);
+              }}
+              style={[styles.inputBox, { flex: 1 }]}
+            />
+      
+            <View style={{ width: 120 }}>
+              <TextInput
+                placeholder="Enter Amount"
+                value={item.amount}
+                onChangeText={(t) => {
+                  const updated = [...nonRefundables];
+                  updated[index].amount = t;
+                  setNonRefundables(updated);
+                }}
+                keyboardType="numeric"
+                style={[styles.inputBox, { paddingRight: 10 }]}
+              />
+      
+              <TouchableOpacity
+                style={styles.closeInside}
+                onPress={() => removeNonRefundable(index)}
+              >
+                <Image source={RemoveIcon} style={{ width: 10, height: 10 }} />
+              </TouchableOpacity>
+            </View>
+      
+          </View>
+        ))}
+      
+      </View>
+
+      
+      
+
+        {hasPending ? (
+          <>
+            <Text style={{marginLeft:15 , fontWeight:600 , marginTop:10}}>Invoices Pending</Text>
+            <View style={styles.table}>
+              <View style={[styles.tableRow, styles.tableHeader]}>
+                <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>INVOICE.NO</Text>
+                <Text style={[styles.tableCellCenter, styles.tableHeaderText]}>TYPE</Text>
+                <Text style={[styles.tableCellRight, styles.tableHeaderText]}>INVOICE AMOUNT</Text>
+              </View>
+
+              {data.invoices_pending.map((inv, i) => (
+                <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableStrip : null]}>
+                  <Text style={[styles.tableCellLeft, styles.invoiceLink]}>{inv.invoice_no}</Text>
+                  <Text style={styles.tableCellCenter}>{inv.type}</Text>
+                  <Text style={styles.tableCellRight}>{fmt(inv.amount)}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Check out Date *</Text>
+            <TouchableOpacity style={styles.inputBoxSingle} onPress={() => setShowCheckoutPicker(true)}>
+              <Text style={{ color: checkoutDate ? "#000" : "#9CA3AF" }}>{checkoutDate || "DD/MM/YYYY"}</Text>
+              <Image source={CalendarIcon} style={styles.iconImage} />
+            </TouchableOpacity>
+          </>
+        )}
+
+        <Text style={{marginLeft:15 , fontWeight:600, marginTop:10}}>Refundable Rent</Text>
+        <View style={styles.table}>
+          <View style={[styles.tableRow, styles.tableHeader]}>
+            <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>DESCRIPTION</Text>
+            <Text style={[styles.tableCellRight, styles.tableHeaderText]}>INVOICE AMOUNT</Text>
+          </View>
+
+          {data.refundable_rent.map((r, i) => (
+            <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableStrip : null]}>
+              <Text style={styles.tabledescription}>{r.description}</Text>
+              <Text style={styles.tableCellRight}>{fmt(r.amount)}</Text>
+            </View>
+          ))}
+        </View>
+
+     <View style={{paddingHorizontal:25 , paddingTop:10}}>
+         <TouchableOpacity style={styles.header} onPress={toggle}>
+        <Text style={styles.totalRefund}>Total Refund</Text>
+
+        <Image
+        source={DirectionDownIcon}
+        style={{height:30 , width:30 , transform: open ? "rotate(180deg)":"rotate(0deg)"}}
+        />
+      </TouchableOpacity>
+     </View>
+      {open && (
+       <View style={styles.card}>
+    
+     
+        <View style={styles.content}>
+          <Row label="Final Settlement" value="₹ 4800" />
+          <Row label="Refundable Advance" value="₹ 8,000" />
+          <Row label="Refundable Rent" value="₹ 2,100" />
+          <Row label="Total Deductions" value="-₹ 3,200" red />
+
+          <View style={styles.resultBox}>
+            <Text style={styles.finalAmount}>-₹ 4,800</Text>
+          </View>
+        </View>
+      
+    </View>
+    )}
+  
+      
+<View style={styles.btnRow}>
+  <TouchableOpacity
+    style={styles.cancelBtn}
+    onPress={() => navigation.goBack()}
+  >
+    <Text style={styles.cancelText}>Cancel</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.addBtn2}>
+    <Text style={styles.addBtnText}>Generate</Text>
+  </TouchableOpacity>
+</View>
+
+        
+      </ScrollView>
+
+      <Modal visible={showEBPicker} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={{ fontWeight: "700", marginBottom: 10 }}>Enter EB Reading</Text>
+            <TextInput
+              placeholder="Reading"
+              value={currentEB}
+              onChangeText={setCurrentEB}
+              keyboardType="numeric"
+              style={[styles.inputBox, { marginBottom: 10 }]}
+            />
+            <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+              <TouchableOpacity style={{ marginRight: 12 }} onPress={() => setShowEBPicker(false)}>
+                <Text style={{ color: "#6B7280" }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowEBPicker(false)}>
+                <Text style={{ color: "#2B6CF6", fontWeight: "700" }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {showCheckoutPicker && (
+        <DateTimePicker
+          value={new Date()}
+          mode="date"
+          display="default"
+          onChange={onCheckoutDatePick}
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
+const Row = ({ label, value, red }) => (
+  <View style={styles.row}>
+    <Text style={styles.label}>{label}</Text>
+    <Text style={[styles.value, red && { color: "#D70000" }]}>{value}</Text>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop:30},
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 6,
+  },
+  topHeader: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 40,
+  backgroundColor: "#fff",
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  zIndex: 100,
+  marginTop:25
+//   elevation: 5, 
+},
+
+  backIcon: { width: 18, height: 18, marginRight: 10 },
+  headerTitle: { fontSize: 18, fontWeight: "700" },
+
+  card: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#EEF2F7",
+    backgroundColor: "#fff",
+  },
+  row: { flexDirection: "row", alignItems: "center" },
+  profileImg: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#E6EEF9" },
+  name: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
+  smallRow: { flexDirection: "row", alignItems: "center" },
+  badge: { backgroundColor: "#FFEFCF", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
+  badgeText: { color: "black", fontSize: 12 },
+  smallIcon: { width: 16, height: 16, marginHorizontal: 4 },
+  badgeLabel: { fontSize: 13 },
+
+ grid: {
+  marginTop: 10
+},
+
+gridPair: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 12,
+},
+
+gridCol: {
+  width: "48%",     
+  flexDirection: "column",
+},
+
+gridLabel: {
+  color: "#6B7280",
+  fontSize: 13,
+},
+
+gridValue: {
+  fontWeight: "700",
+  fontSize: 14,
+  marginTop: 3,
+},
+  
+ebHeaderRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  marginTop: 16,
+},
+
+ebTitle: {
+  fontSize: 15,
+  fontWeight: "700",
+  color: "#000",
+},
+
+lastReadingText: {
+  fontSize: 13,
+  color: "#444",
+  fontWeight: "400",
+},
+
+
+  inputWrap: { flexDirection: "row", marginHorizontal: 16, marginTop: 10, alignItems: "center" },
+  ebInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#EEF2F7",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#fff",
+  },
+  iconBtn: {
+    marginLeft: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: "#EEF2F7",
+  },
+  iconImage: { width: 18, height: 18 },
+  nonRefundContainer: {
+    marginTop: 10,
+    backgroundColor: "#F7F7FA",
+    padding: 10,
+    borderRadius: 10,
+    marginLeft:15, 
+    marginRight:15
+  },
+
+  nonRefundHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  nonRefundRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    gap: 10,
+  },
+
+  inputBox: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    fontSize: 14,
+  },
+
+  fixedLabel: {
+    fontSize: 14,
+    color: "#000",
+    fontWeight: "600",
+  },
+
+  closeInside: {
+    position: "absolute",
+    right: -6,
+    top: -8,
+    padding: 6,
+    backgroundColor: "#DCDCDC",
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    zIndex: 20,
+  },
+
+  addBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1E5BFF",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+
+
+
+  iconImage: {
+    height: 16,
+    width: 16,
+    marginRight:6
+  },
+
+  addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+
+//   deductCard: {
+//     margin: 16,
+//     backgroundColor: "#F7F8FC",
+//     padding: 14,
+//     borderRadius: 12,
+//   },
+//   deductHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+//   addBtn: { flexDirection: "row", backgroundColor: "#1E5BFF", paddingVertical: 8, paddingHorizontal: 10, borderRadius: 10, alignItems: "center" },
+//   addCircle: { width: 14, height: 14, tintColor: "#fff", marginRight: 6 },
+//   addBtnText: { color: "#fff", fontWeight: "700" },
+
+//   deductRow: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 10 },
+  inputBox: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#EEF2F7",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  rowClose: {
+    position: "absolute",
+    right: -6,
+    top: -8,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    padding: 6,
+  },
+
+  table: { marginHorizontal: 16, marginTop: 10, borderRadius: 8, borderWidth: 1, borderColor: "#EEF2F7", overflow: "hidden", backgroundColor: "#fff" },
+  tableRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, justifyContent: "space-between" },
+  tableHeader: { backgroundColor: "#FBFDFF" },
+  tableHeaderText: { fontWeight: "700", color: "#111" , fontSize:12},
+  tableCellLeft: { width: "33%", color: "#1E5BFF" , fontSize:11 },
+  tableCellCenter: { width: "33%", textAlign: "center" , fontSize:11},
+  tableCellRight: { width: "33%", textAlign: "right", fontSize:11 },
+  tabledescription: { width: "45%", color: "#1E5BFF" , fontSize:11 },
+  tableStrip: { backgroundColor: "#FCFCFD" },
+  invoiceLink: { color: "#1E5BFF", textDecorationLine: "underline" },
+
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", padding: 24 },
+  modalBox: { backgroundColor: "#fff", borderRadius: 12, padding: 16 },
+
+  inputBoxSingle: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#EEF2F7",
+    borderRadius: 10,
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+   card: {
+    margin: 16,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 16,
+    elevation: 2
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  totalRefund: {
+     fontSize: 16,
+     fontWeight: "600",
+  },
+  content: {
+     marginTop: 12,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+  },
+  label: {
+    fontSize: 15,
+    color: "#666",
+  },
+  value: {
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "500",
+  },
+  resultBox: {
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: "#eee",
+    padding: 12,
+    borderRadius: 8,
+  },
+  finalAmount: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#D70000",
+    textAlign: "left",
+  },
+   btnRow: {
+    display:'flex',
+  flexDirection: "row",
+//   alignItems: "flex-end",
+  justifyContent: "flex-end",
+  marginTop: 40,
+  paddingHorizontal: 12,
+},
+
+cancelBtn: {
+  paddingVertical: 12,
+  paddingHorizontal: 32,
+},
+
+cancelText: {
+  color: "#6B7280",
+  fontSize: 15,
+  fontWeight: "500",
+},
+
+addBtn2: {
+  backgroundColor: "#2B6CF6",
+  paddingVertical: 12,
+  paddingHorizontal: 40,
+  borderRadius: 10,
+},
+
+addBtnText: {
+  color: "#fff",
+  fontSize: 15,
+  fontWeight: "600",
+},
+});

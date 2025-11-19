@@ -70,7 +70,7 @@ export default function AddBookingScreen({ navigation }) {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" , paddingTop:20}}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={BackIcon} style={styles.backIcon} />
@@ -143,13 +143,14 @@ export default function AddBookingScreen({ navigation }) {
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "left",
     padding: 18,
   },
   backIcon: { width: 22, height: 22 },
   headerTitle: {
     flex: 1,
-    textAlign: "center",
+    // textAlign: "center",
+    marginLeft:10,
     fontSize: 18,
     fontWeight: "600",
     color: "#000",
