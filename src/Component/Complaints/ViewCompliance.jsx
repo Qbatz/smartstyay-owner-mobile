@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  BackHandler
+  BackHandler,
 } from "react-native";
 
 import Profile from "../../Assets/Images/Avatar.png";
@@ -18,29 +18,16 @@ import userImg from "../../Assets/Images/userImg.png";
 import Exchange from "../../Assets/Images/exchange.png";
 import room from "../../Assets/Images/Room_Icon.png";
 import Bed from "../../Assets/Images/bed.png";
-import AssignBottomSheet from "../../Component/Complaints/AssignCompliance";
-import CommentBottomSheet from "../Complaints/CommentBox";
-import ChangeStatus from "../Complaints/ComplianceStatus"
 
-
-export default function ComplaintDetails({ visible,
+export default function ComplaintDetails({
+  visible,
   onClose,
   complaint,
-  selectedUser,
-  setSelectedUser,
   onOpenAssignSheet,
   onOpenCommentSheet,
-  onOpenStatusSheet}) {
-  if (!complaint) return null;
-  const [showAssignSheet, setShowAssignSheet] = useState(false);
-  const [showCommentSheet, setShowCommentSheet] = useState(false);
-  const [showStatusSheet, setShowStatusSheet] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("Pending");
- 
-
-
-
-
+  onOpenStatusSheet,
+}) {
+  // ❗Hooks ALWAYS run first
   useEffect(() => {
     if (visible) {
       const backAction = () => {
@@ -57,23 +44,17 @@ export default function ComplaintDetails({ visible,
     }
   }, [visible]);
 
+  // ❗Safe return AFTER hooks
+  if (!complaint) return null;
 
   return (
-    <>
-   <Modal
-  visible={visible}
-  animationType="slide"
-  transparent={true}
-  onRequestClose={onClose}
->
+    <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
 
         <View style={styles.sheet}>
-          {/* Drag Line */}
           <View style={styles.headerLine} />
 
-          {/* Title + Icons */}
           <View style={styles.headerRow}>
             <View>
               <Text style={styles.title}>{complaint.title}</Text>
@@ -86,7 +67,6 @@ export default function ComplaintDetails({ visible,
             </View>
           </View>
 
-          {/* Complaint From */}
           <Text style={styles.sectionTitle}>Complaint from</Text>
 
           <View style={styles.userRow}>
@@ -94,25 +74,18 @@ export default function ComplaintDetails({ visible,
             <View>
               <Text style={styles.userName}>{complaint.user.split("-")[0]}</Text>
 
-              {/* <View style={styles.infoRow}>
-                <Text style={styles.floorTag}>Ground Floor</Text>
-                <Text style={styles.roomValue}>{complaint.user.split("-")[1]}</Text>
-                <Text style={styles.bedValue}>{complaint.user.split("-")[2]}</Text>
-              </View> */}
               <View style={styles.infoRow}>
-  <Text style={styles.floorTag}>Ground Floor</Text>
+                <Text style={styles.floorTag}>Ground Floor</Text>
 
-  <Image source={room} style={styles.roomIcon} />
-  <Text style={styles.roomValue}>{complaint.user.split("-")[1]}</Text>
+                <Image source={room} style={styles.roomIcon} />
+                <Text style={styles.roomValue}>{complaint.user.split("-")[1]}</Text>
 
-  <Image source={Bed} style={styles.bedIcon} />
-  <Text style={styles.bedValue}>{complaint.user.split("-")[2]}</Text>
-</View>
-
+                <Image source={Bed} style={styles.bedIcon} />
+                <Text style={styles.bedValue}>{complaint.user.split("-")[2]}</Text>
+              </View>
             </View>
           </View>
 
-          {/* Request ID / Assigned */}
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.labelSmall}>Request ID</Text>
@@ -125,19 +98,17 @@ export default function ComplaintDetails({ visible,
             </View>
           </View>
 
-          {/* Status */}
           <Text style={styles.sectionTitle}>Status</Text>
           <Text style={styles.value}>Yet to assign</Text>
 
-          {/* Complaint Type */}
           <Text style={styles.sectionTitle}>Complaint type</Text>
           <Text style={styles.value}>{complaint.title}</Text>
 
-          {/* Description */}
           <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.value}>Ac was not working properly till morning</Text>
+          <Text style={styles.value}>
+            Ac was not working properly till morning
+          </Text>
 
-          {/* Comment Box */}
           <View style={styles.commentBox}>
             <TextInput
               placeholder="Add your Comment"
@@ -145,86 +116,44 @@ export default function ComplaintDetails({ visible,
               style={styles.commentInput}
             />
 
-            <View style={styles.commentRight}>
-              {/* <Image source={CommentIcon} style={styles.commentIcon} /> */}
             <TouchableOpacity
-  onPress={() => {
-    onClose();
-    setTimeout(() => {
-      onOpenCommentSheet();  
-    }, 250);
-  }}
->
-  <Image source={CommentIcon} style={styles.commentIcon} />
-</TouchableOpacity>
+              onPress={() => {
+                onClose();
+                setTimeout(onOpenCommentSheet, 200);
+              }}
+            >
+              <Image source={CommentIcon} style={styles.commentIcon} />
+            </TouchableOpacity>
 
-
-              <Text style={styles.commentCount}>3</Text>
-            </View>
+            <Text style={styles.commentCount}>3</Text>
           </View>
 
-          
           <View style={styles.buttonRow}>
-           
-       <TouchableOpacity
-  style={styles.assignBtn}
-  onPress={() => {
-   onOpenAssignSheet()
-    setTimeout(() => {
-      onClose()
-    }, 200);
-  }}
->
-  <Image source={userImg} style={styles.assignIcon} />
-  <Text style={styles.assignText}>Assign</Text>
-</TouchableOpacity>
+            <TouchableOpacity
+              style={styles.assignBtn}
+              onPress={() => {
+                onClose();
+                setTimeout(onOpenAssignSheet, 200);
+              }}
+            >
+              <Image source={userImg} style={styles.assignIcon} />
+              <Text style={styles.assignText}>Assign</Text>
+            </TouchableOpacity>
 
-
-
-
-
-         <TouchableOpacity
-  style={styles.statusBtn}
-   onPress={() => {
-              onClose();
-              setTimeout(onOpenStatusSheet, 200);
-            }}
-
->
-  <Image source={Exchange} style={styles.assignIcon} />
-  <Text style={styles.statusText}>Change Status</Text>
-</TouchableOpacity>
-
+            <TouchableOpacity
+              style={styles.statusBtn}
+              onPress={() => {
+                onClose();
+                setTimeout(onOpenStatusSheet, 200);
+              }}
+            >
+              <Image source={Exchange} style={styles.assignIcon} />
+              <Text style={styles.statusText}>Change Status</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
     </Modal>
-
-    <AssignBottomSheet
-  visible={showAssignSheet}
-  onClose={() => setShowAssignSheet(false)}
-  selectedUser={selectedUser}
-  setSelectedUser={setSelectedUser}
- 
-
-
-/>
-<CommentBottomSheet
-  visible={showCommentSheet}
-  onClose={() => setShowCommentSheet(false)}
-/>
-<ChangeStatus
-  visible={showStatusSheet}
-  onClose={() => setShowStatusSheet(false)}
-  selectedStatus={selectedStatus}
-  setSelectedStatus={setSelectedStatus}
-  onStatusUpdate={() => {
-    console.log("Updated Status:", selectedStatus);
-    setShowStatusSheet(false);
-  }}
-/>
-
-    </>
   );
 }
 
@@ -234,7 +163,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
-
   sheet: {
     backgroundColor: "#fff",
     padding: 20,
@@ -242,7 +170,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingBottom: 35,
   },
-
   headerLine: {
     width: 60,
     height: 5,
@@ -251,72 +178,47 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 15,
   },
-
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
   iconRow: { flexDirection: "row" },
   icon: { width: 20, height: 20 },
-
   title: { fontSize: 18, fontWeight: "700", color: "#000" },
   time: { fontSize: 12, color: "#777", marginTop: 3, marginBottom: 20 },
-
   sectionTitle: {
     fontSize: 14,
     color: "#777",
     marginTop: 15,
     marginBottom: 5,
   },
-
   userRow: { flexDirection: "row", alignItems: "center" },
   avatar: { width: 45, height: 45, borderRadius: 30, marginRight: 12 },
-
   userName: { fontSize: 16, fontWeight: "600" },
 
- infoRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 5,
-},
+  infoRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
 
- floorTag: {
-  backgroundColor: "#F9E8C8",
-  paddingHorizontal: 10,
-  paddingVertical: 3,
-  borderRadius: 8,
-  fontSize: 12,
-  color: "#000",
-  marginRight: 10,
-},
+  floorTag: {
+    backgroundColor: "#F9E8C8",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+    fontSize: 12,
+    color: "#000",
+    marginRight: 10,
+  },
 
-roomIcon: {
-  width: 18,
-  height: 18,
-  marginRight: 5,
-  tintColor: "#1D5DFF",   // blue like screenshot
-},
+  roomIcon: { width: 20, height: 20, marginRight: 5, tintColor: "#1D5DFF" },
+  roomValue: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginRight: 15,
+    color: "#000",
+  },
 
-roomValue: {
-  fontSize: 14,
-  fontWeight: "500",
-  marginRight: 15,
-  color: "#000",
-},
-  bedIcon: {
-  width: 20,
-  height: 20,
-  marginRight: 5,
-  tintColor: "#1D5DFF",
-},
-
-bedValue: {
-  fontSize: 14,
-  fontWeight: "500",
-  color: "#000",
-},
+  bedIcon: { width: 20, height: 20, marginRight: 5, tintColor: "#1D5DFF" },
+  bedValue: { fontSize: 14, fontWeight: "500", color: "#000" },
 
   rowBetween: {
     flexDirection: "row",
@@ -339,7 +241,6 @@ bedValue: {
     paddingVertical: 8,
     marginTop: 15,
   },
-
   commentInput: { flex: 1, fontSize: 14 },
 
   commentRight: { flexDirection: "row", alignItems: "center" },
@@ -351,42 +252,36 @@ bedValue: {
     marginTop: 25,
     justifyContent: "space-between",
   },
-
-assignBtn: {
-  flexDirection: "row",     // ⭐ makes icon + text in one row
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "#1D5DFF",
-  paddingVertical: 12,
-  borderRadius: 12,
-  flex: 1,
-  marginRight: 10,
-},
-
-assignIcon: {
-  width: 18,
-  height: 18,
-  tintColor: "#fff",        // ⭐ white icon
-  marginRight: 8,
-},
-
-assignText: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "600",
-},
-
-
-  statusBtn: {
-   flexDirection: "row",     // ⭐ makes icon + text in one row
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "#1D5DFF",
-  paddingVertical: 12,
-  borderRadius: 12,
-  flex: 1,
-  marginRight: 10,
+  assignBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1D5DFF",
+    paddingVertical: 12,
+    borderRadius: 12,
+    flex: 1,
+    marginRight: 10,
+  },
+  assignIcon: {
+    width: 18,
+    height: 18,
+    tintColor: "#fff",
+    marginRight: 8,
+  },
+  assignText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 
+  statusBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1D5DFF",
+    paddingVertical: 12,
+    borderRadius: 12,
+    flex: 1,
+  },
   statusText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
