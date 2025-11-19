@@ -73,7 +73,7 @@ export default function LoginDesign() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.replace("ForgotPassword")}>
             <Text style={styles.forgot}>Forgot Password?</Text>
           </TouchableOpacity>
 

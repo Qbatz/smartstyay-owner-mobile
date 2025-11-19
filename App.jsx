@@ -37,6 +37,10 @@ import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
 import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
 import FinalSettlement from "./src/Component/Customer/FinalSettlement";
+import ForgotPassword from "./src/Component/ForgotPassword/ForgotPasswordScreen";
+import OtpVerification from './src/Component/ForgotPassword/ForgotVerifyOtp';
+import SetNewPassword from './src/Component/ForgotPassword/NewPasswordChange';
+import SucessUpdatePassword from './src/Component/ForgotPassword/SuccessUpdatePassword'
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -60,7 +64,7 @@ function AppContent() {
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="MyTabs"
+          initialRouteName="SplashText"
         >
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
@@ -74,6 +78,10 @@ function AppContent() {
             <Navigation.Screen name="AddBooking" component={AddBooking} />
             <Navigation.Screen name="AddWalkin" component={AddWalkin} />
              <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
+              <Navigation.Screen name="ForgotPassword" component={ForgotPassword} />
+                <Navigation.Screen name="OtpVerification" component={OtpVerification} />
+                 <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
+                  <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
         </Navigation.Navigator>
       </NavigationContainer>
 

@@ -64,6 +64,7 @@ const VerifyAccountScreen = ({ navigation }) => {
                     useNativeDriver: true,
                 }),
             ]).start(() => setShowPopup(false));
+            navigation.navigate("MyTabs");
         }, 2000);
 
     };
