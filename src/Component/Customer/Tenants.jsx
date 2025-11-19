@@ -33,12 +33,23 @@ import CheckoutList from '../Customer/Checkout/CheckoutList';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import WalkinScreen from '../Customer/WalkIn/WalkinList'
+import Call from "../../Assets/Images/call.png";
+import Sms from "../../Assets/Images/sms.png";
+import dateImg from "../../Assets/Images/home-link.png";
+import room from "../../Assets/Images/PG_active.png";
+import Bed from "../../Assets/Images/bed.png";
+import { Dimensions } from "react-native";
+
 
 
 
 
 export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
+  const screenWidth = Dimensions.get("window").width;
+
+  const detailDotsRef = useRef(null);
+
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -52,6 +63,8 @@ const [showMenu, setShowMenu] = useState(false);
 const [showFilter, setShowFilter] = useState(false);
 const [status, setStatus] = useState("All");
 const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+const [showDetailsMenu, setShowDetailsMenu] = useState(false);
+
 
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -94,7 +107,7 @@ useLayoutEffect(() => {
 
     
 
-    return false; // allow default back behavior
+    return false;
   };
 
   const handler = BackHandler.addEventListener(
@@ -196,9 +209,9 @@ const customerList = [
               <View style={styles.floorBadge}>
                 <Text style={styles.floorText}>Ground Floor</Text>
               </View>
-              <Image source={EditPin} style={styles.iconSmall} />
+              <Image source={room} style={styles.iconSmall} />
               <Text style={styles.detailText}>203</Text>
-              <Image source={EditPin} style={styles.iconSmall} />
+              <Image source={Bed} style={styles.iconSmall} />
               <Text style={styles.detailText}>03</Text>
             </View>
           </View>
@@ -224,9 +237,7 @@ const customerList = [
       </ScrollView>
 
      
-      {/* <TouchableOpacity style={styles.editButton}>
-        <Image source={EditPin} style={{ width: 60, height: 60 }} />
-      </TouchableOpacity> */}
+    
       <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
     <Image source={EditPin} style={{ width: 60, height: 60 }} />
 </TouchableOpacity>
@@ -249,7 +260,7 @@ const customerList = [
   <TouchableOpacity
     style={styles.modalOverlay}
     activeOpacity={1}
-    onPress={() => setShowDetailModal(false)}   // 👉 tap outside closes modal
+    onPress={() => setShowDetailModal(false)} 
   >
     <TouchableWithoutFeedback>
       <View style={styles.bottomSheet}>
@@ -257,13 +268,28 @@ const customerList = [
 
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Customer Details</Text>
-          <TouchableOpacity onPress={() => setShowDetailModal(false)}>
+         {/* <TouchableOpacity onPress={() => setShowDetailsMenu(true)}>
             <Image
               source={Dots}
               style={{ width: 24, height: 24, transform: [{ rotate: "90deg" }] }}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          <TouchableOpacity
+  ref={detailDotsRef}
+  onPress={() => {
+    detailDotsRef.current.measureInWindow((x, y, w, h) => {
+      setPopupPosition({ x, y, w, h });
+      setShowDetailsMenu(true);
+    });
+  }}
+>
+  <Image source={Dots} style={{ width: 24, height: 24, transform: [{ rotate: "90deg" }] }} />
+</TouchableOpacity>
+
         </View>
+
+  
+
 
         <View style={styles.modalProfileRow}>
           <Image source={selectedCustomer?.img} style={styles.modalProfileImg} />
@@ -275,23 +301,44 @@ const customerList = [
               <View style={styles.floorBadge}>
                 <Text style={styles.floorText}>{selectedCustomer?.floor}</Text>
               </View>
-              <Image source={EditPin} style={styles.iconSmall} />
+              <Image source={room} style={{width:18,height:18}} />
               <Text style={styles.detailText}>{selectedCustomer?.room}</Text>
-              <Image source={EditPin} style={styles.iconSmall} />
+              <Image source={Bed} style={{width:18,height:18}} />
               <Text style={styles.detailText}>{selectedCustomer?.bed}</Text>
             </View>
           </View>
         </View>
 
         <Text style={styles.infoLabel}>Email ID</Text>
-        <Text style={styles.infoValue}>{selectedCustomer?.email}</Text>
+        {/* <Text style={styles.infoValue}> <Image source={Call} style={{width:15,height:15,marginRight:5}} />{selectedCustomer?.email}</Text> */}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+  <Image
+    source={Sms}
+    style={{ width: 15, height: 15, marginRight: 5 }}
+    resizeMode="contain"
+  />
+  <Text style={styles.infoValue}>{selectedCustomer?.email}</Text>
+</View>
+
 
         <Text style={styles.infoLabel}>Contact Number</Text>
-        <Text style={styles.infoValue}>{selectedCustomer?.phone}</Text>
-
+   <View style={{ flexDirection: "row", alignItems: "center" }}>
+  <Image
+    source={Call}
+    style={{ width: 15, height: 15, marginRight: 5 }}
+    resizeMode="contain"
+  />
+  <Text style={styles.infoValue}>{selectedCustomer?.phone}</Text>
+</View>
         <Text style={styles.infoLabel}>Joining Date</Text>
-        <Text style={styles.infoValue}>{selectedCustomer?.joinDate}</Text>
-
+  <View style={{ flexDirection: "row", alignItems: "center" }}>
+  <Image
+    source={dateImg}
+    style={{ width: 15, height: 15, marginRight: 5 }}
+    resizeMode="contain"
+  />
+  <Text style={styles.infoValue}>{selectedCustomer?.joinDate}</Text>
+</View>
         <TouchableOpacity style={styles.unassignBtn}>
           <Text style={styles.unassignText}>Un Assigned</Text>
         </TouchableOpacity>
@@ -299,6 +346,52 @@ const customerList = [
     </TouchableWithoutFeedback>
   </TouchableOpacity>
 )}
+
+ {showDetailModal && showDetailsMenu && (
+  <>
+    <TouchableOpacity
+      style={styles.menuBackdrop}
+      onPress={() => setShowDetailsMenu(false)}
+    />
+
+    <View
+      style={[
+        styles.popupBox,
+        {
+          top: popupPosition.y + popupPosition.h + 8,
+          left:
+            popupPosition.x + 200 > screenWidth
+              ? popupPosition.x - 200 + popupPosition.w
+              : popupPosition.x,
+        },
+      ]}
+    >
+      <TouchableOpacity
+        style={styles.popupRow}
+        onPress={() => {
+          setShowDetailsMenu(false);
+          setShowReAssignBed(true);
+        }}
+      >
+        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+        <Text style={styles.popupText}>Re-Assign Bed</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.popupRow}
+        onPress={() => {
+          setShowDetailsMenu(false);
+          setShowNotice(true);
+        }}
+      >
+        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+        <Text style={styles.popupText}>Move to Notice Period</Text>
+      </TouchableOpacity>
+    </View>
+  </>
+)}
+
+
 
     <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} />
 
@@ -367,7 +460,7 @@ const customerList = [
 
         {/* STATUS DROPDOWN */}
         <Text style={styles.label}>Status</Text>
-
+<View style={{ position: "relative" }}>
         <TouchableOpacity
           style={styles.dropdownBox}
           onPress={() => setShowStatusDropdown(!showStatusDropdown)}
@@ -378,6 +471,7 @@ const customerList = [
 
         {showStatusDropdown && (
           <View style={styles.dropdownMenu}>
+             <ScrollView nestedScrollEnabled={true}>
             {["All", "Active", "In-Active", "Checked Out", "Notice"].map((v) => (
               <TouchableOpacity
                 key={v}
@@ -390,10 +484,11 @@ const customerList = [
                 <Text style={styles.dropdownItemText}>{v}</Text>
               </TouchableOpacity>
             ))}
+            </ScrollView>
           </View>
         )}
 
-       
+       </View>
         <View style={styles.dateRow}>
 
     
@@ -590,14 +685,37 @@ tabContainer: {
   borderBottomColor: "#E5E7EB",
   paddingBottom: 6,
 },
+// dropdownMenu: {
+//   backgroundColor: "#fff",
+//   borderRadius: 10,
+//   marginTop: 5,
+//   borderWidth: 1,
+//   borderColor: "#E5E7EB",
+//   overflow: "hidden",
+//   elevation: 5,
+// },
 dropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  right: 0,
   backgroundColor: "#fff",
   borderRadius: 10,
-  marginTop: 5,
   borderWidth: 1,
   borderColor: "#E5E7EB",
-  overflow: "hidden",
-  elevation: 5,
+  elevation: 7,
+  zIndex: 9999,
+  maxHeight: 150,    
+  overflow: "hidden", 
+},
+menuBackdrop: {
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: "transparent",
+  zIndex: 9999
 },
 
 datePickerOverlay: {
@@ -707,8 +825,8 @@ activeText: {
     fontWeight: "500",
   },
   iconSmall: {
-    width: 13,
-    height: 13,
+    width: 18,
+    height: 18,
     marginHorizontal: 3,
   },
   detailText: {
@@ -831,16 +949,13 @@ popupOverlay: {
 
 popupBox: {
   position: "absolute",
-  backgroundColor: "#fff",
-  paddingVertical: 10,
   width: 200,
+  backgroundColor: "#fff",
   borderRadius: 12,
-  elevation: 10,
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowRadius: 8,
+  elevation: 20,
+  paddingVertical: 10,
+  zIndex: 10000,
 },
-
 popupRow: {
   flexDirection: "row",
   alignItems: "center",
