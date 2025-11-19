@@ -37,10 +37,13 @@ import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
 import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
 import FinalSettlement from "./src/Component/Customer/FinalSettlement";
+
 import ForgotPassword from "./src/Component/ForgotPassword/ForgotPasswordScreen";
 import OtpVerification from './src/Component/ForgotPassword/ForgotVerifyOtp';
 import SetNewPassword from './src/Component/ForgotPassword/NewPasswordChange';
 import SucessUpdatePassword from './src/Component/ForgotPassword/SuccessUpdatePassword'
+import AddComplaint from "./src/Component/Complaints/AddComplaints";
+
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -78,10 +81,15 @@ function AppContent() {
             <Navigation.Screen name="AddBooking" component={AddBooking} />
             <Navigation.Screen name="AddWalkin" component={AddWalkin} />
              <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
+
               <Navigation.Screen name="ForgotPassword" component={ForgotPassword} />
                 <Navigation.Screen name="OtpVerification" component={OtpVerification} />
                  <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
                   <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
+
+    <Navigation.Screen name="AddComplaint" component={AddComplaint} />
+             
+
         </Navigation.Navigator>
       </NavigationContainer>
 

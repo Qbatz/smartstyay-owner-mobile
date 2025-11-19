@@ -8,15 +8,23 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import Profile from "../../Assets/Images/Avatar.png";
+import FilterIcon from "../../Assets/Images/filter.png";
+import AddComplaint from "../../Assets/Images/add-circle.png";
 
-export default function Complaints() {
+export default function Complaints({ route }) {
+
+  const { setShowTabBar } = route.params
+   const navigation = useNavigation();
+
   const complaintsData = [
     {
       id: "1",
       title: "AC Problem",
       user: "Rajeshkumar-204-A",
       time: "02 Hours ago",
-      status: "Assign",
+      status: "+ Assign",
       statusColor: "#1D5DFF",
     },
     {
@@ -24,7 +32,7 @@ export default function Complaints() {
       title: "Water Leakage, Power Issue",
       user: "Parthiban-203-C",
       time: "Yesterday",
-      status: "Assign",
+      status: "+ Assign",
       statusColor: "#1D5DFF",
     },
     {
@@ -32,7 +40,7 @@ export default function Complaints() {
       title: "Washing machine Problem",
       user: "Meeran-103-C",
       time: "03 Jun 2025",
-      status: "Assign",
+      status: "+ Assign",
       statusColor: "#1D5DFF",
     },
     {
@@ -51,7 +59,52 @@ export default function Complaints() {
       status: "Resolved",
       statusColor: "#2BAE66",
     },
-  ];
+     {
+      id: "6",
+      title: "Washing machine Problem",
+      user: "Meeran-103-C",
+      time: "04 Jun 2025",
+      status: "Pending",
+      statusColor: "#D17800",
+    },
+    {
+      id: "7",
+      title: "AC Issue",
+      user: "Ruban-103-4",
+      time: "04 Jun 2025",
+      status: "Resolved",
+      statusColor: "#2BAE66",
+    },
+       {
+      id: "8",
+      title: "TV Issue",
+      user: "Clindon-103-C",
+      time: "04 Jun 2025",
+      status: "Resolved",
+      statusColor: "#2BAE66",
+    },
+
+       {
+      id: "9",
+      title: "Power Issue",
+      user: "Meeran-103-C",
+      time: "04 Jun 2025",
+      status: "Resolved",
+      statusColor: "#2BAE66",
+    },
+       {
+      id: "10",
+      title: "Power Issue",
+      user: "Meeran-103-C",
+      time: "04 Jun 2025",
+      status: "Resolved",
+      statusColor: "#2BAE66",
+    },
+  ]
+
+  const handleAddComplaint = () => {
+     navigation.navigate("AddComplaint")
+  }
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
@@ -60,9 +113,7 @@ export default function Complaints() {
 
         <View style={styles.row}>
           <Image
-            source={{
-              uri: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-            }}
+            source={Profile}
             style={styles.userIcon}
           />
           <Text style={styles.user}>{item.user}</Text>
@@ -82,19 +133,21 @@ export default function Complaints() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchBox}>
-        <Image
-          source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png",
-          }}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          placeholder="Search Complaints"
-          placeholderTextColor="#A1A1A1"
-          style={styles.searchInput}
-        />
-      </View>
+     <View style={styles.searchBox}>
+  <Image
+    source={{
+      uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png",
+    }}
+    style={styles.searchIcon}
+  />
+
+  <TextInput
+    placeholder="Search Complaints"
+    placeholderTextColor="#A1A1A1"
+    style={styles.searchInput}
+  />
+</View>
+
 
       <FlatList
         data={complaintsData}
@@ -105,16 +158,20 @@ export default function Complaints() {
 
       <TouchableOpacity style={styles.filterBtn}>
         <Image
-          source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/3524/3524659.png",
-          }}
-          style={{ width: 18, height: 18 }}
+          source={FilterIcon}
+          style={{ width: 25, height: 25 }}
+        />
+      </TouchableOpacity>
+       <TouchableOpacity style={styles.addBtn} onPress={handleAddComplaint}>
+        <Image
+          source={AddComplaint}
+          style={{ width: 25, height: 25 }}
         />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.addBtn}>
+      {/* <TouchableOpacity style={styles.addBtn}>
         <Text style={styles.plus}>+</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }
@@ -125,18 +182,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     paddingBottom: 100,
+    paddingTop:40
   },
 
-  searchBox: {
-    flexDirection: "row",
-    backgroundColor: "#F3F3F3",
-    padding: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  searchIcon: { width: 18, height: 18, tintColor: "#888", marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 15 },
+ searchBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 14,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.08,
+  shadowRadius: 2,
+  elevation: 1,
+
+  marginBottom: 20,
+},
+
+searchIcon: {
+  width: 20,
+  height: 20,
+  tintColor: "#9B9B9B",
+  marginRight: 10,
+},
+
+searchInput: {
+  flex: 1,
+  fontSize: 15,
+  color: "#000",
+},
+
 
   card: {
     paddingVertical: 15,
@@ -144,10 +224,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#EAEAEA",
     flexDirection: "row",
     justifyContent: "space-between",
+    
   },
   title: { fontSize: 16, fontWeight: "600", color: "#000" },
   row: { flexDirection: "row", alignItems: "center", marginTop: 5 },
-  userIcon: { width: 15, height: 15, tintColor: "#1D5DFF", marginRight: 6 },
+  userIcon: { width: 20, height: 20,  marginRight: 6 },
   user: { color: "#555" },
   rightSection: { alignItems: "flex-end", justifyContent: "space-between" },
   time: { fontSize: 12, color: "#999" },
@@ -155,20 +236,21 @@ const styles = StyleSheet.create({
 
   filterBtn: {
     position: "absolute",
-    bottom: 100,
+    bottom: 150,
     right: 20,
     backgroundColor: "#fff",
     padding: 12,
     borderRadius: 30,
     elevation: 5,
   },
+
   addBtn: {
     position: "absolute",
-    bottom: 35,
+    bottom: 80,
     right: 20,
     backgroundColor: "#1D5DFF",
-    width: 55,
-    height: 55,
+    width: 50,
+    height: 50,
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
