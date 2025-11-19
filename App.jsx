@@ -37,6 +37,7 @@ import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
 import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
 import FinalSettlement from "./src/Component/Customer/FinalSettlement";
+import AddComplaint from "./src/Component/Complaints/AddComplaints";
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -74,6 +75,8 @@ function AppContent() {
             <Navigation.Screen name="AddBooking" component={AddBooking} />
             <Navigation.Screen name="AddWalkin" component={AddWalkin} />
              <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
+    <Navigation.Screen name="AddComplaint" component={AddComplaint} />
+             
         </Navigation.Navigator>
       </NavigationContainer>
 
