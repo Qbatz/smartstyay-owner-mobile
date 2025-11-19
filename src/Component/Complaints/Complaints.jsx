@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import {
   View,
   Text,
@@ -12,8 +12,27 @@ import { useNavigation } from "@react-navigation/native";
 import Profile from "../../Assets/Images/Avatar.png";
 import FilterIcon from "../../Assets/Images/filter.png";
 import AddComplaint from "../../Assets/Images/add-circle.png";
+import ComplaintDetails from "../Complaints/ViewCompliance";
+import AssignBottomSheet from "../Complaints/AssignCompliance";
+import CommentBottomSheet from "../Complaints/CommentBox"
+import ChangeStatus from "../Complaints/ComplianceStatus"
+
+
+
+
 
 export default function Complaints({ route }) {
+  const [showSheet, setShowSheet] = useState(false);
+const [selectedComplaint, setSelectedComplaint] = useState(null);
+const [selectedUser, setSelectedUser] = useState("Select");
+const [selectedStatus, setSelectedStatus] = useState("pending");
+const [showCommentSheet, setShowCommentSheet] = useState(false);
+const [showStatusSheet, setShowStatusSheet] = useState(false);
+
+
+const [showAssignSheet, setShowAssignSheet] = useState(false);  // <-- ADD
+
+
 
   const { setShowTabBar } = route.params
    const navigation = useNavigation();
@@ -112,10 +131,19 @@ export default function Complaints({ route }) {
         <Text style={styles.title}>{item.title}</Text>
 
         <View style={styles.row}>
-          <Image
+          {/* <Image
             source={Profile}
             style={styles.userIcon}
-          />
+          /> */}
+          <TouchableOpacity
+ onPress={() => {
+  setSelectedComplaint(item);
+  setShowSheet(true);
+}}
+
+>
+  <Image source={Profile} style={styles.userIcon} />
+</TouchableOpacity>
           <Text style={styles.user}>{item.user}</Text>
         </View>
       </TouchableOpacity>
@@ -172,7 +200,70 @@ export default function Complaints({ route }) {
       {/* <TouchableOpacity style={styles.addBtn}>
         <Text style={styles.plus}>+</Text>
       </TouchableOpacity> */}
+    
+ {/* Bottom Sheet for Complaint Details */}
+{/* <ComplaintDetails
+  visible={showSheet}
+  complaint={selectedComplaint}
+  onClose={() => setShowSheet(false)}
+  onOpenAssignSheet={() => {
+    setShowAssignSheet(true);
+  }}
+  
+/> */}
+<ComplaintDetails
+  visible={showSheet}
+  onClose={() => setShowSheet(false)}
+  complaint={selectedComplaint}
+  onOpenAssignSheet={() => setShowAssignSheet(true)}
+  onOpenCommentSheet={() => setShowCommentSheet(true)}
+  onOpenStatusSheet={() => setShowStatusSheet(true)}   // <-- ADD THIS
+/>
+
+
+<CommentBottomSheet
+  visible={showCommentSheet}
+  onClose={() => setShowCommentSheet(false)}
+/>
+
+
+
+
+
+
+<AssignBottomSheet
+  visible={showAssignSheet}
+  onClose={() => setShowAssignSheet(false)}
+  selectedUser={selectedUser}
+  selectedStatus={selectedStatus}
+  setSelectedUser={setSelectedUser}
+
+  onAssignDone={() => {
+    setShowAssignSheet(false);        
+    setTimeout(() => {
+      setShowSheet(true);  
+    }, 200);
+  }}
+/>
+
+<ChangeStatus
+  visible={showStatusSheet}
+  onClose={() => setShowStatusSheet(false)}
+  selectedStatus={selectedStatus}
+  setSelectedStatus={setSelectedStatus}
+  onStatusUpdate={() => {
+    console.log("Updated status:", selectedStatus);
+    setShowStatusSheet(false);
+  }}
+/>
+
+
+
+
+      
+
     </View>
+    
   );
 }
 

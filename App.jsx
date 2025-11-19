@@ -43,6 +43,7 @@ import OtpVerification from './src/Component/ForgotPassword/ForgotVerifyOtp';
 import SetNewPassword from './src/Component/ForgotPassword/NewPasswordChange';
 import SucessUpdatePassword from './src/Component/ForgotPassword/SuccessUpdatePassword'
 import AddComplaint from "./src/Component/Complaints/AddComplaints";
+import ComplaintDetails from "./src/Component/Complaints/ViewCompliance";
 
 
 function App() {
@@ -67,7 +68,7 @@ function AppContent() {
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="SplashText"
+          initialRouteName="MyTabs"
         >
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
@@ -86,6 +87,7 @@ function AppContent() {
                 <Navigation.Screen name="OtpVerification" component={OtpVerification} />
                  <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
                   <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
+                    <Navigation.Screen name="ComplaintDetails" component={ComplaintDetails} />
 
     <Navigation.Screen name="AddComplaint" component={AddComplaint} />
              
