@@ -12,12 +12,13 @@ import {
   TouchableWithoutFeedback
 } from "react-native";
 
-import PhoneIcon from "../../../Assets/Images/profile.png";
+import PhoneIcon from "../../../Assets/Images/call.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
 import UserIcon from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/EditPin.png";
 import PlusIcon from "../../../Assets/Images/TenantAdd.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
@@ -44,7 +45,8 @@ export default function WalkinScreen({ setShowTabBar }) {
   useLayoutEffect(() => {
     const backAction = () => {
       if (showFilter) {
-        setShowFilter(false);   
+        setShowFilter(false);
+        setShowStatusDropdown(false)  
         return true;                 
       }
       return false;
@@ -173,7 +175,7 @@ export default function WalkinScreen({ setShowTabBar }) {
 
       </ScrollView>
 
-      {/* FILTER BUTTON */}
+  
       <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
         <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
       </TouchableOpacity>
@@ -189,13 +191,17 @@ export default function WalkinScreen({ setShowTabBar }) {
         <TouchableOpacity
           style={styles.filterOverlay}
           activeOpacity={1}
-          onPress={() => setShowFilter(false)}   // close when clicking outside
+        onPress={() => {
+  setShowFilter(false);
+  setShowStatusDropdown(false);
+}}
+
         >
           <TouchableWithoutFeedback>
             <View style={styles.filterSheet}>
               <View style={styles.filterHandle} />
       
-              {/* Header */}
+            
               <View style={styles.filterHeader}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Image
@@ -206,13 +212,13 @@ export default function WalkinScreen({ setShowTabBar }) {
                 </View>
               </View>
       
-              {/* STATUS DROPDOWN */}
+             
               <Text style={styles.label}>Status</Text>
       
               <Text style={styles.label}>Status</Text>
 
 <View style={{ position: "relative" }}>
-  {/* main dropdown box */}
+
   <TouchableOpacity
     style={styles.dropdownBox}
     onPress={() => setShowStatusDropdown(!showStatusDropdown)}
@@ -221,7 +227,6 @@ export default function WalkinScreen({ setShowTabBar }) {
     <Text style={styles.arrow}>⌄</Text>
   </TouchableOpacity>
 
-  {/* absolute dropdown list */}
 {showStatusDropdown && (
   <View style={styles.dropdownMenu}>
     <ScrollView nestedScrollEnabled={true}>
@@ -486,7 +491,7 @@ filterHandle: {
     marginTop: 4,
   },
 
-  phoneIcon: { width: 16, height: 16, tintColor: "#6B7280" },
+  phoneIcon: { width: 16, height: 16 },
 
   phoneText: {
     marginLeft: 6,
@@ -496,7 +501,7 @@ filterHandle: {
 
   right: { alignItems: "flex-end" },
 
-  dotIcon: { width: 26, height: 26 },
+  dotIcon: { width: 26, height: 26, transform: [{ rotate: "90deg" }] },
 
   date: { fontSize: 11, color: "#6B7280", marginTop: 4 },
 

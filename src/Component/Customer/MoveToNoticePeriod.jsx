@@ -17,6 +17,8 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import Profile from "../../Assets/Images/profile.png";
+import QuestionIcon from "../../Assets/Images/help.png";
+
 
 export default function MoveNoticeModal({
   visible,
@@ -34,6 +36,8 @@ export default function MoveNoticeModal({
 
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
+  const [showNoticeModal, setShowNoticeModal] = useState(false);
+
 
 
   useFocusEffect(
@@ -140,13 +144,17 @@ export default function MoveNoticeModal({
 
             {/* FOOTER */}
             <View style={styles.footer}>
-              <TouchableOpacity onPress={onClose}>
+              <TouchableOpacity onPress={onClose} style={styles.CancelBtn}>
                 <Text style={styles.cancel}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.moveBtn} onPress={onMove}>
-                <Text style={styles.moveText}>Move</Text>
-              </TouchableOpacity>
+              <TouchableOpacity
+  style={styles.moveBtn}
+  onPress={() => setShowNoticeModal(true)}
+>
+  <Text style={styles.moveText}>Move</Text>
+</TouchableOpacity>
+
             </View>
           </View>
         </View>
@@ -201,6 +209,53 @@ export default function MoveNoticeModal({
           </View>
         </View>
       </Modal>
+
+{/* CONFIRM NOTICE MODAL */}
+<Modal
+  visible={showNoticeModal}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setShowNoticeModal(false)}
+>
+  <View style={styles.confirmOverlay}>
+    <View style={styles.confirmBox}>
+      
+      {/* Title Row */}
+      <View style={styles.confirmTitleRow}>
+        <Image source={QuestionIcon} style={styles.confirmIcon} />
+        <Text style={styles.confirmTitle}>Move to Notice period?</Text>
+      </View>
+
+      {/* Message */}
+      <Text style={styles.confirmMessage}>
+        Are you sure you want to move this tenant to the notice period?
+      </Text>
+
+      {/* Buttons */}
+      <View style={styles.confirmButtons}>
+        <TouchableOpacity
+          style={styles.cancelConfirmBtn}
+          onPress={() => setShowNoticeModal(false)}
+        >
+          <Text style={styles.cancelConfirmText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.okConfirmBtn}
+          onPress={() => {
+            setShowNoticeModal(false);
+            onMove(); 
+          }}
+        >
+          <Text style={styles.okConfirmText}>Confirm</Text>
+        </TouchableOpacity>
+      </View>
+
+    </View>
+  </View>
+</Modal>
+
+      
 
     </>
   );
@@ -298,20 +353,25 @@ const styles = StyleSheet.create({
 
   footer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent:"flex-end",
     marginTop: 20,
   },
 
-  cancel: { fontSize: 16, color: "#6B7280" },
+  cancel: { fontSize: 18, color: "#6B7280" },
 
   moveBtn: {
     backgroundColor: "#2D6CDF",
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  CancelBtn:{
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: 10,
   },
 
-  moveText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  moveText: { color: "#fff", fontSize: 18, fontWeight: "600" },
 
   /* Calendar Popup */
   calendarOverlay: {
@@ -332,4 +392,73 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 10,
   },
+  confirmOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+confirmBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  padding: 20,
+  borderRadius: 16,
+  elevation: 10,
+},
+
+confirmTitleRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 10,
+},
+
+confirmIcon: { width: 22, height: 22, marginRight: 8 },
+
+confirmTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#111",
+},
+
+confirmMessage: {
+  fontSize: 14,
+  color: "#555",
+  marginBottom: 20,
+  lineHeight: 20,
+},
+
+confirmButtons: {
+  flexDirection: "row",
+  justifyContent: "flex-end",
+},
+
+cancelConfirmBtn: {
+  borderWidth: 1,
+  borderColor: "#C7C7CC",
+  paddingHorizontal: 22,
+  paddingVertical: 10,
+  borderRadius: 10,
+  marginRight: 10,
+},
+
+cancelConfirmText: {
+  fontSize: 15,
+  color: "#555",
+  fontWeight: "600",
+},
+
+okConfirmBtn: {
+  backgroundColor: "#2D6CDF",
+  paddingHorizontal: 25,
+  paddingVertical: 10,
+  borderRadius: 10,
+},
+
+okConfirmText: {
+  color: "#fff",
+  fontSize: 15,
+  fontWeight: "700",
+},
+
 });
