@@ -34,7 +34,9 @@ import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp';
 import MyTabs from "./src/Component/Tabs/BottomTabs";
 import AddTenant from "./src/Component/Customer/AddTenants";
 import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
+import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
+import FinalSettlement from "./src/Component/Customer/FinalSettlement";
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -69,7 +71,9 @@ function AppContent() {
                 <Navigation.Screen name="MyTabs" component={MyTabs} />
                 <Navigation.Screen name="AddTenant" component={AddTenant} />
                   <Navigation.Screen name="TenantCheckin" component={TenantCheckin} />
+            <Navigation.Screen name="AddBooking" component={AddBooking} />
             <Navigation.Screen name="AddWalkin" component={AddWalkin} />
+             <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
         </Navigation.Navigator>
       </NavigationContainer>
 
