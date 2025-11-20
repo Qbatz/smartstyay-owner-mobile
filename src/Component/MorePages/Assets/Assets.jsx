@@ -1,4 +1,3 @@
-// Assets.jsx
 import React, { useLayoutEffect, useState, useEffect, useCallback,useRef } from "react";
 import {
   View,
@@ -35,8 +34,26 @@ export default function Assets({ navigation }) {
   const [selectedAsset, setSelectedAsset] = useState(null);
 
   const [showFilter, setShowFilter] = useState(false);
+  const [showAssignSheet, setShowAssignSheet] = useState(false);
+  const [assignDate, setAssignDate] = useState(dayjs());
+const [openAssignDate, setOpenAssignDate] = useState(false);
+const [floorOpen, setFloorOpen] = useState(false);
+const [selectedFloor, setSelectedFloor] = useState("");
+const floorOptions = ["Ground Floor","1st Floor","2nd Floor","3rd Floor"];
+const [roomOpen, setRoomOpen] = useState(false);
+const [selectedRoom, setSelectedRoom] = useState("");
+
+const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
+
+
+
+
+
+
   const translateY = useRef(new Animated.Value(0)).current;
   const detailsY = useRef(new Animated.Value(0)).current;
+  const assignTranslateY = useRef(new Animated.Value(0)).current;
+
 
   
 
@@ -89,9 +106,36 @@ const detailsPan = useRef(
   })
 ).current;
 
+const assignPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
+    onPanResponderMove: (_, gesture) => {
+      if (gesture.dy > 0) assignTranslateY.setValue(gesture.dy);
+    },
+    onPanResponderRelease: (_, gesture) => {
+      if (gesture.dy > 120) {
+        Animated.timing(assignTranslateY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowAssignSheet(false);
+          assignTranslateY.setValue(0);
+        });
+      } else {
+        Animated.spring(assignTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
 
 
-  // date picker state
+
+
+  
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
   const [openFrom, setOpenFrom] = useState(false);
@@ -99,7 +143,7 @@ const detailsPan = useRef(
   const [openUpward, setOpenUpward] = useState(false);
 
 
-  // amount dropdown inside filter
+ 
   const amountOptions = [
     "Low to High (Lowest First)",
     "High to Low (Highest First)",
@@ -111,7 +155,7 @@ const detailsPan = useRef(
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-  // sample data
+ 
   const dummyData = [
     { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
     { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
@@ -119,7 +163,7 @@ const detailsPan = useRef(
     { name: "Mattresses", model: "SB-989543", brand: "CURL ON", price: "₹7,500" },
   ];
 
-  // hide tab bar while inside this screen (if using bottom tabs)
+ 
   useLayoutEffect(() => {
     navigation.getParent()?.setOptions({
       tabBarStyle: { display: "none" },
@@ -140,7 +184,7 @@ const detailsPan = useRef(
     };
   }, [navigation]);
 
-  // hardware back handling — closes open overlays before letting system handle back
+ 
   useEffect(() => {
     const onBackPress = () => {
       if (amountDropdownVisible) {
@@ -163,27 +207,27 @@ const detailsPan = useRef(
         setShowSheet(false);
         return true;
       }
-      return false; // allow default behavior
+      return false; 
     };
 
     const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => sub.remove();
   }, [showSheet, showFilter, openFrom, openTo, amountDropdownVisible]);
 
-  // helper to open details sheet
+ 
   const openDetails = (asset) => {
     setSelectedAsset(asset);
     setShowSheet(true);
   };
 
-  // toggle amount dropdown
+  
   const toggleAmountDropdown = () => {
     setAmountDropdownVisible((v) => !v);
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+   
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={BackIcon} style={styles.backIcon} />
@@ -240,81 +284,6 @@ const detailsPan = useRef(
       </TouchableOpacity>
 
     
-      {/* {showSheet && (
-        <View style={styles.sheetOverlay}>
-       
-          <TouchableWithoutFeedback onPress={() => setShowSheet(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
-
-          <View style={styles.bottomSheet}>
-            <View style={styles.sheetHandle} />
-
-            <View style={styles.sheetHeaderRow}>
-              <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
-
-              <View style={styles.topActions}>
-                <TouchableOpacity onPress={() => {}}>
-                  <Image source={EditIcon} style={styles.headerIcon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => {}}>
-                  <Image source={TrashIcon} style={[styles.headerIcon, { marginLeft: 12 }]} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.twoColRow}>
-              <View style={styles.colLeft}>
-                <Text style={styles.label}>Serial No:</Text>
-                <Text style={styles.value}>{selectedAsset?.model}</Text>
-              </View>
-
-              <View style={styles.colRight}>
-                <Text style={styles.label}>Brand Name</Text>
-                <Text style={styles.value}>{selectedAsset?.brand}</Text>
-              </View>
-            </View>
-
-            <View style={styles.twoColRow}>
-              <View style={styles.colLeft}>
-                <Text style={styles.label}>Product Name</Text>
-                <Text style={styles.value}>Fridge</Text>
-              </View>
-
-              <View style={styles.colRight}>
-                <Text style={styles.label}>Purchase Date</Text>
-                <Text style={styles.value}>16-05-2025</Text>
-              </View>
-            </View>
-
-            <View style={styles.twoColRow}>
-              <View style={styles.colLeft}>
-                <Text style={styles.label}>Vendor Name</Text>
-                <Text style={styles.value}>Ram Kumar</Text>
-              </View>
-
-              <View style={styles.colRight}>
-                <Text style={styles.label}>Price</Text>
-                <Text style={styles.value}>{selectedAsset?.price}.00</Text>
-              </View>
-            </View>
-
-            <View style={{ marginTop: 8 }}>
-              <Text style={styles.label}>Mode of Payment</Text>
-              <Text style={styles.value}>CASH</Text>
-            </View>
-
-            <TouchableOpacity style={styles.assignBtn} onPress={() => {}}>
-              <Image source={ButtonTag} style={styles.assignIcon} />
-              <Text style={styles.assignText}>Assign Asset</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )} */}
-
 
       {showSheet && (
   <View style={styles.sheetOverlay}>
@@ -383,10 +352,18 @@ const detailsPan = useRef(
               <Text style={styles.value}>CASH</Text>
             </View>
 
-      <TouchableOpacity style={styles.assignBtn}>
-        <Image source={ButtonTag} style={styles.assignIcon} />
-        <Text style={styles.assignText}>Assign Asset</Text>
-      </TouchableOpacity>
+     
+      <TouchableOpacity 
+  style={styles.assignBtn} 
+  onPress={() => {
+    setShowSheet(false);      
+    setShowAssignSheet(true); 
+  }}
+>
+  <Image source={ButtonTag} style={styles.assignIcon} />
+  <Text style={styles.assignText}>Assign Asset</Text>
+</TouchableOpacity>
+
 
     </Animated.View>
   </View>
@@ -507,7 +484,7 @@ const detailsPan = useRef(
 )}
 
 
-      {/* FROM date picker modal-like */}
+    
       {openFrom && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenFrom(false)}>
@@ -527,7 +504,7 @@ const detailsPan = useRef(
         </View>
       )}
 
-      {/* TO date picker */}
+     
       {openTo && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenTo(false)}>
@@ -546,6 +523,141 @@ const detailsPan = useRef(
           </View>
         </View>
       )}
+  {showAssignSheet && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowAssignSheet(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[styles.assignSheet, { transform: [{ translateY: assignTranslateY }] }]}
+      {...assignPan.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <Text style={styles.assignTitle}>Assign Asset</Text>
+
+      
+      <Text style={styles.label}>Floor *</Text>
+     
+      <View style={{ position: "relative", marginTop: 10 }}>
+  
+
+  <TouchableOpacity
+    style={styles.selectBox}
+    onPress={() => setFloorOpen(!floorOpen)}
+  >
+    <Text style={styles.selectedText}>
+      {selectedFloor || "Select a Floor"}
+    </Text>
+    <Image source={DownArrow} style={styles.downArrow} />
+  </TouchableOpacity>
+
+  
+  {floorOpen && (
+    <View style={styles.dropdown}>
+      <ScrollView
+        style={{ maxHeight: 100 }}   
+        showsVerticalScrollIndicator={true}
+      >
+        {floorOptions.map((item, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.option}
+            onPress={() => {
+              setSelectedFloor(item);
+              setFloorOpen(false);
+            }}
+          >
+            <Text style={styles.optionText}>{item}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  )}
+
+</View>
+
+
+     
+      <Text style={[styles.label, { marginTop: 15 }]}>Select a Room *</Text>
+      <View style={{ position: "relative", marginTop: 15 }}>
+  
+  <TouchableOpacity
+    style={styles.selectBox}
+    onPress={() => setRoomOpen(!roomOpen)}
+  >
+    <Text style={styles.selectedText}>
+      {selectedRoom || "Select Room"}
+    </Text>
+    <Image source={DownArrow} style={styles.downArrow} />
+  </TouchableOpacity>
+
+
+  {roomOpen && (
+    <View style={styles.dropdown}>
+      <ScrollView
+        style={{ maxHeight: 200 }}
+        showsVerticalScrollIndicator={true}
+      >
+        {roomOptions.map((r, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.option}
+            onPress={() => {
+              setSelectedRoom(r);
+              setRoomOpen(false);
+            }}
+          >
+            <Text style={styles.optionText}>{r}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  )}
+
+</View>
+
+   
+      <Text style={[styles.label, { marginTop: 15 }]}>Date *</Text>
+      <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
+        <Text style={styles.selectedText}>{dayjs(assignDate).format("DD-MM-YYYY")}</Text>
+        <Image source={CalendarIcon} style={styles.calIcon} />
+      </TouchableOpacity>
+
+      
+      <View style={styles.assignButtonRow}>
+        <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAssignSheet(false)}>
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.applyBtn}>
+          <Text style={styles.applyBtnText}>Assign</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  </View>
+)}
+{openAssignDate && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenAssignDate(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.datePickerBox}>
+      <DatePicker
+        mode="single"
+        date={assignDate}
+        onChange={(p) => {
+          setAssignDate(p.date || dayjs());
+          setOpenAssignDate(false);
+        }}
+      />
+    </View>
+  </View>
+)}
+
+
 
     </View>
   );
@@ -663,4 +775,92 @@ dropdownMenu: {
   applyBtnText: { color: "#fff", fontWeight: "700" },
 
   datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
+ assignSheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  height: "60%",
+},
+
+
+assignTitle: {
+  fontSize: 20,
+  fontWeight: "700",
+  marginBottom: 20,
+},
+
+placeholderText: {
+  color: "#A0A0A0",
+  fontSize: 15,
+},
+
+actionRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 25,
+},
+
+cancelBtn: {
+  width: "48%",
+  paddingVertical: 14,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#999",
+  alignItems: "center",
+},
+
+cancelText: { color: "#000", fontWeight: "600" },
+
+assignSubmitBtn: {
+  width: "48%",
+  paddingVertical: 14,
+  borderRadius: 12,
+  backgroundColor: "#1E45E1",
+  alignItems: "center",
+},
+
+assignSubmitText: { color: "#fff", fontWeight: "700" },
+assignButtonRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 40,
+},
+selectBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  borderWidth: 1,
+  borderColor: "#CCCCCC",
+  borderRadius: 10,
+  paddingHorizontal: 12,
+  height: 50,
+  backgroundColor: "#fff",
+},
+
+dropdown: {
+  position: "absolute",
+  top: 55,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 10,
+  zIndex: 999,
+  elevation: 10,
+},
+
+option: {
+  paddingVertical: 14,
+  paddingHorizontal: 12,
+
+},
+
+optionText: {
+  fontSize: 15,
+  color: "#000",
+},
+
+
 });
