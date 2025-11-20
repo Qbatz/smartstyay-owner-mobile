@@ -36,6 +36,10 @@ export default function Assets({ navigation }) {
 
   const [showFilter, setShowFilter] = useState(false);
   const translateY = useRef(new Animated.Value(0)).current;
+  const detailsY = useRef(new Animated.Value(0)).current;
+
+  
+
   const panResponder = useRef(
   PanResponder.create({
     onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
@@ -61,6 +65,30 @@ export default function Assets({ navigation }) {
     },
   })
 ).current;
+
+const detailsPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) detailsY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(detailsY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowSheet(false);
+          detailsY.setValue(0);
+        });
+      } else {
+        Animated.spring(detailsY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    },
+  })
+).current;
+
 
 
   // date picker state
@@ -211,10 +239,10 @@ export default function Assets({ navigation }) {
         <Image source={AddIcon} style={styles.fabIcon} />
       </TouchableOpacity>
 
-      {/* ========== Details Bottom Sheet ========== */}
-      {showSheet && (
+    
+      {/* {showSheet && (
         <View style={styles.sheetOverlay}>
-          {/* outside touch — close */}
+       
           <TouchableWithoutFeedback onPress={() => setShowSheet(false)}>
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
@@ -226,11 +254,11 @@ export default function Assets({ navigation }) {
               <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
 
               <View style={styles.topActions}>
-                <TouchableOpacity onPress={() => { /* handle edit */ }}>
+                <TouchableOpacity onPress={() => {}}>
                   <Image source={EditIcon} style={styles.headerIcon} />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => { /* handle delete */ }}>
+                <TouchableOpacity onPress={() => {}}>
                   <Image source={TrashIcon} style={[styles.headerIcon, { marginLeft: 12 }]} />
                 </TouchableOpacity>
               </View>
@@ -279,13 +307,91 @@ export default function Assets({ navigation }) {
               <Text style={styles.value}>CASH</Text>
             </View>
 
-            <TouchableOpacity style={styles.assignBtn} onPress={() => { /* handle assign */ }}>
+            <TouchableOpacity style={styles.assignBtn} onPress={() => {}}>
               <Image source={ButtonTag} style={styles.assignIcon} />
               <Text style={styles.assignText}>Assign Asset</Text>
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      )} */}
+
+
+      {showSheet && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowSheet(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[
+        styles.bottomSheet,
+        { transform: [{ translateY: detailsY }] }
+      ]}
+      {...detailsPan.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <View style={styles.sheetHeaderRow}>
+        <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
+
+        <View style={styles.topActions}>
+          <TouchableOpacity><Image source={EditIcon} style={styles.headerIcon}/></TouchableOpacity>
+          <TouchableOpacity><Image source={TrashIcon} style={[styles.headerIcon,{marginLeft:12}]}/></TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+       <View style={styles.twoColRow}>
+              <View style={styles.colLeft}>
+                <Text style={styles.label}>Serial No:</Text>
+                <Text style={styles.value}>{selectedAsset?.model}</Text>
+              </View>
+
+              <View style={styles.colRight}>
+                <Text style={styles.label}>Brand Name</Text>
+                <Text style={styles.value}>{selectedAsset?.brand}</Text>
+              </View>
+            </View>
+
+            <View style={styles.twoColRow}>
+              <View style={styles.colLeft}>
+                <Text style={styles.label}>Product Name</Text>
+                <Text style={styles.value}>Fridge</Text>
+              </View>
+
+              <View style={styles.colRight}>
+                <Text style={styles.label}>Purchase Date</Text>
+                <Text style={styles.value}>16-05-2025</Text>
+              </View>
+            </View>
+
+            <View style={styles.twoColRow}>
+              <View style={styles.colLeft}>
+                <Text style={styles.label}>Vendor Name</Text>
+                <Text style={styles.value}>Ram Kumar</Text>
+              </View>
+
+              <View style={styles.colRight}>
+                <Text style={styles.label}>Price</Text>
+                <Text style={styles.value}>{selectedAsset?.price}.00</Text>
+              </View>
+            </View>
+
+            <View style={{ marginTop: 8 }}>
+              <Text style={styles.label}>Mode of Payment</Text>
+              <Text style={styles.value}>CASH</Text>
+            </View>
+
+      <TouchableOpacity style={styles.assignBtn}>
+        <Image source={ButtonTag} style={styles.assignIcon} />
+        <Text style={styles.assignText}>Assign Asset</Text>
+      </TouchableOpacity>
+
+    </Animated.View>
+  </View>
+)}
+
 
   
       {showFilter && (
