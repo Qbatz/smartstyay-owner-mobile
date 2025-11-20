@@ -27,6 +27,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import TrashIcon from "../../../Assets/Images/trash.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+import AddAssetSheet from "../Assets/AddAssets"
 
 export default function Assets({ navigation }) {
   // sheet + filter state
@@ -42,6 +43,8 @@ const [selectedFloor, setSelectedFloor] = useState("");
 const floorOptions = ["Ground Floor","1st Floor","2nd Floor","3rd Floor"];
 const [roomOpen, setRoomOpen] = useState(false);
 const [selectedRoom, setSelectedRoom] = useState("");
+const [showAddAsset, setShowAddAsset] = useState(false);
+
 
 const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
 
@@ -279,9 +282,22 @@ const assignPan = useRef(
       </TouchableOpacity>
 
       {/* Add FAB */}
-      <TouchableOpacity style={styles.fab} accessibilityLabel="Add asset">
+      {/* <TouchableOpacity style={styles.fab} accessibilityLabel="Add asset">
         <Image source={AddIcon} style={styles.fabIcon} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <TouchableOpacity
+  style={styles.fab}
+  onPress={() => setShowAddAsset(true)}   // 👈 open sheet
+>
+  <Image source={AddIcon} style={styles.fabIcon} />
+</TouchableOpacity>
+
+{showAddAsset && (
+  <AddAssetSheet
+    onClose={() => setShowAddAsset(false)}
+  />
+)}
+
 
     
 
