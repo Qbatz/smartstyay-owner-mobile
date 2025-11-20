@@ -366,15 +366,15 @@ export default function Complaints({ route }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 40 },
 
-  searchBox: {
+ searchBox: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#D9D9D9",
     borderRadius: 14,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 20,
+    paddingVertical: 2,
+    marginBottom: 10,
   },
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
