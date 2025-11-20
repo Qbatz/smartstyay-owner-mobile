@@ -67,7 +67,7 @@ function AppContent() {
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="SplashText"
+          initialRouteName="SplashScreen"
         >
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
