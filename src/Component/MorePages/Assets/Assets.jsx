@@ -1,5 +1,5 @@
 // Assets.jsx
-import React, { useLayoutEffect, useState, useEffect, useCallback } from "react";
+import React, { useLayoutEffect, useState, useEffect, useCallback,useRef } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
   BackHandler,
   TouchableWithoutFeedback,
   Platform,
-  Dimensions 
+  Dimensions ,
+  PanResponder, Animated
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -34,6 +35,33 @@ export default function Assets({ navigation }) {
   const [selectedAsset, setSelectedAsset] = useState(null);
 
   const [showFilter, setShowFilter] = useState(false);
+  const translateY = useRef(new Animated.Value(0)).current;
+  const panResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
+    onPanResponderMove: (_, gesture) => {
+      if (gesture.dy > 0) translateY.setValue(gesture.dy);
+    },
+    onPanResponderRelease: (_, gesture) => {
+      if (gesture.dy > 120) {
+        Animated.timing(translateY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowFilter(false);
+          translateY.setValue(0);
+        });
+      } else {
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
+
 
   // date picker state
   const [fromDate, setFromDate] = useState(dayjs());
@@ -261,123 +289,117 @@ export default function Assets({ navigation }) {
 
   
       {showFilter && (
-        <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
 
-          <View style={styles.filterSheet}>
-            <View style={styles.sheetHandle} />
+    <Animated.View
+      style={[styles.filterSheet, { transform: [{ translateY }] }]}
+      {...panResponder.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
 
-            <View style={styles.filterHeaderRow}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
-                <Text style={styles.filterTitle}>  Filter by</Text>
-              </View>
-
-            
-            </View>
-            
-            <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-            <Text style={styles.label}>Date Range</Text>
-              <TouchableOpacity onPress={() => {
-                setFromDate(dayjs());
-                setToDate(dayjs());
-                setAmountSelected(amountOptions[0]);
-              }}>
-                <Text style={styles.resetTextSmall}>Reset</Text>
-              </TouchableOpacity>
-               </View>
-
-            <View style={styles.dateRow}>
-              <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-                <Image source={CalendarIcon} style={styles.calIcon} />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-                <Image source={CalendarIcon} style={styles.calIcon} />
-              </TouchableOpacity>
-            </View>
-
-            
-
-            <View style={styles.quickRow}>
-              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                <Text style={styles.quickText}>Today</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                <Text style={styles.quickText}>This Week</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                <Text style={styles.quickText}>This Month</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
-
-    <View
-  style={styles.selectWrapper}
-  onLayout={(event) => {
-    const { y, height } = event.nativeEvent.layout;
-    const screenHeight = Dimensions.get("window").height;
-    const bottomSpace = screenHeight - (y + height);
-
-    setOpenUpward(bottomSpace < 250); 
-  }}
->
-
-              <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown} activeOpacity={0.9}>
-                <Text style={styles.selectedText}>{amountSelected}</Text>
-                <Image source={DownArrow} style={styles.downArrow} />
-              </TouchableOpacity>
-
-              {amountDropdownVisible && (
-              <View style={[
-  styles.dropdownMenu,
-  openUpward ? { bottom: 58, top: 'auto' } : { top: 58 }
-]}>
-                  <ScrollView
-                    style={{ maxHeight: 160 }}
-                    nestedScrollEnabled={true}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    {amountOptions.map((opt) => (
-                      <TouchableOpacity
-                        key={opt}
-                        style={styles.option}
-                        onPress={() => {
-                          setAmountSelected(opt);
-                          setAmountDropdownVisible(false);
-                        }}
-                      >
-                        <Text style={styles.optionText}>{opt}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.bottomButtons}>
-              <TouchableOpacity style={styles.resetBtn} onPress={() => {
-                setFromDate(dayjs()); setToDate(dayjs()); setAmountSelected(amountOptions[0]);
-              }}>
-                <Text style={styles.resetBtnText}>Reset All</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.applyBtn} onPress={() => {
-                // apply filters (emit event or call API)
-                setShowFilter(false);
-              }}>
-                <Text style={styles.applyBtnText}>Apply</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+      <View style={styles.filterHeaderRow}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
+          <Text style={styles.filterTitle}>  Filter by</Text>
         </View>
-      )}
+      </View>
+
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text style={styles.label}>Date Range</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setFromDate(dayjs());
+            setToDate(dayjs());
+            setAmountSelected(amountOptions[0]);
+          }}
+        >
+          <Text style={styles.resetTextSmall}>Reset</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.dateRow}>
+        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+          <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+          <Image source={CalendarIcon} style={styles.calIcon} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+          <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+          <Image source={CalendarIcon} style={styles.calIcon} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.quickRow}>
+        <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+          <Text style={styles.quickText}>Today</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+          <Text style={styles.quickText}>This Week</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+          <Text style={styles.quickText}>This Month</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
+
+      <View
+        style={styles.selectWrapper}
+        onLayout={(event) => {
+          const { y, height } = event.nativeEvent.layout;
+          const screenHeight = Dimensions.get("window").height;
+          const bottomSpace = screenHeight - (y + height);
+
+          setOpenUpward(bottomSpace < 250);
+        }}
+      >
+        <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
+          <Text style={styles.selectedText}>{amountSelected}</Text>
+          <Image source={DownArrow} style={styles.downArrow} />
+        </TouchableOpacity>
+
+        {amountDropdownVisible && (
+          <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
+            <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
+              {amountOptions.map((opt) => (
+                <TouchableOpacity key={opt} style={styles.option}
+                  onPress={() => {
+                    setAmountSelected(opt);
+                    setAmountDropdownVisible(false);
+                  }}
+                >
+                  <Text style={styles.optionText}>{opt}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity style={styles.resetBtn}
+          onPress={() => {
+            setFromDate(dayjs());
+            setToDate(dayjs());
+            setAmountSelected(amountOptions[0]);
+          }}
+        >
+          <Text style={styles.resetBtnText}>Reset All</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+          <Text style={styles.applyBtnText}>Apply</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  </View>
+)}
+
 
       {/* FROM date picker modal-like */}
       {openFrom && (
