@@ -503,6 +503,7 @@ selectBox: {
   paddingHorizontal: 12,
   borderRadius: 12,
 },
+sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
 
