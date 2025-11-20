@@ -41,7 +41,7 @@ export default function Complaints({ route }) {
    const [showFilter, setShowFilter] = useState(false);
    const [status, setStatus] = useState("All");
    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-
+   
 
   const complaintsData = [
     {
@@ -133,7 +133,9 @@ export default function Complaints({ route }) {
  }
 
   const handleAddComplaint = () => {
-     navigation.navigate("AddComplaint")
+    navigation.navigate("AddComplaint", {
+        mode: "add"
+               })
   }
 
   useLayoutEffect(() => {
@@ -234,7 +236,7 @@ export default function Complaints({ route }) {
       {/* ADD BTN */}
       <TouchableOpacity
         style={styles.addBtn}
-        onPress={() => navigation.navigate("AddComplaint")}
+        onPress={handleAddComplaint}
       >
         <Image source={AddComplaint} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
