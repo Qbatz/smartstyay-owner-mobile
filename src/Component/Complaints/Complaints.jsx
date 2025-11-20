@@ -22,7 +22,7 @@ import CommentBottomSheet from "../Complaints/CommentBox";
 import ChangeStatus from "../Complaints/ComplianceStatus";
 
 export default function Complaints({ route }) {
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
   // ---------- STATES ----------
   const [showSheet, setShowSheet] = useState(false);
