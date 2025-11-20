@@ -2,7 +2,7 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import MoreDesign from "./MoreDesign.jsx";
-import Assets from "../Assets/Assets.jsx";
+import Assets from "./Assets/Assets.jsx";
 
 const Stack = createStackNavigator();
 

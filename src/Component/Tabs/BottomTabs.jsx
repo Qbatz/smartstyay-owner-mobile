@@ -8,7 +8,7 @@ import HomeScreen from "../Dashboard/DashboardPage";
 import Tenant from "../Customer/Tenants";
 import Complaints from "../Complaints/Complaints";
 import PGList from "../PG/PGList";
-import MoreStack from "../MorePages/MoreMainPage";
+import MoreDesign from "../MorePages/MoreDesign";
 
 import HomeActive from "../../Assets/Images/home_active_icon.png";
 import HomeInActive from "../../Assets/Images/home_inactive.png";
@@ -108,7 +108,7 @@ export default function MyTabs() {
       
       <Tab.Screen name="PG" component={PGList} />
       <Tab.Screen name="Complaints" component={Complaints}  initialParams={{ setShowTabBar }}/>
-      <Tab.Screen name="More" component={MoreStack}   initialParams={{ setShowTabBar }}/>
+      <Tab.Screen name="More" component={MoreDesign}   initialParams={{ setShowTabBar }}/>
     </Tab.Navigator>
   );
 }

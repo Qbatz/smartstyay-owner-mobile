@@ -9,11 +9,11 @@ import {
   ScrollView,
 } from "react-native";
 
-import BackIcon from "../../Assets/Images/Arrow_left.png";
-import MenuDots from "../../Assets/Images/3dots.png";
-import AddIcon from "../../Assets/Images/add-circle.png";
-import AssetIcon from "../../Assets/Images/Asset.png";
-import SearchIcon from "../../Assets/Images/Asset_search.png";
+import BackIcon from "../../../Assets/Images/Arrow_left.png";
+import MenuDots from "../../../Assets/Images/3dots.png";
+import AddIcon from "../../../Assets/Images/add-circle.png";
+import AssetIcon from "../../../Assets/Images/Asset.png";
+import SearchIcon from "../../../Assets/Images/Asset_search.png";
 
 export default function Assets({ navigation }) {
 
