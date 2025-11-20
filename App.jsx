@@ -44,6 +44,8 @@ import SetNewPassword from './src/Component/ForgotPassword/NewPasswordChange';
 import SucessUpdatePassword from './src/Component/ForgotPassword/SuccessUpdatePassword'
 import AddComplaint from "./src/Component/Complaints/AddComplaints";
 import ComplaintDetails from "./src/Component/Complaints/ViewCompliance";
+import MoreDesign from './src/Component/MorePages/MoreDesign';
+import Assets from './src/Component/MorePages/Assets/Assets';
 
 
 function App() {
@@ -68,7 +70,7 @@ function AppContent() {
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="SplashScreen"
+          initialRouteName="MyTabs"
         >
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
@@ -88,8 +90,9 @@ function AppContent() {
                  <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
                   <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
                     <Navigation.Screen name="ComplaintDetails" component={ComplaintDetails} />
-
-    <Navigation.Screen name="AddComplaint" component={AddComplaint} />
+                    <Navigation.Screen name="AddComplaint" component={AddComplaint} />
+                     <Navigation.Screen name="MoreDesign" component={MoreDesign} />
+                    <Navigation.Screen name="Assets" component={Assets} />
              
 
         </Navigation.Navigator>
