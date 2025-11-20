@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation , useRoute} from "@react-navigation/native";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import CalendarIcon from "../../Assets/Images/calendar.png";
@@ -16,15 +16,18 @@ import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 
 export default function AddComplaint() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { mode, data } = route.params || {};
+
 
   const [floor] = useState("Ground");
   const [room] = useState("10-A");
   const [bed] = useState("A1");
 
+
   const [date, setDate] = useState(new Date());
   const [showDate, setShowDate] = useState(false);
-
-  /* ---------------- CUSTOMER DROPDOWN ---------------- */
+  const [description, setDescription] = useState("");
   const [custOpen, setCustOpen] = useState(false);
   const [customer, setCustomer] = useState(null);
   const [customerList, setCustomerList] = useState([
@@ -32,7 +35,6 @@ export default function AddComplaint() {
     { label: "Ravi", value: "Ravi" },
   ]);
 
-  /* ---------------- COMPLAINT TYPES ---------------- */
   const [ctypeOpen, setCtypeOpen] = useState(false);
   const [complaintType, setComplaintType] = useState(null);
   const [complaintTypes, setComplaintTypes] = useState([
@@ -42,25 +44,41 @@ export default function AddComplaint() {
        { label: "washing machine", value: "washing machine" },
   ]);
 
+  const handleSubmit = () => {
+  if (mode === "edit") {
+    console.log("Updating complaint...");
+    navigation.goBack()
+  } else {
+    console.log("Adding new complaint...");
+  }
+};
+
+
+  useEffect(() => {
+  if (mode === "edit" && data) {
+    setCustomer(data.customer);
+    setComplaintType(data.complaintType);
+    setDescription(data.description);
+    setDate(new Date(data.date));
+  }
+}, [mode, data]);
+
   return (
     <View style={styles.container}>
       
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={ArrowLeft} style={styles.backIcon} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add complaint</Text>
+        <Text style={styles.headerTitle}>  {mode === "edit" ? "Edit Complaint" : "Add Complaint"}</Text>
       </View>
 
-      {/* CONTENT */}
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
       >
 
-        {/* CUSTOMER */}
         <Text style={styles.label}>Customer <Text style={{color:"red"}}>*</Text></Text>
         <View style={{ zIndex: 2000 }}>
  <DropDownPicker
@@ -92,7 +110,6 @@ export default function AddComplaint() {
 
         </View>
 
-        {/* COMPLAINT TYPE */}
         <Text style={styles.label}>Complaint Type <Text style={{color:"red"}}>*</Text></Text>
         <View style={{ zIndex: 1000 }}>
    <DropDownPicker
@@ -156,10 +173,10 @@ export default function AddComplaint() {
           />
         )}
 
-        {/* DESCRIPTION */}
         <Text style={styles.label}>Description</Text>
         <TextInput
           style={styles.descriptionBox}
+          value={description}
           placeholder="Enter Description"
           placeholderTextColor="#C3C3C3"
           multiline
@@ -168,10 +185,10 @@ export default function AddComplaint() {
         <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* FOOTER BUTTON */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitBtn}>
-          <Text style={styles.submitText}>Add Complaint</Text>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+          <Text style={styles.submitText}> 
+             {mode === "edit" ? "Update Complaint" : "Add Complaint"}</Text>
         </TouchableOpacity>
       </View>
 

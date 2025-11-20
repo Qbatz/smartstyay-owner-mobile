@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState ,useEffect } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   TextInput,
   BackHandler,
 } from "react-native";
-
+import { useNavigation } from "@react-navigation/native";
+import DeleteComplaint from "./DeleteComplaint"
 import Profile from "../../Assets/Images/Avatar.png";
 import Edit from "../../Assets/Images/editIcon.png";
 import Delete from "../../Assets/Images/trash.png";
@@ -27,7 +28,10 @@ export default function ComplaintDetails({
   onOpenCommentSheet,
   onOpenStatusSheet,
 }) {
-  // ❗Hooks ALWAYS run first
+
+    const navigation = useNavigation();
+    const [deleteshow, setDeleteShow] = useState(false);
+
   useEffect(() => {
     if (visible) {
       const backAction = () => {
@@ -44,10 +48,41 @@ export default function ComplaintDetails({
     }
   }, [visible]);
 
-  // ❗Safe return AFTER hooks
+
+ 
+
+  const handleDeletePopup = () => {
+    setDeleteShow(true)
+  }
+
+   const handleCloseDeletePopup = () => {
+    setDeleteShow(false)
+  }
+
+  console.log("complaint", complaint);
+  
   if (!complaint) return null;
 
+  const handleEditComplaint = () => {
+  const item =  {
+  customer: "Suresh",
+  complaintType: "AC",
+  floor: "First",
+  room: "10-A",
+  bed: "A1",
+  description: "AC not working"
+}
+
+  navigation.navigate("AddComplaint", {
+    mode: "edit",
+    data: item,  
+  });
+   setTimeout(onOpenStatusSheet, 10);
+};
+
+
   return (
+    <>
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
@@ -62,8 +97,12 @@ export default function ComplaintDetails({
             </View>
 
             <View style={styles.iconRow}>
+              <TouchableOpacity onPress={handleEditComplaint}>
               <Image source={Edit} style={styles.icon} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDeletePopup}>
               <Image source={Delete} style={[styles.icon, { marginLeft: 12 }]} />
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -154,6 +193,12 @@ export default function ComplaintDetails({
         </View>
       </View>
     </Modal>
+    {
+      deleteshow && (
+        <DeleteComplaint  visible={deleteshow} onClose={handleCloseDeletePopup}/>
+      )
+    }
+    </>
   );
 }
 
