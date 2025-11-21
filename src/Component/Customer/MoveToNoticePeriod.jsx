@@ -1,112 +1,100 @@
-import React, { useState, useCallback } from "react";
+import React, { useRef, useEffect,useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  TextInput,
-  ScrollView,
-  Modal,
-  BackHandler,
-  TouchableWithoutFeedback,
+ View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, BackHandler, TouchableWithoutFeedback, Animated,
+  PanResponder,
+
 } from "react-native";
-import DatePicker from "react-native-ui-datepicker";
-import dayjs from "dayjs";
-import { useFocusEffect } from "@react-navigation/native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import Profile from "../../Assets/Images/profile.png";
 import QuestionIcon from "../../Assets/Images/help.png";
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
 
-
-export default function MoveNoticeModal({
-  visible,
-  onClose,
-  onMove,
-  tenant,
-  requestDate,
-  checkoutDate,
-  reason,
-  setRequestDate,
-  setCheckoutDate,
-  setReason,
+export default function MoveNoticeSheet({
+  visible, onClose, onMove, tenant, requestDate, checkoutDate, reason, setRequestDate, setCheckoutDate, setReason,
 }) {
-  if (!tenant) return null;
-
+  if (!visible || !tenant) return null;
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
 
+  const translateY = useRef(new Animated.Value(500)).current;
 
+  useEffect(() => {
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [visible]);
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-
-        console.log("Back Pressed - Modal Visible:", visible);
-
-        if (visible) {
-          onClose();
-          return true;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) translateY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 160) {
+          Animated.timing(translateY, {
+            toValue: 600,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(onClose);
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
         }
-
-        return false;
-      };
-
-      const subscription = BackHandler.addEventListener(
-        "hardwareBackPress",
-        onBackPress
-      );
-
-      return () => subscription.remove();
-    }, [visible])
-  );
-
-
+      },
+    })
+  ).current;
 
   return (
     <>
+    <View style={styles.overlay}>
 
-      <Modal visible={visible} transparent animationType="slide">
-        <View style={styles.overlay}>
-          <TouchableOpacity
-            style={{ flex: 1 }}
-            activeOpacity={1}
-            onPress={onClose}
-          />
+      {/* Tap outside to close */}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={{ flex: 1 }} />
+      </TouchableWithoutFeedback>
 
-         
-          <View style={styles.sheet}>
-            <View style={styles.handle} />
+      {/* Bottom Sheet */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.sheet, { transform: [{ translateY }] }]}
+      >
+        <View style={styles.handle} />
 
-            <Text style={styles.title}>Move to Notice Period?</Text>
+        <Text style={styles.title}>Move to Notice Period?</Text>
+        <Text style={styles.noticeDays}>
+          Notice Days : <Text style={{ color: "#2D6CDF" }}>30</Text>
+        </Text>
 
-            <Text style={styles.noticeDays}>
-              Notice Days : <Text style={{ color: "#2D6CDF" }}>30</Text>
-            </Text>
+        {/* CUSTOMER INFO */}
+        <View style={styles.profileRow}>
+          <Image source={tenant.img || Profile} style={styles.profileImg} />
 
-            {/* CUSTOMER INFO */}
-            <View style={styles.profileRow}>
-              <Image source={tenant.img || Profile} style={styles.profileImg} />
-              <View style={{ marginLeft: 12 }}>
-                <Text style={styles.name}>{tenant.name}</Text>
+          <View style={{ marginLeft: 12 }}>
+            <Text style={styles.name}>{tenant.name}</Text>
 
-                <View style={styles.badgeRow}>
-                  <View style={styles.badgeYellow}>
-                    <Text style={styles.badgeText}>{tenant.floor}</Text>
-                  </View>
+            <View style={styles.badgeRow}>
+              <View style={styles.badgeYellow}>
+                <Text style={styles.badgeText}>{tenant.floor}</Text>
+              </View>
 
-                  <View style={styles.badgeRed}>
-                    <Text style={styles.badgeText}>
-                      {tenant.room} - {tenant.bed}
-                    </Text>
-                  </View>
-                </View>
+              <View style={styles.badgeRed}>
+                <Text style={styles.badgeText}>
+                  {tenant.room} - {tenant.bed}
+                </Text>
               </View>
             </View>
+          </View>
+        </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}>
               {/* Request Date */}
               <Text style={styles.label}>Request Date</Text>
               <TouchableOpacity
@@ -142,8 +130,8 @@ export default function MoveNoticeModal({
               />
             </ScrollView>
 
-            {/* FOOTER */}
-            <View style={styles.footer}>
+        {/* Footer */}
+         <View style={styles.footer}>
               <TouchableOpacity onPress={onClose} style={styles.CancelBtn}>
                 <Text style={styles.cancel}>Cancel</Text>
               </TouchableOpacity>
@@ -156,12 +144,9 @@ export default function MoveNoticeModal({
 </TouchableOpacity>
 
             </View>
-          </View>
-        </View>
-      </Modal>
-
-    
-      <Modal
+      </Animated.View>
+    </View>
+    <Modal
         visible={openRequestPicker}
         transparent
         animationType="fade"
@@ -184,9 +169,7 @@ export default function MoveNoticeModal({
           </View>
         </View>
       </Modal>
-
-
-      <Modal
+     <Modal
         visible={openCheckoutPicker}
         transparent
         animationType="fade"
@@ -209,9 +192,7 @@ export default function MoveNoticeModal({
           </View>
         </View>
       </Modal>
-
-{/* CONFIRM NOTICE MODAL */}
-<Modal
+  <Modal
   visible={showNoticeModal}
   transparent
   animationType="fade"
@@ -253,9 +234,7 @@ export default function MoveNoticeModal({
 
     </View>
   </View>
-</Modal>
-
-      
+</Modal> 
 
     </>
   );
@@ -263,13 +242,10 @@ export default function MoveNoticeModal({
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-  },
-
-  outsideCloseArea: {
-    flex: 1,
   },
 
   sheet: {
@@ -277,7 +253,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    maxHeight: "80%",
+    maxHeight: "82%",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 
   handle: {
@@ -285,24 +265,18 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: "#D1D5DB",
     alignSelf: "center",
-    borderRadius: 50,
+    borderRadius: 10,
     marginBottom: 15,
   },
 
   title: { fontSize: 18, fontWeight: "700", color: "#111" },
   noticeDays: { fontSize: 14, color: "#6B7280", marginVertical: 10 },
 
-  profileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
+  profileRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   profileImg: { width: 50, height: 50, borderRadius: 25 },
-
   name: { fontSize: 16, fontWeight: "600" },
 
   badgeRow: { flexDirection: "row", marginTop: 5 },
-
   badgeYellow: {
     backgroundColor: "#FFF6CC",
     paddingHorizontal: 10,
@@ -310,70 +284,56 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 6,
   },
-
   badgeRed: {
     backgroundColor: "#FFD6D6",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
+  badgeText: { fontSize: 12 },
 
-  badgeText: { fontSize: 12, color: "#111" },
-
-  label: {
-    fontSize: 13,
-    color: "#111",
-    marginTop: 12,
-    marginBottom: 5,
-  },
-
+  label: { fontSize: 13, marginTop: 12 },
   inputBox: {
-    flexDirection: "row",
-    alignItems: "center",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#ccc",
+    padding: 12,
     borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 5,
   },
 
-  textInput: { flex: 1, fontSize: 14, color: "#111" },
-
+  textInput: { fontSize: 14 },
   calendarIcon: { width: 20, height: 20 },
 
   textArea: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#ccc",
     borderRadius: 10,
-    padding: 12,
-    minHeight: 80,
-    fontSize: 14,
-    textAlignVertical: "top",
+    padding: 10,
+    height: 80,
+    marginTop: 5,
   },
 
-  footer: {
+ footer: {
     flexDirection: "row",
-    justifyContent:"flex-end",
+    justifyContent: "flex-end",
     marginTop: 20,
-  },
+    paddingBottom: 50,
+},
+
 
   cancel: { fontSize: 18, color: "#6B7280" },
+  CancelBtn: { padding: 12, marginRight: 10 },
 
   moveBtn: {
     backgroundColor: "#2D6CDF",
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  CancelBtn:{
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: 10,
   },
 
   moveText: { color: "#fff", fontSize: 18, fontWeight: "600" },
-
-  /* Calendar Popup */
   calendarOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -392,7 +352,8 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 10,
   },
-  confirmOverlay: {
+ 
+    confirmOverlay: {
   flex: 1,
   backgroundColor: "rgba(0,0,0,0.4)",
   justifyContent: "center",
@@ -460,5 +421,4 @@ okConfirmText: {
   fontSize: 15,
   fontWeight: "700",
 },
-
 });
