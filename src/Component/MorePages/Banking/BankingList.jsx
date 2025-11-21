@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useRef } from "react";
 import {
   View,
   Text,
@@ -12,16 +12,24 @@ import {
   Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
+import AddBankingDesign from "./AddBanking"
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import BankIcon from "../../../Assets/Images/bank.png";
+import DeleteIcon from "../../../Assets/Images/trash.png";
+import EditIcon from "../../../Assets/Images/editIcon.png";
+import SelfTransIcon from "../../../Assets/Images/arrow-transfer.png";
+import ThreeDotsIcon from "../../../Assets/Images/3dots.png";
+
 
 export default function BankingScreen() {
   const navigation = useNavigation();
-
+  
   const [selectedBank, setSelectedBank] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
 
+   const [addbankingshow, setAddBankingShow] = useState(false)
 
   const bankList = [
     {
@@ -80,8 +88,28 @@ export default function BankingScreen() {
     extrapolate: "clamp",
   });
 
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  
+const dotsRef = useRef({});
+
+const openMenu = (id) => {
+  dotsRef.current[id].measure((fx, fy, width, height, px, py) => {
+    setPopupPosition({ x: px, y: py });
+    setShowMenu(true);
+  });
+};
+
+ 
+  const handleAddBanking = () => {
+    setAddBankingShow(true)
+  }
+
+   const handleCloseAddBanking = () => {
+    setAddBankingShow(false)
+  }
 
   return (
+    <>
     <View style={styles.container}>
 
       <View style={styles.stickyHeader}>
@@ -119,10 +147,14 @@ export default function BankingScreen() {
 
         {/* BANK LIST TITLE */}
         <Animated.View style={{ opacity: bankListOpacity }}>
-          <View style={styles.rowBetween}>
+          <View style={{ flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal:16,
+    alignItems: "center",
+    marginTop: 20,marginBottom:10}}>
             <Text style={styles.sectionTitle}>Bank List</Text>
 
-            <TouchableOpacity style={styles.addBankBtn}>
+            <TouchableOpacity style={styles.addBankBtn} onPress={handleAddBanking}>
               <Text style={styles.addBankText}>Add Bank</Text>
             </TouchableOpacity>
           </View>
@@ -133,26 +165,54 @@ export default function BankingScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {bankList.map((item) => (
               <View key={item.id} style={styles.bankCard}>
-                <TouchableOpacity
-                  style={styles.moreIcon}
-                  onPress={() => setSelectedBank(item)}
-                >
-                  <Text style={{ fontSize: 20 }}>⋮</Text>
-                </TouchableOpacity>
 
-                <Text style={styles.bankTitle}>{item.title}</Text>
-                <Text style={styles.bankSub}>{item.subtitle}</Text>
+  <View
+   style={{backgroundColor:'#f7f5ff'}}
+  >
 
-                <View style={{ marginTop: 10 }}>
-                  <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.acc}>{item.acc}</Text>
-                </View>
+    {/* TOP ROW */}
+    <View style={styles.topRow}>
+      <View style={styles.bankLeft}>
+        <Image
+          source={BankIcon}
+          style={styles.bankIcon}
+        />
+        <View>
+          <Text style={styles.bankTitle}>{item.title}</Text>
+          <Text style={styles.bankSub}>{item.subtitle}</Text>
+        </View>
+      </View>
 
-                <View style={styles.balanceRow}>
-                  <Text style={styles.balanceText}>Balance</Text>
-                  <Text style={styles.balanceAmount}>{item.balance}</Text>
-                </View>
-              </View>
+      <TouchableOpacity style={styles.moreIcon}   ref={(ref) => (dotsRef.current[item.id] = ref)}  onPress={() => openMenu(item.id)}>
+        {/* <Text style={{ fontSize: 20 }}>⋮</Text> */}
+        <Image source={ThreeDotsIcon}  style={styles.popupIcon}/>
+      </TouchableOpacity>
+    </View>
+
+    {/* NAME & ACCOUNT */}
+    <View style={{ marginTop: 12 }}>
+      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.acc}>{item.acc}</Text>
+    </View>
+
+    {/* DEFAULT + CHANGE */}
+    <View style={styles.defaultRow}>
+      <Text style={styles.defaultText}>Default Bank A/C</Text>
+      <Text style={styles.changeText}>Change</Text>
+    </View>
+
+  </View>
+
+  {/* BOTTOM WHITE BALANCE BAR */}
+  <View style={styles.balanceRow}>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Text style={styles.balanceText}>Balance</Text>
+    </View>
+    <Text style={styles.balanceAmount}>{item.balance}</Text>
+  </View>
+
+</View>
+
             ))}
           </ScrollView>
         </Animated.View>
@@ -232,6 +292,66 @@ export default function BankingScreen() {
       </Modal>
 
     </View>
+       {addbankingshow && (
+        <AddBankingDesign visible={addbankingshow} onClose={handleCloseAddBanking}/>
+       )
+
+       }
+
+       {showMenu && (
+         <TouchableOpacity
+           activeOpacity={1}
+           onPress={() => setShowMenu(false)}
+           style={styles.popupOverlay}
+         >
+           <View
+             style={[
+               styles.popupBox,
+               { top: popupPosition.y + 10, left: popupPosition.x - 180 },
+             ]}
+           >
+       
+            <TouchableOpacity style={styles.popupRow} onPress={() => { setShowMenu(false)}} >
+               <Image
+                 source={SelfTransIcon}
+                 style={styles.popupIcon}
+               />
+               <Text style={styles.popupText}>Self Transfer</Text>
+             </TouchableOpacity>
+       
+             <TouchableOpacity style={styles.popupRow}  onPress={() => {
+           setShowMenu(false);
+         }}>
+               <Image
+                 source={EditIcon}
+                 style={styles.popupIcon}
+               />
+               <Text style={styles.popupText}>Edit</Text>
+             </TouchableOpacity>
+           
+        
+       
+            
+       
+             
+      
+        <TouchableOpacity
+         style={styles.popupRow}
+         onPress={() => {
+           setShowMenu(false);
+         }}
+       >
+         <Image
+           source={DeleteIcon}
+           style={styles.popupIcon}
+         />
+         <Text style={styles.popupText}>Delete</Text>
+       </TouchableOpacity>
+           </View>
+         </TouchableOpacity>
+       )}
+    
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -308,36 +428,97 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  /* BANK CARD */
   bankCard: {
-    width: 220,
-    padding: 16,
-    height: 165,
-    backgroundColor: "#F7F8FF",
-    borderRadius: 18,
-    marginHorizontal: 16,
-    position: "relative",
-  },
+  width: 260,
+  height: 190,
+  borderRadius: 18,
+  marginHorizontal: 16,
+  backgroundColor: "#F7F8FF",
+  overflow: "hidden",
+  position: "relative",
+  padding:10
+},
 
-  moreIcon: {
-    position: "absolute",
-    right: 10,
-    top: 10,
-  },
+bgImage: {
+  flex: 1,
+  padding: 16,
+},
 
-  bankTitle: { fontSize: 17, fontWeight: "700" },
-  bankSub: { color: "#777" },
-  name: { fontSize: 15, fontWeight: "600" },
-  acc: { fontSize: 13, color: "#666" },
+topRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
 
-  balanceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 14,
-  },
+bankLeft: {
+  flexDirection: "row",
+  alignItems: "center",
+},
 
-  balanceText: { color: "#777" },
-  balanceAmount: { fontWeight: "700" },
+bankIcon: {
+  width: 38,
+  height: 38,
+  marginRight: 10,
+},
+
+moreIcon: {
+  padding: 5,
+},
+
+bankTitle: {
+  fontSize: 17,
+  fontWeight: "700",
+},
+
+bankSub: {
+  color: "#777",
+  fontSize: 13,
+},
+
+name: {
+  fontSize: 15,
+  fontWeight: "600",
+  marginTop: 4,
+},
+
+acc: {
+  fontSize: 13,
+  color: "#666",
+},
+
+defaultRow: {
+  position: "absolute",
+  right: 16,
+  top: 75,
+  alignItems: "flex-end",
+},
+
+defaultText: {
+  color: "green",
+  fontSize: 14,
+  fontWeight: "600",
+},
+
+changeText: {
+  color: "blue",
+  marginTop: 2,
+  fontSize: 12,
+},
+
+balanceRow: {
+  
+  backgroundColor: "#fff",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+  borderBottomLeftRadius: 18,
+  borderBottomRightRadius: 18,
+},
+
+balanceText: { color: "#777" },
+balanceAmount: { fontWeight: "700", fontSize: 16 },
+
 
   /* TRANSACTION CARD */
   transCard: {
@@ -407,4 +588,43 @@ const styles = StyleSheet.create({
   popupItem: { paddingVertical: 12 },
   popupBlue: { color: "#3D6DFF", fontSize: 15 },
   popupRed: { color: "red", fontSize: 15 },
+
+  
+popupOverlay: {
+  position: "absolute",
+  top: 10,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "transparent",
+},
+
+popupBox: {
+  position: "absolute",
+  width: 200,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  elevation: 20,
+  paddingVertical: 10,
+  zIndex: 10000,
+},
+popupRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+},
+
+popupIcon: {
+  width: 20,
+  height: 20,
+  marginRight: 10,
+},
+
+popupText: {
+  fontSize: 14,
+  color: "#333",
+},
+
+
 });
