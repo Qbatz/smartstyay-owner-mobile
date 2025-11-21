@@ -1,4 +1,4 @@
-import React, { useRef, useEffect,useState } from "react";
+import React, { useRef, useEffect,useState,useCallback } from "react";
 import {
  View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, BackHandler, TouchableWithoutFeedback, Animated,
   PanResponder,
@@ -10,6 +10,7 @@ import Profile from "../../Assets/Images/profile.png";
 import QuestionIcon from "../../Assets/Images/help.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function MoveNoticeSheet({
   visible, onClose, onMove, tenant, requestDate, checkoutDate, reason, setRequestDate, setCheckoutDate, setReason,
@@ -18,6 +19,29 @@ export default function MoveNoticeSheet({
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
+
+   useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+
+        console.log("Back Pressed - Modal Visible:", visible);
+
+        if (visible) {
+          onClose();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [visible])
+  );
 
   const translateY = useRef(new Animated.Value(500)).current;
 
