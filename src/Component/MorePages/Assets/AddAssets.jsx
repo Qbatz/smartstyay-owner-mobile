@@ -16,13 +16,14 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
-export default function AddAssetSheet({ onClose }) {
+export default function AddAssetSheet({ onClose, title = "Add Assets" }) {
     const translateY = useRef(new Animated.Value(0)).current;
     const vendors = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
     const [vendorOpen, setVendorOpen] = useState(false);
     const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
     const [openDatePicker, setOpenDatePicker] = useState(false);
     const [purchaseDate, setPurchaseDate] = useState(dayjs());
+
 
 
 
@@ -51,12 +52,10 @@ export default function AddAssetSheet({ onClose }) {
 
     return (
         <View style={styles.overlay}>
-            {/* Close on outside touch */}
+
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={{ flex: 1 }} />
             </TouchableWithoutFeedback>
-
-            {/* Bottom Sheet */}
             <Animated.View
                 style={[styles.sheet, { transform: [{ translateY }] }]}
                 {...panResponder.panHandlers}
@@ -70,7 +69,8 @@ export default function AddAssetSheet({ onClose }) {
                     nestedScrollEnabled={true}
                 >
 
-                    <Text style={styles.title}>Add an Asset</Text>
+                    <Text style={styles.title}>{title}</Text>
+
 
                     <Text style={styles.label}>Asset Name</Text>
                     <TextInput style={styles.input} placeholder="Asset 1" />
@@ -143,7 +143,7 @@ export default function AddAssetSheet({ onClose }) {
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.addBtn}>
-                            <Text style={styles.addBtnText}>Add Asset</Text>
+                            <Text style={styles.addBtnText}>{title}</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

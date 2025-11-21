@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useEffect, useCallback,useRef } from "react";
+import React, { useLayoutEffect, useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   BackHandler,
   TouchableWithoutFeedback,
   Platform,
-  Dimensions ,
+  Dimensions,
   PanResponder, Animated
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
@@ -37,16 +37,21 @@ export default function Assets({ navigation }) {
   const [showFilter, setShowFilter] = useState(false);
   const [showAssignSheet, setShowAssignSheet] = useState(false);
   const [assignDate, setAssignDate] = useState(dayjs());
-const [openAssignDate, setOpenAssignDate] = useState(false);
-const [floorOpen, setFloorOpen] = useState(false);
-const [selectedFloor, setSelectedFloor] = useState("");
-const floorOptions = ["Ground Floor","1st Floor","2nd Floor","3rd Floor"];
-const [roomOpen, setRoomOpen] = useState(false);
-const [selectedRoom, setSelectedRoom] = useState("");
-const [showAddAsset, setShowAddAsset] = useState(false);
+  const [openAssignDate, setOpenAssignDate] = useState(false);
+  const [floorOpen, setFloorOpen] = useState(false);
+  const [selectedFloor, setSelectedFloor] = useState("");
+  const floorOptions = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"];
+  const [roomOpen, setRoomOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState("");
+  const [showAddAsset, setShowAddAsset] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+
+  
 
 
-const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
+
+  const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
 
 
 
@@ -58,87 +63,87 @@ const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301",
   const assignTranslateY = useRef(new Animated.Value(0)).current;
 
 
-  
+
 
   const panResponder = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
-    onPanResponderMove: (_, gesture) => {
-      if (gesture.dy > 0) translateY.setValue(gesture.dy);
-    },
-    onPanResponderRelease: (_, gesture) => {
-      if (gesture.dy > 120) {
-        Animated.timing(translateY, {
-          toValue: 700,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => {
-          setShowFilter(false);
-          translateY.setValue(0);
-        });
-      } else {
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  })
-).current;
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) translateY.setValue(gesture.dy);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) {
+          Animated.timing(translateY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowFilter(false);
+            translateY.setValue(0);
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
-const detailsPan = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-    onPanResponderMove: (_, g) => {
-      if (g.dy > 0) detailsY.setValue(g.dy);
-    },
-    onPanResponderRelease: (_, g) => {
-      if (g.dy > 120) {
-        Animated.timing(detailsY, {
-          toValue: 700,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => {
-          setShowSheet(false);
-          detailsY.setValue(0);
-        });
-      } else {
-        Animated.spring(detailsY, { toValue: 0, useNativeDriver: true }).start();
-      }
-    },
-  })
-).current;
+  const detailsPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) detailsY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          Animated.timing(detailsY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowSheet(false);
+            detailsY.setValue(0);
+          });
+        } else {
+          Animated.spring(detailsY, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
 
-const assignPan = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
-    onPanResponderMove: (_, gesture) => {
-      if (gesture.dy > 0) assignTranslateY.setValue(gesture.dy);
-    },
-    onPanResponderRelease: (_, gesture) => {
-      if (gesture.dy > 120) {
-        Animated.timing(assignTranslateY, {
-          toValue: 700,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => {
-          setShowAssignSheet(false);
-          assignTranslateY.setValue(0);
-        });
-      } else {
-        Animated.spring(assignTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  })
-).current;
-
-
+  const assignPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) assignTranslateY.setValue(gesture.dy);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) {
+          Animated.timing(assignTranslateY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowAssignSheet(false);
+            assignTranslateY.setValue(0);
+          });
+        } else {
+          Animated.spring(assignTranslateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
 
-  
+
+
+
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
   const [openFrom, setOpenFrom] = useState(false);
@@ -146,7 +151,7 @@ const assignPan = useRef(
   const [openUpward, setOpenUpward] = useState(false);
 
 
- 
+
   const amountOptions = [
     "Low to High (Lowest First)",
     "High to Low (Highest First)",
@@ -158,7 +163,7 @@ const assignPan = useRef(
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
- 
+
   const dummyData = [
     { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
     { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
@@ -166,7 +171,7 @@ const assignPan = useRef(
     { name: "Mattresses", model: "SB-989543", brand: "CURL ON", price: "₹7,500" },
   ];
 
- 
+
   useLayoutEffect(() => {
     navigation.getParent()?.setOptions({
       tabBarStyle: { display: "none" },
@@ -187,11 +192,15 @@ const assignPan = useRef(
     };
   }, [navigation]);
 
- 
+
   useEffect(() => {
     const onBackPress = () => {
       if (amountDropdownVisible) {
         setAmountDropdownVisible(false);
+        return true;
+      }
+       if (showDeletePopup) {
+        setShowDeletePopup(false);
         return true;
       }
       if (openFrom) {
@@ -210,27 +219,28 @@ const assignPan = useRef(
         setShowSheet(false);
         return true;
       }
-      return false; 
+      
+      return false;
     };
 
     const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => sub.remove();
-  }, [showSheet, showFilter, openFrom, openTo, amountDropdownVisible]);
+  }, [showSheet, showFilter, openFrom, openTo, amountDropdownVisible,showDeletePopup]);
 
- 
+
   const openDetails = (asset) => {
     setSelectedAsset(asset);
     setShowSheet(true);
   };
 
-  
+
   const toggleAmountDropdown = () => {
     setAmountDropdownVisible((v) => !v);
   };
 
   return (
     <View style={styles.container}>
-   
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={BackIcon} style={styles.backIcon} />
@@ -241,7 +251,7 @@ const assignPan = useRef(
         <View style={{ width: 30 }} />
       </View>
 
-    
+
       <View style={styles.searchBox}>
         <Image source={SearchIcon} style={styles.searchIcon} />
         <TextInput
@@ -251,7 +261,7 @@ const assignPan = useRef(
         />
       </View>
 
-     
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         {dummyData.map((item, index) => (
           <View key={index} style={styles.card}>
@@ -281,53 +291,78 @@ const assignPan = useRef(
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
 
-      {/* Add FAB */}
-      {/* <TouchableOpacity style={styles.fab} accessibilityLabel="Add asset">
-        <Image source={AddIcon} style={styles.fabIcon} />
-      </TouchableOpacity> */}
-      <TouchableOpacity
-  style={styles.fab}
-  onPress={() => setShowAddAsset(true)}   // 👈 open sheet
->
-  <Image source={AddIcon} style={styles.fabIcon} />
-</TouchableOpacity>
-
-{showAddAsset && (
-  <AddAssetSheet
-    onClose={() => setShowAddAsset(false)}
-  />
-)}
-
-
     
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => {
+          setIsEdit(false);           // ⭐ ADD mode
+          setSelectedAsset(null);
+          setShowAddAsset(true);
+          setShowSheet(false);
+          setShowFilter(false);
+          setShowAssignSheet(false);
+        }}
+      >
+        <Image source={AddIcon} style={styles.fabIcon} />
+      </TouchableOpacity>
+
+
+
+
+      {showAddAsset && (
+        <AddAssetSheet
+          onClose={() => setShowAddAsset(false)}
+          title={isEdit ? "Edit Assets" : "Add Assets"}  
+          asset={selectedAsset}
+        />
+      )}
+
+
+
+
+
 
       {showSheet && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={() => setShowSheet(false)}>
-      <View style={{ flex: 1 }} />
-    </TouchableWithoutFeedback>
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setShowSheet(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
 
-    <Animated.View
-      style={[
-        styles.bottomSheet,
-        { transform: [{ translateY: detailsY }] }
-      ]}
-      {...detailsPan.panHandlers}
-    >
-      <View style={styles.sheetHandle} />
+          <Animated.View
+            style={[
+              styles.bottomSheet,
+              { transform: [{ translateY: detailsY }] }
+            ]}
+            {...detailsPan.panHandlers}
+          >
+            <View style={styles.sheetHandle} />
 
-      <View style={styles.sheetHeaderRow}>
-        <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
+            <View style={styles.sheetHeaderRow}>
+              <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
 
-        <View style={styles.topActions}>
-          <TouchableOpacity><Image source={EditIcon} style={styles.headerIcon}/></TouchableOpacity>
-          <TouchableOpacity><Image source={TrashIcon} style={[styles.headerIcon,{marginLeft:12}]}/></TouchableOpacity>
-        </View>
-      </View>
+              <View style={styles.topActions}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsEdit(true);            
+                    setSelectedAsset(selectedAsset);
+                    setShowAddAsset(true);
+                    setShowSheet(false);
+                  }}
+                >
+                  <Image source={EditIcon} style={styles.headerIcon} />
+                </TouchableOpacity>
 
-      <View style={styles.divider} />
 
-       <View style={styles.twoColRow}>
+
+<TouchableOpacity onPress={() => setShowDeletePopup(true)}>
+  <Image source={TrashIcon} style={[styles.headerIcon, { marginLeft: 12 }]} />
+</TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Serial No:</Text>
                 <Text style={styles.value}>{selectedAsset?.model}</Text>
@@ -368,139 +403,139 @@ const assignPan = useRef(
               <Text style={styles.value}>CASH</Text>
             </View>
 
-     
-      <TouchableOpacity 
-  style={styles.assignBtn} 
-  onPress={() => {
-    setShowSheet(false);      
-    setShowAssignSheet(true); 
-  }}
->
-  <Image source={ButtonTag} style={styles.assignIcon} />
-  <Text style={styles.assignText}>Assign Asset</Text>
-</TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.assignBtn}
+              onPress={() => {
+                setShowSheet(false);
+                setShowAssignSheet(true);
+              }}
+            >
+              <Image source={ButtonTag} style={styles.assignIcon} />
+              <Text style={styles.assignText}>Assign Asset</Text>
+            </TouchableOpacity>
 
 
-    </Animated.View>
-  </View>
-)}
-
-
-  
-      {showFilter && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
-      <View style={{ flex: 1 }} />
-    </TouchableWithoutFeedback>
-
-    <Animated.View
-      style={[styles.filterSheet, { transform: [{ translateY }] }]}
-      {...panResponder.panHandlers}
-    >
-      <View style={styles.sheetHandle} />
-
-      <View style={styles.filterHeaderRow}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
-          <Text style={styles.filterTitle}>  Filter by</Text>
+          </Animated.View>
         </View>
-      </View>
-
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text style={styles.label}>Date Range</Text>
-        <TouchableOpacity
-          onPress={() => {
-            setFromDate(dayjs());
-            setToDate(dayjs());
-            setAmountSelected(amountOptions[0]);
-          }}
-        >
-          <Text style={styles.resetTextSmall}>Reset</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.dateRow}>
-        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-          <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-          <Image source={CalendarIcon} style={styles.calIcon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-          <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-          <Image source={CalendarIcon} style={styles.calIcon} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.quickRow}>
-        <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-          <Text style={styles.quickText}>Today</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-          <Text style={styles.quickText}>This Week</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-          <Text style={styles.quickText}>This Month</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
-
-      <View
-        style={styles.selectWrapper}
-        onLayout={(event) => {
-          const { y, height } = event.nativeEvent.layout;
-          const screenHeight = Dimensions.get("window").height;
-          const bottomSpace = screenHeight - (y + height);
-
-          setOpenUpward(bottomSpace < 250);
-        }}
-      >
-        <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
-          <Text style={styles.selectedText}>{amountSelected}</Text>
-          <Image source={DownArrow} style={styles.downArrow} />
-        </TouchableOpacity>
-
-        {amountDropdownVisible && (
-          <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
-            <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-              {amountOptions.map((opt) => (
-                <TouchableOpacity key={opt} style={styles.option}
-                  onPress={() => {
-                    setAmountSelected(opt);
-                    setAmountDropdownVisible(false);
-                  }}
-                >
-                  <Text style={styles.optionText}>{opt}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.resetBtn}
-          onPress={() => {
-            setFromDate(dayjs());
-            setToDate(dayjs());
-            setAmountSelected(amountOptions[0]);
-          }}
-        >
-          <Text style={styles.resetBtnText}>Reset All</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
-          <Text style={styles.applyBtnText}>Apply</Text>
-        </TouchableOpacity>
-      </View>
-    </Animated.View>
-  </View>
-)}
+      )}
 
 
-    
+
+      {showFilter && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
+
+          <Animated.View
+            style={[styles.filterSheet, { transform: [{ translateY }] }]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.sheetHandle} />
+
+            <View style={styles.filterHeaderRow}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
+                <Text style={styles.filterTitle}>  Filter by</Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={styles.label}>Date Range</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setFromDate(dayjs());
+                  setToDate(dayjs());
+                  setAmountSelected(amountOptions[0]);
+                }}
+              >
+                <Text style={styles.resetTextSmall}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.dateRow}>
+              <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+                <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+                <Image source={CalendarIcon} style={styles.calIcon} />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+                <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+                <Image source={CalendarIcon} style={styles.calIcon} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.quickRow}>
+              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+                <Text style={styles.quickText}>Today</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+                <Text style={styles.quickText}>This Week</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+                <Text style={styles.quickText}>This Month</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
+
+            <View
+              style={styles.selectWrapper}
+              onLayout={(event) => {
+                const { y, height } = event.nativeEvent.layout;
+                const screenHeight = Dimensions.get("window").height;
+                const bottomSpace = screenHeight - (y + height);
+
+                setOpenUpward(bottomSpace < 250);
+              }}
+            >
+              <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
+                <Text style={styles.selectedText}>{amountSelected}</Text>
+                <Image source={DownArrow} style={styles.downArrow} />
+              </TouchableOpacity>
+
+              {amountDropdownVisible && (
+                <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
+                  <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
+                    {amountOptions.map((opt) => (
+                      <TouchableOpacity key={opt} style={styles.option}
+                        onPress={() => {
+                          setAmountSelected(opt);
+                          setAmountDropdownVisible(false);
+                        }}
+                      >
+                        <Text style={styles.optionText}>{opt}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.bottomButtons}>
+              <TouchableOpacity style={styles.resetBtn}
+                onPress={() => {
+                  setFromDate(dayjs());
+                  setToDate(dayjs());
+                  setAmountSelected(amountOptions[0]);
+                }}
+              >
+                <Text style={styles.resetBtnText}>Reset All</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                <Text style={styles.applyBtnText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      )}
+
+
+
       {openFrom && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenFrom(false)}>
@@ -520,7 +555,7 @@ const assignPan = useRef(
         </View>
       )}
 
-     
+
       {openTo && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenTo(false)}>
@@ -539,140 +574,171 @@ const assignPan = useRef(
           </View>
         </View>
       )}
-  {showAssignSheet && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={() => setShowAssignSheet(false)}>
-      <View style={{ flex: 1 }} />
-    </TouchableWithoutFeedback>
+      {showAssignSheet && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setShowAssignSheet(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
 
-    <Animated.View
-      style={[styles.assignSheet, { transform: [{ translateY: assignTranslateY }] }]}
-      {...assignPan.panHandlers}
-    >
-      <View style={styles.sheetHandle} />
-
-      <Text style={styles.assignTitle}>Assign Asset</Text>
-
-      
-      <Text style={styles.label}>Floor *</Text>
-     
-      <View style={{ position: "relative", marginTop: 10 }}>
-  
-
-  <TouchableOpacity
-    style={styles.selectBox}
-    onPress={() => setFloorOpen(!floorOpen)}
-  >
-    <Text style={styles.selectedText}>
-      {selectedFloor || "Select a Floor"}
-    </Text>
-    <Image source={DownArrow} style={styles.downArrow} />
-  </TouchableOpacity>
-
-  
-  {floorOpen && (
-    <View style={styles.dropdown}>
-      <ScrollView
-        style={{ maxHeight: 100 }}   
-        showsVerticalScrollIndicator={true}
-      >
-        {floorOptions.map((item, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={styles.option}
-            onPress={() => {
-              setSelectedFloor(item);
-              setFloorOpen(false);
-            }}
+          <Animated.View
+            style={[styles.assignSheet, { transform: [{ translateY: assignTranslateY }] }]}
+            {...assignPan.panHandlers}
           >
-            <Text style={styles.optionText}>{item}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  )}
+            <View style={styles.sheetHandle} />
 
-</View>
+            <Text style={styles.assignTitle}>Assign Asset</Text>
 
 
-     
-      <Text style={[styles.label, { marginTop: 15 }]}>Select a Room *</Text>
-      <View style={{ position: "relative", marginTop: 15 }}>
-  
-  <TouchableOpacity
-    style={styles.selectBox}
-    onPress={() => setRoomOpen(!roomOpen)}
-  >
-    <Text style={styles.selectedText}>
-      {selectedRoom || "Select Room"}
-    </Text>
-    <Image source={DownArrow} style={styles.downArrow} />
-  </TouchableOpacity>
+            <Text style={styles.label}>Floor *</Text>
+
+            <View style={{ position: "relative", marginTop: 10 }}>
 
 
-  {roomOpen && (
-    <View style={styles.dropdown}>
-      <ScrollView
-        style={{ maxHeight: 200 }}
-        showsVerticalScrollIndicator={true}
-      >
-        {roomOptions.map((r, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={styles.option}
-            onPress={() => {
-              setSelectedRoom(r);
-              setRoomOpen(false);
-            }}
-          >
-            <Text style={styles.optionText}>{r}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  )}
+              <TouchableOpacity
+                style={styles.selectBox}
+                onPress={() => setFloorOpen(!floorOpen)}
+              >
+                <Text style={styles.selectedText}>
+                  {selectedFloor || "Select a Floor"}
+                </Text>
+                <Image source={DownArrow} style={styles.downArrow} />
+              </TouchableOpacity>
 
-</View>
 
-   
-      <Text style={[styles.label, { marginTop: 15 }]}>Date *</Text>
-      <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
-        <Text style={styles.selectedText}>{dayjs(assignDate).format("DD-MM-YYYY")}</Text>
-        <Image source={CalendarIcon} style={styles.calIcon} />
-      </TouchableOpacity>
+              {floorOpen && (
+                <View style={styles.dropdown}>
+                  <ScrollView
+                    style={{ maxHeight: 100 }}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {floorOptions.map((item, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        style={styles.option}
+                        onPress={() => {
+                          setSelectedFloor(item);
+                          setFloorOpen(false);
+                        }}
+                      >
+                        <Text style={styles.optionText}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
 
-      
-      <View style={styles.assignButtonRow}>
-        <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAssignSheet(false)}>
+            </View>
+
+
+
+            <Text style={[styles.label, { marginTop: 15 }]}>Select a Room *</Text>
+            <View style={{ position: "relative", marginTop: 15 }}>
+
+              <TouchableOpacity
+                style={styles.selectBox}
+                onPress={() => setRoomOpen(!roomOpen)}
+              >
+                <Text style={styles.selectedText}>
+                  {selectedRoom || "Select Room"}
+                </Text>
+                <Image source={DownArrow} style={styles.downArrow} />
+              </TouchableOpacity>
+
+
+              {roomOpen && (
+                <View style={styles.dropdown}>
+                  <ScrollView
+                    style={{ maxHeight: 200 }}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {roomOptions.map((r, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        style={styles.option}
+                        onPress={() => {
+                          setSelectedRoom(r);
+                          setRoomOpen(false);
+                        }}
+                      >
+                        <Text style={styles.optionText}>{r}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+            </View>
+
+
+            <Text style={[styles.label, { marginTop: 15 }]}>Date *</Text>
+            <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
+              <Text style={styles.selectedText}>{dayjs(assignDate).format("DD-MM-YYYY")}</Text>
+              <Image source={CalendarIcon} style={styles.calIcon} />
+            </TouchableOpacity>
+
+
+            <View style={styles.assignButtonRow}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAssignSheet(false)}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.applyBtn}>
+                <Text style={styles.applyBtnText}>Assign</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      )}
+      {openAssignDate && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setOpenAssignDate(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.datePickerBox}>
+            <DatePicker
+              mode="single"
+              date={assignDate}
+              onChange={(p) => {
+                setAssignDate(p.date || dayjs());
+                setOpenAssignDate(false);
+              }}
+            />
+          </View>
+        </View>
+      )}
+
+{showDeletePopup && (
+  <View style={styles.popupOverlay}>
+    <View style={styles.popupBox}>
+
+      <Text style={styles.popupTitle}>Delete Assets?</Text>
+      <Text style={styles.popupSubtitle}>
+        Are you sure you want to delete this Assets?
+      </Text>
+
+      <View style={styles.popupBtnRow}>
+        <TouchableOpacity 
+          style={styles.cancelBtn}
+          onPress={() => setShowDeletePopup(false)}
+        >
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.applyBtn}>
-          <Text style={styles.applyBtnText}>Assign</Text>
+        <TouchableOpacity 
+          style={styles.deleteBtn}
+          onPress={() => {
+            // 🔥 Your delete function here
+            setShowDeletePopup(false);
+          }}
+        >
+          <Text style={styles.deleteText}>Delete</Text>
         </TouchableOpacity>
       </View>
-    </Animated.View>
-  </View>
-)}
-{openAssignDate && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={() => setOpenAssignDate(false)}>
-      <View style={{ flex: 1 }} />
-    </TouchableWithoutFeedback>
 
-    <View style={styles.datePickerBox}>
-      <DatePicker
-        mode="single"
-        date={assignDate}
-        onChange={(p) => {
-          setAssignDate(p.date || dayjs());
-          setOpenAssignDate(false);
-        }}
-      />
     </View>
   </View>
 )}
-
 
 
     </View>
@@ -733,13 +799,13 @@ const styles = StyleSheet.create({
   assignText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 
   // filter sheet
-filterSheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  height: "55%",             // ⭐ increase height here
-},  filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  filterSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    height: "55%",             // ⭐ increase height here
+  }, filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   filterTitle: { fontSize: 20, fontWeight: "700" },
   resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
 
@@ -749,33 +815,33 @@ filterSheet: {
   calIcon: { width: 20, height: 20 },
 
   selectWrapper: { position: "relative", width: "100%", marginTop: 8 },
-selectBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  borderWidth: 1,
-  borderColor: "#E0E0E0",
-  height: 50,   // 🔥 consistent height
-  paddingHorizontal: 12,
-  borderRadius: 12,
-},
-sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
+  selectBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    height: 50,   // 🔥 consistent height
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
 
-dropdownMenu: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  elevation: 15,
-  zIndex:1000,
-  paddingVertical: 8,
-  height:100
-},
+  dropdownMenu: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    elevation: 15,
+    zIndex: 1000,
+    paddingVertical: 8,
+    height: 100
+  },
 
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
@@ -791,92 +857,160 @@ dropdownMenu: {
   applyBtnText: { color: "#fff", fontWeight: "700" },
 
   datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
- assignSheet: {
+  assignSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    height: "60%",
+  },
+
+
+  assignTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+  },
+
+  placeholderText: {
+    color: "#A0A0A0",
+    fontSize: 15,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 25,
+  },
+
+  cancelBtn: {
+    width: "48%",
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#999",
+    alignItems: "center",
+  },
+
+  cancelText: { color: "#000", fontWeight: "600" },
+
+  assignSubmitBtn: {
+    width: "48%",
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#1E45E1",
+    alignItems: "center",
+  },
+
+  assignSubmitText: { color: "#fff", fontWeight: "700" },
+  assignButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 40,
+  },
+  selectBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#CCCCCC",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 50,
+    backgroundColor: "#fff",
+  },
+
+  dropdown: {
+    position: "absolute",
+    top: 55,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 10,
+    zIndex: 999,
+    elevation: 10,
+  },
+
+  option: {
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+
+  },
+
+  optionText: {
+    fontSize: 15,
+    color: "#000",
+  },
+  popupOverlay: {
+  position: "absolute",
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 25
+},
+
+popupBox: {
+  width: "100%",
   backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  height: "60%",
+  borderRadius: 18,
+  paddingVertical: 25,
+  paddingHorizontal: 20,
+  elevation: 10
 },
 
-
-assignTitle: {
-  fontSize: 20,
+popupTitle: {
+  fontSize: 18,
   fontWeight: "700",
-  marginBottom: 20,
+  textAlign: "center",
+  marginBottom: 8
 },
 
-placeholderText: {
-  color: "#A0A0A0",
-  fontSize: 15,
+popupSubtitle: {
+  fontSize: 14,
+  color: "#555",
+  textAlign: "center",
+  marginBottom: 25
 },
 
-actionRow: {
+popupBtnRow: {
   flexDirection: "row",
   justifyContent: "space-between",
-  marginTop: 25,
 },
 
 cancelBtn: {
   width: "48%",
-  paddingVertical: 14,
-  borderRadius: 12,
   borderWidth: 1,
-  borderColor: "#999",
-  alignItems: "center",
+  borderColor: "#1E45E1",
+  paddingVertical: 12,
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center"
 },
 
-cancelText: { color: "#000", fontWeight: "600" },
+cancelText: {
+  color: "#1E45E1",
+  fontSize: 16,
+  fontWeight: "600"
+},
 
-assignSubmitBtn: {
+deleteBtn: {
   width: "48%",
-  paddingVertical: 14,
-  borderRadius: 12,
   backgroundColor: "#1E45E1",
-  alignItems: "center",
-},
-
-assignSubmitText: { color: "#fff", fontWeight: "700" },
-assignButtonRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop: 40,
-},
-selectBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  borderWidth: 1,
-  borderColor: "#CCCCCC",
+  paddingVertical: 12,
   borderRadius: 10,
-  paddingHorizontal: 12,
-  height: 50,
-  backgroundColor: "#fff",
+  justifyContent: "center",
+  alignItems: "center"
 },
 
-dropdown: {
-  position: "absolute",
-  top: 55,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 10,
-  zIndex: 999,
-  elevation: 10,
+deleteText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700"
 },
 
-option: {
-  paddingVertical: 14,
-  paddingHorizontal: 12,
-
-},
-
-optionText: {
-  fontSize: 15,
-  color: "#000",
-},
 
 
 });
