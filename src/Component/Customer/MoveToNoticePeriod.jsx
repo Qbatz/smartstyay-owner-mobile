@@ -76,7 +76,7 @@ export default function MoveNoticeModal({
             onPress={onClose}
           />
 
-          {/* Bottom Sheet */}
+         
           <View style={styles.sheet}>
             <View style={styles.handle} />
 
