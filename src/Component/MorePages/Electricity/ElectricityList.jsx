@@ -14,11 +14,13 @@ import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/EditPin.png";
-import TenantsList from "./TenantsList"
+import TenantsList from "./TenantsList";
+
 
 export default function Electricity({ navigation }) {
   const [activeTab, setActiveTab] = useState("Room Reading");
   const [underlineWidth, setUnderlineWidth] = useState(0);
+   
 
   const tabs = [
     { key: "Room Reading" },
@@ -95,7 +97,11 @@ export default function Electricity({ navigation }) {
 
             {/* MIDDLE */}
             <View style={{ flex: 1 }}>
-              <Text style={styles.roomName}>{item.room}</Text>
+              {/* <Text style={styles.roomName}>{item.room}</Text> */}
+              <TouchableOpacity onPress={() => navigation.navigate("RoomDetails", { roomData: item })}>
+  <Text style={styles.roomName}>{item.room}</Text>
+</TouchableOpacity>
+
 
               <View style={styles.subRow}>
                 <View style={styles.tag}>
