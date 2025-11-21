@@ -21,6 +21,7 @@ import DeleteIcon from "../../../Assets/Images/trash.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import SelfTransIcon from "../../../Assets/Images/arrow-transfer.png";
 import ThreeDotsIcon from "../../../Assets/Images/3dots.png";
+import SelfTransferModal from "./SelfTransferScreen";
 
 
 export default function BankingScreen() {
@@ -30,6 +31,7 @@ export default function BankingScreen() {
   const [showMenu, setShowMenu] = useState(false);
 
    const [addbankingshow, setAddBankingShow] = useState(false)
+   const [selfTransferScreen,setSelfTransferScreen] = useState(false)
 
   const bankList = [
     {
@@ -297,6 +299,8 @@ const openMenu = (id) => {
        )
 
        }
+ 
+
 
        {showMenu && (
          <TouchableOpacity
@@ -311,7 +315,11 @@ const openMenu = (id) => {
              ]}
            >
        
-            <TouchableOpacity style={styles.popupRow} onPress={() => { setShowMenu(false)}} >
+            <TouchableOpacity style={styles.popupRow} onPress={() => {
+  setShowMenu(false);
+  setSelfTransferScreen(true);   // OPEN SELF TRANSFER SCREEN
+}}
+ >
                <Image
                  source={SelfTransIcon}
                  style={styles.popupIcon}
@@ -350,6 +358,12 @@ const openMenu = (id) => {
            </View>
          </TouchableOpacity>
        )}
+             {selfTransferScreen && (
+  <SelfTransferModal
+    visible={selfTransferScreen}
+    onClose={() => setSelfTransferScreen(false)}
+  />
+)}
     
     </>
   );
