@@ -37,7 +37,7 @@ import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
 import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
 import FinalSettlement from "./src/Component/Customer/FinalSettlement";
-
+import AddTransaction from "./src/Component/MorePages/Banking/AddTransaction";
 import ForgotPassword from "./src/Component/ForgotPassword/ForgotPasswordScreen";
 import OtpVerification from './src/Component/ForgotPassword/ForgotVerifyOtp';
 import SetNewPassword from './src/Component/ForgotPassword/NewPasswordChange';
@@ -97,8 +97,10 @@ function AppContent() {
                      <Navigation.Screen name="MoreDesign" component={MoreDesign} />
                     <Navigation.Screen name="Assets" component={Assets} />
               <Navigation.Screen name="Banking" component={Banking} />
+              <Navigation.Screen name="AddTransaction" component={AddTransaction} />
                <Navigation.Screen name="Electricity" component={Electricity} />
                <Navigation.Screen name="RoomDetails" component={RoomDetails} />
+
 
         </Navigation.Navigator>
       </NavigationContainer>

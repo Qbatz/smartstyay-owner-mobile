@@ -13,8 +13,21 @@ import {
 } from "react-native";
 import CloseIcon from "../../../Assets/Images/remove.png";
 
-export default function AddBankingModal({ visible, onClose }) {
+export default function AddBankingModal({ visible, onClose , mode, editTab }) {
   const [activeTab, setActiveTab] = useState("Bank");
+useEffect(() => {
+  if (!visible && mode === "add") {
+    setActiveTab("Bank");   // add mode only default reset
+  }
+}, [visible, mode]);
+
+
+useEffect(() => {
+  if (mode === "edit") {
+    setActiveTab(editTab);
+  }
+}, [mode, editTab]);
+
 
   useEffect(() => {
     const backAction = () => {
@@ -29,10 +42,18 @@ export default function AddBankingModal({ visible, onClose }) {
     return () => back.remove();
   }, [visible]);
 
-  const TabButton = ({ title }) => (
+  const TabButton = ({ title }) => {
+  const disabled = mode === "edit" && title !== editTab;
+
+  return (
     <TouchableOpacity
-      style={[styles.tabBtn, activeTab === title && styles.activeTab]}
-      onPress={() => setActiveTab(title)}
+      disabled={disabled}
+      style={[
+        styles.tabBtn,
+        activeTab === title && styles.activeTab,
+        disabled && { opacity: 0.3 }
+      ]}
+      onPress={() => !disabled && setActiveTab(title)}
     >
       <Text
         style={[
@@ -44,6 +65,8 @@ export default function AddBankingModal({ visible, onClose }) {
       </Text>
     </TouchableOpacity>
   );
+};
+
 
   const RenderForm = () => {
     switch (activeTab) {
@@ -127,18 +150,18 @@ export default function AddBankingModal({ visible, onClose }) {
       {/* MAIN SHEET */}
       <View style={styles.sheet}>
         {/* HEADER */}
-        <View style={styles.sheetHeader}>
-          <Text style={styles.sheetTitle}>
-            {activeTab === "Bank" ? "Add Bank" :
-             activeTab === "UPI" ? "Add UPI" :
-             activeTab === "Card" ? "Add Card" :
-             "Add Cash"}
-          </Text>
+       <View style={styles.sheetHeader}>
+  <Text style={styles.sheetTitle}>
+    {mode === "edit"
+      ? `Edit ${activeTab}`
+      : `Add ${activeTab}`}
+  </Text>
 
-          <TouchableOpacity onPress={onClose}>
-            <Image source={CloseIcon} style={styles.closeIcon}/>
-          </TouchableOpacity>
-        </View>
+  <TouchableOpacity onPress={onClose}>
+    <Image source={CloseIcon} style={styles.closeIcon}/>
+  </TouchableOpacity>
+</View>
+
 
         {/* TABS */}
         <View style={styles.tabsRow}>
@@ -153,9 +176,12 @@ export default function AddBankingModal({ visible, onClose }) {
         </ScrollView>
 
         {/* ADD BUTTON */}
-        <TouchableOpacity style={styles.addBtn}>
-          <Text style={styles.addBtnText}>Add</Text>
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.addBtn}>
+  <Text style={styles.addBtnText}>
+    {mode === "edit" ? "Update" : "Add"}
+  </Text>
+</TouchableOpacity>
+
       </View>
     </Modal>
   );
