@@ -1,0 +1,285 @@
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+
+import BackIcon from "../../../Assets/Images/Arrow_left.png";
+import RoomIcon from "../../../Assets/Images/Room_Icon.png";
+import ProfileIcon from "../../../Assets/Images/profile.png";
+import calendarCheck from "../../../Assets/Images/calendarcheck.png";
+import UserProfile from "../../../Assets/Images/profileElec.png";
+
+export default function CustomerReading({ route, navigation }) {
+  const { tenant } = route.params;
+
+  const readings = [
+    {
+      month: "September 2025",
+      price: "330",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "01 – 31 July",
+    },
+    {
+      month: "August 2025",
+      price: "360",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "01 – 31 July",
+    },
+    {
+      month: "July 2025",
+      price: "378",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "01 – 30 June",
+    },
+    {
+      month: "June 2025",
+      price: "267",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "01 – 31 May",
+    },
+    {
+      month: "May 2025",
+      price: "120",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "18 – 30 April",
+    },
+    {
+      month: "May 2025",
+      price: "245",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "01 – 17 April",
+    },
+    {
+      month: "April 2025",
+      price: "320",
+      floor: tenant.floor,
+      room: tenant.room,
+      bed: tenant.bed,
+      date: "01 – 31 March",
+    },
+    
+  ];
+
+  return (
+    <View style={styles.container}>
+
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={BackIcon} style={styles.backIcon} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Room Overview</Text>
+      </View>
+
+      {/* TOP CARD */}
+      <View style={styles.card}>
+        
+        <View style={styles.cardRow}>
+
+          <Image source={ProfileIcon} style={styles.avatar} />
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{tenant.name}</Text>
+
+            <View style={styles.inline}>
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>{tenant.floor}</Text>
+              </View>
+
+              <Image source={RoomIcon} style={styles.icon} />
+              <Text style={styles.roomText}>{tenant.room}</Text>
+
+              <Image source={RoomIcon} style={styles.icon} />
+              <Text style={styles.roomText}>{tenant.bed}</Text>
+            </View>
+          </View>
+
+        
+        </View>
+
+        
+     
+<View style={styles.rowBetween}>
+
+  
+  <View style={{display:"flex",flexDirection:"row"}}>
+  <View style={styles.unitBox}>
+    <Image source={UserProfile} style={styles.unitIcon} />
+    <Text style={styles.unitLabel}>Units 33</Text>
+   
+  </View>
+   <View style={styles.dateBox}>
+    <Image source={calendarCheck} style={styles.calIcon} />
+    <Text style={styles.dateLabel}>Aug 01 - 31</Text>
+  </View>
+  </View>
+
+ 
+  <Text style={styles.priceBig}>₹330</Text>
+
+</View>
+
+      </View>
+
+      <Text style={styles.listTitle}>Readings</Text>
+
+   
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {readings.map((item, index) => (
+          <View key={index} style={styles.listRow}>
+            
+            <View style={styles.greenDot} />
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.monthText}>{item.month}</Text>
+
+              <View style={styles.inline}>
+                <View style={styles.tagSmall}>
+                  <Text style={styles.tagSmallText}>{item.floor}</Text>
+                </View>
+
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={styles.bedText}>{item.room}</Text>
+
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={styles.bedText}>{item.bed}</Text>
+              </View>
+            </View>
+
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={styles.amount}>₹{item.price}</Text>
+              <Text style={styles.dateSmall}>{item.date}</Text>
+            </View>
+
+          </View>
+        ))}
+      </ScrollView>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff", padding: 15 },
+
+
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 18 },
+  backIcon: { width: 22, height: 22, marginRight: 10 },
+  headerTitle: { fontSize: 18, fontWeight: "700" },
+
+ 
+  card: {
+   
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 20,
+  },
+
+  cardRow: { flexDirection: "row", alignItems: "center" },
+
+  avatar: { width: 42, height: 42, borderRadius: 25, marginRight: 12 },
+
+  name: { fontSize: 16, fontWeight: "700" },
+
+  inline: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+
+  tag: {
+    backgroundColor: "#FFECC2",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  tagText: { color: "#A47E00", fontSize: 12, fontWeight: "600" },
+
+  icon: { width: 16, height: 16, tintColor: "#3D6AE8", marginRight: 4 },
+  roomText: { fontWeight: "600", color: "#3D6AE8", marginRight: 12 },
+
+  priceBig: { fontSize: 20, fontWeight: "700" },
+
+ rowBetween: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginTop: 12,
+},
+ unitBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#FFEFD1",
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 8,
+},
+  unitIcon: { width: 16, height: 16, marginRight: 6 },
+  unitLabel: { color: "#8A6300", fontWeight: "600" },
+
+  dateBox: {
+    flexDirection: "row",
+    backgroundColor: "#E9EDFF",
+    padding: 8,
+    borderRadius: 8,
+    alignItems: "center",
+    marginLeft:10
+  },
+  calIcon: { width: 16, height: 16, tintColor: "#1E45E1" },
+  dateLabel: { marginLeft: 6, color: "#1E45E1", fontWeight: "600" },
+
+  /** LIST **/
+  listTitle: { fontSize: 16, fontWeight: "700", marginBottom: 10 },
+
+  listRow: {
+    flexDirection: "row",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+
+  greenDot: {
+    width: 10,
+    height: 10,
+    backgroundColor: "green",
+    borderRadius: 6,
+    marginRight: 12,
+    marginTop: 5,
+  },
+
+  monthText: { fontSize: 15, fontWeight: "700", marginBottom: 4 },
+
+  tagSmall: {
+    backgroundColor: "#FFECC2",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  tagSmallText: {
+    color: "#A47E00",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+
+  bedText: { color: "#3D6AE8", marginRight: 12, fontWeight: "600" },
+
+  amount: { fontSize: 16, fontWeight: "700" },
+
+  dateSmall: { fontSize: 12, color: "#777", marginTop: 4 },
+});

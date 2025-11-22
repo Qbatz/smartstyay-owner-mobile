@@ -48,7 +48,9 @@ import MoreDesign from './src/Component/MorePages/MoreDesign';
 import Assets from './src/Component/MorePages/Assets/Assets';
 import Banking from './src/Component/MorePages/Banking/BankingList';
 import Electricity from './src/Component/MorePages/Electricity/ElectricityList';
-import RoomDetails from './src/Component/MorePages/Electricity/RoomDetails'
+import RoomDetails from './src/Component/MorePages/Electricity/RoomDetails';
+import CustomerReading from './src/Component/MorePages/Electricity/CustomerReadingDetails';
+import TenantsList from './src/Component/MorePages/Electricity/TenantsList';
 
 
 function App() {
@@ -100,6 +102,8 @@ function AppContent() {
               <Navigation.Screen name="AddTransaction" component={AddTransaction} />
                <Navigation.Screen name="Electricity" component={Electricity} />
                <Navigation.Screen name="RoomDetails" component={RoomDetails} />
+                 <Navigation.Screen name="TenantsList" component={TenantsList} />
+                <Navigation.Screen name="CustomerReading" component={CustomerReading} />
 
 
         </Navigation.Navigator>
