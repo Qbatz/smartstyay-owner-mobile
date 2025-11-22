@@ -48,9 +48,13 @@ import MoreDesign from './src/Component/MorePages/MoreDesign';
 import Assets from './src/Component/MorePages/Assets/Assets';
 import Banking from './src/Component/MorePages/Banking/BankingList';
 import Electricity from './src/Component/MorePages/Electricity/ElectricityList';
-import RoomDetails from './src/Component/MorePages/Electricity/RoomDetails'
 import Expenses from './src/Component/MorePages/Expenses/Expenses'
 import AddExpenses from './src/Component/MorePages/Expenses/AddExpenses'
+import RoomDetails from './src/Component/MorePages/Electricity/RoomDetails';
+import CustomerReading from './src/Component/MorePages/Electricity/CustomerReadingDetails';
+import TenantsList from './src/Component/MorePages/Electricity/TenantsList';
+
+
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -103,6 +107,11 @@ function AppContent() {
                <Navigation.Screen name="RoomDetails" component={RoomDetails} />
                <Navigation.Screen name="Expenses" component={Expenses} />
                 <Navigation.Screen name="AddExpenses" component={AddExpenses} />
+                 <Navigation.Screen name="TenantsList" component={TenantsList} />
+                <Navigation.Screen name="CustomerReading" component={CustomerReading} />
+
+
+
         </Navigation.Navigator>
       </NavigationContainer>
 

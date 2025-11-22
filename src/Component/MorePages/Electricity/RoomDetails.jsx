@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect,useRef} from "react";
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Animated,
+    PanResponder,
+    TextInput
 } from "react-native";
 
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
@@ -33,7 +36,52 @@ export default function RoomDetails({ navigation }) {
     { name: "Rajesh", bed: "02", units: "105 Units", price: "1,050", date: "01 – 30 Aug" },
   ];
 
+
+  // ⭐ Bottom Sheet State
+const [showAddSheet, setShowAddSheet] = useState(false);
+
+// ⭐ Animated value for swipe sheet
+const translateY = useRef(new Animated.Value(500)).current;
+
+// ⭐ Animate open
+const openSheet = () => {
+  setShowAddSheet(true);
+  Animated.timing(translateY, {
+    toValue: 0,
+    duration: 200,
+    useNativeDriver: true,
+  }).start();
+};
+
+// ⭐ Animate close
+const closeSheet = () => {
+  Animated.timing(translateY, {
+    toValue: 500,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => setShowAddSheet(false));
+};
+
+// ⭐ PanResponder (Swipe down)
+const panResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) translateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        closeSheet();
+      } else {
+        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    }
+  })
+).current;
+
+
   return (
+    <>
     <View style={styles.container}>
 
       {/* Header */}
@@ -56,13 +104,13 @@ export default function RoomDetails({ navigation }) {
             <Text style={styles.floorText}>Ground Floor</Text>
           </View>
 
-        <TouchableOpacity style={styles.addBtn}>
+      <TouchableOpacity style={styles.addBtn} onPress={openSheet}>
   <View style={{ flexDirection: "row", alignItems: "center" }}>
     <Image source={Add} style={styles.AddPeple} />
     <Text style={styles.addText}>Add</Text>
-      
   </View>
 </TouchableOpacity>
+
  <Image source={Dots} style={{width:25,height:25}} />
 
         </View>
@@ -196,6 +244,70 @@ export default function RoomDetails({ navigation }) {
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
     </View>
+    {showAddSheet && (
+  <View style={styles.sheetOverlay}>
+    
+    {/* Outside Tap Close */}
+    <TouchableOpacity style={styles.overlayTouchable} onPress={closeSheet} />
+
+    {/* Bottom Sheet */}
+    <Animated.View
+      style={[styles.sheetContainer, { transform: [{ translateY }] }]}
+      {...panResponder.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <Text style={styles.sheetTitle}>Add Room Reading</Text>
+
+      {/* ROOM CARD */}
+      <View style={styles.sheetRoomRow}>
+        <Image source={RoomIcon} style={styles.sheetRoomIcon} />
+        <View>
+          <Text style={styles.sheetRoomName}>Room 001</Text>
+          <Text style={styles.sheetFloor}>Ground Floor</Text>
+        </View>
+
+        <View style={{ marginLeft: "auto" }}>
+          <Text style={styles.sheetDateLabel}>Date</Text>
+          <Text style={styles.sheetDateValue}>15/09/2025</Text>
+        </View>
+      </View>
+
+      {/* Current Reading */}
+    {/* Current Reading Label Row */}
+<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+  <Text style={styles.sheetLabel}>Current Reading</Text>
+
+  <TouchableOpacity>
+    <Text style={styles.lastReading}>Last Reading : 400.27</Text>
+  </TouchableOpacity>
+</View>
+
+{/* Input */}
+<TextInput
+  placeholder="0"
+  style={styles.sheetInput}
+  keyboardType="numeric"
+/>
+
+
+
+      {/* Buttons */}
+      <View style={styles.sheetBtnRow}>
+        <TouchableOpacity style={styles.sheetCancel} onPress={closeSheet}>
+          <Text style={styles.sheetCancelTxt}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.sheetAdd}>
+          <Text style={styles.sheetAddTxt}>Add</Text>
+        </TouchableOpacity>
+      </View>
+
+    </Animated.View>
+  </View>
+)}
+
+    </>
   );
 }
 
@@ -363,6 +475,133 @@ calendarIcon: {
   height: 16,
   marginRight: 6,
   tintColor: "#1E45E1",
+},
+
+sheetOverlay: {
+  position: "absolute",
+  top: 0, left: 0, right: 0, bottom: 10,
+  backgroundColor: "rgba(0,0,0,0.3)",
+  justifyContent: "flex-end",
+},
+
+overlayTouchable: {
+  ...StyleSheet.absoluteFillObject,
+},
+
+sheetContainer: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+ paddingBottom: 20,
+},
+
+sheetHandle: {
+  width: 50,
+  height: 5,
+  backgroundColor: "#ccc",
+  borderRadius: 3,
+  alignSelf: "center",
+  marginBottom: 15,
+},
+
+sheetTitle: {
+  fontSize: 20,
+  fontWeight: "700",
+  marginBottom: 20,
+  color: "#000",
+},
+
+sheetRoomRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 25,
+},
+
+sheetRoomIcon: { width: 40, height: 40, marginRight: 12 },
+
+sheetRoomName: { fontSize: 16, fontWeight: "700" },
+sheetFloor: { color: "#777", marginTop: 3 },
+
+sheetDateLabel: { color: "#555", fontSize: 12 },
+sheetDateValue: { fontSize: 14, fontWeight: "700", color: "#000" },
+
+sheetLabel: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#000",
+  marginBottom: 8,
+},
+
+sheetReadingRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 30,
+},
+
+sheetInput: {
+  borderWidth: 1,
+  borderColor: "#DADADA",
+  borderRadius: 10,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  fontSize: 16,
+  color: "#000",
+  marginTop: 6,
+  backgroundColor: "#fff",
+},
+
+lastReading: { color: "#1E45E1", fontWeight: "600" },
+
+sheetBtnRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop:20
+},
+
+sheetCancel: {
+  width: "48%",
+  paddingVertical: 12,
+  borderWidth: 1,
+  borderRadius: 10,
+  borderColor: "#ccc",
+  alignItems: "center",
+},
+
+sheetAdd: {
+  width: "48%",
+  backgroundColor: "#1E45E1",
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: "center",
+},
+
+sheetCancelTxt: { color: "#000", fontSize: 16, fontWeight: "600" },
+sheetAddTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },
+readingRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "flex-start",   // ⭐ VERY IMPORTANT — aligns last reading to top
+  marginTop: 8,
+},
+
+readingInput: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: "#D8D8D8",
+  borderRadius: 10,
+  padding: 12,
+  fontSize: 16,
+  color: "#000",
+  marginRight: 10,             // space between input & last reading
+},
+
+lastReadingText: {
+  fontSize: 14,
+  color: "#1E45E1",
+  fontWeight: "600",
+  marginTop: 4,                // aligns exactly like Figma
 },
 
 

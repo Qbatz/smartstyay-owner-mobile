@@ -1,10 +1,16 @@
 // TenantsList.js
 import React from "react";
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView,TouchableOpacity} from "react-native";
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
+import { useNavigation } from "@react-navigation/native";
+
+
 
 export default function TenantsList() {
+
+  const navigation = useNavigation()
+
   const tenants = [
     { name: "Arun Kumar R", floor: "Ground Floor", room: "003", bed: "03", amount: "330", month: "August" },
     { name: "Alex", floor: "First Floor", room: "103", bed: "01", amount: "330", month: "August" },
@@ -13,15 +19,23 @@ export default function TenantsList() {
     { name: "David", floor: "Ground Floor", room: "002", bed: "02", amount: "420", month: "August" },
   ];
 
+  const handleCustomerReading = (item) => {
+     navigation.navigate("CustomerReading", { tenant: item })
+  }
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+   <ScrollView showsVerticalScrollIndicator={false}>
       {tenants.map((item, index) => (
-        <View key={index} style={styles.row}>
-          
+        
+        <TouchableOpacity
+          key={index}
+          style={styles.row}
+          onPress={()=> handleCustomerReading(item)}
+        >
           {/* Profile Image */}
           <Image source={ProfileIcon} style={styles.profileImg} />
 
-          {/* Middle Content */}
+          {/* Middle */}
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{item.name}</Text>
 
@@ -42,13 +56,14 @@ export default function TenantsList() {
             </View>
           </View>
 
-          {/* Right Price */}
+          {/* Right */}
           <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.amount}>₹ {item.amount}</Text>
             <Text style={styles.month}>{item.month}</Text>
           </View>
 
-        </View>
+        </TouchableOpacity>
+
       ))}
     </ScrollView>
   );
