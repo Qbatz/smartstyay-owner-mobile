@@ -47,6 +47,8 @@ import ComplaintDetails from "./src/Component/Complaints/ViewCompliance";
 import MoreDesign from './src/Component/MorePages/MoreDesign';
 import Assets from './src/Component/MorePages/Assets/Assets';
 import Banking from './src/Component/MorePages/Banking/BankingList';
+import Electricity from './src/Component/MorePages/Electricity/ElectricityList';
+import RoomDetails from './src/Component/MorePages/Electricity/RoomDetails'
 
 
 function App() {
@@ -96,6 +98,9 @@ function AppContent() {
                     <Navigation.Screen name="Assets" component={Assets} />
               <Navigation.Screen name="Banking" component={Banking} />
               <Navigation.Screen name="AddTransaction" component={AddTransaction} />
+               <Navigation.Screen name="Electricity" component={Electricity} />
+               <Navigation.Screen name="RoomDetails" component={RoomDetails} />
+
 
         </Navigation.Navigator>
       </NavigationContainer>

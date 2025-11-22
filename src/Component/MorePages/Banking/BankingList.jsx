@@ -21,6 +21,7 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import AddBankingDesign from "./AddBanking"
 import AddTransaction from "./AddTransaction"
+import SelfTransferModal from "./SelfTransferScreen";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -33,12 +34,16 @@ import DeleteIcon from "../../../Assets/Images/trash.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import SelfTransIcon from "../../../Assets/Images/arrow-transfer.png";
 import ThreeDotsIcon from "../../../Assets/Images/3dots.png";
+
 import MoneyPlus from "../../../Assets/Images/money_plus.png";
 import MoneyMinus from "../../../Assets/Images/money-minus.png";
 import ArrowUp from "../../../Assets/Images/arrow-up.png";
 import ArrowDown from "../../../Assets/Images/arrow-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+
+
+
 
 
 export default function BankingScreen() {
@@ -48,6 +53,7 @@ export default function BankingScreen() {
   const [showMenu, setShowMenu] = useState(false);
 
    const [addbankingshow, setAddBankingShow] = useState(false)
+
    const [editMode, setEditMode] = useState({ mode: "add", tab: "Bank" });
    const [selectedItem, setSelectedItem] = useState(null);
    const [deleteshow , setDeleteShow] = useState(false)
@@ -55,6 +61,9 @@ export default function BankingScreen() {
     const [showtransaction, setShowTransaction] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
      const [showFilter, setShowFilter] = useState(false);
+
+   const [selfTransferScreen,setSelfTransferScreen] = useState(false)
+
 
   const bankList = [
     {
@@ -510,6 +519,7 @@ const handleEditBanking = (item) => {
        )
 
        }
+
 {showtransaction && (
   <View style={styles.sheetOverlay}>
     <TouchableWithoutFeedback onPress={() => setShowTransaction(false)}>
@@ -711,6 +721,7 @@ const handleEditBanking = (item) => {
    
 
 
+
        {showMenu && (
          <TouchableOpacity
            activeOpacity={1}
@@ -724,7 +735,11 @@ const handleEditBanking = (item) => {
              ]}
            >
        
-            <TouchableOpacity style={styles.popupRow} onPress={() => { setShowMenu(false)}} >
+            <TouchableOpacity style={styles.popupRow} onPress={() => {
+  setShowMenu(false);
+  setSelfTransferScreen(true);   // OPEN SELF TRANSFER SCREEN
+}}
+ >
                <Image
                  source={SelfTransIcon}
                  style={styles.popupIcon}
@@ -759,6 +774,7 @@ const handleEditBanking = (item) => {
            </View>
          </TouchableOpacity>
        )}
+
 
        {deleteshow && (
         <>
@@ -797,6 +813,14 @@ const handleEditBanking = (item) => {
           </Modal>
         </>
        )}
+
+             {selfTransferScreen && (
+  <SelfTransferModal
+    visible={selfTransferScreen}
+    onClose={() => setSelfTransferScreen(false)}
+  />
+)}
+
     
     </>
   );
