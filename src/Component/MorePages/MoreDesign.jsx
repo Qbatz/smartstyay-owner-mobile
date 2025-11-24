@@ -31,7 +31,7 @@ export default function MoreDesign({ navigation }) {
     { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
     { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
     { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
-    { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "Vendor" },
+    { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
   ];
 
   return (
