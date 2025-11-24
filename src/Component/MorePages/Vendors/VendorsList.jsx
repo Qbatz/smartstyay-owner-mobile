@@ -21,7 +21,7 @@ import AddVendorSheet from "./AddVendor"
 export default function VendorsList({ navigation }) {
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
-
+  
   const vendors = [
     {
       id: "1",
@@ -96,7 +96,7 @@ export default function VendorsList({ navigation }) {
         source={require("../../../Assets/Images/editIcon.png")}
         style={styles.menuIcon}
       />
-      <Text style={styles.menuText}>Edit</Text>
+      <Text style={styles.menuText}>Edit </Text>
     </TouchableOpacity>
 
     <TouchableOpacity style={styles.menuRow}>
