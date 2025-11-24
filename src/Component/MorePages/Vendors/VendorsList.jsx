@@ -21,7 +21,7 @@ import AddVendorSheet from "./AddVendor"
 export default function VendorsList({ navigation }) {
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
-
+  
   const vendors = [
     {
       id: "1",
