@@ -12,6 +12,10 @@ import SmartstayIcon from "../../Assets/Images/Sm_Icon.png"
 import EyeIcon from "../../Assets/Images/EyeIcon.png";
 import WaveImage from "../../Assets/Images/login_Rectangle.png";
 import { useNavigation } from "@react-navigation/native";
+import {setLogin } from "../../Action/LoginAction"
+import { storeData } from "../../Utils/Storage";
+import {ACCESS_TOKEN} from '../../Utils/Constant'
+
 
 
 export default function LoginDesign() {
@@ -20,6 +24,24 @@ export default function LoginDesign() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+
+  const loginClick=()=>{
+        const data= {
+          emailId: email,
+          password: password,
+        }
+
+        setLogin(data).then(r=>{
+          console.log(r)
+
+          if(r.status==200){
+              storeData(ACCESS_TOKEN,r.data)
+              navigation.navigate('VerifyAccountScreen')
+          }
+        })
+
+  }
 
   return (
     <View style={styles.container}>
@@ -77,7 +99,7 @@ export default function LoginDesign() {
             <Text style={styles.forgot}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton}  onPress={() => navigation.replace("VerifyAccountScreen")}>
+          <TouchableOpacity style={styles.loginButton}  onPress={loginClick}>
             <Text style={styles.loginText}>Log in</Text>
           </TouchableOpacity>
 

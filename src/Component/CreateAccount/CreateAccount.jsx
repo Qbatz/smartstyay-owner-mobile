@@ -16,11 +16,45 @@ import EyeIcon from "../../Assets/Images/EyeIcon.png";
 import Eye from "../../Assets/Images/Eye.png";
 import WaveImage from "../../Assets/Images/CreateAccount_Rectangle.png";
 import { useNavigation } from "@react-navigation/native";
+import { postNewAccount } from "../../Action/LoginAction";
 
 export default function CreateAccount() {
    const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [firstName,setFirstName]=useState()
+  const [lastName,setLastName]=useState()
+  const [emailid,setEmailId]=useState()
+  const [mobileNo,setMobileNo]=useState()
+  const [password,setPassword]=useState()
+  const[confirmPassword,setConfirmPassword]=useState()
+
+
+
+  const createAccountClick=()=>{
+
+    if(password !=confirmPassword){
+      alert("incorrect Confirm Password")
+      return;
+    }
+
+    const data= {
+          firstName: firstName,
+          lastName : lastName,
+          mailId : emailid,
+          password : password,
+          confirmPassword: confirmPassword,
+          mobile: mobileNo,
+  }
+
+      postNewAccount(data).then(r=>{
+        console.log(r)
+      })
+  }
+
+  
+
+
 
   return (
     <View style={styles.container}>
@@ -50,19 +84,22 @@ export default function CreateAccount() {
 
                 <Text style={styles.label}>First name *</Text>
                 <View style={styles.inputBox}>
-                  <TextInput placeholder="Enter First Name" style={styles.input} />
+                  <TextInput placeholder="Enter First Name" style={styles.input}
+                  value={firstName} onChangeText={setFirstName} />
                 </View>
 
                 <Text style={styles.label}>Last Name *</Text>
                 <View style={styles.inputBox}>
-                  <TextInput placeholder="Enter Last Name" style={styles.input} />
+                  <TextInput placeholder="Enter Last Name" style={styles.input} 
+                  value={lastName} onChangeText={setLastName}/>
                 </View>
 
                 <Text style={styles.label}>Email *</Text>
                 <View style={styles.inputBox}>
                   <TextInput
                     placeholder="Ex : arunkumar77@mail.com"
-                    style={styles.input}
+                    style={styles.input} value={emailid} onChangeText={setEmailId}
+
                   />
                 </View>
 
@@ -72,6 +109,7 @@ export default function CreateAccount() {
                     placeholder="+91   98765 43210"
                     style={styles.input}
                     keyboardType="numeric"
+                    value={mobileNo} onChangeText={setMobileNo}
                   />
                 </View>
 
@@ -81,6 +119,7 @@ export default function CreateAccount() {
                     placeholder="Enter Password"
                     secureTextEntry={!showPassword}
                     style={styles.input}
+                    value={password} onChangeText={setPassword}
                   />
                   <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                     <Image source={showPassword ? Eye : EyeIcon}  style={styles.eyeIcon} />
@@ -94,6 +133,7 @@ export default function CreateAccount() {
                     placeholder="Confirm Password"
                     secureTextEntry={!showConfirmPassword}
                     style={styles.input}
+                    value={confirmPassword} onChangeText={setConfirmPassword}
                   />
                   <TouchableOpacity
                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -105,7 +145,7 @@ export default function CreateAccount() {
               </ScrollView>
             </View>
 
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity onPress={createAccountClick} style={styles.button}>
               <Text style={styles.buttonText}>Create Account</Text>
             </TouchableOpacity>
 
