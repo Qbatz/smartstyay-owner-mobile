@@ -13,7 +13,7 @@ import {
   Dimensions
 } from "react-native";
 
-import ProfilePlaceholder from "../../../Assets/Images/Avatar.png";
+import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import Calendar from "../../../Assets/Images/calendar.png";
 import UploadIcon from "../../../Assets/Images/EditPin.png"; // your upload icon
@@ -23,7 +23,7 @@ export default function AddVendorSheet({ onClose }) {
 
   const [image, setImage] = useState(null);
 
-  // Swipe-down panResponder
+ 
   
  const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -54,9 +54,9 @@ const panResponder = useRef(
 
 
 
-  // Image Picker (expo-image-picker or react-native-image-picker)
+
   const pickImage = async () => {
-    // replace with your own image upload logic
+ 
     alert("Upload Image Logic Here");
   };
 
@@ -93,7 +93,7 @@ const panResponder = useRef(
                 source={image ? { uri: image } : ProfilePlaceholder}
                 style={styles.profileImg}
               />
-              <Image source={UploadIcon} style={styles.uploadIcon} />
+             
             </TouchableOpacity>
 
             <View style={{ marginLeft: 12 }}>
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
 
   profileRow: { flexDirection: "row", alignItems: "center" },
 
-  profileImg: { width: 60, height: 60, borderRadius: 30 },
+  profileImg: { width: 60, height: 60, borderRadius: 30 ,backgroundColor:"#737373"},
   uploadIcon: {
     width: 22,
     height: 22,
