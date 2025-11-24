@@ -20,6 +20,8 @@ import AddVendorSheet from "./AddVendor"
 
 export default function VendorsList({ navigation }) {
   const [showAddVendor, setShowAddVendor] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
+
   const vendors = [
     {
       id: "1",
@@ -56,9 +58,15 @@ export default function VendorsList({ navigation }) {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.dotsTouchable} onPress={() => {/* open menu */ }}>
-            <Image source={DotsIcon} style={styles.dotsIcon} />
-          </TouchableOpacity>
+         <TouchableOpacity
+  style={styles.dotsTouchable}
+  onPress={() =>
+    setActiveMenu(activeMenu === item.id ? null : item.id)
+  }
+>
+  <Image source={DotsIcon} style={styles.dotsIcon} />
+</TouchableOpacity>
+
         </View>
 
         <View style={styles.infoRow}>
@@ -81,6 +89,25 @@ export default function VendorsList({ navigation }) {
           </View>
         </View>
       </View>
+           {activeMenu === item.id && (
+  <View style={styles.menuBox}>
+    <TouchableOpacity style={styles.menuRow}>
+      <Image
+        source={require("../../../Assets/Images/editIcon.png")}
+        style={styles.menuIcon}
+      />
+      <Text style={styles.menuText}>Edit</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.menuRow}>
+      <Image
+        source={require("../../../Assets/Images/trash.png")}
+        style={styles.menuIcon}
+      />
+      <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+    </TouchableOpacity>
+  </View>
+)}
 
     </>
   );
@@ -125,6 +152,9 @@ export default function VendorsList({ navigation }) {
           <Image source={AddIcon} style={styles.addIcon} />
         </TouchableOpacity>
       </View>
+
+ 
+
       {showAddVendor && (
         <AddVendorSheet onClose={() => setShowAddVendor(false)} />
       )}
@@ -236,4 +266,40 @@ const styles = StyleSheet.create({
 
   },
   addIcon: { width: 60, height: 60, },
+  menuBox: {
+  position: "absolute",
+  top: 40,
+  right: 10,
+  backgroundColor: "#fff",
+  padding: 12,
+  width: 150,
+  borderRadius: 10,
+  elevation: 8,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 3 },
+  borderWidth: 1,
+  borderColor: "#F0F0F0",
+  zIndex: 999,
+},
+
+menuRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 8,
+},
+
+menuIcon: {
+  width: 18,
+  height: 18,
+  marginRight: 10,
+},
+
+menuText: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#000",
+},
+
 });

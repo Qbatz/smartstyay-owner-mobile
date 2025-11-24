@@ -16,12 +16,40 @@ import {
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import Calendar from "../../../Assets/Images/calendar.png";
-import UploadIcon from "../../../Assets/Images/EditPin.png"; // your upload icon
+import UploadIcon from "../../../Assets/Images/EditPin.png";
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+
 
 export default function AddVendorSheet({ onClose }) {
   const translateY = useRef(new Animated.Value(0)).current;
 
   const [image, setImage] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
+  
+      
+  
+  
+ const pickImage = () => {
+  let options = {
+    mediaType: 'photo',
+    maxWidth: 500,
+    maxHeight: 500,
+    quality: 0.7,
+  };
+
+  launchImageLibrary(options, (response) => {
+    if (response.didCancel) {
+      console.log("Cancelled");
+    } else if (response.errorMessage) {
+      console.log("Error:", response.errorMessage);
+    } else {
+      setSelectedImage(response.assets[0]);   // store full object
+    }
+  });
+};
+
+
+  
 
  
   
@@ -55,10 +83,7 @@ const panResponder = useRef(
 
 
 
-  const pickImage = async () => {
- 
-    alert("Upload Image Logic Here");
-  };
+  
 
   return (
     <View style={styles.overlay}>
@@ -86,23 +111,58 @@ const panResponder = useRef(
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Add Vendor</Text>
 
-          {/* Profile Upload */}
-          <View style={styles.profileRow}>
-            <TouchableOpacity onPress={pickImage}>
-              <Image
-                source={image ? { uri: image } : ProfilePlaceholder}
-                style={styles.profileImg}
-              />
-             
-            </TouchableOpacity>
+       
+          {/* <View style={styles.profileRow}>
+  <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
+    <View style={styles.profileCircle}>
+  <Image
+  source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
+  style={styles.profileIcon}
 
-            <View style={{ marginLeft: 12 }}>
-              <Text style={styles.profileText}>Profile Photo</Text>
-              <Text style={styles.subText}>
-                Add Profile Image of Vendor / Business.{"\n"}Max size 2MB
-              </Text>
-            </View>
-          </View>
+/>
+
+
+
+
+     
+    </View>
+  </TouchableOpacity>
+
+  <View style={{ marginLeft: 14 }}>
+    <Text style={styles.profileTitle}>Profile Photo</Text>
+    <Text style={styles.profileSub}>Add Profile Image of Vendor / Business.{"\n"}Max size 2MB</Text>
+  </View>
+</View> */}
+<View style={styles.profileRow}>
+  <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
+    <View style={styles.profileCircle}>
+
+      {/* Profile Image */}
+      <Image
+        source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
+        style={styles.profileImg}
+      />
+
+      {/* Edit Icon Over Image */}
+      <View style={styles.editBadge}>
+        <Image
+          source={require("../../../Assets/Images/edit.png")}
+          style={styles.editIcon}
+        />
+      </View>
+
+    </View>
+  </TouchableOpacity>
+
+  <View style={{ marginLeft: 14 }}>
+    <Text style={styles.profileTitle}>Profile Photo</Text>
+    <Text style={styles.profileSub}>
+      Add Profile Image of Vendor / Business.{"\n"}Max size 2MB
+    </Text>
+  </View>
+</View>
+
+
 
           {/* Form Fields */}
           <Text style={styles.label}>First Name *</Text>
@@ -185,9 +245,81 @@ const styles = StyleSheet.create({
 
   title: { fontSize: 20, fontWeight: "700", marginBottom: 20 },
 
-  profileRow: { flexDirection: "row", alignItems: "center" },
+ profileRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 6,
+},
 
-  profileImg: { width: 60, height: 60, borderRadius: 30 ,backgroundColor:"#737373"},
+profileContainer: {
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+ 
+
+// profileCircle: {
+//   width: 70,
+//   height: 70,
+//   borderRadius: 35,
+//   backgroundColor: "#E6E6E6",
+//   justifyContent: "center",
+//   alignItems: "center",
+//   position: "relative",
+// },
+   profileCircle: {
+        width: 75,
+        height: 75,
+        borderRadius: 75 / 2,
+        position: "relative",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 20,
+    },
+
+
+profileIcon: {
+  width: 70,
+  height: 70,
+  borderRadius: 35,
+  resizeMode: "cover",
+},
+
+plusBadge: {
+  position: "absolute",
+  bottom: 2,
+  right: 2,
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+ 
+  borderWidth: 1,
+  borderColor: "#D6D6D6",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+plusText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#000",
+},
+
+profileTitle: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#000",
+},
+
+profileSub: {
+  fontSize: 12,
+  color: "#777",
+  marginTop: 4,
+  lineHeight: 16,
+},
+
+
+  profileImg: { width: 60, height: 60, borderRadius: 30 ,backgroundColor:"#737373",},
   uploadIcon: {
     width: 22,
     height: 22,
@@ -236,4 +368,41 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   addBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  profileCircle: {
+  width: 70,
+  height: 70,
+  borderRadius: 35,
+  backgroundColor: "#E6E6E6",
+  justifyContent: "center",
+  alignItems: "center",
+  position: "relative",
+  overflow: "hidden",
+},
+
+profileImg: {
+  width: "100%",
+  height: "100%",
+  borderRadius: 35,
+},
+
+editBadge: {
+  position: "absolute",
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  justifyContent: "center",
+  alignItems: "center",
+  top: "50%",
+  left: "50%",
+  transform: [{ translateX: -16 }, { translateY: -16 }],
+  elevation: 0
+},
+
+
+editIcon: {
+  width: 20,
+  height: 20,
+ 
+},
+
 });
