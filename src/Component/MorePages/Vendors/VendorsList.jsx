@@ -8,6 +8,7 @@ import {
   TextInput,
   FlatList,
   Platform,
+  Modal
 } from "react-native";
 
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
@@ -22,13 +23,21 @@ export default function VendorsList({ navigation }) {
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [editVendor, setEditVendor] = useState(null);
+  const [deletePopup, setDeletePopup] = useState(false)
   const handleEdit = (vendor) => {
-  setEditVendor(vendor);   // store selected vendor
-  setShowAddVendor(true);  // open sheet
-};
+    setEditVendor(vendor);
+    setShowAddVendor(true);
+    setActiveMenu(null)
+  };
+  const handleDelete = () => {
+    setDeletePopup(true)
+    setActiveMenu(null)
+  }
 
 
-  
+
+
+
   const vendors = [
     {
       id: "1",
@@ -65,14 +74,14 @@ export default function VendorsList({ navigation }) {
             </View>
           </View>
 
-         <TouchableOpacity
-  style={styles.dotsTouchable}
-  onPress={() =>
-    setActiveMenu(activeMenu === item.id ? null : item.id)
-  }
->
-  <Image source={DotsIcon} style={styles.dotsIcon} />
-</TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dotsTouchable}
+            onPress={() =>
+              setActiveMenu(activeMenu === item.id ? null : item.id)
+            }
+          >
+            <Image source={DotsIcon} style={styles.dotsIcon} />
+          </TouchableOpacity>
 
         </View>
 
@@ -96,25 +105,68 @@ export default function VendorsList({ navigation }) {
           </View>
         </View>
       </View>
-           {activeMenu === item.id && (
-  <View style={styles.menuBox}>
-    <TouchableOpacity style={styles.menuRow}  onPress={() => handleEdit(item)}>
-      <Image
-        source={require("../../../Assets/Images/editIcon.png")}
-        style={styles.menuIcon}
-      />
-      <Text style={styles.menuText}>Edit </Text>
-    </TouchableOpacity>
+      {activeMenu === item.id && (
+        <View style={styles.menuBox}>
+          <TouchableOpacity style={styles.menuRow} onPress={() => handleEdit(item)}>
+            <Image
+              source={require("../../../Assets/Images/editIcon.png")}
+              style={styles.menuIcon}
+            />
+            <Text style={styles.menuText}>Edit </Text>
+          </TouchableOpacity>
 
-    <TouchableOpacity style={styles.menuRow}>
-      <Image
-        source={require("../../../Assets/Images/trash.png")}
-        style={styles.menuIcon}
-      />
-      <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-    </TouchableOpacity>
-  </View>
-)}
+          <TouchableOpacity style={styles.menuRow} onPress={handleDelete}>
+            <Image
+              source={require("../../../Assets/Images/trash.png")}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+
+      <Modal
+        transparent
+        animationType="fade"
+        visible={deletePopup}
+        onRequestClose={() => setDeletePopup(false)}
+      >
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteBox}>
+
+            <Text style={styles.deleteTitle}>Delete Vendor?</Text>
+            <Text style={styles.deleteSub}>
+              Are you sure you want to delete this Vendor?
+            </Text>
+
+            <View style={styles.deleteBtnRow}>
+
+
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setDeletePopup(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              {/* Delete Button */}
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={() => {
+                  console.log("DELETE CONFIRMED");
+                  setDeletePopup(false);
+                }}
+              >
+                <Text style={styles.deleteBtnText}>Delete</Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
 
     </>
   );
@@ -160,20 +212,16 @@ export default function VendorsList({ navigation }) {
         </TouchableOpacity>
       </View>
 
- 
 
-      {/* {showAddVendor && (
-        <AddVendorSheet onClose={() => setShowAddVendor(false)} />
-      )} */}
       {showAddVendor && (
-  <AddVendorSheet
-    onClose={() => {
-      setShowAddVendor(false);
-      setEditVendor(null);
-    }}
-    vendorData={editVendor} 
-  />
-)}
+        <AddVendorSheet
+          onClose={() => {
+            setShowAddVendor(false);
+            setEditVendor(null);
+          }}
+          vendorData={editVendor}
+        />
+      )}
 
     </>
   );
@@ -284,39 +332,108 @@ const styles = StyleSheet.create({
   },
   addIcon: { width: 60, height: 60, },
   menuBox: {
-  position: "absolute",
-  top: 40,
-  right: 10,
-  backgroundColor: "#fff",
-  padding: 12,
-  width: 150,
-  borderRadius: 10,
-  elevation: 8,
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowRadius: 8,
-  shadowOffset: { width: 0, height: 3 },
-  borderWidth: 1,
-  borderColor: "#F0F0F0",
-  zIndex: 999,
-},
+    position: "absolute",
+    top: 40,
+    right: 10,
+    backgroundColor: "#fff",
+    padding: 12,
+    width: 150,
+    borderRadius: 10,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+    zIndex: 999,
+  },
 
-menuRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 8,
-},
+  menuRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
 
-menuIcon: {
-  width: 18,
-  height: 18,
-  marginRight: 10,
-},
+  menuIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
+  },
 
-menuText: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#000",
-},
+  menuText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
+  },
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBox: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+  },
+
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111',
+    textAlign: 'center',
+  },
+
+  deleteSub: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  deleteBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 22,
+  },
+
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginRight: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  cancelText: {
+    color: '#444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
 
 });

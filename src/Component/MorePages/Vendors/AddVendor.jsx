@@ -12,6 +12,7 @@ import {
   PanResponder,
   Dimensions
 } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
 
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
@@ -25,6 +26,7 @@ export default function AddVendorSheet({onClose, vendorData }) {
 
   const [image, setImage] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
       
   
@@ -49,8 +51,38 @@ export default function AddVendorSheet({onClose, vendorData }) {
 };
 
 
-  
-
+   const [open, setOpen] = useState(false);
+   const [value, setValue] = useState(null);
+const [items, setItems] = useState([
+  { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+  { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+  { label: "Assam", value: "Assam" },
+  { label: "Bihar", value: "Bihar" },
+  { label: "Chhattisgarh", value: "Chhattisgarh" },
+  { label: "Goa", value: "Goa" },
+  { label: "Gujarat", value: "Gujarat" },
+  { label: "Haryana", value: "Haryana" },
+  { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+  { label: "Jharkhand", value: "Jharkhand" },
+  { label: "Karnataka", value: "Karnataka" },
+  { label: "Kerala", value: "Kerala" },
+  { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+  { label: "Maharashtra", value: "Maharashtra" },
+  { label: "Manipur", value: "Manipur" },
+  { label: "Meghalaya", value: "Meghalaya" },
+  { label: "Mizoram", value: "Mizoram" },
+  { label: "Nagaland", value: "Nagaland" },
+  { label: "Odisha", value: "Odisha" },
+  { label: "Punjab", value: "Punjab" },
+  { label: "Rajasthan", value: "Rajasthan" },
+  { label: "Sikkim", value: "Sikkim" },
+  { label: "Tamil Nadu", value: "Tamil Nadu" },
+  { label: "Telangana", value: "Telangana" },
+  { label: "Tripura", value: "Tripura" },
+  { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+  { label: "Uttarakhand", value: "Uttarakhand" },
+  { label: "West Bengal", value: "West Bengal" },
+]);
  
   
  const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -106,7 +138,12 @@ const panResponder = useRef(
 >
         <View style={styles.handle} />
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+       <ScrollView
+  showsVerticalScrollIndicator={false}
+  nestedScrollEnabled={true}
+  scrollEnabled={!isDropdownOpen}   // ⭐ important
+>
+
           <Text style={styles.title}>
            {vendorData ? "Update Vendor" : "Add Vendor"}
             </Text>
@@ -172,11 +209,50 @@ const panResponder = useRef(
           <Text style={styles.label}>Pincode *</Text>
           <TextInput style={styles.input} placeholder="Enter Pincode" keyboardType="numeric" />
 
-          <Text style={styles.label}>State *</Text>
+          {/* <Text style={styles.label}>State *</Text>
           <TouchableOpacity style={styles.selectBox}>
             <Text style={styles.selectText}>Select State</Text>
             <Image source={DownArrow} style={styles.arrow} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+<View style={{ zIndex: 2000, elevation: 2000 }}>
+  <Text style={styles.label}>State *</Text>
+
+  <DropDownPicker
+    open={open}
+    value={value}
+    items={items}
+    setOpen={setOpen}
+    setValue={setValue}
+    setItems={setItems}
+    
+    placeholder="Select State"
+    listMode="SCROLLVIEW"
+    
+    scrollViewProps={{
+      nestedScrollEnabled: true,
+    }}
+
+    style={{
+      borderColor: "#DDD",
+      height: 48,
+      borderRadius: 12,
+      zIndex: 2000,
+    }}
+
+    dropDownContainerStyle={{
+      borderColor: "#DDD",
+      maxHeight: 250,  
+      elevation: 20,
+      zIndex: 3000,
+      overflow: 'auto',
+      height:250
+    }}
+  />
+</View>
+
+
+
+
 
           <Text style={styles.label}>Country *</Text>
           <TouchableOpacity style={styles.selectBox}>
@@ -206,13 +282,6 @@ const styles = StyleSheet.create({
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-  },
-  sheet: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    maxHeight: "88%",
   },
   handle: {
     width: 80,
@@ -339,6 +408,15 @@ profileSub: {
     marginTop: 20,
     marginBottom: 10,
   },
+  sheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 30,
+  borderTopRightRadius: 30,
+  maxHeight: "88%",
+  overflow: "visible",   // ⭐ Without this dropdown cut ஆகும்
+},
+
 
   cancel: { color: "#777", fontSize: 16 },
   addBtn: {
