@@ -21,6 +21,13 @@ import AddVendorSheet from "./AddVendor"
 export default function VendorsList({ navigation }) {
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [editVendor, setEditVendor] = useState(null);
+  const handleEdit = (vendor) => {
+  setEditVendor(vendor);   // store selected vendor
+  setShowAddVendor(true);  // open sheet
+};
+
+
   
   const vendors = [
     {
@@ -91,7 +98,7 @@ export default function VendorsList({ navigation }) {
       </View>
            {activeMenu === item.id && (
   <View style={styles.menuBox}>
-    <TouchableOpacity style={styles.menuRow}>
+    <TouchableOpacity style={styles.menuRow}  onPress={() => handleEdit(item)}>
       <Image
         source={require("../../../Assets/Images/editIcon.png")}
         style={styles.menuIcon}
@@ -155,9 +162,19 @@ export default function VendorsList({ navigation }) {
 
  
 
-      {showAddVendor && (
+      {/* {showAddVendor && (
         <AddVendorSheet onClose={() => setShowAddVendor(false)} />
-      )}
+      )} */}
+      {showAddVendor && (
+  <AddVendorSheet
+    onClose={() => {
+      setShowAddVendor(false);
+      setEditVendor(null);
+    }}
+    vendorData={editVendor} 
+  />
+)}
+
     </>
   );
 

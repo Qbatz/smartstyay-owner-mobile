@@ -20,7 +20,7 @@ import UploadIcon from "../../../Assets/Images/EditPin.png";
 import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 
 
-export default function AddVendorSheet({ onClose }) {
+export default function AddVendorSheet({onClose, vendorData }) {
   const translateY = useRef(new Animated.Value(0)).current;
 
   const [image, setImage] = useState(null);
@@ -87,7 +87,6 @@ const panResponder = useRef(
 
   return (
     <View style={styles.overlay}>
-      {/* Close by tapping background */}
     <TouchableWithoutFeedback
   onPress={() => {
     Animated.timing(translateY, {
@@ -101,7 +100,6 @@ const panResponder = useRef(
         <View style={{ flex: 1 }} />
       </TouchableWithoutFeedback>
 
-      {/* Bottom Sheet */}
      <Animated.View
   {...panResponder.panHandlers}
   style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -109,35 +107,17 @@ const panResponder = useRef(
         <View style={styles.handle} />
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Add Vendor</Text>
+          <Text style={styles.title}>
+           {vendorData ? "Update Vendor" : "Add Vendor"}
+            </Text>
 
        
-          {/* <View style={styles.profileRow}>
-  <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
-    <View style={styles.profileCircle}>
-  <Image
-  source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
-  style={styles.profileIcon}
-
-/>
-
-
-
-
      
-    </View>
-  </TouchableOpacity>
-
-  <View style={{ marginLeft: 14 }}>
-    <Text style={styles.profileTitle}>Profile Photo</Text>
-    <Text style={styles.profileSub}>Add Profile Image of Vendor / Business.{"\n"}Max size 2MB</Text>
-  </View>
-</View> */}
 <View style={styles.profileRow}>
   <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
     <View style={styles.profileCircle}>
 
-      {/* Profile Image */}
+     
       <Image
         source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
         style={styles.profileImg}
