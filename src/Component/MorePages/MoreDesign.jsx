@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect} from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  BackHandler
 } from "react-native";
 
 import HostelImage from "../../Assets/Images/PgImg.png"
@@ -23,6 +24,17 @@ import RightArrow from "../../Assets/Images/right_direction.png"
 
 
 export default function MoreDesign({ navigation }) {
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigation.navigate("MyTabs");
+        return true; 
+      }
+    );
+  
+    return () => backHandler.remove();
+  }, []);
 
   const menuItems = [
     { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
@@ -43,7 +55,7 @@ export default function MoreDesign({ navigation }) {
           <Text style={styles.headerTitle}>More</Text>
         </View>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.replace("SettingsScreen")}>
           <Image source={SettingsImage} style={styles.settingsIcon} />
         </TouchableOpacity>
       </View>
@@ -76,7 +88,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
     paddingHorizontal: 30,
-    paddingTop: 40,
+    paddingTop:40
+   
   },
 
   header: {
