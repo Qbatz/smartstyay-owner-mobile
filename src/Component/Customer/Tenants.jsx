@@ -158,6 +158,10 @@ const handleShowAddBooking = () => {
 navigation.navigate("AddBooking")
 }
 
+const handleShowCancelNotice = () => {
+navigation.navigate("CancelNotice")
+}
+
 const customerList = [
   {
     id: 1,
@@ -477,6 +481,14 @@ const customerList = [
   />
   <Text style={styles.popupText}>Move to Notice Period</Text>
 </TouchableOpacity>
+
+  <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Cancel Notice Period</Text>
+      </TouchableOpacity>
 
  <TouchableOpacity
   style={styles.popupRow}

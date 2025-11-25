@@ -54,7 +54,7 @@ import RoomDetails from './src/Component/MorePages/Electricity/RoomDetails';
 import CustomerReading from './src/Component/MorePages/Electricity/CustomerReadingDetails';
 import TenantsList from './src/Component/MorePages/Electricity/TenantsList';
 import VendorsList from './src/Component/MorePages/Vendors/VendorsList'
-
+import CancelNotice from './src/Component/Customer/Checkout/CancelNotice'
 
 
 function App() {
@@ -111,7 +111,7 @@ function AppContent() {
                  <Navigation.Screen name="TenantsList" component={TenantsList} />
                 <Navigation.Screen name="CustomerReading" component={CustomerReading} />
                   <Navigation.Screen name="VendorsList" component={VendorsList} />
-
+                <Navigation.Screen name="CancelNotice" component={CancelNotice} />
 
 
         </Navigation.Navigator>
