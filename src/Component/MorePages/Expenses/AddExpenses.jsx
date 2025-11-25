@@ -18,25 +18,37 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
-export default function AddExpenses({ navigation }) {
+export default function AddExpenses({ navigation , route}) {
+
+    const editData = route?.params?.editData || null;
   // DATE
   const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [purchaseDate, setPurchaseDate] = useState(new Date());
+  // const [purchaseDate, setPurchaseDate] = useState(new Date());
 
   // SELECTS (hooks stable)
-  const [category, setCategory] = useState("Kitchen");
-  const [categoryOpen, setCategoryOpen] = useState(false);
+ const [category, setCategory] = useState(editData?.category || "Kitchen");
+const [unitCount, setUnitCount] = useState(editData?.unitCount || "120");
+const [modePayment, setModePayment] = useState(editData?.paymentMode || "Cash");
 
-  const [unitCount, setUnitCount] = useState("120");
+const [perUnit, setPerUnit] = useState(editData?.perUnit || "100");
+const [purchaseAmount, setPurchaseAmount] = useState(editData?.amount || "12000");
+const [description, setDescription] = useState(editData?.description || "");
+
+const [purchaseDate, setPurchaseDate] = useState(
+  editData?.date ? new Date(editData.date) : new Date()
+);
+
+
+  // const [unitCount, setUnitCount] = useState("120");
   const [unitCountOpen, setUnitCountOpen] = useState(false);
 
-  const [modePayment, setModePayment] = useState("Cash");
+  // const [modePayment, setModePayment] = useState("Cash");
   const [modePaymentOpen, setModePaymentOpen] = useState(false);
 
   // INPUTS
-  const [perUnit, setPerUnit] = useState("100");
-  const [purchaseAmount, setPurchaseAmount] = useState("12000");
-  const [description, setDescription] = useState("");
+  // const [perUnit, setPerUnit] = useState("100");
+  // const [purchaseAmount, setPurchaseAmount] = useState("12000");
+  // const [description, setDescription] = useState("");
 
   // OPTIONS
   const categoryOptions = ["Kitchen", "Food", "Veg", "Non Veg"];
@@ -45,7 +57,7 @@ export default function AddExpenses({ navigation }) {
 
   // close all open lists
   const closeAll = () => {
-    setCategoryOpen(false);
+    // setCategoryOpen(false);
     setUnitCountOpen(false);
     setModePaymentOpen(false);
     setOpenDatePicker(false);
@@ -60,7 +72,7 @@ export default function AddExpenses({ navigation }) {
         style={styles.select}
         onPress={() => {
           // close other open ones and toggle this
-          setCategoryOpen(false);
+          // setCategoryOpen(false);
           setUnitCountOpen(false);
           setModePaymentOpen(false);
           setOpenDatePicker(false);
@@ -79,7 +91,7 @@ export default function AddExpenses({ navigation }) {
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled
           >
-            {list.map((v, i) => (
+            {list && list.length > 0 && list.map((v, i) => (
               <TouchableOpacity
                 key={i}
                 onPress={() => {
@@ -104,7 +116,7 @@ export default function AddExpenses({ navigation }) {
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                           <Image source={ArrowLeft} style={styles.backIcon} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Add Expense</Text>
+                        <Text style={styles.headerTitle}>  {editData ? "Edit Expense" : "Add Expense"}</Text>
                       </View>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -118,8 +130,8 @@ export default function AddExpenses({ navigation }) {
         {renderSelectField(
           "Category *",
           category,
-          categoryOpen,
-          setCategoryOpen,
+          // categoryOpen,
+          // setCategoryOpen,
           categoryOptions,
           setCategory
         )}
@@ -130,7 +142,7 @@ export default function AddExpenses({ navigation }) {
           style={styles.inputBox}
           onPress={() => {
             // close other lists and toggle date picker inline
-            setCategoryOpen(false);
+            // setCategoryOpen(false);
             setUnitCountOpen(false);
             setModePaymentOpen(false);
             setOpenDatePicker(!openDatePicker);
@@ -218,11 +230,10 @@ export default function AddExpenses({ navigation }) {
           <TouchableOpacity
             style={styles.saveBtn}
             onPress={() => {
-              // TODO: handle submit -> call API or update parent
               navigation.goBack();
             }}
           >
-            <Text style={styles.saveText}>Save</Text>
+            <Text style={styles.saveText}>  {editData ? "Update" : "Save"}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
