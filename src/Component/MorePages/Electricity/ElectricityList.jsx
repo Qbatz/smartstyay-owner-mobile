@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef,useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,10 @@ import {
   TextInput,
   Image,
   ScrollView,
+  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler
 } from "react-native";
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
 
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
@@ -15,11 +18,78 @@ import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/EditPin.png";
 import TenantsList from "./TenantsList";
+import DownArrow from "../../../Assets/Images/direction-down.png";
+import CalendarIcon from "../../../Assets/Images/calendar.png";
 
 
 export default function Electricity({ navigation }) {
   const [activeTab, setActiveTab] = useState("Room Reading");
   const [underlineWidth, setUnderlineWidth] = useState(0);
+  const [showFilter, setShowFilter] = useState(false);
+  const [fromDate, setFromDate] = useState(dayjs());
+    const [toDate, setToDate] = useState(dayjs());
+    const [openFrom, setOpenFrom] = useState(false);
+    const [openTo, setOpenTo] = useState(false);
+    const [openUpward, setOpenUpward] = useState(false);
+     const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+      const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+       const toggleAmountDropdown = () => {
+    setAmountDropdownVisible((v) => !v);
+  };
+ useEffect(() => {
+  const onBackPress = () => {
+    if (showFilter) {
+      setShowFilter(false);   
+      return true;
+    }
+
+ 
+    navigation.navigate("MoreDesign");
+    return true;
+  };
+
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    onBackPress
+  );
+
+  return () => backHandler.remove();
+}, [showFilter]);
+
+
+     const amountOptions = [
+    "Low to High (Lowest First)",
+    "High to Low (Highest First)",
+    "Newest First",
+    "Oldest First",
+  ];
+      const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
+   const translateY = useRef(new Animated.Value(0)).current;
+   const panResponder = useRef(
+       PanResponder.create({
+         onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
+         onPanResponderMove: (_, gesture) => {
+           if (gesture.dy > 0) translateY.setValue(gesture.dy);
+         },
+         onPanResponderRelease: (_, gesture) => {
+           if (gesture.dy > 120) {
+             Animated.timing(translateY, {
+               toValue: 700,
+               duration: 200,
+               useNativeDriver: true,
+             }).start(() => {
+               setShowFilter(false);
+               translateY.setValue(0);
+             });
+           } else {
+             Animated.spring(translateY, {
+               toValue: 0,
+               useNativeDriver: true,
+             }).start();
+           }
+         },
+       })
+     ).current;
    
 
   const tabs = [
@@ -126,7 +196,7 @@ export default function Electricity({ navigation }) {
       </ScrollView>
 
       {/* Floating Filter Button */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity style={styles.fab}  onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
      </>
@@ -134,6 +204,158 @@ export default function Electricity({ navigation }) {
       
   {activeTab === "Tenant Reading" &&
   <TenantsList/>}
+     {showFilter && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
+
+          <Animated.View
+            style={[styles.filterSheet, { transform: [{ translateY }] }]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.sheetHandle} />
+
+            <View style={styles.filterHeaderRow}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
+                <Text style={styles.filterTitle}>  Filter by</Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={styles.label}>Date Range</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setFromDate(dayjs());
+                  setToDate(dayjs());
+                  setAmountSelected(amountOptions[0]);
+                }}
+              >
+                <Text style={styles.resetTextSmall}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.dateRow}>
+              <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+                <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+                <Image source={CalendarIcon} style={styles.calIcon} />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+                <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+                <Image source={CalendarIcon} style={styles.calIcon} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.quickRow}>
+              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+                <Text style={styles.quickText}>Today</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+                <Text style={styles.quickText}>This Week</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+                <Text style={styles.quickText}>This Month</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
+
+            <View
+              style={styles.selectWrapper}
+              onLayout={(event) => {
+                const { y, height } = event.nativeEvent.layout;
+                const screenHeight = Dimensions.get("window").height;
+                const bottomSpace = screenHeight - (y + height);
+
+                setOpenUpward(bottomSpace < 250);
+              }}
+            >
+              <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
+                <Text style={styles.selectedText}>{amountSelected}</Text>
+                <Image source={DownArrow} style={styles.downArrow} />
+              </TouchableOpacity>
+
+              {amountDropdownVisible && (
+                <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
+                  <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
+                    {amountOptions.map((opt) => (
+                      <TouchableOpacity key={opt} style={styles.option}
+                        onPress={() => {
+                          setAmountSelected(opt);
+                          setAmountDropdownVisible(false);
+                        }}
+                      >
+                        <Text style={styles.optionText}>{opt}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.bottomButtons}>
+              <TouchableOpacity style={styles.resetBtn}
+                onPress={() => {
+                  setFromDate(dayjs());
+                  setToDate(dayjs());
+                  setAmountSelected(amountOptions[0]);
+                }}
+              >
+                <Text style={styles.resetBtnText}>Reset All</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                <Text style={styles.applyBtnText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      )}
+
+
+
+      {openFrom && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setOpenFrom(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.datePickerBox}>
+            <DatePicker
+              mode="single"
+              date={fromDate}
+              onChange={(p) => {
+                setFromDate(p.date || dayjs());
+                setOpenFrom(false);
+              }}
+            />
+          </View>
+        </View>
+      )}
+
+
+      {openTo && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setOpenTo(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.datePickerBox}>
+            <DatePicker
+              mode="single"
+              date={toDate}
+              onChange={(p) => {
+                setToDate(p.date || dayjs());
+                setOpenTo(false);
+              }}
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -152,6 +374,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     height: 50,
+  },
+  sheetOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
   },
 
   searchIcon: { width: 18, height: 18, tintColor: "#9CA3AF" },
@@ -183,6 +411,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E45E1",
     borderRadius: 10,
   },
+  sheetHandle: { width: 60, height: 4, backgroundColor: "#D1D5DB", alignSelf: "center", borderRadius: 20, marginBottom: 15 },
 
   /* LIST ROW */
   row: {
@@ -240,4 +469,59 @@ const styles = StyleSheet.create({
   },
 
   fabIcon: { width: 60, height: 60 },
+  sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
+  selectedText: { fontSize: 15, color: "#000", flex: 1 },
+  downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
+  dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
+  dateText: { color: "#111" },
+  calIcon: { width: 20, height: 20 },
+
+  selectWrapper: { position: "relative", width: "100%", marginTop: 8 },
+  selectBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    height: 50,   // 🔥 consistent height
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
+  selectedText: { fontSize: 15, color: "#000", flex: 1 },
+   datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
+   filterSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    height: "55%",           
+  }, filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  filterTitle: { fontSize: 20, fontWeight: "700" },
+  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
+  option: { paddingVertical: 12, paddingHorizontal: 14 },
+  optionText: { fontSize: 15, color: "#000" },
+
+  quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
+  quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
+  quickText: { color: "#111", fontWeight: "600" },
+  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
+  resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
+  resetBtnText: { color: "#1E45E1", fontWeight: "700" },applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
+  applyBtnText: { color: "#fff", fontWeight: "700" },
+   dropdownMenu: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    elevation: 15,
+    zIndex: 1000,
+    paddingVertical: 8,
+    height: 100
+  },
+  
 });
