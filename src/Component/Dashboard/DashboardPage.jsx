@@ -1,4 +1,4 @@
-import React, { useState,useCallback } from "react";
+import React, { useState,useCallback, } from "react";
 import {
   View,
   Text,
@@ -37,7 +37,8 @@ import ActiveCompliance from '../../Assets/Images/Active_Compliance.png';
 import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
-import * as Svg from "react-native-svg";
+// import * as Svg from "react-native-svg";
+import Svg, {  Path, Circle, Line, G, Text as SvgText} from "react-native-svg";
 
 
 import {
@@ -50,13 +51,62 @@ import {
 } from "react-native-svg-charts";
 import * as shape from "d3-shape";
 
-const { width } = Dimensions.get("window");
-const yAxisValues = [0, 100, 200, 300, 400, 500];
+
+
 
 
 export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const chartWidth = width - 40;
+const chartHeight = 250;
    const navigation = useNavigation();
+  const { width } = Dimensions.get("window");
+  const [chartLayout, setChartLayout] = useState(null);
+
+
+ const [tooltip, setTooltip] = useState(null);
+ 
+ const [selectedYear, setSelectedYear] = useState("Last Year");
+
+  // const months = ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024"];
+  const advance = [100000, 150000, 23000, 31000, 28000];
+  const advanceReturn = [10000, 12000, 21000, 30000, 50000];
+
+ const onPointPress = (index) => {
+  setTooltip({
+    x: getX(index),
+    y: Math.min(getY(advance[index]), getY(advanceReturn[index])) - 15,
+    month: months[index],
+    advance: advance[index],
+    advanceReturn: advanceReturn[index]
+  });
+};
+
+
+ 
+
+  const createPath = (array) =>
+    array.map((v, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(v)}`).join(" ")
+const height = 250;
+  const data = [
+    { label: "Jun 2025", value: 5000 },
+    { label: "Jul 2025", value: 195000 },
+    { label: "Aug 2025", value: 168000 },
+    { label: "Sep 2025", value: 0 },
+    { label: "Oct 2025", value: 0 },
+    { label: "Nov 2025", value: 5000 }
+  ];
+
+  const maxValue = Math.max(...data.map(d => d.value));
+  const padding = 30;
+
+  const getX = (i) => (i / (data.length - 1)) * (width - padding * 2) + padding;
+  const getY = (value) => height - (value / maxValue) * (height - padding * 2) - padding;
+
+  // Line Path Generate
+  const linePath = data
+    .map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.value)}`)
+    .join(" ");
 
 useFocusEffect(
   useCallback(() => {
@@ -79,11 +129,11 @@ useFocusEffect(
 const revenue = [300, 250, 400, 150, 450];
 const product = [400, 200, 350, 250, 300];
 const months = ["Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024"];
-const [tooltip, setTooltip] = useState(null); 
+
 const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
   <>
     {revenueData.map((value, index) => (
-      <Svg.Text
+      <SvgText
         key={`rev-${index}`}
         x={x(index) + bandwidth * 0}
         y={y(value) + 20}
@@ -94,11 +144,11 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
         origin={`${x(index) + bandwidth * 0.22}, ${y(value) + 20}`}
       >
         ₹{value}
-      </Svg.Text>
+      </SvgText>
     ))}
 
     {productData.map((value, index) => (
-      <Svg.Text
+      <SvgText
         key={`pro-${index}`}
         x={x(index) + bandwidth * 0.40}
         y={y(value) + 20}
@@ -109,10 +159,11 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
         origin={`${x(index) + bandwidth * 0.70}, ${y(value) + 20}`}
       >
         ₹{value}
-      </Svg.Text>
+      </SvgText>
     ))}
   </>
 );
+
 
 
 
@@ -276,7 +327,7 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
 
 
         <View style={styles.summaryRow}>
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, { width: width * 0.45 }]}>
             <View >
 
               <Image
@@ -290,7 +341,7 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
 
           <View style={styles.sideColumn}>
 
-            <View style={styles.smallCard}>
+            <View style={[styles.smallCard, { width: width * 0.4 }]}>
               <View style={styles.smallCardContent}>
                 <View>
                   <Text style={styles.smallLabel}>Total Beds</Text>
@@ -519,26 +570,114 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
 
 
         {/* ============= LINE CHART ============= */}
-        <Text style={styles.sectionTitle}>Advance VS Advance Return</Text>
-        <View style={styles.chartCard}>
-          <LineChart
-            style={{ height: 200 }}
-            data={lineData1}
-            svg={{ stroke: "#2F80ED", strokeWidth: 3 }}
-            curve={shape.curveMonotoneX}
-            contentInset={{ top: 20, bottom: 20 }}
-          >
-            <Grid />
-          </LineChart>
+        <View style={styles.card}>
+  {/* HEADER */}
+  <View style={styles.headerRow}>
+    <Text style={styles.title}>Advance VS Advance Return</Text>
 
-          <LineChart
-            style={{ height: 200, position: "absolute" }}
-            data={lineData2}
-            svg={{ stroke: "#FF5A5F", strokeWidth: 3 }}
-            curve={shape.curveMonotoneX}
-            contentInset={{ top: 20, bottom: 20 }}
-          />
-        </View>
+    <TouchableOpacity style={styles.dropdown}>
+      <Text style={styles.dropdownText}>{selectedYear}</Text>
+      <Text style={{ fontSize: 18 }}>▾</Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* CHART */}
+  <View
+    style={{ position: "relative" }}
+    onLayout={(e) => setChartLayout(e.nativeEvent.layout)}
+  >
+    <Svg width={chartWidth} height={chartHeight}>
+
+      {/* Horizontal lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+        <Line
+          key={i}
+          x1={padding}
+          y1={t * (chartHeight - padding)}
+          x2={chartWidth - padding}
+          y2={t * (chartHeight - padding)}
+          stroke="#E5E7EB"
+          strokeWidth={1}
+        />
+      ))}
+
+      {/* Advance Path */}
+      <Path d={createPath(advance)} stroke="#3A7BFF" strokeWidth={3} fill="none" />
+
+      {/* Advance Return Path */}
+      <Path d={createPath(advanceReturn)} stroke="#FF5733" strokeWidth={3} fill="none" />
+
+      {/* Blue Dots */}
+     {advance.map((v, i) => (
+  <Circle
+    key={`a-${i}`}
+    cx={getX(i)}
+    cy={getY(v)}
+    r={6}
+    fill="#3A7BFF"
+    onPress={() => onPointPress(i)}
+  />
+))}
+
+{/* RED Dots */}
+{advanceReturn.map((v, i) => (
+  <Circle
+    key={`ar-${i}`}
+    cx={getX(i)}
+    cy={getY(v)}
+    r={6}
+    fill="#FF5733"
+    onPress={() => onPointPress(i)}
+  />
+))}
+    </Svg>
+
+    {/* TOOLTIP BOX */}
+   {tooltip && chartLayout && (
+  <View
+    style={[
+      styles.tooltipBox,
+      {
+        top: tooltip.y,
+        left: tooltip.x - 70,
+      }
+    ]}
+  >
+    <Text style={styles.tooltipMonth}>{tooltip.month}</Text>
+
+    <Text style={[styles.tooltipValue, { color: "#3A7BFF" }]}>
+      Advance : ₹{tooltip.advance}
+    </Text>
+
+    <Text style={[styles.tooltipValue, { color: "#FF5733" }]}>
+      Advance Return : ₹{tooltip.advanceReturn}
+    </Text>
+  </View>
+)}
+
+
+  </View>
+
+  {/* LABELS */}
+  <View style={styles.monthRow}>
+    {months.map((m, i) => (
+      <Text key={i} style={styles.monthLabel}>{m}</Text>
+    ))}
+  </View>
+
+  {/* LEGEND */}
+  <View style={styles.legendRow}>
+    <View style={styles.legendItem}>
+      <View style={[styles.dot, { backgroundColor: "#3A7BFF" }]} />
+      <Text>Advance</Text>
+    </View>
+
+    <View style={styles.legendItem}>
+      <View style={[styles.dot, { backgroundColor: "#FF5733" }]} />
+      <Text>Advance Return</Text>
+    </View>
+  </View>
+</View>
 
         {/* ============= CASHBACK DONUT ============= */}
         <Text style={styles.sectionTitle}>Total Cashback</Text>
@@ -728,8 +867,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  summaryCard: {
-    width: width * 0.45,
+ summaryCard: {
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
@@ -738,7 +876,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     position: "relative",
     height: 170,
-  },
+},
 
 
   bigCardIcon: {
@@ -756,7 +894,7 @@ const styles = StyleSheet.create({
 
   sideColumn: { justifyContent: "space-between" },
   smallCard: {
-    width: width * 0.4,
+  
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
@@ -808,7 +946,7 @@ const styles = StyleSheet.create({
   },
 
   quickCard: {
-    width: width * 0.28,
+    // width: width * 0.28,
   backgroundColor: "#fff",
   padding: 14,
   borderRadius: 16,
@@ -848,7 +986,7 @@ const styles = StyleSheet.create({
   },
 
   statBox: {
-    width: width * 0.42,
+    // width: width * 0.42,
     backgroundColor: "#fff",
     padding: 14,
     borderRadius: 12,
@@ -1082,5 +1220,85 @@ legendItem: {
   alignItems: "center",
   marginHorizontal: 15,
 },
+tooltip: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    elevation: 8,
+    width: 150,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  value: {
+    marginTop: 4,
+    color: "#3A7BFF",
+    fontWeight: "600",
+  },
+
+    card: {
+    backgroundColor: "#fff",
+    margin: 16,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EBEDF5",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  title: { fontSize: 16, fontWeight: "700" },
+  dropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F9FC",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  dropdownText: { marginRight: 6 },
+  monthRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 14,
+  },
+  monthLabel: { fontSize: 11, color: "#6B7280" },
+  legendRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 14,
+  },
+  legendItem: { flexDirection: "row", alignItems: "center", marginHorizontal: 15 },
+  dot: { width: 12, height: 12, borderRadius: 6, marginRight: 6 },
+  tooltipBox: {
+  position: "absolute",
+  backgroundColor: "white",
+  padding: 10,
+  borderRadius: 10,
+  elevation: 8,
+  width: 160,
+  shadowColor: "#000",
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+},
+tooltipTitle: {
+  fontSize: 13,
+  fontWeight: "700",
+  marginBottom: 4,
+},
+tooltipValue: {
+  fontSize: 13,
+  fontWeight: "600",
+},
+
 
 });
