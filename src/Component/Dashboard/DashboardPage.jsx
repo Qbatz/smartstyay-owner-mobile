@@ -78,39 +78,42 @@ useFocusEffect(
 );
 const revenue = [300, 250, 400, 150, 450];
 const product = [400, 200, 350, 250, 300];
-const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => {
-  return (
-    <>
-       {revenue.map((value, index) => (
+const months = ["Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024"];
+const [tooltip, setTooltip] = useState(null); 
+const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
+  <>
+    {revenueData.map((value, index) => (
       <Svg.Text
-        key={`r-${index}`}
-        x={x(index) + bandwidth / 4}
-        y={y(value) - (y(0) - y(value)) / 2} // 🔥 center vertically inside bar
+        key={`rev-${index}`}
+        x={x(index) + bandwidth * 0}
+        y={y(value) + 20}
         fill="#FFFFFF"
         fontSize="11"
-        fontWeight="700"
-        textAnchor="middle"
+        fontWeight="bold"
+        rotation={-90}
+        origin={`${x(index) + bandwidth * 0.22}, ${y(value) + 20}`}
       >
         ₹{value}
       </Svg.Text>
     ))}
 
-    {product.map((value, index) => (
+    {productData.map((value, index) => (
       <Svg.Text
-        key={`p-${index}`}
-        x={x(index) + (bandwidth / 4) * 3}
-        y={y(value) - (y(0) - y(value)) / 2} // 🔥 center vertically inside bar
+        key={`pro-${index}`}
+        x={x(index) + bandwidth * 0.40}
+        y={y(value) + 20}
         fill="#FFFFFF"
         fontSize="11"
-        fontWeight="700"
-        textAnchor="middle"
+        fontWeight="bold"
+        rotation={-90}
+        origin={`${x(index) + bandwidth * 0.70}, ${y(value) + 20}`}
       >
         ₹{value}
       </Svg.Text>
     ))}
-    </>
-  );
-};
+  </>
+);
+
 
 
 
@@ -124,7 +127,7 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => {
 
 
 
-const months = ["Jan", "Feb", "Mar", "Apr", "May"];
+
  const yAxisValues = [0,100,200,300,400,500];
 
 
@@ -443,9 +446,7 @@ const months = ["Jan", "Feb", "Mar", "Apr", "May"];
 
   <View style={{ flexDirection: "row", height: 330, marginTop: 10 }}>
 <YAxis
-  data={[0,100,200,300,400,500]}
-  min={0}
-  max={500}
+  data={[0, 100, 200, 300, 400, 500]}
   numberOfTicks={6}
   contentInset={{ top: 20, bottom: 20 }}
   svg={{ fill: "#6B7280", fontSize: 10 }}
@@ -457,32 +458,29 @@ const months = ["Jan", "Feb", "Mar", "Apr", "May"];
 
     <View style={{ flex: 1, marginLeft: 10 }}>
 
-    <BarChart
+   <BarChart
   style={{ height: 300 }}
   data={[
     { data: revenue, svg: { fill: "#EF4444", rx: 6, ry: 6 } },
     { data: product, svg: { fill: "#22C55E", rx: 6, ry: 6 } }
   ]}
   spacingInner={0.3}
-  spacingOuter={0.2}
-  yMin={0}
-  yMax={500}
+  spacingOuter={0.1}
   contentInset={{ top: 20, bottom: 20 }}
 >
-
   <Grid
-    belowChart={true}
-    direction="HORIZONTAL"
-    ticks={[0, 100, 200, 300, 400, 500]}
-    svg={{ stroke: "#E5E7EB", strokeWidth: 1, opacity: 0.4 }}
-    contentInset={{ top: 20, bottom: 20 }}
-  />
+  belowChart={true}
+  direction="HORIZONTAL"
+  ticks={[0, 100, 200, 300, 400, 500]}
+  svg={{ stroke: "#E5E7EB", strokeWidth: 1, opacity: 0.7 }}
+  contentInset={{ top: 20, bottom: 20 }}
+/>
+
 
   <BarLabels
     revenueData={revenue}
     productData={product}
   />
-
 </BarChart>
 
 
@@ -516,7 +514,6 @@ const months = ["Jan", "Feb", "Mar", "Apr", "May"];
   </View>
 
 </View>
-
 
 
 
