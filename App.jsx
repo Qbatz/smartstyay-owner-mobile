@@ -56,7 +56,6 @@ import TenantsList from './src/Component/MorePages/Electricity/TenantsList';
 import VendorsList from './src/Component/MorePages/Vendors/VendorsList'
 import CancelNotice from './src/Component/Customer/Checkout/CancelNotice';
 import SettingsScreen from './src/Component/SettingScreen/SettingScreen';
-import GeneralDetailsScreen from './src/Component/SettingScreen/General';
 import Bills from './src/Component/MorePages/Bills/Bills';
 import GeneralDetailsScreen from './src/Component/SettingScreen/GeneralPages/General';
 import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGeneralScreen';
