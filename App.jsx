@@ -56,8 +56,11 @@ import TenantsList from './src/Component/MorePages/Electricity/TenantsList';
 import VendorsList from './src/Component/MorePages/Vendors/VendorsList'
 import CancelNotice from './src/Component/Customer/Checkout/CancelNotice';
 import SettingsScreen from './src/Component/SettingScreen/SettingScreen';
+import GeneralDetailsScreen from './src/Component/SettingScreen/General';
+import Bills from './src/Component/MorePages/Bills/Bills';
 import GeneralDetailsScreen from './src/Component/SettingScreen/GeneralPages/General';
 import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGeneralScreen';
+
 
 
 function App() {
@@ -117,6 +120,7 @@ function AppContent() {
                 <Navigation.Screen name="CancelNotice" component={CancelNotice} />
                  <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
                   <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
+                    <Navigation.Screen name="Bills" component={Bills} />
                    <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
 
 
