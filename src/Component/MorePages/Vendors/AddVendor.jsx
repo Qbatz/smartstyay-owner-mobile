@@ -12,21 +12,18 @@ import {
   PanResponder,
   Dimensions
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
+
 
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-import Calendar from "../../../Assets/Images/calendar.png";
-import UploadIcon from "../../../Assets/Images/EditPin.png";
-import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 
 export default function AddVendorSheet({onClose, vendorData }) {
   const translateY = useRef(new Animated.Value(0)).current;
 
-  const [image, setImage] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+   
   
       
   
@@ -53,7 +50,11 @@ export default function AddVendorSheet({onClose, vendorData }) {
 
    const [open, setOpen] = useState(false);
    const [value, setValue] = useState(null);
-const [items, setItems] = useState([
+
+    //  const vendors = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
+       const [vendorOpen, setVendorOpen] = useState(false);
+       const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
+const vendors = [
   { label: "Andhra Pradesh", value: "Andhra Pradesh" },
   { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
   { label: "Assam", value: "Assam" },
@@ -82,7 +83,8 @@ const [items, setItems] = useState([
   { label: "Uttar Pradesh", value: "Uttar Pradesh" },
   { label: "Uttarakhand", value: "Uttarakhand" },
   { label: "West Bengal", value: "West Bengal" },
-]);
+];
+
  
   
  const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -139,9 +141,10 @@ const panResponder = useRef(
         <View style={styles.handle} />
 
        <ScrollView
-  showsVerticalScrollIndicator={false}
-  nestedScrollEnabled={true}
-  scrollEnabled={!isDropdownOpen}   // ⭐ important
+   showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    scrollEnabled={!vendorOpen}
+                    nestedScrollEnabled={true}  // ⭐ important
 >
 
           <Text style={styles.title}>
@@ -214,7 +217,7 @@ const panResponder = useRef(
             <Text style={styles.selectText}>Select State</Text>
             <Image source={DownArrow} style={styles.arrow} />
           </TouchableOpacity> */}
-<View style={{ zIndex: 2000, elevation: 2000 }}>
+{/* <View style={{ zIndex: 2000, elevation: 2000 }}>
   <Text style={styles.label}>State *</Text>
 
   <DropDownPicker
@@ -248,7 +251,42 @@ const panResponder = useRef(
       height:250
     }}
   />
+</View> */}
+
+<Text style={styles.label}>Vendor name</Text>
+
+                  <View style={{ position: "relative" }}>
+    <TouchableOpacity
+        style={styles.select}
+        onPress={() => setVendorOpen(!vendorOpen)}
+        activeOpacity={0.9}
+    >
+        <Text style={styles.selectText}>
+            {vendorSelected || "Select a Vendor"}
+        </Text>
+        <Image source={DownArrow} style={styles.arrow} />
+    </TouchableOpacity>
+
+    {vendorOpen && (
+        <View style={styles.dropdownMenu}>
+            <ScrollView style={{ maxHeight: 160 }}>
+                {vendors.map((v, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={styles.option}
+                        onPress={() => {
+                            setVendorSelected(v.label);   
+                            setVendorOpen(false);
+                        }}
+                    >
+                        <Text style={styles.optionText}>{v.label}</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    )}
 </View>
+
 
 
 
@@ -306,16 +344,6 @@ profileContainer: {
 },
 
  
-
-// profileCircle: {
-//   width: 70,
-//   height: 70,
-//   borderRadius: 35,
-//   backgroundColor: "#E6E6E6",
-//   justifyContent: "center",
-//   alignItems: "center",
-//   position: "relative",
-// },
    profileCircle: {
         width: 75,
         height: 75,
@@ -369,13 +397,7 @@ profileSub: {
 
 
   profileImg: { width: 60, height: 60, borderRadius: 30 ,backgroundColor:"#737373",},
-  uploadIcon: {
-    width: 22,
-    height: 22,
-    position: "absolute",
-    bottom: -2,
-    right: -2,
-  },
+ 
 
   profileText: { fontSize: 14, fontWeight: "700" },
   subText: { color: "#777", fontSize: 12, lineHeight: 16, marginTop: 4 },
@@ -408,14 +430,13 @@ profileSub: {
     marginTop: 20,
     marginBottom: 10,
   },
-  sheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 30,
-  borderTopRightRadius: 30,
-  maxHeight: "88%",
-  overflow: "visible",   // ⭐ Without this dropdown cut ஆகும்
-},
+ sheet: {
+        backgroundColor: "#fff",
+        padding: 20,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        maxHeight: "88%",
+    },
 
 
   cancel: { color: "#777", fontSize: 16 },
@@ -462,5 +483,46 @@ editIcon: {
   height: 20,
  
 },
+  input: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+    },
+
+    select: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+     dropdownMenu: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 999,
+        elevation: 10,
+    },
+
+    option: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    optionText: {
+        fontSize: 15,
+        color: "#000",
+    },
+
 
 });
