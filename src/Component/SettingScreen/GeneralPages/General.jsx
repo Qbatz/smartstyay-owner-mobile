@@ -18,6 +18,11 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 
 export default function GeneralDetailsScreen({ navigation }) {
 const [activeMenu, setActiveMenu] = useState(null);
+ const [showDeletePopup, setShowDeletePopup] = useState(false);
+ const handleDelete=()=>{
+  setShowDeletePopup(true)
+  setActiveMenu(null)
+ }
 
   const users = [
     {
@@ -97,7 +102,7 @@ const [activeMenu, setActiveMenu] = useState(null);
 </TouchableOpacity>
 
 
-      <TouchableOpacity style={styles.menuRow}>
+      <TouchableOpacity style={styles.menuRow} onPress={handleDelete}>
         <Image
           source={Delete}
           style={[styles.menuIcon, { tintColor: "red" }]}
@@ -113,6 +118,7 @@ const [activeMenu, setActiveMenu] = useState(null);
   );
 
   return (
+    <>
 <Pressable style={{ flex: 1 }} onPress={() => setActiveMenu(null)}>
     <View style={styles.container}>
       {/* Header */}
@@ -137,6 +143,38 @@ const [activeMenu, setActiveMenu] = useState(null);
       </ScrollView>
     </View>
     </Pressable>
+    {showDeletePopup && (
+      <View style={styles.popupOverlay}>
+        <View style={styles.popupBox}>
+    
+          <Text style={styles.popupTitle}>Delete Master?</Text>
+          <Text style={styles.popupSubtitle}>
+            Are you sure you want to delete this Master?
+          </Text>
+    
+          <View style={styles.popupBtnRow}>
+            <TouchableOpacity 
+              style={styles.cancelBtn}
+              onPress={() => setShowDeletePopup(false)}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+    
+            <TouchableOpacity 
+              style={styles.deleteBtn}
+              onPress={() => {
+                // 🔥 Your delete function here
+                setShowDeletePopup(false);
+              }}
+            >
+              <Text style={styles.deleteText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+    
+        </View>
+      </View>
+    )}
+    </>
   );
 }
 
@@ -247,5 +285,72 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
+  popupOverlay: {
+  position: "absolute",
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 25
+},
+
+popupBox: {
+  width: "100%",
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  paddingVertical: 25,
+  paddingHorizontal: 20,
+  elevation: 10
+},
+
+popupTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  textAlign: "center",
+  marginBottom: 8
+},
+
+popupSubtitle: {
+  fontSize: 14,
+  color: "#555",
+  textAlign: "center",
+  marginBottom: 25
+},
+
+popupBtnRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+cancelBtn: {
+  width: "48%",
+  borderWidth: 1,
+  borderColor: "#1E45E1",
+  paddingVertical: 12,
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center"
+},
+
+cancelText: {
+  color: "#1E45E1",
+  fontSize: 16,
+  fontWeight: "600"
+},
+
+deleteBtn: {
+  width: "48%",
+  backgroundColor: "#1E45E1",
+  paddingVertical: 12,
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center"
+},
+
+deleteText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700"
+},
 
 });
