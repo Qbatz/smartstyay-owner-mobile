@@ -61,6 +61,7 @@ import GeneralDetailsScreen from './src/Component/SettingScreen/GeneralPages/Gen
 import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGeneralScreen';
 import NotificationDetails from './src/Component/Dashboard/Notification';
 import ChangeHostelScreen from './src/Component/Dashboard/ChangeHostel';
+import ProfileDrawer from './src/Component/Dashboard/ProfileClickScreen';
 
 
 
@@ -125,6 +126,7 @@ function AppContent() {
                    <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
                      <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
+                      <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
 
 
         </Navigation.Navigator>

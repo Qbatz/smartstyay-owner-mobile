@@ -1,12 +1,76 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import React,{useState,useRef,useCallback} from "react";
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity,Animated,PanResponder,Dimensions,BackHandler } from "react-native";
 import HostelImg from "../../Assets/Images/PgImg.png";
+import PgRooms from "../../Assets/Images/pgrooms.png";
 import call from "../../Assets/Images/call.png";
 import sms from "../../Assets/Images/sms.png";
-import Building from "../../Assets/Images/buildings.png"
+import Building from "../../Assets/Images/buildings.png";
+import { useFocusEffect } from '@react-navigation/native';
+
 
 export default function ChangeHostelScreen({ navigation }) {
+    const [showSheet, setShowSheet] = useState(false);
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      if (showSheet) {
+        closeSheet();   // 👈 bottom sheet close
+        return true;    // 👈 prevent default back action
+      }
+
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return true;
+      }
+
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [showSheet, navigation])
+);
+
+const openSheet = () => {
+  setShowSheet(true);
+  Animated.timing(translateY, {
+    toValue: 0,
+    duration: 220,
+    useNativeDriver: true,
+  }).start();
+};
+
+const closeSheet = () => {
+  Animated.timing(translateY, {
+    toValue: SCREEN_HEIGHT,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => setShowSheet(false));
+};
+const panResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) translateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > SCREEN_HEIGHT * 0.15) {
+        closeSheet();
+      } else {
+        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    },
+  })
+).current;
+
   return (
+    <>
     <ScrollView style={{ flex: 1, backgroundColor: "#fff" }}>
      
       <View style={styles.header}>
@@ -21,7 +85,7 @@ export default function ChangeHostelScreen({ navigation }) {
   </View>
 
   {/* RIGHT SIDE → Switch Account */}
-  <TouchableOpacity onPress={() => console.log("Switch Account Clicked")}>
+  <TouchableOpacity onPress={openSheet}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <Image
         source={require("../../Assets/Images/arrow-transfer.png")} 
@@ -64,7 +128,7 @@ export default function ChangeHostelScreen({ navigation }) {
 
         {/* Images row */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {[HostelImg, HostelImg, HostelImg,HostelImg,HostelImg].map((x, i) => (
+          {[PgRooms, PgRooms, PgRooms,PgRooms,PgRooms].map((x, i) => (
             <Image key={i} source={x} style={styles.roomImg} />
           ))}
         </ScrollView>
@@ -103,6 +167,46 @@ export default function ChangeHostelScreen({ navigation }) {
 
       </View>
     </ScrollView>
+    {showSheet && (
+  <View style={styles.overlay}>
+    {/* Close by touching outside */}
+    <TouchableOpacity style={{ flex: 1 }} onPress={closeSheet} />
+
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[styles.sheet, { transform: [{ translateY }] }]}
+    >
+      <View style={styles.handle} />
+
+      {/* Hostel List */}
+      <TouchableOpacity style={styles.hostelRow}>
+        <Image source={HostelImg} style={styles.hostelIcon} />
+        <View>
+          <Text style={styles.hostelTitle}>Royal Grand Hostel</Text>
+          <Text style={styles.hostelEmail}>info@royalgrand.com</Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.hostelRow}>
+        <Image source={HostelImg} style={styles.hostelIcon} />
+        <View>
+          <Text style={styles.hostelTitle}>Smartstay PG</Text>
+          <Text style={styles.hostelEmail}>support@smartstay.com</Text>
+        </View>
+      </TouchableOpacity>
+       <TouchableOpacity style={styles.hostelRow}>
+        <Image source={HostelImg} style={styles.hostelIcon} />
+        <View>
+          <Text style={styles.hostelTitle}>Smartstay PG</Text>
+          <Text style={styles.hostelEmail}>support@smartstay.com</Text>
+        </View>
+      </TouchableOpacity>
+
+    </Animated.View>
+  </View>
+)}
+
+    </>
   );
 }
 
@@ -197,5 +301,63 @@ infoText: {
   flex: 1,  // long address wrap properly
   lineHeight: 20,
 },
+overlay: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "flex-end",
+  
+},
+
+sheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 28,
+  borderTopRightRadius: 28,
+  paddingBottom: 70,
+  maxHeight: "60%",
+},
+
+handle: {
+  width: 45,
+  height: 5,
+  backgroundColor: "#D1D5DB",
+  borderRadius: 10,
+  alignSelf: "center",
+  marginBottom: 15,
+},
+
+hostelRow: {
+  flexDirection: "row",
+  padding: 14,
+  borderRadius: 14,
+  borderWidth: 1,
+  borderColor: "#E0E7FF",
+  marginBottom: 12,
+  alignItems: "center",
+},
+
+hostelIcon: {
+  width: 48,
+  height: 48,
+  borderRadius: 10,
+  marginRight: 12,
+},
+
+hostelTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#111",
+},
+
+hostelEmail: {
+  fontSize: 13,
+  color: "#6B7280",
+  marginTop: 2,
+},
+
 
 });

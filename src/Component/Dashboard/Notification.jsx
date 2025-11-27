@@ -1,4 +1,4 @@
-import React,{useState,useRef} from "react";
+import React,{useState,useRef,useCallback} from "react";
 import {
   View,
   Text,
@@ -10,9 +10,10 @@ import {
    Animated,
   PanResponder,
   Dimensions,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,BackHandler
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useFocusEffect} from "@react-navigation/native";
+
 
 import newTenant from "../../Assets/Images/newTenants.png";
 import paymentReceived from "../../Assets/Images/paymentReceived.png";
@@ -35,6 +36,31 @@ export default function NotificationDetails() {
      const [openTo, setOpenTo] = useState(false);
      const [openUpward, setOpenUpward] = useState(false);
       const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+      useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      if (showFilter) {
+        onClose();   
+        return true;   
+      }
+
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return true;
+      }
+
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [showFilter, navigation])
+);
+
 
   React.useEffect(() => {
     Animated.timing(translateY, {

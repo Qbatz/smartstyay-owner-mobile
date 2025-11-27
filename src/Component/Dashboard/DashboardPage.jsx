@@ -39,6 +39,8 @@ import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
 import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
+import ProfileDrawer from "./ProfileClickScreen";
+
 
 
 import {
@@ -56,9 +58,25 @@ import {
 
 export default function DashboardScreen()  {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
   
    const navigation = useNavigation();
 
+useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      if (drawerVisible) {
+        setDrawerVisible(false);
+        return true;
+      }
+      return false;
+    };
+
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => sub.remove();
+  }, [drawerVisible])
+);
 
 
 
@@ -263,9 +281,15 @@ const legendItems = [
   >
     <Image source={Bell} style={{ width: 40, height: 40 }} />
   </TouchableOpacity>
-            <View style={[styles.iconCircle, { marginLeft: 10 }]}>
+            {/* <View style={[styles.iconCircle, { marginLeft: 10 }]}>
               <Image source={Profile} style={{ width:40, height:40 }} />
-            </View>
+            </View> */}
+            <TouchableOpacity
+  style={[styles.iconCircle, { marginLeft: 10 }]}
+  onPress={() => setDrawerVisible(true)}
+>
+  <Image source={Profile} style={{ width: 40, height: 40 }} />
+</TouchableOpacity>
           </View>
         </View>
 
@@ -836,6 +860,12 @@ const legendItems = [
         )}
         {activeTab === "Announcement" && <AnnouncementScreen />}
         {activeTab === "Updates" && <UpdatesScreen />}
+
+        <ProfileDrawer
+  visible={drawerVisible}
+  onClose={() => setDrawerVisible(false)}
+/>
+
     </SafeAreaView>
   );
 }
