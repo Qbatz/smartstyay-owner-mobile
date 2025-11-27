@@ -59,6 +59,8 @@ import SettingsScreen from './src/Component/SettingScreen/SettingScreen';
 import Bills from './src/Component/MorePages/Bills/Bills';
 import GeneralDetailsScreen from './src/Component/SettingScreen/GeneralPages/General';
 import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGeneralScreen';
+import NotificationDetails from './src/Component/Dashboard/Notification';
+import ChangeHostelScreen from './src/Component/Dashboard/ChangeHostel';
 
 
 
@@ -121,6 +123,8 @@ function AppContent() {
                   <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
                     <Navigation.Screen name="Bills" component={Bills} />
                    <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
+                    <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
+                     <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
 
 
         </Navigation.Navigator>
