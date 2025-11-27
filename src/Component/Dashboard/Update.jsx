@@ -19,6 +19,7 @@ export default function UpdatesScreen() {
       images: [],
       active: false,
     },
+    
   ];
 
   return (
@@ -65,7 +66,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F9FAFF",
     paddingHorizontal: 12,
-    paddingTop: 10,
+    paddingTop:5,
+    marginBottom:20
   },
   row: {
     flexDirection: "row",

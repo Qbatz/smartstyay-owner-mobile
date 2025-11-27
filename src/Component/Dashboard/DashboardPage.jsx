@@ -54,12 +54,9 @@ import {
 
 
 
-export default function DashboardScreen() {
+export default function DashboardScreen()  {
   const [activeTab, setActiveTab] = useState("Dashboard");
   
-
-
-
    const navigation = useNavigation();
 
 
@@ -252,16 +249,22 @@ const legendItems = [
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.hostelTitle}>Royal Grand Hostel</Text>
-              <Text style={styles.changeText}>Change Hostel →</Text>
+              {/* <Text style={styles.changeText}>Change Hostel →</Text> */}
+              <TouchableOpacity onPress={() => navigation.navigate("ChangeHostelScreen")}>
+  <Text style={styles.changeText}>Change Hostel →</Text>
+</TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.rightIcons}>
-            <View style={styles.iconCircle}>
-              <Image source={Bell} style={{ width: 22, height: 22 }} />
-            </View>
+             <TouchableOpacity
+    style={styles.iconCircle}
+    onPress={() => navigation.navigate("NotificationDetails")}
+  >
+    <Image source={Bell} style={{ width: 40, height: 40 }} />
+  </TouchableOpacity>
             <View style={[styles.iconCircle, { marginLeft: 10 }]}>
-              <Image source={Profile} style={{ width: 22, height: 22 }} />
+              <Image source={Profile} style={{ width:40, height:40 }} />
             </View>
           </View>
         </View>
@@ -879,11 +882,9 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 42,
     height: 42,
-    borderRadius: 22,
-    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 3,
+   
   },
 
   tabsRow: { flexDirection: "row", marginTop: 18 },
@@ -1383,7 +1384,7 @@ legendGrid: {
 },
 
 legendItemRow: {
-  width: "45%",
+  width: "50%",
   flexDirection: "row",
   alignItems: "center",
   marginVertical: 6,
