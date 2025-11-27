@@ -9,7 +9,8 @@ import {
   Dimensions,
   StatusBar,
   Image,
-  BackHandler
+  BackHandler,
+  TouchableWithoutFeedback
 } from "react-native";
 
 import LinearGradient from "react-native-linear-gradient";
@@ -37,19 +38,17 @@ import ActiveCompliance from '../../Assets/Images/Active_Compliance.png';
 import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
-// import * as Svg from "react-native-svg";
-import Svg, {  Path, Circle, Line, G, Text as SvgText} from "react-native-svg";
+import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
 
 
 import {
   BarChart,
-  LineChart,
   PieChart,
   Grid,
   YAxis,
   XAxis
 } from "react-native-svg-charts";
-import * as shape from "d3-shape";
+
 
 
 
@@ -57,20 +56,40 @@ import * as shape from "d3-shape";
 
 export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const chartWidth = width - 40;
-const chartHeight = 250;
+  
+
+
+
    const navigation = useNavigation();
-  const { width } = Dimensions.get("window");
-  const [chartLayout, setChartLayout] = useState(null);
+
+
 
 
  const [tooltip, setTooltip] = useState(null);
- 
- const [selectedYear, setSelectedYear] = useState("Last Year");
+  const { width } = Dimensions.get("window");
 
-  // const months = ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024"];
-  const advance = [100000, 150000, 23000, 31000, 28000];
-  const advanceReturn = [10000, 12000, 21000, 30000, 50000];
+const months = ["Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024"];
+const advance = [100000, 150000, 23000, 31000, 28000];
+const advanceReturn = [10000, 12000, 21000, 30000, 50000];
+
+const padding = 20;
+const chartHeight = 250;
+
+const [chartWidth, setChartWidth] = useState(width - 40);
+
+const maxY = Math.max(...advance, ...advanceReturn);
+
+const getX = (i) =>
+  (i / (months.length - 1)) * (chartWidth - padding * 2) + padding;
+
+const getY = (value) =>
+  padding + (1 - value / maxY) * (chartHeight - padding * 2);
+
+const createPath = (array) =>
+  array
+    .map((v, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(v)}`)
+    .join(" ");
+
 
  const onPointPress = (index) => {
   setTooltip({
@@ -83,11 +102,6 @@ const chartHeight = 250;
 };
 
 
- 
-
-  const createPath = (array) =>
-    array.map((v, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(v)}`).join(" ")
-const height = 250;
   const data = [
     { label: "Jun 2025", value: 5000 },
     { label: "Jul 2025", value: 195000 },
@@ -97,16 +111,7 @@ const height = 250;
     { label: "Nov 2025", value: 5000 }
   ];
 
-  const maxValue = Math.max(...data.map(d => d.value));
-  const padding = 30;
 
-  const getX = (i) => (i / (data.length - 1)) * (width - padding * 2) + padding;
-  const getY = (value) => height - (value / maxValue) * (height - padding * 2) - padding;
-
-  // Line Path Generate
-  const linePath = data
-    .map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.value)}`)
-    .join(" ");
 
 useFocusEffect(
   useCallback(() => {
@@ -128,8 +133,6 @@ useFocusEffect(
 );
 const revenue = [300, 250, 400, 150, 450];
 const product = [400, 200, 350, 250, 300];
-const months = ["Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024"];
-
 const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
   <>
     {revenueData.map((value, index) => (
@@ -178,59 +181,60 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
 
 
 
-
- const yAxisValues = [0,100,200,300,400,500];
-
-
-
-  const barData = [30000, 18000, 25000, 42000, 38000];
-  const barLabels = ["Jan", "Feb", "Mar", "Apr", "May"];
-
-  const lineData1 = [10000, 15000, 20000, 28000, 24000];
-  const lineData2 = [12000, 18000, 22000, 26000, 21000];
-  const Labels = ({ x, y, bandwidth, revenue, product }) => (
-  <>
-    {revenue.map((value, index) => (
-      <Svg.Text
-        key={`r-${index}`}
-        x={x(index) + bandwidth / 4}
-        y={y(value) - 10}
-        fill="#EF4444"
-        fontSize="10"
-        fontWeight="bold"
-        textAnchor="middle"
-      >
-        ₹{value}
-      </Svg.Text>
-    ))}
-
-    {product.map((value, index) => (
-      <Svg.Text
-        key={`p-${index}`}
-        x={x(index) + (bandwidth / 4) * 3}
-        y={y(value) - 10}
-        fill="#22C55E"
-        fontSize="10"
-        fontWeight="bold"
-        textAnchor="middle"
-      >
-        ₹{value}
-      </Svg.Text>
-    ))}
-  </>
-);
-
   const cashbackData = [
     { key: 1, value: 65, svg: { fill: "#10B981" } },
     { key: 2, value: 35, svg: { fill: "#E5E7EB" } },
   ];
 
-  const expenseCategory = [
-    { key: 1, value: 45, svg: { fill: "#FBBF24" } },
-    { key: 2, value: 30, svg: { fill: "#3B82F6" } },
-    { key: 3, value: 15, svg: { fill: "#EF4444" } },
-    { key: 4, value: 10, svg: { fill: "#A78BFA" } },
-  ];
+
+
+
+const received = 10000;
+const pending = 11000;
+
+const safeReceived = Number(received) || 0;
+const safePending = Number(pending) || 0;
+const total = safeReceived + safePending;
+
+const percentage = total === 0 ? 0 : safeReceived / total;
+
+// Gauge settings
+const radius = 80;
+const strokeWidth = 22;
+const cx = 100;
+const cy = 100;
+
+// Convert percentage to angle (half circle = 180°)
+const endAngle = Math.PI * percentage; // 0 → π radians
+
+// Convert angle to coordinates
+const startX = cx - radius;
+const startY = cy;
+
+const endX = cx + radius * Math.cos(Math.PI - endAngle);
+const endY = cy - radius * Math.sin(Math.PI - endAngle);
+
+const expenseCategory = [
+  { key: 1, value: 95, svg: { fill: "#22C55E" } },  // Green
+  { key: 2, value: 26, svg: { fill: "#FBBF24" } },  // Yellow
+  { key: 3, value: 17, svg: { fill: "#EF4444" } },  // Red
+  { key: 4, value: 12, svg: { fill: "#A78BFA" } },  // Purple
+  { key: 5, value: 17, svg: { fill: "#0EA5E9" } },  // Cyan
+  { key: 6, value: 12, svg: { fill: "#3B82F6" } },  // Blue
+];
+
+const totalCategories = 150;
+
+const legendItems = [
+  { color: "#22C55E", text: "Category 1   95" },
+  { color: "#FBBF24", text: "Category 2   26" },
+  { color: "#EF4444", text: "Category 3   17" },
+
+  { color: "#A78BFA", text: "Category 4   12" },
+  { color: "#0EA5E9", text: "Category 5   17" },
+  { color: "#3B82F6", text: "Others 6   12" },
+];
+
 
 
   return (
@@ -427,7 +431,7 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
             { title: "Total Customer", value: "378" },
             { title: "EB Amount", value: "₹ 24,000" },
           ].map((item, i) => (
-            <View key={i} style={styles.statBox}>
+            <View key={i}  style={[styles.statBox, { width: width * 0.42 }]}>
               <Text style={styles.statTitle}>{item.title}</Text>
               <Text style={styles.statValue}>{item.value}</Text>
             </View>
@@ -570,95 +574,104 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
 
 
         {/* ============= LINE CHART ============= */}
-        <View style={styles.card}>
-  {/* HEADER */}
-  <View style={styles.headerRow}>
-    <Text style={styles.title}>Advance VS Advance Return</Text>
+    <View style={styles.card}>
+       <View style={styles.chartHeader}>
+    <Text style={styles.chartTitle}>Advance VS Advance Return</Text>
 
-    <TouchableOpacity style={styles.dropdown}>
-      <Text style={styles.dropdownText}>{selectedYear}</Text>
-      <Text style={{ fontSize: 18 }}>▾</Text>
-    </TouchableOpacity>
+    <View style={styles.dropdownBox}>
+      <Text style={styles.dropdownText}>Last 6 Months</Text>
+      <Text style={{ fontSize: 18, marginLeft: 4 }}>▾</Text>
+    </View>
   </View>
+  <View style={{ flexDirection: "row" }}>
 
-  {/* CHART */}
-  <View
-    style={{ position: "relative" }}
-    onLayout={(e) => setChartLayout(e.nativeEvent.layout)}
-  >
-    <Svg width={chartWidth} height={chartHeight}>
-
-      {/* Horizontal lines */}
-      {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-        <Line
-          key={i}
-          x1={padding}
-          y1={t * (chartHeight - padding)}
-          x2={chartWidth - padding}
-          y2={t * (chartHeight - padding)}
-          stroke="#E5E7EB"
-          strokeWidth={1}
-        />
+    {/* LEFT Y-Labels */}
+    <View style={{ width: 40, justifyContent: "space-between", marginTop: 10 }}>
+      {[50000, 40000, 30000, 20000, 10000, 0].map((v, i) => (
+        <Text key={i} style={{ fontSize: 10, color: "#6B7280" }}>
+          {v === 0 ? "0" : v / 1000 + "k"}
+        </Text>
       ))}
+    </View>
 
-      {/* Advance Path */}
-      <Path d={createPath(advance)} stroke="#3A7BFF" strokeWidth={3} fill="none" />
+    {/* SVG CHART */}
+    <TouchableWithoutFeedback onPress={() => setTooltip(null)}>
+      <View
+        style={{ position: "relative", flex: 1 }}
+        onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}
+      >
+        <Svg width={chartWidth} height={chartHeight}>
 
-      {/* Advance Return Path */}
-      <Path d={createPath(advanceReturn)} stroke="#FF5733" strokeWidth={3} fill="none" />
-
-      {/* Blue Dots */}
-     {advance.map((v, i) => (
-  <Circle
-    key={`a-${i}`}
-    cx={getX(i)}
-    cy={getY(v)}
-    r={6}
-    fill="#3A7BFF"
-    onPress={() => onPointPress(i)}
+          {/* GRID */}
+    {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+  <Line
+    key={i}
+    x1={padding}
+    y1={padding + t * (chartHeight - padding * 2)}
+    x2={chartWidth - padding}
+    y2={padding + t * (chartHeight - padding * 2)}
+    stroke="#E5E7EB"
+    strokeWidth={1}
   />
 ))}
 
-{/* RED Dots */}
-{advanceReturn.map((v, i) => (
-  <Circle
-    key={`ar-${i}`}
-    cx={getX(i)}
-    cy={getY(v)}
-    r={6}
-    fill="#FF5733"
-    onPress={() => onPointPress(i)}
-  />
-))}
-    </Svg>
+          {/* Blue Line */}
+          <Path d={createPath(advance)}
+            stroke="#3A7BFF"
+            strokeWidth={3}
+            fill="none"
+          />
 
-    {/* TOOLTIP BOX */}
-   {tooltip && chartLayout && (
-  <View
-    style={[
-      styles.tooltipBox,
-      {
-        top: tooltip.y,
-        left: tooltip.x - 70,
-      }
-    ]}
-  >
-    <Text style={styles.tooltipMonth}>{tooltip.month}</Text>
+          {/* Red Line */}
+          <Path d={createPath(advanceReturn)}
+            stroke="#FF5733"
+            strokeWidth={3}
+            fill="none"
+          />
 
-    <Text style={[styles.tooltipValue, { color: "#3A7BFF" }]}>
-      Advance : ₹{tooltip.advance}
-    </Text>
+          {/* Blue Dots */}
+          {advance.map((v, i) => (
+            <Circle
+              key={i}
+              cx={getX(i)}
+              cy={getY(v)}
+              r={6}
+              fill="#3A7BFF"
+              onPress={() => onPointPress(i)}
+            />
+          ))}
 
-    <Text style={[styles.tooltipValue, { color: "#FF5733" }]}>
-      Advance Return : ₹{tooltip.advanceReturn}
-    </Text>
+          {/* Red Dots */}
+          {advanceReturn.map((v, i) => (
+            <Circle
+              key={i}
+              cx={getX(i)}
+              cy={getY(v)}
+              r={6}
+              fill="#FF5733"
+              onPress={() => onPointPress(i)}
+            />
+          ))}
+        </Svg>
+
+        {/* TOOLTIP */}
+        {tooltip && (
+          <View style={[styles.tooltipBox, { top: tooltip.y, left: tooltip.x - 70 }]}>
+            <Text style={styles.tooltipMonth}>{tooltip.month}</Text>
+            <Text style={[styles.tooltipValue, { color: "#3A7BFF" }]}>
+              Advance : ₹{tooltip.advance}
+            </Text>
+            <Text style={[styles.tooltipValue, { color: "#FF5733" }]}>
+              Advance Return : ₹{tooltip.advanceReturn}
+            </Text>
+          </View>
+        )}
+
+      </View>
+    </TouchableWithoutFeedback>
   </View>
-)}
 
-
-  </View>
-
-  {/* LABELS */}
+  {/* X-axis Labels */}
   <View style={styles.monthRow}>
     {months.map((m, i) => (
       <Text key={i} style={styles.monthLabel}>{m}</Text>
@@ -671,7 +684,6 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
       <View style={[styles.dot, { backgroundColor: "#3A7BFF" }]} />
       <Text>Advance</Text>
     </View>
-
     <View style={styles.legendItem}>
       <View style={[styles.dot, { backgroundColor: "#FF5733" }]} />
       <Text>Advance Return</Text>
@@ -679,55 +691,142 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
   </View>
 </View>
 
-        {/* ============= CASHBACK DONUT ============= */}
-        <Text style={styles.sectionTitle}>Total Cashback</Text>
-        <View style={styles.cashbackRow}>
-          <PieChart
-            style={{ height: 180, width: 180 }}
-            data={cashbackData}
-            innerRadius={65}
-            outerRadius={"95%"}
-          />
+     <View style={styles.card}>
+       <View style={styles.chartHeader}>
+    <Text style={styles.chartTitle}>Total Cashback</Text>
 
-          <View style={{ marginLeft: 16 }}>
-            <Text style={styles.cashbackValue}>₹19,500</Text>
+    <View style={styles.dropdownBox}>
+      <Text style={styles.dropdownText}>Last 6 Months</Text>
+      <Text style={{ fontSize: 18, marginLeft: 4 }}>▾</Text>
+    </View>
+  </View>
+     <View style={{ flexDirection: "row", alignItems: "center", margin: 16 }}>
+  <Svg width={200} height={150}>
 
-            <View style={styles.legendRow}>
-              <View style={[styles.dot, { backgroundColor: "#10B981" }]} />
-              <Text>Received ₹19,500</Text>
-            </View>
+    {/* BACK ARC */}
+    <Path
+      d={`M ${cx - radius} ${cy}
+          A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+      stroke="#E5E7EB"
+      strokeWidth={strokeWidth}
+      fill="none"
+      strokeLinecap="round"
+    />
 
-            <View style={styles.legendRow}>
-              <View style={[styles.dot, { backgroundColor: "#E5E7EB" }]} />
-              <Text>Pending ₹30,000</Text>
-            </View>
-          </View>
-        </View>
+    {/* GREEN ARC */}
+    <Path
+      d={`M ${startX} ${startY}
+          A ${radius} ${radius} 0 0 1 ${endX} ${endY}`}
+      stroke="#10B981"
+      strokeWidth={strokeWidth}
+      fill="none"
+      strokeLinecap="round"
+    />
 
-        {/* ============= CATEGORY DONUT ============= */}
-        <Text style={styles.sectionTitle}>Expenses</Text>
-        <View style={styles.chartCard}>
-          <PieChart
-            style={{ height: 200 }}
-            data={expenseCategory}
-            innerRadius={40}
-            outerRadius={"90%"}
-          />
+    {/* CENTER VALUE */}
+    <Text
+    style={{
+      position: "absolute",
+      top: 90,
+      left: 110,
+      transform: [{ translateX: -40 }],
+      fontSize: 16,
+      fontWeight: "700",
+      color: "#000",
+    }}
+  >
+    ₹{safeReceived.toLocaleString()}
+  </Text>
 
-          <View style={{ marginTop: 16 }}>
-            {[
-              { text: "Category 1 – 45%", color: "#FBBF24" },
-              { text: "Category 2 – 30%", color: "#3B82F6" },
-              { text: "Category 3 – 15%", color: "#EF4444" },
-              { text: "Category 4 – 10%", color: "#A78BFA" },
-            ].map((item, i) => (
-              <View key={i} style={styles.legendRow}>
-                <View style={[styles.dot, { backgroundColor: item.color }]} />
-                <Text style={{ marginLeft: 8 }}>{item.text}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+  </Svg>
+
+ 
+  <View style={{ marginLeft: 16 }}>
+    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#10B981", marginRight: 8 }} />
+      <Text>Received ₹{safeReceived.toLocaleString()}</Text>
+    </View>
+
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#E5E7EB", marginRight: 8 }} />
+      <Text>Pending ₹{safePending.toLocaleString()}</Text>
+    </View>
+  </View>
+</View>
+</View>
+
+
+       
+      <View style={styles.chartCard}>
+
+  <View style={styles.chartHeader}>
+    <Text style={styles.chartTitle}>Expenses</Text>
+
+    <View style={styles.dropdownBox}>
+      <Text style={styles.dropdownText}>This Month</Text>
+      <Text style={{ fontSize: 18, marginLeft: 4 }}>▾</Text>
+    </View>
+  </View>
+
+ 
+<View style={{ width: 220, height: 220, alignSelf: "center" }}>
+  
+
+  <PieChart
+    style={{ height: 220 }}
+    data={expenseCategory}
+    innerRadius={70}
+    outerRadius={"90%"}
+  />
+
+  
+  <View
+    style={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: 220,
+      height: 220,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <View
+      style={{
+        width: 145, 
+        height: 145,
+        borderRadius: 145 / 2,
+        backgroundColor: "white",
+      }}
+    />
+
+
+    <Text
+      style={{
+        position: "absolute",
+        fontSize: 24,
+        fontWeight: "700",
+        color: "#000",
+      }}
+    >
+      {totalCategories}
+    </Text>
+  </View>
+</View>
+
+
+  
+  <View style={styles.legendGrid}>
+    {legendItems.map((item, i) => (
+      <View key={i} style={styles.legendItemRow}>
+        <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+        <Text style={styles.legendLabel}>{item.text}</Text>
+      </View>
+    ))}
+  </View>
+
+</View>
+
 
         <View style={{ height: 50 }} />
       </ScrollView>
@@ -738,7 +837,7 @@ const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (
   );
 }
 
-/* ------------------- STYLES ------------------- */
+
 
 const styles = StyleSheet.create({
   safe: { backgroundColor: "#fff", flex: 1 },
@@ -908,15 +1007,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // smallCard: {
-  //   width: width * 0.4,
-  //   padding: 14,
-  //   backgroundColor: "#fff",
-  //   borderRadius: 16,
-  //   borderWidth: 1,
-  //   borderColor: "#EAEFFC",
-  //   elevation: 2,
-  // },
+ 
 
   smallCardIcon: {
     width: 40,
@@ -942,11 +1033,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     paddingHorizontal: 10,
-    // justifyContent: "space-between",
+   
   },
 
   quickCard: {
-    // width: width * 0.28,
   backgroundColor: "#fff",
   padding: 14,
   borderRadius: 16,
@@ -957,14 +1047,7 @@ const styles = StyleSheet.create({
   alignItems: "center",
   },
 
-  // quickIconBox: {
-  //   width: 46,
-  //   height: 46,
-  //   borderRadius: 12,
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  //   borderWidth: 1,
-  // },
+ 
   quickIconBox: {
   width: 46,
   height: 46,
@@ -1106,7 +1189,7 @@ cardValue: {
 },
 
 chartTitle: {
-  fontSize: 18,
+  fontSize: 16,
   fontWeight: "700",
   color: "#1E293B",
 },
@@ -1175,10 +1258,6 @@ xLabels: {
   marginTop: 10,
 },
 
-monthLabel: {
-  fontSize: 12,
-  color: "#6B7280",
-},
 
 monthArrow: {
   textAlign: "center",
@@ -1210,10 +1289,10 @@ legendRowBottom: {
 },
 
 legendRow: {
-  flexDirection: "row",
-  justifyContent: "center",
-  marginTop: 18,
-},
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 14,
+  },
 
 legendItem: {
   flexDirection: "row",
@@ -1272,12 +1351,8 @@ tooltip: {
     marginTop: 14,
   },
   monthLabel: { fontSize: 11, color: "#6B7280" },
-  legendRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 14,
-  },
-  legendItem: { flexDirection: "row", alignItems: "center", marginHorizontal: 15 },
+  
+
   dot: { width: 12, height: 12, borderRadius: 6, marginRight: 6 },
   tooltipBox: {
   position: "absolute",
@@ -1299,6 +1374,28 @@ tooltipValue: {
   fontSize: 13,
   fontWeight: "600",
 },
+legendGrid: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "flex-start",
+  marginTop: 10,
+  paddingHorizontal: 10,
+},
+
+legendItemRow: {
+  width: "45%",
+  flexDirection: "row",
+  alignItems: "center",
+  marginVertical: 6,
+},
+
+
+
+legendLabel: {
+  fontSize: 13,
+  color: "#1E293B",
+},
+
 
 
 });
