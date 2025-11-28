@@ -13,7 +13,7 @@ import SettingIcon from "../../Assets/Images/setting.png";
 import ThreeDots from "../../Assets/Images/3dots.png";
 import Edit from "../../Assets/Images/editIcon.png";
 import Delete from "../../Assets/Images/trash.png";
-
+import ChangePasswordSheet from "../SettingScreen/GeneralPages/ChangePasswordSheet";
 
 
 
@@ -22,6 +22,7 @@ export default function ProfileScreen({ navigation }) {
     const [activeMenu, setActiveMenu] = useState(null);
     const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
     const [showAccountSheet, setShowAccountSheet] = useState(false);
+     const [showPasswordSheet, setShowPasswordSheet] = useState(false);
 const sheetY = useRef(new Animated.Value(300)).current;
 const DotsTopRef = useRef(null);
 const DotsBottomRef = useRef(null);
@@ -98,7 +99,7 @@ const dotsRef = useRef(null);
                         <View style={{ flex: 1 }}>
                             <Text style={styles.name}>Muthuram K</Text>
 
-                            <TouchableOpacity style={styles.changePwdRow}>
+                            <TouchableOpacity style={styles.changePwdRow}  onPress={() => {setShowPasswordSheet(true)}}>
                                 <Image
                                     source={require("../../Assets/Images/Eye.png")}
                                     style={styles.eyeIcon}
@@ -271,7 +272,10 @@ const dotsRef = useRef(null);
   </View>
 )}
 
-
+     <ChangePasswordSheet 
+  visible={showPasswordSheet}
+  onClose={() => setShowPasswordSheet(false)}
+/>
 
         </View>
     );

@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   menuBox: {
   position: "absolute",
   top: 50,
-  right: 0,        // ⭐ FIXED → right-edge align perfect
+  right: 0,       
   backgroundColor: "#fff",
   width: 170,
   padding: 12,
