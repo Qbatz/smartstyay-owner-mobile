@@ -1,4 +1,6 @@
 import React, { useState,useCallback, } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import {
   View,
   Text,
@@ -57,6 +59,8 @@ import {
 
 
 export default function DashboardScreen()  {
+  const insets = useSafeAreaInsets();
+
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -253,7 +257,8 @@ const legendItems = [
 
 
   return (
-    <SafeAreaView style={styles.safe}>
+  <View style={[styles.safe, { paddingTop: insets.top }]}>
+
       <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
 
 
@@ -866,7 +871,7 @@ const legendItems = [
   onClose={() => setDrawerVisible(false)}
 />
 
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -891,7 +896,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 40
+   
   },
 
   hostelRow: { flexDirection: "row", alignItems: "center" },

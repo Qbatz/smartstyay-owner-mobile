@@ -62,6 +62,7 @@ import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGene
 import NotificationDetails from './src/Component/Dashboard/Notification';
 import ChangeHostelScreen from './src/Component/Dashboard/ChangeHostel';
 import ProfileDrawer from './src/Component/Dashboard/ProfileClickScreen';
+import ProfileScreen from './src/Component/Dashboard/ChangeProfile';
 
 
 
@@ -87,7 +88,7 @@ function AppContent() {
       <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="SplashText"
+          initialRouteName="MyTabs"
         >
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
@@ -127,6 +128,7 @@ function AppContent() {
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
                      <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
                       <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
+                       <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
 
 
         </Navigation.Navigator>
