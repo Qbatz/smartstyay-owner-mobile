@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useState,useRef} from "react";
 import {
     View,
     Text,
@@ -6,6 +6,7 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    Dimensions,Animated,PanResponder
 } from "react-native";
 import LeftArrow from "../../Assets/Images/Arrow_left.png";
 import SettingIcon from "../../Assets/Images/setting.png";
@@ -17,8 +18,53 @@ import Delete from "../../Assets/Images/trash.png";
 
 
 export default function ProfileScreen({ navigation }) {
-   
+   const SCREEN_WIDTH = Dimensions.get("window").width;
     const [activeMenu, setActiveMenu] = useState(null);
+    const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
+    const [showAccountSheet, setShowAccountSheet] = useState(false);
+const sheetY = useRef(new Animated.Value(300)).current;   // sheet starts hidden
+
+const panResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gesture) =>
+      Math.abs(gesture.dy) > 5,  // only vertical drag
+
+    onPanResponderMove: (_, gesture) => {
+      if (gesture.dy > 0) sheetY.setValue(gesture.dy); // pull down only
+    },
+
+    onPanResponderRelease: (_, gesture) => {
+      if (gesture.dy > 120 || gesture.vy > 1.5) {
+        closeSheet();  
+      } else {
+        Animated.spring(sheetY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
+
+const openSheet = () => {
+  setShowAccountSheet(true);
+  Animated.timing(sheetY, {
+    toValue: 0,
+    duration: 220,
+    useNativeDriver: true,
+  }).start();
+};
+
+const closeSheet = () => {
+  Animated.timing(sheetY, {
+    toValue: 300,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => setShowAccountSheet(false));
+};
+
+
+const dotsRef = useRef(null);
     return (
         <View style={styles.container}>
 
@@ -59,9 +105,21 @@ export default function ProfileScreen({ navigation }) {
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity onPress={() => setActiveMenu(true)}>
-                            <Image source={ThreeDots} style={styles.dotsIcon} />
-                        </TouchableOpacity>
+                       <TouchableOpacity
+  ref={dotsRef}
+  onPress={() => {
+    dotsRef.current.measureInWindow((x, y, width, height) => {
+      setPopupPos({
+        top: y + height + 5,         // dot keela popup
+        right: SCREEN_WIDTH - (x + width),
+      });
+    });
+    setActiveMenu(true);
+  }}
+>
+  <Image source={ThreeDots} style={styles.dotsIcon} />
+</TouchableOpacity>
+
                     </View>
 
                     <View style={styles.infoRow}>
@@ -92,13 +150,13 @@ export default function ProfileScreen({ navigation }) {
                         </Text>
                     </View>
 
-                    <TouchableOpacity style={styles.changeBtn}>
-                        <Image
-                            source={require("../../Assets/Images/call.png")}
-                            style={styles.swapIcon}
-                        />
-                        <Text style={styles.changeBtnText}>Change Account</Text>
-                    </TouchableOpacity>
+                 <TouchableOpacity style={styles.changeBtn} onPress={openSheet}>
+  <Image
+    source={require("../../Assets/Images/call.png")}
+    style={styles.swapIcon}
+  />
+  <Text style={styles.changeBtnText}>Change Account</Text>
+</TouchableOpacity>
                 </View>
 
                 <View style={[styles.card, { marginTop: 20 }]}>
@@ -130,33 +188,58 @@ export default function ProfileScreen({ navigation }) {
             </ScrollView>
 
 
-              {activeMenu  && 
-                <View style={styles.menuBox}>
-                 
-                  <TouchableOpacity 
-              style={styles.menuRow} 
-              onPress={() => {
-                setActiveMenu(null);
-                navigation.navigate("AddGeneralScreen", { editData: u });
-              }}
-            >
-              <Image
-                source={Edit}
-                style={styles.menuIcon}
-              />
-              <Text style={styles.menuText}>Edit</Text>
-            </TouchableOpacity>
-            
-            
-                  <TouchableOpacity style={styles.menuRow} >
-                    <Image
-                      source={Delete}
-                      style={[styles.menuIcon, { tintColor: "red" }]}
-                    />
-                    <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              }
+            {activeMenu && (
+  <TouchableOpacity 
+    style={styles.menuOverlay}
+    onPress={() => setActiveMenu(false)}  
+  >
+    <View style={[styles.menuBox, { top: popupPos.top, right: popupPos.right }]}>
+      
+      <TouchableOpacity style={styles.menuRow}>
+        <Image source={Edit} style={styles.menuIcon} />
+        <Text style={styles.menuText}>Edit</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuRow}>
+        <Image source={Delete} style={[styles.menuIcon, { tintColor: "red" }]} />
+        <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+      </TouchableOpacity>
+
+    </View>
+  </TouchableOpacity>
+)}
+{showAccountSheet && (
+  <View style={styles.sheetOverlay}>
+    
+    <TouchableOpacity style={styles.overlayTouch} onPress={closeSheet} />
+
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[
+        styles.bottomSheet,
+        { transform: [{ translateY: sheetY }] }
+      ]}
+    >
+
+      <View style={styles.sheetBar} />
+
+      <TouchableOpacity style={styles.sheetCard}>
+        <Image source={require("../../Assets/Images/profile.png")} style={styles.sheetAvatar} />
+        <Text style={styles.sheetName}>Muthuram K</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.sheetCard}>
+        <Image source={require("../../Assets/Images/profile.png")} style={styles.sheetAvatar} />
+        <Text style={styles.sheetName}>Priya</Text>
+      </TouchableOpacity>
+      
+
+    </Animated.View>
+  </View>
+)}
+
+
+
         </View>
     );
 }
@@ -309,24 +392,26 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: "600",
     },
-     menuBox: {
-    position: "absolute",
-    top: 160,
-    right: 10,
-    backgroundColor: "#fff",
-    padding: 12,
-    width: 150,
-    borderRadius: 10,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-    zIndex: 999,
-    
-  },
+    menuBox: {
+  position: "absolute",
+  backgroundColor: "#fff",
+  padding: 12,
+  width: 170,
+  borderRadius: 12,
+  elevation: 8,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 3 },
+  borderWidth: 1,
+  borderColor: "#EEE",
+  zIndex: 9999,
+},
+menuOverlay: {
+  position: "absolute",
+  top: 0, left: 0, right: 0, bottom: 0,
+},
+
 
   menuRow: {
     flexDirection: "row",
@@ -345,5 +430,74 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
+
+sheetOverlay: {
+  position: "absolute",
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "flex-end",
+},
+
+overlayTouch: {
+  flex: 1,
+},
+
+bottomSheet: {
+  width: "100%",
+  backgroundColor: "#fff",
+  paddingTop: 15,
+  paddingBottom: 60,
+  paddingHorizontal: 18,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+},
+
+sheetBar: {
+  width: 45,
+  height: 5,
+  backgroundColor: "#D0D0D0",
+  borderRadius: 20,
+  alignSelf: "center",
+  marginBottom: 15,
+},
+
+sheetCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+  backgroundColor: "#F8F9FC",
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  marginBottom: 12,
+},
+
+sheetAvatar: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  marginRight: 10,
+},
+
+sheetName: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#000",
+},
+
+closeBtn: {
+  marginTop: 10,
+  alignSelf: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+},
+
+closeBtnText: {
+  fontSize: 15,
+  fontWeight: "600",
+  color: "#555",
+},
+
 });
 
