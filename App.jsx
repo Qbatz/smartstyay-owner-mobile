@@ -62,7 +62,10 @@ import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGene
 import NotificationDetails from './src/Component/Dashboard/Notification';
 import ChangeHostelScreen from './src/Component/Dashboard/ChangeHostel';
 import ProfileDrawer from './src/Component/Dashboard/ProfileClickScreen';
+import ProfileScreen from './src/Component/Dashboard/ChangeProfile';
+
 import CreateBills from './src/Component/MorePages/Bills/CreateBill';
+
 
 
 function App() {
@@ -127,7 +130,12 @@ function AppContent() {
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
                      <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
                       <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
+
+                       <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
+
+
                       <Navigation.Screen name="CreateBills" component={CreateBills} />
+
 
         </Navigation.Navigator>
       </NavigationContainer>
