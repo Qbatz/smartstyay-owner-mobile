@@ -39,6 +39,7 @@ import dateImg from "../../Assets/Images/home-link.png";
 import room from "../../Assets/Images/PG_active.png";
 import Bed from "../../Assets/Images/bed.png";
 import { Dimensions } from "react-native";
+import CheckoutBottomSheet from './Checkout/CheckoutTenant'
 
 
 
@@ -49,6 +50,8 @@ export default function TenantsScreen({ route }) {
   const screenWidth = Dimensions.get("window").width;
 
   const detailDotsRef = useRef(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+
 
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
@@ -95,8 +98,8 @@ const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
 useLayoutEffect(() => {
-  setShowTabBar(!showDetailModal && !showFilter);
-}, [showDetailModal, showFilter]);
+  setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice);
+}, [showDetailModal, showFilter,showCheckout,showNotice]);
 
 
 
@@ -111,6 +114,14 @@ useLayoutEffect(() => {
       setShowFilter(false);
       return true;
     }
+     if (showCheckout) {
+      setShowCheckout(false);
+      return true;
+    }
+      if (showNotice) {
+      setShowNotice(false);
+      return true;
+    }
 
     
 
@@ -123,7 +134,7 @@ useLayoutEffect(() => {
   );
 
   return () => handler.remove();
-}, [showDetailModal, showFilter]);
+}, [showDetailModal, showFilter,showCheckout,showNotice]);
 
 
   
@@ -177,6 +188,7 @@ const customerList = [
 ];
 
   return (
+    <>
     <SafeAreaView style={styles.container}>
       {/* 🔍 Search Bar */}
       <View style={styles.searchContainer}>
@@ -482,6 +494,18 @@ const customerList = [
   <Text style={styles.popupText}>Move to Notice Period</Text>
 </TouchableOpacity>
 
+
+  <TouchableOpacity
+  style={styles.popupRow}
+  onPress={() => {
+    setShowMenu(false);
+    setShowCheckout(true);
+  }}
+>
+  <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+  <Text style={styles.popupText}>Checkout</Text>
+</TouchableOpacity>
+
   <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
         <Image
           source={require("../../Assets/Images/ReAssign.png")}
@@ -747,8 +771,28 @@ const customerList = [
 )}
 
 
+
       
     </SafeAreaView>
+    {
+  showCheckout &&
+  <CheckoutBottomSheet
+  visible={showCheckout}
+  onClose={() => setShowCheckout(false)}
+  customer={selectedCustomer}
+  reason={reason}
+  setReason={setReason}
+  checkoutDate="22/10/2024"
+  noticeDays={30}
+  onCheckout={() => {
+    console.log("Checkout Done");
+    setShowCheckout(false);
+  }}
+  setShowTabBar ={setShowTabBar}
+  
+/>
+}
+    </>
   );
 }
 
