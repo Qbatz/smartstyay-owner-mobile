@@ -302,23 +302,20 @@ const styles = StyleSheet.create({
   infoIcon: { width: 18, height: 18, marginRight: 8 },
 
   infoText: { fontSize: 14, color: "#333", flex: 1 },
-   menuBox: {
-    position: "absolute",
-    top: 40,
-    right: 10,
-    backgroundColor: "#fff",
-    padding: 12,
-    width: 150,
-    borderRadius: 10,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-    zIndex: 999,
-  },
+  menuBox: {
+  position: "absolute",
+  top: 50,
+  right: 0,        // ⭐ FIXED → right-edge align perfect
+  backgroundColor: "#fff",
+  width: 170,
+  padding: 12,
+  borderRadius: 12,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  elevation: 8,
+  zIndex: 999,
+},
+
 
   menuRow: {
     flexDirection: "row",
