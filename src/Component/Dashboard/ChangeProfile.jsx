@@ -22,7 +22,9 @@ export default function ProfileScreen({ navigation }) {
     const [activeMenu, setActiveMenu] = useState(null);
     const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
     const [showAccountSheet, setShowAccountSheet] = useState(false);
-const sheetY = useRef(new Animated.Value(300)).current;   // sheet starts hidden
+const sheetY = useRef(new Animated.Value(300)).current;
+const DotsTopRef = useRef(null);
+const DotsBottomRef = useRef(null);
 
 const panResponder = useRef(
   PanResponder.create({
@@ -105,20 +107,21 @@ const dotsRef = useRef(null);
                             </TouchableOpacity>
                         </View>
 
-                       <TouchableOpacity
-  ref={dotsRef}
+                      <TouchableOpacity
+  ref={DotsTopRef}
   onPress={() => {
-    dotsRef.current.measureInWindow((x, y, width, height) => {
+    DotsTopRef.current.measureInWindow((x, y, width, height) => {
       setPopupPos({
-        top: y + height + 5,         // dot keela popup
+        top: y + height + 6,
         right: SCREEN_WIDTH - (x + width),
       });
     });
-    setActiveMenu(true);
+    setActiveMenu("box");
   }}
 >
   <Image source={ThreeDots} style={styles.dotsIcon} />
 </TouchableOpacity>
+
 
                     </View>
 
@@ -178,9 +181,21 @@ const dotsRef = useRef(null);
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity>
-                            <Image source={ThreeDots} style={styles.dotsIcon} />
-                        </TouchableOpacity>
+                       <TouchableOpacity
+  ref={DotsBottomRef}
+  onPress={() => {
+    DotsBottomRef.current.measureInWindow((x, y, width, height) => {
+      setPopupPos({
+        top: y + height + 6,
+        right: SCREEN_WIDTH - (x + width),
+      });
+    });
+    setActiveMenu("box1");
+  }}
+>
+  <Image source={ThreeDots} style={styles.dotsIcon} />
+</TouchableOpacity>
+
                     </View>
                 </View>
 
@@ -188,26 +203,44 @@ const dotsRef = useRef(null);
             </ScrollView>
 
 
-            {activeMenu && (
-  <TouchableOpacity 
+   {activeMenu && (
+  <TouchableOpacity
     style={styles.menuOverlay}
-    onPress={() => setActiveMenu(false)}  
+    onPress={() => setActiveMenu(null)}
   >
     <View style={[styles.menuBox, { top: popupPos.top, right: popupPos.right }]}>
-      
-      <TouchableOpacity style={styles.menuRow}>
+
+      {/* EDIT */}
+      <TouchableOpacity
+        style={styles.menuRow}
+        onPress={() => {
+          console.log(activeMenu + " EDIT");
+          setActiveMenu(null);
+        }}
+      >
         <Image source={Edit} style={styles.menuIcon} />
         <Text style={styles.menuText}>Edit</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.menuRow}>
-        <Image source={Delete} style={[styles.menuIcon, { tintColor: "red" }]} />
+      {/* DELETE */}
+      <TouchableOpacity
+        style={styles.menuRow}
+        onPress={() => {
+          console.log(activeMenu + " DELETE");
+          setActiveMenu(null);
+        }}
+      >
+        <Image
+          source={Delete}
+          style={[styles.menuIcon, { tintColor: "red" }]}
+        />
         <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
       </TouchableOpacity>
 
     </View>
   </TouchableOpacity>
 )}
+
 {showAccountSheet && (
   <View style={styles.sheetOverlay}>
     
