@@ -458,14 +458,22 @@ const handleShowRecordPayment  = () => {
 }
 
 const handleCreateBill = () => {
-navigation.navigate("CreateBills")
+navigation.navigate("CreateBills" , {mode: "add"})
 }
 
 const handleShowRefundPayment = () => {
   setShowRefundPayment(true)
 }
-const handleShowAddBooking = () => {
-navigation.navigate("AddBooking")
+const handleEditBill = () => {
+
+ navigation.navigate("CreateBills", {
+    mode: "edit",
+    // data: item,  
+  });
+}
+
+const handleShowBillPdf = () => {
+navigation.navigate("BillsPdf")
 }
 
 const handleShowCancelNotice = () => {
@@ -718,7 +726,7 @@ const customerList = [
   </View>
 
   {/* PREVIEW BUTTON */}
-  <TouchableOpacity style={styles.previewBtn}>
+  <TouchableOpacity style={styles.previewBtn} onPress={handleShowBillPdf}>
     <View style={{display:'flex', flexDirection:'row'}}>
                <Image source={PreviewIcon} style={{   width: 18,
     height: 18, marginTop:3 , marginRight:12
@@ -838,7 +846,7 @@ const customerList = [
         />
         <Text style={styles.popupText}>Write-off</Text>
       </TouchableOpacity>
-       <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+       <TouchableOpacity style={styles.popupRow} onPress={handleEditBill} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
@@ -1538,9 +1546,9 @@ const customerList = [
     <View style={styles.deleteOverlay}>
       <View style={styles.deleteBox}>
 
-        <Text style={styles.deleteTitle}>Delete Customer?</Text>
+        <Text style={styles.deleteTitle}>Delete Bill?</Text>
         <Text style={styles.deleteSub}>
-          Are you sure you want to delete this Customer?
+          Are you sure you want to delete this Bill?
         </Text>
 
         <View style={styles.deleteBtnRow}>

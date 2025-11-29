@@ -65,7 +65,7 @@ import ProfileDrawer from './src/Component/Dashboard/ProfileClickScreen';
 import ProfileScreen from './src/Component/Dashboard/ChangeProfile';
 
 import CreateBills from './src/Component/MorePages/Bills/CreateBill';
-
+import BillsPdf from './src/Component/MorePages/Bills/BillsPdf';
 
 
 function App() {
@@ -130,12 +130,9 @@ function AppContent() {
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
                      <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
                       <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
-
                        <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
-
-
                       <Navigation.Screen name="CreateBills" component={CreateBills} />
-
+                      <Navigation.Screen name="BillsPdf" component={BillsPdf} />
 
         </Navigation.Navigator>
       </NavigationContainer>

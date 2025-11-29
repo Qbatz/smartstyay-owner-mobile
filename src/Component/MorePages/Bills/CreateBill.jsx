@@ -3,19 +3,15 @@ import {
    View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   TextInput,
   Image,
-  TouchableWithoutFeedback,
-  Modal, Animated ,
-  PanResponder,
-  BackHandler , Dimensions
+ Dimensions
 } from "react-native";
+import {  useRoute} from "@react-navigation/native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -26,21 +22,18 @@ import RemoveIcon from "../../../Assets/Images/remove-circle.png";
 export default function CreateBill({navigation}) {
   const itemOptions = ["Room rent", "EB", "Others"];
 
+    const route = useRoute();
+    const { mode, data } = route.params || {};
   const [customer, setCustomer] = useState("");
   const [invoiceNo, setInvoiceNo] = useState("");
 //   const [invoiceDate, setInvoiceDate] = useState("");
 //   const [dueDate, setDueDate] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [fromDate, setFromDate] = useState(dayjs());
-  const [toDate, setToDate] = useState(dayjs());
   
-  const [openFrom, setOpenFrom] = useState(false);
-  const [openTo, setOpenTo] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
 const [openinvoiceDatePicker, setOpenInvoiceDatePicker] = useState(false);
 const [opendueDatePicker, setOpenDueDatePicker] = useState(false);  
 
-  const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
   const [invoiceDate, setInvoiceDate] = useState(
      new Date()
   )
@@ -63,6 +56,18 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
    
         const [customerSelected, setCustomerSelected] = useState(CustomerOptions[0]);
         const [customeDropdownVisible, setCustomerDropdownVisible] = useState(false);
+
+
+        //  this is dummy data store for edit 
+        //  useEffect(() => {
+        //   if (mode === "edit" && data) {
+        //     setCustomer(data?.customer);
+        //     setInvoiceNo(data?.invoiceno);
+        //     setInvoiceDate(data?.invoice_date);
+        //     setDueDate(new Date(data?.dueDate));
+        //   }
+        // }, [mode, data]); 
+       
 
   const handleSelectItem = (type) => {
     let newCard;
@@ -102,14 +107,13 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                           <Image source={ArrowLeft} style={styles.backIcon} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>  Create New Bill</Text>
+                        <Text style={styles.headerTitle}>  {mode === "edit" ? "Edit Bill" : " Create New Bill"} </Text>
                       </View>
 
 
 
     <ScrollView style={styles.container}>
     
-      {/* CUSTOMER */}
       <Text style={styles.label}>Customer</Text>
      <View
                        style={styles.selectWrapper}
@@ -144,7 +148,6 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
                        )}
                      </View>
 
-      {/* INVOICE NO */}
       <Text style={styles.label}>Invoice No</Text>
       <TextInput
         style={styles.input}
@@ -153,7 +156,6 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
         onChangeText={setInvoiceNo}
       />
 
-      {/* INVOICE DATE */}
       <Text style={styles.label}>Invoice Date</Text>
           <TouchableOpacity
           style={styles.inputBox}
@@ -165,10 +167,8 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
           <Image source={CalendarIcon} style={styles.calendarIcon} />
         </TouchableOpacity>
 
-        {/* Date picker inline under the field (Option B) */}
         {openinvoiceDatePicker && (
           <View style={styles.dropdownBox}>
-            {/* DatePicker UI rendered inline */}
             <DatePicker
               mode="single"
               date={invoiceDate}
@@ -182,7 +182,6 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
         )}
 
 
-      {/* DUE DATE */}
       <Text style={styles.label}>Due Date</Text>
          <TouchableOpacity
           style={styles.inputBox}
@@ -194,10 +193,8 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
           <Image source={CalendarIcon} style={styles.calendarIcon} />
         </TouchableOpacity>
 
-        {/* Date picker inline under the field (Option B) */}
         {opendueDatePicker && (
           <View style={styles.dropdownBox}>
-            {/* DatePicker UI rendered inline */}
             <DatePicker
               mode="single"
               date={dueDate}
@@ -210,7 +207,6 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
           </View>
         )}
 
-      {/* ITEMS */}
       <Text style={styles.label}>Items</Text>
       <TouchableOpacity
         style={styles.ItemdropdownBox}
@@ -233,7 +229,6 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
         </View>
       )}
 
-      {/* ITEM CARDS */}
       {items.map((item, index) => (
         <View key={index} style={styles.itemCard}>
           <View style={styles.cardHeader}>
@@ -263,7 +258,6 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
         </View>
       ))}
 
-      {/* BOTTOM BUTTONS */}
        <View style={styles.btnRow}>
                <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
                  <Text style={styles.cancelText}>Cancel</Text>
@@ -275,7 +269,7 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
                    navigation.goBack();
                  }}
                >
-                 <Text style={styles.saveText}> Create Bill</Text>
+                 <Text style={styles.saveText}> {mode === "edit" ? "Update Bill" : " Create Bill"}</Text>
                </TouchableOpacity>
              </View>
 
