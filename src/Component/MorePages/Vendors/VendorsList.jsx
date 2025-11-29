@@ -1,4 +1,4 @@
-import React, { useState,useRef } from "react";
+import React, { useState,useRef,useCallback } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,9 @@ import {
   TextInput,
   FlatList,
   Platform,
-  Modal,PanResponder,Animated,TouchableWithoutFeedback,Dimensions,ScrollView
+  Modal,PanResponder,Animated,TouchableWithoutFeedback,Dimensions,ScrollView,BackHandler
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import AvatarPlaceholder from "../../../Assets/Images/Avatar.png";
@@ -40,6 +41,32 @@ export default function VendorsList({ navigation }) {
          const toggleAmountDropdown = () => {
       setAmountDropdownVisible((v) => !v);
     };
+
+
+    useFocusEffect(
+       useCallback(() => {
+         const onBackPress = () => {
+           if (showFilter) {
+             setShowFilter(false)
+             return true;
+           }
+     
+           if (navigation.canGoBack()) {
+             navigation.goBack();
+             return true;
+           }
+     
+           return false;
+         };
+     
+         const subscription = BackHandler.addEventListener(
+           "hardwareBackPress",
+           onBackPress
+         );
+     
+         return () => subscription.remove();
+       }, [navigation,showFilter])
+     );
      const amountOptions = [
         "Low to High (Lowest First)",
         "High to Low (Highest First)",

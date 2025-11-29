@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState ,useEffect} from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   ScrollView,
   Animated,
   PanResponder,
-  Dimensions
+  Dimensions,BackHandler
 } from "react-native";
 
 
@@ -25,7 +25,19 @@ export default function AddVendorSheet({onClose, vendorData }) {
     const [selectedImage, setSelectedImage] = useState(null);
    
   
+      useEffect(() => {
+        const backAction = () => {
+          onClose();   
+          return true;
+        };
       
+        const handler = BackHandler.addEventListener(
+          "hardwareBackPress",
+          backAction
+        );
+      
+        return () => handler.remove();
+      }, [onClose]);
   
   
  const pickImage = () => {
