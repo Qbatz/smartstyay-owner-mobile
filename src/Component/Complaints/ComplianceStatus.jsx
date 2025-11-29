@@ -1,17 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   Image,
   ScrollView,
+  Animated,
+  PanResponder,
+  Dimensions,
+  BackHandler,
 } from "react-native";
 
-import { BackHandler } from "react-native";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import CloseIcon from "../../Assets/Images/remove.png";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function ChangeStatus({
   visible,
@@ -22,51 +26,101 @@ export default function ChangeStatus({
 }) {
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  /** PAN HANDLER */
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) translateY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) handleClose();
+        else openSheet();
+      },
+    })
+  ).current;
+
+  /** animate open */
+  const openSheet = () => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  /** animate close */
+  const handleClose = () => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => onClose());
+  };
+
+  /** On visible change */
   useEffect(() => {
     if (visible) {
-      const backAction = () => {
-        onClose();
-        return true;
-      };
-      const sub = BackHandler.addEventListener("hardwareBackPress", backAction);
-      return () => sub.remove();
+      openSheet();
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          handleClose();
+          return true;
+        }
+      );
+
+      return () => backHandler.remove();
     }
   }, [visible]);
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} transparent animationType="slide">
-     <View style={styles.overlay} pointerEvents="box-none">
-        <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+    <>
+      {/* OVERLAY */}
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={handleClose}
+      />
 
-        <View style={styles.sheet}>
-          <View style={styles.headerLine} />
+      {/* BOTTOM SHEET */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.sheet, { transform: [{ translateY }] }]}
+      >
+        <View style={styles.headerLine} />
 
-          <View style={styles.header}>
-            <Text style={styles.title}>Change Status</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Image source={CloseIcon} style={styles.closeIcon} />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.header}>
+          <Text style={styles.title}>Change Status</Text>
 
-          <Text style={styles.label}>Change</Text>
+          <TouchableOpacity onPress={handleClose}>
+            <Image source={CloseIcon} style={styles.closeIcon} />
+          </TouchableOpacity>
+        </View>
 
-          {/* SELECT BOX */}
-          <View style={{ zIndex: 50 }}>
-            <TouchableOpacity
-              style={styles.selectBox}
-              onPress={() => setDropdownVisible(!dropdownVisible)}
-            >
-              <Text style={styles.selectedText}>{selectedStatus}</Text>
-              <Image source={DownArrow} style={styles.downArrow} />
-            </TouchableOpacity>
+        <Text style={styles.label}>Change</Text>
 
-            {dropdownVisible && (
-              <View style={styles.dropdownMenu}>
-                 <ScrollView 
-      nestedScrollEnabled={true}
-      showsVerticalScrollIndicator={false}
-    >
-                {["Pending", "In Progress", "Resolved",].map((item) => (
+        {/* SELECT BOX */}
+        <View style={{ zIndex: 50 }}>
+          <TouchableOpacity
+            style={styles.selectBox}
+            onPress={() => setDropdownVisible(!dropdownVisible)}
+          >
+            <Text style={styles.selectedText}>{selectedStatus}</Text>
+            <Image source={DownArrow} style={styles.downArrow} />
+          </TouchableOpacity>
+
+          {dropdownVisible && (
+            <View style={styles.dropdownMenu}>
+              <ScrollView
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={false}
+              >
+                {["Pending", "In Progress", "Resolved"].map((item) => (
                   <TouchableOpacity
                     key={item}
                     style={styles.option}
@@ -78,53 +132,56 @@ export default function ChangeStatus({
                     <Text style={styles.optionText}>{item}</Text>
                   </TouchableOpacity>
                 ))}
-                </ScrollView>
-              </View>
-            )}
-          </View>
-
-         
-          <View style={styles.footerBtnRow}>
-            <TouchableOpacity
-              style={[styles.btn, styles.cancelBtn]}
-              onPress={onClose}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.btn, styles.updateBtn]}
-              onPress={onStatusUpdate}
-            >
-              <Text style={styles.updateText}>Change Status</Text>
-            </TouchableOpacity>
-          </View>
-
+              </ScrollView>
+            </View>
+          )}
         </View>
-      </View>
-    </Modal>
+
+        {/* BUTTONS */}
+        <View style={styles.footerBtnRow}>
+          <TouchableOpacity
+            style={[styles.btn, styles.cancelBtn]}
+            onPress={handleClose}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.btn, styles.updateBtn]}
+            onPress={() => {
+              onStatusUpdate();
+              handleClose();
+            }}
+          >
+            <Text style={styles.updateText}>Change Status</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
   },
 
   sheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-  paddingBottom: 35,
-  position: "relative",
-
-  overflow: "visible",
-},
-
-
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    padding: 20,
+    paddingBottom: 40,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
 
   headerLine: {
     width: 60,
@@ -139,6 +196,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 25,
+    alignItems: "center",
   },
 
   title: { fontSize: 18, fontWeight: "700", color: "#000" },
@@ -159,24 +217,22 @@ const styles = StyleSheet.create({
   selectedText: { fontSize: 15, color: "#000" },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
 
-dropdownMenu: {
-  position: "absolute",
-  top: 55,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  elevation: 10,
-  zIndex: 999,
+  dropdownMenu: {
+    position: "absolute",
+    top: 55,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    elevation: 10,
+    zIndex: 999,
+    maxHeight: 140,
+    overflow: "hidden",
+  },
 
-  maxHeight: 120,         
-  overflow: "hidden",      
-},
-
-
-  option: { paddingVertical: 6, paddingHorizontal: 14 },
+  option: { paddingVertical: 10, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
   footerBtnRow: {

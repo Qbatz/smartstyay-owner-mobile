@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState,useEffect } from "react";
 import {
     View,
     Text,
@@ -9,20 +9,37 @@ import {
     Image,
     Animated,
     PanResponder,
-    ScrollView
+    ScrollView,
+    BackHandler
 } from "react-native";
 import Calendar from "../../../Assets/Images/calendar.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
+
 export default function AddAssetSheet({ onClose, title = "Add Assets" }) {
+      
     const translateY = useRef(new Animated.Value(0)).current;
     const vendors = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
     const [vendorOpen, setVendorOpen] = useState(false);
     const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
     const [openDatePicker, setOpenDatePicker] = useState(false);
     const [purchaseDate, setPurchaseDate] = useState(dayjs());
+
+useEffect(() => {
+  const backAction = () => {
+    onClose();   
+    return true;
+  };
+
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => handler.remove();
+}, [onClose]);
 
 
 

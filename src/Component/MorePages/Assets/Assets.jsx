@@ -27,10 +27,10 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import TrashIcon from "../../../Assets/Images/trash.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
-import AddAssetSheet from "../Assets/AddAssets"
+import AddAssetSheet from "../Assets/AddAssets";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Assets({ navigation }) {
-  // sheet + filter state
   const [showSheet, setShowSheet] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
 
@@ -61,7 +61,27 @@ export default function Assets({ navigation }) {
   const translateY = useRef(new Animated.Value(0)).current;
   const detailsY = useRef(new Animated.Value(0)).current;
   const assignTranslateY = useRef(new Animated.Value(0)).current;
-
+useFocusEffect(
+   useCallback(() => {
+     const onBackPress = () => {
+       
+ 
+       if (navigation.canGoBack()) {
+         navigation.goBack();
+         return true;
+       }
+ 
+       return false;
+     };
+ 
+     const subscription = BackHandler.addEventListener(
+       "hardwareBackPress",
+       onBackPress
+     );
+ 
+     return () => subscription.remove();
+   }, [navigation])
+ );
 
 
 

@@ -1,128 +1,195 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
   Image,
   TextInput,
   ScrollView,
-  BackHandler
+  Animated,
+  PanResponder,
+  Dimensions,
+  BackHandler,
 } from "react-native";
 
-import CloseIcon from "../../Assets/Images/remove.png";
 import Profile from "../../Assets/Images/Avatar.png";
 import Comments from "../../Assets/Images/send.png";
 
-export default function CommentBottomSheet({ visible, onClose }) {
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
+export default function CommentBottomSheet({ visible, onClose }) {
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  /** SWIPE HANDLER */
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) translateY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) closeSheet();
+        else openSheet();
+      },
+    })
+  ).current;
+
+  /** OPEN ANIMATION */
+  const openSheet = () => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  /** CLOSE ANIMATION */
+  const closeSheet = () => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(onClose);
+  };
+
+  /** OPEN when visible changes */
   useEffect(() => {
     if (visible) {
-      const backAction = () => {
-        onClose();
-        return true;
-      };
+      openSheet();
 
-      const sub = BackHandler.addEventListener("hardwareBackPress", backAction);
-      return () => sub.remove();
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          closeSheet();
+          return true;
+        }
+      );
+
+      return () => backHandler.remove();
     }
   }, [visible]);
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+    <>
+      {/* DARK BACKDROP */}
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={closeSheet}
+      />
 
-        <View style={styles.sheet}>
-          {/* Top Drag Line */}
-          <View style={styles.dragLine} />
+      {/* SWIPEABLE BOTTOM SHEET */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.sheet, { transform: [{ translateY }] }]}
+      >
+        <View style={styles.dragLine} />
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.commentsTitle}>Comments</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Text style={styles.commentsTitle}>Comments</Text>
 
-            {/* Header User */}
-            <View style={styles.mainUserRow}>
-              <Image source={Profile} style={styles.mainUserImg} />
-              <View>
-                <Text style={styles.mainUserName}>Parthiban M</Text>
-                <Text style={styles.mainUserDate}>20 Mar 2025</Text>
-              </View>
+          {/* MAIN USER */}
+          <View style={styles.mainUserRow}>
+            <Image source={Profile} style={styles.mainUserImg} />
+            <View>
+              <Text style={styles.mainUserName}>Parthiban M</Text>
+              <Text style={styles.mainUserDate}>20 Mar 2025</Text>
             </View>
+          </View>
 
-            <View style={styles.separator} />
+          <View style={styles.separator} />
 
-            {/* First Message */}
-            <View style={styles.msgRow}>
-              <Image source={Profile} style={styles.msgUserImg} />
-              <View style={{ flex: 1 }}>
-                <View style={styles.msgHeader}>
-                  <Text style={styles.msgUserName}>Parthiban</Text>
-                  <Text style={styles.msgTime}>20 Mar 2025 – 12:45 PM</Text>
-                </View>
+          {/* MESSAGE 1 */}
+          <View style={styles.msgRow}>
+            <Image source={Profile} style={styles.msgUserImg} />
 
-                <Text style={styles.msgText}>When will the complaint be solved?</Text>
-              </View>
-            </View>
-
-            {/* Second Message */}
-            <View style={styles.msgRow}>
-              <Image source={Profile} style={styles.msgUserImg} />
-              <View style={{ flex: 1 }}>
-                <View style={styles.msgHeader}>
-                  <Text style={styles.msgUserName}>Priya</Text>
-                  <Text style={styles.msgTime}>20 Mar 2025 – 02:26 PM</Text>
-                </View>
-
-                <Text style={styles.msgText}>
-                  Complaint Assigned and will be rectify in Few Hours
+            <View style={{ flex: 1 }}>
+              <View style={styles.msgHeader}>
+                <Text style={styles.msgUserName}>Parthiban</Text>
+                <Text style={styles.msgTime}>
+                  20 Mar 2025 – 12:45 PM
                 </Text>
               </View>
+
+              <Text style={styles.msgText}>
+                When will the complaint be solved?
+              </Text>
             </View>
+          </View>
 
-            {/* Third Message */}
-            <View style={styles.msgRow}>
-              <Image source={Profile} style={styles.msgUserImg} />
-              <View style={{ flex: 1 }}>
-                <View style={styles.msgHeader}>
-                  <Text style={styles.msgUserName}>Parthiban</Text>
-                  <Text style={styles.msgTime}>20 Mar 2025 – 04:05 PM</Text>
-                </View>
+          {/* MESSAGE 2 */}
+          <View style={styles.msgRow}>
+            <Image source={Profile} style={styles.msgUserImg} />
 
-                <Text style={styles.msgText}>Thank you!</Text>
+            <View style={{ flex: 1 }}>
+              <View style={styles.msgHeader}>
+                <Text style={styles.msgUserName}>Priya</Text>
+                <Text style={styles.msgTime}>
+                  20 Mar 2025 – 02:26 PM
+                </Text>
               </View>
-            </View>
 
-            {/* Reply Input */}
-            <View style={styles.replyBox}>
-              <TextInput
-                placeholder="Post your Reply Here"
-                placeholderTextColor="#8A8A8A"
-                style={styles.input}
-              />
-              <TouchableOpacity style={styles.sendBtn}>
-                <Image source={Comments} style={styles.sendIcon} />
-              </TouchableOpacity>
+              <Text style={styles.msgText}>
+                Complaint Assigned and will be rectify in Few Hours
+              </Text>
             </View>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
+          </View>
+
+          {/* MESSAGE 3 */}
+          <View style={styles.msgRow}>
+            <Image source={Profile} style={styles.msgUserImg} />
+
+            <View style={{ flex: 1 }}>
+              <View style={styles.msgHeader}>
+                <Text style={styles.msgUserName}>Parthiban</Text>
+                <Text style={styles.msgTime}>
+                  20 Mar 2025 – 04:05 PM
+                </Text>
+              </View>
+
+              <Text style={styles.msgText}>Thank you!</Text>
+            </View>
+          </View>
+
+          {/* REPLY INPUT */}
+          <View style={styles.replyBox}>
+            <TextInput
+              placeholder="Post your Reply Here"
+              placeholderTextColor="#8A8A8A"
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.sendBtn}>
+              <Image source={Comments} style={styles.sendIcon} />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </Animated.View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
     backgroundColor: "rgba(0,0,0,0.35)",
-    justifyContent: "flex-end",
   },
 
   sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: "#fff",
+    padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    padding: 20,
+    maxHeight: SCREEN_HEIGHT * 0.85,
   },
 
   dragLine: {
@@ -197,7 +264,7 @@ const styles = StyleSheet.create({
   msgTime: {
     fontSize: 11,
     color: "#999",
-    marginLeft:20
+    marginLeft: 20,
   },
 
   msgText: {
@@ -225,7 +292,6 @@ const styles = StyleSheet.create({
   },
 
   sendBtn: {
-   
     width: 42,
     height: 42,
     borderRadius: 25,
@@ -237,6 +303,5 @@ const styles = StyleSheet.create({
   sendIcon: {
     width: 30,
     height: 30,
-   
   },
 });
