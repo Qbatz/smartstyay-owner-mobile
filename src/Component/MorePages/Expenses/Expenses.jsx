@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useEffect, useState , useRef } from "react";
+import React, {useLayoutEffect, useEffect, useState , useRef,useCallback } from "react";
 import {
   View,
   Text,
@@ -28,11 +28,13 @@ import ButtonTag from "../../../Assets/Images/tag.png";
 import FilterIcon from "../../../Assets/Images/EditPin.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CloseIcon from "../../../Assets/Images/remove.png";
+import { useFocusEffect } from '@react-navigation/native';
 
 
 export default function ExpensesScreen() {
   const navigation = useNavigation();
    const [showFilter, setShowFilter] = useState(false);
+   
 
 const expensesData = [
   {
@@ -296,34 +298,89 @@ const closeTagAsset = () => {
     //   return () => sub.remove();
     // }, [showFilter]);
 
-    useEffect(() => {
+
+   useFocusEffect(
+  useCallback(() => {
+
     const onBackPress = () => {
 
-    if (selectedExpense) {
-      closeDetails();
-      return true; 
-    }
+      // 1️⃣ Expense Details Open → Close it
+      if (selectedExpense) {
+        setSelectedExpense(null);
+        return true;
+      }
 
-    if (showFilter) {
-      setShowFilter(false);
-      return true; 
-    }
+      // 2️⃣ Filter Sheet Open → Close it
+      if (showFilter) {
+        setShowFilter(false);
+        return true;
+      }
 
-    if(showTagAsset){
-      setShowTagAsset(false)
-      return true
-    }
+      // 3️⃣ Tag Asset Sheet Open → Close it
+      if (showTagAsset) {
+        setShowTagAsset(false);
+        return true;
+      }
 
-    return false;
-  }
+      // 4️⃣ If can go back → goBack()
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return true;
+      }
 
-  const sub = BackHandler.addEventListener(
-    "hardwareBackPress",
-    onBackPress
-  );
+      // 5️⃣ Otherwise allow default behaviour
+      return false;
+    };
 
-  return () => sub.remove();
-}, [selectedExpense, showFilter]);
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [
+    selectedExpense,
+    showFilter,
+    showTagAsset,
+    navigation
+  ])
+);
+
+
+//    useEffect(() => {
+//   const onBackPress = () => {
+
+    
+//     if (selectedExpense) {
+//       closeDetails();
+//       return true;
+//     }
+
+  
+//     if (showFilter) {
+//       setShowFilter(false);
+//       return true;
+//     }
+
+    
+//     if (showTagAsset) {
+//       setShowTagAsset(false);
+//       return true;
+//     }
+
+   
+//     navigation.navigate("MyTabs");
+//     return true;
+//   };
+
+//   const sub = BackHandler.addEventListener(
+//     "hardwareBackPress",
+//     onBackPress
+//   );
+
+//   return () => sub.remove();
+// }, [selectedExpense, showFilter, showTagAsset,navigation]);
+
 
   
 const toggleAmountDropdown = () => {

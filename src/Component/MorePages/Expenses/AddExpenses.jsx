@@ -1,7 +1,7 @@
 // AddExpenses.js
 // Navigation-friendly, Figma-styled Add Expense screen with inline full-width dropdowns & date picker below the field
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Image,
   SafeAreaView,
   Platform,
+  BackHandler
 } from "react-native";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -44,6 +45,18 @@ const [purchaseDate, setPurchaseDate] = useState(
 
   // const [modePayment, setModePayment] = useState("Cash");
   const [modePaymentOpen, setModePaymentOpen] = useState(false);
+  useEffect(() => {
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    () => {
+      navigation.goBack();  
+      return true;
+    }
+  );
+
+  return () => backHandler.remove();
+}, []);
+
 
   // INPUTS
   // const [perUnit, setPerUnit] = useState("100");
