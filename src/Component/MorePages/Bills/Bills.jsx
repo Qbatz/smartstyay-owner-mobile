@@ -34,7 +34,8 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-// import WalkinScreen from '../Customer/WalkIn/WalkinList'
+import RecurringBills from "./RecurringBills"
+import Receipt from './Receipt'
 import Call from "../../../Assets/Images/call.png";
 import Sms from "../../../Assets/Images/sms.png";
 import dateImg from "../../../Assets/Images/home-link.png";
@@ -62,8 +63,8 @@ import { Dimensions } from "react-native";
 
 
 export default function BillsDesign({ route }) {
-//   const { setShowTabBar } = route.params;
-//   const screenWidth = Dimensions.get("window").width;
+  // const { setShowTabBar } = route.params;
+  // const screenWidth = Dimensions.get("window").width;
 
   const detailDotsRef = useRef(null);
 
@@ -616,12 +617,12 @@ const customerList = [
 )}
 
 
-{/* {activeTab === "RecurringBills" && (
-   <CheckoutList/>
+{activeTab === "RecurringBills" && (
+   <RecurringBills />
   )}
   {activeTab === "Receipt" && (
-   <WalkinScreen setShowTabBar = {setShowTabBar}/>
-  )} */}
+   <Receipt />
+  )}
  
 {showBillDetails && (
   <View style={styles.sheetOverlay}>
