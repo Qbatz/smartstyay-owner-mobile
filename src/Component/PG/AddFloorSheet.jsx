@@ -133,9 +133,21 @@ export default function AddFloorSheet({ visible, onClose }) {
           onChangeText={setFloorName}
         />
 
-        <TouchableOpacity style={styles.addBtn}>
+        {/* <TouchableOpacity style={styles.addBtn}>
           <Text style={styles.addBtnText}>Add Floor</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+  style={styles.addBtn}
+  onPress={() => {
+    if (!floorName.trim()) return;
+    onClose();        // close sheet
+    onSave(floorName); // send to parent
+    setFloorName(""); // clear input
+  }}
+>
+  <Text style={styles.addBtnText}>Add Floor</Text>
+</TouchableOpacity>
+
       </Animated.View>
     </View>
   );
