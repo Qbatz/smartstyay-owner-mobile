@@ -313,7 +313,7 @@ useLayoutEffect(() => {
               return () => backHandler.remove();
             }, [])
 
-            
+
 
 
  useLayoutEffect(() => {
@@ -2107,6 +2107,7 @@ applyText: {
 },
 
 
+
 deleteOverlay: {
   flex: 1,
   backgroundColor: "rgba(0,0,0,0.4)",
@@ -2121,6 +2122,7 @@ deleteBox: {
   borderRadius: 15,
   alignItems: "center",
   elevation: 10,
+  gap:10
 },
 
 deleteTitle: {
@@ -2149,9 +2151,10 @@ cancelBtn: {
   borderRadius: 10,
   borderWidth: 1,
   borderColor: "#2D6CDF",
-  marginRight: 10,
   alignItems: "center",
+  marginRight: 30,
 },
+
 
 cancelText: {
   fontSize: 16,
@@ -2165,13 +2168,17 @@ deleteBtn: {
   borderRadius: 10,
   backgroundColor: "#2D6CDF",
   alignItems: "center",
+  marginLeft: 10,
 },
+
 
 deleteBtnText: {
   fontSize: 16,
   fontWeight: "600",
   color: "#fff",
 },
+
+
 
   centerContainer: {
     flex: 1,
