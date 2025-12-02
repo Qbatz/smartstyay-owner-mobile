@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ScrollView,
   Image,
   SafeAreaView,
-  TouchableWithoutFeedback,
+  TouchableWithoutFeedback,BackHandler,
 } from "react-native";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -50,6 +50,18 @@ export default function AddTransaction({ navigation }) {
     setFromAccOpen(false);
     setToAccOpen(false);
   };
+
+      useEffect(() => {
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          navigation.goBack();  
+          return true;
+        }
+      );
+    
+      return () => backHandler.remove();
+    }, []);
 
   // Dropdown box UI (shared inside same file)
   const renderSelect = (label, selected, open, setOpen, list, onSelect) => (

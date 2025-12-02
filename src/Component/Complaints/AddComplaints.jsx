@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image,
+  Image, BackHandler
 } from "react-native";
 import { useNavigation , useRoute} from "@react-navigation/native";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -53,6 +53,18 @@ export default function AddComplaint() {
   }
 };
 
+
+ useEffect(() => {
+              const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                  navigation.goBack();  
+                  return true;
+                }
+              );
+            
+              return () => backHandler.remove();
+            }, [])
 
   useEffect(() => {
   if (mode === "edit" && data) {

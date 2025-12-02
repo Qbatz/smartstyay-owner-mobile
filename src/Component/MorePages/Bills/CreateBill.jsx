@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
    View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
- Dimensions
+ Dimensions , BackHandler
 } from "react-native";
 import {  useRoute} from "@react-navigation/native";
 import DatePicker from "react-native-ui-datepicker";
@@ -57,6 +57,17 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
         const [customerSelected, setCustomerSelected] = useState(CustomerOptions[0]);
         const [customeDropdownVisible, setCustomerDropdownVisible] = useState(false);
 
+         useEffect(() => {
+              const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                  navigation.goBack();  
+                  return true;
+                }
+              );
+            
+              return () => backHandler.remove();
+            }, []);
 
         //  this is dummy data store for edit 
         //  useEffect(() => {
@@ -67,6 +78,8 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
         //     setDueDate(new Date(data?.dueDate));
         //   }
         // }, [mode, data]); 
+
+          
        
 
   const handleSelectItem = (type) => {

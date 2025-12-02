@@ -68,7 +68,7 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState("Bills");
+  const [activeTab, setActiveTab] = useState("All Bills");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
 const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -163,6 +163,7 @@ const openMenu = (item) => {
     setShowMenu(true);
   });
 };
+
 const DeleteMenu = ()=>{
   setDeleteTenants(true)
 }
@@ -170,17 +171,17 @@ const CloseDelete = () =>{
   setDeleteTenants(false)
 }
 
-const [fromDate, setFromDate] = useState(dayjs());
-const [toDate, setToDate] = useState(dayjs());
+    const [fromDate, setFromDate] = useState(dayjs());
+    const [toDate, setToDate] = useState(dayjs());
 
-const [openFrom, setOpenFrom] = useState(false);
-const [openTo, setOpenTo] = useState(false);
+    const [openFrom, setOpenFrom] = useState(false);
+    const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
 
-const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+    const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-const [showBillDetails, setShowBillDetails] = useState(false);
-const [selectedBill, setSelectedBill] = useState(null);
+    const [showBillDetails, setShowBillDetails] = useState(false);
+    const [selectedBill, setSelectedBill] = useState(null);
 
 
 
@@ -299,6 +300,20 @@ useLayoutEffect(() => {
 
   return () => handler.remove();
 }, [showDetailModal, showFilter , showBillDetails , showWriteOff , showRecordPayment , showRefundPayment]);
+
+  useEffect(() => {
+              const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                  navigation.goBack();  
+                  return true;
+                }
+              );
+            
+              return () => backHandler.remove();
+            }, [])
+
+            
 
 
  useLayoutEffect(() => {
@@ -434,7 +449,7 @@ const writeoffPan = useRef(
 
   
   const tabs = [
-    { key: "Bills", active: Profile, inactive: InProfile },
+    { key: "All Bills", active: Profile, inactive: InProfile },
     { key: "RecurringBills", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
@@ -527,10 +542,7 @@ const customerList = [
       onPress={() => setActiveTab(tab.key)}
     >
       <View style={styles.tabContent}>
-        <Image
-          source={activeTab === tab.key ? tab.active : tab.inactive}
-          style={styles.tabIcon}
-        />
+      
         <Text
           style={[
             styles.tabText,
@@ -544,7 +556,7 @@ const customerList = [
   ))}
 </View>
 
-{activeTab === "Bills" && (
+{activeTab === "All Bills" && (
   <View style={{ flex: 1 }}>
 
     {customerList.length > 0 ? (

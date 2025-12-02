@@ -67,7 +67,7 @@ import AssignTenant from './src/Component/PG/AssignTenants'
 
 import CreateBills from './src/Component/MorePages/Bills/CreateBill';
 import BillsPdf from './src/Component/MorePages/Bills/BillsPdf';
-
+import ReceiptPdf from './src/Component/MorePages/Bills/ReceiptPdf';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -134,7 +134,11 @@ function AppContent() {
                        <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
                       <Navigation.Screen name="CreateBills" component={CreateBills} />
                       <Navigation.Screen name="BillsPdf" component={BillsPdf} />
+
                       <Navigation.Screen name="AssignTenant" component={AssignTenant} />
+
+                      <Navigation.Screen name="ReceiptPdf" component={ReceiptPdf} />
+
 
         </Navigation.Navigator>
       </NavigationContainer>
