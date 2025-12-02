@@ -1,4 +1,4 @@
-import React, { useState , useEffect, useRef , useLayoutEffect } from "react";
+import React, { useState , useEffect, useRef , useLayoutEffect , useCallback } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   PanResponder,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import AddBankingDesign from "./AddBanking"
@@ -194,6 +195,43 @@ export default function BankingScreen() {
       const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
       return () => sub.remove();
     }, [ showFilter, openFrom, openTo, amountDropdownVisible]);
+
+
+
+     useFocusEffect(
+      useCallback(() => {
+    
+        const onBackPress = () => {
+    
+        if(selfTransferScreen){
+          setSelfTransferScreen(false)
+          return true;
+        }
+
+          if (showFilter) {
+            setShowFilter(false);
+            return true;
+          }
+    
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+            return true;
+          }
+    
+          return false;
+        };
+    
+        const subscription = BackHandler.addEventListener(
+          "hardwareBackPress",
+          onBackPress
+        );
+    
+        return () => subscription.remove();
+      }, [
+       showFilter, selfTransferScreen,
+        navigation
+      ])
+    );
 
     const translateY = useRef(new Animated.Value(0)).current;
     const detailsY = useRef(new Animated.Value(0)).current;

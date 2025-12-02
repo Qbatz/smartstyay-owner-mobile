@@ -32,14 +32,24 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import Telegram from "../../../Assets/Images/telegram.png";
 import Payment from "../../../Assets/Images/payment.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
+import DeleteIcon from  "../../../Assets/Images/trash.png"
+import EditIcon from  "../../../Assets/Images/editIcon.png"  
 
 
 const Receipt = () => {
 
+  const dotsRefs = useRef({});
+  const navigation = useNavigation();
 
   const [stayType, setStayType] = useState("Long Stay");
   const [openDropdown, setOpenDropdown] = useState(false);
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+
+  
+   const [showMenu, setShowMenu] = useState(false);
+const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+const [selectedCustomer, setSelectedCustomer] = useState(null);
+
   
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
@@ -52,7 +62,7 @@ const Receipt = () => {
   const [openUpward, setOpenUpward] = useState(false);
 
     const detailsY = useRef(new Animated.Value(0)).current;
-      const detailsSheetY = useRef(new Animated.Value(0)).current;
+    const detailsSheetY = useRef(new Animated.Value(0)).current;
 
          const amountOptions = [
             "Low to High (Lowest First)",
@@ -209,6 +219,23 @@ const Receipt = () => {
   const handleBillDetails = () => {
     setShowBillDetails(true)
   }
+
+const openMenu = (item, id) => {
+  const ref = dotsRefs.current[id];
+
+  if (!ref) return;
+
+  ref.measureInWindow((px, py, width, height) => {
+    setPopupPosition({ x: px, y: py });
+    setSelectedCustomer(item);
+    setShowMenu(true);
+  });
+};
+
+
+const handleShowReceiptPdf = () => {
+navigation.navigate("ReceiptPdf")
+}
   
 
   const toggleSwitch = (id) => {
@@ -219,10 +246,11 @@ const Receipt = () => {
     );
   };
 
-  const renderItem = ({ item }) => (
+const renderItem = ({ item }) => {
+  return (
     <View style={styles.row}>
-        <TouchableOpacity onPress={handleBillDetails}>
-      <Image source={item.photo} style={styles.avatar} />
+      <TouchableOpacity onPress={handleBillDetails}>
+        <Image source={item.photo} style={styles.avatar} />
       </TouchableOpacity>
 
       <View style={{ flex: 1 }}>
@@ -232,25 +260,30 @@ const Receipt = () => {
           <View style={styles.tagBox}>
             <Text style={styles.tag}>{item.tag}</Text>
           </View>
-               <Image source={Bills_Black_Icon} style={{   width: 12,
-            height: 12, marginTop:3 , marginRight:5
-          }} />
+
+          <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }} />
           <Text style={styles.bill}>{item.bill}</Text>
         </View>
       </View>
 
-    <View style={styles.rightSection}>
-                 <TouchableOpacity  >
-                   <Image
-                     source={Dots}
-                     style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                   />
-                 </TouchableOpacity>
-   
-                 <Text style={styles.dateText}>01/06</Text>
-               </View>
+      <View style={styles.rightSection}>
+        <TouchableOpacity
+          ref={(r) => (dotsRefs.current[item.id] = r)}
+          onPress={() => openMenu(item, item.id)}
+        >
+          <Image
+            source={Dots}
+            style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.dateText}>01/06</Text>
+      </View>
     </View>
   );
+};
+
+
 
   return (
     <View style={styles.container}>
@@ -271,6 +304,41 @@ const Receipt = () => {
          <TouchableOpacity style={styles.addBtn}>
               <Image source={AddIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
+
+
+           {showMenu && (
+  <TouchableOpacity
+    activeOpacity={1}
+    onPress={() => setShowMenu(false)}
+    style={styles.popupOverlay}
+  >
+    <View
+      style={[
+        styles.popupBox,
+        { top: popupPosition.y - 120, left: popupPosition.x - 180 },
+      ]}
+    >
+      <TouchableOpacity style={styles.popupRow}>
+        <Image  source={Download} style={styles.popupIcon}/>
+        <Text style={styles.popupText}>Download</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.popupRow}>
+           <Image  source={EditIcon} style={styles.popupIcon}/>
+        <Text style={styles.popupText}>Edit</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.popupRow}
+        onPress={() => setShowMenu(false)}
+      >
+           <Image  source={DeleteIcon} style={styles.popupIcon}/>
+        <Text style={styles.popupText}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  </TouchableOpacity>
+)}
+
 
 
         {showBillDetails && (
@@ -392,7 +460,7 @@ const Receipt = () => {
           </View>
         
           {/* PREVIEW BUTTON */}
-          <TouchableOpacity style={styles.previewBtn} >
+          <TouchableOpacity style={styles.previewBtn} onPress={handleShowReceiptPdf} >
             <View style={{display:'flex', flexDirection:'row'}}>
                        <Image source={PreviewIcon} style={{   width: 18,
             height: 18, marginTop:3 , marginRight:12
@@ -887,4 +955,41 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
     alignItems: "center",
     elevation: 6,
   },
+  
+  popupOverlay: {
+  position: "absolute",
+  top: 10,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "transparent",
+},
+
+popupBox: {
+  position: "absolute",
+  width: 150,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  elevation: 20,
+  paddingVertical: 10,
+  zIndex: 10000,
+},
+
+  popupRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+},
+
+popupIcon: {
+  width: 20,
+  height: 20,
+  marginRight: 10,
+},
+
+popupText: {
+  fontSize: 14,
+  color: "#333",
+},
 });
