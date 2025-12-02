@@ -6,8 +6,12 @@ import {
   TextInput,
   Image,
   StyleSheet,
-  ScrollView,
+  ScrollView,TouchableWithoutFeedback
 } from "react-native";
+import Delete from "../../Assets/Images/trash.png";
+import DownArrow from "../../Assets/Images/direction-down.png";
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
 
 
 export default function AssignTenant({navigation,route}) {
@@ -16,6 +20,8 @@ export default function AssignTenant({navigation,route}) {
 
     
   const [activeTab, setActiveTab] = useState("Booking");
+    const [openDatePicker, setOpenDatePicker] = useState(false);
+      const [purchaseDate, setPurchaseDate] = useState(dayjs());
 
   const [tenant, setTenant] = useState("");
   const [stayType, setStayType] = useState("");
@@ -28,6 +34,9 @@ export default function AssignTenant({navigation,route}) {
  const [extraCharges, setExtraCharges] = useState([]);
 const [openDropdownId, setOpenDropdownId] = useState(null); 
 const [disabledTypes, setDisabledTypes] = useState([]); 
+ const TenantsName = ["priya", "Allwin", "Mathu", "Arputha", "Hepzi"];
+    const [TenantsOpen, setTenantsopen] = useState(false);
+    const [TenantsSelected, setTenantsSelected] = useState("Select a Vendor");
 
 const TYPE_OPTIONS = ["Maintenance", "Others"];
  // store selected types
@@ -48,16 +57,34 @@ const removeCharge = (id, type) => {
 };
 
 
+
 const selectType = (id, type) => {
   setExtraCharges(prev =>
-    prev.map(i => (i.id === id ? { ...i, type } : i))
+    prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
   );
 
   if (type === "Maintenance") {
-    setDisabledTypes(["Maintenance"]);
+    setDisabledTypes(["Maintenance"]); // disable everywhere
+  }
+
+  if (type === "Others") {
+    // Others should NEVER disable Maintenance
   }
 
   setOpenDropdownId(null);
+};
+
+
+const updateTitle = (id, title) => {
+  setExtraCharges(prev =>
+    prev.map(i => (i.id === id ? { ...i, title } : i))
+  );
+};
+
+const updateAmount = (id, amount) => {
+  setExtraCharges(prev =>
+    prev.map(i => (i.id === id ? { ...i, amount } : i))
+  );
 };
 
 
@@ -95,19 +122,48 @@ const selectType = (id, type) => {
 
       <ScrollView style={{ marginTop: 10 }} showsVerticalScrollIndicator={false}>
 
-        {/* DROPDOWNS & INPUTS SHARED IN BOTH TABS */}
-        <Text style={styles.label}>Select Tenant</Text>
-        <TouchableOpacity style={styles.dropdown}>
-          <Text>{tenant || "Select Tenant"}</Text>
-          <Text>⌄</Text>
-        </TouchableOpacity>
+    
+        
+         <Text style={styles.label}>Select Tenant</Text>
+        
+                            <View style={{ position: "relative" }}>
+                                <TouchableOpacity
+                                    style={styles.select}
+                                    onPress={() => setTenantsopen(!TenantsOpen)}
+                                    activeOpacity={0.9}
+                                >
+                                    <Text style={styles.selectText}>{TenantsSelected}</Text>
+                                    <Image source={DownArrow} style={styles.arrow} />
+                                </TouchableOpacity>
+        
+                                {TenantsOpen && (
+                                    <View style={styles.dropdownMenuone}>
+                                        <ScrollView style={{ maxHeight: 160 }}>
+                                            {TenantsName.map((v, index) => (
+                                                <TouchableOpacity
+                                                    key={index}
+                                                    style={styles.option}
+                                                    onPress={() => {
+                                                        setTenantsSelected(v);
+                                                        setTenantsopen(false);
+                                                    }}
+                                                >
+                                                    <Text style={styles.optionText}>{v}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                )}
+                            </View>
 
         {/* Booking Date (ONLY for Booking tab) */}
         {activeTab === "Booking" && (
           <>
             <Text style={styles.label}>Booking Date</Text>
-            <TouchableOpacity style={styles.dateBox}>
-              <Text>{bookingDate || "Pick a Date"}</Text>
+            <TouchableOpacity style={styles.dateBox}   onPress={() => setOpenDatePicker(true)}>
+              <Text style={styles.placeholder}>
+                                         {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                                     </Text>
               <Image
                 source={require("../../Assets/Images/calendar.png")}
                 style={styles.icon}
@@ -122,7 +178,35 @@ const selectType = (id, type) => {
               value={bookingAmount}
               onChangeText={setBookingAmount}
             />
+            <Text style={styles.label}>Joining Date *</Text>
+        <TouchableOpacity style={styles.dateBox}>
+          <Text>{joiningDate || "Pick a Date"}</Text>
+          <Image
+            source={require("../../Assets/Images/calendar.png")}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+
+            {openDatePicker && (
+                <View style={styles.sheetOverlay}>
+                    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+                        <View style={{ flex: 1 }} />
+                    </TouchableWithoutFeedback>
+
+                    <View style={styles.datePickerBox}>
+                        <DatePicker
+                            mode="single"
+                            date={purchaseDate}
+                            onChange={(p) => {
+                                setPurchaseDate(p.date || dayjs());
+                                setOpenDatePicker(false);
+                            }}
+                        />
+                    </View>
+                </View>
+            )}
           </>
+
         )}
 
         {/* Check-in Only Fields */}
@@ -151,12 +235,7 @@ const selectType = (id, type) => {
               value={advanceAmount}
               onChangeText={setAdvanceAmount}
             />
-
-          </>
-        )}
-
-        {/* Common Joining Date */}
-        <Text style={styles.label}>Joining Date *</Text>
+            <Text style={styles.label}>Joining Date *</Text>
         <TouchableOpacity style={styles.dateBox}>
           <Text>{joiningDate || "Pick a Date"}</Text>
           <Image
@@ -164,6 +243,12 @@ const selectType = (id, type) => {
             style={styles.icon}
           />
         </TouchableOpacity>
+
+          </>
+        )}
+
+     
+        
 
         {/* Non-Refundable Amount (Check-In only) */}
         {activeTab === "CheckIn" && (
@@ -176,98 +261,100 @@ const selectType = (id, type) => {
               </TouchableOpacity>
             </View>
 {extraCharges.map((item) => (
-  <View key={item.id} style={{ marginTop: 12 }}>
+  <View
+    key={item.id}
+    style={{
+      marginTop: 12,
+      position: "relative",
+      zIndex: openDropdownId === item.id ? 999 : 1,
+    }}
+  >
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+
+      {/* SELECT BOX (when type is empty) */}
+      {item.type === "" && (
+        <TouchableOpacity
+          style={styles.leftBox}
+          onPress={() =>
+            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+          }
+        >
+          <Text>Select...</Text>
+      <Image source={DownArrow} style={styles.arrow} />
+        </TouchableOpacity>
+      )}
+
+     
+      {item.type === "Others" && (
+        <TextInput
+          style={styles.leftBox}
+          placeholder="Enter custom reason"
+          value={item.title}
+          onChangeText={(txt) => updateTitle(item.id, txt)}
+        />
+      )}
+
+    
+      {item.type === "Maintenance" && (
+        <View style={[styles.leftBox, { backgroundColor: "#eee" }]}>
+          <Text>Maintenance</Text>
+        </View>
+      )}
+
+   
+      {item.type !== "" && (
+        <TextInput
+          style={styles.rightBox}
+          placeholder="Enter amount"
+          keyboardType="numeric"
+          value={item.amount}
+          onChangeText={(txt) => updateAmount(item.id, txt)}
+        />
+      )}
+
+    
+      <TouchableOpacity onPress={() => removeCharge(item.id, item.type)}>
+     
+        <Image source={Delete}  style={styles.DeleteImg}/>
+      </TouchableOpacity>
+    </View>
 
   
-   <View style={{ flexDirection: "row", alignItems: "center" }}>
-
-  {/* TYPE DROPDOWN – show only if not Others */}
-  {item.type !== "Others" && (
-    <TouchableOpacity
-      style={styles.selectBox}
-      onPress={() =>
-        setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-      }
-    >
-      <Text>{item.type || "Select"}</Text>
-      <Text>⌄</Text>
-    </TouchableOpacity>
-  )}
-
-  {/* IF OTHERS SELECTED → SHOW TITLE + AMOUNT */}
-  {item.type === "Others" && (
-    <>
-      <TextInput
-        placeholder="Enter Title"
-        value={item.title}
-        onChangeText={(txt) => {
-          setExtraCharges(prev =>
-            prev.map(i => (i.id === item.id ? { ...i, title: txt } : i))
-          );
-        }}
-        style={[styles.titleInput, { marginLeft: 10 }]}
-      />
-
-      <TextInput
-        placeholder="₹"
-        value={item.amount}
-        keyboardType="numeric"
-        onChangeText={(txt) => {
-          setExtraCharges(prev =>
-            prev.map(i => (i.id === item.id ? { ...i, amount: txt } : i))
-          );
-        }}
-        style={[styles.amountInput, { marginLeft: 10 }]}
-      />
-    </>
-  )}
-
-  {/* IF MAINTENANCE → ONLY AMOUNT */}
-  {item.type === "Maintenance" && (
-    <TextInput
-      placeholder="₹"
-      value={item.amount}
-      keyboardType="numeric"
-      onChangeText={(txt) => {
-        setExtraCharges(prev =>
-          prev.map(i => (i.id === item.id ? { ...i, amount: txt } : i))
-        );
-      }}
-      style={[styles.amountInput, { marginLeft: 10 }]}
-    />
-  )}
-
-  {/* REMOVE */}
-  <TouchableOpacity onPress={() => removeCharge(item.id, item.type)}>
-    <Text style={{ fontSize: 18, color: "red", marginLeft: 5 }}>✕</Text>
-  </TouchableOpacity>
-
-</View>
-
-
-    {/* ⬇⬇⬇ THIS IS WHERE YOUR DROPDOWN CODE GOES ⬇⬇⬇ */}
-    {openDropdownId === item.id && (
+    {openDropdownId === item.id && item.type === "" && (
       <View style={styles.dropdownMenu}>
-        
-        {/* PUT YOUR CODE HERE */}
-        {TYPE_OPTIONS.map((t) => {
-          let disabled = disabledTypes.includes(t);
+      {TYPE_OPTIONS.map((t) => {
+  const maintenanceDisabled =
+    disabledTypes.includes("Maintenance") && t === "Maintenance";
 
-          if (disabled && t !== item.type) return null;
 
-          return (
-            <TouchableOpacity key={t} onPress={() => selectType(item.id, t)}>
-              <Text style={styles.dropdownItem}>{t}</Text>
-            </TouchableOpacity>
-          );
-        })}
+  if (maintenanceDisabled) {
+    return (
+      <View key={t} style={{ opacity: 0.4 }}>
+        <Text style={styles.dropdownItem}>{t}</Text>
+      </View>
+    );
+  }
+
+  // Others always allowed
+  return (
+    <TouchableOpacity
+      key={t}
+      onPress={() => selectType(item.id, t)}
+    >
+      <Text style={styles.dropdownItem}>{t}</Text>
+    </TouchableOpacity>
+  );
+})}
 
       </View>
     )}
-    {/* ⬆⬆⬆ END DROPDOWN CODE ⬆⬆⬆ */}
-
   </View>
 ))}
+
+
+
+
+
 
 
 
@@ -349,15 +436,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
-  dateBox: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    padding: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+   dateBox: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
 
   input: {
     borderWidth: 1,
@@ -438,44 +526,189 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    width: 120,
+    width: 300,
     flexDirection: "row",
     justifyContent: "space-between",
   },
 
- titleInput: {
+titleInput: {
   flex: 1,
   borderWidth: 1,
   borderColor: "#ccc",
-  borderRadius: 8,
-  padding: 10,
-},
-
-amountInput: {
-  width: 80,
-  borderWidth: 1,
-  borderColor: "#ccc",
-  borderRadius: 8,
+  borderRadius: 10,
   padding: 10,
   marginLeft: 10,
 },
 
+amountInput: {
+  width: 100,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 10,
+  marginLeft: 10,
+},
 
-  dropdownMenu: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    marginTop: 6,
-    width: 120,
-    paddingVertical: 4,
-  },
+  typeBox: {
 
-  dropdownItem: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 12,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width:300
+},
+
+titleBox: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 12,
+  marginLeft: 10,
+},
+
+amountBox: {
+  width: 90,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 12,
+  marginLeft: 10,
+},
+ arrow: { width: 18, height: 18, tintColor: "#444" },
+
+dropdownMenu: {
+  marginTop: 6,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  
+},
+
+dropdownItem: {
+  padding: 12,
+  fontSize: 14,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+typeBoxDisabled: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 12,
+  width: 300,
+  backgroundColor: "#eee",
+},
+leftBox: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 12,
+  marginRight: 10,
+  backgroundColor: "#fff",
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+rightBox: {
+  width: 110,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  padding: 12,
+},
+DeleteImg:{
+    width:30,
+    height:30,
+    marginLeft:20
+},
+ dropdownMenuone: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 999,
+        elevation: 10,
+    },
+
+    option: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    optionText: {
+        fontSize: 15,
+        color: "#000",
+    },
+     selectText: { color: "#555" },
+      select: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+     placeholder: { color: "#555" },
+     option: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    optionText: {
+        fontSize: 15,
+        color: "#000",
+    },
+
+
+    datePickerBox: {
+        backgroundColor: "#fff",
+        width: "80%",
+   borderColor: "#DCDCDC",  
+        borderRadius: 30,
+       padding:5,
+        marginBottom: 120,
+         borderWidth: 0.5,   
+    },
+
+    fullDateOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 10,
+
+        justifyContent: "flex-end",
+        zIndex: 9999,
+        elevation: 20,
+    },
+
+ datePickerPopup: {
+    borderColor: "#DCDCDC",      // ✔ correct
+    borderWidth: 1,              // ✔ border visible
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 10,
-    fontSize: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
+    width: "100%",
+  
+},
+    sheetOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        justifyContent: "flex-end",
+      
+    },
+
+
 });
 
