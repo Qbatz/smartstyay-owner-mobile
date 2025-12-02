@@ -15,7 +15,8 @@ import AddFloorSheet from "./AddFloorSheet";
 import AddRoomSheet from "./AddRoomSheet";
 import HostelImg from "../../Assets/Images/PgImg.png";
 import AddFloorIcon from "../../Assets/Images/TenantAdd.png";
-import AddBedBottomSheet from "./AddBed"
+import AddBedBottomSheet from "./AddBed";
+import ManageBedBottomSheet from "./AvailableBedBottomSheet"
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -203,6 +204,9 @@ export default function PGPageFull({ route }) {
   const [showAddRoom, setShowAddRoom] = useState(false);
   const [showAddBed, setShowAddBed] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showManageBed, setShowManageBed] = useState(false);
+const [selectedBed, setSelectedBed] = useState(null);
+
   const translateY = React.useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
@@ -251,9 +255,9 @@ export default function PGPageFull({ route }) {
 
   useEffect(() => {
     if (route?.params?.setShowTabBar) {
-      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed);
+      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed);
     }
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed]);
 
   useEffect(() => {
     const onBack = () => {
@@ -274,11 +278,15 @@ export default function PGPageFull({ route }) {
         setShowAddRoom(false);
         return true;
       }
+       if (showManageBed) {
+        setShowManageBed(false);
+        return true;
+      }
       return false;
     };
     const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
     return () => sub.remove();
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed]);
 
   // BASE BED SELECTION
   const getBaseBed = (status) => {
@@ -483,7 +491,16 @@ export default function PGPageFull({ route }) {
            
               <View style={styles.bedsRow}>
                 {item.beds?.map((b) => (
-                  <View key={b.id} style={styles.bedItem}>
+                  <TouchableOpacity
+    key={b.id}
+    style={styles.bedItem}
+    onPress={() => {
+      if (b.status =="available") {
+        setSelectedBed(b);
+        setShowManageBed(true);
+      }
+    }}
+  >
 
                     <Image
                       source={getBaseBed(b.status)}
@@ -498,7 +515,7 @@ export default function PGPageFull({ route }) {
                     )}
 
                     <Text style={styles.bedLabel}>{b.label}</Text>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
 
@@ -591,6 +608,11 @@ export default function PGPageFull({ route }) {
         onClose={() => setShowAddBed(false)}
      
       />
+      <ManageBedBottomSheet
+  visible={showManageBed}
+  onClose={() => setShowManageBed(false)}
+/>
+
     </>
   );
 }
