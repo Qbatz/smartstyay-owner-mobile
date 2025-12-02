@@ -45,7 +45,7 @@ const Receipt = () => {
   const [openDropdown, setOpenDropdown] = useState(false);
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-  
+  const [deleteReceipt,setDeleteReceipt] = useState(false)
    const [showMenu, setShowMenu] = useState(false);
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -330,7 +330,10 @@ const renderItem = ({ item }) => {
 
       <TouchableOpacity
         style={styles.popupRow}
-        onPress={() => setShowMenu(false)}
+        onPress={() => {setShowMenu(false)
+          setDeleteReceipt(true)}
+        }
+    
       >
            <Image  source={DeleteIcon} style={styles.popupIcon}/>
         <Text style={styles.popupText}>Delete</Text>
@@ -587,6 +590,45 @@ const renderItem = ({ item }) => {
                          </View>
             </Animated.View>
           </View>
+              )}
+
+              {deleteReceipt && (
+                <Modal
+                  transparent
+                  animationType="fade"
+                  visible={deleteReceipt}
+                  onRequestClose={() => setDeleteReceipt(false)}
+                >
+                  <View style={styles.deleteOverlay}>
+                    <View style={styles.deleteBox}>
+              
+                      <Text style={styles.deleteTitle}>Delete Receipt?</Text>
+                      <Text style={styles.deleteSub}>
+                        Are you sure you want to delete this Receipt?
+                      </Text>
+              
+                      <View style={styles.deleteBtnRow}>
+                        <TouchableOpacity
+                          style={styles.cancelBtn}
+                          onPress={() => setDeleteReceipt(false)}
+                        >
+                          <Text style={styles.cancelText}>Cancel</Text>
+                        </TouchableOpacity>
+              
+                        <TouchableOpacity
+                          style={styles.deleteBtn}
+                          onPress={() => {
+                            console.log("DELETE CONFIRMED");
+                            setDeleteReceipt(false);
+                          }}
+                        >
+                          <Text style={styles.deleteBtnText}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+              
+                    </View>
+                  </View>
+                </Modal>
               )}
               
     </View>
@@ -991,5 +1033,73 @@ popupIcon: {
 popupText: {
   fontSize: 14,
   color: "#333",
+},
+
+
+
+deleteOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+deleteBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  padding: 25,
+  borderRadius: 15,
+  alignItems: "center",
+  elevation: 10,
+},
+
+deleteTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#111",
+  marginBottom: 10,
+},
+
+deleteSub: {
+  fontSize: 14,
+  color: "#555",
+  textAlign: "center",
+  marginBottom: 25,
+},
+
+deleteBtnRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
+},
+
+cancelBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#2D6CDF",
+  marginRight: 10,
+  alignItems: "center",
+},
+
+cancelText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#2D6CDF",
+},
+
+deleteBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  backgroundColor: "#2D6CDF",
+  alignItems: "center",
+},
+
+deleteBtnText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#fff",
 },
 });

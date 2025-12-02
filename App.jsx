@@ -67,6 +67,8 @@ import ProfileScreen from './src/Component/Dashboard/ChangeProfile';
 import CreateBills from './src/Component/MorePages/Bills/CreateBill';
 import BillsPdf from './src/Component/MorePages/Bills/BillsPdf';
 import ReceiptPdf from './src/Component/MorePages/Bills/ReceiptPdf';
+import SettingsPG from './src/Component/SettingScreen/SettingsPG/SettingsPGList';
+import AddPG from './src/Component/SettingScreen/SettingsPG/AddPG';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -134,6 +136,8 @@ function AppContent() {
                       <Navigation.Screen name="CreateBills" component={CreateBills} />
                       <Navigation.Screen name="BillsPdf" component={BillsPdf} />
                       <Navigation.Screen name="ReceiptPdf" component={ReceiptPdf} />
+                      <Navigation.Screen name="SettingsPG" component={SettingsPG} />
+                       <Navigation.Screen name="AddPG" component={AddPG} />
 
         </Navigation.Navigator>
       </NavigationContainer>
