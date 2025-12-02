@@ -1,0 +1,138 @@
+import React, { useRef, useEffect,useState } from "react";
+import { View, Text, TouchableOpacity, Animated, PanResponder, StyleSheet, Image } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+
+
+export default function ManageBedBottomSheet({ visible, onClose }) {
+      const navigation = useNavigation();
+  const translateY = useRef(new Animated.Value(300)).current;
+
+
+  
+
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(translateY, {
+        toValue: 300,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
+    onPanResponderMove: (_, g) => g.dy > 0 && translateY.setValue(g.dy),
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) onClose();
+      else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+    },
+  });
+
+  if (!visible) return null;
+
+  return (
+    <>
+    <View style={styles.overlay}>
+      <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
+
+      <Animated.View
+        style={[styles.sheet, { transform: [{ translateY }] }]}
+        {...panResponder.panHandlers}
+      >
+        <View style={styles.handle} />
+
+        <Text style={styles.title}>Manage Bed</Text>
+
+       
+        <TouchableOpacity style={styles.optionRow}onPress={() => {
+  navigation.navigate("AddTenant");
+  onClose();
+}}
+>
+          <Text style={styles.optionText}>Add Customer</Text>
+          <Image source={require("../../Assets/Images/addsquare.png")} style={styles.icon} />
+        </TouchableOpacity>
+
+      
+        <TouchableOpacity style={styles.optionRow}  onPress={() => {
+    onClose();  
+    navigation.navigate("AssignTenant", {
+      roomNo: "101",
+      bedId: "A",
+    });
+  }}>
+          <Text style={styles.optionText}>Assign Tenant</Text>
+          <Image source={require("../../Assets/Images/Reports.png")} style={styles.icon} />
+        </TouchableOpacity>
+
+        {/* Delete */}
+        <TouchableOpacity style={styles.deleteRow}>
+          <Text style={styles.deleteText}>Delete</Text>
+          <Image source={require("../../Assets/Images/trash.png")} style={styles.deleteIcon} />
+        </TouchableOpacity>
+
+      </Animated.View>
+    </View>
+
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0, bottom: 0, left: 0, right: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+    marginBottom:30
+  },
+  overlayTouch: { flex: 1 },
+  sheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 30,
+  },
+  handle: {
+    width: 60, height: 5,
+    backgroundColor: "#ccc",
+    alignSelf: "center",
+    borderRadius: 3,
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  optionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+  },
+  optionText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  deleteRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    marginTop: 10,
+  },
+  deleteText: {
+    fontSize: 16,
+    color: "red",
+  },
+  icon: { width: 22, height: 22, tintColor: "#1E45E1" },
+  deleteIcon: { width: 22, height: 22, tintColor: "red" },
+});

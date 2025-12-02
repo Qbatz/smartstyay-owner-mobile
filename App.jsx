@@ -63,6 +63,7 @@ import NotificationDetails from './src/Component/Dashboard/Notification';
 import ChangeHostelScreen from './src/Component/Dashboard/ChangeHostel';
 import ProfileDrawer from './src/Component/Dashboard/ProfileClickScreen';
 import ProfileScreen from './src/Component/Dashboard/ChangeProfile';
+import AssignTenant from './src/Component/PG/AssignTenants'
 
 import CreateBills from './src/Component/MorePages/Bills/CreateBill';
 import BillsPdf from './src/Component/MorePages/Bills/BillsPdf';
@@ -133,6 +134,7 @@ function AppContent() {
                        <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
                       <Navigation.Screen name="CreateBills" component={CreateBills} />
                       <Navigation.Screen name="BillsPdf" component={BillsPdf} />
+                      <Navigation.Screen name="AssignTenant" component={AssignTenant} />
 
         </Navigation.Navigator>
       </NavigationContainer>
