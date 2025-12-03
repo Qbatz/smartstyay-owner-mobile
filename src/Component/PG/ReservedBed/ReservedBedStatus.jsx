@@ -14,10 +14,12 @@ import Money from "../../../Assets/Images/money.png";
 import Checkin from "../../../Assets/Images/add-circle.png";
 import MakeUs from "../../../Assets/Images/Logout.png";
 import Dots from "../../../Assets/Images/3dots.png";
-import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet"
+import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
+import { useNavigation } from "@react-navigation/native";
 
 
 export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
+     const navigation = useNavigation();
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
     const [showInactiveSheet,setShowInactiveSheet] =useState(false)
@@ -114,7 +116,7 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
 
                         {/* POPUP */}
                         <View style={styles.popupMenu}>
-                            <TouchableOpacity style={styles.popupItem}>
+                            <TouchableOpacity style={styles.popupItem} onPress={() => navigation.navigate("ReserveToCheckin")}>
                                 <View style={styles.row}>
                                     <Image source={Checkin} style={styles.iconCheck} />
                                     <Text style={styles.popupText}>Check-In</Text>

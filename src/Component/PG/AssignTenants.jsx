@@ -59,12 +59,12 @@ export default function AssignTenant({ navigation, route }) {
     ]);
   };
 
-  const removeCharge = (id, type) => {
+  const removeCharge = (id) => {
     setExtraCharges(prev => prev.filter(i => i.id !== id));
 
-    if (type === "Maintenance") {
-      setDisabledTypes([]);
-    }
+    // if (type === "Maintenance") {
+    //   setDisabledTypes([]);
+    // }
   };
 
   const selectType = (id, type) => {
