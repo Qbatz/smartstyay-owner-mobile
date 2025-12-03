@@ -236,6 +236,20 @@ const openMenu = (item, id) => {
 const handleShowReceiptPdf = () => {
 navigation.navigate("ReceiptPdf")
 }
+
+const handleCreateBill = () => {
+navigation.navigate("CreateReceipt" , {mode: "add"})
+}
+
+
+const handleEditBill = () => {
+
+ navigation.navigate("CreateReceipt", {
+    mode: "edit",
+    // data: item,  
+  });
+    setShowMenu(false);
+}
   
 
   const toggleSwitch = (id) => {
@@ -301,7 +315,7 @@ const renderItem = ({ item }) => {
           <Image source={FilterIcon} style={{ width: 60, height: 60 }} />
         </TouchableOpacity>
 
-         <TouchableOpacity style={styles.addBtn}>
+         <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
               <Image source={AddIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
 
@@ -323,7 +337,7 @@ const renderItem = ({ item }) => {
         <Text style={styles.popupText}>Download</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.popupRow}>
+      <TouchableOpacity style={styles.popupRow} onPress={handleEditBill}>
            <Image  source={EditIcon} style={styles.popupIcon}/>
         <Text style={styles.popupText}>Edit</Text>
       </TouchableOpacity>
