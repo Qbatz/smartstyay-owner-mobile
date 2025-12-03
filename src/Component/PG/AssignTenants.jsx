@@ -44,8 +44,6 @@ export default function AssignTenant({ navigation, route }) {
   const CheckinTenants = ["priya", "Allwin", "Mathu", "Hepzi"];
   const [checkinTenantsOpen, setCheckinTenantsopen] = useState(false);
   const [CheckinTenantSelected, setCheckinTenantSelected] = useState("Select Tenant");
-
-
   const StayType = ["LongStay"];
   const [StayTypeOpen, setStayTypeOpen] = useState(false);
   const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
