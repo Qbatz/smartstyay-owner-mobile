@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   TextInput,
   Image,
   Modal,
-  TouchableWithoutFeedback,
+  TouchableWithoutFeedback,BackHandler,
 } from "react-native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import AddImageIcon from "../../../Assets/Images/blue_circle.png";
@@ -17,41 +17,59 @@ import EmptyProfileImage from "../../../Assets/Images/empty_pgprofile.png";
 import EditIcon from  "../../../Assets/Images/editIcon.png" 
 import DeleteIcon from  "../../../Assets/Images/trash.png"
 
-export default function AddPG({ navigation }) {
-  /* ====================== STATES ===================== */
+export default function AddPG({ navigation , route  }) {
 
-  const [photo, setPhoto] = useState(null);
+    const isEdit = route?.params?.mode === "edit";
+    const editData = route?.params?.data || null;
 
-  const [img1, setImg1] = useState(null);
-  const [img2, setImg2] = useState(null);
-  const [img3, setImg3] = useState(null);
-  const [img4, setImg4] = useState(null);
 
-  const [firstName, setFirstName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [email, setEmail] = useState("");
-  const [houseNo, setHouseNo] = useState("");
-  const [street, setStreet] = useState("");
-  const [landmark, setLandmark] = useState("");
-  const [pincode, setPincode] = useState("");
+const [photo, setPhoto] = useState(
+  editData?.profilePhoto ? { uri: editData.profilePhoto } : null
+);
 
-  /* DROPDOWNS */
+console.log("editdata", editData);
+
+
+const [img1, setImg1] = useState(editData?.images?.[0] || null);
+const [img2, setImg2] = useState(editData?.images?.[1] || null);
+const [img3, setImg3] = useState(editData?.images?.[2] || null);
+const [img4, setImg4] = useState(editData?.images?.[3] || null);
+
+const [firstName, setFirstName] = useState(editData?.name || "");
+const [mobile, setMobile]     = useState(editData?.phone || "");
+const [email, setEmail]       = useState(editData?.email || "");
+const [houseNo, setHouseNo]   = useState("");
+const [street, setStreet]     = useState("");
+const [landmark, setLandmark] = useState("");
+const [pincode, setPincode]   = useState("");
+const [city, setCity]         = useState("");
+const [state, setState]       = useState("Select State");
+
   const townList = ["Select Type", "Chennai", "Coimbatore", "Bengaluru"];
   const stateList = ["Select State", "Tamil Nadu", "Karnataka", "Kerala"];
 
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("Select State");
+
 
   const [townOpen, setTownOpen] = useState(false);
   const [stateOpen, setStateOpen] = useState(false);
 
-  // Close dropdowns when tapping outside
+    useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigation.goBack();  
+        return true;
+      }
+    );
+  
+    return () => backHandler.remove();
+  }, []);
+
   const closeAll = () => {
     setTownOpen(false);
     setStateOpen(false);
   };
 
-  /* ====================== IMAGE PICKER ===================== */
 
   const pickImage = async (setImage) => {
     const res = await launchImageLibrary({ mediaType: "photo", quality: 0.7 });
@@ -63,11 +81,9 @@ export default function AddPG({ navigation }) {
     if (res?.assets && res.assets.length) setImage(res.assets[0]);
   };
 
-  /* MODAL FOR PROFILE PICTURE */
   const [photoModal, setPhotoModal] = useState(false);
   const openPhotoPicker = () => setPhotoModal(true);
 
-  /* ====================== RENDER DROPDOWN ===================== */
 
   const renderSelect = (label, selected, open, setOpen, list, onSelect) => (
     <>
@@ -111,25 +127,34 @@ export default function AddPG({ navigation }) {
     </>
   );
 
-  /* ====================== SUBMIT ===================== */
 
-  const handleSubmit = () => {
-    console.log("SUBMIT DATA:", {
+ const handleSubmit = () => {
+
+  if(isEdit){
+    console.log("UPDATED HOSTEL DATA:", {
+      id: editData.id,
       firstName,
       mobile,
       email,
-      houseNo,
-      street,
-      landmark,
-      pincode,
-      town,
-      state,
-      profilePhoto: photo,
+      photo,
       images: [img1, img2, img3, img4],
     });
-  };
 
-  /* ===================================================== */
+    navigation.goBack();
+    return;
+  }
+
+  // Normal Add PG
+  console.log("NEW PG ADDED:", {
+    firstName,
+    mobile,
+    email,
+    photo,
+    images: [img1, img2, img3, img4],
+  });
+};
+
+
 
   return (
     <TouchableWithoutFeedback onPress={closeAll}>
@@ -138,12 +163,11 @@ export default function AddPG({ navigation }) {
       <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ paddingBottom: 60 }}>
         <View style={styles.container}>
 
-          {/* HEADER */}
         <View style={styles.header}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Image source={ArrowLeft} style={styles.backIcon} />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}> Add Paying Guest</Text>
+              <Text style={styles.headerTitle}>{isEdit ? "Edit Paying Guest" : "Add Paying Guest"}</Text>
             </View>
 
           
@@ -178,7 +202,6 @@ export default function AddPG({ navigation }) {
           </View>
           </View>
 
-          {/* PROFILE PHOTO MODAL */}
           <Modal visible={photoModal} transparent animationType="fade">
             <TouchableOpacity style={styles.modalOverlay} onPress={() => setPhotoModal(false)} />
             <View style={styles.modalBox}>
@@ -196,7 +219,6 @@ export default function AddPG({ navigation }) {
             </View>
           </Modal>
 
-          {/* FORM FIELDS */}
           <InputField label="First Name *" value={firstName} onChangeText={setFirstName} placeholder="Enter First name" />
           <InputField label="Mobile Number *" value={mobile} onChangeText={setMobile} placeholder="98765 43210" keyboardType="phone-pad" />
           <InputField label="Email ID" value={email} onChangeText={setEmail} placeholder="Enter Mail id" />
@@ -205,11 +227,8 @@ export default function AddPG({ navigation }) {
           <InputField label="Landmark" value={landmark} onChangeText={setLandmark} placeholder="Near SBI" />
           <InputField label="Pincode *" value={pincode} onChangeText={setPincode} placeholder="659 741" keyboardType="numeric" />
           <InputField label="Town/City *" value={city} onChangeText={setCity} placeholder="Enter City"  />
-          {/* DROPDOWNS */}
-          {/* {renderSelect("Town/City *", town, townOpen, setTownOpen, townList, setTown)} */}
           {renderSelect("State *", state, stateOpen, setStateOpen, stateList, setState)}
 
-          {/* IMAGE UPLOAD ROW */}
           <View style={{ flexDirection: "row", marginTop: 12 }}>
             {renderImageBox(img1, setImg1)}
             {renderImageBox(img2, setImg2)}
@@ -217,9 +236,8 @@ export default function AddPG({ navigation }) {
             {renderImageBox(img4, setImg4)}
           </View>
 
-          {/* SAVE BUTTON */}
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-            <Text style={styles.submitText}>Save</Text>
+            <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
           </TouchableOpacity>
 
         </View>
