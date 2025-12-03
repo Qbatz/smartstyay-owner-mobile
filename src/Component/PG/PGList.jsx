@@ -643,6 +643,7 @@ setShowReservedSheet(false)
   onClose={() => setShowReservedSheet(false)}
   bed={selectedReserved?.bed}
   room={selectedReserved?.room}
+  selectTap={route?.params?.setShowTabBar}
 />
 
 

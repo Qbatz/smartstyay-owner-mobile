@@ -6,19 +6,41 @@ import {
     PanResponder,
     TouchableOpacity,
     Image,
-    StyleSheet, TouchableWithoutFeedback
+    StyleSheet, TouchableWithoutFeedback,BackHandler
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
 import Money from "../../../Assets/Images/money.png";
 import Checkin from "../../../Assets/Images/add-circle.png";
 import MakeUs from "../../../Assets/Images/Logout.png";
-import Dots from "../../../Assets/Images/3dots.png"
+import Dots from "../../../Assets/Images/3dots.png";
+import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet"
 
 
-export default function ReservedBedBottomSheet({ visible, onClose }) {
+export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
+    const [showInactiveSheet,setShowInactiveSheet] =useState(false)
+      useEffect(() => {
+        if (selectTap) {
+         selectTap(!showInactiveSheet);
+        }
+      }, [showInactiveSheet]);
+
+      useEffect(() => {
+          const onBack = () => {
+            if (showInactiveSheet) {
+              setShowInactiveSheet(false);
+              return true;
+            }
+           
+      
+          
+            return false;
+          };
+          const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+          return () => sub.remove();
+        }, [showInactiveSheet]);
 
     useEffect(() => {
         if (visible) {
@@ -48,9 +70,18 @@ export default function ReservedBedBottomSheet({ visible, onClose }) {
         },
     });
 
-    if (!visible) return null;
+   if (!visible) {
+  return (
+    <InactiveTenantSheet
+      visible={showInactiveSheet}
+      onClose={() => setShowInactiveSheet(false)}
+    />
+  );
+}
+
 
     return (
+        <>
         <View style={styles.overlay}>
             <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
 
@@ -90,7 +121,18 @@ export default function ReservedBedBottomSheet({ visible, onClose }) {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.popupItem}>
+                            <TouchableOpacity style={styles.popupItem}  onPress={() => {
+  setMenuOpen(false);
+
+  // Step 1: Close Reserved Sheet
+  onClose();
+
+  // Step 2: Open Inactive sheet after animation delay
+  setTimeout(() => {
+    setShowInactiveSheet(true);
+  }, 250); // same as animation duration
+}}
+>
                                 <View style={styles.row}>
                                     <Image source={MakeUs} style={styles.icon} />
                                     <Text style={styles.popupText}>Make as Inactive</Text>
@@ -165,6 +207,12 @@ export default function ReservedBedBottomSheet({ visible, onClose }) {
                 </TouchableOpacity>
             </Animated.View>
         </View>
+        <InactiveTenantSheet
+  visible={showInactiveSheet}
+  onClose={() => setShowInactiveSheet(false)}
+/>
+
+        </>
     );
 }
 
