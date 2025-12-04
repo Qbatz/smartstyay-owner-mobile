@@ -27,7 +27,7 @@ import ActiveWalkin from "../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
-import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
+import MoveNoticeSheet from '../Customer/MoveToNoticePeriod';
 import ReassignBedModal from '../Customer/ReAssignBed';
 import CheckoutList from '../Customer/Checkout/CheckoutList';
 import DatePicker from "react-native-ui-datepicker";
@@ -759,7 +759,7 @@ const customerList = [
 
 
 {showNotice && (
-  <MoveNoticeModal
+  <MoveNoticeSheet
     visible={showNotice}
     onClose={() => setShowNotice(false)}
     tenant={selectedCustomer}
@@ -768,8 +768,8 @@ const customerList = [
     reason={reason}
     setRequestDate={setReqDate}
     setCheckoutDate={setOutDate}
-    setReason={setReason}
-    onMove={() => console.log("Move Clicked")}
+   
+  
   />
 )}
 

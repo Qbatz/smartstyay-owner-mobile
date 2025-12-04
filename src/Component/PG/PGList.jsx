@@ -19,6 +19,7 @@ import AddBedBottomSheet from "./AddBed";
 import ManageBedBottomSheet from "./AvailableBedBottomSheet";
 import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus";
 import OccupiedBedSheet from "./OccupiedBed/OccupiedBedStatus";
+import MoveNoticeSheet from '.././Customer/MoveToNoticePeriod';
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -29,6 +30,7 @@ const IconCalendar = require("../../Assets/Images/Reservedbed.png");
 const IconRupee = require("../../Assets/Images/overdueImage.png");
 const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 import { useNavigation } from "@react-navigation/native";
+
 
 const initialFloors = [
   {
@@ -212,6 +214,13 @@ const [showReservedSheet, setShowReservedSheet] = useState(false);
 const [selectedReserved, setSelectedReserved] = useState(null);
 const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
 const [selectedOccupied, setSelectedOccupied] = useState(null);
+ const [showNotice, setShowNotice] = useState(false);
+ const [reqDate, setReqDate] = useState("31/07/2025");
+ const [outDate, setOutDate] = useState("30/08/2025");
+ const [reason, setReason] = useState("")
+
+
+
 
 
   const translateY = React.useRef(new Animated.Value(300)).current;
@@ -330,6 +339,13 @@ setShowOccupiedSheet(false)
     setFloors(updated);
     setActiveFloorIndex(0);
   };
+
+  const handleOpenNoticeSheet = () => {
+  setShowOccupiedSheet(false);
+  setSelectedOccupied(null);
+  setShowNotice(true);   // open notice sheet
+};
+
 
   return (
     <>
@@ -678,12 +694,38 @@ onPress={() => {
   room={selectedReserved?.room}
   selectTap={route?.params?.setShowTabBar}
 />
-<OccupiedBedSheet
+{/* <OccupiedBedSheet
     visible={showOccupiedSheet}
     onClose={() => setShowOccupiedSheet(false)}
     bed={selectedOccupied?.bed}
     room={selectedOccupied?.room}
+
+
+/> */}
+<OccupiedBedSheet
+  visible={showOccupiedSheet}
+  onClose={() => {
+    setShowOccupiedSheet(false);
+    setSelectedOccupied(null);
+  }}
+  bed={selectedOccupied?.bed}
+  room={selectedOccupied?.room}
+  onMoveToNotice={handleOpenNoticeSheet}  // <-- important
 />
+
+   { showNotice && 
+ <MoveNoticeSheet
+            visible={showNotice}
+            onClose={() => setShowNotice(false)}
+            requestDate={reqDate}
+    checkoutDate={outDate}
+    reason={reason}
+    setRequestDate={setReqDate}
+    setCheckoutDate={setOutDate}
+           
+          />
+        
+     }
 
 
     </>
