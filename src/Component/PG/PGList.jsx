@@ -40,6 +40,7 @@ const initialFloors = [
       {
         id: "r1",
         room_no: "001",
+        roomId:"1",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -80,6 +81,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "101",
+          roomId:"2",
         sharing: "3 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -90,11 +92,12 @@ const initialFloors = [
   },
   {
     id: "f3",
-    name: "Floor 1",
+    name: "Floor 3",
     rooms: [
       {
         id: "r1",
         room_no: "001",
+          roomId:"1",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -108,6 +111,7 @@ const initialFloors = [
       {
         id: "r2",
         room_no: "002",
+          roomId:"2",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -118,6 +122,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "002",
+          roomId:"3",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -130,11 +135,12 @@ const initialFloors = [
   },
   {
     id: "f4",
-    name: "Floor 2",
+    name: "Floor 4",
     rooms: [
       {
         id: "r3",
         room_no: "101",
+          roomId:"1",
         sharing: "3 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -145,11 +151,12 @@ const initialFloors = [
   },
   {
     id: "f5",
-    name: "Floor 1",
+    name: "Floor 5",
     rooms: [
       {
         id: "r1",
         room_no: "001",
+          roomId:"2",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -163,6 +170,7 @@ const initialFloors = [
       {
         id: "r2",
         room_no: "002",
+          roomId:"3",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -185,7 +193,7 @@ const initialFloors = [
   },
   {
     id: "f6",
-    name: "Floor 2",
+    name: "Floor 6",
     rooms: [
       {
         id: "r3",
@@ -194,6 +202,7 @@ const initialFloors = [
         beds: [
           { id: "b1", label: "A", status: "available" },
           { id: "b2", label: "B", status: "occupied" },
+            { id: "b3", label: "C", status: "available" },
         ],
       },
     ],
@@ -218,6 +227,7 @@ const [selectedOccupied, setSelectedOccupied] = useState(null);
  const [reqDate, setReqDate] = useState("31/07/2025");
  const [outDate, setOutDate] = useState("30/08/2025");
  const [reason, setReason] = useState("")
+
 
 
 
@@ -343,8 +353,19 @@ setShowOccupiedSheet(false)
   const handleOpenNoticeSheet = () => {
   setShowOccupiedSheet(false);
   setSelectedOccupied(null);
-  setShowNotice(true);   // open notice sheet
+  setShowNotice(true);   
 };
+const handleReAssignBed = () => {
+  if (!selectedOccupied) return;
+
+  navigation.navigate("ReassignBedScreen", {
+    tenant: selectedOccupied, 
+     floors: floors 
+  });
+
+  setShowOccupiedSheet(false);
+};
+
 
 
   return (
@@ -710,7 +731,8 @@ onPress={() => {
   }}
   bed={selectedOccupied?.bed}
   room={selectedOccupied?.room}
-  onMoveToNotice={handleOpenNoticeSheet}  // <-- important
+  onMoveToNotice={handleOpenNoticeSheet}  
+    onReAssign={handleReAssignBed}
 />
 
    { showNotice && 

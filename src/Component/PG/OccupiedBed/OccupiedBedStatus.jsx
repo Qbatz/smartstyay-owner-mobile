@@ -10,6 +10,7 @@ import {
     PanResponder
 } from "react-native";
 import MoveNoticeSheet from '../../Customer/MoveToNoticePeriod';
+import { useNavigation } from "@react-navigation/native";
 
 import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
@@ -20,8 +21,9 @@ import Dots from "../../../Assets/Images/3dots.png";
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 
-export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice  }) {
+export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign }) {
     const translateY = useRef(new Animated.Value(300)).current;
+    
     // const [showNotice, setShowNotice] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
 // const [reqDate, setReqDate] = useState("31/07/2025");
@@ -34,6 +36,11 @@ const handleMoveClick = () => {
   onMoveToNotice();   // tell parent to open notice period
 };
 
+const handleReAssignBed=()=>{
+      setMenuOpen(false);
+  onClose(); 
+  onReAssign()
+}
 
 
   
@@ -45,7 +52,7 @@ const handleMoveClick = () => {
         }).start();
     }, [visible]);
 
-    // Swipe Down Close
+   
     const panResponder = PanResponder.create({
         onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
         onPanResponderMove: (_, g) => {
@@ -90,7 +97,7 @@ const handleMoveClick = () => {
                         </TouchableWithoutFeedback>
 
                         <View style={styles.popupMenu}>
-                            <TouchableOpacity style={styles.popupItem}>
+                            <TouchableOpacity style={styles.popupItem} onPress={handleReAssignBed}>
                                 <Image source={ReassignIcon} style={styles.menuIcon} />
                                 <Text style={styles.popupText}>Re-Assign Bed</Text>
                             </TouchableOpacity>
