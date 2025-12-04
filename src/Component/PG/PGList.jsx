@@ -17,7 +17,8 @@ import HostelImg from "../../Assets/Images/PgImg.png";
 import AddFloorIcon from "../../Assets/Images/TenantAdd.png";
 import AddBedBottomSheet from "./AddBed";
 import ManageBedBottomSheet from "./AvailableBedBottomSheet";
-import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus"
+import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus";
+import OccupiedBedSheet from "./OccupiedBed/OccupiedBedStatus";
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -209,6 +210,8 @@ export default function PGPageFull({ route }) {
 const [selectedBed, setSelectedBed] = useState(null);
 const [showReservedSheet, setShowReservedSheet] = useState(false);
 const [selectedReserved, setSelectedReserved] = useState(null);
+const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
+const [selectedOccupied, setSelectedOccupied] = useState(null);
 
 
   const translateY = React.useRef(new Animated.Value(300)).current;
@@ -259,9 +262,9 @@ const [selectedReserved, setSelectedReserved] = useState(null);
 
   useEffect(() => {
     if (route?.params?.setShowTabBar) {
-      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet);
+      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet && !showOccupiedSheet);
     }
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet]);
 
   useEffect(() => {
     const onBack = () => {
@@ -290,11 +293,15 @@ const [selectedReserved, setSelectedReserved] = useState(null);
 setShowReservedSheet(false)
  return true;
       }
+      if(showOccupiedSheet){
+setShowOccupiedSheet(false)
+ return true;
+      }
       return false;
     };
     const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
     return () => sub.remove();
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet]);
 
   // BASE BED SELECTION
   const getBaseBed = (status) => {
@@ -508,9 +515,26 @@ setShowReservedSheet(false)
     //     setShowManageBed(true);
     //   }
     // }}
-    onPress={() => {
+//     onPress={() => {
 
-  // ☑️ RESERVED → Open sample bottom sheet
+//   // ☑️ RESERVED → Open sample bottom sheet
+//   if (b.status === "reserved") {
+//     setSelectedReserved({ bed: b, room: item });
+//     setShowReservedSheet(true);
+//   }
+
+
+//   else if (b.status === "available") {
+//     setSelectedBed(b);
+//     setShowManageBed(true);
+//   }
+//   else {
+//     return;
+//   }
+// }}
+onPress={() => {
+
+  // RESERVED → Reserved Bottom Sheet
   if (b.status === "reserved") {
     setSelectedReserved({ bed: b, room: item });
     setShowReservedSheet(true);
@@ -521,10 +545,19 @@ setShowReservedSheet(false)
     setSelectedBed(b);
     setShowManageBed(true);
   }
+
+  else if (b.status === "occupied") {
+    setSelectedOccupied({ bed: b, room: item });
+    setShowOccupiedSheet(true);
+  }
+
+ 
   else {
     return;
   }
+
 }}
+
 
   >
 
@@ -644,6 +677,12 @@ setShowReservedSheet(false)
   bed={selectedReserved?.bed}
   room={selectedReserved?.room}
   selectTap={route?.params?.setShowTabBar}
+/>
+<OccupiedBedSheet
+    visible={showOccupiedSheet}
+    onClose={() => setShowOccupiedSheet(false)}
+    bed={selectedOccupied?.bed}
+    room={selectedOccupied?.room}
 />
 
 
