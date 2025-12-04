@@ -7,7 +7,7 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder,TextInput
+  TextInput,Keyboard,PanResponder,
 } from "react-native";
 
 import DatePicker from "react-native-ui-datepicker";
@@ -26,13 +26,13 @@ export default function ConfirmReassignSheet({
   current,
   next,
 }) {
+
   const translateY = useRef(new Animated.Value(500)).current;
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [sameAsCurrent,setSameAsCurrent] = useState("")
-  console.log("current",current)
+  const [sameAsCurrent, setSameAsCurrent] = useState(false);
 
- 
+  // 👉 1. FIRST HOOK – Open/Close Bottom Sheet
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 500,
@@ -41,7 +41,31 @@ export default function ConfirmReassignSheet({
     }).start();
   }, [visible]);
 
-  // PanResponder for swipe down
+  // 👉 2. SECOND HOOK – Keyboard Handling
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height + 40,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // 👉 3. DEFINE panResponder (IMPORTANT: After hooks, before return!)
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
     onPanResponderMove: (_, g) => {
@@ -57,7 +81,10 @@ export default function ConfirmReassignSheet({
     },
   });
 
+  // 👉 4. DO NOT put hooks after this line!
   if (!visible) return null;
+
+
 
   return (
     <>
@@ -197,7 +224,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    bottom: 25,
+    bottom: 0,
     backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "flex-end",
   },
@@ -290,6 +317,7 @@ inputBoxDate:{
     flexDirection: "row",
     justifyContent: "space-between",
     paddingTop: 25,
+   marginBottom:20
   },
 
   cancel: {

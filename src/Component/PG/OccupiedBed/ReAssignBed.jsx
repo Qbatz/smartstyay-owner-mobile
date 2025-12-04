@@ -199,22 +199,10 @@ console.log("tenant",tenant)
         ))}
       </ScrollView>
 
-      {/* CONTINUE BUTTON */}
-      {/* {selectedNewBed && (
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("ConfirmReassign", { tenant, selectedNewBed })
-          }
-          style={styles.continueBtn}
-        >
-          <Text style={styles.continueText}>Continue →</Text>
-        </TouchableOpacity>
-      )} */}
-      {/* FIXED BOTTOM BAR */}
+      
 {selectedNewBed && (
   <View style={styles.bottomBar}>
-    
-    {/* LEFT SIDE DETAILS */}
+
     <View>
       <Text style={styles.bottomLabel}>Bed No  |  {selectedDetails?.sharing}</Text>
       <Text style={styles.bottomValue}>
@@ -222,19 +210,9 @@ console.log("tenant",tenant)
       </Text>
     </View>
 
-    {/* RIGHT SIDE BUTTON */}
-    {/* <TouchableOpacity
-      style={styles.bottomButton}
-      onPress={() =>
-        navigation.navigate("ConfirmReassign", { tenant, selectedNewBed })
-      }
-    >
-      <Text style={styles.bottomButtonText}>Continue →</Text>
-    </TouchableOpacity> */}
+    
      <TouchableOpacity
-        //   onPress={() =>
-        //     navigation.navigate("ConfirmReassign", { tenant, selectedNewBed })
-        //   }
+       
          onPress={() => setShowConfirm(true)}
           style={styles.continueBtn}
         >
@@ -264,7 +242,7 @@ console.log("tenant",tenant)
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff",paddingBottom:25 ,paddingTop:20},
+  container: { flex: 1, backgroundColor: "#fff" ,paddingTop:20},
 
   headerBack: { padding: 20 },
   headerText: { fontSize: 16, fontWeight: "500" },
@@ -418,7 +396,7 @@ tickText: {
 },
 bottomBar: {
   position: "absolute",
-  bottom: 20,
+  bottom: 0,
   left: 0,
   right: 0,
   backgroundColor: "#fff",
@@ -432,6 +410,7 @@ bottomBar: {
   shadowColor: "#000",
   shadowOpacity: 0.1,
   shadowRadius: 8,
+  paddingBottom:20
 },
 bottomValue:{
 color:"#1E45E1"
