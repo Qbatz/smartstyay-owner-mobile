@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     PanResponder
 } from "react-native";
+import MoveNoticeSheet from '../../Customer/MoveToNoticePeriod';
 
 import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
@@ -19,9 +20,21 @@ import Dots from "../../../Assets/Images/3dots.png";
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 
-export default function OccupiedBedSheet({ visible, onClose, bed, room }) {
+export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice  }) {
     const translateY = useRef(new Animated.Value(300)).current;
+    // const [showNotice, setShowNotice] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+// const [reqDate, setReqDate] = useState("31/07/2025");
+// const [outDate, setOutDate] = useState("30/08/2025");
+// const [reason, setReason] = useState("");
+
+const handleMoveClick = () => {
+  setMenuOpen(false);
+  onClose();          // close occupied sheet
+  onMoveToNotice();   // tell parent to open notice period
+};
+
+
 
   
     useEffect(() => {
@@ -47,18 +60,19 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room }) {
     if (!visible) return null;
 
     return (
+        <>
         <View style={styles.overlay}>
-            {/* OUTSIDE TAP CLOSE */}
+        
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={{ flex: 1 }} />
             </TouchableWithoutFeedback>
 
-            {/* BOTTOM SHEET */}
+         
             <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]} {...panResponder.panHandlers}>
 
                 <View style={styles.handle} />
 
-                {/* HEADER */}
+              
                 <View style={styles.headerRow}>
                     <Text style={styles.title}>Bed Status</Text>
 
@@ -67,7 +81,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room }) {
                     </TouchableOpacity>
                 </View>
 
-                {/* POPUP MENU */}
+              
                 {menuOpen && (
                     <View style={styles.menuWrapper} pointerEvents="box-none">
 
@@ -81,7 +95,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room }) {
                                 <Text style={styles.popupText}>Re-Assign Bed</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.popupItem}>
+                            <TouchableOpacity style={styles.popupItem} onPress={handleMoveClick}>
                                 <Image source={NoticeIcon} style={styles.menuIcon} />
                                 <Text style={styles.popupText}>Move to Notice Period</Text>
                             </TouchableOpacity>
@@ -137,6 +151,12 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room }) {
 
             </Animated.View>
         </View>
+     
+
+  
+         
+      
+        </>
     );
 }
 
