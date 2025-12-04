@@ -14,10 +14,12 @@ import Money from "../../../Assets/Images/money.png";
 import Checkin from "../../../Assets/Images/add-circle.png";
 import MakeUs from "../../../Assets/Images/Logout.png";
 import Dots from "../../../Assets/Images/3dots.png";
-import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet"
+import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
+import { useNavigation } from "@react-navigation/native";
 
 
 export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
+     const navigation = useNavigation();
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
     const [showInactiveSheet,setShowInactiveSheet] =useState(false)
@@ -31,16 +33,20 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
           const onBack = () => {
             if (showInactiveSheet) {
               setShowInactiveSheet(false);
+          
               return true;
             }
-           
+           if(menuOpen){
+   setMenuOpen(false)
+   return true;
+           }
       
           
             return false;
           };
           const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
           return () => sub.remove();
-        }, [showInactiveSheet]);
+        }, [showInactiveSheet,menuOpen]);
 
     useEffect(() => {
         if (visible) {
@@ -78,12 +84,19 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
     />
   );
 }
-
+const handleOuterClick=()=>{
+    onClose()
+    setMenuOpen(false)
+}
+const handleCheckIn = ()=>{
+   setMenuOpen(false) 
+   navigation.navigate("ReserveToCheckin") 
+}
 
     return (
         <>
         <View style={styles.overlay}>
-            <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
+            <TouchableOpacity style={styles.overlayTouch} onPress={handleOuterClick} />
 
             <Animated.View
                 style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -114,7 +127,7 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
 
                         {/* POPUP */}
                         <View style={styles.popupMenu}>
-                            <TouchableOpacity style={styles.popupItem}>
+                            <TouchableOpacity style={styles.popupItem} onPress={handleCheckIn}>
                                 <View style={styles.row}>
                                     <Image source={Checkin} style={styles.iconCheck} />
                                     <Text style={styles.popupText}>Check-In</Text>
