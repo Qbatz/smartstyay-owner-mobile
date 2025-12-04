@@ -7,7 +7,7 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder,
+  PanResponder,TextInput
 } from "react-native";
 
 import DatePicker from "react-native-ui-datepicker";
@@ -29,6 +29,7 @@ export default function ConfirmReassignSheet({
   const translateY = useRef(new Animated.Value(500)).current;
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
+  const [sameAsCurrent,setSameAsCurrent] = useState("")
   console.log("current",current)
 
  
@@ -114,17 +115,35 @@ export default function ConfirmReassignSheet({
         <Text style={styles.sectionLabel}>Date</Text>
       <TouchableOpacity
   onPress={() => setShowDatePicker(true)}
-  style={styles.inputBox}
+  style={styles.inputBoxDate}
 >
   <Text>{dayjs(selectedDate).format("DD/MM/YYYY")}</Text>
   <Image source={Calendar} style={styles.icon} />
 </TouchableOpacity>
 
         
+<View style={styles.rentHeaderRow}>
+  <Text style={styles.sectionLabel}>New Rent Amount</Text>
 
+  <TouchableOpacity 
+    style={styles.checkboxRow} 
+    onPress={() => setSameAsCurrent(!sameAsCurrent)}
+  >
+    <View style={[styles.checkbox, sameAsCurrent && styles.checkboxActive]}>
+      {sameAsCurrent && <View style={styles.checkboxInner} />}
+    </View>
+    <Text style={styles.checkboxLabel}>Same as Current</Text>
+  </TouchableOpacity>
+</View>
         <Text style={styles.sectionLabel}>New Rent Amount</Text>
-        <View style={styles.inputBox}>
-          <Text>₹ 4000</Text>
+        <View style={styles.inputBox} >
+         <TextInput
+  style={styles.inputField}
+  placeholder="Enter Amount"
+  placeholderTextColor="#999"
+  keyboardType="numeric"
+/>
+
         </View>
 
     
@@ -239,17 +258,33 @@ const styles = StyleSheet.create({
     height: 30,
   
   },
-
-  inputBox: {
-    borderWidth: 1,
+ inputField: {
+  fontSize: 15,
+  color: "#000",
+},
+inputBoxDate:{
+ borderWidth: 1,
     borderColor: "#ddd",
-    backgroundColor: "#fafafa",
-    padding: 12,
+    
     borderRadius: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+     height:50,paddingLeft:14
+},
+
+  inputBox: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+   
+   paddingLeft:14,
+    borderRadius: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height:50
   },
+  
 
   footer: {
     flexDirection: "row",
@@ -309,4 +344,45 @@ assignText: {
     padding: 10,
    borderRadius:16
   },
+  rentHeaderRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 14,
+  marginBottom: 6,
+},
+
+checkboxRow: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+checkbox: {
+  width: 18,
+  height: 18,
+  borderWidth: 1.5,
+  borderColor: "#555",
+  borderRadius: 4,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 6,
+},
+
+checkboxActive: {
+  borderColor: "#1E45E1",
+  backgroundColor: "#1E45E1",
+},
+
+checkboxInner: {
+  width: 10,
+  height: 10,
+  backgroundColor: "#fff",
+  borderRadius: 2,
+},
+
+checkboxLabel: {
+  fontSize: 13,
+  color: "#444",
+},
+
 });
