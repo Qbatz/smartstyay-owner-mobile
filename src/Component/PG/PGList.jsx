@@ -20,6 +20,8 @@ import ManageBedBottomSheet from "./AvailableBedBottomSheet";
 import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus";
 import OccupiedBedSheet from "./OccupiedBed/OccupiedBedStatus";
 import MoveNoticeSheet from '.././Customer/MoveToNoticePeriod';
+import NoticePeriodBedSheet from "../PG/NoticePeriodBed/NoticeperiodBedStatus";
+import NewBookingSheet from './NoticePeriodBed/NoticePeriodToBooking'
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -227,6 +229,10 @@ const [selectedOccupied, setSelectedOccupied] = useState(null);
  const [reqDate, setReqDate] = useState("31/07/2025");
  const [outDate, setOutDate] = useState("30/08/2025");
  const [reason, setReason] = useState("")
+ const [showNoticePeriodSheet, setShowNoticePeriodSheet] = useState(false);
+const [noticeData, setNoticeData] = useState(null);
+
+const [showNewBooking, setShowNewBooking] = useState(false);
 
 
 
@@ -281,9 +287,9 @@ const [selectedOccupied, setSelectedOccupied] = useState(null);
 
   useEffect(() => {
     if (route?.params?.setShowTabBar) {
-      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet && !showOccupiedSheet);
+      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet && !showOccupiedSheet && !showNoticePeriodSheet && !showNewBooking);
     }
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet,showNoticePeriodSheet,showNewBooking]);
 
   useEffect(() => {
     const onBack = () => {
@@ -316,11 +322,19 @@ setShowReservedSheet(false)
 setShowOccupiedSheet(false)
  return true;
       }
+        if (showNoticePeriodSheet) {
+        setShowNoticePeriodSheet(false);
+        return true;
+      }
+       if (showNewBooking) {
+        setShowNewBooking(false);
+        return true;
+      }
       return false;
     };
     const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
     return () => sub.remove();
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet,showNewBooking]);
 
   // BASE BED SELECTION
   const getBaseBed = (status) => {
@@ -365,7 +379,10 @@ const handleReAssignBed = () => {
 
   setShowOccupiedSheet(false);
 };
-
+  const handleNoticeToBookin = () => {
+  setShowNoticePeriodSheet(false);
+  setShowNewBooking(true);   
+};
 
 
   return (
@@ -587,6 +604,11 @@ onPress={() => {
     setSelectedOccupied({ bed: b, room: item });
     setShowOccupiedSheet(true);
   }
+  else if (b.status === "noticeperiod") {
+  setNoticeData({ bed: b, room: item, tenant: selectedOccupied });
+  setShowNoticePeriodSheet(true);
+}
+
 
  
   else {
@@ -745,9 +767,24 @@ onPress={() => {
     setRequestDate={setReqDate}
     setCheckoutDate={setOutDate}
            
-          />
-        
+          />    
+
      }
+<NoticePeriodBedSheet
+  visible={showNoticePeriodSheet}
+  onClose={() => setShowNoticePeriodSheet(false)}
+  bed={noticeData?.bed}
+  room={noticeData?.room}
+  tenant={noticeData?.tenant}
+  setShowBar={route.params.setShowTabBar}
+  onClick={handleNoticeToBookin}
+/>
+  <NewBookingSheet
+  visible={showNewBooking}
+  onClose={() => setShowNewBooking(false)}
+  bed={selectedOccupied?.bed}
+  room={selectedOccupied?.room}
+/>
 
 
     </>
