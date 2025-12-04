@@ -1,23 +1,48 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView } from "react-native";
+import React, { useState,useCallback } from "react";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView ,BackHandler} from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import Calendar from "../../../Assets/Images/calendar.png";
 import Delete from "../../../Assets/Images/remove.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ReserveToCheckin({ route, navigation }) {
 
   const { bed, room } = route.params || {};
+  
 
   const [openJoinPicker, setOpenJoinPicker] = useState(false);
   const [joinDate, setJoinDate] = useState(dayjs());
    const [extraCharges, setExtraCharges] = useState([]);
    const [openDropdownId, setOpenDropdownId] = useState(null);
+    const StayType = ["LongStay"];
+     const [StayTypeOpen, setStayTypeOpen] = useState(false);
+     const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
     const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
-
+ useFocusEffect(
+   useCallback(() => {
+     const onBackPress = () => {
+       
+ 
+       if (navigation.canGoBack()) {
+         navigation.goBack();
+         return true;
+       }
+ 
+       return false;
+     };
+ 
+     const subscription = BackHandler.addEventListener(
+       "hardwareBackPress",
+       onBackPress
+     );
+ 
+     return () => subscription.remove();
+   }, [navigation])
+ );
 
   const addCharge = () => {
     setExtraCharges(prev => [
@@ -89,11 +114,37 @@ export default function ReserveToCheckin({ route, navigation }) {
           <Text>₹500</Text>
         </View>
 
-        {/* Stay Type */}
         <Text style={styles.label}>Stay Type</Text>
-        <View style={styles.selectBox}>
-          <Text>Select Type</Text>
-        </View>
+       
+                     <View style={{ position: "relative" }}>
+                       <TouchableOpacity
+                         style={styles.select}
+                         onPress={() => setStayTypeOpen(!StayTypeOpen)}
+                         activeOpacity={0.9}
+                       >
+                         <Text style={styles.selectText}>{StayTypeSelected}</Text>
+                         <Image source={DownArrow} style={styles.arrow} />
+                       </TouchableOpacity>
+       
+                       {StayTypeOpen && (
+                         <View style={styles.dropdownMenuone}>
+                           <ScrollView style={{ maxHeight: 160 }}>
+                             {StayType.map((v, index) => (
+                               <TouchableOpacity
+                                 key={index}
+                                 style={styles.option}
+                                 onPress={() => {
+                                   setStayTypeSelected(v);
+                                   setStayTypeOpen(false);
+                                 }}
+                               >
+                                 <Text style={styles.optionText}>{v}</Text>
+                               </TouchableOpacity>
+                             ))}
+                           </ScrollView>
+                         </View>
+                       )}
+                     </View>
 
         {/* Rental Amount */}
         <Text style={styles.label}>Rental Amount</Text>
@@ -332,18 +383,27 @@ const styles = StyleSheet.create({
   },
 
   buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 30,
-    marginBottom: 30,
+     flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 15,
+    marginTop: 25,
   },
+  
 
-  cancelBtn: {
-    width: "48%",
-    borderWidth: 1,
-    borderColor: "#DCDCDC",
+//   cancelBtn: {
+//     width: "48%",
+//     borderWidth: 1,
+//     borderColor: "#DCDCDC",
+//     paddingVertical: 14,
+//     borderRadius: 10,
+//   },
+ cancelBtn: {
     paddingVertical: 14,
+    paddingHorizontal: 25,
     borderRadius: 10,
+
+
+    width: "40%"
   },
 
   cancelText: {
@@ -354,10 +414,11 @@ const styles = StyleSheet.create({
   },
 
   checkBtn: {
-    width: "48%",
-    backgroundColor: "#1E45E1",
     paddingVertical: 14,
+    paddingHorizontal: 25,
     borderRadius: 10,
+    backgroundColor: "#1D5DFF",
+    width: "35%"
   },
 
   checkText: {
@@ -491,7 +552,17 @@ backgroundColor:"#FFFFFF",
   },
 
   selectText: { color: "#555" },
-  select: {
+ 
+  placeholder: { color: "#555" },
+
+
+  optionText: {
+    fontSize: 15,
+    color: "#000",
+  },
+selectText: { color: "#555" },
+ 
+   select: {
     height: 48,
     borderWidth: 1,
     borderColor: "#e1e1e1",
@@ -501,12 +572,4 @@ backgroundColor:"#FFFFFF",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  placeholder: { color: "#555" },
-
-
-  optionText: {
-    fontSize: 15,
-    color: "#000",
-  },
-
 });

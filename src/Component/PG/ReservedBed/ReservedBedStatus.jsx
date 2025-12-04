@@ -33,16 +33,20 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
           const onBack = () => {
             if (showInactiveSheet) {
               setShowInactiveSheet(false);
+          
               return true;
             }
-           
+           if(menuOpen){
+   setMenuOpen(false)
+   return true;
+           }
       
           
             return false;
           };
           const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
           return () => sub.remove();
-        }, [showInactiveSheet]);
+        }, [showInactiveSheet,menuOpen]);
 
     useEffect(() => {
         if (visible) {
@@ -80,12 +84,19 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
     />
   );
 }
-
+const handleOuterClick=()=>{
+    onClose()
+    setMenuOpen(false)
+}
+const handleCheckIn = ()=>{
+   setMenuOpen(false) 
+   navigation.navigate("ReserveToCheckin") 
+}
 
     return (
         <>
         <View style={styles.overlay}>
-            <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
+            <TouchableOpacity style={styles.overlayTouch} onPress={handleOuterClick} />
 
             <Animated.View
                 style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -116,7 +127,7 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
 
                         {/* POPUP */}
                         <View style={styles.popupMenu}>
-                            <TouchableOpacity style={styles.popupItem} onPress={() => navigation.navigate("ReserveToCheckin")}>
+                            <TouchableOpacity style={styles.popupItem} onPress={handleCheckIn}>
                                 <View style={styles.row}>
                                     <Image source={Checkin} style={styles.iconCheck} />
                                     <Text style={styles.popupText}>Check-In</Text>
