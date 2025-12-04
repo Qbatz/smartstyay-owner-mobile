@@ -85,6 +85,18 @@ export default function ReserveToCheckin({ route, navigation }) {
     );
   };
 
+const convertToDeductions = (extraCharges) => {
+  return extraCharges.map(item => ({
+    type: item.type === "Others" ? item.title.toLowerCase() : "maintenance",
+    amount: item.amount,
+    showInput: item.type === "Others"
+  }));
+};
+const onSave = () => {
+  const deductions = convertToDeductions(extraCharges);
+  console.log("Final Deductions:", deductions);
+};
+
   return (
     <View style={styles.container}>
 
@@ -276,7 +288,7 @@ export default function ReserveToCheckin({ route, navigation }) {
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.checkBtn}>
+          <TouchableOpacity style={styles.checkBtn} onPress={onSave}>
             <Text style={styles.checkText}>Check In</Text>
           </TouchableOpacity>
         </View>

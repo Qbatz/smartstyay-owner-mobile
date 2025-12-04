@@ -75,6 +75,9 @@ import CreateReceipt from './src/Component/MorePages/Bills/CreateReceipt';
 import SettingsElectricity from './src/Component/SettingScreen/SettingsElectricity/SettingsElectricity';
 import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin'
 import ComplaintType from './src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings';
+import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed'
+
+
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -152,6 +155,9 @@ function AppContent() {
                       <Navigation.Screen name="SettingsElectricity" component={SettingsElectricity} />  
                             <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
                            <Navigation.Screen name="ComplaintType" component={ComplaintType} />
+                             <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
+
+
         </Navigation.Navigator>
       </NavigationContainer>
 

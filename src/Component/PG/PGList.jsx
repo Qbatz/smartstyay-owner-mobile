@@ -17,7 +17,9 @@ import HostelImg from "../../Assets/Images/PgImg.png";
 import AddFloorIcon from "../../Assets/Images/TenantAdd.png";
 import AddBedBottomSheet from "./AddBed";
 import ManageBedBottomSheet from "./AvailableBedBottomSheet";
-import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus"
+import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus";
+import OccupiedBedSheet from "./OccupiedBed/OccupiedBedStatus";
+import MoveNoticeSheet from '.././Customer/MoveToNoticePeriod';
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -29,6 +31,7 @@ const IconRupee = require("../../Assets/Images/overdueImage.png");
 const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 import { useNavigation } from "@react-navigation/native";
 
+
 const initialFloors = [
   {
     id: "f1",
@@ -37,6 +40,7 @@ const initialFloors = [
       {
         id: "r1",
         room_no: "001",
+        roomId:"1",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -77,6 +81,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "101",
+          roomId:"2",
         sharing: "3 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -87,11 +92,12 @@ const initialFloors = [
   },
   {
     id: "f3",
-    name: "Floor 1",
+    name: "Floor 3",
     rooms: [
       {
         id: "r1",
         room_no: "001",
+          roomId:"1",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -105,6 +111,7 @@ const initialFloors = [
       {
         id: "r2",
         room_no: "002",
+          roomId:"2",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -115,6 +122,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "002",
+          roomId:"3",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -127,11 +135,12 @@ const initialFloors = [
   },
   {
     id: "f4",
-    name: "Floor 2",
+    name: "Floor 4",
     rooms: [
       {
         id: "r3",
         room_no: "101",
+          roomId:"1",
         sharing: "3 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -142,11 +151,12 @@ const initialFloors = [
   },
   {
     id: "f5",
-    name: "Floor 1",
+    name: "Floor 5",
     rooms: [
       {
         id: "r1",
         room_no: "001",
+          roomId:"2",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -160,6 +170,7 @@ const initialFloors = [
       {
         id: "r2",
         room_no: "002",
+          roomId:"3",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -182,7 +193,7 @@ const initialFloors = [
   },
   {
     id: "f6",
-    name: "Floor 2",
+    name: "Floor 6",
     rooms: [
       {
         id: "r3",
@@ -191,6 +202,7 @@ const initialFloors = [
         beds: [
           { id: "b1", label: "A", status: "available" },
           { id: "b2", label: "B", status: "occupied" },
+            { id: "b3", label: "C", status: "available" },
         ],
       },
     ],
@@ -209,6 +221,16 @@ export default function PGPageFull({ route }) {
 const [selectedBed, setSelectedBed] = useState(null);
 const [showReservedSheet, setShowReservedSheet] = useState(false);
 const [selectedReserved, setSelectedReserved] = useState(null);
+const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
+const [selectedOccupied, setSelectedOccupied] = useState(null);
+ const [showNotice, setShowNotice] = useState(false);
+ const [reqDate, setReqDate] = useState("31/07/2025");
+ const [outDate, setOutDate] = useState("30/08/2025");
+ const [reason, setReason] = useState("")
+
+
+
+
 
 
   const translateY = React.useRef(new Animated.Value(300)).current;
@@ -259,9 +281,9 @@ const [selectedReserved, setSelectedReserved] = useState(null);
 
   useEffect(() => {
     if (route?.params?.setShowTabBar) {
-      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet);
+      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet && !showOccupiedSheet);
     }
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet]);
 
   useEffect(() => {
     const onBack = () => {
@@ -290,11 +312,15 @@ const [selectedReserved, setSelectedReserved] = useState(null);
 setShowReservedSheet(false)
  return true;
       }
+      if(showOccupiedSheet){
+setShowOccupiedSheet(false)
+ return true;
+      }
       return false;
     };
     const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
     return () => sub.remove();
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet]);
+  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet]);
 
   // BASE BED SELECTION
   const getBaseBed = (status) => {
@@ -323,6 +349,24 @@ setShowReservedSheet(false)
     setFloors(updated);
     setActiveFloorIndex(0);
   };
+
+  const handleOpenNoticeSheet = () => {
+  setShowOccupiedSheet(false);
+  setSelectedOccupied(null);
+  setShowNotice(true);   
+};
+const handleReAssignBed = () => {
+  if (!selectedOccupied) return;
+
+  navigation.navigate("ReassignBedScreen", {
+    tenant: selectedOccupied, 
+     floors: floors 
+  });
+
+  setShowOccupiedSheet(false);
+};
+
+
 
   return (
     <>
@@ -508,9 +552,26 @@ setShowReservedSheet(false)
     //     setShowManageBed(true);
     //   }
     // }}
-    onPress={() => {
+//     onPress={() => {
 
-  // ☑️ RESERVED → Open sample bottom sheet
+//   // ☑️ RESERVED → Open sample bottom sheet
+//   if (b.status === "reserved") {
+//     setSelectedReserved({ bed: b, room: item });
+//     setShowReservedSheet(true);
+//   }
+
+
+//   else if (b.status === "available") {
+//     setSelectedBed(b);
+//     setShowManageBed(true);
+//   }
+//   else {
+//     return;
+//   }
+// }}
+onPress={() => {
+
+  // RESERVED → Reserved Bottom Sheet
   if (b.status === "reserved") {
     setSelectedReserved({ bed: b, room: item });
     setShowReservedSheet(true);
@@ -521,10 +582,19 @@ setShowReservedSheet(false)
     setSelectedBed(b);
     setShowManageBed(true);
   }
+
+  else if (b.status === "occupied") {
+    setSelectedOccupied({ bed: b, room: item });
+    setShowOccupiedSheet(true);
+  }
+
+ 
   else {
     return;
   }
+
 }}
+
 
   >
 
@@ -645,6 +715,39 @@ setShowReservedSheet(false)
   room={selectedReserved?.room}
   selectTap={route?.params?.setShowTabBar}
 />
+{/* <OccupiedBedSheet
+    visible={showOccupiedSheet}
+    onClose={() => setShowOccupiedSheet(false)}
+    bed={selectedOccupied?.bed}
+    room={selectedOccupied?.room}
+
+
+/> */}
+<OccupiedBedSheet
+  visible={showOccupiedSheet}
+  onClose={() => {
+    setShowOccupiedSheet(false);
+    setSelectedOccupied(null);
+  }}
+  bed={selectedOccupied?.bed}
+  room={selectedOccupied?.room}
+  onMoveToNotice={handleOpenNoticeSheet}  
+    onReAssign={handleReAssignBed}
+/>
+
+   { showNotice && 
+ <MoveNoticeSheet
+            visible={showNotice}
+            onClose={() => setShowNotice(false)}
+            requestDate={reqDate}
+    checkoutDate={outDate}
+    reason={reason}
+    setRequestDate={setReqDate}
+    setCheckoutDate={setOutDate}
+           
+          />
+        
+     }
 
 
     </>
