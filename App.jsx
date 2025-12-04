@@ -73,7 +73,8 @@ import AddPG from './src/Component/SettingScreen/SettingsPG/AddPG';
 import SettingsSecurity from './src/Component/SettingScreen/Security/SettingSecurity';
 import CreateReceipt from './src/Component/MorePages/Bills/CreateReceipt';
 import SettingsElectricity from './src/Component/SettingScreen/SettingsElectricity/SettingsElectricity';
-import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin'
+import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin';
+import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed'
 
 
 function App() {
@@ -151,6 +152,7 @@ function AppContent() {
                             <Navigation.Screen name="CreateReceipt" component={CreateReceipt} />
                       <Navigation.Screen name="SettingsElectricity" component={SettingsElectricity} />  
                             <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
+                             <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
 
         </Navigation.Navigator>
       </NavigationContainer>
