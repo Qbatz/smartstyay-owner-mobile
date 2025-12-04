@@ -72,6 +72,10 @@ import SettingsPG from './src/Component/SettingScreen/SettingsPG/SettingsPGList'
 import AddPG from './src/Component/SettingScreen/SettingsPG/AddPG';
 import SettingsSecurity from './src/Component/SettingScreen/Security/SettingSecurity';
 import CreateReceipt from './src/Component/MorePages/Bills/CreateReceipt';
+import SettingsElectricity from './src/Component/SettingScreen/SettingsElectricity/SettingsElectricity';
+
+
+
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -146,6 +150,7 @@ function AppContent() {
                        <Navigation.Screen name="AddPG" component={AddPG} />
                         <Navigation.Screen name="SettingsSecurity" component={SettingsSecurity} />
                             <Navigation.Screen name="CreateReceipt" component={CreateReceipt} />
+                      <Navigation.Screen name="SettingsElectricity" component={SettingsElectricity} />  
         </Navigation.Navigator>
       </NavigationContainer>
 

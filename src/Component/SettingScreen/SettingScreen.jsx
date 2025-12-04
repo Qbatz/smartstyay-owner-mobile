@@ -21,7 +21,7 @@ export default function SettingsScreen({ navigation }) {
   ];
 
   const pgItems = [
-    { icon: require("../../Assets/Images/Electricityimg.png"), title: "Electricity" },
+    { icon: require("../../Assets/Images/Electricityimg.png"), title: "Electricity" ,screen: "SettingsElectricity"},
     { icon: require("../../Assets/Images/BillingRule.png"), title: "Billing Rule" },
     { icon: require("../../Assets/Images/BillTempl.png"), title: "Bill Templates" },
     { icon: require("../../Assets/Images/Expense.png"), title: "Expenses" },
