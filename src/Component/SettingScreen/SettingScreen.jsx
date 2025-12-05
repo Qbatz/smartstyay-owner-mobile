@@ -27,7 +27,7 @@ export default function SettingsScreen({ navigation }) {
     { icon: require("../../Assets/Images/Expense.png"), title: "Expenses" },
     { icon: require("../../Assets/Images/compliance.png"), title: "Complaints",screen : "ComplaintType" },
     { icon: require("../../Assets/Images/Amenitie.png"), title: "Amenities" },
-    { icon: require("../../Assets/Images/Expense.png"), title: "User" },
+    { icon: require("../../Assets/Images/Expense.png"), title: "User" ,screen: "UsersScreen"},
     { icon: require("../../Assets/Images/Expense.png"), title: "Role" },
     { icon: require("../../Assets/Images/Expense.png"), title: "Agreement & Policy" },
   ];
