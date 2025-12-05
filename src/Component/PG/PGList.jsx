@@ -383,6 +383,14 @@ const handleReAssignBed = () => {
   setShowNoticePeriodSheet(false);
   setShowNewBooking(true);   
 };
+const handleShowFinalSettlement = () => {
+  setShowNoticePeriodSheet(false);
+   navigation.navigate("FinalSettlement")
+}
+const handleShowCancelNotice = () => {
+  setShowNoticePeriodSheet(false);
+navigation.navigate("CancelNotice")
+}
 
 
   return (
@@ -778,6 +786,9 @@ onPress={() => {
   tenant={noticeData?.tenant}
   setShowBar={route.params.setShowTabBar}
   onClick={handleNoticeToBookin}
+  onFinalSheet={handleShowFinalSettlement}
+  navigation={navigation} 
+  cancelNoticePeriod={handleShowCancelNotice}
 />
   <NewBookingSheet
   visible={showNewBooking}

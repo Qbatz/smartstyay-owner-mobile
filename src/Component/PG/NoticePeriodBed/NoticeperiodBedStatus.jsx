@@ -17,14 +17,12 @@ export default function NoticePeriodBedSheet({
   onClose,
   bed,
   room,
-  tenant,onClick
+  tenant,onClick,onFinalSheet,cancelNoticePeriod
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
   const [menuVisible, setMenuVisible] = useState(false);
   
 
-
-  /** Animate Sheet */
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 500,
@@ -55,12 +53,23 @@ export default function NoticePeriodBedSheet({
     onClose()
     onClick()
   }
+const handleFinalSettledment = () => {
+  setMenuVisible(false);
+  onFinalSheet();      
+  onClose();
+};
+const handleCancelNoticePeriod = () => {
+  setMenuVisible(false);
+  cancelNoticePeriod();      
+  onClose();
+};
+
 
   if (!visible) return null;
 
   return (
     <>
-      {/* Overlay */}
+  
       <View style={styles.overlay}>
         <TouchableWithoutFeedback
           onPress={() => {
@@ -115,7 +124,7 @@ export default function NoticePeriodBedSheet({
                 <Text style={styles.menuText}>New Booking</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleCancelNoticePeriod}>
                 <Image
                   source={require("../../../Assets/Images/calendarremove.png")}
                   style={styles.menuIcon}
@@ -123,7 +132,7 @@ export default function NoticePeriodBedSheet({
                 <Text style={styles.menuText}>Cancel Notice period</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettledment}>
                 <Image
                   source={require("../../../Assets/Images/receipttext.png")}
                   style={styles.menuIcon}
