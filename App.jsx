@@ -75,8 +75,10 @@ import CreateReceipt from './src/Component/MorePages/Bills/CreateReceipt';
 import SettingsElectricity from './src/Component/SettingScreen/SettingsElectricity/SettingsElectricity';
 import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin'
 import ComplaintType from './src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings';
-import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed';
+import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed'
+import ExpensesCategory from './src/Component/SettingScreen/ExpensesCategory/SettingsExpenses';
 import UsersScreen from './src/Component/SettingScreen/Users/UsersList'
+
 
 
 
@@ -157,7 +159,9 @@ function AppContent() {
                             <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
                            <Navigation.Screen name="ComplaintType" component={ComplaintType} />
                              <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
+                      <Navigation.Screen name="ExpensesCategory" component={ExpensesCategory} />
                                <Navigation.Screen name="UsersScreen" component={UsersScreen} />
+
 
 
         </Navigation.Navigator>
