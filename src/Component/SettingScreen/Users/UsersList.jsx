@@ -11,7 +11,8 @@ import {
 import MenuIcon from "../../../Assets/Images/3dots.png";
 import PlusIcon from "../../../Assets/Images/TenantAddBlue.png";
 import { useFocusEffect } from '@react-navigation/native';
-import BackArrow from "../../../Assets/Images/Arrow_left.png"
+import BackArrow from "../../../Assets/Images/Arrow_left.png";
+import AddUserBottomSheet from "./AddUser";
 
 export default function UsersScreen({navigation}) {
   const users = [
@@ -21,6 +22,8 @@ export default function UsersScreen({navigation}) {
     { name: "Sri Dharan", role: "Office Admin", email: "mukesh@gmail.com", phone: "+91 98765 43210" },
     
   ];
+  const [showAddSheet, setShowAddSheet] = React.useState(false);
+
    useFocusEffect(
        useCallback(() => {
          const onBackPress = () => {
@@ -44,6 +47,7 @@ export default function UsersScreen({navigation}) {
      );
 
   return (
+    <>
     <View style={styles.container}>
       
  
@@ -89,10 +93,24 @@ export default function UsersScreen({navigation}) {
       </ScrollView>
 
     
-      <TouchableOpacity style={styles.fab}>
+      {/* <TouchableOpacity style={styles.fab}>
         <Image source={PlusIcon} style={styles.fabIcon} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <TouchableOpacity
+  style={styles.fab}
+  onPress={() => setShowAddSheet(true)}
+>
+  <Image source={PlusIcon} style={styles.fabIcon} />
+</TouchableOpacity>
+
+
+
     </View>
+    <AddUserBottomSheet
+  visible={showAddSheet}
+  onClose={() => setShowAddSheet(false)}
+/>
+    </>
   );
 }
 const styles = StyleSheet.create({
