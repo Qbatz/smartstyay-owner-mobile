@@ -76,7 +76,7 @@ import SettingsElectricity from './src/Component/SettingScreen/SettingsElectrici
 import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin'
 import ComplaintType from './src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings';
 import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed'
-
+import ExpensesCategory from './src/Component/SettingScreen/ExpensesCategory/SettingsExpenses';
 
 
 function App() {
@@ -156,7 +156,7 @@ function AppContent() {
                             <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
                            <Navigation.Screen name="ComplaintType" component={ComplaintType} />
                              <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
-
+           <Navigation.Screen name="ExpensesCategory" component={ExpensesCategory} />
 
         </Navigation.Navigator>
       </NavigationContainer>

@@ -24,7 +24,7 @@ export default function SettingsScreen({ navigation }) {
     { icon: require("../../Assets/Images/Electricityimg.png"), title: "Electricity" ,screen: "SettingsElectricity"},
     { icon: require("../../Assets/Images/BillingRule.png"), title: "Billing Rule" },
     { icon: require("../../Assets/Images/BillTempl.png"), title: "Bill Templates" },
-    { icon: require("../../Assets/Images/Expense.png"), title: "Expenses" },
+    { icon: require("../../Assets/Images/Expense.png"), title: "Expenses" ,screen : "ExpensesCategory" },
     { icon: require("../../Assets/Images/compliance.png"), title: "Complaints",screen : "ComplaintType" },
     { icon: require("../../Assets/Images/Amenitie.png"), title: "Amenities" },
     { icon: require("../../Assets/Images/Expense.png"), title: "User" },

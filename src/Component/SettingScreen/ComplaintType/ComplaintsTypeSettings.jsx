@@ -35,7 +35,9 @@ export default function ComplaintsSettings({ navigation }) {
 
   const sheetY = useRef(new Animated.Value(700)).current;
 
-  /* ---------------- OPEN SHEET ---------------- */
+  /* ---------------------------------------------------------
+     OPEN / CLOSE BOTTOMSHEET
+  --------------------------------------------------------- */
   const openSheet = (edit = false, item = null) => {
     sheetY.setValue(700);
 
@@ -66,25 +68,29 @@ export default function ComplaintsSettings({ navigation }) {
     }).start(() => {
       setShowSheet(false);
       setComplaintText("");
-      setIsEdit(false);
       setEditingId(null);
+      setIsEdit(false);
     });
   };
 
-  /* ---------------- SWIPE DOWN SHEET ---------------- */
+  /* ---------------------------------------------------------
+     SWIPE HANDLER — SWIPE ONLY FROM HANDLE
+  --------------------------------------------------------- */
   const sheetPan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
 
       onPanResponderMove: (_, g) => {
         if (g.dy > 0) sheetY.setValue(g.dy);
       },
 
       onPanResponderRelease: (_, g) => {
-        if (g.dy > 120) closeSheet();
-        else {
+        if (g.dy > 140) {
+          closeSheet();
+        } else {
           Animated.spring(sheetY, {
             toValue: 0,
+            bounciness: 6,
             useNativeDriver: true,
           }).start();
         }
@@ -92,12 +98,16 @@ export default function ComplaintsSettings({ navigation }) {
     })
   ).current;
 
-  /* ---------------- KEYBOARD HANDLING ---------------- */
+  /* ---------------------------------------------------------
+     KEYBOARD ANIMATION (FOLLOWS EXPENSES SHEET LOGIC)
+  --------------------------------------------------------- */
   useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      const height = e.endCoordinates.height;
+
       Animated.timing(sheetY, {
-        toValue: -320,
-        duration: 200,
+        toValue: -height + 60,
+        duration: 180,
         useNativeDriver: true,
       }).start();
     });
@@ -105,7 +115,7 @@ export default function ComplaintsSettings({ navigation }) {
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       Animated.timing(sheetY, {
         toValue: 0,
-        duration: 200,
+        duration: 180,
         useNativeDriver: true,
       }).start();
     });
@@ -116,20 +126,26 @@ export default function ComplaintsSettings({ navigation }) {
     };
   }, []);
 
-  /* ---------------- DELETE CONFIRM ---------------- */
+  /* ---------------------------------------------------------
+     DELETE CONFIRM
+  --------------------------------------------------------- */
   const confirmDelete = () => {
-    setComplaints(prev => prev.filter(i => i.id !== deleteId));
+    setComplaints((prev) => prev.filter((i) => i.id !== deleteId));
     setShowDeleteConfirm(false);
   };
 
-  /* ---------------- SAVE ---------------- */
+  /* ---------------------------------------------------------
+     SAVE
+  --------------------------------------------------------- */
   const handleSave = () => {
     if (isEdit) {
-      setComplaints(prev =>
-        prev.map(i => (i.id === editingId ? { ...i, title: complaintText } : i))
+      setComplaints((prev) =>
+        prev.map((i) =>
+          i.id === editingId ? { ...i, title: complaintText } : i
+        )
       );
     } else {
-      setComplaints(prev => [
+      setComplaints((prev) => [
         ...prev,
         { id: Date.now().toString(), title: complaintText.trim() },
       ]);
@@ -138,7 +154,9 @@ export default function ComplaintsSettings({ navigation }) {
     closeSheet();
   };
 
-  /* ---------------- MENU POPUP ---------------- */
+  /* ---------------------------------------------------------
+     POPUP MENU
+  --------------------------------------------------------- */
   const renderPopupMenu = (item) => {
     if (showMenuId !== item.id) return null;
 
@@ -180,7 +198,9 @@ export default function ComplaintsSettings({ navigation }) {
     );
   };
 
-  /* ---------------- LIST ITEM ---------------- */
+  /* ---------------------------------------------------------
+     LIST ITEM
+  --------------------------------------------------------- */
   const renderComplaint = ({ item }) => (
     <View style={{ position: "relative" }}>
       <View style={styles.card}>
@@ -191,7 +211,7 @@ export default function ComplaintsSettings({ navigation }) {
 
         <TouchableOpacity
           onPress={() =>
-            setShowMenuId(prev => (prev === item.id ? null : item.id))
+            setShowMenuId((prev) => (prev === item.id ? null : item.id))
           }
         >
           <Image source={Dots} style={styles.dots} />
@@ -202,9 +222,9 @@ export default function ComplaintsSettings({ navigation }) {
     </View>
   );
 
-  /* ============================================================
-     UI START
-  ============================================================ */
+  /* ---------------------------------------------------------
+     UI
+  --------------------------------------------------------- */
   return (
     <>
       {/* MAIN SCREEN */}
@@ -216,7 +236,6 @@ export default function ComplaintsSettings({ navigation }) {
           paddingTop: 40,
         }}
       >
-        {/* HEADER */}
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backIcon} />
@@ -224,11 +243,9 @@ export default function ComplaintsSettings({ navigation }) {
           <Text style={styles.headerTitle}>Complaints</Text>
         </View>
 
-        {/* CONTENT TAP → CLOSE MENU ONLY */}
         <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
           <View style={{ flex: 1 }}>
-            {/* EMPTY STATE */}
-            {complaints.length === 0 && (
+            {complaints.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Image source={EmptyComplaint} style={styles.emptyImg} />
                 <Text style={styles.emptyTitle}>No Complaints are there!</Text>
@@ -240,10 +257,7 @@ export default function ComplaintsSettings({ navigation }) {
                   <Text style={styles.addBtnText}>+ Complaints</Text>
                 </TouchableOpacity>
               </View>
-            )}
-
-            {/* LIST */}
-            {complaints.length > 0 && (
+            ) : (
               <FlatList
                 data={complaints}
                 renderItem={renderComplaint}
@@ -254,7 +268,6 @@ export default function ComplaintsSettings({ navigation }) {
           </View>
         </TouchableWithoutFeedback>
 
-        {/* ADD FLOAT BTN */}
         {complaints.length > 0 && (
           <TouchableOpacity style={styles.addBtn} onPress={() => openSheet(false)}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
@@ -268,7 +281,6 @@ export default function ComplaintsSettings({ navigation }) {
           <View style={styles.deleteOverlay}>
             <View style={styles.deleteBox}>
               <Text style={styles.deleteTitle}>Delete Complaint Type?</Text>
-
               <Text style={styles.deleteSub}>
                 Are you sure you want to delete this Complaint Type?
               </Text>
@@ -293,13 +305,13 @@ export default function ComplaintsSettings({ navigation }) {
       {/* BOTTOM SHEET */}
       {showSheet && (
         <View style={styles.sheetOverlay} pointerEvents="box-none">
-          {/* BACKDROP */}
           <TouchableWithoutFeedback onPress={closeSheet}>
             <View style={styles.sheetDim} />
           </TouchableWithoutFeedback>
 
-          {/* BOTTOM SHEET */}
           <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+
+            {/* SWIPE ONLY FROM HANDLE */}
             <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
               <View style={styles.sheetHandle} />
             </View>
@@ -322,7 +334,10 @@ export default function ComplaintsSettings({ navigation }) {
             </ScrollView>
 
             <TouchableOpacity
-              style={[styles.addTypeBtn, { opacity: complaintText.trim() ? 1 : 0.4 }]}
+              style={[
+                styles.addTypeBtn,
+                { opacity: complaintText.trim() ? 1 : 0.4 },
+              ]}
               disabled={!complaintText.trim()}
               onPress={handleSave}
             >
@@ -331,8 +346,7 @@ export default function ComplaintsSettings({ navigation }) {
               </Text>
             </TouchableOpacity>
 
-            {/* FIX WHITE GAP */}
-            <View style={styles.bottomMask} />
+            {/* <View style={styles.bottomMask} /> */}
           </Animated.View>
         </View>
       )}
@@ -340,9 +354,9 @@ export default function ComplaintsSettings({ navigation }) {
   );
 }
 
-/* ----------------------------------------------------
-   STYLES
----------------------------------------------------- */
+/* ---------------------------------------------------------
+     STYLES — unchanged except swipe improvements
+--------------------------------------------------------- */
 const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 20, height: 20, marginRight: 10 },
@@ -465,7 +479,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     justifyContent: "flex-end",
-    
   },
 
   sheetDim: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
@@ -490,17 +503,16 @@ const styles = StyleSheet.create({
   handleWrapper: {
     alignItems: "center",
     paddingVertical: 12,
-    
   },
 
-  bottomMask: {
-    position: "absolute",
-    bottom: -200,
-    left: 0,
-    right: 0,
-    height: 200,
-    backgroundColor: "#fff",
-  },
+//   bottomMask: {
+//     position: "absolute",
+//     bottom: -200,
+//     left: 0,
+//     right: 0,
+//     height: 200,
+//     backgroundColor: "#fff",
+//   },
 
   sheetTitle: { fontSize: 18, fontWeight: "700", marginBottom: 16 },
 
