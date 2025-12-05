@@ -17,7 +17,7 @@ export default function NoticePeriodBedSheet({
   onClose,
   bed,
   room,
-  tenant,onClick,onFinalSheet,navigation 
+  tenant,onClick,onFinalSheet,cancelNoticePeriod
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
   const [menuVisible, setMenuVisible] = useState(false);
@@ -56,6 +56,11 @@ export default function NoticePeriodBedSheet({
 const handleFinalSettledment = () => {
   setMenuVisible(false);
   onFinalSheet();      
+  onClose();
+};
+const handleCancelNoticePeriod = () => {
+  setMenuVisible(false);
+  cancelNoticePeriod();      
   onClose();
 };
 
@@ -119,7 +124,7 @@ const handleFinalSettledment = () => {
                 <Text style={styles.menuText}>New Booking</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleCancelNoticePeriod}>
                 <Image
                   source={require("../../../Assets/Images/calendarremove.png")}
                   style={styles.menuIcon}
