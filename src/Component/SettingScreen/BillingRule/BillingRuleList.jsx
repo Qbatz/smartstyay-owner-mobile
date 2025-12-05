@@ -26,28 +26,24 @@ export default function BillingRuleScreen({ navigation }) {
 
 
 
-   useEffect(() => {
-                const backHandler = BackHandler.addEventListener(
-                  "hardwareBackPress",
-                  () => {
-                    navigation.goBack();  
-                    return true;
-                  }
-                );
-              
-                return () => backHandler.remove();
-              }, [])
+ useEffect(() => {
+  const backPress = BackHandler.addEventListener(
+    "hardwareBackPress",
+    () => {
+      if (showEditSheet) {
+        closeEditSheet();
+        return true; // handled
+      }
 
-useEffect(() => {
-  const back = BackHandler.addEventListener("hardwareBackPress", () => {
-    if (showEditSheet) {
-      closeEditSheet();
-      return true;
+      navigation.goBack();
+      return true; // handled
     }
-    return false;
-  });
-  return () => back.remove();
+  );
+
+  return () => backPress.remove();
 }, [showEditSheet]);
+
+
 
 
 useEffect(() => {

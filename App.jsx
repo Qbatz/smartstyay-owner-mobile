@@ -80,7 +80,8 @@ import ExpensesCategory from './src/Component/SettingScreen/ExpensesCategory/Set
 import UsersScreen from './src/Component/SettingScreen/Users/UsersList'
 import SettingsAmenity from './src/Component/SettingScreen/Amenity/AmenitySettings'
 import BillingRuleScreen from './src/Component/SettingScreen/BillingRule/BillingRuleList';
-import LongStayRecurring from './src/Component/SettingScreen/BillingRule/LongStayRecurring'
+import LongStayRecurring from './src/Component/SettingScreen/BillingRule/LongStayRecurring';
+import RolesScreen from "./src/Component/SettingScreen/RoleScreen/RoleList"
 
 
 
@@ -168,6 +169,7 @@ function AppContent() {
                           <Navigation.Screen name="SettingsAmenity" component={SettingsAmenity} />
                                 <Navigation.Screen name="BillingRuleScreen" component={BillingRuleScreen} />
                                  <Navigation.Screen name="LongStayRecurring" component={LongStayRecurring} />
+                                  <Navigation.Screen name="RolesScreen" component={RolesScreen} />
 
 
 

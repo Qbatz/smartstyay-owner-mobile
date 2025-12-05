@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Image,
-  ScrollView,Keyboard
+  ScrollView,Keyboard,BackHandler
 } from "react-native";
 import EyeOpen from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
@@ -26,6 +26,21 @@ export default function AddUserBottomSheet({ visible, onClose,editData }) {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
 
+useEffect(() => {
+  if (!visible) return;
+
+  const backAction = () => {
+    onClose();
+    return true;
+  };
+
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => handler.remove();
+}, [visible]);
 
   useEffect(() => {
     Animated.timing(translateY, {
