@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useCallback } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Platform, LayoutAnimation
+  Platform, LayoutAnimation,BackHandler
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
@@ -24,6 +24,7 @@ import AddCircle from "../../Assets/Images/add-circle.png";
 import Delete from "../../Assets/Images/remove.png";
 import DirectionDownIcon from "../../Assets/Images/direction_down.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function FinalSettlement({ navigation }) {
   const [extraCharges, setExtraCharges] = useState([]);
@@ -77,6 +78,27 @@ export default function FinalSettlement({ navigation }) {
       prev.map(i => (i.id === id ? { ...i, amount } : i))
     );
   };
+  useFocusEffect(
+     useCallback(() => {
+       const onBackPress = () => {
+       
+   
+         if (navigation.canGoBack()) {
+           navigation.goBack();
+           return true;
+         }
+   
+         return false;
+       };
+   
+       const subscription = BackHandler.addEventListener(
+         "hardwareBackPress",
+         onBackPress
+       );
+   
+       return () => subscription.remove();
+     }, [ navigation])
+   );
 
 
   const mockData = {
@@ -506,13 +528,14 @@ const Row = ({ label, value, red }) => (
 );
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff", paddingTop: 30 },
+  safe: { flex: 1, backgroundColor: "#fff", paddingTop: 40 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 18,
     paddingBottom: 6,
+  
   },
 
   topHeader: {
@@ -526,7 +549,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     zIndex: 100,
-    marginTop: 25
+    marginTop: 35
     //   elevation: 5, 
   },
 
