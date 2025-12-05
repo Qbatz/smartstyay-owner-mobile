@@ -9,12 +9,12 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Image,
-  ScrollView, KeyboardAvoidingView, Platform,Keyboard
+  ScrollView,Keyboard
 } from "react-native";
 import EyeOpen from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
 
-export default function AddUserBottomSheet({ visible, onClose }) {
+export default function AddUserBottomSheet({ visible, onClose,editData }) {
   const translateY = useRef(new Animated.Value(500)).current;
   const [roleOpen, setRoleOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
@@ -64,6 +64,24 @@ useEffect(() => {
     hide.remove();
   };
 }, []);
+// useEffect(() => {
+//   if (visible) {
+//     if (editData) {
+//       setName(editData.name || "");
+//       setEmail(editData.email || "");
+//       setMobile(editData.phone || "");
+//       setSelectedRole(editData.role || "");
+//       setDescription(editData.description || "");
+//     } else {
+//       setName("");
+//       setEmail("");
+//       setMobile("");
+//       setSelectedRole("");
+//       setDescription("");
+//     }
+//   }
+// }, [editData, visible]);
+
 
   if (!visible) return null;
 
@@ -88,22 +106,23 @@ useEffect(() => {
           contentContainerStyle={{ paddingBottom: 50 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Title */}
-          <Text style={styles.title}>Add User</Text>
+        
+          <Text style={styles.title}>{editData ? "Edit User" : "Add User"}</Text>
 
-          {/* Name */}
+       
           <Text style={styles.label}>Name *</Text>
           <TextInput style={styles.input} placeholder="Enter Name" />
 
-          {/* Email */}
+      
           <Text style={styles.label}>Email ID *</Text>
           <TextInput style={styles.input} placeholder="Enter Email" />
 
-          {/* Mobile */}
+      
           <Text style={styles.label}>Mobile Number *</Text>
           <TextInput style={styles.input} placeholder="+91 98765 43210" />
-
-          {/* Password */}
+{!editData && (
+    <>
+       
          <Text style={styles.label}>Password *</Text>
         
           <View style={styles.passwordWrapper}>
@@ -123,9 +142,10 @@ useEffect(() => {
     />
   </TouchableOpacity>
 </View>
+</>
+)}
 
-
-          {/* Role */}
+        
           <Text style={styles.label}>Role *</Text>
 
           <TouchableOpacity
@@ -198,7 +218,7 @@ useEffect(() => {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.addBtn}>
-              <Text style={styles.addText}>Add</Text>
+              <Text style={styles.addText}>{editData ? "Edit" : "Add"}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
