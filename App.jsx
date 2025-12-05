@@ -77,7 +77,9 @@ import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin'
 import ComplaintType from './src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings';
 import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed'
 import ExpensesCategory from './src/Component/SettingScreen/ExpensesCategory/SettingsExpenses';
-import UsersScreen from './src/Component/SettingScreen/Users/UsersList'
+import UsersScreen from './src/Component/SettingScreen/Users/UsersList';
+import BillingRuleScreen from './src/Component/SettingScreen/BillingRule/BillingRuleList';
+import LongStayRecurring from './src/Component/SettingScreen/BillingRule/LongStayRecurring'
 
 
 
@@ -161,6 +163,8 @@ function AppContent() {
                              <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
                       <Navigation.Screen name="ExpensesCategory" component={ExpensesCategory} />
                                <Navigation.Screen name="UsersScreen" component={UsersScreen} />
+                                <Navigation.Screen name="BillingRuleScreen" component={BillingRuleScreen} />
+                                 <Navigation.Screen name="LongStayRecurring" component={LongStayRecurring} />
 
 
 
