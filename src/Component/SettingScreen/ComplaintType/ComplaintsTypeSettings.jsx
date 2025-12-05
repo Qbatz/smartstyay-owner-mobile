@@ -12,7 +12,7 @@ import {
   PanResponder,
   Keyboard,
   Modal,
-  ScrollView,
+  ScrollView, BackHandler
 } from "react-native";
 
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -101,6 +101,18 @@ export default function ComplaintsSettings({ navigation }) {
   /* ---------------------------------------------------------
      KEYBOARD ANIMATION (FOLLOWS EXPENSES SHEET LOGIC)
   --------------------------------------------------------- */
+
+   useEffect(() => {
+                  const backHandler = BackHandler.addEventListener(
+                    "hardwareBackPress",
+                    () => {
+                      navigation.goBack();  
+                      return true;
+                    }
+                  );
+                
+                  return () => backHandler.remove();
+                }, [])
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       const height = e.endCoordinates.height;
