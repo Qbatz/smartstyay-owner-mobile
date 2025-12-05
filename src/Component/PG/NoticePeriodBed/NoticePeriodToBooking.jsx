@@ -35,7 +35,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed }) {
   const [accountOpen, setAccountopen] = useState(false);
   const [accountSelected, setAccountSelected] = useState("Select Account");
 
-  // ➤ OPEN/CLOSE SHEET
+ 
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 500,
@@ -68,7 +68,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed }) {
     };
   }, []);
 
-  // ➤ SWIPE DOWN (PanResponder)
+
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10, // Start drag down
     onPanResponderMove: (_, g) => {

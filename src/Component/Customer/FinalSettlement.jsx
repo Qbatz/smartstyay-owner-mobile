@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Platform,LayoutAnimation
+  Platform, LayoutAnimation
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
@@ -20,14 +20,65 @@ import Profile from "../../Assets/Images/User.png";
 import RoomIcon from "../../Assets/Images/Room_Icon.png";
 import BedIcon from "../../Assets/Images/Bed_Icon.png";
 import AddCircle from "../../Assets/Images/add-circle.png";
-import RemoveIcon from "../../Assets/Images/remove.png";
+// import RemoveIcon from "../../Assets/Images/remove.png";
+import Delete from "../../Assets/Images/remove.png";
 import DirectionDownIcon from "../../Assets/Images/direction_down.png";
+import DownArrow from "../../Assets/Images/direction-down.png";
 
 export default function FinalSettlement({ navigation }) {
+  const [extraCharges, setExtraCharges] = useState([]);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const [open, setOpen] = useState(false);
+  const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
-  
+  const TYPE_OPTIONS = ["Maintenance", "Others"];
+
+
+  const addCharge = () => {
+    setExtraCharges(prev => [
+      ...prev,
+      { id: Date.now(), type: "", title: "", amount: "" }
+    ]);
+  };
+
+  const removeCharge = (id) => {
+    setExtraCharges(prev => prev.filter(i => i.id !== id));
+
+    // if (type === "Maintenance") {
+    //   setDisabledTypes([]);
+    // }
+  };
+
+  const selectType = (id, type) => {
+
+
+    if (type === "Maintenance" && maintenanceAlreadyUsed) return;
+
+    setExtraCharges(prev =>
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
+    );
+
+    setOpenDropdownId(null);
+  };
+
+
+
+
+
+  const updateTitle = (id, title) => {
+    setExtraCharges(prev =>
+      prev.map(i => (i.id === id ? { ...i, title } : i))
+    );
+  };
+
+  const updateAmount = (id, amount) => {
+    setExtraCharges(prev =>
+      prev.map(i => (i.id === id ? { ...i, amount } : i))
+    );
+  };
+
+
   const mockData = {
     customer_name: "Daniel Balaji",
     profile_image: "",
@@ -45,7 +96,7 @@ export default function FinalSettlement({ navigation }) {
     advance_paid: 6000,
 
     actual_checkout_date: "30/11/2025",
-    status: "Pending", 
+    status: "Pending",
 
     last_reading: 230,
     current_reading: 471.89,
@@ -81,16 +132,16 @@ export default function FinalSettlement({ navigation }) {
   const [maintenanceAmount, setMaintenanceAmount] = useState("");
   const [nonRefundables, setNonRefundables] = useState([]);
 
-const addNonRefundable = () => {
-  setNonRefundables(prev => [
-    ...prev,
-    { reason: "", amount: "" }
-  ]);
-};
+  const addNonRefundable = () => {
+    setNonRefundables(prev => [
+      ...prev,
+      { reason: "", amount: "" }
+    ]);
+  };
 
-const removeNonRefundable = (index) => {
-  setNonRefundables(prev => prev.filter((_, i) => i !== index));
-};
+  const removeNonRefundable = (index) => {
+    setNonRefundables(prev => prev.filter((_, i) => i !== index));
+  };
 
   const onEBDatePick = (event, selected) => {
     if (Platform.OS === "android") setShowEBPicker(false);
@@ -114,14 +165,14 @@ const removeNonRefundable = (index) => {
 
   return (
     <SafeAreaView style={styles.safe}>
-          <View style={styles.topHeader}>
+      <View style={styles.topHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={ArrowLeft} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Final Settlement</Text>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 , marginTop:20}}>
-        
+      <ScrollView contentContainerStyle={{ paddingBottom: 40, marginTop: 20 }}>
+
 
         <View style={styles.card}>
           <View style={styles.row}>
@@ -142,78 +193,78 @@ const removeNonRefundable = (index) => {
               </View>
             </View>
           </View>
-<View style={styles.grid}>
+          <View style={styles.grid}>
 
-  <View style={styles.gridPair}>
-    <View  style={styles.gridCol}>
-      <Text style={styles.gridLabel}>Joined Date</Text>
-      <Text style={styles.gridValue}>{data.joined_date}</Text>
-    </View>
+            <View style={styles.gridPair}>
+              <View style={styles.gridCol}>
+                <Text style={styles.gridLabel}>Joined Date</Text>
+                <Text style={styles.gridValue}>{data.joined_date}</Text>
+              </View>
 
-    <View style={[styles.gridCol, { marginLeft:30}]}>
-      <Text style={styles.gridLabel}>Req Checkout Date</Text>
-      <Text style={styles.gridValue}>{data.req_checkout_date}</Text>
-    </View>
-  </View>
+              <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                <Text style={styles.gridLabel}>Req Checkout Date</Text>
+                <Text style={styles.gridValue}>{data.req_checkout_date}</Text>
+              </View>
+            </View>
 
-  <View style={styles.gridPair}>
-    <View style={styles.gridCol}>
-      <Text style={styles.gridLabel}>Advance Amount</Text>
-      <Text style={styles.gridValue}>{fmt(data.advance_amount)}</Text>
-    </View>
+            <View style={styles.gridPair}>
+              <View style={styles.gridCol}>
+                <Text style={styles.gridLabel}>Advance Amount</Text>
+                <Text style={styles.gridValue}>{fmt(data.advance_amount)}</Text>
+              </View>
 
-    <View style={[styles.gridCol, { marginLeft:30}]}>
-      <Text style={styles.gridLabel}>Monthly Rent</Text>
-      <Text style={styles.gridValue}>{fmt(data.monthly_rent)}</Text>
-    </View>
-  </View>
+              <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                <Text style={styles.gridLabel}>Monthly Rent</Text>
+                <Text style={styles.gridValue}>{fmt(data.monthly_rent)}</Text>
+              </View>
+            </View>
 
-  <View style={styles.gridPair}>
-    <View style={styles.gridCol}>
-      <Text style={styles.gridLabel}>Booking Amount</Text>
-      <Text style={styles.gridValue}>{fmt(data.booking_amount)}</Text>
-    </View>
+            <View style={styles.gridPair}>
+              <View style={styles.gridCol}>
+                <Text style={styles.gridLabel}>Booking Amount</Text>
+                <Text style={styles.gridValue}>{fmt(data.booking_amount)}</Text>
+              </View>
 
-    <View style={[styles.gridCol, { marginLeft:30}]}>
-      <Text style={styles.gridLabel}>Advance Paid</Text>
-      <Text style={styles.gridValue}>{fmt(data.advance_paid)}</Text>
-    </View>
-  </View>
+              <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                <Text style={styles.gridLabel}>Advance Paid</Text>
+                <Text style={styles.gridValue}>{fmt(data.advance_paid)}</Text>
+              </View>
+            </View>
 
-  <View style={styles.gridPair}>
-    <View style={styles.gridCol}>
-      <Text style={styles.gridLabel}>Actual Checkout Date</Text>
-      <Text style={styles.gridValue}>{data.actual_checkout_date}</Text>
-    </View>
+            <View style={styles.gridPair}>
+              <View style={styles.gridCol}>
+                <Text style={styles.gridLabel}>Actual Checkout Date</Text>
+                <Text style={styles.gridValue}>{data.actual_checkout_date}</Text>
+              </View>
 
-    <View style={[styles.gridCol, { marginLeft:30}]}>
-      <Text style={styles.gridLabel}>Status</Text>
-      <Text
-        style={[
-          styles.gridValue,
-          { color: data.status === "Pending" ? "#E11D48" : "#16A34A" },
-        ]}
-      >
-        {data.status}
-      </Text>
-    </View>
-  </View>
+              <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                <Text style={styles.gridLabel}>Status</Text>
+                <Text
+                  style={[
+                    styles.gridValue,
+                    { color: data.status === "Pending" ? "#E11D48" : "#16A34A" },
+                  ]}
+                >
+                  {data.status}
+                </Text>
+              </View>
+            </View>
 
-</View>
+          </View>
 
         </View>
 
-         <View style={styles.ebHeaderRow}>
-  <Text style={styles.ebTitle}>
-    Current EB Reading <Text style={{ color: "red" }}>*</Text>
-  </Text>
+        <View style={styles.ebHeaderRow}>
+          <Text style={styles.ebTitle}>
+            Current EB Reading <Text style={{ color: "red" }}>*</Text>
+          </Text>
 
-  <Text style={styles.lastReadingText}>
-    Last Reading : 230
-  </Text>
-</View>
+          <Text style={styles.lastReadingText}>
+            Last Reading : 230
+          </Text>
+        </View>
 
-     
+
         <View style={styles.inputWrap}>
           <TextInput
             style={styles.ebInput}
@@ -222,87 +273,110 @@ const removeNonRefundable = (index) => {
             keyboardType="numeric"
             placeholder="Enter reading"
           />
-        
+
         </View>
 
+        <View style={styles.nonRefund}>
+          <View style={styles.extraHeader}>
+            <Text style={styles.label}>Non Refundable Amount</Text>
 
-    
-
-      <View style={styles.nonRefundContainer}>
-        
-        <View style={styles.nonRefundHeader}>
-          <Text style={{ marginTop: 16, fontSize: 16, fontWeight: "700" , }}>Deductions</Text>
-      
-          <TouchableOpacity style={styles.addBtn} onPress={addNonRefundable}>
-            <View style={styles.iconCircle}>
-              <Image source={AddCircle} style={styles.iconImage} />
-            </View>
-            <Text style={styles.addText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-      
-        <View style={styles.nonRefundRow}>
-          <View style={[styles.inputBox, { flex: 1 }]}>
-            <Text style={styles.fixedLabel}>Maintenance</Text>
+            <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
+              <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+            </TouchableOpacity>
           </View>
-      
-          <View style={{ width: 120 }}>
-            <TextInput
-              value={maintenanceAmount}
-              onChangeText={setMaintenanceAmount}
-              keyboardType="numeric"
-              placeholder="Enter Amount"
-              style={styles.inputBox}
-            />
-          </View>
-        </View>
-      
-        {nonRefundables.map((item, index) => (
-          <View key={index} style={styles.nonRefundRow}>
-      
-            <TextInput
-              placeholder="Enter Reason"
-              value={item.reason}
-              onChangeText={(t) => {
-                const updated = [...nonRefundables];
-                updated[index].reason = t;
-                setNonRefundables(updated);
-              }}
-              style={[styles.inputBox, { flex: 1 }]}
-            />
-      
-            <View style={{ width: 120 }}>
-              <TextInput
-                placeholder="Enter Amount"
-                value={item.amount}
-                onChangeText={(t) => {
-                  const updated = [...nonRefundables];
-                  updated[index].amount = t;
-                  setNonRefundables(updated);
-                }}
-                keyboardType="numeric"
-                style={[styles.inputBox, { paddingRight: 10 }]}
-              />
-      
+
+          {extraCharges.map((item) => (
+            <View key={item.id} style={styles.figmaRowWrapper}>
+
+              {/* CLOSE BTN */}
               <TouchableOpacity
-                style={styles.closeInside}
-                onPress={() => removeNonRefundable(index)}
+                onPress={() => removeCharge(item.id, item.type)}
+                style={styles.figmaCloseBtn}
               >
-                <Image source={RemoveIcon} style={{ width: 10, height: 10 }} />
-              </TouchableOpacity>
-            </View>
-      
-          </View>
-        ))}
-      
-      </View>
 
-      
-      
+                <Image
+                  source={Delete}
+                  style={styles.figmaCloseText}
+                />
+              </TouchableOpacity>
+
+
+              <View style={styles.figmaRow}>
+
+
+                {item.type === "" ? (
+                  <TouchableOpacity
+                    style={styles.figmaLeftBox}
+                    onPress={() =>
+                      setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                    }
+                  >
+                    <Text style={{ color: "#777" }}>Select...</Text>
+                    <Image source={DownArrow} style={styles.arrow} />
+                  </TouchableOpacity>
+                ) : item.type === "Others" ? (
+                  <TextInput
+                    style={styles.figmaLeftBox}
+                    placeholder="Enter reason"
+                    value={item.title}
+                    onChangeText={(t) => updateTitle(item.id, t)}
+                  />
+                ) : (
+                  <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                    <Text>Maintenance</Text>
+                  </View>
+                )}
+
+                {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                {item.type === "" ? (
+                  <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                    <Text style={{ color: "#999" }}>Enter amount</Text>
+                  </View>
+                ) : (
+                  <TextInput
+                    style={styles.figmaRightBox}
+                    placeholder="Enter amount"
+                    keyboardType="numeric"
+                    value={item.amount}
+                    onChangeText={(t) => updateAmount(item.id, t)}
+                  />
+                )}
+
+              </View>
+
+
+              {openDropdownId === item.id && item.type === "" && (
+                <View style={styles.dropdownMenu}>
+                  {TYPE_OPTIONS.map((t) => {
+
+                    const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                    return (
+                      <TouchableOpacity
+                        key={t}
+                        disabled={disabled}
+                        onPress={() => !disabled && selectType(item.id, t)}
+                        style={{ opacity: disabled ? 0.3 : 1 }}
+                      >
+                        <Text style={styles.dropdownItem}>{t}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+
+            </View>
+          ))}
+
+
+
+
+
+        </View>
 
         {hasPending ? (
           <>
-            <Text style={{marginLeft:15 , fontWeight:600 , marginTop:10}}>Invoices Pending</Text>
+            <Text style={{ marginLeft: 15, fontWeight: 600, marginTop: 10 }}>Invoices Pending</Text>
             <View style={styles.table}>
               <View style={[styles.tableRow, styles.tableHeader]}>
                 <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>INVOICE.NO</Text>
@@ -329,7 +403,7 @@ const removeNonRefundable = (index) => {
           </>
         )}
 
-        <Text style={{marginLeft:15 , fontWeight:600, marginTop:10}}>Refundable Rent</Text>
+        <Text style={{ marginLeft: 15, fontWeight: 600, marginTop: 10 }}>Refundable Rent</Text>
         <View style={styles.table}>
           <View style={[styles.tableRow, styles.tableHeader]}>
             <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>DESCRIPTION</Text>
@@ -344,49 +418,49 @@ const removeNonRefundable = (index) => {
           ))}
         </View>
 
-     <View style={{paddingHorizontal:25 , paddingTop:10}}>
-         <TouchableOpacity style={styles.header} onPress={toggle}>
-        <Text style={styles.totalRefund}>Total Refund</Text>
+        <View style={{ paddingHorizontal: 25, paddingTop: 10 }}>
+          <TouchableOpacity style={styles.header} onPress={toggle}>
+            <Text style={styles.totalRefund}>Total Refund</Text>
 
-        <Image
-        source={DirectionDownIcon}
-        style={{height:30 , width:30 , transform: open ? "rotate(180deg)":"rotate(0deg)"}}
-        />
-      </TouchableOpacity>
-     </View>
-      {open && (
-       <View style={styles.card}>
-    
-     
-        <View style={styles.content}>
-          <Row label="Final Settlement" value="₹ 4800" />
-          <Row label="Refundable Advance" value="₹ 8,000" />
-          <Row label="Refundable Rent" value="₹ 2,100" />
-          <Row label="Total Deductions" value="-₹ 3,200" red />
-
-          <View style={styles.resultBox}>
-            <Text style={styles.finalAmount}>-₹ 4,800</Text>
-          </View>
+            <Image
+              source={DirectionDownIcon}
+              style={{ height: 30, width: 30, transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </TouchableOpacity>
         </View>
-      
-    </View>
-    )}
-  
-      
-<View style={styles.btnRow}>
-  <TouchableOpacity
-    style={styles.cancelBtn}
-    onPress={() => navigation.goBack()}
-  >
-    <Text style={styles.cancelText}>Cancel</Text>
-  </TouchableOpacity>
+        {open && (
+          <View style={styles.card}>
 
-  <TouchableOpacity style={styles.addBtn2}>
-    <Text style={styles.addBtnText}>Generate</Text>
-  </TouchableOpacity>
-</View>
 
-        
+            <View style={styles.content}>
+              <Row label="Final Settlement" value="₹ 4800" />
+              <Row label="Refundable Advance" value="₹ 8,000" />
+              <Row label="Refundable Rent" value="₹ 2,100" />
+              <Row label="Total Deductions" value="-₹ 3,200" red />
+
+              <View style={styles.resultBox}>
+                <Text style={styles.finalAmount}>-₹ 4,800</Text>
+              </View>
+            </View>
+
+          </View>
+        )}
+
+
+        <View style={styles.btnRow}>
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.addBtn2}>
+            <Text style={styles.addBtnText}>Generate</Text>
+          </TouchableOpacity>
+        </View>
+
+
       </ScrollView>
 
       <Modal visible={showEBPicker} transparent animationType="fade">
@@ -432,7 +506,7 @@ const Row = ({ label, value, red }) => (
 );
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop:30},
+  safe: { flex: 1, backgroundColor: "#fff", paddingTop: 30 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -440,20 +514,21 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 6,
   },
+
   topHeader: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  height: 40,
-  backgroundColor: "#fff",
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  zIndex: 100,
-  marginTop:25
-//   elevation: 5, 
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 40,
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    zIndex: 100,
+    marginTop: 25
+    //   elevation: 5, 
+  },
 
   backIcon: { width: 18, height: 18, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
@@ -465,7 +540,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#EEF2F7",
     backgroundColor: "#fff",
+    elevation: 1
   },
+
   row: { flexDirection: "row", alignItems: "center" },
   profileImg: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#E6EEF9" },
   name: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
@@ -475,51 +552,51 @@ const styles = StyleSheet.create({
   smallIcon: { width: 16, height: 16, marginHorizontal: 4 },
   badgeLabel: { fontSize: 13 },
 
- grid: {
-  marginTop: 10
-},
+  grid: {
+    marginTop: 10
+  },
 
-gridPair: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop: 12,
-},
+  gridPair: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 12,
+  },
 
-gridCol: {
-  width: "48%",     
-  flexDirection: "column",
-},
+  gridCol: {
+    width: "48%",
+    flexDirection: "column",
+  },
 
-gridLabel: {
-  color: "#6B7280",
-  fontSize: 13,
-},
+  gridLabel: {
+    color: "#6B7280",
+    fontSize: 13,
+  },
 
-gridValue: {
-  fontWeight: "700",
-  fontSize: 14,
-  marginTop: 3,
-},
-  
-ebHeaderRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  marginTop: 16,
-},
+  gridValue: {
+    fontWeight: "700",
+    fontSize: 14,
+    marginTop: 3,
+  },
 
-ebTitle: {
-  fontSize: 15,
-  fontWeight: "700",
-  color: "#000",
-},
+  ebHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
 
-lastReadingText: {
-  fontSize: 13,
-  color: "#444",
-  fontWeight: "400",
-},
+  ebTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#000",
+  },
+
+  lastReadingText: {
+    fontSize: 13,
+    color: "#444",
+    fontWeight: "400",
+  },
 
 
   inputWrap: { flexDirection: "row", marginHorizontal: 16, marginTop: 10, alignItems: "center" },
@@ -545,8 +622,8 @@ lastReadingText: {
     backgroundColor: "#F7F7FA",
     padding: 10,
     borderRadius: 10,
-    marginLeft:15, 
-    marginRight:15
+    marginLeft: 15,
+    marginRight: 15
   },
 
   nonRefundHeader: {
@@ -563,15 +640,7 @@ lastReadingText: {
     gap: 10,
   },
 
-  inputBox: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    fontSize: 14,
-  },
+
 
   fixedLabel: {
     fontSize: 14,
@@ -591,37 +660,19 @@ lastReadingText: {
     zIndex: 20,
   },
 
-  addBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1E5BFF",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
+
 
 
 
   iconImage: {
     height: 16,
     width: 16,
-    marginRight:6
+    marginRight: 6
   },
 
   addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
-//   deductCard: {
-//     margin: 16,
-//     backgroundColor: "#F7F8FC",
-//     padding: 14,
-//     borderRadius: 12,
-//   },
-//   deductHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-//   addBtn: { flexDirection: "row", backgroundColor: "#1E5BFF", paddingVertical: 8, paddingHorizontal: 10, borderRadius: 10, alignItems: "center" },
-//   addCircle: { width: 14, height: 14, tintColor: "#fff", marginRight: 6 },
-//   addBtnText: { color: "#fff", fontWeight: "700" },
 
-//   deductRow: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 10 },
   inputBox: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -630,6 +681,7 @@ lastReadingText: {
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
+
   rowClose: {
     position: "absolute",
     right: -6,
@@ -644,11 +696,11 @@ lastReadingText: {
   table: { marginHorizontal: 16, marginTop: 10, borderRadius: 8, borderWidth: 1, borderColor: "#EEF2F7", overflow: "hidden", backgroundColor: "#fff" },
   tableRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, justifyContent: "space-between" },
   tableHeader: { backgroundColor: "#FBFDFF" },
-  tableHeaderText: { fontWeight: "700", color: "#111" , fontSize:12},
-  tableCellLeft: { width: "33%", color: "#1E5BFF" , fontSize:11 },
-  tableCellCenter: { width: "33%", textAlign: "center" , fontSize:11},
-  tableCellRight: { width: "33%", textAlign: "right", fontSize:11 },
-  tabledescription: { width: "45%", color: "#1E5BFF" , fontSize:11 },
+  tableHeaderText: { fontWeight: "700", color: "#111", fontSize: 12 },
+  tableCellLeft: { width: "33%", color: "#1E5BFF", fontSize: 11 },
+  tableCellCenter: { width: "33%", textAlign: "center", fontSize: 11 },
+  tableCellRight: { width: "33%", textAlign: "right", fontSize: 11 },
+  tabledescription: { width: "45%", color: "#1E5BFF", fontSize: 11 },
   tableStrip: { backgroundColor: "#FCFCFD" },
   invoiceLink: { color: "#1E5BFF", textDecorationLine: "underline" },
 
@@ -667,24 +719,14 @@ lastReadingText: {
     alignItems: "center",
     backgroundColor: "#fff",
   },
-   card: {
-    margin: 16,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 16,
-    elevation: 2
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+
+
   totalRefund: {
-     fontSize: 16,
-     fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "600",
   },
   content: {
-     marginTop: 12,
+    marginTop: 12,
   },
   row: {
     flexDirection: "row",
@@ -713,36 +755,131 @@ lastReadingText: {
     color: "#D70000",
     textAlign: "left",
   },
-   btnRow: {
-    display:'flex',
-  flexDirection: "row",
-//   alignItems: "flex-end",
-  justifyContent: "flex-end",
-  marginTop: 40,
-  paddingHorizontal: 12,
-},
+  btnRow: {
+    display: 'flex',
+    flexDirection: "row",
+    //   alignItems: "flex-end",
+    justifyContent: "flex-end",
+    marginTop: 40,
+    paddingHorizontal: 12,
+  },
 
-cancelBtn: {
-  paddingVertical: 12,
-  paddingHorizontal: 32,
-},
+  cancelBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+  },
 
-cancelText: {
-  color: "#6B7280",
-  fontSize: 15,
-  fontWeight: "500",
-},
+  cancelText: {
+    color: "#6B7280",
+    fontSize: 15,
+    fontWeight: "500",
+  },
 
-addBtn2: {
-  backgroundColor: "#2B6CF6",
-  paddingVertical: 12,
-  paddingHorizontal: 40,
-  borderRadius: 10,
-},
+  addBtn2: {
+    backgroundColor: "#2B6CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+  },
 
-addBtnText: {
-  color: "#fff",
-  fontSize: 15,
-  fontWeight: "600",
-},
+  addBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+
+
+  // add
+  nonRefund: {
+    backgroundColor: "#F7F9FF",
+    padding: 10,
+    marginTop: 10,
+    borderRadius: 20
+  },
+
+  extraHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+  },
+  addBtn: {
+    backgroundColor: "#2D6CDF",
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+
+  figmaRowWrapper: {
+    marginTop: 20,
+    position: "relative",
+  },
+
+  figmaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  figmaLeftBox: {
+    width: "48%",
+    height: 50,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: "#E3E3E3",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  figmaRightBox: {
+    width: "45%",
+    height: 50,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: "#E3E3E3",
+    justifyContent: "center",
+    marginRight: 20
+  },
+
+  figmaCloseBtn: {
+    position: "absolute",
+    right: 5,
+    top: -10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#E1E1E1",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  figmaCloseText: {
+    width: 10,
+    height: 10
+  },
+  arrow: { width: 18, height: 18, tintColor: "#444" },
+  dropdownMenu: {
+    marginTop: 6,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+
+  },
+
+  dropdownItem: {
+    padding: 12,
+    fontSize: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+
+
+
+
 });
