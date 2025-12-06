@@ -1,5 +1,5 @@
 // PGPageFull.js
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,9 @@ import {
   FlatList,
   Platform,
   ScrollView,
-  BackHandler, Animated, PanResponder
+  BackHandler,
+  Animated,
+  PanResponder,
 } from "react-native";
 import AddFloorSheet from "./AddFloorSheet";
 import AddRoomSheet from "./AddRoomSheet";
@@ -19,21 +21,23 @@ import AddBedBottomSheet from "./AddBed";
 import ManageBedBottomSheet from "./AvailableBedBottomSheet";
 import ReservedBedBottomSheet from "./ReservedBed/ReservedBedStatus";
 import OccupiedBedSheet from "./OccupiedBed/OccupiedBedStatus";
-import MoveNoticeSheet from '.././Customer/MoveToNoticePeriod';
+import MoveNoticeSheet from ".././Customer/MoveToNoticePeriod";
 import NoticePeriodBedSheet from "../PG/NoticePeriodBed/NoticeperiodBedStatus";
-import NewBookingSheet from './NoticePeriodBed/NoticePeriodToBooking'
+import NewBookingSheet from "./NoticePeriodBed/NoticePeriodToBooking";
+import DoubleStatusSheet from "./NoticePeriodBed/DoupleStatusSheet";
+import InactiveTenantSheet from "./ReservedBed/MakeUsInActiveSheet"
+import { useNavigation } from "@react-navigation/native";
+
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
 const BedGreen = require("../../Assets/Images/OccubiedBedImg.png");
 
-
 const IconCalendar = require("../../Assets/Images/Reservedbed.png");
 const IconRupee = require("../../Assets/Images/overdueImage.png");
 const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
-import { useNavigation } from "@react-navigation/native";
 
-
+// ---------- DUMMY DATA ----------
 const initialFloors = [
   {
     id: "f1",
@@ -42,7 +46,7 @@ const initialFloors = [
       {
         id: "r1",
         room_no: "001",
-        roomId:"1",
+        roomId: "1",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -73,7 +77,6 @@ const initialFloors = [
           { id: "b3", label: "C", status: "occupied" },
         ],
       },
-
     ],
   },
   {
@@ -83,7 +86,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "101",
-          roomId:"2",
+        roomId: "2",
         sharing: "3 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -99,7 +102,7 @@ const initialFloors = [
       {
         id: "r1",
         room_no: "001",
-          roomId:"1",
+        roomId: "1",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -107,13 +110,14 @@ const initialFloors = [
           { id: "b3", label: "C", status: "occupied" },
           { id: "b4", label: "D", status: "available" },
           { id: "b5", label: "E", status: "reserved" },
-          { id: "b6", label: "E", status: "noticeperiod" },
+          // 👇 multi-status example
+          { id: "b6", label: "E", status: "noticeperiod,reserved" },
         ],
       },
       {
         id: "r2",
         room_no: "002",
-          roomId:"2",
+        roomId: "2",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -124,7 +128,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "002",
-          roomId:"3",
+        roomId: "3",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -132,7 +136,6 @@ const initialFloors = [
           { id: "b3", label: "C", status: "occupied" },
         ],
       },
-
     ],
   },
   {
@@ -142,7 +145,7 @@ const initialFloors = [
       {
         id: "r3",
         room_no: "101",
-          roomId:"1",
+        roomId: "1",
         sharing: "3 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -158,7 +161,7 @@ const initialFloors = [
       {
         id: "r1",
         room_no: "001",
-          roomId:"2",
+        roomId: "2",
         sharing: "10 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -172,7 +175,7 @@ const initialFloors = [
       {
         id: "r2",
         room_no: "002",
-          roomId:"3",
+        roomId: "3",
         sharing: "6 Sharing",
         beds: [
           { id: "b1", label: "A", status: "available" },
@@ -190,7 +193,6 @@ const initialFloors = [
           { id: "b3", label: "C", status: "occupied" },
         ],
       },
-
     ],
   },
   {
@@ -204,13 +206,14 @@ const initialFloors = [
         beds: [
           { id: "b1", label: "A", status: "available" },
           { id: "b2", label: "B", status: "occupied" },
-            { id: "b3", label: "C", status: "available" },
+          { id: "b3", label: "C", status: "available" },
         ],
       },
     ],
   },
 ];
 
+// ================== COMPONENT ===================
 export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   const [floors, setFloors] = useState([]);
@@ -220,27 +223,63 @@ export default function PGPageFull({ route }) {
   const [showAddBed, setShowAddBed] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showManageBed, setShowManageBed] = useState(false);
-const [selectedBed, setSelectedBed] = useState(null);
-const [showReservedSheet, setShowReservedSheet] = useState(false);
-const [selectedReserved, setSelectedReserved] = useState(null);
-const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
-const [selectedOccupied, setSelectedOccupied] = useState(null);
- const [showNotice, setShowNotice] = useState(false);
- const [reqDate, setReqDate] = useState("31/07/2025");
- const [outDate, setOutDate] = useState("30/08/2025");
- const [reason, setReason] = useState("")
- const [showNoticePeriodSheet, setShowNoticePeriodSheet] = useState(false);
-const [noticeData, setNoticeData] = useState(null);
-
-const [showNewBooking, setShowNewBooking] = useState(false);
-
-
-
-
+  const [selectedBed, setSelectedBed] = useState(null);
+  const [showReservedSheet, setShowReservedSheet] = useState(false);
+  const [selectedReserved, setSelectedReserved] = useState(null);
+  const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
+  const [selectedOccupied, setSelectedOccupied] = useState(null);
+  const [showNotice, setShowNotice] = useState(false);
+  const [reqDate, setReqDate] = useState("31/07/2025");
+  const [outDate, setOutDate] = useState("30/08/2025");
+  const [reason, setReason] = useState("");
+  const [showNoticePeriodSheet, setShowNoticePeriodSheet] = useState(false);
+  const [noticeData, setNoticeData] = useState(null);
+  const [showNewBooking, setShowNewBooking] = useState(false);
+  const [showDoubleStatus, setShowDoubleStatus] = useState(false);
+const [selectedDouble, setSelectedDouble] = useState(null);
+const [showInactiveSheet,setShowInactiveSheet] =useState(false)
 
 
   const translateY = React.useRef(new Animated.Value(300)).current;
 
+  // ---------- Helpers ----------
+  const splitStatus = (status) => {
+    if (!status) return [];
+    return status.split(",").map((s) => s.trim());
+  };
+
+  // Primary status → RESERVED gets first priority when multiple
+  const getPrimaryStatus = (status) => {
+    if (!status) return "";
+    const statuses = splitStatus(status);
+
+    if (statuses.includes("reserved")) return "reserved"; // ✅ priority B
+    if (statuses.includes("noticeperiod")) return "noticeperiod";
+    if (statuses.includes("overdue")) return "overdue";
+    if (statuses.includes("occupied")) return "occupied";
+
+    return statuses[0];
+  };
+
+  const getStatusCount = (status) => {
+    if (!status) return 0;
+    return splitStatus(status).length;
+  };
+
+  const getBaseBed = (status) => {
+    if (status === "available") return BedEmpty;
+    if (status === "reserved") return BedEmpty;
+    // multi-status or other → show green (occupied-style)
+    return BedGreen;
+  };
+
+  const overlayIcons = {
+    reserved: IconCalendar,
+    overdue: IconRupee,
+    noticeperiod: IconNotice,
+  };
+
+  // ---------- Anim bottom sheet ----------
   useEffect(() => {
     if (showActionSheet) {
       Animated.timing(translateY, {
@@ -255,18 +294,15 @@ const [showNewBooking, setShowNewBooking] = useState(false);
         useNativeDriver: true,
       }).start();
     }
-  }, [showActionSheet]);
+  }, [showActionSheet, translateY]);
 
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) =>
-      gestureState.dy > 10,
-
+    onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
     onPanResponderMove: (_, gestureState) => {
       if (gestureState.dy > 0) {
         translateY.setValue(gestureState.dy);
       }
     },
-
     onPanResponderRelease: (_, gestureState) => {
       if (gestureState.dy > 120) {
         setShowActionSheet(false);
@@ -279,18 +315,42 @@ const [showNewBooking, setShowNewBooking] = useState(false);
     },
   });
 
-
-
+  // ---------- Init dummy data ----------
   useEffect(() => {
     setFloors(initialFloors);
   }, []);
 
+  // ---------- Hide TabBar when any sheet open ----------
   useEffect(() => {
     if (route?.params?.setShowTabBar) {
-      route.params.setShowTabBar(!showAddFloor && !showActionSheet && !showAddRoom && !showAddBed && !showManageBed && !showReservedSheet && !showOccupiedSheet && !showNoticePeriodSheet && !showNewBooking);
+      route.params.setShowTabBar(
+        !showAddFloor &&
+          !showActionSheet &&
+          !showAddRoom &&
+          !showAddBed &&
+          !showManageBed &&
+          !showReservedSheet &&
+          !showOccupiedSheet &&
+          !showNoticePeriodSheet &&
+          !showNewBooking &&
+          !showDoubleStatus &&
+          !showInactiveSheet
+      );
     }
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet,showNoticePeriodSheet,showNewBooking]);
+  }, [
+    showAddFloor,
+    showActionSheet,
+    showAddRoom,
+    showAddBed,
+    showManageBed,
+    showReservedSheet,
+    showOccupiedSheet,
+    showNoticePeriodSheet,
+    showNewBooking,showDoubleStatus,
+    route,showInactiveSheet
+  ]);
 
+  // ---------- Android Back Handler ----------
   useEffect(() => {
     const onBack = () => {
       if (showAddFloor) {
@@ -305,105 +365,127 @@ const [showNewBooking, setShowNewBooking] = useState(false);
         setShowAddBed(false);
         return true;
       }
-
       if (showAddRoom) {
         setShowAddRoom(false);
         return true;
       }
-       if (showManageBed) {
+      if (showManageBed) {
         setShowManageBed(false);
         return true;
       }
-      if(showReservedSheet){
-setShowReservedSheet(false)
- return true;
+      if (showReservedSheet) {
+        setShowReservedSheet(false);
+        return true;
       }
-      if(showOccupiedSheet){
-setShowOccupiedSheet(false)
- return true;
+      if (showOccupiedSheet) {
+        setShowOccupiedSheet(false);
+        return true;
       }
-        if (showNoticePeriodSheet) {
+      if (showNoticePeriodSheet) {
         setShowNoticePeriodSheet(false);
         return true;
       }
-       if (showNewBooking) {
+      if (showNewBooking) {
         setShowNewBooking(false);
         return true;
       }
+        if (showDoubleStatus) {
+        setShowDoubleStatus(false);
+        return true;
+      }
+      if(showInactiveSheet){
+setShowInactiveSheet(false)
+return true;
+      }
       return false;
     };
+
     const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
     return () => sub.remove();
-  }, [showAddFloor, showActionSheet, showAddRoom,showAddBed,showManageBed,showReservedSheet,showOccupiedSheet,showNewBooking]);
+  }, [
+    showAddFloor,
+    showActionSheet,
+    showAddRoom,
+    showAddBed,
+    showManageBed,
+    showReservedSheet,
+    showOccupiedSheet,
+    showNoticePeriodSheet,
+    showNewBooking,showDoubleStatus,showInactiveSheet
+  ]);
 
-  // BASE BED SELECTION
-  const getBaseBed = (status) => {
-    if (status === "available") return BedEmpty;
-    if (status === "reserved") return BedEmpty;
-    return BedGreen;
-  };
-
-  // TOP ICON OVERLAY
-  const overlayIcons = {
-    reserved: IconCalendar,
-    overdue: IconRupee,
-    noticeperiod: IconNotice,
-  };
-
+  // ---------- Actions ----------
   const handleAddFloor = (floorName) => {
     if (!floorName?.trim()) return;
-
     const newFloor = {
       id: `f${Date.now()}`,
       name: floorName,
       rooms: [],
     };
-
     const updated = [newFloor, ...floors];
     setFloors(updated);
     setActiveFloorIndex(0);
   };
 
   const handleOpenNoticeSheet = () => {
-  setShowOccupiedSheet(false);
-  setSelectedOccupied(null);
-  setShowNotice(true);   
-};
-const handleReAssignBed = () => {
-  if (!selectedOccupied) return;
+    setShowOccupiedSheet(false);
+    setSelectedOccupied(null);
+    setShowNotice(true);
+  };
 
-  navigation.navigate("ReassignBedScreen", {
-    tenant: selectedOccupied, 
-     floors: floors 
-  });
+  const handleReAssignBed = () => {
+    if (!selectedOccupied) return;
 
-  setShowOccupiedSheet(false);
-};
+    navigation.navigate("ReassignBedScreen", {
+      tenant: selectedOccupied,
+      floors: floors,
+    });
+
+    setShowOccupiedSheet(false);
+    setShowDoubleStatus(false)
+  };
+
   const handleNoticeToBookin = () => {
-  setShowNoticePeriodSheet(false);
-  setShowNewBooking(true);   
-};
-const handleShowFinalSettlement = () => {
-  setShowNoticePeriodSheet(false);
-   navigation.navigate("FinalSettlement")
-}
-const handleShowCancelNotice = () => {
-  setShowNoticePeriodSheet(false);
-navigation.navigate("CancelNotice")
+    setShowNoticePeriodSheet(false);
+    setShowNewBooking(true);
+    setShowDoubleStatus(false)
+  };
+
+  const handleShowFinalSettlement = () => {
+    setShowNoticePeriodSheet(false);
+    navigation.navigate("FinalSettlement");
+      setShowDoubleStatus(false)
+  };
+
+  const handleShowCancelNotice = () => {
+    setShowNoticePeriodSheet(false);
+    navigation.navigate("CancelNotice");
+    setShowDoubleStatus(false)
+  };
+const handleMakeUsInActive=()=>{
+   setShowDoubleStatus(false)
+   setShowInactiveSheet(true)
 }
 
+const handleCheckIn = ()=>{
+   setShowDoubleStatus(false) 
+   navigation.navigate("ReserveToCheckin") 
+}
 
+  
   return (
     <>
       <View style={styles.container}>
+        {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity onPress={() => navigation.navigate("ChangeHostelScreen")}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("SettingsPG")}
+            >
               <Image source={HostelImg} style={styles.HostelImg} />
             </TouchableOpacity>
             <Text style={styles.title}>Royal Grand Hostel</Text>
           </View>
-
 
           <TouchableOpacity
             style={styles.floorButton}
@@ -411,41 +493,34 @@ navigation.navigate("CancelNotice")
           >
             <Text style={styles.floorButtonText}>+ Floor</Text>
           </TouchableOpacity>
-
         </View>
 
-
-        {/* STATUS FILTER ROW - Figma Style */}
-        <View style={{ display: 'flex', flexDirection: 'row', marginLeft: 13 }}>
+        {/* STATUS FILTER ROW */}
+        <View style={{ flexDirection: "row", marginLeft: 13 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filterScroll}
           >
-
             <View style={styles.filterItem}>
               <View style={styles.availableDot} />
               <Text style={styles.filterText}>Available</Text>
             </View>
-
 
             <View style={styles.filterItem}>
               <View style={styles.occupiedDot} />
               <Text style={styles.filterText}>Occupied</Text>
             </View>
 
-
             <View style={styles.filterItem}>
               <Image source={IconCalendar} style={styles.filterIcon} />
               <Text style={styles.filterText}>Reserved</Text>
             </View>
 
-
             <View style={styles.filterItem}>
               <Image source={IconRupee} style={styles.filterIcon} />
               <Text style={styles.filterText}>Overdue</Text>
             </View>
-
 
             <View style={styles.filterItem}>
               <Image source={IconNotice} style={styles.filterIcon} />
@@ -454,21 +529,17 @@ navigation.navigate("CancelNotice")
           </ScrollView>
         </View>
 
-
+        {/* just spacing row */}
         <View style={{ paddingVertical: 12 }}>
-
-
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16 }}
-          >
-
-          </ScrollView>
-
+          ></ScrollView>
         </View>
 
-        <View style={{ display: 'flex', flexDirection: 'row', marginLeft: 13 }}>
+        {/* FLOOR TABS */}
+        <View style={{ flexDirection: "row", marginLeft: 13 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -483,8 +554,13 @@ navigation.navigate("CancelNotice")
                 ]}
                 onPress={() => setActiveFloorIndex(i)}
               >
-                <View style={{ flexDirection: "column", alignItems: "center", gap: 8 }}>
-               
+                <View
+                  style={{
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
                   <View
                     style={[
                       styles.floorCircle,
@@ -501,7 +577,6 @@ navigation.navigate("CancelNotice")
                     </Text>
                   </View>
 
-                  {/* Floor Name */}
                   <Text
                     style={[
                       styles.floorLabel,
@@ -514,40 +589,40 @@ navigation.navigate("CancelNotice")
               </TouchableOpacity>
             ))}
           </ScrollView>
-
         </View>
-        {
-          floors.length === 0 &&
+
+        {/* NO FLOOR */}
+        {floors.length === 0 && (
           <View style={styles.centerContainer}>
-            <Image
-              source={EmptyFloor}
-              style={styles.image}
-            />
+            <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No floors are there!</Text>
 
-            <TouchableOpacity style={styles.addFloorBtn} onPress={() => setShowAddFloor(true)}>
+            <TouchableOpacity
+              style={styles.addFloorBtn}
+              onPress={() => setShowAddFloor(true)}
+            >
               <Text style={styles.addFloorText}>+ Add Floor</Text>
             </TouchableOpacity>
           </View>
-        }
-
-
-
-
-        {floors.length > 0 && floors[activeFloorIndex]?.rooms?.length === 0 && (
-          <View style={styles.centerContainer}>
-            <Image
-              source={EmptyFloor}
-              style={styles.image}
-            />
-            <Text style={styles.noFloorText}>No Rooms are there!</Text>
-
-            <TouchableOpacity style={styles.addFloorBtn} onPress={() => setShowAddRoom(true)}>
-              <Text style={styles.addFloorText}>+ Add Rooms</Text>
-            </TouchableOpacity>
-          </View>
         )}
-   
+
+        {/* NO ROOMS */}
+        {floors.length > 0 &&
+          floors[activeFloorIndex]?.rooms?.length === 0 && (
+            <View style={styles.centerContainer}>
+              <Image source={EmptyFloor} style={styles.image} />
+              <Text style={styles.noFloorText}>No Rooms are there!</Text>
+
+              <TouchableOpacity
+                style={styles.addFloorBtn}
+                onPress={() => setShowAddRoom(true)}
+              >
+                <Text style={styles.addFloorText}>+ Add Rooms</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+        {/* ROOMS + BEDS */}
         <FlatList
           contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
           data={floors[activeFloorIndex]?.rooms || []}
@@ -560,113 +635,104 @@ navigation.navigate("CancelNotice")
                   <Text style={styles.roomSubtitle}>{item.sharing}</Text>
                 </View>
 
-                <TouchableOpacity style={styles.addRoomBtn} onPress={() => setShowAddBed(true)}>
+                <TouchableOpacity
+                  style={styles.addRoomBtn}
+                  onPress={() => setShowAddBed(true)}
+                >
                   <Image source={AddIcon} style={{ width: 22, height: 22 }} />
                 </TouchableOpacity>
               </View>
 
-           
               <View style={styles.bedsRow}>
                 {item.beds?.map((b) => (
                   <TouchableOpacity
-    key={b.id}
-    style={styles.bedItem}
-    // onPress={() => {
-    //   if (b.status =="available") {
-    //     setSelectedBed(b);
-    //     setShowManageBed(true);
-    //   }
-    // }}
-//     onPress={() => {
+                    key={b.id}
+                    style={styles.bedItem}
+                    onPress={() => {
+                      const statuses = splitStatus(b.status);
 
-//   // ☑️ RESERVED → Open sample bottom sheet
-//   if (b.status === "reserved") {
-//     setSelectedReserved({ bed: b, room: item });
-//     setShowReservedSheet(true);
-//   }
-
-
-//   else if (b.status === "available") {
-//     setSelectedBed(b);
-//     setShowManageBed(true);
-//   }
-//   else {
-//     return;
-//   }
-// }}
-onPress={() => {
-
-  // RESERVED → Reserved Bottom Sheet
-  if (b.status === "reserved") {
-    setSelectedReserved({ bed: b, room: item });
-    setShowReservedSheet(true);
-  }
-
-
-  else if (b.status === "available") {
-    setSelectedBed(b);
-    setShowManageBed(true);
-  }
-
-  else if (b.status === "occupied") {
-    setSelectedOccupied({ bed: b, room: item });
-    setShowOccupiedSheet(true);
-  }
-  else if (b.status === "noticeperiod") {
-  setNoticeData({ bed: b, room: item, tenant: selectedOccupied });
-  setShowNoticePeriodSheet(true);
+                      // NOTICE + RESERVED together → Reserved sheet (priority B)
+                  if (
+  statuses.includes("noticeperiod") &&
+  statuses.includes("reserved")
+) {
+  setSelectedDouble({ bed: b, room: item }); 
+  setShowDoubleStatus(true);
+  return;
 }
 
 
- 
-  else {
-    return;
-  }
+                      // RESERVED only
+                      if (b.status === "reserved") {
+                        setSelectedReserved({ bed: b, room: item });
+                        setShowReservedSheet(true);
+                        return;
+                      }
 
-}}
+                      // AVAILABLE
+                      if (b.status === "available") {
+                        setSelectedBed(b);
+                        setShowManageBed(true);
+                        return;
+                      }
 
+                      // OCCUPIED
+                      if (b.status === "occupied") {
+                        setSelectedOccupied({ bed: b, room: item });
+                        setShowOccupiedSheet(true);
+                        return;
+                      }
 
-  >
-
+                      // NOTICE only
+                      if (b.status === "noticeperiod") {
+                        setNoticeData({ bed: b, room: item });
+                        setShowNoticePeriodSheet(true);
+                        return;
+                      }
+                    }}
+                  >
                     <Image
                       source={getBaseBed(b.status)}
                       style={styles.bedIcon}
                     />
 
-                    {overlayIcons[b.status] && (
+                    {/* PRIMARY STATUS ICON (reserved / notice / overdue) */}
+                    {overlayIcons[getPrimaryStatus(b.status)] && (
                       <Image
-                        source={overlayIcons[b.status]}
+                        source={overlayIcons[getPrimaryStatus(b.status)]}
                         style={styles.overlayIcon}
                       />
+                    )}
+
+                    {/* MULTI-STATUS BADGE: e.g. "2" */}
+                    {getStatusCount(b.status) > 1 && (
+                      <View style={styles.multiBadge}>
+                        <Text style={styles.multiBadgeText}>
+                          {getStatusCount(b.status)}
+                        </Text>
+                      </View>
                     )}
 
                     <Text style={styles.bedLabel}>{b.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-
             </View>
-
           )}
         />
-
-
-
-
       </View>
-    {
-  floors.length > 0 && (
-    <TouchableOpacity
-      style={styles.addFab}
-      onPress={() => setShowActionSheet(true)}
-    >
-      <Image source={AddFloorIcon} style={styles.addIcon} />
-    </TouchableOpacity>
-  )
-}
 
+      {/* FLOATING ADD BUTTON */}
+      {floors.length > 0 && (
+        <TouchableOpacity
+          style={styles.addFab}
+          onPress={() => setShowActionSheet(true)}
+        >
+          <Image source={AddFloorIcon} style={styles.addIcon} />
+        </TouchableOpacity>
+      )}
 
-
+      {/* ACTION SHEET (Floor / Room) */}
       {showActionSheet && (
         <View style={styles.overlay}>
           <TouchableOpacity
@@ -678,15 +744,15 @@ onPress={() => {
             style={[styles.actionSheet, { transform: [{ translateY }] }]}
             {...panResponder.panHandlers}
           >
-
             <View style={styles.sheetHandle} />
 
             <View style={styles.sheetContent}>
-
-              <TouchableOpacity style={styles.actionItem} onPress={() => {
-                setShowAddFloor(true);
-                setShowActionSheet(false);
-              }}
+              <TouchableOpacity
+                style={styles.actionItem}
+                onPress={() => {
+                  setShowAddFloor(true);
+                  setShowActionSheet(false);
+                }}
               >
                 <View style={styles.iconBG}>
                   <Image
@@ -697,15 +763,18 @@ onPress={() => {
                 <Text style={styles.actionText}>Floor</Text>
               </TouchableOpacity>
 
-
-
-              <TouchableOpacity style={styles.actionItem} onPress={() => {
-                setShowAddRoom(true);
-                setShowActionSheet(false);
-              }}>
+              <TouchableOpacity
+                style={styles.actionItem}
+                onPress={() => {
+                  setShowAddRoom(true);
+                  setShowActionSheet(false);
+                }}
+              >
                 <View style={styles.iconRoom}>
-                  <Image source={require("../../Assets/Images/RoomImg.png")} style={styles.iconRoomimg} />
-
+                  <Image
+                    source={require("../../Assets/Images/RoomImg.png")}
+                    style={styles.iconRoomimg}
+                  />
                 </View>
                 <Text style={styles.actionText}>Room</Text>
               </TouchableOpacity>
@@ -714,8 +783,7 @@ onPress={() => {
         </View>
       )}
 
-
-
+      {/* BOTTOM SHEETS */}
       <AddFloorSheet
         visible={showAddFloor}
         onClose={() => setShowAddFloor(false)}
@@ -724,84 +792,94 @@ onPress={() => {
           setShowAddFloor(false);
         }}
       />
+
       <AddRoomSheet
         visible={showAddRoom}
         onClose={() => setShowAddRoom(false)}
-     
       />
+
       <AddBedBottomSheet
         visible={showAddBed}
         onClose={() => setShowAddBed(false)}
-     
       />
+
       <ManageBedBottomSheet
-  visible={showManageBed}
-  onClose={() => setShowManageBed(false)}
-/>
-<ReservedBedBottomSheet
-  visible={showReservedSheet}
-  onClose={() => setShowReservedSheet(false)}
-  bed={selectedReserved?.bed}
-  room={selectedReserved?.room}
-  selectTap={route?.params?.setShowTabBar}
-/>
-{/* <OccupiedBedSheet
-    visible={showOccupiedSheet}
-    onClose={() => setShowOccupiedSheet(false)}
-    bed={selectedOccupied?.bed}
-    room={selectedOccupied?.room}
+        visible={showManageBed}
+        onClose={() => setShowManageBed(false)}
+      />
 
+      <ReservedBedBottomSheet
+        visible={showReservedSheet}
+        onClose={() => setShowReservedSheet(false)}
+        bed={selectedReserved?.bed}
+        room={selectedReserved?.room}
+        selectTap={route?.params?.setShowTabBar}
+      />
 
-/> */}
-<OccupiedBedSheet
-  visible={showOccupiedSheet}
-  onClose={() => {
-    setShowOccupiedSheet(false);
-    setSelectedOccupied(null);
-  }}
-  bed={selectedOccupied?.bed}
-  room={selectedOccupied?.room}
-  onMoveToNotice={handleOpenNoticeSheet}  
-    onReAssign={handleReAssignBed}
+      <OccupiedBedSheet
+        visible={showOccupiedSheet}
+        onClose={() => {
+          setShowOccupiedSheet(false);
+          setSelectedOccupied(null);
+        }}
+        bed={selectedOccupied?.bed}
+        room={selectedOccupied?.room}
+        onMoveToNotice={handleOpenNoticeSheet}
+        onReAssign={handleReAssignBed}
+      />
+
+      {showNotice && (
+        <MoveNoticeSheet
+          visible={showNotice}
+          onClose={() => setShowNotice(false)}
+          requestDate={reqDate}
+          checkoutDate={outDate}
+          reason={reason}
+          setRequestDate={setReqDate}
+          setCheckoutDate={setOutDate}
+        />
+      )}
+
+      <NoticePeriodBedSheet
+        visible={showNoticePeriodSheet}
+        onClose={() => setShowNoticePeriodSheet(false)}
+        bed={noticeData?.bed}
+        room={noticeData?.room}
+        tenant={noticeData?.tenant}
+        setShowBar={route.params.setShowTabBar}
+        onClick={handleNoticeToBookin}
+        onFinalSheet={handleShowFinalSettlement}
+        navigation={navigation}
+        cancelNoticePeriod={handleShowCancelNotice}
+      />
+
+      <NewBookingSheet
+        visible={showNewBooking}
+        onClose={() => setShowNewBooking(false)}
+        bed={selectedOccupied?.bed}
+        room={selectedOccupied?.room}
+      />
+      <DoubleStatusSheet
+    visible={showDoubleStatus}
+    onClose={() => setShowDoubleStatus(false)}
+    bed={selectedDouble?.bed}
+    room={selectedDouble?.room}
+    handleNoticeToBookin={handleNoticeToBookin}
+    handleShowFinalSettlement={handleShowFinalSettlement}
+    handleReAssignBed={handleShowCancelNotice}
+    handleMakeUsInActive={handleMakeUsInActive}
+    handleCheckIn={handleCheckIn}
 />
-
-   { showNotice && 
- <MoveNoticeSheet
-            visible={showNotice}
-            onClose={() => setShowNotice(false)}
-            requestDate={reqDate}
-    checkoutDate={outDate}
-    reason={reason}
-    setRequestDate={setReqDate}
-    setCheckoutDate={setOutDate}
-           
-          />    
-
-     }
-<NoticePeriodBedSheet
-  visible={showNoticePeriodSheet}
-  onClose={() => setShowNoticePeriodSheet(false)}
-  bed={noticeData?.bed}
-  room={noticeData?.room}
-  tenant={noticeData?.tenant}
-  setShowBar={route.params.setShowTabBar}
-  onClick={handleNoticeToBookin}
-  onFinalSheet={handleShowFinalSettlement}
-  navigation={navigation} 
-  cancelNoticePeriod={handleShowCancelNotice}
-/>
-  <NewBookingSheet
-  visible={showNewBooking}
-  onClose={() => setShowNewBooking(false)}
-  bed={selectedOccupied?.bed}
-  room={selectedOccupied?.room}
-/>
-
+ <InactiveTenantSheet
+      visible={showInactiveSheet}
+      onClose={() => setShowInactiveSheet(false)}
+    />
 
     </>
   );
 }
 
+// ================== STYLES ===================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -834,7 +912,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-
   floorButton: {
     backgroundColor: "#1E45E1",
     paddingVertical: 8,
@@ -852,7 +929,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: "center",
     width: 80,
-
   },
 
   floorTabActive: {
@@ -864,7 +940,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#FFF5E6",   // cream
+    backgroundColor: "#FFF5E6",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
@@ -894,7 +970,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-
   roomCard: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -914,7 +989,6 @@ const styles = StyleSheet.create({
   roomSubtitle: { fontSize: 12, color: "#888" },
 
   addRoomBtn: {
-
     padding: 8,
     borderRadius: 0,
   },
@@ -939,6 +1013,7 @@ const styles = StyleSheet.create({
   },
 
   bedLabel: { fontSize: 12 },
+
   centerContainer: {
     flex: 3,
     alignItems: "center",
@@ -971,6 +1046,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
+
   addFab: {
     position: "absolute",
     right: 20,
@@ -980,9 +1056,9 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-
   },
-  addIcon: { width: 60, height: 60, },
+  addIcon: { width: 60, height: 60 },
+
   filterScroll: {
     paddingLeft: 16,
     paddingRight: 30,
@@ -1021,10 +1097,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#444",
   },
-  HostelImg: {
-    width: 30,
-    height: 30
-  },
+
   overlay: {
     position: "absolute",
     left: 0,
@@ -1059,14 +1132,15 @@ const styles = StyleSheet.create({
 
   sheetContent: {
     flexDirection: "row",
-    justifyContent: "start",
+    justifyContent: "flex-start",
     gap: 30,
-    marginLeft: 50
+    marginLeft: 50,
   },
 
   actionItem: {
     alignItems: "center",
   },
+
   iconBG: {
     width: 60,
     height: 60,
@@ -1079,9 +1153,10 @@ const styles = StyleSheet.create({
   iconImg: {
     width: 32,
     height: 32,
-    tintColor: "#fff",         // makes icon white (Figma-style)
+    tintColor: "#fff",
     resizeMode: "contain",
   },
+
   iconRoom: {
     width: 60,
     height: 60,
@@ -1098,13 +1173,11 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
 
-
   actionIcon: {
     width: 50,
     height: 50,
     borderRadius: 8,
     backgroundColor: "#00B7FF",
-
   },
 
   actionText: {
@@ -1113,5 +1186,24 @@ const styles = StyleSheet.create({
     color: "#555",
   },
 
+  multiBadge: {
+    position: "absolute",
+    top: -6,
+    right: 6,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#1E45E1",
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+  },
 
+  multiBadgeText: {
+    color: "#1E45E1",
+    fontSize: 11,
+    fontWeight: "700",
+  },
 });
