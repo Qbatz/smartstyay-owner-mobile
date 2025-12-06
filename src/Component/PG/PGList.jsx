@@ -25,6 +25,7 @@ import MoveNoticeSheet from ".././Customer/MoveToNoticePeriod";
 import NoticePeriodBedSheet from "../PG/NoticePeriodBed/NoticeperiodBedStatus";
 import NewBookingSheet from "./NoticePeriodBed/NoticePeriodToBooking";
 import DoubleStatusSheet from "./NoticePeriodBed/DoupleStatusSheet";
+import InactiveTenantSheet from "./ReservedBed/MakeUsInActiveSheet"
 import { useNavigation } from "@react-navigation/native";
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
@@ -236,6 +237,7 @@ export default function PGPageFull({ route }) {
   const [showNewBooking, setShowNewBooking] = useState(false);
   const [showDoubleStatus, setShowDoubleStatus] = useState(false);
 const [selectedDouble, setSelectedDouble] = useState(null);
+const [showInactiveSheet,setShowInactiveSheet] =useState(false)
 
 
   const translateY = React.useRef(new Animated.Value(300)).current;
@@ -331,7 +333,8 @@ const [selectedDouble, setSelectedDouble] = useState(null);
           !showOccupiedSheet &&
           !showNoticePeriodSheet &&
           !showNewBooking &&
-          !showDoubleStatus
+          !showDoubleStatus &&
+          !showInactiveSheet
       );
     }
   }, [
@@ -344,7 +347,7 @@ const [selectedDouble, setSelectedDouble] = useState(null);
     showOccupiedSheet,
     showNoticePeriodSheet,
     showNewBooking,showDoubleStatus,
-    route,
+    route,showInactiveSheet
   ]);
 
   // ---------- Android Back Handler ----------
@@ -390,6 +393,10 @@ const [selectedDouble, setSelectedDouble] = useState(null);
         setShowDoubleStatus(false);
         return true;
       }
+      if(showInactiveSheet){
+setShowInactiveSheet(false)
+return true;
+      }
       return false;
     };
 
@@ -404,7 +411,7 @@ const [selectedDouble, setSelectedDouble] = useState(null);
     showReservedSheet,
     showOccupiedSheet,
     showNoticePeriodSheet,
-    showNewBooking,showDoubleStatus
+    showNewBooking,showDoubleStatus,showInactiveSheet
   ]);
 
   // ---------- Actions ----------
@@ -435,24 +442,37 @@ const [selectedDouble, setSelectedDouble] = useState(null);
     });
 
     setShowOccupiedSheet(false);
+    setShowDoubleStatus(false)
   };
 
   const handleNoticeToBookin = () => {
     setShowNoticePeriodSheet(false);
     setShowNewBooking(true);
+    setShowDoubleStatus(false)
   };
 
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
     navigation.navigate("FinalSettlement");
+      setShowDoubleStatus(false)
   };
 
   const handleShowCancelNotice = () => {
     setShowNoticePeriodSheet(false);
     navigation.navigate("CancelNotice");
+    setShowDoubleStatus(false)
   };
+const handleMakeUsInActive=()=>{
+   setShowDoubleStatus(false)
+   setShowInactiveSheet(true)
+}
 
-  // ================== RENDER ===================
+const handleCheckIn = ()=>{
+   setShowDoubleStatus(false) 
+   navigation.navigate("ReserveToCheckin") 
+}
+
+  
   return (
     <>
       <View style={styles.container}>
@@ -460,7 +480,7 @@ const [selectedDouble, setSelectedDouble] = useState(null);
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <TouchableOpacity
-              onPress={() => navigation.navigate("ChangeHostelScreen")}
+              onPress={() => navigation.navigate("SettingsPG")}
             >
               <Image source={HostelImg} style={styles.HostelImg} />
             </TouchableOpacity>
@@ -844,7 +864,16 @@ const [selectedDouble, setSelectedDouble] = useState(null);
     onClose={() => setShowDoubleStatus(false)}
     bed={selectedDouble?.bed}
     room={selectedDouble?.room}
+    handleNoticeToBookin={handleNoticeToBookin}
+    handleShowFinalSettlement={handleShowFinalSettlement}
+    handleReAssignBed={handleShowCancelNotice}
+    handleMakeUsInActive={handleMakeUsInActive}
+    handleCheckIn={handleCheckIn}
 />
+ <InactiveTenantSheet
+      visible={showInactiveSheet}
+      onClose={() => setShowInactiveSheet(false)}
+    />
 
     </>
   );

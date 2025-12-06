@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
   Easing,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -21,10 +22,13 @@ export default function DoubleStatusSheet({
   bed,
   room,
   onPressNotice,
-  onPressReserved,
+  handleShowFinalSettlement,
+  handleNoticeToBookin,
+  handleReAssignBed,handleMakeUsInActive,handleCheckIn
 }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
+   const navigation = useNavigation();
 
   const [showOccupiedMenu, setShowOccupiedMenu] = useState(false);
   const [showReservedMenu, setShowReservedMenu] = useState(false);
@@ -53,6 +57,21 @@ export default function DoubleStatusSheet({
     setShowOccupiedMenu(false);
     setShowReservedMenu(false);
   };
+  const handleNewReserve=()=>{
+    handleNoticeToBookin()
+  }
+  const handleFinalSettled = ()=>{
+    handleShowFinalSettlement()
+  }
+const handleCancelNotice=()=>{
+    handleReAssignBed()
+}
+const handleMakeUsIn=()=>{
+  handleMakeUsInActive()
+}
+const handleBookToCheckin=()=>{
+  handleCheckIn()
+}
 
   /* ---------------- CLOSE ---------------- */
   const closeSheet = () => {
@@ -175,17 +194,17 @@ export default function DoubleStatusSheet({
 
           {showOccupiedMenu && (
             <View style={styles.menuCard}>
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
                 <Text style={styles.menuText}>New Booking</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleCancelNotice}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/calendarremove.png")} />
                 <Text style={styles.menuText}>Cancel Notice period</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
                 <Text style={styles.menuText}>Generate FS</Text>
               </TouchableOpacity>
@@ -237,12 +256,12 @@ export default function DoubleStatusSheet({
 
           {showReservedMenu && (
             <View style={styles.menuCard}>
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleBookToCheckin}>
                 <Image style={styles.menuIconAdd} source={require("../../../Assets/Images/add-circle.png")} />
                 <Text style={styles.menuText}>Check-in</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleMakeUsIn}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/Logout.png")} />
                 <Text style={styles.menuText}>Make as Inactive</Text>
               </TouchableOpacity>

@@ -273,7 +273,7 @@ const legendItems = [
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.hostelTitle}>Royal Grand Hostel</Text>
               {/* <Text style={styles.changeText}>Change Hostel →</Text> */}
-              <TouchableOpacity onPress={() => navigation.navigate("ChangeHostelScreen")}>
+              <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
   <Text style={styles.changeText}>Change Hostel →</Text>
 </TouchableOpacity>
             </View>
