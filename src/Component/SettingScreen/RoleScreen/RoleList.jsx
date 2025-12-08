@@ -10,6 +10,12 @@ import {
 } from "react-native";
 import AddCategorySheet from "./AddRole";
 import { useFocusEffect } from '@react-navigation/native';
+import BackArrow from "../../../Assets/Images/Arrow_left.png";
+import RoleProfile from "../../../Assets/Images/Avatar.png";
+import Dots from "../../../Assets/Images/3dots.png";
+import editIcon from "../../../Assets/Images/editIcon.png";
+import Trash from "../../../Assets/Images/trash.png";
+import TenantAddBlue from "../../../Assets/Images/TenantAddBlue.png";
 
 export default function RolesScreen({ navigation }) {
       const [openMenuId, setOpenMenuId] = useState(null);
@@ -73,7 +79,7 @@ const handleDelete = () => {
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
-            source={require("../../../Assets/Images/Arrow_left.png")}
+            source={BackArrow}
             style={styles.backIcon}
           />
         </TouchableOpacity>
@@ -90,7 +96,7 @@ const handleDelete = () => {
       <View style={styles.rowBetween}>
         <View style={styles.roleRow}>
           <Image
-            source={require("../../../Assets/Images/profile.png")}
+            source={RoleProfile}
             style={styles.roleIcon}
           />
           <Text style={styles.roleName}>{item.name}</Text>
@@ -101,7 +107,7 @@ const handleDelete = () => {
           onPress={() => setOpenMenuId(openMenuId === i ? null : i)}
         >
           <Image
-            source={require("../../../Assets/Images/3dots.png")}
+            source={Dots}
             style={styles.dotsIcon}
           />
         </TouchableOpacity>
@@ -128,7 +134,7 @@ const handleDelete = () => {
     setOpenMenuId(null);   
   }}>
             <Image
-              source={require("../../../Assets/Images/editIcon.png")}
+              source={editIcon}
               style={styles.optionIcon}
             />
             <Text style={styles.optionText}>Edit</Text>
@@ -138,7 +144,7 @@ const handleDelete = () => {
 
           <TouchableOpacity style={styles.optionRow} onPress={handleDelete}>
             <Image
-              source={require("../../../Assets/Images/trash.png")}
+              source={Trash}
               style={styles.optionIcon}
             />
             <Text style={styles.optionText}>Delete</Text>
@@ -159,7 +165,7 @@ const handleDelete = () => {
   setEditData(null); 
 }}
   >
-  <Image source={require("../../../Assets/Images/TenantAddBlue.png")} style={styles.addIcon} />
+  <Image source={TenantAddBlue} style={styles.addIcon} />
 </TouchableOpacity>
     </View>
 
@@ -253,7 +259,7 @@ const styles = StyleSheet.create({
   roleIcon: {
     width: 22,
     height: 22,
-    tintColor: "#FFB800",
+    
   },
 
   roleName: {
