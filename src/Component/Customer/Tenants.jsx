@@ -18,7 +18,7 @@ import { useLayoutEffect } from "react";
 
 
 import Profile from "../../Assets/Images/profile.png";
-import EditPin from "../../Assets/Images/EditPin.png";
+import Filter from "../../Assets/Images/filter.png";
 import SearchIcon from "../../Assets/Images/Asset_search.png";
 import InProfile from "../../Assets/Images/inActiveuser.png";
 import ActiveCheckout from "../../Assets/Images/Active_checkout.png";
@@ -273,7 +273,7 @@ const customerList = [
      
     
       <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
-    <Image source={EditPin} style={{ width: 60, height: 60 }} />
+    <Image source={Filter} style={{ width: 60, height: 60 }} />
 </TouchableOpacity>
 
 
@@ -548,7 +548,7 @@ const customerList = [
         <View style={styles.filterHeader}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image
-              source={EditPin}
+              source={Filter}
               style={{ width: 35, height: 35, marginRight: 8 }}
             />
             <Text style={styles.filterTitle}>Filter by</Text>

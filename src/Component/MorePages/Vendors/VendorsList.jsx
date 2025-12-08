@@ -15,7 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import AvatarPlaceholder from "../../../Assets/Images/Avatar.png";
 import DotsIcon from "../../../Assets/Images/3dots.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/TenantAddBlue.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import AddVendorSheet from "./AddVendor";
