@@ -14,7 +14,7 @@ import {
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import UserProfile from "../../../Assets/Images/profileElec.png";
 import calendarCheck from "../../../Assets/Images/calendarcheck.png";
 import Add from "../../../Assets/Images/ElectricityAdd.png";
@@ -425,10 +425,21 @@ const styles = StyleSheet.create({
 
   fab: {
     position: "absolute",
-    bottom: 40,
-    right: 25,
+  bottom: 120,
+  right:30,
+  width: 50,
+  height: 50,
+  backgroundColor: "#fff",
+  borderRadius: 55,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, 
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 },
   },
-  fabIcon: { width: 60, height: 60 },
+  fabIcon: { width: 30, height: 30 },
   middleBoxRow: {
   flexDirection: "row",
   alignItems: "center",
