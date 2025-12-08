@@ -15,7 +15,7 @@ import {
 import PhoneIcon from "../../../Assets/Images/call.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
 import UserIcon from "../../../Assets/Images/profile.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import PlusIcon from "../../../Assets/Images/TenantAdd.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 

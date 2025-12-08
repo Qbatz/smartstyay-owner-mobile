@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
-import Shield from "../../../Assets/Images/Shield.png"
+import Shield from "../../../Assets/Images/Shield.png";
+import Confiqure from "../../../Assets/Images/arrow-transfer.png"
 
 export default function BillingRuleScreen({ navigation }) {
 
@@ -183,7 +184,7 @@ const closeEditSheet = () => {
 >
   <View style={styles.configureRow}>
     <Image
-      source={require("../../../Assets/Images/arrow-transfer.png")} 
+      source={Confiqure} 
       style={styles.configureIcon}
     />
     <Text style={styles.configureText}>Configure</Text>

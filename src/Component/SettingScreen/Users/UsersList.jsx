@@ -12,6 +12,8 @@ import MenuIcon from "../../../Assets/Images/3dots.png";
 import PlusIcon from "../../../Assets/Images/TenantAddBlue.png";
 import { useFocusEffect } from '@react-navigation/native';
 import BackArrow from "../../../Assets/Images/Arrow_left.png";
+import EditIcon from "../../../Assets/Images/editIcon.png";
+import Trash from "../../../Assets/Images/trash.png";
 import AddUserBottomSheet from "./AddUser";
 
 export default function UsersScreen({navigation}) {
@@ -97,7 +99,7 @@ export default function UsersScreen({navigation}) {
     setOpenMenuId(null);   
   }}>
       <Image 
-        source={require("../../../Assets/Images/editIcon.png")} 
+        source={EditIcon} 
         style={styles.optionIcon} 
       />
       <Text style={styles.optionText}>Edit</Text>
@@ -107,7 +109,7 @@ export default function UsersScreen({navigation}) {
 
     <TouchableOpacity style={styles.optionRow} onPress={handleDelete}>
       <Image 
-        source={require("../../../Assets/Images/trash.png")} 
+        source={Trash} 
         style={styles.optionIcon} 
       />
       <Text style={styles.optionText}>Delete</Text>

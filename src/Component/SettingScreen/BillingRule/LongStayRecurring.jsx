@@ -1,16 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet,Image, ScrollView } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 
 export default function LongStayRecurring({ navigation }) {
 
-  const [roleOpen, setRoleOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("");
-  const roles = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "11", "12", "13", "14", "15", "16", "17", "18",
-    "19", "20", "21", "22", "23", "24", "25", "26",
-    "27", "28", "29", "30", "31"]
+
   const billingDays = Array.from({ length: 31 }, (_, i) =>
     String(i + 1).padStart(2, "0")
   );
@@ -55,7 +50,7 @@ export default function LongStayRecurring({ navigation }) {
         </Text>
 
         <Image
-          source={require("../../../Assets/Images/direction-down.png")}
+          source={DownArrow}
           style={styles.arrowIcon}
         />
       </TouchableOpacity>
@@ -105,7 +100,7 @@ export default function LongStayRecurring({ navigation }) {
         </Text>
 
         <Image
-          source={require("../../../Assets/Images/direction-down.png")}
+          source={DownArrow}
           style={styles.icon}
         />
       </TouchableOpacity>

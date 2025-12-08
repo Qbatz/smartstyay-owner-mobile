@@ -16,7 +16,7 @@ import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import TenantsList from "./TenantsList";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
