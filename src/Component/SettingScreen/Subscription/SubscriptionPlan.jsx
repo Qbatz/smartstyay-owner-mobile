@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 
-export default function SubscriptionPlans() {
+export default function SubscriptionPlans({navigation}) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [billingType, setBillingType] = useState("monthly");
@@ -83,19 +83,70 @@ export default function SubscriptionPlans() {
           <Text style={styles.screenTitle}>Subscription plans</Text>
         </TouchableOpacity>
 
-        {/* Trial Expired Card */}
+       {/*
         <View style={styles.expiredCard}>
           <Image
-            source={require("../../../Assets/Images/profile.png")}
+            source={require("../../../Assets/Images/SubscriptionPlan.png")}
             style={styles.expireImage}
           />
           <Text style={styles.expireTitle}>Your Trial got expired!</Text>
           <Text style={styles.expireSubtitle}>
             Your free trial has ended. Subscribe now to continue accessing all features.
           </Text>
-        </View>
+        </View>*/}
+ <View style={styles.card}>
 
-        {/* Choose Plan */}
+      {/* Header Row */}
+      <View style={styles.rowBetween}>
+        <Text style={styles.title}>Free Trial</Text>
+
+        <View style={styles.badge}>
+          <Image
+            source={require("../../../Assets/Images/NewBook.png")}
+            style={styles.badgeIcon}
+          />
+          <Text style={styles.badgeText}>17 Days Left</Text>
+        </View>
+      </View>
+
+      {/* Description */}
+      <Text style={styles.desc}>
+        You are in 30 days Free Trial,
+      </Text>
+      <Text style={[styles.desc, { marginBottom: 14 }]}>
+        Upgrade to continue unlimited access once your trial ends.
+      </Text>
+
+      {/* Upgrade Button */}
+      <TouchableOpacity style={styles.upgradeBtn}>
+        <Text style={styles.upgradeText}>Upgrade to Premium</Text>
+      </TouchableOpacity>
+
+      {/* Dates */}
+      <View style={styles.dateRow}>
+        <Image
+          source={require("../../../Assets/Images/calendar.png")}
+          style={styles.calendarIcon}
+        />
+        <View>
+          <Text style={styles.dateLabel}>Start Date</Text>
+          <Text style={styles.dateValue}>Nov 18, 2025</Text>
+        </View>
+      </View>
+
+      <View style={styles.dateRow}>
+        <Image
+          source={require("../../../Assets/Images/calendar.png")}
+          style={styles.calendarIcon}
+        />
+        <View>
+          <Text style={styles.dateLabel}>End Date</Text>
+          <Text style={styles.dateValue}>Dec 17, 2025</Text>
+        </View>
+      </View>
+
+    </View>
+      
         <Text style={styles.chooseTitle}>Choose a Plan</Text>
         <Text style={styles.chooseSubText}>
           Select a Subscription Plan to Unlock the Functionality of the Application
@@ -169,12 +220,18 @@ export default function SubscriptionPlans() {
       </ScrollView>
 
       {/* Continue Button */}
-      <TouchableOpacity
-        disabled={!selectedPlan}
-        style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
-      >
-        <Text style={styles.continueText}>Continue →</Text>
-      </TouchableOpacity>
+   <TouchableOpacity
+  disabled={!selectedPlan}
+  style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
+  onPress={() => {
+    navigation.navigate("PlanDetailsScreen", {
+      planId: selectedPlan  
+    });
+  }}
+>
+  <Text style={styles.continueText}>Continue →</Text>
+</TouchableOpacity>
+
     </View>
   );
 }
@@ -184,7 +241,7 @@ const styles = StyleSheet.create({
   screenTitle: { fontSize: 20, fontWeight: "700" },
 
   expiredCard: {
-    backgroundColor: "#FFF8F2",
+    // backgroundColor: "#FFF8F2",
     borderRadius: 14,
     padding: 16,
     borderColor: "#FFD9C5",
@@ -195,12 +252,12 @@ const styles = StyleSheet.create({
   expireTitle: { fontSize: 18, fontWeight: "700", textAlign: "center", marginTop: 6 },
   expireSubtitle: { textAlign: "center", color: "#777", marginTop: 4 },
 
-  chooseTitle: { fontSize: 18, fontWeight: "700", marginTop: 20, textAlign: "center" },
-  chooseSubText: { color: "#777", textAlign: "center", marginBottom: 18 },
+  chooseTitle: { fontSize: 22, fontWeight: "700", marginTop: 20, textAlign: "center",justifyContent:"center",display:"flex" },
+  chooseSubText: { color: "#777", textAlign: "center", marginBottom: 18,display:"flex",justifyContent:"center",marginLeft:50,marginRight:50},
 
   switchContainer: {
     flexDirection: "row",
-    backgroundColor: "#E8EDFF",
+    // backgroundColor: "#E8EDFF",
     padding: 4,
     borderRadius: 20,
     justifyContent: "center",
@@ -273,4 +330,91 @@ const styles = StyleSheet.create({
     backgroundColor: "#AAB4DD",
   },
   continueText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+   card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E3E8FF",
+    padding: 16,
+    marginTop: 10,
+  },
+
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#000",
+  },
+
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFB84D",
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
+
+  badgeIcon: {
+    width: 14,
+    height: 14,
+    tintColor: "#fff",
+    marginRight: 5,
+  },
+
+  badgeText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+
+  desc: {
+    fontSize: 13,
+    color: "#555",
+    marginTop: 6,
+  },
+
+  upgradeBtn: {
+    backgroundColor: "#3562FF",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 14,
+  },
+
+  upgradeText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  calendarIcon: {
+    width: 18,
+    height: 18,
+    tintColor: "#4B4B4B",
+    marginRight: 10,
+  },
+
+  dateLabel: {
+    fontSize: 12,
+    color: "#777",
+  },
+
+  dateValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 2,
+    color: "#000",
+  },
 });

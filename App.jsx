@@ -84,6 +84,7 @@ import LongStayRecurring from './src/Component/SettingScreen/BillingRule/LongSta
 import RolesScreen from "./src/Component/SettingScreen/RoleScreen/RoleList"
 import BillTemplate from "./src/Component/SettingScreen/BillTemplate/SettingsBillTemplate";
 import SubscriptionPlans from './src/Component/SettingScreen/Subscription/SubscriptionPlan';
+import PlanDetailsScreen from './src/Component/SettingScreen/Subscription/PlanDetailsScreen'
 
 
 
@@ -173,6 +174,7 @@ function AppContent() {
                                   <Navigation.Screen name="RolesScreen" component={RolesScreen} />
                             <Navigation.Screen name="BillTemplate" component={BillTemplate} />
                                <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
+                                  <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
 
 
 
