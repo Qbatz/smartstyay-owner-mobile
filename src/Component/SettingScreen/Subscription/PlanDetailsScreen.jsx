@@ -1,7 +1,33 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
+import React,{useCallback} from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView,BackHandler} from "react-native";
+import Calendar from "../../../Assets/Images/calendar.png";
+import { useFocusEffect } from '@react-navigation/native';
+import StatusIcon from "../../../Assets/Images/StatusIcon.png";
+import Arrow from "../../../Assets/Images/Arrow_left.png";
+import crown from "../../../Assets/Images/crown.png";
 
 export default function PlanDetailsScreen({ route, navigation }) {
+  useFocusEffect(
+         useCallback(() => {
+           const onBackPress = () => {
+           
+       
+             if (navigation.canGoBack()) {
+               navigation.goBack();
+               return true;
+             }
+       
+             return false;
+           };
+       
+           const subscription = BackHandler.addEventListener(
+             "hardwareBackPress",
+             onBackPress
+           );
+       
+           return () => subscription.remove();
+         }, [ navigation])
+       );
   
   const { planId } = route.params;
 
@@ -31,15 +57,16 @@ export default function PlanDetailsScreen({ route, navigation }) {
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView style={{ padding: 16 }}>
 
-        {/* Back & Title */}
+      
         <View style={styles.row}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backArrow}>←</Text>
+            {/* <Text style={styles.backArrow}>←</Text> */}
+             <Image source={Arrow} style={styles.backArrow}/>
           </TouchableOpacity>
           <Text style={styles.header}>Subscription plans</Text>
         </View>
 
-        {/* MAIN PLAN CARD */}
+      
         <View style={styles.card}>
           <View style={styles.rowBetween}>
             <Text style={styles.planTitle}>{planData.title}</Text>
@@ -56,27 +83,27 @@ export default function PlanDetailsScreen({ route, navigation }) {
             <Text style={styles.changeBtnText}>Change Plan</Text>
           </TouchableOpacity>
 
-          {/* Renewal Row */}
+        
           <View style={styles.infoRow}>
-            <Image source={require("../../../Assets/Images/calendar.png")} style={styles.icon} />
+            <Image source={Calendar} style={styles.icon} />
             <View>
               <Text style={styles.infoLabel}>Renewal Date</Text>
               <Text style={styles.infoValue}>{planData.renewal}</Text>
             </View>
           </View>
 
-          {/* Payment Method */}
+       
           <View style={styles.infoRow}>
-            <Image source={require("../../../Assets/Images/calendar.png")} style={styles.icon} />
+            <Image source={Calendar} style={styles.icon} />
             <View>
               <Text style={styles.infoLabel}>Payment Method</Text>
               <Text style={styles.infoValue}>{planData.method}</Text>
             </View>
           </View>
 
-          {/* Status */}
+         
           <View style={styles.infoRow}>
-            <Image source={require("../../../Assets/Images/calendar.png")} style={styles.icon} />
+            <Image source={StatusIcon} style={styles.icon} />
             <View>
               <Text style={styles.infoLabel}>Status</Text>
               <Text style={styles.statusBlue}>{planData.status}</Text>
@@ -84,19 +111,19 @@ export default function PlanDetailsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* UPGRADE BOX — ONLY for Basic Plan */}
+      
         {!isPremium && (
           <View style={styles.upgradeCard}>
 
             <View style={styles.rowBetween}>
               <Text style={styles.planUpgradeTitle}>Upgrade to Premium Plan</Text>
               <Image
-                source={require("../../../Assets/Images/calendar.png")}
+                source={crown}
                 style={{ width: 20, height: 20 }}
               />
             </View>
 
-            {/* Features */}
+       
             <View style={styles.featureRow}>
               <Text style={styles.tick}>✔</Text>
               <Text style={styles.featureText}>WhatsApp Integration</Text>
@@ -123,14 +150,14 @@ export default function PlanDetailsScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* BILLING HISTORY */}
+       
         <Text style={styles.billingHeader}>Billing History</Text>
 
         {["0876", "1312", "0342"].map((item, idx) => (
           <View key={idx} style={styles.billCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
-                source={require("../../../Assets/Images/calendar.png")}
+                source={Calendar}
                 style={styles.billIcon}
               />
               <View>
@@ -154,8 +181,8 @@ export default function PlanDetailsScreen({ route, navigation }) {
   );
 }
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  backArrow: { fontSize: 22, marginRight: 8 },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: 12,marginTop:20 },
+  backArrow: {marginRight: 8 ,width:20,height:20},
   header: { fontSize: 20, fontWeight: "700" },
 
   card: {

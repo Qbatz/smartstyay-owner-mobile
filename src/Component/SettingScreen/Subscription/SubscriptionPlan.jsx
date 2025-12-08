@@ -1,17 +1,37 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  ScrollView,
-} from "react-native";
+import React, { useState,useCallback} from "react";
+import {View,Text,TouchableOpacity,StyleSheet,Image,ScrollView,BackHandler} from "react-native";
+import FreeTrial from "../../../Assets/Images/NewBook.png";
+import Calendar from "../../../Assets/Images/calendar.png";
+import SubscriptionPlan from "../../../Assets/Images/SubscriptionPlan.png";
+import { useFocusEffect } from '@react-navigation/native';
+import Arrow from "../../../Assets/Images/Arrow_left.png";
 
 export default function SubscriptionPlans({navigation}) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [billingType, setBillingType] = useState("monthly");
+
+  useFocusEffect(
+         useCallback(() => {
+           const onBackPress = () => {
+           
+       
+             if (navigation.canGoBack()) {
+               navigation.goBack();
+               return true;
+             }
+       
+             return false;
+           };
+       
+           const subscription = BackHandler.addEventListener(
+             "hardwareBackPress",
+             onBackPress
+           );
+       
+           return () => subscription.remove();
+         }, [ navigation])
+       );
 
   const handleExpand = (id) => {
     setExpandedPlan(expandedPlan === id ? null : id);
@@ -74,19 +94,19 @@ export default function SubscriptionPlans({navigation}) {
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
 
-      {/* Scroll Content */}
-      <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 16 }}>
+   
 
-        {/* Back + Heading */}
-        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-          <Text style={styles.backArrow}>←</Text>
+
+        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", marginBottom:10,marginTop:30,marginLeft:10}}  onPress={() => navigation.goBack()}>
+          {/* <Text style={styles.backArrow}>←</Text> */}
+          <Image source={Arrow} style={styles.backArrow}/>
           <Text style={styles.screenTitle}>Subscription plans</Text>
         </TouchableOpacity>
-
+   <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 16 }}>
        {/*
         <View style={styles.expiredCard}>
           <Image
-            source={require("../../../Assets/Images/SubscriptionPlan.png")}
+            source={SubscriptionPlan}
             style={styles.expireImage}
           />
           <Text style={styles.expireTitle}>Your Trial got expired!</Text>
@@ -102,7 +122,7 @@ export default function SubscriptionPlans({navigation}) {
 
         <View style={styles.badge}>
           <Image
-            source={require("../../../Assets/Images/NewBook.png")}
+            source={FreeTrial}
             style={styles.badgeIcon}
           />
           <Text style={styles.badgeText}>17 Days Left</Text>
@@ -125,7 +145,7 @@ export default function SubscriptionPlans({navigation}) {
       {/* Dates */}
       <View style={styles.dateRow}>
         <Image
-          source={require("../../../Assets/Images/calendar.png")}
+          source={Calendar}
           style={styles.calendarIcon}
         />
         <View>
@@ -136,7 +156,7 @@ export default function SubscriptionPlans({navigation}) {
 
       <View style={styles.dateRow}>
         <Image
-          source={require("../../../Assets/Images/calendar.png")}
+          source={Calendar}
           style={styles.calendarIcon}
         />
         <View>
@@ -237,7 +257,7 @@ export default function SubscriptionPlans({navigation}) {
 }
 
 const styles = StyleSheet.create({
-  backArrow: { fontSize: 22, marginRight: 8 },
+  backArrow: {marginRight: 8,width:20,height:20 },
   screenTitle: { fontSize: 20, fontWeight: "700" },
 
   expiredCard: {
