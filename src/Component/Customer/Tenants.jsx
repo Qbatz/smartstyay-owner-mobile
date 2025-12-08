@@ -9,9 +9,7 @@ import {
   TextInput,
   Image,
 TouchableWithoutFeedback,
-Modal,
-
-  BackHandler
+Modal,Animated,BackHandler,PanResponder
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -68,7 +66,37 @@ const [status, setStatus] = useState("All");
 const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 const [showDetailsMenu, setShowDetailsMenu] = useState(false);
 const [deleteTenants,setDeleteTenants] = useState(false)
+const handleWalkinFilter = () => {
+  setShowFilter(true);   
+};
 
+const filterTranslateY = useRef(new Animated.Value(500)).current;
+
+
+useEffect(() => {
+  Animated.timing(filterTranslateY, {
+    toValue: showFilter ? 0 : 500,
+    duration: 250,
+    useNativeDriver: true,
+  }).start();
+}, [showFilter]);
+
+
+const filterPanResponder = PanResponder.create({
+  onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
+  onPanResponderMove: (_, g) => {
+    if (g.dy > 0) filterTranslateY.setValue(g.dy);
+  },
+  onPanResponderRelease: (_, g) => {
+    if (g.dy > 120) setShowFilter(false);
+    else {
+      Animated.spring(filterTranslateY, {
+        toValue: 0,
+        useNativeDriver: true,
+      }).start();
+    }
+  },
+});
 
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -273,7 +301,7 @@ const customerList = [
      
     
       <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
-    <Image source={Filter} style={{ width: 60, height: 60 }} />
+    <Image source={Filter} style={{ width: 30, height: 30 }} />
 </TouchableOpacity>
 
 
@@ -287,7 +315,8 @@ const customerList = [
    <CheckoutList/>
   )}
   {activeTab === "Walkin" && (
-   <WalkinScreen setShowTabBar = {setShowTabBar}/>
+   <WalkinScreen setShowTabBar = {setShowTabBar} 
+   handleWalkinFilter={handleWalkinFilter}  />
   )}
  
 {showDetailModal && (
@@ -535,29 +564,35 @@ const customerList = [
 )}
 
 {showFilter && (
-  <TouchableOpacity
-    style={styles.filterOverlay}
-    activeOpacity={1}
-    onPress={() => setShowFilter(false)}   // close when clicking outside
-  >
-    <TouchableWithoutFeedback>
-      <View style={styles.filterSheet}>
-        <View style={styles.filterHandle} />
+  <View style={styles.filterOverlay}>
 
-        {/* Header */}
-        <View style={styles.filterHeader}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={Filter}
-              style={{ width: 35, height: 35, marginRight: 8 }}
-            />
-            <Text style={styles.filterTitle}>Filter by</Text>
-          </View>
+    {/* Close on outside touch */}
+    <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    {/* SWIPEABLE SHEET */}
+    <Animated.View
+      style={[styles.filterSheet, { transform: [{ translateY: filterTranslateY }] }]}
+      {...filterPanResponder.panHandlers}
+    >
+      {/* Handle Bar */}
+      <View style={styles.filterHandle} />
+
+      {/* Header */}
+      <View style={styles.filterHeader}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={Filter}
+            style={{ width: 35, height: 35, marginRight: 8 }}
+          />
+          <Text style={styles.filterTitle}>Filter by</Text>
         </View>
+      </View>
 
-        {/* STATUS DROPDOWN */}
-        <Text style={styles.label}>Status</Text>
-<View style={{ position: "relative" }}>
+      {/* STATUS DROPDOWN */}
+      <Text style={styles.label}>Status</Text>
+      <View style={{ position: "relative" }}>
         <TouchableOpacity
           style={styles.dropdownBox}
           onPress={() => setShowStatusDropdown(!showStatusDropdown)}
@@ -568,90 +603,66 @@ const customerList = [
 
         {showStatusDropdown && (
           <View style={styles.dropdownMenu}>
-             <ScrollView nestedScrollEnabled={true}>
-            {["All", "Active", "In-Active", "Checked Out", "Notice"].map((v) => (
-              <TouchableOpacity
-                key={v}
-                style={styles.dropdownItem}
-                onPress={() => {
-                  setStatus(v);
-                  setShowStatusDropdown(false);
-                }}
-              >
-                <Text style={styles.dropdownItemText}>{v}</Text>
-              </TouchableOpacity>
-            ))}
+            <ScrollView nestedScrollEnabled={true}>
+              {["All", "Active", "In-Active", "Checked Out", "Notice"].map((v) => (
+                <TouchableOpacity
+                  key={v}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setStatus(v);
+                    setShowStatusDropdown(false);
+                  }}
+                >
+                  <Text style={styles.dropdownItemText}>{v}</Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         )}
+      </View>
 
-       </View>
-        <View style={styles.dateRow}>
-
-    
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>From</Text>
-
-            <TouchableOpacity
-              style={styles.dateBox}
-              onPress={() => setOpenFrom(true)}
-            >
-              <Text>{formatDate(fromDate)}</Text>
-              <Image
-                source={require("../../Assets/Images/calendar.png")}
-                style={styles.calIcon}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ width: 15 }} />
-
-          {/* TO DATE */}
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>To</Text>
-
-            <TouchableOpacity
-              style={styles.dateBox}
-              onPress={() => setOpenTo(true)}
-            >
-              <Text>{formatDate(toDate)}</Text>
-              <Image
-                source={require("../../Assets/Images/calendar.png")}
-                style={styles.calIcon}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-     
-        <View style={styles.quickRow}>
-          <TouchableOpacity style={styles.quickBtn}>
-            <Text style={styles.quickText}>Today</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.quickBtn}>
-            <Text style={styles.quickText}>This Week</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.quickBtn}>
-            <Text style={styles.quickText}>This Month</Text>
+      {/* Date Range */}
+      <View style={styles.dateRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.label}>From</Text>
+          <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+            <Text>{formatDate(fromDate)}</Text>
+            <Image source={require("../../Assets/Images/calendar.png")} style={styles.calIcon} />
           </TouchableOpacity>
         </View>
 
-       
-        <View style={styles.bottomButtons}>
-          <TouchableOpacity style={styles.resetBtn}>
-            <Text style={styles.resetText}>Reset All</Text>
-          </TouchableOpacity>
+        <View style={{ width: 15 }} />
 
-          <TouchableOpacity style={styles.applyBtn}>
-            <Text style={styles.applyText}>Apply</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.label}>To</Text>
+          <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+            <Text>{formatDate(toDate)}</Text>
+            <Image source={require("../../Assets/Images/calendar.png")} style={styles.calIcon} />
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableWithoutFeedback>
-  </TouchableOpacity>
+
+      {/* Quick Filter */}
+      <View style={styles.quickRow}>
+        <TouchableOpacity style={styles.quickBtn}><Text style={styles.quickText}>Today</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.quickBtn}><Text style={styles.quickText}>This Week</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.quickBtn}><Text style={styles.quickText}>This Month</Text></TouchableOpacity>
+      </View>
+
+      {/* Buttons */}
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity style={styles.resetBtn}>
+          <Text style={styles.resetText}>Reset All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.applyBtn}>
+          <Text style={styles.applyText}>Apply</Text>
+        </TouchableOpacity>
+      </View>
+
+    </Animated.View>
+  </View>
 )}
+
 
 <Modal
   transparent
@@ -1005,10 +1016,15 @@ activeText: {
     right: 10,
     bottom: 50,
   },
-   editButton: {
+
+    editButton: {
     position: "absolute",
-    right: 10,
-    bottom:110,
+    bottom: 130,
+    right: 13,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5,
   },
   modalOverlay: {
   position: "absolute",

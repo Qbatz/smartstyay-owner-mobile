@@ -531,26 +531,30 @@ const styles = StyleSheet.create({
   infoValue: { color: "#111", fontSize: 14, marginTop: 6 },
 
   // FABs
-  filterFab: {
-    position: "absolute",
-    right: 20,
-    bottom: 100,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+ filterFab: {
+  position: "absolute",
+  bottom: 120,
+  right: 25,
+  width: 50,
+  height: 50,
+  backgroundColor: "#fff",
+  borderRadius: 55,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, 
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 }, // iOS shadow
+},
 
-    borderWidth: 1,
-    borderColor: "#E6E6E6",
-    justifyContent: "center",
-    alignItems: "center",
 
-  },
-  filterIcon: { width: 60, height: 60 },
+  filterIcon: { width: 30, height: 30 },
 
   addFab: {
     position: "absolute",
     right: 20,
-    bottom: 28,
+    bottom: 48,
     width: 56,
     height: 56,
     borderRadius: 28,

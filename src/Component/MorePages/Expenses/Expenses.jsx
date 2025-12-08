@@ -487,7 +487,7 @@ const handleOpenTagAsset = () => {
        <TouchableOpacity
              style={styles.fab} onPress={handleShowAddExpense}
            >
-             <Image source={AddIcon} style={styles.fabIcon} />
+             <Image source={AddIcon} style={styles.fabIconAdd} />
            </TouchableOpacity>
 
 
@@ -845,10 +845,25 @@ card: {
     marginTop: -3,
   },
 
-  fab: { position: "absolute", bottom: 35, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  Filterfab: { position: "absolute", bottom: 100, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  fabIcon: { width: 60, height: 60 },
-
+  fab: { position: "absolute", bottom: 45, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  fabIcon: { width: 30, height: 30 },
+  fabIconAdd:{ width: 60, height: 60},
+ Filterfab: {
+  position: "absolute",
+  bottom: 120,
+  right:30,
+  width: 50,
+  height: 50,
+  backgroundColor: "#fff",
+  borderRadius: 55,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, 
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 }, // iOS shadow
+},
     sheetOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,

@@ -23,7 +23,7 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
 
-export default function WalkinScreen({ setShowTabBar }) {
+export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
  
   const [showFilter, setShowFilter] = useState(false);
   const [status, setStatus] = useState("All");
@@ -176,8 +176,8 @@ export default function WalkinScreen({ setShowTabBar }) {
       </ScrollView>
 
   
-      <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
-        <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
+      <TouchableOpacity style={styles.filterBtn} onPress={handleWalkinFilter}>
+        <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
       </TouchableOpacity>
 
  
@@ -506,14 +506,13 @@ filterHandle: {
   date: { fontSize: 11, color: "#6B7280", marginTop: 4 },
 
   filterBtn: {
-    width: 55,
-    height: 55,
-    borderRadius: 40,
-    position: "absolute",
-    right: 15,
+     position: "absolute",
     bottom: 80,
-    alignItems: "center",
-    justifyContent: "center",
+    right: 22,
+    backgroundColor: "#fff",
+    padding: 7,
+    borderRadius: 30,
+    elevation: 5,
     
   },
 
