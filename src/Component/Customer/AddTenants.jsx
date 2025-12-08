@@ -9,13 +9,12 @@ import {
     TextInput,
     Image,
     BackHandler,
-    Modal
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
-import DropDownPicker from "react-native-dropdown-picker";
-import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+import DownArrow from "../../Assets/Images/direction-down.png";
+import { launchImageLibrary } from 'react-native-image-picker';
 
 
 
@@ -24,28 +23,28 @@ export default function AddTenant() {
     const [step, setStep] = useState(1);
     const [selectedImage, setSelectedImage] = useState(null);
 
-    
+
 
 
     const pickImage = () => {
-  let options = {
-    mediaType: 'photo',
-    maxWidth: 500,
-    maxHeight: 500,
-    quality: 0.7,
-  };
+        let options = {
+            mediaType: 'photo',
+            maxWidth: 500,
+            maxHeight: 500,
+            quality: 0.7,
+        };
 
-  launchImageLibrary(options, (response) => {
-    if (response.didCancel) {
-      console.log('User cancelled');
-    } else if (response.errorMessage) {
-      console.log('Error:', response.errorMessage);
-    } else {
-      const source = { uri: response.assets[0].uri };
-      setSelectedImage(source); // save selected image
-    }
-  });
-};
+        launchImageLibrary(options, (response) => {
+            if (response.didCancel) {
+                console.log('User cancelled');
+            } else if (response.errorMessage) {
+                console.log('Error:', response.errorMessage);
+            } else {
+                const source = { uri: response.assets[0].uri };
+                setSelectedImage(source);
+            }
+        });
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -94,38 +93,39 @@ export default function AddTenant() {
         addressDetails.city.trim() !== "" &&
         addressDetails.state.trim() !== "";
 
-  const [open, setOpen] = useState(false);
-const [value, setValue] = useState(null);
-const [items, setItems] = useState([
-  { label: "Andhra Pradesh", value: "Andhra Pradesh" },
-  { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
-  { label: "Assam", value: "Assam" },
-  { label: "Bihar", value: "Bihar" },
-  { label: "Chhattisgarh", value: "Chhattisgarh" },
-  { label: "Goa", value: "Goa" },
-  { label: "Gujarat", value: "Gujarat" },
-  { label: "Haryana", value: "Haryana" },
-  { label: "Himachal Pradesh", value: "Himachal Pradesh" },
-  { label: "Jharkhand", value: "Jharkhand" },
-  { label: "Karnataka", value: "Karnataka" },
-  { label: "Kerala", value: "Kerala" },
-  { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-  { label: "Maharashtra", value: "Maharashtra" },
-  { label: "Manipur", value: "Manipur" },
-  { label: "Meghalaya", value: "Meghalaya" },
-  { label: "Mizoram", value: "Mizoram" },
-  { label: "Nagaland", value: "Nagaland" },
-  { label: "Odisha", value: "Odisha" },
-  { label: "Punjab", value: "Punjab" },
-  { label: "Rajasthan", value: "Rajasthan" },
-  { label: "Sikkim", value: "Sikkim" },
-  { label: "Tamil Nadu", value: "Tamil Nadu" },
-  { label: "Telangana", value: "Telangana" },
-  { label: "Tripura", value: "Tripura" },
-  { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-  { label: "Uttarakhand", value: "Uttarakhand" },
-  { label: "West Bengal", value: "West Bengal" },
-]);
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const [selectedState, setSelectedState] = useState("Select State");
+    const items = [
+        { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+        { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+        { label: "Assam", value: "Assam" },
+        { label: "Bihar", value: "Bihar" },
+        { label: "Chhattisgarh", value: "Chhattisgarh" },
+        { label: "Goa", value: "Goa" },
+        { label: "Gujarat", value: "Gujarat" },
+        { label: "Haryana", value: "Haryana" },
+        { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+        { label: "Jharkhand", value: "Jharkhand" },
+        { label: "Karnataka", value: "Karnataka" },
+        { label: "Kerala", value: "Kerala" },
+        { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+        { label: "Maharashtra", value: "Maharashtra" },
+        { label: "Manipur", value: "Manipur" },
+        { label: "Meghalaya", value: "Meghalaya" },
+        { label: "Mizoram", value: "Mizoram" },
+        { label: "Nagaland", value: "Nagaland" },
+        { label: "Odisha", value: "Odisha" },
+        { label: "Punjab", value: "Punjab" },
+        { label: "Rajasthan", value: "Rajasthan" },
+        { label: "Sikkim", value: "Sikkim" },
+        { label: "Tamil Nadu", value: "Tamil Nadu" },
+        { label: "Telangana", value: "Telangana" },
+        { label: "Tripura", value: "Tripura" },
+        { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+        { label: "Uttarakhand", value: "Uttarakhand" },
+        { label: "West Bengal", value: "West Bengal" },
+    ]
 
     return (
         <SafeAreaView style={styles.container}>
@@ -206,10 +206,10 @@ const [items, setItems] = useState([
 
 
                             <View style={styles.profileWrapper}>
-                             <Image 
-  source={selectedImage ? selectedImage : Profile} 
-  style={styles.profileImage} 
-/>
+                                <Image
+                                    source={selectedImage ? selectedImage : Profile}
+                                    style={styles.profileImage}
+                                />
 
 
                                 {/* <TouchableOpacity style={styles.editIconWrapper}>
@@ -219,11 +219,11 @@ const [items, setItems] = useState([
                                     />
                                 </TouchableOpacity> */}
                                 <TouchableOpacity style={styles.editIconWrapper} onPress={pickImage}>
-  <Image
-    source={require("../../Assets/Images/edit.png")}
-    style={styles.editIcon}
-  />
-</TouchableOpacity>
+                                    <Image
+                                        source={require("../../Assets/Images/edit.png")}
+                                        style={styles.editIcon}
+                                    />
+                                </TouchableOpacity>
 
                             </View>
 
@@ -336,128 +336,142 @@ const [items, setItems] = useState([
                 {/* STEP 2 */}
                 {step === 2 && (
                     <>
-                    <SafeAreaView style={styles.container1}>
-  <ScrollView
-    showsVerticalScrollIndicator={false}
-    nestedScrollEnabled={true}
-  >
-                        <View style={styles.form}>
-                            <Text style={styles.label}>Flat, House no., Building *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Flat, House no., Building..."
-                                value={addressDetails.flat}
-                                onChangeText={(t) =>
-                                    setAddressDetails({ ...addressDetails, flat: t })
-                                }
-                            />
-                               <Text style={styles.label}>Area , Street , Sector , Village *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Area"
-                                value={addressDetails.area}
-                                onChangeText={(t) =>
-                                    setAddressDetails({ ...addressDetails, area: t })
-                                }
-                            />
-                               <Text style={styles.label}>Landmark *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Ex : Near SBI Bank"
-                                value={addressDetails.landmark}
-                                onChangeText={(t) =>
-                                    setAddressDetails({ ...addressDetails, landmark: t })
-                                }
-                            />
+                        <SafeAreaView style={styles.container1}>
+                            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
 
-                            <Text style={styles.label}>Pincode *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="000 000"
-                                keyboardType="numeric"
-                                value={addressDetails.pincode}
-                                onChangeText={(t) =>
-                                    setAddressDetails({ ...addressDetails, pincode: t })
-                                }
-                            />
+                                <View style={styles.form}>
+                                    <Text style={styles.label}>Flat, House no., Building *</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter Flat, House no., Building..."
+                                        value={addressDetails.flat}
+                                        onChangeText={(t) =>
+                                            setAddressDetails({ ...addressDetails, flat: t })
+                                        }
+                                    />
+                                    <Text style={styles.label}>Area , Street , Sector , Village *</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter Area"
+                                        value={addressDetails.area}
+                                        onChangeText={(t) =>
+                                            setAddressDetails({ ...addressDetails, area: t })
+                                        }
+                                    />
+                                    <Text style={styles.label}>Landmark *</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Ex : Near SBI Bank"
+                                        value={addressDetails.landmark}
+                                        onChangeText={(t) =>
+                                            setAddressDetails({ ...addressDetails, landmark: t })
+                                        }
+                                    />
 
-                            <Text style={styles.label}>City *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Your City Name"
-                                value={addressDetails.city}
-                                onChangeText={(t) =>
-                                    setAddressDetails({ ...addressDetails, city: t })
-                                }
-                            />
+                                    <Text style={styles.label}>Pincode *</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="000 000"
+                                        keyboardType="numeric"
+                                        value={addressDetails.pincode}
+                                        onChangeText={(t) =>
+                                            setAddressDetails({ ...addressDetails, pincode: t })
+                                        }
+                                    />
 
-                            {/* <Text style={styles.label}>State *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Select State"
-                                value={addressDetails.state}
-                                onChangeText={(t) =>
-                                    setAddressDetails({ ...addressDetails, state: t })
-                                }
-                            /> */}
-     <View style={{ zIndex: 2000, marginBottom: open ? 180 : 12 }}>
-  <Text style={styles.label}>State *</Text>
-
-<View style={{ zIndex: 2000, elevation: 2000, height: open ? 300 : 50 }}>
-  <DropDownPicker
-    open={open}
-    value={value}
-    items={items}
-    setOpen={setOpen}
-    setValue={setValue}
-    setItems={setItems}
-    placeholder="Select State"
-    listMode="SCROLLVIEW"
-    nestedScrollEnabled={true}
-    style={{
-      borderColor: "#E5E7EB",
-      borderRadius: 8,
-    }}
-    dropDownContainerStyle={{
-      borderColor: "#E5E7EB",
-    }}
-  />
-</View>
+                                    <Text style={styles.label}>City *</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter Your City Name"
+                                        value={addressDetails.city}
+                                        onChangeText={(t) =>
+                                            setAddressDetails({ ...addressDetails, city: t })
+                                        }
+                                    />
 
 
-</View>
+                                    <View style={{ marginBottom: open ? 200 : 12 }}>
+                                        <Text style={styles.label}>State *</Text>
+
+                                        <View style={{ position: "relative" }}>
+                                            <TouchableOpacity
+                                                style={styles.select}
+                                                onPress={() => setOpen(!open)}
+                                            >
+                                                <Text style={styles.selectText}>{selectedState}</Text>
+                                                <Image source={DownArrow} style={styles.arrow} />
+                                            </TouchableOpacity>
+
+                                            {open && (
+                                                <View style={styles.dropdownMenu}>
+                                                    <ScrollView
+                                                        nestedScrollEnabled={true}
+                                                        style={{ maxHeight: 150 }}      
+                                                        showsVerticalScrollIndicator={true}
+                                                    >
+                                                        {items.map((v, index) => (
+                                                            <TouchableOpacity
+                                                                  key={index}
+    style={[
+        styles.option,
+        selectedState === v.label && styles.selectedOption
+    ]}
+
+                                                                onPress={() => {
+                                                                    setSelectedState(v.label);
+                                                                    setAddressDetails({ ...addressDetails, state: v.label });
+                                                                    setOpen(false);
+                                                                }}
+                                                            >
+                                                                <Text
+        style={[
+            styles.optionText,
+            selectedState === v.label && styles.selectedOptionText
+        ]}
+    >
+        {v.label}
+    </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                    </View>
 
 
 
 
-                        </View>
 
 
-                        <View style={styles.btnRow}>
-                            <TouchableOpacity
-                                style={styles.secondaryBtn}
-                                onPress={() => setStep(1)}
-                            >
-                                <Text style={styles.secondaryText}>Previous</Text>
-                            </TouchableOpacity>
+                                </View>
 
-                            <TouchableOpacity
-                                style={[
-                                    styles.primaryBtn,
-                                    !isAddressValid && styles.primaryBtnDisabled
-                                ]}
-                                disabled={!isAddressValid}
-                                onPress={() => navigation.goBack()}
-                            >
-                                <Text
-                                    style={[styles.primaryText,]}
-                                >
-                                    Create Tenant
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-</ScrollView>
-</SafeAreaView>
+
+                                <View style={styles.btnRow}>
+                                    <TouchableOpacity
+                                        style={styles.secondaryBtn}
+                                        onPress={() => setStep(1)}
+                                    >
+                                        <Text style={styles.secondaryText}>Previous</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.primaryBtn,
+                                            !isAddressValid && styles.primaryBtnDisabled
+                                        ]}
+                                        disabled={!isAddressValid}
+                                        onPress={() => navigation.goBack()}
+                                    >
+                                        <Text
+                                            style={[styles.primaryText,]}
+                                        >
+                                            Create Tenant
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </SafeAreaView>
                     </>
                 )}
             </ScrollView>
@@ -475,7 +489,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 50
     },
-     container1: {
+    container1: {
         flex: 1,
         backgroundColor: "#fff",
         paddingHorizontal: 16,
@@ -513,17 +527,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     pickerWrapper: {
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 8,
-  marginBottom: 12,
-  overflow: "hidden",
-},
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 8,
+        marginBottom: 12,
+        overflow: "hidden",
+    },
 
-picker: {
-  height: 50,
-  color: "#111827",
-},
+    picker: {
+        height: 50,
+        color: "#111827",
+    },
 
     stepLine: {
         flex: 1,
@@ -556,7 +570,7 @@ picker: {
         marginTop: 15,
         marginBottom: 25,
     },
-    
+
     profileWrapper: {
         width: 75,
         height: 75,
@@ -616,13 +630,13 @@ picker: {
         marginBottom: 6,
         marginTop: 4,
     },
-  
+
     input: {
         borderWidth: 1,
         borderColor: "#E5E7EB",
         borderRadius: 8,
         paddingHorizontal: 12,
-        height:50,
+        height: 50,
         fontSize: 14,
         backgroundColor: "#fff",
         marginBottom: 12,
@@ -690,14 +704,14 @@ picker: {
         fontWeight: "600",
     },
     secondaryBtnDisabled: {
-        backgroundColor: "#A5B4FC", 
+        backgroundColor: "#A5B4FC",
     },
 
     secondaryTextDisabled: {
         color: "#E0E7FF",
     },
 
- 
+
     primaryBtnDisabled: {
         borderColor: "#A5B4FC",
         backgroundColor: "transparent",
@@ -714,51 +728,97 @@ picker: {
 
 
     dropdownInput: {
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 8,
-  paddingHorizontal: 12,
-  paddingVertical: 14,
-  marginBottom: 12,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 14,
+        marginBottom: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
 
-dropdownText: {
-  fontSize: 14,
-  color: "#111827",
-},
+    dropdownText: {
+        fontSize: 14,
+        color: "#111827",
+    },
 
-modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.2)",
-  justifyContent: "center",
-  padding: 20,
-},
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.2)",
+        justifyContent: "center",
+        padding: 20,
+    },
 
-modalBox: {
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 20,
-  maxHeight: "70%",
-},
+    modalBox: {
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        padding: 20,
+        maxHeight: "70%",
+    },
 
-modalItem: {
-  paddingVertical: 12,
-  borderBottomColor: "#E5E7EB",
-  borderBottomWidth: 1,
-},
+    modalItem: {
+        paddingVertical: 12,
+        borderBottomColor: "#E5E7EB",
+        borderBottomWidth: 1,
+    },
 
-modalItemText: {
-  fontSize: 16,
-  color: "#111",
-},
+    modalItemText: {
+        fontSize: 16,
+        color: "#111",
+    },
 
-modalCancel: {
-  paddingVertical: 12,
-  alignItems: "center",
+    modalCancel: {
+        paddingVertical: 12,
+        alignItems: "center",
+    },
+
+
+    select: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    selectText: { color: "#555" },
+    arrow: { width: 18, height: 18, tintColor: "#777" },
+    dropdownMenu: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 9999,   // 🔥 increase zIndex
+        elevation: 10,
+        maxHeight: 250, // 🔥 ensure scroll works
+    }
+    ,
+
+    option: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    optionText: {
+        fontSize: 15,
+        color: "#000",
+    },
+selectedOption: {
+    backgroundColor: "#1E45E1",
 },
+selectedOptionText: {
+    color: "#fff",
+    fontWeight: "600"
+}
 
 
 });
