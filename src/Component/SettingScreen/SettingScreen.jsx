@@ -10,27 +10,46 @@ import {
   TouchableOpacity,
   BackHandler, Platform
 } from "react-native";
+import General from "../../Assets/Images/General.png";
+import Manage from "../../Assets/Images/Manage.png";
+import Security from "../../Assets/Images/security.png";
+import Subscription from "../../Assets/Images/subscription.png";
+import Integration from "../../Assets/Images/integration.png";
+import Electricity from "../../Assets/Images/Electricityimg.png";
+import BillingRule from "../../Assets/Images/BillingRule.png";
+import BillTemplate from "../../Assets/Images/BillTempl.png";
+import Expense from "../../Assets/Images/Expense.png";
+import Complaints from "../../Assets/Images/compliance.png";
+import Amenity from "../../Assets/Images/Amenitie.png";
+import RightArrow from "../../Assets/Images/right_direction.png";
+import BackArrow from "../../Assets/Images/Arrow_left.png";
+import SearchIcon from "../../Assets/Images/Asset_search.png";
+import FilterIcon from "../../Assets/Images/filter.png";
+import UserIcon from "../../Assets/Images/userImage.png";
+import RoleIcon from "../../Assets/Images/RoleImage.png";
+import AgreementIcon from "../../Assets/Images/AgreementImg.png";
 
 export default function SettingsScreen({ navigation }) {
   const mainItems = [
-    { icon: require("../../Assets/Images/General.png"), title: "General" , screen: "GeneralDetailsScreen" },
-    { icon: require("../../Assets/Images/Manage.png"), title: "Manage PG" ,screen: "SettingsPG"  },
-    { icon: require("../../Assets/Images/security.png"), title: "Security",screen: "SettingsSecurity" },
-    { icon: require("../../Assets/Images/subscription.png"), title: "Subscription",screen: "SubscriptionPlans" },
-    { icon: require("../../Assets/Images/integration.png"), title: "Integration",screen: "Assets" },
+    { icon: General, title: "General" , screen: "GeneralDetailsScreen" },
+    { icon: Manage, title: "Manage PG" ,screen: "SettingsPG"  },
+    { icon: Security, title: "Security",screen: "SettingsSecurity" },
+    { icon: Subscription, title: "Subscription",screen: "SubscriptionPlans" },
+    { icon: Integration, title: "Integration",screen: "Assets" },
   ];
 
+ 
   const pgItems = [
-    { icon: require("../../Assets/Images/Electricityimg.png"), title: "Electricity" ,screen: "SettingsElectricity"},
-    { icon: require("../../Assets/Images/BillingRule.png"), title: "Billing Rule" ,screen:"BillingRuleScreen"},
-    { icon: require("../../Assets/Images/BillTempl.png"), title: "Bill Templates" ,screen:"BillTemplate" },
-    { icon: require("../../Assets/Images/Expense.png"), title: "Expenses" ,screen : "ExpensesCategory" },
-    { icon: require("../../Assets/Images/compliance.png"), title: "Complaints",screen : "ComplaintType" },
-    { icon: require("../../Assets/Images/Amenitie.png"), title: "Amenities" ,screen : "SettingsAmenity"},
-    { icon: require("../../Assets/Images/Expense.png"), title: "User" ,screen: "UsersScreen"},
-    { icon: require("../../Assets/Images/Expense.png"), title: "Role" ,screen:"RolesScreen"},
-    { icon: require("../../Assets/Images/Expense.png"), title: "Agreement & Policy" },
-  ];
+  { icon: Electricity, title: "Electricity", screen: "SettingsElectricity" },
+  { icon: BillingRule, title: "Billing Rule", screen:"BillingRuleScreen" },
+  { icon: BillTemplate, title: "Bill Templates", screen:"BillTemplate" },
+  { icon: Expense, title: "Expenses", screen: "ExpensesCategory" },
+  { icon: Complaints, title: "Complaints", screen: "ComplaintType" },
+  { icon: Amenity, title: "Amenities", screen: "SettingsAmenity" },
+  { icon: UserIcon, title: "User", screen: "UsersScreen" },
+  { icon: RoleIcon, title: "Role", screen:"RolesScreen" },
+  { icon: AgreementIcon, title: "Agreement & Policy" },
+];
 useEffect(() => {
   const backHandler = BackHandler.addEventListener(
     "hardwareBackPress",
@@ -53,7 +72,7 @@ const renderItem = (item) => (
     </View>
 
     <Image
-      source={require("../../Assets/Images/right_direction.png")}
+      source={RightArrow}
       style={styles.arrow}
     />
   </TouchableOpacity>
@@ -66,7 +85,7 @@ const renderItem = (item) => (
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.replace("MoreDesign")}>
           <Image
-            source={require("../../Assets/Images/Arrow_left.png")}
+            source={BackArrow}
             style={styles.backIcon}
           />
         </TouchableOpacity>
@@ -74,7 +93,7 @@ const renderItem = (item) => (
         <Text style={styles.headerText}>Settings</Text>
 
         <Image
-          source={require("../../Assets/Images/filter.png")}
+          source={FilterIcon}
           style={styles.settingsIcon}
         />
       </View>
@@ -83,7 +102,7 @@ const renderItem = (item) => (
         {/* Search box */}
         <View style={styles.searchBox}>
           <Image
-            source={require("../../Assets/Images/Asset_search.png")}
+            source={SearchIcon}
             style={styles.searchIcon}
           />
           <TextInput placeholder="Search" style={styles.searchInput} />

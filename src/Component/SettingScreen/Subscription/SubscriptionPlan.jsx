@@ -5,6 +5,8 @@ import Calendar from "../../../Assets/Images/calendar.png";
 import SubscriptionPlan from "../../../Assets/Images/SubscriptionPlan.png";
 import { useFocusEffect } from '@react-navigation/native';
 import Arrow from "../../../Assets/Images/Arrow_left.png";
+import LinearGradient from "react-native-linear-gradient";
+
 
 export default function SubscriptionPlans({navigation}) {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -205,7 +207,18 @@ export default function SubscriptionPlans({navigation}) {
               activeOpacity={0.9}
               onPress={() => setSelectedPlan(item.id)}
             >
-              {item.tag && <Text style={styles.tag}>Most Popular</Text>}
+              {/* {item.tag && <Text style={styles.tag}>Most Popular</Text>} */}
+              {item.tag && (
+  <LinearGradient
+    colors={["#FFA73B", "#FF7A18"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }}
+    style={styles.popularTag}
+  >
+    <Text style={styles.popularTagText}>Most Popular</Text>
+  </LinearGradient>
+)}
+
 
               {/* Plan Header */}
               <View style={styles.rowBetween}>
@@ -350,14 +363,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#AAB4DD",
   },
   continueText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-   card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#E3E8FF",
-    padding: 16,
-    marginTop: 10,
-  },
+  //  card: {
+  //   backgroundColor: "#FFFFFF",
+  //   borderRadius: 14,
+  //   borderWidth: 1,
+  //   borderColor: "#E3E8FF",
+  //   padding: 16,
+  //   marginTop: 10,
+  // },
+  card: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 14,
+  borderWidth: 1,
+  borderColor: "#E3E8FF",
+  padding: 16,
+  marginTop: 30,   // IMPORTANT (space for badge)
+  position: "relative",
+},
+popularTag: {
+  position: "absolute",
+  top: -15,                 // ⬅️ border மேல வர விடும் magic line
+  alignSelf: "center",
+  paddingHorizontal: 14,
+  paddingVertical: 4,
+  borderRadius: 20,
+  zIndex: 10,
+},
+
+popularTagText: {
+  color: "#fff",
+  fontWeight: "700",
+  fontSize: 12,
+},
+
+
 
   rowBetween: {
     flexDirection: "row",
