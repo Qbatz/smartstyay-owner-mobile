@@ -41,7 +41,7 @@ import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
 import Svg, { Path, Circle, Line, Text as SvgText } from "react-native-svg";
 import ProfileDrawer from "./ProfileClickScreen";
-
+import AddTenant from "../Customer/AddTenants";
 
 
 import {
@@ -62,6 +62,7 @@ export default function DashboardScreen() {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
+  
 
 
   const navigation = useNavigation();
@@ -412,43 +413,32 @@ export default function DashboardScreen() {
 
           <Text style={styles.sectionTitle}>Quick Actions</Text>
 
-          {/* <View style={styles.quickGrid}>
-          {[
-            { label: "Add Customers", icon: Usercircle, color: "#7C3AED" },
-            { label: "Add Expense", icon: ExpenseImg, color: "#EF4444" },
-            { label: "Create Bills", icon: CrateBill, color: "#F59E0B" },
-            { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA" },
-            { label: "Make agreement", icon: AgreementImg, color: "#10B981" },
-          ].map((x, i) => (
-            <View key={i} style={styles.quickCard}>
-              <View style={[styles.quickIconBox, { borderColor: x.color }]}>
-
-              </View>
-              <Text style={styles.quickLabel}>{x.label}</Text>
-            </View>
-          ))}
-        </View> */}
+        
           <View style={styles.quickGrid}>
-            {[
-              { label: "Add Customers", icon: Usercircle, color: "#7C3AED" },
-              { label: "Add Expense", icon: ExpenseImg, color: "#EF4444" },
-              { label: "Create Bills", icon: CrateBill, color: "#F59E0B" },
-              { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA" },
-              { label: "Make agreement", icon: AgreementImg, color: "#10B981" },
-            ].map((x, i) => (
-              <View key={i} style={styles.quickCard}>
+  {[
+    { label: "Add Customers", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
+    { label: "Add Expense", icon: ExpenseImg, color: "#EF4444", route: "AddExpenses" },
+    { label: "Create Bills", icon: CrateBill, color: "#F59E0B", route: "CreateBills" },
+    { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA", route: "AddWalkin" },
+    { label: "Make agreement", icon: AgreementImg, color: "#10B981", route: "Agreement" },
+  ].map((x, i) => (
+    <TouchableOpacity
+      key={i}
+      style={styles.quickCard}
+      onPress={() => navigation.navigate(x.route)}   // 👈 Navigate on press
+    >
+      <View style={[styles.iconWrapper, { borderColor: x.color }]}>
+        <Image
+          source={x.icon}
+          style={{ width: 30, height: 30, resizeMode: "contain" }}
+        />
+      </View>
 
-                <View style={[{ borderColor: x.color }]}>
-                  <Image
-                    source={x.icon}
-                    style={{ width: 30, height: 30, resizeMode: "contain" }}
-                  />
-                </View>
+      <Text style={styles.quickLabel}>{x.label}</Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
-                <Text style={styles.quickLabel}>{x.label}</Text>
-              </View>
-            ))}
-          </View>
 
 
           <View style={{ backgroundColor: "#F3F5FF" }}>
