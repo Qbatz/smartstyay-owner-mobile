@@ -22,7 +22,7 @@ import AddIcon from "../../../Assets/Images/TenantAddBlue.png";
 import AssetIcon from "../../../Assets/Images/Asset.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import ButtonTag from "../../../Assets/Images/tag.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import TrashIcon from "../../../Assets/Images/trash.png";
