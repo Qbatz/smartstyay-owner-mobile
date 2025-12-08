@@ -454,21 +454,25 @@ const styles = StyleSheet.create({
 
   price: { fontSize: 16, fontWeight: "700", color: "#000" },
   month: { color: "#6B7280", fontSize: 13, marginTop: 4 },
+ fab: {
+  position: "absolute",
+  bottom: 120,
+  right: 25,
+  width: 50,
+  height: 50,
+  backgroundColor: "#fff",
+  borderRadius: 55,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, 
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 }, // iOS shadow
+},
+  
 
-  fab: {
-    position: "absolute",
-    bottom: 85,
-    right: 25,
-    width: 55,
-    height: 55,
-    borderRadius: 30,
-    
-    justifyContent: "center",
-    alignItems: "center",
-   
-  },
-
-  fabIcon: { width: 60, height: 60 },
+  fabIcon: { width: 30, height: 30 },
   sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },

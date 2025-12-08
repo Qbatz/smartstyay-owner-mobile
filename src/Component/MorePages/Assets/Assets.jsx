@@ -323,7 +323,7 @@ useFocusEffect(
           setShowAssignSheet(false);
         }}
       >
-        <Image source={AddIcon} style={styles.fabIcon} />
+        <Image source={AddIcon} style={styles.fabIconAdd} />
       </TouchableOpacity>
 
 
@@ -780,10 +780,18 @@ const styles = StyleSheet.create({
   assetSub: { fontSize: 13, color: "#696969", marginTop: 2 },
   dotsIcon: { width: 18, height: 18, tintColor: "#999" },
 
-  fab: { position: "absolute", bottom: 25, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  Filterfab: { position: "absolute", bottom: 100, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  fabIcon: { width: 60, height: 60 },
-
+  fab: { position: "absolute", bottom: 65, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  Filterfab: {  position: "absolute",
+    bottom: 130,
+    right: 30,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5, },
+  fabIcon: { width: 30, height: 30 },
+fabIconAdd:{
+width: 60, height: 60 
+},
   sheetOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,

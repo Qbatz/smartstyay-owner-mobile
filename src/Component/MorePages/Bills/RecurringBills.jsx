@@ -319,7 +319,7 @@ const RecurringBills = () => {
 
       {/* Filter button */}
       <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
-          <Image source={FilterIcon} style={{ width: 60, height: 60 }} />
+          <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
 
 
@@ -706,8 +706,12 @@ optionText: {
 //   },
    filterButton: {
     position: "absolute",
-    right: 10,
-    bottom:40,
+    bottom: 70,
+    right: 15,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5,
   },
 
 

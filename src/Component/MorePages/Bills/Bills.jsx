@@ -614,7 +614,7 @@ const customerList = [
     {customerList.length > 0 && (
         <>
          <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
-      <Image source={FilterIcon} style={{ width: 60, height: 60 }} />
+      <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
     </TouchableOpacity>
 
     <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
@@ -1827,9 +1827,13 @@ activeText: {
 //     bottom: 50,
 //   },
    editButton: {
-    position: "absolute",
-    right: 10,
-    bottom:110,
+   position: "absolute",
+    bottom: 120,
+    right: 20,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5,
   },
 
    addBtn: {
