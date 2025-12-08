@@ -16,7 +16,7 @@ export default function SettingsScreen({ navigation }) {
     { icon: require("../../Assets/Images/General.png"), title: "General" , screen: "GeneralDetailsScreen" },
     { icon: require("../../Assets/Images/Manage.png"), title: "Manage PG" ,screen: "SettingsPG"  },
     { icon: require("../../Assets/Images/security.png"), title: "Security",screen: "SettingsSecurity" },
-    { icon: require("../../Assets/Images/subscription.png"), title: "Subscription",screen: "Assets" },
+    { icon: require("../../Assets/Images/subscription.png"), title: "Subscription",screen: "SubscriptionPlans" },
     { icon: require("../../Assets/Images/integration.png"), title: "Integration",screen: "Assets" },
   ];
 
