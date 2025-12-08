@@ -25,7 +25,7 @@ import Edit from "../../../Assets/Images/editIcon.png";
 import Delete from "../../../Assets/Images/trash.png";
 import AssetIcon from "../../../Assets/Images/Asset.png";
 import ButtonTag from "../../../Assets/Images/tag.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CloseIcon from "../../../Assets/Images/remove.png";
 import { useFocusEffect } from '@react-navigation/native';

@@ -42,6 +42,8 @@ export default function CreateReceipt({ navigation }) {
 
   const [openDuePicker, setOpenDuePicker] = useState(false);
   const [openPaymentPicker, setOpenPaymentPicker] = useState(false);
+  
+   
 
   const route = useRoute();
   const { mode, data } = route.params || {};
@@ -73,66 +75,95 @@ export default function CreateReceipt({ navigation }) {
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 120 }}>
         
         {/* ========================= CUSTOMER ======================== */}
-        <Text style={styles.label}>Customer</Text>
-        <View style={styles.selectWrapper}>
-          <TouchableOpacity
-            style={styles.selectBox}
-            onPress={() => setOpenCustomer(!openCustomer)}
-          >
-            <Text style={styles.selectedText}>{customer}</Text>
-            <Image source={DownArrow} style={styles.downArrow} />
-          </TouchableOpacity>
+       <Text style={styles.label}>Customer</Text>
+<View style={styles.selectWrapper}>
+  <TouchableOpacity
+    style={styles.selectBox}
+    onPress={() => setOpenCustomer(!openCustomer)}
+  >
+    <Text style={[styles.selectedText, !customer && { color: "#9CA3AF" }]}>
+      {customer}
+    </Text>
+    <Image source={DownArrow} style={styles.downArrow} />
+  </TouchableOpacity>
 
-          {openCustomer && (
-            <View style={styles.dropdownMenu}>
-              <ScrollView style={{ maxHeight: 110  }}>
-                {CustomerOptions.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.option}
-                    onPress={() => {
-                      setCustomer(item);
-                      setOpenCustomer(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
+  {openCustomer && (
+    <View style={styles.newDropdownMenu}>
+      <ScrollView style={{ maxHeight: 130 }} nestedScrollEnabled={true}>
+        {CustomerOptions.map((item, index) => {
+          const isSelected = customer === item;
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.newOption,
+                isSelected && styles.newOptionSelected,
+              ]}
+              onPress={() => {
+                setCustomer(item);
+                setOpenCustomer(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.newOptionText,
+                  isSelected && styles.newOptionTextSelected,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  )}
+</View>
+
 
         {/* ========================= INVOICE ======================== */}
-        <Text style={styles.label}>Invoice No</Text>
-        <View style={styles.selectWrapper}>
-          <TouchableOpacity
-            style={styles.selectBox}
-            onPress={() => setOpenInvoice(!openInvoice)}
-          >
-            <Text style={styles.selectedText}>{invoiceNo}</Text>
-            <Image source={DownArrow} style={styles.downArrow} />
-          </TouchableOpacity>
+      <Text style={styles.label}>Invoice No</Text>
+<View style={styles.selectWrapper}>
+  <TouchableOpacity
+    style={styles.selectBox}
+    onPress={() => setOpenInvoice(!openInvoice)}
+  >
+    <Text style={styles.selectedText}>{invoiceNo}</Text>
+    <Image source={DownArrow} style={styles.downArrow} />
+  </TouchableOpacity>
 
-          {openInvoice && (
-            <View style={styles.dropdownMenu}>
-              <ScrollView style={{ maxHeight: 110 }}>
-                {InvoiceOptions.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.option}
-                    onPress={() => {
-                      setInvoiceNo(item);
-                      setOpenInvoice(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
+  {openInvoice && (
+    <View style={styles.newDropdownMenu}>
+      <ScrollView style={{ maxHeight: 130 }} nestedScrollEnabled={true}>
+        {InvoiceOptions.map((item, index) => {
+          const isSelected = invoiceNo === item;
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.newOption,
+                isSelected && styles.newOptionSelected,
+              ]}
+              onPress={() => {
+                setInvoiceNo(item);
+                setOpenInvoice(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.newOptionText,
+                  isSelected && styles.newOptionTextSelected,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  )}
+</View>
 
         {/* ========================= DUE + RECEIVED ======================== */}
         <View style={styles.row}>
@@ -185,37 +216,49 @@ export default function CreateReceipt({ navigation }) {
         )}
 
         {/* ========================= MODE ======================== */}
-        <Text style={styles.label}>Mode of Transaction</Text>
-        <View style={styles.selectWrapper}>
-          <TouchableOpacity
-            style={styles.selectBox}
-            onPress={() => setOpenMode(!openMode)}
-          >
-            <Text style={styles.selectedText}>{modeSelected}</Text>
-            <Image source={DownArrow} style={styles.downArrow} />
-          </TouchableOpacity>
+      <Text style={styles.label}>Mode of Transaction</Text>
+<View style={styles.selectWrapper}>
+  <TouchableOpacity
+    style={styles.selectBox}
+    onPress={() => setOpenMode(!openMode)}
+  >
+    <Text style={styles.selectedText}>{modeSelected}</Text>
+    <Image source={DownArrow} style={styles.downArrow} />
+  </TouchableOpacity>
 
-          {openMode && (
-            <View style={styles.dropdownMenu}>
-              <ScrollView style={{ maxHeight: 110  }}>
-                {ModeOptions.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.option}
-                    onPress={() => {
-                      setModeSelected(item);
-                      setOpenMode(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{item}</Text>
-                  </TouchableOpacity>
-                ))}
+  {openMode && (
+    <View style={styles.newDropdownMenu}>
+      <ScrollView style={{ maxHeight: 130 }} nestedScrollEnabled={true}>
+        {ModeOptions.map((item, index) => {
+          const isSelected = modeSelected === item;
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.newOption,
+                isSelected && styles.newOptionSelected,
+              ]}
+              onPress={() => {
+                setModeSelected(item);
+                setOpenMode(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.newOptionText,
+                  isSelected && styles.newOptionTextSelected,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  )}
+</View>
 
-
-              </ScrollView>
-            </View>
-          )}
-        </View>
 
         {/* ========================= NOTES ======================== */}
         <Text style={styles.label}>Notes</Text>
@@ -334,6 +377,44 @@ const styles = StyleSheet.create({
   calendarIcon: { width: 20, height: 20, tintColor: "#555" },
 
   row: { flexDirection: "row", justifyContent: "space-between" },
+
+
+  //updated
+newDropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 10,
+  overflow: "hidden",   // REQUIRED
+  maxHeight: 180,       // REQUIRED (scroll works ONLY if height is limited)
+  zIndex: 9999,
+  elevation: 10,
+},
+
+
+newOption: {
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+},
+
+newOptionSelected: {
+  backgroundColor: "#1D5BEE",  // BLUE HIGHLIGHT
+},
+
+newOptionText: {
+  fontSize: 15,
+  color: "#111",
+},
+
+newOptionTextSelected: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
 
   dropdownBox: {
     marginBottom: 16,

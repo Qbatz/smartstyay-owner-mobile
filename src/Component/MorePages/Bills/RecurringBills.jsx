@@ -16,7 +16,7 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
 import ProfileImage from "../../../Assets/Images/Avatar.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import DueIcon from "../../../Assets/Images/Due_Icon.png";
 import MoneyCheckIcon from "../../../Assets/Images/money_check.png";
 import PreviewIcon from "../../../Assets/Images/View_Icon.png";

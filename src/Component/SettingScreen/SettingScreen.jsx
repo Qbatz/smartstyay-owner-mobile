@@ -40,6 +40,7 @@ export default function SettingsScreen({ navigation }) {
 
  
   const pgItems = [
+
   { icon: Electricity, title: "Electricity", screen: "SettingsElectricity" },
   { icon: BillingRule, title: "Billing Rule", screen:"BillingRuleScreen" },
   { icon: BillTemplate, title: "Bill Templates", screen:"BillTemplate" },
@@ -48,8 +49,9 @@ export default function SettingsScreen({ navigation }) {
   { icon: Amenity, title: "Amenities", screen: "SettingsAmenity" },
   { icon: UserIcon, title: "User", screen: "UsersScreen" },
   { icon: RoleIcon, title: "Role", screen:"RolesScreen" },
-  { icon: AgreementIcon, title: "Agreement & Policy" },
+  { icon: AgreementIcon, title: "Agreement & Policy",screen:"Agreement"  },
 ];
+
 useEffect(() => {
   const backHandler = BackHandler.addEventListener(
     "hardwareBackPress",

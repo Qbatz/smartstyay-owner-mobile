@@ -30,6 +30,7 @@ export default function CreateBill({navigation}) {
 //   const [dueDate, setDueDate] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
+  
   const [openUpward, setOpenUpward] = useState(false);
 const [openinvoiceDatePicker, setOpenInvoiceDatePicker] = useState(false);
 const [opendueDatePicker, setOpenDueDatePicker] = useState(false);  
@@ -47,15 +48,9 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
     (op) => op === "Others" || !selectedTypes.includes(op)
   );
 
-      const CustomerOptions = [
-        "Suresh",
-        "Kumar",
-        "Ruban",
-        "Rajesh",
-      ];
-   
-        const [customerSelected, setCustomerSelected] = useState(CustomerOptions[0]);
-        const [customeDropdownVisible, setCustomerDropdownVisible] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
+const [customerSelected, setCustomerSelected] = useState("");
+const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
          useEffect(() => {
               const backHandler = BackHandler.addEventListener(
@@ -127,39 +122,51 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
 
     <ScrollView style={styles.container}>
     
-      <Text style={styles.label}>Customer</Text>
-     <View
-                       style={styles.selectWrapper}
-                       onLayout={(event) => {
-                         const { y, height } = event.nativeEvent.layout;
-                         const screenHeight = Dimensions.get("window").height;
-                         const bottomSpace = screenHeight - (y + height);
-         
-                         setOpenUpward(bottomSpace < 250);
-                       }}
-                     >
-                       <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
-                         <Text style={styles.selectedText}>{customerSelected}</Text>
-                         <Image source={DownArrow} style={styles.downArrow} />
-                       </TouchableOpacity>
-         
-                       {customeDropdownVisible && (
-                         <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
-                           <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                             {CustomerOptions.map((opt) => (
-                               <TouchableOpacity key={opt} style={styles.option}
-                                 onPress={() => {
-                                   setCustomerSelected(opt);
-                                   setCustomerDropdownVisible(false);
-                                 }}
-                               >
-                                 <Text style={styles.optionText}>{opt}</Text>
-                               </TouchableOpacity>
-                             ))}
-                           </ScrollView>
-                         </View>
-                       )}
-                     </View>
+  <Text style={styles.label}>Customer *</Text>
+
+<TouchableOpacity
+  style={styles.customerdropdownBox}
+  onPress={() => setCustomerOpen(!customerOpen)}
+>
+  <Text style={{ color: customerSelected ? "#000" : "#9CA3AF" }}>
+    {customerSelected || "Select Customer"}
+  </Text>
+
+  <Image source={DownArrow} style={styles.arrowIcon} />
+</TouchableOpacity>
+
+{customerOpen && (
+  <View style={styles.customerDropdownMenu}>
+    <ScrollView style={{ maxHeight: 130 }}>
+      {CustomerOptions.map((name, index) => {
+        const isSelected = name === customerSelected;
+        return (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.customerOption,
+              isSelected && styles.customerOptionSelected,
+            ]}
+            onPress={() => {
+              setCustomerSelected(name);
+              setCustomerOpen(false);
+            }}
+          >
+            <Text
+              style={[
+                styles.customerOptionText,
+                isSelected && styles.customerOptionTextSelected,
+              ]}
+            >
+              {name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  </View>
+)}
+
 
       <Text style={styles.label}>Invoice No</Text>
       <TextInput
@@ -220,27 +227,47 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
           </View>
         )}
 
-      <Text style={styles.label}>Items</Text>
-      <TouchableOpacity
-        style={styles.ItemdropdownBox}
-        onPress={() => setDropdownOpen(!dropdownOpen)}
-      >
-        <Text style={styles.placeholder}>Select Item Type</Text>
-      </TouchableOpacity>
+   <Text style={styles.label}>Items</Text>
 
-      {dropdownOpen && (
-        <View style={styles.dropdownList}>
-          {filteredOptions.map((op) => (
-            <TouchableOpacity
-              key={op}
-              style={styles.dropdownOption}
-              onPress={() => handleSelectItem(op)}
+<TouchableOpacity
+  style={styles.ItemdropdownBox}
+  onPress={() => setDropdownOpen(!dropdownOpen)}
+>
+  <Text style={{ color: "#9CA3AF" }}>
+    Select Item Type
+  </Text>
+</TouchableOpacity>
+
+{dropdownOpen && (
+  <View style={styles.itemDropdownMenu}>
+    <ScrollView style={{ maxHeight: 180 }}>
+      {filteredOptions.map((op, index) => {
+        const isSelected = false; // optional highlight, since it does not stay selected in box
+
+        return (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.itemOption,
+              isSelected && styles.itemOptionSelected,
+            ]}
+            onPress={() => handleSelectItem(op)}
+          >
+            <Text
+              style={[
+                styles.itemOptionText,
+                isSelected && styles.itemOptionTextSelected,
+              ]}
             >
-              <Text style={{ fontSize: 15 }}>{op}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+              {op}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  </View>
+)}
+
 
       {items.map((item, index) => (
         <View key={index} style={styles.itemCard}>
@@ -309,14 +336,47 @@ const styles = StyleSheet.create({
 
   label: { fontSize: 15, marginBottom: 6 },
 
-  ItemdropdownBox: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 15,
-    justifyContent: "center",
-  },
+ItemdropdownBox: {
+  height: 52,
+  borderWidth: 1,
+  borderColor: "#DFDFDF",
+  borderRadius: 10,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 14,
+  justifyContent: "space-between",
+  marginBottom: 12,
+},
+
+itemDropdownMenu: {
+  marginTop: 4,
+  marginBottom:8,
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 10,
+  backgroundColor: "#fff",
+  overflow: "hidden",
+},
+
+itemOption: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+itemOptionSelected: {
+  backgroundColor: "#1D5BEE",   
+},
+
+itemOptionText: {
+  fontSize: 15,
+  color: "#111",
+},
+
+itemOptionTextSelected: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
   placeholder: { color: "#777" },
 
   input: {
@@ -404,19 +464,22 @@ const styles = StyleSheet.create({
   sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
-  dropdownMenu: {
+  arrowIcon: {
+  width: 18,
+  height: 18,
+  tintColor: "#6A6A6A",
+},
+dropdownMenu: {
   position: "absolute",
-  top: 52,
   left: 0,
   right: 0,
+  top: "17%",
   backgroundColor: "#fff",
-  borderRadius: 10,
   borderWidth: 1,
-  borderColor: "#E5E7EB",
-  elevation: 7,
-  zIndex: 9999,
-  maxHeight: 150,    
-  overflow: "hidden", 
+  borderColor: "#ddd",
+  borderRadius: 10,
+  zIndex: 999,
+  elevation: 10,
 },
  option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
@@ -449,17 +512,59 @@ const styles = StyleSheet.create({
       fontSize: 15,
       textAlignVertical: "top",
     },
+
+    customerdropdownBox: {
+  borderWidth: 1,
+  borderColor: "#D4D4D4",
+  borderRadius: 10,
+  padding: 14,
+  marginTop: 6,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+customerDropdownMenu: {
+  marginTop: 4,
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 10,
+  backgroundColor: "#fff",
+  overflow: "hidden",
+},
+
+customerOption: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+customerOptionSelected: {
+  backgroundColor: "#1D5BEE",   // SAME BLUE HIGHLIGHT
+},
+
+customerOptionText: {
+  fontSize: 15,
+  color: "#111",
+},
+
+customerOptionTextSelected: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
   
     calendarIcon: { width: 22, height: 22, tintColor: "#676767" },
   
     /* Inline dropdown box (full width under field) */
     dropdownBox: {
-      marginTop: 8,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: "#E6E6E6",
-      backgroundColor: "#fff",
-      overflow: "hidden",
+        borderWidth: 1,
+  borderColor: "#D4D4D4",
+  borderRadius: 10,
+  padding: 14,
+  marginTop: 6,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
       // shadow for iOS / elevation for Android
       ...Platform.select({
         ios: {
