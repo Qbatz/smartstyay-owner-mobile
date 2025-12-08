@@ -29,7 +29,7 @@ export default function SettingsScreen({ navigation }) {
     { icon: require("../../Assets/Images/Amenitie.png"), title: "Amenities" ,screen : "SettingsAmenity"},
     { icon: require("../../Assets/Images/Expense.png"), title: "User" ,screen: "UsersScreen"},
     { icon: require("../../Assets/Images/Expense.png"), title: "Role" ,screen:"RolesScreen"},
-    { icon: require("../../Assets/Images/Expense.png"), title: "Agreement & Policy" },
+    { icon: require("../../Assets/Images/Expense.png"), title: "Agreement & Policy"  ,screen:"Agreement" },
   ];
 useEffect(() => {
   const backHandler = BackHandler.addEventListener(
