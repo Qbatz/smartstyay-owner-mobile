@@ -19,6 +19,8 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { GeneralProvider } from './src/Context/GeneralContext';
+
 
 // import LoginDesign from "./src/Component/Login.jsx"
 // import CreateAccount from "./src/Component/CreateAccount.jsx"
@@ -99,7 +101,9 @@ function App() {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <LoginContext>
         <CommonContext>
+           <GeneralProvider>
             <AppContent />
+            </GeneralProvider>
         </CommonContext>
       </LoginContext>      
     </SafeAreaProvider>
