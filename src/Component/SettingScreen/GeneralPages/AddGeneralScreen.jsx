@@ -6,10 +6,59 @@ import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 import plusIcon from "../../../Assets/Images/plusIcon.png";
 import Edit from "../../../Assets/Images/edit.png";
+import { useGeneral } from "../../../Context/GeneralContext";
+
 
 
 export default function AddGeneralScreen({ navigation,route}) {
      const editData = route?.params?.editData || null;
+     const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [mobile, setMobile] = useState("");
+const [email, setEmail] = useState("");
+
+const [flat, setFlat] = useState("");
+const [street, setStreet] = useState("");
+const [landmark, setLandmark] = useState("");
+const [pincode, setPincode] = useState("");
+const [city, setCity] = useState("");
+const { addGeneral, loading, errorMsg, successMsg } = useGeneral();
+const handleSubmit = async () => {
+  const payload = {
+  accountInfo: {
+    firstName,
+    lastName,
+    mobile,
+    mailId: email,
+    houseNo: flat,
+    street,
+    landmark,
+    city,
+    pincode,
+    state: StateSelected,
+    password: "Test@123",
+  },
+  profilePic: selectedImage
+    ? {
+        uri: selectedImage.uri,
+        type: selectedImage.type,
+        name: selectedImage.fileName || "profile.jpg",
+      }
+    : null,
+};
+
+
+  console.log("FINAL PAYLOAD → ", payload);
+
+  const res = await addGeneral(payload);
+
+  if (res) {
+    navigation.goBack();
+  }
+};
+
+
+
       useEffect(() => {
     if (editData) {
       console.log("Editing user:", editData);
@@ -110,75 +159,77 @@ export default function AddGeneralScreen({ navigation,route}) {
 
 
                 <TouchableOpacity
-                    style={styles.profileSection}
-                    onPress={pickImage}
-                    activeOpacity={0.8}
-                >
-                    <View style={styles.profileCircle}>
+  style={styles.profileSection}
+  onPress={pickImage}
+  activeOpacity={0.8}
+>
+  <View style={styles.profileCircle}>
+    
+    <Image
+      source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
+      style={styles.profileImg}
+    />
 
+    {!selectedImage && (
+      <View style={styles.addBadge}>
+        <Image source={plusIcon} style={{ width: 16, height: 16 }} />
+      </View>
+    )}
 
-                        <Image
-                            source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
-                            style={styles.profileImg}
-                        />
+    {selectedImage && (
+      <View style={styles.centerEditBadge}>
+        <Image source={Edit} style={{ width: 20, height: 20 }} />
+      </View>
+    )}
 
-                        {!selectedImage && (
-                            <View style={styles.addBadge}>
-                                <Image
-                                    source={plusIcon}
-                                    style={{ width: 16, height: 16, }}
-                                />
-                            </View>
-                        )}
+  </View>
 
+  <View style={{ marginLeft: 16 }}>
+    <Text style={styles.profileLabel}>Profile Photo</Text>
+    <Text style={styles.profileSub}>
+      Add Profile Image of Vendor/Business.{"\n"}Max size of image 2 MB
+    </Text>
+  </View>
+</TouchableOpacity>
 
-                        {selectedImage && (
-                            <View style={styles.centerEditBadge}>
-                                <Image
-                                    source={Edit}
-                                    style={{ width: 20, height: 20, }}
-                                />
-                            </View>
-                        )}
-
-                    </View>
-
-                    <View style={{ marginLeft: 16 }}>
-                        <Text style={styles.profileLabel}>Profile Photo</Text>
-                        <Text style={styles.profileSub}>
-                            Add Profile Image of Vendor/Business.{"\n"}Max size of image 2 MB
-                        </Text>
-                    </View>
-                </TouchableOpacity>
 
 
 
                 <Text style={styles.label}>First Name *</Text>
-                <TextInput style={styles.input} placeholder="Enter First name" />
+                <TextInput style={styles.input} placeholder="Enter First name" value={firstName}
+  onChangeText={setFirstName} />
 
                 <Text style={styles.label}>Last Name</Text>
-                <TextInput style={styles.input} placeholder="Enter last Name" />
+                <TextInput style={styles.input} placeholder="Enter last Name" value={lastName}
+  onChangeText={setLastName}/>
 
                 <Text style={styles.label}>Mobile Number *</Text>
-                <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" />
+                <TextInput style={styles.input} placeholder="+91" keyboardType="numeric"  value={mobile}
+  onChangeText={setMobile}/>
 
                 <Text style={styles.label}>Email ID</Text>
-                <TextInput style={styles.input} placeholder="Enter Email" />
+                <TextInput style={styles.input} placeholder="Enter Email"  value={email}
+  onChangeText={setEmail}/>
 
                 <Text style={styles.label}>Flat, House no, Building...</Text>
-                <TextInput style={styles.input} placeholder="Enter House No" />
+                <TextInput style={styles.input} placeholder="Enter House No"  value={flat}
+  onChangeText={setFlat}/>
 
                 <Text style={styles.label}>Area, Street, Sector...</Text>
-                <TextInput style={styles.input} placeholder="Enter Street" />
+                <TextInput style={styles.input} placeholder="Enter Street"  value={street}
+  onChangeText={setStreet}/>
 
                 <Text style={styles.label}>Landmark</Text>
-                <TextInput style={styles.input} placeholder="Eg: Near SBI" />
+                <TextInput style={styles.input} placeholder="Eg: Near SBI"  value={landmark}
+  onChangeText={setLandmark}/>
 
                 <Text style={styles.label}>Pincode *</Text>
-                <TextInput style={styles.input} placeholder="Select Type" />
+                <TextInput style={styles.input} placeholder="Select Type" value={pincode}
+  onChangeText={setPincode}/>
 
                 <Text style={styles.label}>Town/City *</Text>
-                <TextInput style={styles.input} placeholder="Select Type" />
+                <TextInput style={styles.input} placeholder="Select Type"  value={city}
+  onChangeText={setCity}/>
 
                 <Text style={styles.label}>State *</Text>
 
@@ -216,9 +267,42 @@ export default function AddGeneralScreen({ navigation,route}) {
 
 
 
-                <TouchableOpacity style={styles.submitBtn}>
+                {/* <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
                     <Text style={styles.submitText}>Add General</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                {/* <TouchableOpacity
+  style={styles.submitBtn}
+  onPress={handleSubmit}
+  disabled={loading}
+>
+  <Text style={styles.submitText}>
+    {loading ? "Please wait..." : "Add General"}
+  </Text>
+
+  {errorMsg !== "" && (
+    <Text style={{ color: "red", marginTop: 8 }}>{errorMsg}</Text>
+  )}
+  
+  {successMsg !== "" && (
+    <Text style={{ color: "green", marginTop: 8 }}>{successMsg}</Text>
+  )}
+</TouchableOpacity> */}
+<TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+  <Text style={styles.submitText}>
+    {loading ? "Saving..." : "Add General"}
+  </Text>
+</TouchableOpacity>
+
+{errorMsg !== "" && (
+  <Text style={{ color: "red", textAlign: "center", marginTop: 5 }}>
+    {errorMsg}
+  </Text>
+)}
+ {successMsg !== "" && (
+    <Text style={{ color: "green", marginTop: 8 }}>{successMsg}</Text>
+  )}
+
+
 
                 <View style={{ height: 40 }} />
             </ScrollView>

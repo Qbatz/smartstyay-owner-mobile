@@ -28,24 +28,49 @@ export default function LoginDesign() {
   const [showPassword, setShowPassword] = useState(false);
 
 
-  const loginClick=()=>{
-        const data= {
-          emailId: email,
-          password: password,
-        }
+  // const loginClick=()=>{
+  //       const data= {
+  //         emailId: email,
+  //         password: password,
+  //       }
 
-        setLogin(data).then(r=>{
-          console.log(r)
-          context.updateToken(r.data)
-          if(r.status==200){
-              storeData(ACCESS_TOKEN,r.data)
-              console.log(r.data)
+  //       setLogin(data).then(r=>{
+  //         console.log(r)
+  //         context.updateToken(r.data)
+  //         if(r.status==200){
+  //             storeData(ACCESS_TOKEN,r.data)
+  //             console.log(r.data)
               
-              navigation.navigate('VerifyAccountScreen')
-          }
-        })
+  //             navigation.navigate('VerifyAccountScreen')
+  //         }
+  //       })
 
-  }
+  // }
+const loginClick = () => {
+  const data = {
+    emailId: email,
+    password: password,
+  };
+
+  setLogin(data).then((r) => {
+    console.log("LOGIN RESPONSE:", r);
+
+    if (r.status == 200) {
+      const token = r.data; // ✅ Correct way
+
+      if (token) {
+        context.updateToken(token);          // Save into Context + AsyncStorage
+        storeData(ACCESS_TOKEN, token);      // If needed separately
+        console.log("TOKEN STORED:", token);
+
+        navigation.navigate("VerifyAccountScreen");
+      } else {
+        console.log("No token returned by API");
+      }
+    }
+  });
+};
+
 
   return (
     <View style={styles.container}>
