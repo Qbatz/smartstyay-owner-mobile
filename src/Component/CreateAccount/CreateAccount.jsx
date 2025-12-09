@@ -32,6 +32,8 @@ export default function CreateAccount() {
   const [showSuccessModal,setShowSuccessModal]=useState(false)
   const[toastMessage,setToastMessage]=useState()
   const[modelType,setModelType]=useState()
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
 
 
 
@@ -51,15 +53,45 @@ export default function CreateAccount() {
           mobile: mobileNo,
   }
 
-      postNewAccount(data).then(r=>{
-        console.log(r)
+      if(
+  firstName && firstName.trim() !== "" &&
+  lastName && lastName.trim() !== "" &&
+  emailid && emailid.trim() !== "" &&
+  mobileNo && mobileNo.trim() !== "" &&
+  password && password.trim() !== ""
+){
+  if(!passwordRegex.test(password)){
+    setShowSuccessModal(true);
+    setToastMessage('Password must contain uppercase, number & special character');
+    setModelType('error');
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 2000);
+    return;
+  }
 
-        if(r.status==201){
-            setShowSuccessModal(true)
-            setToastMessage('Created Successfully')
-            setModelType('success')
-        }
-      })  
+  postNewAccount(data).then(r=>{
+    if(r.status === 201){
+      setShowSuccessModal(true);
+      setToastMessage('Created Successfully');
+      setModelType('success');
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
+    }
+  });
+
+}
+else{
+  setShowSuccessModal(true);
+  setToastMessage('All Fields Required');
+  setModelType('error');
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 2000);
+}
+
+     
   }
 
   
