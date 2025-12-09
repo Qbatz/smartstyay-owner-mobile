@@ -94,6 +94,11 @@ const [openTo, setOpenTo] = useState(false);
 const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
+useEffect(()=>{
+    
+},[])
+
+
 useLayoutEffect(() => {
   setShowTabBar(!showDetailModal && !showFilter);
 }, [showDetailModal, showFilter]);

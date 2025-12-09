@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
@@ -15,14 +15,16 @@ import { useNavigation } from "@react-navigation/native";
 import {setLogin } from "../../Action/LoginAction"
 import { storeData } from "../../Utils/Storage";
 import {ACCESS_TOKEN} from '../../Utils/Constant'
-
+import { LoginContexts } from "../../Context/LoginContext";
 
 
 export default function LoginDesign() {
+
+  const context=useContext(LoginContexts)
   
    const navigation = useNavigation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("alen.bruce@s3remotica.com");
+  const [password, setPassword] = useState("Banner@19");
   const [showPassword, setShowPassword] = useState(false);
 
 
@@ -34,9 +36,11 @@ export default function LoginDesign() {
 
         setLogin(data).then(r=>{
           console.log(r)
-
+          context.updateToken(r.data)
           if(r.status==200){
               storeData(ACCESS_TOKEN,r.data)
+              console.log(r.data)
+              
               navigation.navigate('VerifyAccountScreen')
           }
         })

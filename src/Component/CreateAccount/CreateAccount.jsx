@@ -17,6 +17,7 @@ import Eye from "../../Assets/Images/Eye.png";
 import WaveImage from "../../Assets/Images/CreateAccount_Rectangle.png";
 import { useNavigation } from "@react-navigation/native";
 import { postNewAccount } from "../../Action/LoginAction";
+import SuccessModal from '../../ToastFile/ToastPage'
 
 export default function CreateAccount() {
    const navigation = useNavigation();
@@ -28,6 +29,9 @@ export default function CreateAccount() {
   const [mobileNo,setMobileNo]=useState()
   const [password,setPassword]=useState()
   const[confirmPassword,setConfirmPassword]=useState()
+  const [showSuccessModal,setShowSuccessModal]=useState(false)
+  const[toastMessage,setToastMessage]=useState()
+  const[modelType,setModelType]=useState()
 
 
 
@@ -49,7 +53,13 @@ export default function CreateAccount() {
 
       postNewAccount(data).then(r=>{
         console.log(r)
-      })
+
+        if(r.status==201){
+            setShowSuccessModal(true)
+            setToastMessage('Created Successfully')
+            setModelType('success')
+        }
+      })  
   }
 
   
@@ -58,6 +68,12 @@ export default function CreateAccount() {
 
   return (
     <View style={styles.container}>
+      <SuccessModal
+              visible={showSuccessModal}
+              onClose={() => setShowSuccessModal(false)}
+              message={toastMessage}
+              type={modelType}
+            />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
