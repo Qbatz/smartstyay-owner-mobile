@@ -1,0 +1,268 @@
+import React, { useEffect, useState, useRef,useCallback } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler } from "react-native";
+import Setting from '../../Assets/Images/setting.png';
+import Remove from '../../Assets/Images/remove.png';
+import { useNavigation,useFocusEffect } from "@react-navigation/native";
+
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const SCREEN_WIDTH = Dimensions.get("window").width
+
+export default function ProfileDrawer({ visible, onClose }) {
+  const navigation = useNavigation();
+  const slideX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
+
+  const BOTTOM_TAB_HEIGHT = global.BOTTOM_TAB_HEIGHT || 70;
+  const [tabHeight, setTabHeight] = useState(BOTTOM_TAB_HEIGHT);
+
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const arrowRef = useRef(null);
+  const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
+
+  useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      if (showEditPopup) {
+        setShowEditPopup(false); 
+        return true; // IMPORTANT: prevent app exit
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [showEditPopup])
+);
+
+  
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (global.BOTTOM_TAB_HEIGHT && global.BOTTOM_TAB_HEIGHT !== tabHeight) {
+        setTabHeight(global.BOTTOM_TAB_HEIGHT);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  // SLIDE ANIMATION
+  useEffect(() => {
+    Animated.timing(slideX, {
+      toValue: visible ? SCREEN_WIDTH * 0.40 : SCREEN_WIDTH,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <View style={styles.overlay}>
+
+
+      <TouchableOpacity style={styles.background} onPress={onClose} />
+
+      <Animated.View
+        style={[
+          styles.panel,
+          {
+            width: SCREEN_WIDTH * 0.60,
+            height: SCREEN_HEIGHT - tabHeight,
+            transform: [{ translateX: slideX }],
+          },
+        ]}
+      >
+
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Smartstay</Text>
+          <TouchableOpacity onPress={onClose}>
+            <Image source={Remove} style={styles.close} />
+          </TouchableOpacity>
+        </View>
+
+       
+        <View style={styles.profileRow}>
+
+        
+          <TouchableOpacity
+            style={{ flexDirection: "row", flex: 1 }}
+            onPress={() => {
+              onClose();
+              setTimeout(() => navigation.navigate("ProfileScreen"), 150);
+            }}
+          >
+            <Image
+              source={require("../../Assets/Images/profile.png")}
+              style={styles.profileImg}
+            />
+
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.profileName}>Muthuram K</Text>
+
+              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+                <Image
+                  source={require("../../Assets/Images/Eye.png")}
+                  style={styles.eyeIcon}
+                />
+                <Text style={styles.changePassword}>Change Password</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+        
+          <TouchableOpacity
+            ref={arrowRef}
+            onPress={() => {
+              arrowRef.current.measureInWindow((x, y, width, height) => {
+                setPopupPos({
+                  top: y + height + 5,
+                  right: SCREEN_WIDTH - (x + width),
+                });
+              });
+              setShowEditPopup(true);
+            }}
+          >
+            <Image
+              source={require("../../Assets/Images/right_direction.png")}
+              style={styles.arrowIcon}
+            />
+          </TouchableOpacity>
+
+        </View>
+
+        {/* BOTTOM MENU */}
+        <View style={styles.bottomSection}>
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => navigation.navigate("SettingsScreen")}
+          >
+            <Image source={Setting} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Settings</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuRow}>
+            <Image source={Setting} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Help & Information</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.logoutRow}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+
+      </Animated.View>
+
+      {/* POPUP */}
+      {showEditPopup && (
+  <TouchableOpacity
+    style={styles.popupOverlay}
+    activeOpacity={1}
+    onPress={() => setShowEditPopup(false)}
+  />
+)}
+
+{showEditPopup && (
+  <View style={[styles.popup, { top: popupPos.top, right: popupPos.right }]}>
+    <TouchableOpacity style={styles.popupRow}>
+      <Image source={require("../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
+      <Text style={styles.popupText}>Edit</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.popupRow}>
+      <Image source={require("../../Assets/Images/trash.png")} style={styles.popupIcon} />
+      <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+
+    </View>
+  );
+}
+
+
+const styles = StyleSheet.create({
+overlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.3)",
+  flexDirection: "row",
+  zIndex: 9999,
+  elevation: 9999,    
+  pointerEvents: "box-none",
+},
+
+
+  background: { flex: 1 },
+
+panel: {
+  position: "absolute",
+  top: 0,
+  backgroundColor: "#fff",
+  borderTopLeftRadius: 0,
+  borderBottomLeftRadius: 0,
+  overflow: "hidden",
+  paddingTop: 40,
+},
+
+
+
+
+  header: {
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  title: { fontSize: 20, fontWeight: "700" },
+  close: {width:15,height:15},
+
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+
+  profileImg: { width: 50, height: 50, borderRadius: 25 },
+  profileName: { fontSize: 16, fontWeight: "600", color: "#000" },
+  changePassword: { fontSize: 13, color: "#2F80ED", marginLeft: 6 },
+  eyeIcon: { width: 14, height: 14, tintColor: "#2F80ED" },
+  arrowIcon: { width: 18, height: 18, tintColor: "#000", marginLeft: 12 },
+
+  bottomSection: { marginTop: "auto", paddingHorizontal: 20, paddingBottom: 35 },
+  menuRow: { flexDirection: "row", alignItems: "center", paddingVertical: 18 },
+  menuIcon: { width: 22, height: 22, marginRight: 12 },
+  menuText: { fontSize: 16, color: "#333" },
+
+  logoutRow: { backgroundColor: "#FFECEC", borderRadius: 10, marginTop: 20, padding: 16 },
+  logoutText: { color: "#EF4444", fontSize: 16, fontWeight: "700" },
+
+  popup: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    padding: 18,
+    borderRadius: 10,
+    elevation: 5,
+    marginTop:50
+    
+  },
+
+  popupRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8,paddingHorizontal:10 },
+  popupIcon: { width: 18, height: 18, marginRight: 10 },
+  popupText: { fontSize: 16, color: "#333" },
+
+  popupOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+  },
+
+
+});

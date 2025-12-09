@@ -18,10 +18,10 @@ import { useLayoutEffect } from "react";
 
 
 import Profile from "../../../Assets/Images/profile.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import InProfile from "../../../Assets/Images/inActiveuser.png";
-import ActiveCheckout from "../../../Assets/Images/ActiveCheckout.png";
+import ActiveCheckout from "../../../Assets/Images/Active_checkout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout.png";
 import ActiveWalkin from "../../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../../Assets/Images/walkin.png";
@@ -34,7 +34,8 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-// import WalkinScreen from '../Customer/WalkIn/WalkinList'
+import RecurringBills from "./RecurringBills"
+import Receipt from './Receipt'
 import Call from "../../../Assets/Images/call.png";
 import Sms from "../../../Assets/Images/sms.png";
 import dateImg from "../../../Assets/Images/home-link.png";
@@ -52,7 +53,7 @@ import ProfileImage from "../../../Assets/Images/Avatar.png";
 import DueIcon from "../../../Assets/Images/Due_Icon.png";
 import MoneyCheckIcon from "../../../Assets/Images/money_check.png";
 import PreviewIcon from "../../../Assets/Images/View_Icon.png";
-
+import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
 import { Dimensions } from "react-native";
 
 
@@ -62,12 +63,12 @@ import { Dimensions } from "react-native";
 
 
 export default function BillsDesign({ route }) {
-//   const { setShowTabBar } = route.params;
-//   const screenWidth = Dimensions.get("window").width;
+  // const { setShowTabBar } = route.params;
+  // const screenWidth = Dimensions.get("window").width;
 
   const detailDotsRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState("Bills");
+  const [activeTab, setActiveTab] = useState("All Bills");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
 const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -82,6 +83,36 @@ const [status, setStatus] = useState("All");
 const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 const [showDetailsMenu, setShowDetailsMenu] = useState(false);
 const [deleteTenants,setDeleteTenants] = useState(false)
+const [showWriteOff, setShowWriteOff] = useState(false);
+const [writeOffReason, setWriteOffReason] = useState("");
+
+const [showRecordPayment, setShowRecordPayment] = useState(false);
+
+const [paidAmount, setPaidAmount] = useState("");
+const [paidDate, setPaidDate] = useState(new Date());
+
+const [showPaymentMode, setShowPaymentMode] = useState(false);
+const paymentModes = ["Cash", "UPI", "Bank Transfer"];
+const [selectedMode, setSelectedMode] = useState("");
+
+const [openPaidDate, setOpenPaidDate] = useState(false);
+
+const [showRefundPayment, setShowRefundPayment] = useState(false);
+
+const [refundAmount, setRefundAmount] = useState("5600");
+const [refundDate, setRefundDate] = useState(new Date());
+const [openRefundDate, setOpenRefundDate] = useState(false);
+const [refundFrom, setRefundFrom] = useState("");
+const [showRefundFrom, setShowRefundFrom] = useState(false);
+
+const [refundMode, setRefundMode] = useState("");
+const [showRefundMode, setShowRefundMode] = useState(false);
+
+const [transactionId, setTransactionId] = useState("");
+
+const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
+const refundModes = ["UPI", "Cash", "Bank Transfer"];
+
 
 
 
@@ -91,6 +122,39 @@ const dotsRef = useRef(null);
 
     const detailsY = useRef(new Animated.Value(0)).current;
     const detailsSheetY = useRef(new Animated.Value(0)).current;
+    const writeoffSheetY = useRef(new Animated.Value(0)).current;
+
+    const handleRefundRecord = () => {
+  // Basic validation
+  if (!refundAmount) {
+    alert("Enter refund amount");
+    return;
+  }
+  if (!refundFrom) {
+    alert("Select refund from");
+    return;
+  }
+  if (!refundMode) {
+    alert("Select refund mode");
+    return;
+  }
+
+  // Example payload (you can send this to API)
+  const payload = {
+    customer: "Jobin",
+    refundAmount,
+    refundDate: dayjs(refundDate).format("YYYY-MM-DD"),
+    refundFrom,
+    refundMode,
+    transactionId,
+  };
+
+  console.log("REFUND DATA 👉", payload);
+
+  // Close popup
+  setShowRefundPayment(false);
+};
+
 
 const openMenu = (item) => {
   dotsRef.current.measure((fx, fy, width, height, px, py) => {
@@ -99,6 +163,7 @@ const openMenu = (item) => {
     setShowMenu(true);
   });
 };
+
 const DeleteMenu = ()=>{
   setDeleteTenants(true)
 }
@@ -106,17 +171,17 @@ const CloseDelete = () =>{
   setDeleteTenants(false)
 }
 
-const [fromDate, setFromDate] = useState(dayjs());
-const [toDate, setToDate] = useState(dayjs());
+    const [fromDate, setFromDate] = useState(dayjs());
+    const [toDate, setToDate] = useState(dayjs());
 
-const [openFrom, setOpenFrom] = useState(false);
-const [openTo, setOpenTo] = useState(false);
+    const [openFrom, setOpenFrom] = useState(false);
+    const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
 
-const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+    const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-const [showBillDetails, setShowBillDetails] = useState(false);
-const [selectedBill, setSelectedBill] = useState(null);
+    const [showBillDetails, setShowBillDetails] = useState(false);
+    const [selectedBill, setSelectedBill] = useState(null);
 
 
 
@@ -130,6 +195,60 @@ const [selectedBill, setSelectedBill] = useState(null);
  
       const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
       const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+
+
+      const recordSheetY = useRef(new Animated.Value(0)).current;
+
+const recordPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) recordSheetY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(recordSheetY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowRecordPayment(false);
+          recordSheetY.setValue(0);
+        });
+      } else {
+        Animated.spring(recordSheetY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    },
+  })
+).current;
+
+
+const refundSheetY = useRef(new Animated.Value(0)).current;
+
+const refundPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) refundSheetY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(refundSheetY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowRefundPayment(false);
+          refundSheetY.setValue(0);
+        });
+      } else {
+        Animated.spring(refundSheetY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    },
+  })
+).current;
+
+
 
 
 // useLayoutEffect(() => {
@@ -155,6 +274,21 @@ useLayoutEffect(() => {
       return true;
     }
 
+    if (showWriteOff) {
+      setShowWriteOff(false);
+      return true;
+    }
+
+    if(showRecordPayment){
+      setShowRecordPayment(false)
+      return true;
+    }
+
+     if (showRefundPayment) {
+          setShowRefundPayment(false);
+          return true;
+        }
+
 
     return false;
   };
@@ -165,7 +299,21 @@ useLayoutEffect(() => {
   );
 
   return () => handler.remove();
-}, [showDetailModal, showFilter , showBillDetails]);
+}, [showDetailModal, showFilter , showBillDetails , showWriteOff , showRecordPayment , showRefundPayment]);
+
+  useEffect(() => {
+              const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                  navigation.goBack();  
+                  return true;
+                }
+              );
+            
+              return () => backHandler.remove();
+            }, [])
+
+
 
 
  useLayoutEffect(() => {
@@ -208,6 +356,8 @@ useLayoutEffect(() => {
           setShowFilter(false);
           return true;
         }
+
+        
       
         
         return false;
@@ -245,6 +395,31 @@ useLayoutEffect(() => {
 ).current;
 
 
+
+const writeoffPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) writeoffSheetY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(writeoffSheetY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowWriteOff(false);
+          writeoffSheetY.setValue(0);
+        });
+      } else {
+        Animated.spring(writeoffSheetY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    },
+  })
+).current;
+
+
  const detailsfilter = useRef(
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
@@ -274,7 +449,7 @@ useLayoutEffect(() => {
 
   
   const tabs = [
-    { key: "Bills", active: Profile, inactive: InProfile },
+    { key: "All Bills", active: Profile, inactive: InProfile },
     { key: "RecurringBills", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
@@ -290,23 +465,31 @@ const openBillDetails = (item) => {
   setShowBillDetails(true);
 };
 
-const handleShowReAssignBed = () => {
-  setShowReAssignBed(true)
+const handleShowWriteOff = () => {
+  setShowWriteOff(true);
 }
 
-const handlecloseReAssignbed = () => {
-   setShowReAssignBed(false)
+const handleShowRecordPayment  = () => {
+   setShowRecordPayment(true);
 }
 
-const handleShowFinalSettlement = () => {
-navigation.navigate("FinalSettlement")
+const handleCreateBill = () => {
+navigation.navigate("CreateBills" , {mode: "add"})
 }
 
-const handleShowTennantCheckin = () => {
-navigation.navigate("TenantCheckin")
+const handleShowRefundPayment = () => {
+  setShowRefundPayment(true)
 }
-const handleShowAddBooking = () => {
-navigation.navigate("AddBooking")
+const handleEditBill = () => {
+
+ navigation.navigate("CreateBills", {
+    mode: "edit",
+    // data: item,  
+  });
+}
+
+const handleShowBillPdf = () => {
+navigation.navigate("BillsPdf")
 }
 
 const handleShowCancelNotice = () => {
@@ -359,10 +542,7 @@ const customerList = [
       onPress={() => setActiveTab(tab.key)}
     >
       <View style={styles.tabContent}>
-        <Image
-          source={activeTab === tab.key ? tab.active : tab.inactive}
-          style={styles.tabIcon}
-        />
+      
         <Text
           style={[
             styles.tabText,
@@ -376,7 +556,7 @@ const customerList = [
   ))}
 </View>
 
-{activeTab === "Bills" && (
+{activeTab === "All Bills" && (
   <View style={{ flex: 1 }}>
 
     {customerList.length > 0 ? (
@@ -434,10 +614,10 @@ const customerList = [
     {customerList.length > 0 && (
         <>
          <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
-      <Image source={FilterIcon} style={{ width: 60, height: 60 }} />
+      <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
     </TouchableOpacity>
 
-    <TouchableOpacity style={styles.addBtn}>
+    <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
       <Image source={AddIcon} style={{ width: 25, height: 25 }} />
     </TouchableOpacity>
         </>
@@ -449,12 +629,12 @@ const customerList = [
 )}
 
 
-{/* {activeTab === "RecurringBills" && (
-   <CheckoutList/>
+{activeTab === "RecurringBills" && (
+   <RecurringBills />
   )}
   {activeTab === "Receipt" && (
-   <WalkinScreen setShowTabBar = {setShowTabBar}/>
-  )} */}
+   <Receipt />
+  )}
  
 {showBillDetails && (
   <View style={styles.sheetOverlay}>
@@ -559,7 +739,7 @@ const customerList = [
   </View>
 
   {/* PREVIEW BUTTON */}
-  <TouchableOpacity style={styles.previewBtn}>
+  <TouchableOpacity style={styles.previewBtn} onPress={handleShowBillPdf}>
     <View style={{display:'flex', flexDirection:'row'}}>
                <Image source={PreviewIcon} style={{   width: 18,
     height: 18, marginTop:3 , marginRight:12
@@ -653,7 +833,7 @@ const customerList = [
       </TouchableOpacity>
      
      
-        <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+        <TouchableOpacity style={styles.popupRow} onPress={handleShowRefundPayment} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
@@ -664,13 +844,7 @@ const customerList = [
      
 
       
-    <TouchableOpacity
-  style={styles.popupRow}
-  onPress={() => {
-    setShowMenu(false);
-    setShowNotice(true); 
-  }}
->
+    <TouchableOpacity style={styles.popupRow} onPress={handleShowRecordPayment} >
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
     style={styles.popupIcon}
@@ -678,14 +852,14 @@ const customerList = [
   <Text style={styles.popupText}>Record Payment</Text>
 </TouchableOpacity>
 
-  <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+  <TouchableOpacity style={styles.popupRow} onPress={handleShowWriteOff} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
         />
         <Text style={styles.popupText}>Write-off</Text>
       </TouchableOpacity>
-       <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+       <TouchableOpacity style={styles.popupRow} onPress={handleEditBill} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
@@ -709,6 +883,493 @@ const customerList = [
     </View>
   </TouchableOpacity>
 )}
+
+{showWriteOff && (
+  <View style={styles.sheetOverlay}>
+
+    {/* Close when tap outside */}
+    <TouchableWithoutFeedback onPress={() => setShowWriteOff(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    {/* Bottom Sheet */}
+    <Animated.View
+      style={[
+        styles.transactionSheet,
+        { height: "55%", transform: [{ translateY: writeoffSheetY }] }
+      ]}
+      {...writeoffPan.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* WRITE OFF TITLE */}
+        <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 8 }}>
+          Write off
+        </Text>
+
+        <Text style={{ color: "#777", lineHeight: 20, marginBottom: 18 }}>
+          Use when tenant has absconded and all pending dues 
+          must be written off.
+        </Text>
+
+        <View style={{ flexDirection: "row", marginBottom: 20 }}>
+          <Image source={ProfileImage} style={{ width: 55, height: 55, borderRadius: 28 }} />
+
+          <View style={{ marginLeft: 12, flex: 1 }}>
+            <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
+              Daniel Balaji R
+            </Text>
+
+            <View style={{ flexDirection: "row", marginTop: 4, alignItems: "center" }}>
+              <View
+                style={{
+                  backgroundColor: "#FFE6C7",
+                  paddingHorizontal: 10,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  marginRight: 7,
+                }}
+              >
+                <Text style={{ color: "#C67506", fontSize: 11, fontWeight: "600" }}>
+                  Checkout Inv
+                </Text>
+              </View>
+
+              <Image
+                source={Bills_Black_Icon}
+                style={{ width: 12, height: 12, marginRight: 5 }}
+              />
+
+              <Text style={{ fontSize: 11, color: "#444" }}>#1212121212</Text>
+            </View>
+          </View>
+
+          <View style={{ alignItems: "flex-end" }}>
+            <View style={{display:'flex', flexDirection:'row'}}>
+            <Image  source={WriteOffDueIcon} style={{height:12, width:12 , marginTop:4, marginRight:4}}/>
+            <Text style={{ color: "#1E45E1", fontWeight: "700", marginBottom: 4 }}>
+              Due Pending
+            </Text>
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: "#000" }}>
+              ₹ 2,200.00
+            </Text>
+          </View>
+        </View>
+
+        {/* COMMENT BOX */}
+        <Text style={{ marginBottom: 6, fontWeight: "600", color: "#444" }}>
+          Reason (Comments)
+        </Text>
+
+        <TextInput
+          placeholder="Enter reason here"
+          multiline={true}
+          style={{
+            borderWidth: 1,
+            borderColor: "#D9D9D9",
+            padding: 14,
+            borderRadius: 12,
+            minHeight: 110,
+            textAlignVertical: "top",
+            fontSize: 15,
+          }}
+          value={writeOffReason}
+          onChangeText={setWriteOffReason}
+        />
+
+        {/* BOTTOM BUTTONS */}
+         <View style={styles.btnRow}>
+                      <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+                        <Text style={styles.cancelText}>Cancel</Text>
+                      </TouchableOpacity>
+            
+                      <TouchableOpacity
+                        style={styles.saveBtn}
+                        onPress={() => {
+                          navigation.goBack();
+                        }}
+                      >
+                        <Text style={styles.saveText}> Confirm</Text>
+                      </TouchableOpacity>
+                    </View>
+      </ScrollView>
+    </Animated.View>
+  </View>
+)}
+
+
+{showRecordPayment && (
+  <View style={styles.sheetOverlay}>
+
+    {/* Close on tap outside */}
+    <TouchableWithoutFeedback onPress={() => setShowRecordPayment(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[
+        styles.transactionSheet,
+        { height: "75%", transform: [{ translateY: recordSheetY }] }
+      ]}
+      {...recordPan.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* Header */}
+        <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
+          Record Payment
+        </Text>
+
+        {/* USER INFO */}
+        <View style={{ flexDirection: "row", marginBottom: 20 }}>
+          <Image
+            source={ProfileImage}
+            style={{ width: 55, height: 55, borderRadius: 28 }}
+          />
+
+          <View style={{ marginLeft: 12, flex: 1 }}>
+            <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
+              Jebin
+            </Text>
+
+            <View style={{ flexDirection: "row", marginTop: 4 }}>
+              <View
+                style={{
+                  backgroundColor: "#FFE6C7",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  marginRight: 8,
+                }}
+              >
+                <Text style={{ color: "#C67506", fontWeight: "600", fontSize: 12 }}>
+                  Checkout Inv
+                </Text>
+              </View>
+
+              <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }} />
+              <Text style={{ fontSize: 13, color: "#555" }}>#1212121212</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* DUE AMOUNT */}
+        <Text style={styles.label}>Due Amount</Text>
+        <View style={styles.inputBox}>
+          <Text style={{ fontSize: 16 }}>₹ 3200</Text>
+        </View>
+
+        {/* PAID AMOUNT */}
+        <Text style={styles.label}>Paid Amount</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          placeholder="₹ 0"
+          value={paidAmount}
+          onChangeText={setPaidAmount}
+        />
+
+        {/* PAID DATE */}
+        <Text style={styles.label}>Paid Date</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setOpenPaidDate(!openPaidDate)}
+        >
+          <Text style={{ fontSize: 15 }}>
+            {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+          </Text>
+
+          <Image
+            source={CalendarIcon}
+            style={{ width: 22, height: 22, tintColor: "#444" }}
+          />
+        </TouchableOpacity>
+
+        {openPaidDate && (
+          <View style={styles.dropdownBox}>
+            <DatePicker
+              mode="single"
+              date={paidDate}
+              onChange={(v) => {
+                setPaidDate(v.date || new Date());
+                setOpenPaidDate(false);
+              }}
+            />
+          </View>
+        )}
+
+        {/* TRANSACTION MODE */}
+        <Text style={styles.label}>Transaction Mode</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setShowPaymentMode((v) => !v)}
+        >
+          <Text style={{ fontSize: 15 }}>
+            {selectedMode ? selectedMode : "Select mode"}
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={{ width: 18, height: 18, tintColor: "#555" }}
+          />
+        </TouchableOpacity>
+
+        {/* Dropdown mode */}
+        {showPaymentMode && (
+          <View style={styles.transactiondropdown}>
+            {paymentModes.map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={{ padding: 12 }}
+                onPress={() => {
+                  setSelectedMode(mode);
+                  setShowPaymentMode(false);
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>{mode}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Buttons */}
+          <View style={styles.btnRow}>
+                      <TouchableOpacity style={styles.cancelBtn} >
+                        <Text style={styles.cancelText}>Cancel</Text>
+                      </TouchableOpacity>
+            
+                      <TouchableOpacity
+                        style={styles.saveBtn}
+                       
+                      >
+                        <Text style={styles.saveText}>Record</Text>
+                      </TouchableOpacity>
+                    </View>
+      </ScrollView>
+    </Animated.View>
+  </View>
+)}
+
+
+{showRefundPayment && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[
+        styles.transactionSheet,
+        { height: "93%", transform: [{ translateY: refundSheetY }] }
+      ]}
+      {...refundPan.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* TITLE */}
+        <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
+          Refund Payment
+        </Text>
+
+        {/* USER SECTION */}
+        <View style={{ flexDirection: "row", marginBottom: 20 }}>
+          <Image
+            source={ProfileImage}
+            style={{ width: 55, height: 55, borderRadius: 30 }}
+          />
+
+          <View style={{ marginLeft: 12, flex: 1 }}>
+            <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
+              Jebin
+            </Text>
+
+            <View style={{ flexDirection: "row", marginTop: 4 }}>
+              <View
+                style={{
+                  backgroundColor: "#FFE6C7",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  marginRight: 8,
+                }}
+              >
+                <Text style={{ color: "#C67506", fontSize: 11, fontWeight: "600" }}>
+                  Checkout Inv
+                </Text>
+              </View>
+
+              <Image
+                source={Bills_Black_Icon}
+                style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
+              />
+              <Text style={{ fontSize: 11, color: "#555" }}>#1212121212</Text>
+            </View>
+          </View>
+
+          {/* RIGHT SIDE REFUND AMOUNT */}
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={{ color: "#444", fontSize: 13 }}>Refund Amount</Text>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#000" }}>
+              ₹ 5,600.00
+            </Text>
+          </View>
+        </View>
+
+        {/* REFUND AMOUNT */}
+        <Text style={styles.label}>
+          Refund amount <Text style={{ color: "red" , fontSize:16}}>*</Text>
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="₹ 0.00"
+          keyboardType="numeric"
+          value={refundAmount}
+          onChangeText={setRefundAmount}
+        />
+
+        {/* BALANCE DUE */}
+        <Text style={styles.label}>Balance Due</Text>
+        <View style={styles.inputBox}>
+          <Text style={{ fontSize: 16 }}>₹ 0.00</Text>
+        </View>
+
+        {/* REFUND DATE */}
+        <Text style={styles.label}>Refund Date</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setOpenRefundDate(!openRefundDate)}
+        >
+          <Text style={{ fontSize: 15 }}>
+            {refundDate ? dayjs(refundDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+          </Text>
+
+          <Image
+            source={CalendarIcon}
+            style={{ width: 22, height: 22, tintColor: "#444" }}
+          />
+        </TouchableOpacity>
+
+        {openRefundDate && (
+          <View style={styles.dropdownBox}>
+            <DatePicker
+              mode="single"
+              date={refundDate}
+              onChange={(v) => {
+                setRefundDate(v.date || new Date());
+                setOpenRefundDate(false);
+              }}
+            />
+          </View>
+        )}
+
+        {/* REFUND FROM */}
+        <Text style={styles.label}>Refund From</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setShowRefundFrom((v) => !v)}
+        >
+          <Text style={{ fontSize: 15 }}>
+            {refundFrom ? refundFrom : "Select bank"}
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={{ width: 18, height: 18, tintColor: "#555" }}
+          />
+        </TouchableOpacity>
+
+        {showRefundFrom && (
+          <View style={styles.transactiondropdown}>
+            {bankOptions.map((bank) => (
+              <TouchableOpacity
+                key={bank}
+                style={{ padding: 12 }}
+                onPress={() => {
+                  setRefundFrom(bank);
+                  setShowRefundFrom(false);
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>{bank}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* REFUND MODE */}
+        <Text style={styles.label}>Refund Mode</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setShowRefundMode((v) => !v)}
+        >
+          <Text style={{ fontSize: 15 }}>
+            {refundMode ? refundMode : "Select mode"}
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={{ width: 18, height: 18, tintColor: "#555" }}
+          />
+        </TouchableOpacity>
+
+        {showRefundMode && (
+          <View style={styles.transactiondropdown}>
+            {refundModes.map((m) => (
+              <TouchableOpacity
+                key={m}
+                style={{ padding: 12 }}
+                onPress={() => {
+                  setRefundMode(m);
+                  setShowRefundMode(false);
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>{m}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* TRANSACTION ID */}
+        <Text style={styles.label}>Transaction ID</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter transaction ID"
+          keyboardType="numeric"
+          value={transactionId}
+          onChangeText={setTransactionId}
+        />
+
+        {/* BUTTON ROW */}
+        <View style={styles.btnRow}>
+                      <TouchableOpacity style={styles.cancelBtn} >
+                        <Text style={styles.cancelText}>Cancel</Text>
+                      </TouchableOpacity>
+            
+                      <TouchableOpacity
+                        style={styles.saveBtn}
+                       
+                      >
+                        <Text style={styles.saveText}>Record</Text>
+                      </TouchableOpacity>
+                    </View>
+
+
+      </ScrollView>
+    </Animated.View>
+  </View>
+)}
+
 
 
 
@@ -898,9 +1559,9 @@ const customerList = [
     <View style={styles.deleteOverlay}>
       <View style={styles.deleteBox}>
 
-        <Text style={styles.deleteTitle}>Delete Customer?</Text>
+        <Text style={styles.deleteTitle}>Delete Bill?</Text>
         <Text style={styles.deleteSub}>
-          Are you sure you want to delete this Customer?
+          Are you sure you want to delete this Bill?
         </Text>
 
         <View style={styles.deleteBtnRow}>
@@ -1166,9 +1827,13 @@ activeText: {
 //     bottom: 50,
 //   },
    editButton: {
-    position: "absolute",
-    right: 10,
-    bottom:110,
+   position: "absolute",
+    bottom: 120,
+    right: 20,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5,
   },
 
    addBtn: {
@@ -1361,6 +2026,23 @@ dropdownText: {
   color: "#111",
   fontSize: 15,
 },
+transactiondropdown : {
+ borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    backgroundColor: "#fff",
+    marginTop: 5,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: { elevation: 3 },
+    }),
+},
 
 arrow: { fontSize: 18, color: "#555" },
 
@@ -1429,6 +2111,7 @@ applyText: {
 },
 
 
+
 deleteOverlay: {
   flex: 1,
   backgroundColor: "rgba(0,0,0,0.4)",
@@ -1443,6 +2126,7 @@ deleteBox: {
   borderRadius: 15,
   alignItems: "center",
   elevation: 10,
+  gap:10
 },
 
 deleteTitle: {
@@ -1471,9 +2155,10 @@ cancelBtn: {
   borderRadius: 10,
   borderWidth: 1,
   borderColor: "#2D6CDF",
-  marginRight: 10,
   alignItems: "center",
+  marginRight: 30,
 },
+
 
 cancelText: {
   fontSize: 16,
@@ -1487,13 +2172,17 @@ deleteBtn: {
   borderRadius: 10,
   backgroundColor: "#2D6CDF",
   alignItems: "center",
+  marginLeft: 10,
 },
+
 
 deleteBtnText: {
   fontSize: 16,
   fontWeight: "600",
   color: "#fff",
 },
+
+
 
   centerContainer: {
     flex: 1,
@@ -1742,7 +2431,57 @@ previewText: {
   fontSize: 16,
   fontWeight: "700",
 },
+   btnRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 20,
+    gap: 12,
+    alignItems: "center",
+  },
 
+  cancelBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+  },
 
+  cancelText: {
+    color: "#6B7280",
+    fontSize: 15,
+  },
 
+  saveBtn: {
+    backgroundColor: "#2B6CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 10,
+  },
+
+  saveText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+inputBox: {
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E2E2",
+    paddingHorizontal: 14,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+ input: {
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E2E2",
+    backgroundColor: "#fff",
+    paddingHorizontal: 14,
+    fontSize: 15,
+    marginBottom: 12,
+  },
 });

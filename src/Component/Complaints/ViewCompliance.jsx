@@ -1,16 +1,19 @@
-import React, { useState ,useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   TouchableOpacity,
-  Modal,
   TextInput,
+  Animated,
+  PanResponder,
+  Dimensions,
   BackHandler,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import DeleteComplaint from "./DeleteComplaint"
+
+import DeleteComplaint from "./DeleteComplaint";
 import Profile from "../../Assets/Images/Avatar.png";
 import Edit from "../../Assets/Images/editIcon.png";
 import Delete from "../../Assets/Images/trash.png";
@@ -20,6 +23,8 @@ import Exchange from "../../Assets/Images/exchange.png";
 import room from "../../Assets/Images/Room_Icon.png";
 import Bed from "../../Assets/Images/bed.png";
 
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+
 export default function ComplaintDetails({
   visible,
   onClose,
@@ -28,193 +33,239 @@ export default function ComplaintDetails({
   onOpenCommentSheet,
   onOpenStatusSheet,
 }) {
+  const navigation = useNavigation();
+  const [deleteshow, setDeleteShow] = useState(false);
 
-    const navigation = useNavigation();
-    const [deleteshow, setDeleteShow] = useState(false);
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
+  
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        gesture.dy > 6, // detect swipe down
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) translateY.setValue(gesture.dy);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) handleCloseSheet(); // close if swipe enough
+        else animateOpen(); // reset to open
+      },
+    })
+  ).current;
+
+  // open animation
+  const animateOpen = () => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // close animation
+  const handleCloseSheet = () => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => onClose());
+  };
+
+  // open when visible changes
   useEffect(() => {
     if (visible) {
-      const backAction = () => {
-        onClose();
-        return true;
-      };
+      animateOpen();
 
       const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
-        backAction
+        () => {
+          handleCloseSheet();
+          return true;
+        }
       );
 
       return () => backHandler.remove();
     }
   }, [visible]);
 
-
- 
-
-  const handleDeletePopup = () => {
-    setDeleteShow(true)
-  }
-
-   const handleCloseDeletePopup = () => {
-    setDeleteShow(false)
-  }
-
-  console.log("complaint", complaint);
-  
-  if (!complaint) return null;
-
-  const handleEditComplaint = () => {
-  const item =  {
-  customer: "Suresh",
-  complaintType: "AC",
-  floor: "First",
-  room: "10-A",
-  bed: "A1",
-  description: "AC not working"
-}
-
-  navigation.navigate("AddComplaint", {
-    mode: "edit",
-    data: item,  
-  });
-   setTimeout(onOpenStatusSheet, 10);
-};
-
+  if (!visible || !complaint) return null;
 
   return (
     <>
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.overlay}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+      {/* BACKDROP */}
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={handleCloseSheet}
+      />
 
-        <View style={styles.sheet}>
-          <View style={styles.headerLine} />
+      {/* BOTTOM SHEET */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[
+          styles.sheet,
+          { transform: [{ translateY }] },
+        ]}
+      >
+        {/* drag handle */}
+        <View style={styles.headerLine} />
 
-          <View style={styles.headerRow}>
-            <View>
-              <Text style={styles.title}>{complaint.title}</Text>
-              <Text style={styles.time}>{complaint.time}</Text>
-            </View>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>{complaint.title}</Text>
+            <Text style={styles.time}>{complaint.time}</Text>
+          </View>
 
-            <View style={styles.iconRow}>
-              <TouchableOpacity onPress={handleEditComplaint}>
+          <View style={styles.iconRow}>
+            <TouchableOpacity  onPress={() => navigation.navigate("AddComplaint", {
+    mode: "edit",
+   
+  })}>
               <Image source={Edit} style={styles.icon} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDeletePopup}>
-              <Image source={Delete} style={[styles.icon, { marginLeft: 12 }]} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>Complaint from</Text>
-
-          <View style={styles.userRow}>
-            <Image source={Profile} style={styles.avatar} />
-            <View>
-              <Text style={styles.userName}>{complaint.user.split("-")[0]}</Text>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.floorTag}>Ground Floor</Text>
-
-                <Image source={room} style={styles.roomIcon} />
-                <Text style={styles.roomValue}>{complaint.user.split("-")[1]}</Text>
-
-                <Image source={Bed} style={styles.bedIcon} />
-                <Text style={styles.bedValue}>{complaint.user.split("-")[2]}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.rowBetween}>
-            <View>
-              <Text style={styles.labelSmall}>Request ID</Text>
-              <Text style={styles.boldText}>C00371</Text>
-            </View>
-
-            <View>
-              <Text style={styles.labelSmall}>Assigned to</Text>
-              <Text style={styles.boldText}>----</Text>
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>Status</Text>
-          <Text style={styles.value}>Yet to assign</Text>
-
-          <Text style={styles.sectionTitle}>Complaint type</Text>
-          <Text style={styles.value}>{complaint.title}</Text>
-
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.value}>
-            Ac was not working properly till morning
-          </Text>
-
-          <View style={styles.commentBox}>
-            <TextInput
-              placeholder="Add your Comment"
-              placeholderTextColor="#A0A0A0"
-              style={styles.commentInput}
-            />
-
-            <TouchableOpacity
-              onPress={() => {
-                onClose();
-                setTimeout(onOpenCommentSheet, 200);
-              }}
-            >
-              <Image source={CommentIcon} style={styles.commentIcon} />
             </TouchableOpacity>
 
-            <Text style={styles.commentCount}>3</Text>
-          </View>
-
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={styles.assignBtn}
-              onPress={() => {
-                onClose();
-                setTimeout(onOpenAssignSheet, 200);
-              }}
-            >
-              <Image source={userImg} style={styles.assignIcon} />
-              <Text style={styles.assignText}>Assign</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.statusBtn}
-              onPress={() => {
-                onClose();
-                setTimeout(onOpenStatusSheet, 200);
-              }}
-            >
-              <Image source={Exchange} style={styles.assignIcon} />
-              <Text style={styles.statusText}>Change Status</Text>
+            <TouchableOpacity onPress={() => setDeleteShow(true)}>
+              <Image
+                source={Delete}
+                style={[styles.icon, { marginLeft: 12 }]}
+              />
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </Modal>
-    {
-      deleteshow && (
-        <DeleteComplaint  visible={deleteshow} onClose={handleCloseDeletePopup}/>
-      )
-    }
+
+        {/* Complaint from */}
+        <Text style={styles.sectionTitle}>Complaint from</Text>
+
+        <View style={styles.userRow}>
+          <Image source={Profile} style={styles.avatar} />
+
+          <View>
+            <Text style={styles.userName}>
+              {complaint.user.split("-")[0]}
+            </Text>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.floorTag}>Ground Floor</Text>
+
+              <Image source={room} style={styles.roomIcon} />
+              <Text style={styles.roomValue}>
+                {complaint.user.split("-")[1]}
+              </Text>
+
+              <Image source={Bed} style={styles.bedIcon} />
+              <Text style={styles.bedValue}>
+                {complaint.user.split("-")[2]}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Row */}
+        <View style={styles.rowBetween}>
+          <View>
+            <Text style={styles.labelSmall}>Request ID</Text>
+            <Text style={styles.boldText}>C00371</Text>
+          </View>
+
+          <View>
+            <Text style={styles.labelSmall}>Assigned to</Text>
+            <Text style={styles.boldText}>----</Text>
+          </View>
+        </View>
+
+        {/* Status */}
+        <Text style={styles.sectionTitle}>Status</Text>
+        <Text style={styles.value}>Yet to assign</Text>
+
+        {/* Type */}
+        <Text style={styles.sectionTitle}>Complaint type</Text>
+        <Text style={styles.value}>{complaint.title}</Text>
+
+        {/* Description */}
+        <Text style={styles.sectionTitle}>Description</Text>
+        <Text style={styles.value}>
+          AC was not working properly till morning
+        </Text>
+
+        {/* Comment */}
+        <View style={styles.commentBox}>
+          <TextInput
+            placeholder="Add your Comment"
+            placeholderTextColor="#A0A0A0"
+            style={styles.commentInput}
+          />
+
+          <TouchableOpacity
+            onPress={() => {
+              handleCloseSheet();
+              setTimeout(onOpenCommentSheet, 200);
+            }}
+          >
+            <Image source={CommentIcon} style={styles.commentIcon} />
+          </TouchableOpacity>
+
+          <Text style={styles.commentCount}>3</Text>
+        </View>
+
+        {/* Buttons */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.assignBtn}
+            onPress={() => {
+              handleCloseSheet();
+              setTimeout(onOpenAssignSheet, 200);
+            }}
+          >
+            <Image source={userImg} style={styles.assignIcon} />
+            <Text style={styles.assignText}>Assign</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.statusBtn}
+            onPress={() => {
+              handleCloseSheet();
+              setTimeout(onOpenStatusSheet, 200);
+            }}
+          >
+            <Image source={Exchange} style={styles.assignIcon} />
+            <Text style={styles.statusText}>Change Status</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      {/* Delete Popup */}
+      {deleteshow && (
+        <DeleteComplaint
+          visible={deleteshow}
+          onClose={() => setDeleteShow(false)}
+        />
+      )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
   },
+
   sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: "#fff",
     padding: 20,
+    paddingBottom: 35,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 35,
   },
+
   headerLine: {
     width: 60,
     height: 5,
@@ -223,23 +274,28 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 15,
   },
+
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
+
+  title: { fontSize: 18, fontWeight: "700", color: "#000" },
+  time: { fontSize: 12, color: "#777", marginBottom: 15 },
+
   iconRow: { flexDirection: "row" },
   icon: { width: 20, height: 20 },
-  title: { fontSize: 18, fontWeight: "700", color: "#000" },
-  time: { fontSize: 12, color: "#777", marginTop: 3, marginBottom: 20 },
+
   sectionTitle: {
     fontSize: 14,
     color: "#777",
     marginTop: 15,
-    marginBottom: 5,
   },
-  userRow: { flexDirection: "row", alignItems: "center" },
+
+  userRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
   avatar: { width: 45, height: 45, borderRadius: 30, marginRight: 12 },
+
   userName: { fontSize: 16, fontWeight: "600" },
 
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
@@ -249,21 +305,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 8,
-    fontSize: 12,
-    color: "#000",
     marginRight: 10,
   },
 
-  roomIcon: { width: 20, height: 20, marginRight: 5, tintColor: "#1D5DFF" },
-  roomValue: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginRight: 15,
-    color: "#000",
-  },
-
-  bedIcon: { width: 20, height: 20, marginRight: 5, tintColor: "#1D5DFF" },
-  bedValue: { fontSize: 14, fontWeight: "500", color: "#000" },
+  roomIcon: { width: 20, height: 20, marginRight: 5 },
+  bedIcon: { width: 20, height: 20, marginRight: 5 },
 
   rowBetween: {
     flexDirection: "row",
@@ -286,47 +332,39 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginTop: 15,
   },
-  commentInput: { flex: 1, fontSize: 14 },
 
-  commentRight: { flexDirection: "row", alignItems: "center" },
-  commentIcon: { width: 18, height: 18, marginRight: 3 },
+  commentInput: { flex: 1, fontSize: 14 },
+  commentIcon: { width: 18, height: 18, marginRight: 6 },
   commentCount: { fontSize: 14, color: "#555" },
 
   buttonRow: {
     flexDirection: "row",
-    marginTop: 25,
     justifyContent: "space-between",
+    marginTop: 25,
   },
+
   assignBtn: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "#1D5DFF",
     paddingVertical: 12,
     borderRadius: 12,
     flex: 1,
     marginRight: 10,
-  },
-  assignIcon: {
-    width: 18,
-    height: 18,
-    tintColor: "#fff",
-    marginRight: 8,
-  },
-  assignText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    justifyContent: "center",
   },
 
   statusBtn: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "#1D5DFF",
     paddingVertical: 12,
     borderRadius: 12,
     flex: 1,
+    justifyContent: "center",
   },
+
+  assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
+  assignText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   statusText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });

@@ -1,4 +1,4 @@
-import React, { useState,useRef } from "react";
+import React, { useState,useRef,useCallback } from "react";
 import {
   View,
   Text,
@@ -8,13 +8,14 @@ import {
   TextInput,
   FlatList,
   Platform,
-  Modal,PanResponder,Animated,TouchableWithoutFeedback,Dimensions,ScrollView
+  Modal,PanResponder,Animated,TouchableWithoutFeedback,Dimensions,ScrollView,BackHandler
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import AvatarPlaceholder from "../../../Assets/Images/Avatar.png";
 import DotsIcon from "../../../Assets/Images/3dots.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/TenantAddBlue.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import AddVendorSheet from "./AddVendor";
@@ -40,6 +41,32 @@ export default function VendorsList({ navigation }) {
          const toggleAmountDropdown = () => {
       setAmountDropdownVisible((v) => !v);
     };
+
+
+    useFocusEffect(
+       useCallback(() => {
+         const onBackPress = () => {
+           if (showFilter) {
+             setShowFilter(false)
+             return true;
+           }
+     
+           if (navigation.canGoBack()) {
+             navigation.goBack();
+             return true;
+           }
+     
+           return false;
+         };
+     
+         const subscription = BackHandler.addEventListener(
+           "hardwareBackPress",
+           onBackPress
+         );
+     
+         return () => subscription.remove();
+       }, [navigation,showFilter])
+     );
      const amountOptions = [
         "Low to High (Lowest First)",
         "High to Low (Highest First)",
@@ -504,26 +531,30 @@ const styles = StyleSheet.create({
   infoValue: { color: "#111", fontSize: 14, marginTop: 6 },
 
   // FABs
-  filterFab: {
-    position: "absolute",
-    right: 20,
-    bottom: 100,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+ filterFab: {
+  position: "absolute",
+  bottom: 120,
+  right: 25,
+  width: 50,
+  height: 50,
+  backgroundColor: "#fff",
+  borderRadius: 55,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, 
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 }, // iOS shadow
+},
 
-    borderWidth: 1,
-    borderColor: "#E6E6E6",
-    justifyContent: "center",
-    alignItems: "center",
 
-  },
-  filterIcon: { width: 60, height: 60 },
+  filterIcon: { width: 30, height: 30 },
 
   addFab: {
     position: "absolute",
     right: 20,
-    bottom: 28,
+    bottom: 48,
     width: 56,
     height: 56,
     borderRadius: 28,

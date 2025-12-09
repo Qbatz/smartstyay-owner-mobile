@@ -9,7 +9,7 @@ import {
   Pressable,
   BackHandler,
   ScrollView,
-  Image
+  Image ,
 } from "react-native";
 import CloseIcon from "../../../Assets/Images/remove.png";
 
@@ -41,6 +41,18 @@ useEffect(() => {
     const back = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => back.remove();
   }, [visible]);
+
+    useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigation.goBack();  
+        return true;
+      }
+    );
+  
+    return () => backHandler.remove();
+  }, []);
 
   const TabButton = ({ title }) => {
   const disabled = mode === "edit" && title !== editTab;

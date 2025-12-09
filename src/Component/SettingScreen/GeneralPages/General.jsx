@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useState,useCallback} from "react";
 import {
   View,
   Text,
@@ -6,7 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Pressable
+  Pressable,
+  BackHandler
 } from "react-native";
 import Dots from "../../../Assets/Images/3dots.png";
 import Sms from "../../../Assets/Images/sms.png";
@@ -15,10 +16,39 @@ import Buildings from "../../../Assets/Images/buildings.png";
 import Edit from "../../../Assets/Images/editIcon.png";
 import Delete from "../../../Assets/Images/trash.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import ChangePasswordSheet from './ChangePasswordSheet';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function GeneralDetailsScreen({ navigation }) {
 const [activeMenu, setActiveMenu] = useState(null);
  const [showDeletePopup, setShowDeletePopup] = useState(false);
+ const [showPasswordSheet, setShowPasswordSheet] = useState(false);
+
+ useFocusEffect(
+   useCallback(() => {
+     const onBackPress = () => {
+       if (showPasswordSheet) {
+         setShowPasswordSheet(false);   
+         return true;    
+       }
+ 
+       if (navigation.canGoBack()) {
+         navigation.goBack();
+         return true;
+       }
+ 
+       return false;
+     };
+ 
+     const subscription = BackHandler.addEventListener(
+       "hardwareBackPress",
+       onBackPress
+     );
+ 
+     return () => subscription.remove();
+   }, [showPasswordSheet, navigation])
+ );
+
  const handleDelete=()=>{
   setShowDeletePopup(true)
   setActiveMenu(null)
@@ -86,6 +116,18 @@ const [activeMenu, setActiveMenu] = useState(null);
 
   {activeMenu === u.id && (
     <View style={styles.menuBox}>
+
+    <TouchableOpacity 
+  style={styles.menuRow} 
+  onPress={() => {
+    setShowPasswordSheet(true);
+    setActiveMenu(null);
+  }}
+>
+  <Image source={Edit} style={styles.menuIcon} />
+  <Text style={styles.menuText}>Change Password</Text>
+</TouchableOpacity>
+
      
       <TouchableOpacity 
   style={styles.menuRow} 
@@ -111,6 +153,9 @@ const [activeMenu, setActiveMenu] = useState(null);
       </TouchableOpacity>
     </View>
   )}
+
+
+
 
 </View>
 
@@ -174,6 +219,13 @@ const [activeMenu, setActiveMenu] = useState(null);
         </View>
       </View>
     )}
+
+
+      <ChangePasswordSheet 
+  visible={showPasswordSheet}
+  onClose={() => setShowPasswordSheet(false)}
+/>
+
     </>
   );
 }
@@ -250,23 +302,20 @@ const styles = StyleSheet.create({
   infoIcon: { width: 18, height: 18, marginRight: 8 },
 
   infoText: { fontSize: 14, color: "#333", flex: 1 },
-   menuBox: {
-    position: "absolute",
-    top: 40,
-    right: 10,
-    backgroundColor: "#fff",
-    padding: 12,
-    width: 150,
-    borderRadius: 10,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-    zIndex: 999,
-  },
+  menuBox: {
+  position: "absolute",
+  top: 50,
+  right: 0,       
+  backgroundColor: "#fff",
+  width: 170,
+  padding: 12,
+  borderRadius: 12,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  elevation: 8,
+  zIndex: 999,
+},
+
 
   menuRow: {
     flexDirection: "row",

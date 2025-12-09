@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useEffect, useState , useRef } from "react";
+import React, {useLayoutEffect, useEffect, useState , useRef,useCallback } from "react";
 import {
   View,
   Text,
@@ -25,14 +25,16 @@ import Edit from "../../../Assets/Images/editIcon.png";
 import Delete from "../../../Assets/Images/trash.png";
 import AssetIcon from "../../../Assets/Images/Asset.png";
 import ButtonTag from "../../../Assets/Images/tag.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CloseIcon from "../../../Assets/Images/remove.png";
+import { useFocusEffect } from '@react-navigation/native';
 
 
 export default function ExpensesScreen() {
   const navigation = useNavigation();
    const [showFilter, setShowFilter] = useState(false);
+   
 
 const expensesData = [
   {
@@ -296,34 +298,89 @@ const closeTagAsset = () => {
     //   return () => sub.remove();
     // }, [showFilter]);
 
-    useEffect(() => {
+
+   useFocusEffect(
+  useCallback(() => {
+
     const onBackPress = () => {
 
-    if (selectedExpense) {
-      closeDetails();
-      return true; 
-    }
+      // 1️⃣ Expense Details Open → Close it
+      if (selectedExpense) {
+        setSelectedExpense(null);
+        return true;
+      }
 
-    if (showFilter) {
-      setShowFilter(false);
-      return true; 
-    }
+      // 2️⃣ Filter Sheet Open → Close it
+      if (showFilter) {
+        setShowFilter(false);
+        return true;
+      }
 
-    if(showTagAsset){
-      setShowTagAsset(false)
-      return true
-    }
+      // 3️⃣ Tag Asset Sheet Open → Close it
+      if (showTagAsset) {
+        setShowTagAsset(false);
+        return true;
+      }
 
-    return false;
-  }
+      // 4️⃣ If can go back → goBack()
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return true;
+      }
 
-  const sub = BackHandler.addEventListener(
-    "hardwareBackPress",
-    onBackPress
-  );
+      // 5️⃣ Otherwise allow default behaviour
+      return false;
+    };
 
-  return () => sub.remove();
-}, [selectedExpense, showFilter]);
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [
+    selectedExpense,
+    showFilter,
+    showTagAsset,
+    navigation
+  ])
+);
+
+
+//    useEffect(() => {
+//   const onBackPress = () => {
+
+    
+//     if (selectedExpense) {
+//       closeDetails();
+//       return true;
+//     }
+
+  
+//     if (showFilter) {
+//       setShowFilter(false);
+//       return true;
+//     }
+
+    
+//     if (showTagAsset) {
+//       setShowTagAsset(false);
+//       return true;
+//     }
+
+   
+//     navigation.navigate("MyTabs");
+//     return true;
+//   };
+
+//   const sub = BackHandler.addEventListener(
+//     "hardwareBackPress",
+//     onBackPress
+//   );
+
+//   return () => sub.remove();
+// }, [selectedExpense, showFilter, showTagAsset,navigation]);
+
 
   
 const toggleAmountDropdown = () => {
@@ -430,7 +487,7 @@ const handleOpenTagAsset = () => {
        <TouchableOpacity
              style={styles.fab} onPress={handleShowAddExpense}
            >
-             <Image source={AddIcon} style={styles.fabIcon} />
+             <Image source={AddIcon} style={styles.fabIconAdd} />
            </TouchableOpacity>
 
 
@@ -788,10 +845,25 @@ card: {
     marginTop: -3,
   },
 
-  fab: { position: "absolute", bottom: 35, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  Filterfab: { position: "absolute", bottom: 100, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  fabIcon: { width: 60, height: 60 },
-
+  fab: { position: "absolute", bottom: 45, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  fabIcon: { width: 30, height: 30 },
+  fabIconAdd:{ width: 60, height: 60},
+ Filterfab: {
+  position: "absolute",
+  bottom: 120,
+  right:30,
+  width: 50,
+  height: 50,
+  backgroundColor: "#fff",
+  borderRadius: 55,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, 
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 }, // iOS shadow
+},
     sheetOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,

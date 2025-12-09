@@ -1,5 +1,5 @@
 
-import React , {useState} from "react";
+import React , {useState,useRef,useEffect} from "react";
 import {
   View,
   Text,
@@ -7,9 +7,8 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  Image,
-  TouchableWithoutFeedback,
-ScrollView
+  Image,BackHandler,Animated,PanResponder,
+ScrollView,Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -42,6 +41,56 @@ export default function Complaints({ route }) {
    const [status, setStatus] = useState("All");
    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
    
+// FILTER ANIMATION
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+
+const filterTranslateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+const openFilterSheet = () => {
+  Animated.spring(filterTranslateY, {
+    toValue: 0,
+    useNativeDriver: true,
+  }).start();
+};
+
+const closeFilterSheet = () => {
+  Animated.timing(filterTranslateY, {
+    toValue: SCREEN_HEIGHT,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => setShowFilter(false));
+};
+
+// SWIPE HANDLER
+const filterPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) filterTranslateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) closeFilterSheet();
+      else openFilterSheet();
+    },
+  })
+).current;
+
+// OPEN SHEET WHEN showFilter true
+useEffect(() => {
+  if (showFilter) {
+    openFilterSheet();
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        closeFilterSheet();
+        return true;
+      }
+    );
+
+    return () => backHandler.remove();
+  }
+}, [showFilter]);
 
   const complaintsData = [
     {
@@ -133,53 +182,75 @@ export default function Complaints({ route }) {
  }
 
   const handleAddComplaint = () => {
-    navigation.navigate("AddComplaint", {
-        mode: "add"
-               })
-  }
+    navigation.navigate("AddComplaint", {mode: "add"})}
 
   useLayoutEffect(() => {
-  setShowTabBar( !showFilter);
-}, [ showFilter]);
+  setShowTabBar( !showFilter && !showSheet && !showAssignSheet && !showStatusSheet && !showCommentSheet);
+}, [ showFilter,showSheet,showAssignSheet,showStatusSheet,showCommentSheet]);
 
-//   useLayoutEffect(() => {
-//   const backAction = () => {
+  useLayoutEffect(() => {
+  const backAction = () => {
  
-//     if (showFilter) {
-//       setShowFilter(false);
-//       return true;
-//     }
+    if (showFilter) {
+      setShowFilter(false);
+      return true;
+    }
+     if (showAssignSheet) {
+      setShowAssignSheet(false);
+      return true;
+    }
+     if (showSheet) {
+      setShowSheet(false);
+      return true;
+    }
+     if (showStatusSheet) {
+      setShowStatusSheet(false);
+      return true;
+    }
+    if (showCommentSheet) {
+      setShowCommentSheet(false);
+      return true;
+    }
+    
 
-//     return false;
-//   };
+    return false;
+  };
 
-//   const handler = BackHandler.addEventListener(
-//     "hardwareBackPress",
-//     backAction
-//   );
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
 
-//   return () => handler.remove();
-// }, [ showFilter]);
+  return () => handler.remove();
+}, [ showFilter,showSheet,showAssignSheet,showStatusSheet,showCommentSheet])
 
+  useEffect(() => {
+              const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                  navigation.goBack();  
+                  return true;
+                }
+              );
+            
+              return () => backHandler.remove();
+            }, [])
 
-
-//   ];
+  
 
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <TouchableOpacity style={{ flex: 1 }}>
+      <TouchableOpacity style={{ flex: 1 }}  onPress={() => {
+              setSelectedComplaint(item);
+              setShowSheet(true);
+            }}>
         <Text style={styles.title}>{item.title}</Text>
 
         <View style={styles.row}>
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedComplaint(item);
-              setShowSheet(true);
-            }}
-          >
+        
             <Image source={Profile} style={styles.userIcon} />
-          </TouchableOpacity>
+        
 
           <Text style={styles.user}>{item.user}</Text>
         </View>
@@ -188,7 +259,10 @@ export default function Complaints({ route }) {
       <View style={styles.rightSection}>
         <Text style={styles.time}>{item.time}</Text>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+              setShowAssignSheet(true);
+              setShowSheet(false);
+            }}>
           <Text style={[styles.status, { color: item.statusColor }]}>
             {item.status}
           </Text>
@@ -242,85 +316,11 @@ export default function Complaints({ route }) {
       </TouchableOpacity>
 
 
-      {/* <TouchableOpacity style={styles.addBtn}>
-        <Text style={styles.plus}>+</Text>
-      </TouchableOpacity> */}
+     
 
-      {showFilter && (
-        <TouchableOpacity
-          style={styles.filterOverlay}
-          activeOpacity={1}
-          onPress={() => setShowFilter(false)}   // close when clicking outside
-        >
-          <TouchableWithoutFeedback>
-            <View style={styles.filterSheet}>
-              <View style={styles.filterHandle} />
-      
-              {/* Header */}
-              <View style={styles.filterHeader}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Image
-                    source={FilterIcon}
-                    style={{ width: 25, height: 25, marginRight: 8 }}
-                  />
-                  <Text style={styles.filterTitle}>Filter by</Text>
-                </View>
-              </View>
-      
-              {/* STATUS DROPDOWN */}
-              <Text style={styles.label}>Status</Text>
-      <View style={{ position: "relative" }}>
-              <TouchableOpacity
-                style={styles.dropdownBox}
-                onPress={() => setShowStatusDropdown(!showStatusDropdown)}
-              >
-                <Text style={styles.dropdownText}>{status}</Text>
-                <Text style={styles.arrow}>⌄</Text>
-              </TouchableOpacity>
-      
-              {showStatusDropdown && (
-                <View style={styles.dropdownMenu}>
-                   <ScrollView nestedScrollEnabled={true}>
-                  {["All", "Active", "In-Active", "Checked Out", "Notice"].map((v) => (
-                    <TouchableOpacity
-                      key={v}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setStatus(v);
-                        setShowStatusDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItemText}>{v}</Text>
-                    </TouchableOpacity>
-                  ))}
-                  </ScrollView>
-                </View>
-              )}
-      
-             </View>
-             
-         <View style={{height:100}}>
-          <Text></Text>
-         </View>
-           
-             
-      
-             
-              <View style={styles.bottomButtons}>
-                <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-                  <Text style={styles.resetText}>Reset All</Text>
-                </TouchableOpacity>
-      
-                <TouchableOpacity style={styles.applyBtn}>
-                  <Text style={styles.applyText}>Apply</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </TouchableOpacity>
-      )}
+ 
 
-      {/* --- VIEW COMPLIANCE SHEET (Child Component) --- */}
+      
       <ComplaintDetails
         visible={showSheet}
         onClose={() => setShowSheet(false)}
@@ -338,6 +338,7 @@ export default function Complaints({ route }) {
         setSelectedUser={setSelectedUser}
         onAssignDone={() => {
           setShowAssignSheet(false);
+          
           setTimeout(() => {
             setShowSheet(true);
           }, 150);
@@ -358,6 +359,86 @@ export default function Complaints({ route }) {
         setSelectedStatus={setSelectedStatus}
         onStatusUpdate={() => setShowStatusSheet(false)}
       />
+
+         {showFilter && (
+  <>
+    {/* BACKDROP */}
+    <TouchableOpacity
+      style={styles.filterOverlay}
+      activeOpacity={1}
+      onPress={() => closeFilterSheet()}
+    />
+
+    {/* BOTTOM SHEET */}
+    <Animated.View
+      {...filterPan.panHandlers}
+      style={[
+        styles.filterSheet,
+        { transform: [{ translateY: filterTranslateY }] },
+      ]}
+    >
+      <View style={styles.filterHandle} />
+
+      {/* Header */}
+      <View style={styles.filterHeader}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={FilterIcon}
+            style={{ width: 25, height: 25, marginRight: 8 }}
+          />
+          <Text style={styles.filterTitle}>Filter by</Text>
+        </View>
+      </View>
+
+      {/* STATUS DROPDOWN */}
+      <Text style={styles.label}>Status</Text>
+      <View style={{ position: "relative" }}>
+        <TouchableOpacity
+          style={styles.dropdownBox}
+          onPress={() => setShowStatusDropdown(!showStatusDropdown)}
+        >
+          <Text style={styles.dropdownText}>{status}</Text>
+          <Text style={styles.arrow}>⌄</Text>
+        </TouchableOpacity>
+
+        {showStatusDropdown && (
+          <View style={styles.dropdownMenu}>
+            <ScrollView nestedScrollEnabled={true}>
+              {["All", "Active", "In-Active", "Checked Out", "Notice"].map(
+                (v) => (
+                  <TouchableOpacity
+                    key={v}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setStatus(v);
+                      setShowStatusDropdown(false);
+                    }}
+                  >
+                    <Text style={styles.dropdownItemText}>{v}</Text>
+                  </TouchableOpacity>
+                )
+              )}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+
+      <View style={{ height: 100 }} />
+
+      {/* Bottom Buttons */}
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
+          <Text style={styles.resetText}>Reset All</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.applyBtn}>
+          <Text style={styles.applyText}>Apply</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  </>
+)}
+
 
     </View>
   );
@@ -435,10 +516,17 @@ filterOverlay: {
 
 filterSheet: {
   backgroundColor: "#fff",
-  padding: 20,
+  paddingTop: 20,
+  paddingHorizontal: 20,
+  paddingBottom: 0,       // ⭐ bottom gap remove
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,               // ⭐ Full width fix
 },
+
 
 filterHandle: {
   width: 60,
@@ -505,6 +593,7 @@ quickRow: {
   flexDirection: "row",
   justifyContent: "space-between",
   marginTop: 20,
+  
 },
 
 quickBtn: {
@@ -512,6 +601,7 @@ quickBtn: {
   paddingVertical: 10,
   paddingHorizontal: 18,
   borderRadius: 10,
+  
 },
 
 quickText: { color: "#111", fontWeight: "500" },
@@ -520,6 +610,7 @@ bottomButtons: {
   flexDirection: "row",
   justifyContent: "space-between",
   marginTop: 25,
+  marginBottom:30
 },
 
 resetBtn: {

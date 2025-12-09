@@ -13,9 +13,9 @@ import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function MoveNoticeSheet({
-  visible, onClose, onMove, tenant, requestDate, checkoutDate, reason, setRequestDate, setCheckoutDate, setReason,
+  visible, onClose, requestDate, checkoutDate, reason, setRequestDate, setCheckoutDate, setReason,
 }) {
-  if (!visible || !tenant) return null;
+  if (!visible) return null;
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
@@ -99,19 +99,19 @@ export default function MoveNoticeSheet({
 
         {/* CUSTOMER INFO */}
         <View style={styles.profileRow}>
-          <Image source={tenant.img || Profile} style={styles.profileImg} />
+          <Image source={ Profile} style={styles.profileImg} />
 
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.name}>{tenant.name}</Text>
+            <Text style={styles.name}>PounRaj</Text>
 
             <View style={styles.badgeRow}>
               <View style={styles.badgeYellow}>
-                <Text style={styles.badgeText}>{tenant.floor}</Text>
+                <Text style={styles.badgeText}>GrounFloor</Text>
               </View>
 
               <View style={styles.badgeRed}>
                 <Text style={styles.badgeText}>
-                  {tenant.room} - {tenant.bed}
+                  Room_1 - Bed_1
                 </Text>
               </View>
             </View>
@@ -148,7 +148,7 @@ export default function MoveNoticeSheet({
               <TextInput
                 style={styles.textArea}
                 value={reason}
-                onChangeText={setReason}
+                // onChangeText={setReason}
                 placeholder="Enter Reason"
                 multiline
               />

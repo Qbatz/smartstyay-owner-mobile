@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useCallback } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  ScrollView
+  ScrollView,BackHandler
 } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
@@ -14,12 +14,36 @@ import SampleAvatar from "../../../Assets/Images/Avatar.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import BedIcon from "../../../Assets/Images/Bed_Icon.png";
 import DatePicker from "react-native-ui-datepicker";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 import dayjs from "dayjs";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function CancelNotice({ navigation }) {
   const [openDate, setOpenDate] = useState(false);
   const [checkInDate, setCheckInDate] = useState(new Date());
   const [reason, setReason] = useState("");
+
+   useFocusEffect(
+       useCallback(() => {
+         const onBackPress = () => {
+         
+     
+           if (navigation.canGoBack()) {
+             navigation.goBack();
+             return true;
+           }
+     
+           return false;
+         };
+     
+         const subscription = BackHandler.addEventListener(
+           "hardwareBackPress",
+           onBackPress
+         );
+     
+         return () => subscription.remove();
+       }, [ navigation])
+     );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 30 }}>
@@ -59,7 +83,15 @@ export default function CancelNotice({ navigation }) {
           </View>
         </View>
 
-        {/* Re-Check-In Date */}
+       
+                     <Text style={styles.label}>Stay Type</Text>
+
+<TouchableOpacity style={styles.dropBox}>
+  <Text style={styles.dropText}>Long stay</Text>
+
+  <Image source={DownArrow} style={styles.dropIcon} />
+</TouchableOpacity>
+
         <Text style={styles.label}>Re Check-In Date <Text style={{color:"red"}}>*</Text></Text>
 
         <TouchableOpacity
@@ -118,6 +150,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
+    marginTop:20
   },
   backIcon: { width: 20, height: 20, tintColor: "#222", marginRight: 12 },
   headerText: { fontSize: 18, fontWeight: "700", color: "#000" },
@@ -192,8 +225,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 20,
-    // borderTopWidth: 1,
-    // borderColor: "#F1F1F1",
+   
   },
 
   cancelBtn: {
@@ -218,7 +250,7 @@ const styles = StyleSheet.create({
     display:'flex',
   flexDirection: "row",
   justifyContent: "flex-end",
-  marginBottom: 40,
+ paddingBottom:45,
   paddingHorizontal: 12,
 },
 
@@ -245,4 +277,29 @@ addBtnText: {
   fontSize: 15,
   fontWeight: "600",
 },
+
+  dropBox: {
+  height: 50,
+  borderRadius: 10,
+  backgroundColor: "#F5F7FF",  // screenshot mathiri light blue
+  borderWidth: 1,
+  borderColor: "#E6E9F5",
+  paddingHorizontal: 14,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginTop: 6,
+},
+
+dropText: {
+  fontSize: 15,
+  color: "#000",
+},
+
+dropIcon: {
+  width: 16,
+  height: 16,
+  tintColor: "#555",   // arrow light black
+},
+
 });

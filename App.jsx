@@ -61,6 +61,31 @@ import GeneralDetailsScreen from './src/Component/SettingScreen/GeneralPages/Gen
 import AddGeneralScreen from './src/Component/SettingScreen/GeneralPages/AddGeneralScreen';
 import NotificationDetails from './src/Component/Dashboard/Notification';
 import ChangeHostelScreen from './src/Component/Dashboard/ChangeHostel';
+import ProfileDrawer from './src/Component/Dashboard/ProfileClickScreen';
+import ProfileScreen from './src/Component/Dashboard/ChangeProfile';
+import AssignTenant from './src/Component/PG/AssignTenants'
+
+import CreateBills from './src/Component/MorePages/Bills/CreateBill';
+import BillsPdf from './src/Component/MorePages/Bills/BillsPdf';
+import ReceiptPdf from './src/Component/MorePages/Bills/ReceiptPdf';
+import SettingsPG from './src/Component/SettingScreen/SettingsPG/SettingsPGList';
+import AddPG from './src/Component/SettingScreen/SettingsPG/AddPG';
+import SettingsSecurity from './src/Component/SettingScreen/Security/SettingSecurity';
+import CreateReceipt from './src/Component/MorePages/Bills/CreateReceipt';
+import SettingsElectricity from './src/Component/SettingScreen/SettingsElectricity/SettingsElectricity';
+import ReserveToCheckin  from './src/Component/PG/ReservedBed/ReservedToCheckin'
+import ComplaintType from './src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings';
+import ReassignBedScreen from './src/Component/PG/OccupiedBed/ReAssignBed'
+import ExpensesCategory from './src/Component/SettingScreen/ExpensesCategory/SettingsExpenses';
+import UsersScreen from './src/Component/SettingScreen/Users/UsersList'
+import SettingsAmenity from './src/Component/SettingScreen/Amenity/AmenitySettings'
+import BillingRuleScreen from './src/Component/SettingScreen/BillingRule/BillingRuleList';
+import LongStayRecurring from './src/Component/SettingScreen/BillingRule/LongStayRecurring';
+import RolesScreen from "./src/Component/SettingScreen/RoleScreen/RoleList"
+import BillTemplate from "./src/Component/SettingScreen/BillTemplate/SettingsBillTemplate";
+import SubscriptionPlans from './src/Component/SettingScreen/Subscription/SubscriptionPlan';
+import PlanDetailsScreen from './src/Component/SettingScreen/Subscription/PlanDetailsScreen'
+import Agreement from './src/Component/SettingScreen/SettingsAgreement/AgreementPolicy'
 import LoginContext from './src/Context/LoginContext';
 import CommonContext from './src/Context/CommonContext'
 
@@ -131,6 +156,32 @@ function AppContent() {
           <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
           <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
           <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
+                      <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
+                       <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
+                      <Navigation.Screen name="CreateBills" component={CreateBills} />
+                      <Navigation.Screen name="BillsPdf" component={BillsPdf} />
+
+                      <Navigation.Screen name="AssignTenant" component={AssignTenant} />
+
+                      <Navigation.Screen name="ReceiptPdf" component={ReceiptPdf} />
+                      <Navigation.Screen name="SettingsPG" component={SettingsPG} />
+                       <Navigation.Screen name="AddPG" component={AddPG} />
+                        <Navigation.Screen name="SettingsSecurity" component={SettingsSecurity} />
+                            <Navigation.Screen name="CreateReceipt" component={CreateReceipt} />
+                      <Navigation.Screen name="SettingsElectricity" component={SettingsElectricity} />  
+                            <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
+                           <Navigation.Screen name="ComplaintType" component={ComplaintType} />
+                             <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
+                      <Navigation.Screen name="ExpensesCategory" component={ExpensesCategory} />
+                               <Navigation.Screen name="UsersScreen" component={UsersScreen} />
+                          <Navigation.Screen name="SettingsAmenity" component={SettingsAmenity} />
+                                <Navigation.Screen name="BillingRuleScreen" component={BillingRuleScreen} />
+                                 <Navigation.Screen name="LongStayRecurring" component={LongStayRecurring} />
+                                  <Navigation.Screen name="RolesScreen" component={RolesScreen} />
+                            <Navigation.Screen name="BillTemplate" component={BillTemplate} />
+                               <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
+                                  <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
+                            <Navigation.Screen name="Agreement" component={Agreement} />
 
 
         </Navigation.Navigator>

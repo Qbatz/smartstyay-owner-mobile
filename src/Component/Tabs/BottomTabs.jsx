@@ -106,7 +106,7 @@ export default function MyTabs() {
         initialParams={{ setShowTabBar }}
       />
       
-      <Tab.Screen name="PG" component={PGList} />
+      <Tab.Screen name="PG" component={PGList}   initialParams={{ setShowTabBar }} />
       <Tab.Screen name="Complaints" component={Complaints}  initialParams={{ setShowTabBar }}/>
       <Tab.Screen name="More" component={MoreDesign}   initialParams={{ setShowTabBar }}/>
     </Tab.Navigator>

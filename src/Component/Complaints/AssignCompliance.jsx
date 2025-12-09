@@ -1,129 +1,183 @@
-import React, { useEffect,useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   Image,
-  ScrollView
+  ScrollView,
+  Animated,
+  PanResponder,
+  Dimensions,
+  BackHandler,
 } from "react-native";
 
-import { BackHandler } from "react-native";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import CloseIcon from "../../Assets/Images/remove.png";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function AssignBottomSheet({
   visible,
   onClose,
   selectedUser,
   setSelectedUser,
-  onAssignDone 
+  onAssignDone,
 }) {
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
-     const [dropdownVisible, setDropdownVisible] = useState(false);
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
+  const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
+
+  /** PAN HANDLER */
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) translateY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) handleClose();
+        else openSheet();
+      },
+    })
+  ).current;
+
+  /** OPEN SHEET */
+  const openSheet = () => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
   };
-  // Close on hardware back press
+
+  /** CLOSE SHEET */
+  const handleClose = () => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => onClose());
+  };
+
+  /** On visible change */
   useEffect(() => {
     if (visible) {
-      const backAction = () => {
-        onClose();
-        return true;
-      };
+      openSheet();
 
-      const subscription = BackHandler.addEventListener(
+      const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
-        backAction
+        () => {
+          handleClose();
+          return true;
+        }
       );
 
-      return () => subscription.remove();
+      return () => backHandler.remove();
     }
   }, [visible]);
 
+  if (!visible) return null;
+
   return (
     <>
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+      {/* Overlay */}
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={handleClose}
+      />
 
-        <View style={styles.sheet}>
-             <View style={styles.headerLine} />
-          {/* TITLE + CLOSE */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Assign complaint</Text>
+      {/* SHEET */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.sheet, { transform: [{ translateY }] }]}
+      >
+        <View style={styles.headerLine} />
 
-            <TouchableOpacity onPress={onClose}>
-              <Image source={CloseIcon} style={styles.closeIcon} />
-            </TouchableOpacity>
-          </View>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Assign complaint</Text>
 
-        
+          <TouchableOpacity onPress={handleClose}>
+            <Image source={CloseIcon} style={styles.closeIcon} />
+          </TouchableOpacity>
+        </View>
 
-         <Text style={styles.label}>Assign</Text>
+        <Text style={styles.label}>Assign</Text>
 
-<View style={styles.selectWrapper}>
-  <TouchableOpacity style={styles.selectBox} onPress={toggleDropdown}>
-    <Text style={styles.selectedText}>{selectedUser}</Text>
-    <Image source={DownArrow} style={styles.downArrow} />
-  </TouchableOpacity>
+        {/* SELECT USER DROPDOWN */}
+        <View style={styles.selectWrapper}>
+          <TouchableOpacity style={styles.selectBox} onPress={toggleDropdown}>
+            <Text style={styles.selectedText}>{selectedUser}</Text>
+            <Image source={DownArrow} style={styles.downArrow} />
+          </TouchableOpacity>
 
-{dropdownVisible && (
-  <View style={styles.dropdownMenu}>
-    <ScrollView
-      style={{ maxHeight: 150 }}       // limit height & scroll
-      nestedScrollEnabled={true}        // important inside Modal
-      showsVerticalScrollIndicator={false}
-    >
-      {["Raja", "Kannan", "Arun", "Vijay", "Sarath", "Pravin"].map((item) => (
+          {dropdownVisible && (
+            <View style={styles.dropdownMenu}>
+              <ScrollView
+                style={{ maxHeight: 150 }}
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={false}
+              >
+                {["Raja", "Kannan", "Arun", "Vijay", "Sarath", "Pravin"].map(
+                  (item) => (
+                    <TouchableOpacity
+                      key={item}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedUser(item);
+                        setDropdownVisible(false);
+                      }}
+                    >
+                      <Text style={styles.optionText}>{item}</Text>
+                    </TouchableOpacity>
+                  )
+                )}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+
+        {/* SUBMIT */}
         <TouchableOpacity
-          key={item}
-          style={styles.option}
+          style={styles.submitBtn}
           onPress={() => {
-            setSelectedUser(item);
-            setDropdownVisible(false);
+            onAssignDone();
+            handleClose();
           }}
         >
-          <Text style={styles.optionText}>{item}</Text>
+          <Text style={styles.submitText}>Assign complaint</Text>
         </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </View>
-)}
-
-</View>
-
-
-
-        
-         <TouchableOpacity
-  style={styles.submitBtn}
-  onPress={() => {
-    onAssignDone();    
-  }}
->
-  <Text style={styles.submitText}>Assign complaint</Text>
-</TouchableOpacity>
-
-        </View>
-      </View>
-    </Modal>
-
-
-    
+      </Animated.View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
   },
-   headerLine: {
+
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    padding: 20,
+    paddingBottom: 35,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+
+  headerLine: {
     width: 60,
     height: 5,
     backgroundColor: "#D5D5D5",
@@ -132,56 +186,20 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-selectBox: {
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 12,
-  paddingVertical: 14,
-  paddingHorizontal: 16,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  backgroundColor: "#fff",
-},
-
-selectWrapper: {
-  position: "relative",
-  width: "100%",
-},
-
-
-selectedText: {
-  fontSize: 15,
-  color: "#000",
-},
-sheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-  paddingBottom: 35,
-  position: "relative",
-
-  minHeight: 350,  
-},
-
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
   },
+
   title: {
     fontSize: 18,
     fontWeight: "600",
     color: "#000",
   },
-  closeIcon: {
-    width: 15,
-    height:15,
-    tintColor: "#000",
-  },
+
+  closeIcon: { width: 15, height: 15 },
 
   label: {
     fontSize: 14,
@@ -190,42 +208,39 @@ sheet: {
     marginTop: 10,
   },
 
- downArrow: {
-  width: 18,
-  height: 18,
-  tintColor: "#6F6F6F",
-},
+  selectWrapper: { position: "relative", width: "100%" },
 
-dropdownMenu: {
-  position: "absolute",
-  top: 58,          // ⭐ EXACT spacing below the input box
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  elevation: 8,
-  zIndex: 999,
-  paddingVertical: 8,
-},
-
-
-
-option: {
-  paddingVertical: 14,
-  paddingHorizontal: 16,
-},
-
-optionText: {
-  fontSize: 15,
-  color: "#000",
-},
-  downIcon: {
-    width: 18,
-    height: 18,
-    tintColor: "#555",
+  selectBox: {
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
+
+  selectedText: { fontSize: 15, color: "#000" },
+  downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
+
+  dropdownMenu: {
+    position: "absolute",
+    top: 58,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    elevation: 8,
+    zIndex: 999,
+    paddingVertical: 8,
+  },
+
+  option: { paddingVertical: 14, paddingHorizontal: 16 },
+  optionText: { fontSize: 15, color: "#000" },
 
   submitBtn: {
     backgroundColor: "#1D5DFF",
@@ -234,15 +249,6 @@ optionText: {
     alignItems: "center",
     marginTop: 85,
   },
-  headerLine: {
-  width: 60,
-  height: 5,
-  backgroundColor: "#D5D5D5",
-  borderRadius: 5,
-  alignSelf: "center",
-  marginBottom: 15,
-},
-
 
   submitText: {
     color: "#fff",

@@ -1,22 +1,10 @@
 import React, { useState, useCallback } from "react";
-import {
-    View,
-    Text,
-    StyleSheet,
-    SafeAreaView,
-    ScrollView,
-    TouchableOpacity,
-    TextInput,
-    Image,
-    BackHandler,
-    Modal
-} from "react-native";
+import {View,Text,StyleSheet,SafeAreaView,ScrollView,TouchableOpacity,TextInput,Image,BackHandler,} from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
-import DropDownPicker from "react-native-dropdown-picker";
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import { postTenant } from '../../Action/HostelAction'
+import DownArrow from "../../Assets/Images/direction-down.png";
+import { launchImageLibrary } from 'react-native-image-picker';
 
 
 
@@ -43,8 +31,8 @@ export default function AddTenant() {
             } else if (response.errorMessage) {
                 console.log('Error:', response.errorMessage);
             } else {
-                const source = { uri: response.assets[0] };
-                setSelectedImage(source); // save selected image
+                const source = { uri: response.assets[0].uri };
+                setSelectedImage(source);
             }
         });
     };
@@ -98,7 +86,8 @@ export default function AddTenant() {
 
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
-    const [items, setItems] = useState([
+    const [selectedState, setSelectedState] = useState("Select State");
+    const items = [
         { label: "Andhra Pradesh", value: "Andhra Pradesh" },
         { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
         { label: "Assam", value: "Assam" },
@@ -127,42 +116,7 @@ export default function AddTenant() {
         { label: "Uttar Pradesh", value: "Uttar Pradesh" },
         { label: "Uttarakhand", value: "Uttarakhand" },
         { label: "West Bengal", value: "West Bengal" },
-    ]);
-
-    const createTenantClcik = () => {
-
-        const payloads = {
-            firstName: basicDetails.firstName,
-            lastName: basicDetails.lastName,
-            mobile: basicDetails.mobile,
-            emailId: basicDetails.email,
-        }
-
-        console.log(payloads)
-
-        const formData = new FormData();
-
-        const jsonBase64 = btoa(JSON.stringify(payloads))
-
-        formDate.append("payloads", {
-            uri: "data:application/json;base64," + jsonBase64,
-            type: "application/json",
-            name: "payload.json",
-        })
-
-        if (selectedImage) {
-            console.log(selectedImage)
-
-            formDate.append("profilePic", {
-                uri: selectedImage?.uri?.uri,
-                type: selectedImage.type || "image/jpeg",
-                name: selectedImage.name,
-            })
-
-        }
-
-        postTenant()
-    }
+    ]
 
     return (
         <SafeAreaView style={styles.container}>
@@ -244,7 +198,7 @@ export default function AddTenant() {
 
                             <View style={styles.profileWrapper}>
                                 <Image
-                                    source={{uri:selectedImage?.uri?.uri}}
+                                    source={selectedImage ? selectedImage : Profile}
                                     style={styles.profileImage}
                                 />
 
@@ -374,10 +328,8 @@ export default function AddTenant() {
                 {step === 2 && (
                     <>
                         <SafeAreaView style={styles.container1}>
-                            <ScrollView
-                                showsVerticalScrollIndicator={false}
-                                nestedScrollEnabled={true}
-                            >
+                            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+
                                 <View style={styles.form}>
                                     <Text style={styles.label}>Flat, House no., Building *</Text>
                                     <TextInput
@@ -418,16 +370,19 @@ export default function AddTenant() {
                                         }
                                     />
 
-                                    <Text style={styles.label}>City *</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter Your City Name"
-                                        value={addressDetails.city}
-                                        onChangeText={(t) =>
-                                            setAddressDetails({ ...addressDetails, city: t })
-                                        }
-                                    />
+                                            <Text style={styles.label}>City *</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Enter Your City Name"
+                                                value={addressDetails.city}
+                                                onChangeText={(t) =>
+                                                    setAddressDetails({ ...addressDetails, city: t })
+                                                }
+                                            />
 
+
+                                    <View style={{ marginBottom: open ? 200 : 12 }}>
+                                        <Text style={styles.label}>State *</Text>
                                     {/* <Text style={styles.label}>State *</Text>
                             <TextInput
                                 style={styles.input}
@@ -440,29 +395,53 @@ export default function AddTenant() {
                                     <View style={{ zIndex: 2000, marginBottom: open ? 180 : 12 }}>
                                         <Text style={styles.label}>State *</Text>
 
-                                        <View style={{ zIndex: 2000, elevation: 2000, height: open ? 300 : 50 }}>
-                                            <DropDownPicker
-                                                open={open}
-                                                value={value}
-                                                items={items}
-                                                setOpen={setOpen}
-                                                setValue={setValue}
-                                                setItems={setItems}
-                                                placeholder="Select State"
-                                                listMode="SCROLLVIEW"
-                                                nestedScrollEnabled={true}
-                                                style={{
-                                                    borderColor: "#E5E7EB",
-                                                    borderRadius: 8,
-                                                }}
-                                                dropDownContainerStyle={{
-                                                    borderColor: "#E5E7EB",
-                                                }}
-                                            />
+                                        <View style={{ position: "relative" }}>
+                                            <TouchableOpacity
+                                                style={styles.select}
+                                                onPress={() => setOpen(!open)}
+                                            >
+                                                <Text style={styles.selectText}>{selectedState}</Text>
+                                                <Image source={DownArrow} style={styles.arrow} />
+                                            </TouchableOpacity>
+
+                                            {open && (
+                                                <View style={styles.dropdownMenu}>
+                                                    <ScrollView
+                                                        nestedScrollEnabled={true}
+                                                        style={{ maxHeight: 150 }}      
+                                                        showsVerticalScrollIndicator={true}
+                                                    >
+                                                        {items.map((v, index) => (
+                                                            <TouchableOpacity
+                                                                  key={index}
+    style={[
+        styles.option,
+        selectedState === v.label && styles.selectedOption
+    ]}
+
+                                                                onPress={() => {
+                                                                    setSelectedState(v.label);
+                                                                    setAddressDetails({ ...addressDetails, state: v.label });
+                                                                    setOpen(false);
+                                                                }}
+                                                            >
+                                                                <Text
+        style={[
+            styles.optionText,
+            selectedState === v.label && styles.selectedOptionText
+        ]}
+    >
+        {v.label}
+    </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
                                         </View>
-
-
                                     </View>
+
+
 
 
 
@@ -484,7 +463,7 @@ export default function AddTenant() {
                                             !isAddressValid && styles.primaryBtnDisabled
                                         ]}
                                         disabled={!isAddressValid}
-                                        onPress={createTenantClcik}
+                                        onPress={() => navigation.goBack()}
                                     >
                                         <Text
                                             style={[styles.primaryText,]}
@@ -550,6 +529,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     pickerWrapper: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 8,
+        marginBottom: 12,
+        overflow: "hidden",
+    },
         borderWidth: 1,
         borderColor: "#E5E7EB",
         borderRadius: 8,
@@ -796,6 +781,52 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         alignItems: "center",
     },
+
+
+    select: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    selectText: { color: "#555" },
+    arrow: { width: 18, height: 18, tintColor: "#777" },
+    dropdownMenu: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 9999,   // 🔥 increase zIndex
+        elevation: 10,
+        maxHeight: 250, // 🔥 ensure scroll works
+    }
+    ,
+
+    option: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    optionText: {
+        fontSize: 15,
+        color: "#000",
+    },
+selectedOption: {
+    backgroundColor: "#1E45E1",
+},
+selectedOptionText: {
+    color: "#fff",
+    fontWeight: "600"
+}
 
 
 });

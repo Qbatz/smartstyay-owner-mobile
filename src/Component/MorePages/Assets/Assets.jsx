@@ -22,15 +22,15 @@ import AddIcon from "../../../Assets/Images/TenantAddBlue.png";
 import AssetIcon from "../../../Assets/Images/Asset.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import ButtonTag from "../../../Assets/Images/tag.png";
-import FilterIcon from "../../../Assets/Images/EditPin.png";
+import FilterIcon from "../../../Assets/Images/filter.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import TrashIcon from "../../../Assets/Images/trash.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
-import AddAssetSheet from "../Assets/AddAssets"
+import AddAssetSheet from "../Assets/AddAssets";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Assets({ navigation }) {
-  // sheet + filter state
   const [showSheet, setShowSheet] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
 
@@ -61,7 +61,27 @@ export default function Assets({ navigation }) {
   const translateY = useRef(new Animated.Value(0)).current;
   const detailsY = useRef(new Animated.Value(0)).current;
   const assignTranslateY = useRef(new Animated.Value(0)).current;
-
+useFocusEffect(
+   useCallback(() => {
+     const onBackPress = () => {
+       
+ 
+       if (navigation.canGoBack()) {
+         navigation.goBack();
+         return true;
+       }
+ 
+       return false;
+     };
+ 
+     const subscription = BackHandler.addEventListener(
+       "hardwareBackPress",
+       onBackPress
+     );
+ 
+     return () => subscription.remove();
+   }, [navigation])
+ );
 
 
 
@@ -303,7 +323,7 @@ export default function Assets({ navigation }) {
           setShowAssignSheet(false);
         }}
       >
-        <Image source={AddIcon} style={styles.fabIcon} />
+        <Image source={AddIcon} style={styles.fabIconAdd} />
       </TouchableOpacity>
 
 
@@ -760,10 +780,18 @@ const styles = StyleSheet.create({
   assetSub: { fontSize: 13, color: "#696969", marginTop: 2 },
   dotsIcon: { width: 18, height: 18, tintColor: "#999" },
 
-  fab: { position: "absolute", bottom: 25, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  Filterfab: { position: "absolute", bottom: 100, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  fabIcon: { width: 60, height: 60 },
-
+  fab: { position: "absolute", bottom: 65, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  Filterfab: {  position: "absolute",
+    bottom: 130,
+    right: 30,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 30,
+    elevation: 5, },
+  fabIcon: { width: 30, height: 30 },
+fabIconAdd:{
+width: 60, height: 60 
+},
   sheetOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,19 +9,20 @@ import {
   Image,
   SafeAreaView,
   TouchableWithoutFeedback,
+  BackHandler,
 } from "react-native";
+
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
 export default function AddTransaction({ navigation }) {
-
-  // ---------- DATE ----------
+  // DATE
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [purchaseDate, setPurchaseDate] = useState(new Date());
 
-  // ---------- DROPDOWN STATES ----------
+  // DROPDOWNS
   const [transactionType, setTransactionType] = useState("Expense");
   const [transactionTypeOpen, setTransactionTypeOpen] = useState(false);
 
@@ -34,16 +35,16 @@ export default function AddTransaction({ navigation }) {
   const [toAcc, setToAcc] = useState("HDFC XXXX1234");
   const [toAccOpen, setToAccOpen] = useState(false);
 
-  // ---------- OTHER DATA ----------
+  // OTHER INPUTS
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
 
-  // ---------- OPTIONS ----------
+  // OPTIONS
   const transactionOptions = ["Expense", "Income", "Transfer"];
   const categoryOptions = ["Food", "Travel", "Shopping", "Bills", "Recharge", "Other"];
   const accounts = ["Cash", "HDFC XXXX1234", "SBI XXXX5678", "Wallet", "Credit Card"];
 
-  // Close all dropdowns
+  // CLOSE ALL LISTS
   const closeAll = () => {
     setTransactionTypeOpen(false);
     setCategoryOpen(false);
@@ -51,44 +52,64 @@ export default function AddTransaction({ navigation }) {
     setToAccOpen(false);
   };
 
-  // Dropdown box UI (shared inside same file)
-  const renderSelect = (label, selected, open, setOpen, list, onSelect) => (
-    
-   <>
-  <View style={{ flexDirection: "row", alignItems: "center", marginBottom:5 }}>
-    <Text style={styles.label}>{label.replace("*", "")}</Text>
-    {label.includes("*") && <Text style={{ color: "red" }}>*</Text>}
-  </View>
+  // BACK HANDLER
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+      navigation.goBack();
+      return true;
+    });
+    return () => backHandler.remove();
+  }, []);
 
+  // REUSABLE BLUE-HIGHLIGHT DROPDOWN
+  const renderSelect = (label, selected, open, setOpen, list, onSelect) => (
+    <>
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
+        <Text style={styles.label}>{label.replace("*", "")}</Text>
+        {label.includes("*") && <Text style={{ color: "red" }}>*</Text>}
+      </View>
 
       <View style={{ position: "relative" }}>
         <TouchableOpacity
-          style={styles.select}
-          activeOpacity={0.9}
+          style={styles.selectBox}
           onPress={() => {
             closeAll();
             setOpen(!open);
           }}
         >
           <Text style={styles.selectText}>{selected}</Text>
-          <Text style={styles.caret}>⌄</Text>
+          <Image source={require("../../../Assets/Images/direction-down.png")}
+                 style={styles.downArrow} />
         </TouchableOpacity>
 
         {open && (
-          <View style={styles.dropdownMenu}>
-            <ScrollView style={{ maxHeight: 160 }}>
-              {list.map((v, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.option}
-                  onPress={() => {
-                    onSelect(v);
-                    setOpen(false);
-                  }}
-                >
-                  <Text style={styles.optionText}>{v}</Text>
-                </TouchableOpacity>
-              ))}
+          <View style={styles.newDropdownMenu}>
+            <ScrollView style={{ maxHeight: 180 }} nestedScrollEnabled>
+              {list.map((item, i) => {
+                const isSelected = selected === item;
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={[
+                      styles.newOption,
+                      isSelected && styles.newOptionSelected
+                    ]}
+                    onPress={() => {
+                      onSelect(item);
+                      setOpen(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.newOptionText,
+                        isSelected && styles.newOptionTextSelected
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         )}
@@ -99,17 +120,15 @@ export default function AddTransaction({ navigation }) {
   return (
     <>
       <SafeAreaView style={styles.safe}>
-
-        {/* HEADER */}
-       
-
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-     <View style={styles.topHeader}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image source={ArrowLeft} style={styles.backIcon} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Transaction</Text>
-        </View>
+          
+          {/* HEADER */}
+          <View style={styles.topHeader}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={ArrowLeft} style={styles.backIcon} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Add Transaction</Text>
+          </View>
 
           {/* Transaction Type */}
           {renderSelect(
@@ -134,13 +153,13 @@ export default function AddTransaction({ navigation }) {
           {/* Date */}
           <Text style={styles.label}>Date</Text>
           <TouchableOpacity
-            style={styles.dateBox}
+            style={styles.inputBox}
             onPress={() => {
               closeAll();
               setOpenDatePicker(true);
             }}
           >
-            <Text style={styles.placeholder}>
+            <Text style={{ color: "#222" }}>
               {dayjs(purchaseDate).format("DD-MM-YYYY")}
             </Text>
             <Image source={CalendarIcon} style={styles.calendarIcon} />
@@ -167,10 +186,10 @@ export default function AddTransaction({ navigation }) {
           )}
 
           {/* Amount */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, marginBottom: 5 }}>
-  <Text style={styles.label}>Amount</Text>
-  <Text style={{ color: "red" }}>*</Text>
-</View>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
+            <Text style={styles.label}>Amount</Text>
+            <Text style={{ color: "red" }}>*</Text>
+          </View>
 
           <TextInput
             style={styles.input}
@@ -192,24 +211,21 @@ export default function AddTransaction({ navigation }) {
             multiline
           />
 
-          {/* Buttons */}
-         <View style={styles.btnRow}>
-           <TouchableOpacity
-             style={styles.cancelBtn}
-             onPress={() => navigation.goBack()}
-           >
-             <Text style={styles.cancelText}>Cancel</Text>
-           </TouchableOpacity>
-         
-           <TouchableOpacity style={styles.addBtn2}>
-             <Text style={styles.addBtnText}>Add</Text>
-           </TouchableOpacity>
-         </View>
+          {/* BUTTONS */}
+          <View style={styles.btnRow}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.saveBtn}>
+              <Text style={styles.saveText}>Add</Text>
+            </TouchableOpacity>
+          </View>
 
         </ScrollView>
       </SafeAreaView>
 
-      {/* DATE PICKER OVERLAY — header blur ஆகாது */}
+      {/* DATE PICKER MODAL */}
       {openDatePicker && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
@@ -232,142 +248,125 @@ export default function AddTransaction({ navigation }) {
   );
 }
 
-
-
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff", paddingTop: 20 },
+  safe: { flex: 1, backgroundColor: "#fff" },
 
   topHeader: {
-    backgroundColor: "#fff",
     flexDirection: "row",
     alignItems: "center",
-
+    marginBottom: 16,
   },
 
-  backIcon: { width: 18, height: 18, marginRight: 10, tintColor: "#222" },
+  backIcon: { width: 20, height: 20, marginRight: 12, tintColor: "#222" },
 
-  headerTitle: { fontSize: 18, fontWeight: "700" },
+  headerTitle: { fontSize: 20, fontWeight: "700", color: "#111" },
 
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 20, 
-    backgroundColor: "#fff",
-    flex: 1,
-  },
+  container: { paddingHorizontal: 20, paddingTop: 20 },
 
   label: {
     fontSize: 14,
     color: "#000",
-    marginTop: 12,
-    marginBottom: 5,
+    marginBottom: 6,
+    fontWeight: "500",
   },
 
-  select: {
-    height: 48,
+  selectBox: {
+    height: 50,
     borderWidth: 1,
-    borderColor: "#e1e1e1",
+    borderColor: "#D4D4D4",
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff",
+    justifyContent: "space-between",
   },
 
-  selectText: { color: "#222" },
-  caret: { fontSize: 16, color: "#666" },
+  selectText: { fontSize: 15, color: "#000" },
+  downArrow: { width: 18, height: 18, tintColor: "#6A6A6A" },
 
-  dropdownMenu: {
+  newDropdownMenu: {
     position: "absolute",
-    top: 50,
+    top: 52,
     left: 0,
     right: 0,
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 999,
-    elevation: 15,
+    borderColor: "#DDDDDD",
+    borderRadius: 10,
+    overflow: "hidden",
+    maxHeight: 180,
+    zIndex: 9999,
+    elevation: 10,
   },
 
-  option: { paddingVertical: 12, paddingHorizontal: 14 },
-  optionText: { fontSize: 15, color: "#000" },
-
-  dateBox: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#e1e1e1",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  newOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
 
-  placeholder: { color: "#555" },
-  calendarIcon: { width: 20, height: 20, tintColor: "#444" },
+  newOptionSelected: {
+    backgroundColor: "#1D5BEE",
+  },
+
+  newOptionText: { fontSize: 15, color: "#111" },
+  newOptionTextSelected: { color: "#fff", fontWeight: "600" },
 
   input: {
     borderWidth: 1,
     borderColor: "#E5E5E5",
-    borderRadius: 8,
-    padding: 15,
+    borderRadius: 12,
+    padding: 14,
     fontSize: 15,
-    color: "#000",
   },
 
- btnRow: {
-    display:'flex',
-  flexDirection: "row",
-//   alignItems: "flex-end",
-  justifyContent: "flex-end",
-  marginTop: 40,
-  paddingHorizontal: 12,
-},
+  inputBox: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 
-cancelBtn: {
-  paddingVertical: 12,
-  paddingHorizontal: 32,
-},
+  calendarIcon: { width: 20, height: 20, tintColor: "#444" },
 
-cancelText: {
-  color: "#6B7280",
-  fontSize: 15,
-  fontWeight: "500",
-},
+  btnRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 30,
+    gap: 12,
+  },
 
-addBtn2: {
-  backgroundColor: "#2B6CF6",
-  paddingVertical: 12,
-  paddingHorizontal: 40,
-  borderRadius: 10,
-},
+  cancelBtn: {},
+  cancelText: { fontSize: 15, color: "#6B7280" },
 
-addBtnText: {
-  color: "#fff",
-  fontSize: 15,
-  fontWeight: "600",
-},
+  saveBtn: {
+    backgroundColor: "#2B6CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 36,
+    borderRadius: 10,
+  },
+
+  saveText: { color: "#fff", fontSize: 15, fontWeight: "600" },
 
   sheetOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    bottom:30,
+    bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-    zIndex: 800, 
   },
 
- datePickerBox: {
-  backgroundColor: "#fff",
-  width: "90%",
-  borderRadius: 16,
-  paddingVertical: 10,
-  paddingHorizontal: 10,
-  alignSelf: "center",
-  marginBottom: 140,
-},
-
+  datePickerBox: {
+    backgroundColor: "#fff",
+    width: "92%",
+    borderRadius: 16,
+    padding: 10,
+    alignSelf: "center",
+    marginBottom: 100,
+  },
 });
