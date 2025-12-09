@@ -33,7 +33,7 @@ import LoginDesign from './src/Component/CreateAccount/Login'
 import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp';
 import MyTabs from "./src/Component/Tabs/BottomTabs";
 import AddTenant from "./src/Component/Customer/AddTenants";
-import TenantCheckin from  "./src/Component/Customer/TenantCheckIn";
+import TenantCheckin from "./src/Component/Customer/TenantCheckIn";
 import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
 import FinalSettlement from "./src/Component/Customer/FinalSettlement";
@@ -86,6 +86,8 @@ import BillTemplate from "./src/Component/SettingScreen/BillTemplate/SettingsBil
 import SubscriptionPlans from './src/Component/SettingScreen/Subscription/SubscriptionPlan';
 import PlanDetailsScreen from './src/Component/SettingScreen/Subscription/PlanDetailsScreen'
 import Agreement from './src/Component/SettingScreen/SettingsAgreement/AgreementPolicy'
+import LoginContext from './src/Context/LoginContext';
+import CommonContext from './src/Context/CommonContext'
 
 
 
@@ -95,7 +97,11 @@ function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <LoginContext>
+        <CommonContext>
+            <AppContent />
+        </CommonContext>
+      </LoginContext>      
     </SafeAreaProvider>
   );
 }
@@ -116,40 +122,40 @@ function AppContent() {
           <Navigation.Screen name="SplashText" component={SplashText} />
           <Navigation.Screen name="SplashScreen" component={SplashScreen} />
           <Navigation.Screen name="LandingScreen" component={LandingScreen} />
-           <Navigation.Screen name="CreateAccount" component={CreateAccount} />
-             <Navigation.Screen name="LoginDesign" component={LoginDesign} />
-              <Navigation.Screen name="VerifyAccountScreen" component={VerifyAccountScreen} />
-                <Navigation.Screen name="MyTabs" component={MyTabs} />
-                <Navigation.Screen name="AddTenant" component={AddTenant} />
-                  <Navigation.Screen name="TenantCheckin" component={TenantCheckin} />
-            <Navigation.Screen name="AddBooking" component={AddBooking} />
-            <Navigation.Screen name="AddWalkin" component={AddWalkin} />
-             <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
+          <Navigation.Screen name="CreateAccount" component={CreateAccount} />
+          <Navigation.Screen name="LoginDesign" component={LoginDesign} />
+          <Navigation.Screen name="VerifyAccountScreen" component={VerifyAccountScreen} />
+          <Navigation.Screen name="MyTabs" component={MyTabs} />
+          <Navigation.Screen name="AddTenant" component={AddTenant} />
+          <Navigation.Screen name="TenantCheckin" component={TenantCheckin} />
+          <Navigation.Screen name="AddBooking" component={AddBooking} />
+          <Navigation.Screen name="AddWalkin" component={AddWalkin} />
+          <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
 
-              <Navigation.Screen name="ForgotPassword" component={ForgotPassword} />
-                <Navigation.Screen name="OtpVerification" component={OtpVerification} />
-                 <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
-                  <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
-                    <Navigation.Screen name="ComplaintDetails" component={ComplaintDetails} />
-                    <Navigation.Screen name="AddComplaint" component={AddComplaint} />
-                     <Navigation.Screen name="MoreDesign" component={MoreDesign} />
-                    <Navigation.Screen name="Assets" component={Assets} />
-              <Navigation.Screen name="Banking" component={Banking} />
-              <Navigation.Screen name="AddTransaction" component={AddTransaction} />
-               <Navigation.Screen name="Electricity" component={Electricity} />
-               <Navigation.Screen name="RoomDetails" component={RoomDetails} />
-               <Navigation.Screen name="Expenses" component={Expenses} />
-                <Navigation.Screen name="AddExpenses" component={AddExpenses} />
-                 <Navigation.Screen name="TenantsList" component={TenantsList} />
-                <Navigation.Screen name="CustomerReading" component={CustomerReading} />
-                  <Navigation.Screen name="VendorsList" component={VendorsList} />
-                <Navigation.Screen name="CancelNotice" component={CancelNotice} />
-                 <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
-                  <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
-                    <Navigation.Screen name="Bills" component={Bills} />
-                   <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
-                    <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
-                     <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
+          <Navigation.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Navigation.Screen name="OtpVerification" component={OtpVerification} />
+          <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
+          <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
+          <Navigation.Screen name="ComplaintDetails" component={ComplaintDetails} />
+          <Navigation.Screen name="AddComplaint" component={AddComplaint} />
+          <Navigation.Screen name="MoreDesign" component={MoreDesign} />
+          <Navigation.Screen name="Assets" component={Assets} />
+          <Navigation.Screen name="Banking" component={Banking} />
+          <Navigation.Screen name="AddTransaction" component={AddTransaction} />
+          <Navigation.Screen name="Electricity" component={Electricity} />
+          <Navigation.Screen name="RoomDetails" component={RoomDetails} />
+          <Navigation.Screen name="Expenses" component={Expenses} />
+          <Navigation.Screen name="AddExpenses" component={AddExpenses} />
+          <Navigation.Screen name="TenantsList" component={TenantsList} />
+          <Navigation.Screen name="CustomerReading" component={CustomerReading} />
+          <Navigation.Screen name="VendorsList" component={VendorsList} />
+          <Navigation.Screen name="CancelNotice" component={CancelNotice} />
+          <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
+          <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
+          <Navigation.Screen name="Bills" component={Bills} />
+          <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
+          <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
+          <Navigation.Screen name="ChangeHostelScreen" component={ChangeHostelScreen} />
                       <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
                        <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
                       <Navigation.Screen name="CreateBills" component={CreateBills} />

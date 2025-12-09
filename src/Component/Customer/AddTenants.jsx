@@ -15,6 +15,7 @@ export default function AddTenant() {
 
 
 
+    console.log(selectedImage)
 
     const pickImage = () => {
         let options = {
@@ -369,18 +370,29 @@ export default function AddTenant() {
                                         }
                                     />
 
-                                    <Text style={styles.label}>City *</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter Your City Name"
-                                        value={addressDetails.city}
-                                        onChangeText={(t) =>
-                                            setAddressDetails({ ...addressDetails, city: t })
-                                        }
-                                    />
+                                            <Text style={styles.label}>City *</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Enter Your City Name"
+                                                value={addressDetails.city}
+                                                onChangeText={(t) =>
+                                                    setAddressDetails({ ...addressDetails, city: t })
+                                                }
+                                            />
 
 
                                     <View style={{ marginBottom: open ? 200 : 12 }}>
+                                        <Text style={styles.label}>State *</Text>
+                                    {/* <Text style={styles.label}>State *</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Select State"
+                                value={addressDetails.state}
+                                onChangeText={(t) =>
+                                    setAddressDetails({ ...addressDetails, state: t })
+                                }
+                            /> */}
+                                    <View style={{ zIndex: 2000, marginBottom: open ? 180 : 12 }}>
                                         <Text style={styles.label}>State *</Text>
 
                                         <View style={{ position: "relative" }}>
@@ -517,6 +529,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     pickerWrapper: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 8,
+        marginBottom: 12,
+        overflow: "hidden",
+    },
         borderWidth: 1,
         borderColor: "#E5E7EB",
         borderRadius: 8,

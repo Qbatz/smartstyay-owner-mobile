@@ -17,6 +17,7 @@ import Eye from "../../Assets/Images/Eye.png";
 import WaveImage from "../../Assets/Images/CreateAccount_Rectangle.png";
 import { useNavigation } from "@react-navigation/native";
 import { postNewAccount } from "../../Action/LoginAction";
+import SuccessModal from '../../ToastFile/ToastPage'
 
 export default function CreateAccount() {
    const navigation = useNavigation();
@@ -28,6 +29,11 @@ export default function CreateAccount() {
   const [mobileNo,setMobileNo]=useState()
   const [password,setPassword]=useState()
   const[confirmPassword,setConfirmPassword]=useState()
+  const [showSuccessModal,setShowSuccessModal]=useState(false)
+  const[toastMessage,setToastMessage]=useState()
+  const[modelType,setModelType]=useState()
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
 
 
 
@@ -47,9 +53,45 @@ export default function CreateAccount() {
           mobile: mobileNo,
   }
 
-      postNewAccount(data).then(r=>{
-        console.log(r)
-      })
+      if(
+  firstName && firstName.trim() !== "" &&
+  lastName && lastName.trim() !== "" &&
+  emailid && emailid.trim() !== "" &&
+  mobileNo && mobileNo.trim() !== "" &&
+  password && password.trim() !== ""
+){
+  if(!passwordRegex.test(password)){
+    setShowSuccessModal(true);
+    setToastMessage('Password must contain uppercase, number & special character');
+    setModelType('error');
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 2000);
+    return;
+  }
+
+  postNewAccount(data).then(r=>{
+    if(r.status === 201){
+      setShowSuccessModal(true);
+      setToastMessage('Created Successfully');
+      setModelType('success');
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
+    }
+  });
+
+}
+else{
+  setShowSuccessModal(true);
+  setToastMessage('All Fields Required');
+  setModelType('error');
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 2000);
+}
+
+     
   }
 
   
@@ -58,6 +100,12 @@ export default function CreateAccount() {
 
   return (
     <View style={styles.container}>
+      <SuccessModal
+              visible={showSuccessModal}
+              onClose={() => setShowSuccessModal(false)}
+              message={toastMessage}
+              type={modelType}
+            />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

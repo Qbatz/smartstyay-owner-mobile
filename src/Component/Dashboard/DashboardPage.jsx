@@ -1,4 +1,4 @@
-import React, { useState, useCallback, } from "react";
+import React, { useState,useCallback, useEffect, useContext, } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -39,7 +39,8 @@ import ActiveCompliance from '../../Assets/Images/Active_compliance.png';
 import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
-import Svg, { Path, Circle, Line, Text as SvgText } from "react-native-svg";
+import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
+import { LoginContexts } from "../../Context/LoginContext";
 import ProfileDrawer from "./ProfileClickScreen";
 import AddTenant from "../Customer/AddTenants";
 
@@ -51,9 +52,7 @@ import {
   YAxis,
   XAxis
 } from "react-native-svg-charts";
-
-
-
+import { getHostels } from "../../Action/HostelAction";
 
 
 
@@ -82,10 +81,12 @@ export default function DashboardScreen() {
     }, [drawerVisible])
   );
 
+  const context=useContext(LoginContexts)
+    const [tooltip, setTooltip] = useState(null);
+    const { width } = Dimensions.get("window");
+    const [hostelList,setHostelList]=useState([])
 
-
-  const [tooltip, setTooltip] = useState(null);
-  const { width } = Dimensions.get("window");
+    console.log(hostelList)
 
   const months = ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024"];
   const advance = [100000, 150000, 23000, 31000, 28000];
@@ -119,6 +120,14 @@ export default function DashboardScreen() {
       advanceReturn: advanceReturn[index]
     });
   };
+
+
+    useEffect(()=>{
+        getHostels(context.getToken).then(r=>{
+          console.log(r)
+          setHostelList(r.data)
+        })
+    },[])
 
 
   const data = [
@@ -271,7 +280,7 @@ export default function DashboardScreen() {
           <View style={styles.hostelRow}>
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.hostelTitle}>Royal Grand Hostel</Text>
+              <Text style={styles.hostelTitle}>{hostelList[0]?.name}</Text>
               {/* <Text style={styles.changeText}>Change Hostel →</Text> */}
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                 <Text style={styles.changeText}>Change Hostel →</Text>
