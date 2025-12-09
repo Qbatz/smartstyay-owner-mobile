@@ -23,39 +23,36 @@ const [landmark, setLandmark] = useState("");
 const [pincode, setPincode] = useState("");
 const [city, setCity] = useState("");
 const { addGeneral, loading, errorMsg, successMsg } = useGeneral();
+// inside AddGeneralScreen
 const handleSubmit = async () => {
   const payload = {
-  accountInfo: {
-    firstName,
-    lastName,
-    mobile,
-    mailId: email,
-    houseNo: flat,
-    street,
-    landmark,
-    city,
-    pincode,
-    state: StateSelected,
-    password: "Test@123",
-  },
-  profilePic: selectedImage
-    ? {
-        uri: selectedImage.uri,
-        type: selectedImage.type,
-        name: selectedImage.fileName || "profile.jpg",
-      }
-    : null,
-};
+    accountInfo: {
+      firstName,
+      lastName,
+      mobile,
+      mailId: email,
+      houseNo: flat,
+      street,
+      landmark,
+      city,
+      pincode,
+      state: StateSelected,
+      password: "Test@123",
+    },
 
+    profilePic: selectedImage ? {
+      uri: selectedImage.uri,
+      name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
+      type: selectedImage.type || "image/jpeg",
+    } : null
+  };
 
-  console.log("FINAL PAYLOAD → ", payload);
+  console.log("FINAL PAYLOAD =", payload);
 
   const res = await addGeneral(payload);
-
-  if (res) {
-    navigation.goBack();
-  }
+  if (res) navigation.goBack();
 };
+
 
 
 

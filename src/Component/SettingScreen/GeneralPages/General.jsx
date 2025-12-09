@@ -1,4 +1,4 @@
-import React,{useState,useCallback} from "react";
+import React,{useState,useCallback,useEffect} from "react";
 import {
   View,
   Text,
@@ -18,11 +18,14 @@ import Delete from "../../../Assets/Images/trash.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ChangePasswordSheet from './ChangePasswordSheet';
 import { useFocusEffect } from '@react-navigation/native';
+import { useGeneral } from "../../../Context/GeneralContext";
+
 
 export default function GeneralDetailsScreen({ navigation }) {
 const [activeMenu, setActiveMenu] = useState(null);
  const [showDeletePopup, setShowDeletePopup] = useState(false);
  const [showPasswordSheet, setShowPasswordSheet] = useState(false);
+ const { getAdminList } = useGeneral();
 
  useFocusEffect(
    useCallback(() => {
@@ -48,6 +51,14 @@ const [activeMenu, setActiveMenu] = useState(null);
      return () => subscription.remove();
    }, [showPasswordSheet, navigation])
  );
+ useEffect(() => {
+  loadAdmins();
+}, []);
+
+const loadAdmins = async () => {
+  const data = await getAdminList();
+  console.log("ADMIN LIST →", data);
+};
 
  const handleDelete=()=>{
   setShowDeletePopup(true)
