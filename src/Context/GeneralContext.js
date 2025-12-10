@@ -11,34 +11,33 @@ export const GeneralProvider = ({ children }) => {
   const [successMsg, setSuccessMsg] = useState("");
 
 
-const addGeneral = async (params) => {
+const addGeneral = async (formData) => {
   try {
-    const formData = new FormData();
-
-    formData.append("accountInfo", JSON.stringify(params.accountInfo));
-
-    if (params.profilePic) {
-      formData.append("profilePic", {
-        uri: params.profilePic.uri,
-        name: params.profilePic.name,
-        type: params.profilePic.type,
-      });
-    }
-
-    console.log("FD PARTS →", formData._parts);
+    const token = await retriveData("token");
 
     const response = await AxiosConfig.post(
       "/v2/profile/add-admin",
-      formData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     return response;
 
   } catch (err) {
-    console.log("API ERROR:", err.response ?? err.message);
+    console.log("API ERROR:", err.response?.data || err.message);
     return null;
   }
 };
+
+
+
+
+
 
 
 

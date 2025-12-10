@@ -26,6 +26,7 @@ const [activeMenu, setActiveMenu] = useState(null);
  const [showDeletePopup, setShowDeletePopup] = useState(false);
  const [showPasswordSheet, setShowPasswordSheet] = useState(false);
  const { getAdminList } = useGeneral();
+ const [getData,setGetData] = useState("")
 
  useFocusEffect(
    useCallback(() => {
@@ -57,9 +58,10 @@ const [activeMenu, setActiveMenu] = useState(null);
 
 const loadAdmins = async () => {
   const data = await getAdminList();
-  console.log("ADMIN LIST →", data);
+  console.log("data", data);
+  setGetData(data)
 };
-
+console.log("loadAdmins",getData)
  const handleDelete=()=>{
   setShowDeletePopup(true)
   setActiveMenu(null)
