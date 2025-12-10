@@ -473,6 +473,7 @@ export default function AddGeneralScreen({ navigation, route }) {
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
     if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    if (!email.trim()) newErrors.email = "Please Enter Email ID";
     if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     if (!city.trim()) newErrors.city = "Please Enter City";
     if (StateSelected === "Select State") newErrors.state = "Please Select State";
@@ -850,7 +851,7 @@ export default function AddGeneralScreen({ navigation, route }) {
             onChangeText={setLandmark} />
 
           <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Select Type" value={pincode}
+          <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
             onChangeText={(t) => {
               setPincode(t);
               setErrors({ ...errors, pincode: "" });
@@ -860,7 +861,7 @@ export default function AddGeneralScreen({ navigation, route }) {
           )}
 
           <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Select Type" value={city}
+          <TextInput style={styles.input} placeholder="Enter City" value={city}
             onChangeText={(t) => {
               setCity(t);
               setErrors({ ...errors, city: "" });
