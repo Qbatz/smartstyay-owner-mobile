@@ -9,47 +9,101 @@ export const GeneralProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [mailError, setMailError] = useState("")
 
 
-const addGeneral = async (formData) => {
-  try {
-    const token = await retriveData("token");
+  const addGeneral = async (formData) => {
+    try {
+      const token = await retriveData("token");
 
-    const response = await AxiosConfig.post(
-      "/v2/profile/add-admin",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+      const response = await AxiosConfig.post(
+        "/v2/profile/add-admin",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("ResponseAdd", response)
+      return response;
 
-    return response;
+    }
+    catch (err) {
+      const errorData = err.response?.data || { message: err.message };
 
-  } catch (err) {
-    console.log("API ERROR:", err.response?.data || err.message);
-    return null;
-  }
-};
-
-
+      console.log("API ERROR:", errorData);
 
 
+      return { success: false, data: errorData }; // IMPORTANT FIX
+    }
+
+  };
 
 
 
+  const updateGeneral = async (adminId, formData) => {
+    try {
+      const token = await retriveData("token");
 
-const getAdminList = async () => {
+      const response = await AxiosConfig.put(
+        `/v2/profile/admin/${adminId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("responseupdate", response)
+
+      return response.data;
+
+    } catch (error) {
+      console.log("UPDATE ERROR:", error.response?.data || error.message);
+      return null;
+    }
+  };
+
+
+  const deleteGeneral = async (userId) => {
+    try {
+      const token = await retriveData("token");
+
+      const response = await AxiosConfig.delete(
+        `/v2/profile/delete-admin/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("DELETE SUCCESS:", response.data);
+      return { success: true, data: response.data };
+
+    } catch (err) {
+      const errorData = err.response?.data || { message: err.message };
+      console.log("DELETE ERROR:", errorData);
+
+      return { success: false, data: errorData };
+    }
+  };
+
+
+
+  const getAdminList = async () => {
     try {
       setLoading(true);
       setErrorMsg("");
 
       const response = await AxiosConfig.get("/v2/profile/admin-list");
-      console.log('response',response)
+      console.log('response', response)
 
       setLoading(false);
+      setSuccessMsg("General Added Successfully ✔");
       return response.data;
 
     } catch (error) {
@@ -65,6 +119,8 @@ const getAdminList = async () => {
       value={{
         addGeneral,
         getAdminList,
+        updateGeneral,
+        deleteGeneral,
         loading,
         errorMsg,
         successMsg,

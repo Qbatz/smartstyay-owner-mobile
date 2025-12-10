@@ -1,4 +1,4 @@
-import React,{useState,useCallback,useEffect} from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -19,232 +19,242 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ChangePasswordSheet from './ChangePasswordSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useGeneral } from "../../../Context/GeneralContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 export default function GeneralDetailsScreen({ navigation }) {
-const [activeMenu, setActiveMenu] = useState(null);
- const [showDeletePopup, setShowDeletePopup] = useState(false);
- const [showPasswordSheet, setShowPasswordSheet] = useState(false);
- const { getAdminList } = useGeneral();
- const [getData,setGetData] = useState("")
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showPasswordSheet, setShowPasswordSheet] = useState(false);
+  const { deleteGeneral, getAdminList } = useGeneral();
+  const [getData, setGetData] = useState([])
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
- useFocusEffect(
-   useCallback(() => {
-     const onBackPress = () => {
-       if (showPasswordSheet) {
-         setShowPasswordSheet(false);   
-         return true;    
-       }
- 
-       if (navigation.canGoBack()) {
-         navigation.goBack();
-         return true;
-       }
- 
-       return false;
-     };
- 
-     const subscription = BackHandler.addEventListener(
-       "hardwareBackPress",
-       onBackPress
-     );
- 
-     return () => subscription.remove();
-   }, [showPasswordSheet, navigation])
- );
- useEffect(() => {
-  loadAdmins();
-}, []);
 
-const loadAdmins = async () => {
-  const data = await getAdminList();
-  console.log("data", data);
-  setGetData(data)
-};
-console.log("loadAdmins",getData)
- const handleDelete=()=>{
-  setShowDeletePopup(true)
-  setActiveMenu(null)
- }
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (showPasswordSheet) {
+          setShowPasswordSheet(false);
+          return true;
+        }
 
-  const users = [
-    {
-      name: "Rajkumar M",
-      email: "rajkumar001a@gmail.com",
-      phone: "+91 98765 43210",
-      address: "203, E block, Nivas Nagar, Chennai 2145602",
-      image: require("../../../Assets/Images/profile.png"),
-      id:"1"
-    },
-    {
-      name: "Muthu Raja S",
-      email: "muthuraja002@gmail.com",
-      phone: "+91 98765 43210",
-      address: "203, E block, Nivas Nagar, Chennai 2145602",
-      image: require("../../../Assets/Images/profile.png"),
-      id:"2"
-    },
-    
-  ];
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [showPasswordSheet, navigation])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAdmins();
+    }, [])
+  );
+
+
+  const loadAdmins = async () => {
+    const data = await getAdminList();
+    console.log("data", data);
+    setGetData(data)
+  };
+  const [deleteId, setDeleteId] = useState("")
+  console.log("loadAdmins", getData)
+
+  const handleDelete = (userId) => {
+    console.log("Delete ID:", userId);
+    setShowDeletePopup(true);
+
+    setActiveMenu(null);
+    setDeleteId(userId);
+  };
+  const handleDeleteAdmin = async () => {
+    const res = await deleteGeneral(deleteId);
+
+    if (!res.success) {
+      alert(res.data?.message || "Delete failed");
+      return;
+    }
+
+
+    setModalMessage("Deleted Successfully");
+    setModalType("success");
+    setShowSuccessModal(true);
+    setShowDeletePopup(false)
+
+    await loadAdmins();
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      setShowDeletePopup(false);
+    }, 1500);
+  };
+
 
   const renderUserCard = (u, index) => (
-   <View key={u.id} style={styles.card}>
+    <View key={u.userId} style={styles.card}>
 
-  <View style={styles.cardHeader}>
-    <Image source={u.image} style={styles.profileImage} />
-
-    <View style={{ flex: 1 }}>
-      <Text style={styles.userName}>{u.name}</Text>
-      <TouchableOpacity>
-        <Text style={styles.changePassword}>Change Password</Text>
-      </TouchableOpacity>
-    </View>
-
-    <TouchableOpacity onPress={() => setActiveMenu(activeMenu === u.id ? null : u.id)}>
-      <Image
-        source={Dots}
-        style={styles.dotsIcon}
-      />
-    </TouchableOpacity>
-  </View>
-
-  <View style={styles.section}>
-    <Text style={styles.sectionTitle}>Contact Details</Text>
-    <View style={styles.infoRow}>
-      <Image source={Sms} style={styles.infoIcon}/>
-      <Text style={styles.infoText}>{u.email}</Text>
-    </View>
-
-    <View style={styles.infoRow}>
-      <Image source={Call} style={styles.infoIcon}/>
-      <Text style={styles.infoText}>{u.phone}</Text>
-    </View>
-
-    <View style={styles.infoRow}>
-      <Image source={Buildings} style={styles.infoIcon}/>
-      <Text style={styles.infoText}>{u.address}</Text>
-    </View>
-  </View>
-
-
-  {activeMenu === u.id && (
-    <View style={styles.menuBox}>
-
-    <TouchableOpacity 
-  style={styles.menuRow} 
-  onPress={() => {
-    setShowPasswordSheet(true);
-    setActiveMenu(null);
-  }}
->
-  <Image source={Edit} style={styles.menuIcon} />
-  <Text style={styles.menuText}>Change Password</Text>
-</TouchableOpacity>
-
-     
-      <TouchableOpacity 
-  style={styles.menuRow} 
-  onPress={() => {
-    setActiveMenu(null);
-    navigation.navigate("AddGeneralScreen", { editData: u });
-  }}
->
-  <Image
-    source={Edit}
-    style={styles.menuIcon}
-  />
-  <Text style={styles.menuText}>Edit</Text>
-</TouchableOpacity>
-
-
-      <TouchableOpacity style={styles.menuRow} onPress={handleDelete}>
+      <View style={styles.cardHeader}>
         <Image
-          source={Delete}
-          style={[styles.menuIcon, { tintColor: "red" }]}
+          source={u.profilePic ? { uri: u.profilePic } : require("../../../Assets/Images/profile.png")}
+          style={styles.profileImage}
         />
-        <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-      </TouchableOpacity>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.userName}>{u.firstName} {u.lastName}</Text>
+
+          <TouchableOpacity onPress={() => setShowPasswordSheet(true)}>
+            <Text style={styles.changePassword}>Change Password</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={() => setActiveMenu(activeMenu === u.userId ? null : u.userId)}>
+          <Image source={Dots} style={styles.dotsIcon} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Contact Details</Text>
+
+        <View style={styles.infoRow}>
+          <Image source={Sms} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{u.mailId}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Image source={Call} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{"+91 " + u.mobileNo}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Image source={Buildings} style={styles.infoIcon} />
+          <Text style={styles.infoText}>
+            {u.houseNo}, {u.street}, {u.city} - {u.pincode}
+          </Text>
+        </View>
+      </View>
+
+      {activeMenu === u.userId && (
+        <View style={styles.menuBox}>
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => {
+              setShowPasswordSheet(true);
+              setActiveMenu(null);
+            }}
+          >
+            <Image source={Edit} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Change Password</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => {
+              setActiveMenu(null);
+              navigation.navigate("AddGeneralScreen", { editData: u });
+            }}
+          >
+            <Image source={Edit} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Edit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuRow} onPress={() => handleDelete(u.userId)}>
+            <Image source={Delete} style={[styles.menuIcon, { tintColor: "red" }]} />
+            <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
-  )}
-
-
-
-
-</View>
-
-    
   );
+
+
 
   return (
     <>
-<Pressable style={{ flex: 1 }} onPress={() => setActiveMenu(null)}>
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={ArrowLeft}
-            style={styles.backIcon}
-          />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>General</Text>
-
-        <TouchableOpacity style={styles.masterButton}  onPress={() => navigation.navigate("AddGeneralScreen")}>
-          <Text style={styles.masterText}>+ Master</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
-        {users.map((u, index) => renderUserCard(u, index))}
-        <View style={{ height: 40 }} />
-      </ScrollView>
-    </View>
-    </Pressable>
-    {showDeletePopup && (
-      <View style={styles.popupOverlay}>
-        <View style={styles.popupBox}>
-    
-          <Text style={styles.popupTitle}>Delete Master?</Text>
-          <Text style={styles.popupSubtitle}>
-            Are you sure you want to delete this Master?
-          </Text>
-    
-          <View style={styles.popupBtnRow}>
-            <TouchableOpacity 
-              style={styles.cancelBtn}
-              onPress={() => setShowDeletePopup(false)}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
+      <Pressable style={{ flex: 1 }} onPress={() => setActiveMenu(null)}>
+        <SuccessModal
+          visible={showSuccessModal}
+          message={modalMessage}
+          type={modalType}
+          onClose={() => setShowSuccessModal(false)}
+        />
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image
+                source={ArrowLeft}
+                style={styles.backIcon}
+              />
             </TouchableOpacity>
-    
-            <TouchableOpacity 
-              style={styles.deleteBtn}
-              onPress={() => {
-                // 🔥 Your delete function here
-                setShowDeletePopup(false);
-              }}
-            >
-              <Text style={styles.deleteText}>Delete</Text>
+
+            <Text style={styles.headerTitle}>General</Text>
+
+            <TouchableOpacity style={styles.masterButton} onPress={() => navigation.navigate("AddGeneralScreen")}>
+              <Text style={styles.masterText}>+ Master</Text>
             </TouchableOpacity>
           </View>
-    
+
+          <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
+            {getData.length > 0 && getData.map((u, index) => renderUserCard(u, index))}
+            <View style={{ height: 40 }} />
+          </ScrollView>
+
         </View>
-      </View>
-    )}
+      </Pressable>
+      {showDeletePopup && (
+        <View style={styles.popupOverlay}>
+          <View style={styles.popupBox}>
+
+            <Text style={styles.popupTitle}>Delete Master?</Text>
+            <Text style={styles.popupSubtitle}>
+              Are you sure you want to delete this Master?
+            </Text>
+
+            <View style={styles.popupBtnRow}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setShowDeletePopup(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={handleDeleteAdmin}
+              >
+                <Text style={styles.deleteText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </View>
+      )}
 
 
-      <ChangePasswordSheet 
-  visible={showPasswordSheet}
-  onClose={() => setShowPasswordSheet(false)}
-/>
+      <ChangePasswordSheet
+        visible={showPasswordSheet}
+        onClose={() => setShowPasswordSheet(false)}
+      />
 
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 16,paddingTop:30 },
+  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 16, paddingTop: 30 },
 
   header: {
     flexDirection: "row",
@@ -272,15 +282,15 @@ const styles = StyleSheet.create({
 
   masterText: { color: "#FFF", fontWeight: "600" },
 
- card: {
-  backgroundColor: "#FFF",
-  borderRadius: 14,
-  padding: 20,
-  marginBottom: 14,
-  borderWidth: 1,
-  borderColor: "#EEE",
-  position: "relative",  
-},
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#EEE",
+    position: "relative",
+  },
 
 
   cardHeader: {
@@ -316,18 +326,18 @@ const styles = StyleSheet.create({
 
   infoText: { fontSize: 14, color: "#333", flex: 1 },
   menuBox: {
-  position: "absolute",
-  top: 50,
-  right: 0,       
-  backgroundColor: "#fff",
-  width: 170,
-  padding: 12,
-  borderRadius: 12,
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  elevation: 8,
-  zIndex: 999,
-},
+    position: "absolute",
+    top: 50,
+    right: 0,
+    backgroundColor: "#fff",
+    width: 170,
+    padding: 12,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    elevation: 8,
+    zIndex: 999,
+  },
 
 
   menuRow: {
@@ -348,71 +358,71 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   popupOverlay: {
-  position: "absolute",
-  top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.5)",
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 25
-},
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 25
+  },
 
-popupBox: {
-  width: "100%",
-  backgroundColor: "#fff",
-  borderRadius: 18,
-  paddingVertical: 25,
-  paddingHorizontal: 20,
-  elevation: 10
-},
+  popupBox: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    paddingVertical: 25,
+    paddingHorizontal: 20,
+    elevation: 10
+  },
 
-popupTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  textAlign: "center",
-  marginBottom: 8
-},
+  popupTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8
+  },
 
-popupSubtitle: {
-  fontSize: 14,
-  color: "#555",
-  textAlign: "center",
-  marginBottom: 25
-},
+  popupSubtitle: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 25
+  },
 
-popupBtnRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-},
+  popupBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
 
-cancelBtn: {
-  width: "48%",
-  borderWidth: 1,
-  borderColor: "#1E45E1",
-  paddingVertical: 12,
-  borderRadius: 10,
-  justifyContent: "center",
-  alignItems: "center"
-},
+  cancelBtn: {
+    width: "48%",
+    borderWidth: 1,
+    borderColor: "#1E45E1",
+    paddingVertical: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
 
-cancelText: {
-  color: "#1E45E1",
-  fontSize: 16,
-  fontWeight: "600"
-},
+  cancelText: {
+    color: "#1E45E1",
+    fontSize: 16,
+    fontWeight: "600"
+  },
 
-deleteBtn: {
-  width: "48%",
-  backgroundColor: "#1E45E1",
-  paddingVertical: 12,
-  borderRadius: 10,
-  justifyContent: "center",
-  alignItems: "center"
-},
+  deleteBtn: {
+    width: "48%",
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
 
-deleteText: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "700"
-},
+  deleteText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700"
+  },
 
 });
