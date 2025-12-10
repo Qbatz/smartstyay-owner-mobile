@@ -26,32 +26,50 @@ const { addGeneral, loading, errorMsg, successMsg } = useGeneral();
 // inside AddGeneralScreen
 const handleSubmit = async () => {
   const payload = {
-    accountInfo: {
-      firstName,
-      lastName,
-      mobile,
-      mailId: email,
-      houseNo: flat,
-      street,
-      landmark,
-      city,
-      pincode,
-      state: StateSelected,
-      password: "Test@123",
-    },
+    firstName,
+    lastName,
+    mobile,
+    mailId: email,
+    houseNo: flat,
+    street,
+    landmark,
+    city,
+    pincode,
+    state: StateSelected,
+    password: "Test@123",
+  };
 
-    profilePic: selectedImage ? {
+  console.log("Payload JSON =", payload);
+
+  const formData = new FormData();
+
+  // Convert accountInfo JSON → Base64
+  const jsonBase64 = btoa(JSON.stringify(payload));
+
+  formData.append("accountInfo", {
+    uri: "data:application/json;base64," + jsonBase64,
+    type: "application/json",
+    name: "account.json",
+  });
+
+  // IMAGE FORMAT (Same as your working sample)
+  if (selectedImage) {
+    formData.append("profilePic", {
       uri: selectedImage.uri,
       name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
       type: selectedImage.type || "image/jpeg",
-    } : null
-  };
+    });
+  }
 
-  console.log("FINAL PAYLOAD =", payload);
+  console.log("FORM PARTS ===>", formData);
 
-  const res = await addGeneral(payload);
+  const res = await addGeneral(formData);
   if (res) navigation.goBack();
 };
+
+
+
+
 
 
 
