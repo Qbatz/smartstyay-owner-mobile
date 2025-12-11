@@ -513,7 +513,7 @@ export default function AddGeneralScreen({ navigation, route }) {
 
   const formData = new FormData();
   const jsonBase64 = btoa(JSON.stringify(payloadForApi));
-
+console.log("payloadForApi",payloadForApi)
   formData.append("payload", {
     uri: "data:application/json;base64," + jsonBase64,
     type: "application/json",
