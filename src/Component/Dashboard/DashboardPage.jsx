@@ -83,11 +83,21 @@ const activeHostel =
 
    useEffect(() => {
     if (!login.getToken) return;
+    
 
     getHostels(login.getToken).then((res) => {
       updateHostelList(res.data);
     });
   }, [login.getToken]);
+
+    useEffect(()=> {
+    if(activeHostel){
+      setActiveHostelId(activeHostel.hostelId)
+    }
+  },[activeHostel])
+
+  console.log("activeHostelId", activeHostelId);
+  
 
   useFocusEffect(
     useCallback(() => {
