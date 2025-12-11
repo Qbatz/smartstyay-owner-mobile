@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -8,86 +8,288 @@ import {
   TextInput,
   Image,
   Modal,
-  TouchableWithoutFeedback,BackHandler,
+  TouchableWithoutFeedback,
+  BackHandler,
 } from "react-native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { PGContext } from "../../../Context/PGContext";
+
 import AddImageIcon from "../../../Assets/Images/blue_circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyProfileImage from "../../../Assets/Images/empty_pgprofile.png";
-import EditIcon from  "../../../Assets/Images/editIcon.png" 
-import DeleteIcon from  "../../../Assets/Images/trash.png"
+import EditIcon from "../../../Assets/Images/editIcon.png";
+import DeleteIcon from "../../../Assets/Images/trash.png";
 
-export default function AddPG({ navigation , route  }) {
+export default function AddPG({ navigation, route }) {
 
-    const isEdit = route?.params?.mode === "edit";
-    const editData = route?.params?.data || null;
+  const isEdit = route?.params?.mode === "edit";
+  const editData = route?.params?.data || null;
 
+  const { addPG, editPG } = useContext(PGContext);
 
-const [photo, setPhoto] = useState(
-  editData?.profilePhoto ? { uri: editData.profilePhoto } : null
-);
+  // Utility to convert image into file object for FormData
+  const prepareImage = (img) => {
+    if (!img?.uri) return null;
+    return {
+      uri: img.uri,
+      type: img.type || "image/jpeg",
+      name: img.fileName || `image_${Date.now()}.jpg`,
+    };
+  };
 
-console.log("editdata", editData);
+  // ---------------------------
+  // FORM STATES
+  // ---------------------------
+  const [photo, setPhoto] = useState(
+    editData?.mainImage ? { uri: editData.mainImage } : null
+  );
 
+  const [img1, setImg1] = useState(editData?.images?.[0] ? { uri: editData.images[0] } : null);
+  const [img2, setImg2] = useState(editData?.images?.[1] ? { uri: editData.images[1] } : null);
+  const [img3, setImg3] = useState(editData?.images?.[2] ? { uri: editData.images[2] } : null);
+  const [img4, setImg4] = useState(editData?.images?.[3] ? { uri: editData.images[3] } : null);
 
-const [img1, setImg1] = useState(editData?.images?.[0] || null);
-const [img2, setImg2] = useState(editData?.images?.[1] || null);
-const [img3, setImg3] = useState(editData?.images?.[2] || null);
-const [img4, setImg4] = useState(editData?.images?.[3] || null);
+  const [hostelName, setHostelName] = useState(editData?.name || "");
+  const [mobile, setMobile] = useState(editData?.mobile || "");
+  const [email, setEmail] = useState(editData?.emailId || "");
+  const [houseNo, setHouseNo] = useState(editData?.houseNo || "");
+  const [street, setStreet] = useState(editData?.street || "");
+  const [landmark, setLandmark] = useState(editData?.landmark || "");
+  const [pincode, setPincode] = useState(editData?.pincode?.toString() || "");
+  const [city, setCity] = useState(editData?.city || "");
+  const [state, setState] = useState(editData?.state || "Select State");
 
-const [firstName, setFirstName] = useState(editData?.name || "");
-const [mobile, setMobile]     = useState(editData?.phone || "");
-const [email, setEmail]       = useState(editData?.email || "");
-const [houseNo, setHouseNo]   = useState("");
-const [street, setStreet]     = useState("");
-const [landmark, setLandmark] = useState("");
-const [pincode, setPincode]   = useState("");
-const [city, setCity]         = useState("");
-const [state, setState]       = useState("Select State");
+  const stateList = [
+    "Select State",
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+    "Uttar Pradesh", "Uttarakhand", "West Bengal",
+    "Andaman and Nicobar Islands", "Chandigarh", "Daman and Diu",
+    "Delhi", "Jammu & Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
+  ];
 
-  const townList = ["Select Type", "Chennai", "Coimbatore", "Bengaluru"];
-  const stateList = ["Select State", "Tamil Nadu", "Karnataka", "Kerala"];
-
-
-
-  const [townOpen, setTownOpen] = useState(false);
   const [stateOpen, setStateOpen] = useState(false);
+  const [errors, setErrors] = useState({});
 
-    useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        navigation.goBack();  
-        return true;
-      }
-    );
-  
+
+  // ---------------------------
+  // Android Back Button Override
+  // ---------------------------
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+      navigation.goBack();
+      return true;
+    });
     return () => backHandler.remove();
   }, []);
 
   const closeAll = () => {
-    setTownOpen(false);
     setStateOpen(false);
   };
 
-
+  // ---------------------------
+  // Image Picker
+  // ---------------------------
   const pickImage = async (setImage) => {
     const res = await launchImageLibrary({ mediaType: "photo", quality: 0.7 });
-    if (res?.assets && res.assets.length) setImage(res.assets[0]);
+    if (res?.assets?.length) setImage(res.assets[0]);
   };
 
   const pickCamera = async (setImage) => {
     const res = await launchCamera({ mediaType: "photo", saveToPhotos: true });
-    if (res?.assets && res.assets.length) setImage(res.assets[0]);
+    if (res?.assets?.length) setImage(res.assets[0]);
   };
 
   const [photoModal, setPhotoModal] = useState(false);
-  const openPhotoPicker = () => setPhotoModal(true);
+
+  // ---------------------------
+  // Handle SUBMIT
+  // ---------------------------
+
+  console.log("hostelid", editData?.hostelId);
+  
+const handleSubmit = async () => {
+  let errors = {};
+
+  if (!hostelName.trim()) errors.hostelName = "Please Enter PG Name";
+  if (!mobile.trim()) errors.mobile = "Please Enter Mobile Number";
+  if (!pincode.trim()) errors.pincode = "Please Enter Pincode";
+  if (!city.trim()) errors.city = "Please Enter City";
+  if (state === "Select State") errors.state = "Please Select State";
+
+  if (Object.keys(errors).length > 0) {
+    setErrors(errors);
+    return;
+  }
+
+  setErrors({});
+
+  // JSON payload same as web admin
+  const payload = {
+    hostelName,
+    mobile,
+    emailId: email,
+    houseNo,
+    street,
+    landmark,
+    pincode: Number(pincode),
+    city,
+    state,
+  };
+
+  // Prepare File objects
+  const formatFile = (img) =>
+    img?.uri
+      ? {
+          uri: img.uri,
+          type: img.type || "image/jpeg",
+          name: img.fileName || `img_${Date.now()}.jpg`,
+        }
+      : null;
+
+  const finalPayload = {
+    payloads: payload,
+    mainImage: formatFile(photo),
+    additionalImages: [
+      formatFile(img1),
+      formatFile(img2),
+      formatFile(img3),
+      formatFile(img4),
+    ].filter(Boolean),
+    hostelId: editData?.hostelId,
+  };
+
+  console.log("FINAL PG PAYLOAD ===>", finalPayload);
+
+  if (isEdit) {
+    const res = await editPG(finalPayload);
+    if (res?.status === 200 || res?.status === 201) {
+      alert("PG Updated Successfully");
+      navigation.goBack();
+    } else {
+      alert("Update Failed");
+    }
+    return;
+  }
+
+  const res = await addPG(finalPayload);
+  if (res?.status === 201) {
+    alert("PG Added Successfully");
+    navigation.goBack();
+  } else {
+    alert("Add PG Failed");
+  }
+};
 
 
-  const renderSelect = (label, selected, open, setOpen, list, onSelect) => (
+
+
+  // ---------------------------
+  // RENDER UI
+  // ---------------------------
+  return (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.fixedHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={ArrowLeft} style={styles.backIcon} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {isEdit ? "Edit Paying Guest" : "Add Paying Guest"}
+        </Text>
+      </View>
+
+      <TouchableWithoutFeedback onPress={closeAll}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 60 }}>
+          <View style={styles.container}>
+
+            {/* PROFILE PHOTO */}
+            <View style={{ flexDirection: "row", marginBottom: 20 }}>
+              <TouchableOpacity style={styles.profileBox} onPress={() => setPhotoModal(true)}>
+                {photo?.uri ? (
+                  <Image source={{ uri: photo.uri }} style={styles.profileImg} />
+                ) : (
+                  <Image source={EmptyProfileImage} style={styles.profileImg} />
+                )}
+
+                {photo?.uri && (
+                  <View style={styles.editIcon}>
+                    <Image source={EditIcon} style={{ width: 20, height: 20 }} />
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <View style={{ marginTop: 30, marginLeft: 20 }}>
+                <Text style={styles.sectionLabel}>Profile Photo</Text>
+                <Text style={styles.sectionSub}>Add Profile Image of PG.</Text>
+                <Text style={{ fontSize: 12, color: "grey", marginTop: 3 }}>Max size 2 MB</Text>
+              </View>
+            </View>
+
+            {/* IMAGE PICKER MODAL */}
+            <Modal visible={photoModal} transparent animationType="fade">
+              <TouchableOpacity style={styles.modalOverlay} onPress={() => setPhotoModal(false)} />
+              <View style={styles.modalBox}>
+                <TouchableOpacity style={styles.modalBtn} onPress={() => { setPhotoModal(false); pickCamera(setPhoto); }}>
+                  <Text style={styles.modalText}>Take Photo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalBtn} onPress={() => { setPhotoModal(false); pickImage(setPhoto); }}>
+                  <Text style={styles.modalText}>Choose from Gallery</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.modalBtn, { backgroundColor: "#eee" }]} onPress={() => setPhotoModal(false)}>
+                  <Text style={[styles.modalText, { color: "#111" }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </Modal>
+
+            {/* INPUT FIELDS */}
+            <InputField label="First Name *" value={hostelName} onChangeText={setHostelName} placeholder="Enter First name" />
+            <InputField label="Mobile Number *" value={mobile} onChangeText={setMobile} placeholder="98765 43210" keyboardType="phone-pad" />
+            <InputField label="Email ID" value={email} onChangeText={setEmail} placeholder="Enter Mail id" />
+            <InputField label="Flat / House No / Apartment" value={houseNo} onChangeText={setHouseNo} placeholder="Enter House No" />
+            <InputField label="Area / Street" value={street} onChangeText={setStreet} placeholder="Enter Street" />
+            <InputField label="Landmark" value={landmark} onChangeText={setLandmark} placeholder="Near SBI" />
+            <InputField label="Pincode *" value={pincode} onChangeText={setPincode} placeholder="659 741" keyboardType="numeric" />
+            <InputField label="Town/City *" value={city} onChangeText={setCity} placeholder="Enter City" />
+
+            {/* STATE DROPDOWN */}
+            {renderSelect(
+              "State *",
+              state,
+              stateOpen,
+              setStateOpen,
+              stateList,
+              setState
+            )}
+
+            {/* ADDITIONAL IMAGES */}
+            <View style={{ flexDirection: "row", marginTop: 12 }}>
+              {renderImageBox(img1, setImg1)}
+              {renderImageBox(img2, setImg2)}
+              {renderImageBox(img3, setImg3)}
+              {renderImageBox(img4, setImg4)}
+            </View>
+
+            {/* SUBMIT BUTTON */}
+            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+              <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
+            </TouchableOpacity>
+
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </View>
+  );
+}
+
+/* ====================== DROPDOWN SELECT FUNCTION ===================== */
+
+function renderSelect(label, selected, open, setOpen, list, onSelect) {
+  return (
     <>
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
+      <View style={{ flexDirection: "row", marginBottom: 5 }}>
         <Text style={styles.label}>{label.replace("*", "")}</Text>
         {label.includes("*") && <Text style={{ color: "red" }}>*</Text>}
       </View>
@@ -95,11 +297,7 @@ const [state, setState]       = useState("Select State");
       <View style={{ position: "relative", marginBottom: 12 }}>
         <TouchableOpacity
           style={styles.select}
-          onPress={() => {
-            closeAll();
-            setOpen(!open);
-          }}
-          activeOpacity={0.9}
+          onPress={() => setOpen(!open)}
         >
           <Text style={styles.selectText}>{selected}</Text>
           <Text style={styles.caret}>⌄</Text>
@@ -107,147 +305,33 @@ const [state, setState]       = useState("Select State");
 
         {open && (
           <View style={styles.dropdownMenu}>
-            <ScrollView style={{ maxHeight: 160 }}>
-              {list.map((v, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.option}
-                  onPress={() => {
-                    onSelect(v);
-                    setOpen(false);
-                  }}
-                >
-                  <Text style={styles.optionText}>{v}</Text>
-                </TouchableOpacity>
-              ))}
+            <ScrollView style={{ maxHeight: 250 }}>
+              {list.map((v, i) => {
+                const isSelected = selected === v;
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.option, isSelected && { backgroundColor: "#E3EEFF" }]}
+                    onPress={() => {
+                      onSelect(v);
+                      setOpen(false);
+                    }}
+                  >
+                    <Text style={[styles.optionText, isSelected && { color: "#2D6CDF", fontWeight: "700" }]}>
+                      {v}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         )}
       </View>
     </>
   );
-
-
- const handleSubmit = () => {
-
-  if(isEdit){
-    console.log("UPDATED HOSTEL DATA:", {
-      id: editData.id,
-      firstName,
-      mobile,
-      email,
-      photo,
-      images: [img1, img2, img3, img4],
-    });
-
-    navigation.goBack();
-    return;
-  }
-
-  // Normal Add PG
-  console.log("NEW PG ADDED:", {
-    firstName,
-    mobile,
-    email,
-    photo,
-    images: [img1, img2, img3, img4],
-  });
-};
-
-
-
-  return (
-    <TouchableWithoutFeedback onPress={closeAll}>
-     
-        
-      <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} contentContainerStyle={{ paddingBottom: 60 }}>
-        <View style={styles.container}>
-
-        <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Image source={ArrowLeft} style={styles.backIcon} />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>{isEdit ? "Edit Paying Guest" : "Add Paying Guest"}</Text>
-            </View>
-
-          
-          <View style={{display:'flex',flexDirection:'row' , marginBottom:20}}>
-
-        <TouchableOpacity
-  style={styles.profileBox}
-  onPress={openPhotoPicker}
-  activeOpacity={0.9}
->
-  {photo?.uri ? (
-    <Image source={{ uri: photo.uri }} style={styles.profileImg} />
-  ) : (
-    <Image source={EmptyProfileImage} style={styles.profileImg} />
-  )}
-
-  {
-    photo?.uri && (
-        <View style={styles.editIcon}>
-    <Image  source={EditIcon} style={{width: 20,
-  height: 20,}}/>
-  </View>
-    )
-  }
-  
-</TouchableOpacity>
-
-             <View style={{display:'flex', flexDirection:'column', marginTop:30, marginLeft:20}}>
-           <Text style={styles.sectionLabel}>Profile Photo</Text>
-          <Text style={styles.sectionSub}>Add Profile Image of PG. </Text>
-          <Text style={{fontSize:12 , color:'grey', marginTop:3}}>Max size 2 MB</Text>
-          </View>
-          </View>
-
-          <Modal visible={photoModal} transparent animationType="fade">
-            <TouchableOpacity style={styles.modalOverlay} onPress={() => setPhotoModal(false)} />
-            <View style={styles.modalBox}>
-              <TouchableOpacity style={styles.modalBtn} onPress={() => { setPhotoModal(false); pickCamera(setPhoto); }}>
-                <Text style={styles.modalText}>Take Photo</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.modalBtn} onPress={() => { setPhotoModal(false); pickImage(setPhoto); }}>
-                <Text style={styles.modalText}>Choose from Gallery</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: "#eee" }]} onPress={() => setPhotoModal(false)}>
-                <Text style={[styles.modalText, { color: "#111" }]}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </Modal>
-
-          <InputField label="First Name *" value={firstName} onChangeText={setFirstName} placeholder="Enter First name" />
-          <InputField label="Mobile Number *" value={mobile} onChangeText={setMobile} placeholder="98765 43210" keyboardType="phone-pad" />
-          <InputField label="Email ID" value={email} onChangeText={setEmail} placeholder="Enter Mail id" />
-          <InputField label="Flat / House No / Apartment" value={houseNo} onChangeText={setHouseNo} placeholder="Enter House No" />
-          <InputField label="Area / Street" value={street} onChangeText={setStreet} placeholder="Enter Street" />
-          <InputField label="Landmark" value={landmark} onChangeText={setLandmark} placeholder="Near SBI" />
-          <InputField label="Pincode *" value={pincode} onChangeText={setPincode} placeholder="659 741" keyboardType="numeric" />
-          <InputField label="Town/City *" value={city} onChangeText={setCity} placeholder="Enter City"  />
-          {renderSelect("State *", state, stateOpen, setStateOpen, stateList, setState)}
-
-          <View style={{ flexDirection: "row", marginTop: 12 }}>
-            {renderImageBox(img1, setImg1)}
-            {renderImageBox(img2, setImg2)}
-            {renderImageBox(img3, setImg3)}
-            {renderImageBox(img4, setImg4)}
-          </View>
-
-          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-            <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
-          </TouchableOpacity>
-
-        </View>
-      </ScrollView>
-       
-    </TouchableWithoutFeedback>
-  );
 }
 
-/* ====================== IMAGE BOX RENDERER ===================== */
+/* ====================== IMAGE BOX ===================== */
 
 function renderImageBox(image, setImage) {
   return (
@@ -259,7 +343,6 @@ function renderImageBox(image, setImage) {
           )
         }
         style={styles.imgBox}
-        activeOpacity={0.8}
       >
         {image?.uri ? (
           <Image source={{ uri: image.uri }} style={styles.thumb} />
@@ -272,19 +355,14 @@ function renderImageBox(image, setImage) {
         )}
       </TouchableOpacity>
 
-      {/* DELETE ICON */}
       {image?.uri && (
-        <TouchableOpacity
-          onPress={() => setImage(null)}
-          style={styles.deleteIcon}
-        >
-          <Image source={DeleteIcon} style={{height:16, width:16}}/>
+        <TouchableOpacity onPress={() => setImage(null)} style={styles.deleteIcon}>
+          <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
         </TouchableOpacity>
       )}
     </View>
   );
 }
-
 
 /* ====================== INPUT FIELD ===================== */
 
@@ -310,20 +388,29 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType }) {
 /* ====================== STYLES ===================== */
 
 const styles = StyleSheet.create({
- container: {   flex: 1,
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 85,
+  },
+
+  fixedHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingTop: 40, },
+    zIndex: 200,
+  },
 
-
-
-  header: { flexDirection: "row", alignItems: "center", marginTop:30 },
   backIcon: { width: 20, height: 20, marginRight: 10 },
   headerTitle: { fontSize: 17, fontWeight: "600" },
-   headerTitle: { fontSize: 17, fontWeight: "600" },
 
   sectionLabel: { fontSize: 13, fontWeight: "700" },
-  sectionSub: { fontSize: 12, color: "black", marginTop: 6 , fontWeight:400 },
+  sectionSub: { fontSize: 12, color: "black", marginTop: 6 },
 
   profileBox: {
     width: 86,
@@ -331,27 +418,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 50,
-    marginTop: 10,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fafafa",
   },
+
   editIcon: {
-  position: "absolute",
-  height: 22,
-  width: 22,
-  borderRadius: 22,
-  justifyContent: "center",
-  alignItems: "center",
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 3,
+  },
 
-},
-
-
-  plus: { fontSize: 32, color: "#2F80ED", fontWeight: "700" },
   profileImg: { width: 86, height: 86, borderRadius: 50 },
 
-  /* DROPDOWN */
-  label: { fontSize: 13, fontWeight: "600", color: "#111827" },
+  label: { fontSize: 13, fontWeight: "600" },
   input: {
     height: 48,
     borderWidth: 1,
@@ -367,13 +450,14 @@ const styles = StyleSheet.create({
     borderColor: "#E6E9F0",
     borderRadius: 12,
     paddingHorizontal: 12,
+    backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
-  selectText: { fontSize: 14, color: "#222" },
-  caret: { fontSize: 18, color: "#555" },
+  selectText: { fontSize: 14 },
+
+  caret: { fontSize: 18, color: "#666" },
 
   dropdownMenu: {
     position: "absolute",
@@ -381,73 +465,46 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "#fff",
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 50,
-    elevation: 20,
+    zIndex: 999,
   },
-  option: { padding: 12 },
-  optionText: { color: "#111", fontSize: 15 },
 
-  /* IMAGE BOX */
+  option: { padding: 12 },
+  optionText: { fontSize: 15 },
+
   imgBox: {
     width: 86,
     height: 86,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E6E9F0",
-    backgroundColor: "#FFF",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 7,
   },
-  imgPlus: { height:24 , width:24 },
-  imgSmall: { fontSize: 11, marginTop: 4, color:"#2D6CDF" , fontWeight:500},
-  imgSize: { fontSize: 9, color: "#999", marginTop: 2 },
+  imgPlus: { width: 24, height: 24 },
+  imgSmall: { fontSize: 11, color: "#2D6CDF" },
+  imgSize: { fontSize: 9, color: "#999" },
   thumb: { width: 84, height: 84, borderRadius: 12 },
 
-  /* BUTTON */
+  deleteIcon: {
+    position: "absolute",
+    top: -10,
+    right: 3,
+    backgroundColor: "#fff",
+    padding: 3,
+    borderRadius: 6,
+  },
+
   submitBtn: {
-    marginTop: 18,
+    marginTop: 25,
     backgroundColor: "#2D6CDF",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
   },
-  submitText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
-  modalBox: {
-    position: "absolute",
-    bottom: 40,
-    left: 20,
-    right: 20,
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-  },
-  modalBtn: {
-    paddingVertical: 12,
-    alignItems: "center",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    marginBottom: 8,
-  },
-  modalText: { color: "#2F80ED", fontWeight: "700" },
-  deleteIcon: {
-  position: "absolute",
-  top: -10,
-  right: 3,
-  backgroundColor: "#fff",
-  height: 20,
-  width: 20,
-  borderRadius: 5,
-  justifyContent: "center",
-  alignItems: "center",
-//   borderWidth: 1.5,
-//   borderColor: "#fff",
-  zIndex: 10,
-},
-
+  submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
+

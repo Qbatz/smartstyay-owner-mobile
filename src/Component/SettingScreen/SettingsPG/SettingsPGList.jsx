@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,11 @@ import {
   UIManager,
   findNodeHandle,
   Animated,
-  PanResponder, Modal ,
+  PanResponder,
+  Modal,
 } from "react-native";
+
+import { CommonContexts } from "../../../Context/CommonContext";
 
 import HostelImg from "../../../Assets/Images/PgImg.png";
 import PgRooms from "../../../Assets/Images/pgrooms.png";
@@ -24,121 +27,58 @@ import Dots from "../../../Assets/Images/3dots.png";
 import DeleteIcon from "../../../Assets/Images/trash.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
+import EmptyIcon from "../../../Assets/Images/Empty_state.png"; 
+import PlusIcon from "../../../Assets/Images/blue_circle.png"
 
 export default function SettingsPG({ navigation }) {
-  const [visiblePopup, setVisiblePopup] = useState(null);
+  const { hostelList } = useContext(CommonContexts);
+  console.log("Settings PG — API Hostels:", hostelList);
 
+  const dotRefs = useRef({});
+  const [visiblePopup, setVisiblePopup] = useState(null);
+  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
+
+  const [isSwitchVisible, setIsSwitchVisible] = useState(false);
   const [switchHostel, setSwitchHostel] = useState(null);
   const sheetY = useRef(new Animated.Value(300)).current;
-  const [isSwitchVisible, setIsSwitchVisible] = useState(false);
-  const [deletePGShow,setDeletePG] = useState(false)
 
-  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
-  const dotRefs = useRef({});
+  const [deletePGShow, setDeletePG] = useState(false);
 
-  // ------------------------------
-  // HOSTEL DUMMY DATA
-  // ------------------------------
-  const [hostels, setHostels] = useState([
-    {
-      id: 1,
-      name: "Royal Grand Hostel",
-      type: "PG - Boys",
-      email: "royalgrandnavalur@gmail.com",
-      phone: "+91 98765 43210",
-      address: "203, E block, Nivas Nagar, Chennai",
-      totalRooms: 16,
-      availableBeds: 50,
-      profilePhoto : HostelImg ,
-      images: [PgRooms, PgRooms, PgRooms, PgRooms],
-    },
-    {
-      id: 2,
-      name: "SS Men's Hostel",
-      type: "PG - Dormitory",
-      email: "ssmenhostel@gmail.com",
-      phone: "+91 98765 43210",
-      address: "Gandhi Nagar, Chennai",
-      totalRooms: 10,
-      availableBeds: 38,
-          profilePhoto : HostelImg ,
-      images: [PgRooms, PgRooms],
-    },
-    {
-      id: 3,
-      name: "Getset Homes",
-      type: "PG - Boys",
-      email: "getsethomes@gmail.com",
-      phone: "+91 98765 43210",
-      address: "OMR Road, Chennai",
-      totalRooms: 20,
-      availableBeds: 60,
-      profilePhoto : HostelImg ,
-      images: [PgRooms, PgRooms],
-    },
-  ]);
+  const formatHostels = hostelList?.map((h) => ({
+    id: h.hostelId,
+    name: h.name,
+    type: "Paying Guest", 
+    email: h.emailId || "N/A",
+    phone: h.mobile || "N/A",
+    address: `${h.houseNo || ""}, ${h.street || ""}, ${h.city || ""}`,
+    totalRooms: h.noOfRooms,
+    availableBeds: h.noOfAvailableBeds,
+    profilePhoto: h.mainImage ? { uri: h.mainImage } : HostelImg,
+    images: h.images?.length ? h.images.map((i) => ({ uri: i })) : [PgRooms],
+  }));
 
-  const mainHostel = hostels[0];
-  const otherHostels = hostels.slice(1);
+  const mainHostel = formatHostels?.[0];
+  const otherHostels =
+    formatHostels?.length > 1 ? formatHostels.slice(1) : [];
 
-  // ------------------------------
-  // OPEN EDIT POPUP (3 DOTS)
-  // ------------------------------
   const openPopup = (id) => {
     const ref = dotRefs.current[id];
+    if (!ref) return;
 
-    if (ref) {
-      UIManager.measure(findNodeHandle(ref), (fx, fy, width, height, px, py) => {
-        setPopupPos({ x: px - 120, y: py + height + 5 });
+    UIManager.measure(
+      findNodeHandle(ref),
+      (fx, fy, width, height, px, py) => {
+        setPopupPos({ x: px - 130, y: py + height + 5 });
         setVisiblePopup(id);
-      });
-    }
+      }
+    );
   };
 
-  // ------------------------------
-  // SWITCH HOSTEL LOGIC
-  // ------------------------------
-  const handleSwitchHostel = (hostel) => {
-    setSwitchHostel(hostel);
-    setIsSwitchVisible(true);
-    openSheet();
-  };
 
-  const handleActivate = (id) => {
-    const newActive = hostels.find((h) => h.id === id);
-    const remaining = hostels.filter((h) => h.id !== id);
-
-    setHostels([newActive, ...remaining]);
-    closeSheet();
-  };
-
-  // ------------------------------
-  // EDIT HOSTEL
-  // ------------------------------
-  const handleEdit = (id) => {
-    const selectedHostel = hostels.find((h) => h.id === id);
-
-    navigation.navigate("AddPG", {
-      mode: "edit",
-      data: selectedHostel,
-    });
-
-    setVisiblePopup(null);
-  };
-
-  const handleDelete = () => {
-    console.log("Delete Hostel");
-    setVisiblePopup(null);
-    setDeletePG(true)
-  };
-
-  // ------------------------------
-  // BOTTOM SHEET ANIMATION
-  // ------------------------------
   const openSheet = () => {
     Animated.timing(sheetY, {
       toValue: 0,
-      duration: 250,
+      duration: 200,
       useNativeDriver: true,
     }).start();
   };
@@ -148,13 +88,20 @@ export default function SettingsPG({ navigation }) {
       toValue: 300,
       duration: 200,
       useNativeDriver: true,
-    }).start(() => {
-      setIsSwitchVisible(false);
-      setSwitchHostel(null);
-    });
+    }).start(() => setIsSwitchVisible(false));
   };
 
-  // Swipe Down Close
+  const handleSwitchHostel = (hostel) => {
+    setSwitchHostel(hostel);
+    setIsSwitchVisible(true);
+    openSheet();
+  };
+
+  const handleActivate = (id) => {
+    console.log("Switched PG to:", id);
+    closeSheet();
+  };
+
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
     onPanResponderMove: (_, g) => {
@@ -166,163 +113,202 @@ export default function SettingsPG({ navigation }) {
     },
   });
 
-  // Back Button Close
+
+ const handleEdit = (id) => {
+  const HostelDetails = hostelList.find((h) => h.hostelId === id); 
+
+  const HostelData = {
+    hostelId: HostelDetails.hostelId,
+    name: HostelDetails.name,
+    emailId: HostelDetails.emailId,
+    mobile: HostelDetails.mobile,
+    houseNo: HostelDetails.houseNo,
+    street: HostelDetails.street,
+    city: HostelDetails.city,
+    state: HostelDetails.state,
+    pincode: HostelDetails.pincode,
+    landmark: HostelDetails.landmark,
+    type: "Paying Guest",
+    mainImage: HostelDetails.mainImage,
+    images: HostelDetails.images || [],
+    noOfRooms: HostelDetails.noOfRooms,
+    noOfBeds: HostelDetails.noOfBeds,
+    noOfAvailableBeds: HostelDetails.noOfAvailableBeds,
+  };
+
+  navigation.navigate("AddPG", {
+    mode: "edit",
+    data: HostelData,
+  });
+
+  setVisiblePopup(null);
+};
+
+
+  const handleDelete = () => {
+    setVisiblePopup(null);
+    setDeletePG(true);
+  };
+
+
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (isSwitchVisible) {
-        closeSheet();
-        return true;
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (isSwitchVisible) {
+          closeSheet();
+          return true;
+        }
+        if (visiblePopup) {
+          setVisiblePopup(null);
+          return true;
+        }
+        return false;
       }
-      if (visiblePopup) {
-        setVisiblePopup(null);
-        return true;
-      }
-      return false;
-    });
+    );
 
     return () => backHandler.remove();
   }, [isSwitchVisible, visiblePopup]);
 
+  if (!mainHostel)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+         <Image source={EmptyIcon} style={{width: 200, height: 160, marginBottom: 10}} />
+        <Text>No PG Data Found</Text>
+      </View>
+    );
+
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-
-      {/* STATIC NON-SCROLL AREA */}
-      <View>
-        {/* HEADER */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image source={ArrowLeft} style={styles.backArrow} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Manage PG</Text>
-          </View>
-        </View>
-
-        {/* MAIN HOSTEL CARD */}
-        <View style={styles.card}>
-          <View style={styles.topRow}>
-            <View style={{ flexDirection: "row" }}>
-              <Image source={HostelImg} style={styles.hostelImg} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.hostelName}>{mainHostel.name}</Text>
-                <Text style={styles.badge}>{mainHostel.type}</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity
-              ref={(r) => (dotRefs.current[mainHostel.id] = r)}
-              onPress={() => openPopup(mainHostel.id)}
-            >
-              <Image source={Dots} style={styles.dotsIcon} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.rowBox}>
-            <View style={styles.col}>
-              <Text style={styles.label}>Total Rooms</Text>
-              <Text style={styles.num}>{mainHostel.totalRooms}</Text>
-            </View>
-
-            <View style={styles.col}>
-              <Text style={styles.label}>Available Beds</Text>
-              <Text style={styles.num}>{mainHostel.availableBeds}</Text>
-            </View>
-          </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {(mainHostel.images || []).map((img, i) => (
-              <Image key={i} source={img} style={styles.roomImg} />
-            ))}
-          </ScrollView>
-
-          <Text style={styles.infoTitle}>Email ID</Text>
-          <View style={styles.infoRow}>
-            <Image source={sms} style={styles.infoIcon} />
-            <Text style={styles.infoText}>{mainHostel.email}</Text>
-          </View>
-
-          <Text style={styles.infoTitle}>Contact Number</Text>
-          <View style={styles.infoRow}>
-            <Image source={call} style={styles.infoIcon} />
-            <Text style={styles.infoText}>{mainHostel.phone}</Text>
-          </View>
-
-          <Text style={styles.infoTitle}>Address</Text>
-          <View style={styles.infoRow}>
-            <Image source={Building} style={styles.infoIcon} />
-            <Text style={styles.infoText}>{mainHostel.address}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>Other Hostels</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={ArrowLeft} style={styles.backArrow} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Manage PG</Text>
       </View>
 
-      {/* SCROLLABLE OTHER HOSTEL LIST */}
+      <View style={styles.card}>
+        <View style={styles.topRow}>
+          <View style={{ flexDirection: "row" }}>
+            <Image source={mainHostel.profilePhoto} style={styles.hostelImg} />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.hostelName}>{mainHostel.name}</Text>
+              <Text style={styles.badge}>{mainHostel.type}</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            ref={(r) => (dotRefs.current[mainHostel.id] = r)}
+            onPress={() => openPopup(mainHostel.id)}
+          >
+            <Image source={Dots} style={styles.dotsIcon} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.rowBox}>
+          <View style={styles.col}>
+            <Text style={styles.label}>Total Rooms</Text>
+            <Text style={styles.num}>{mainHostel.totalRooms}</Text>
+          </View>
+
+          <View style={styles.col}>
+            <Text style={styles.label}>Available Beds</Text>
+            <Text style={styles.num}>{mainHostel.availableBeds}</Text>
+          </View>
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {mainHostel.images.map((img, i) => (
+            <Image key={i} source={img} style={styles.roomImg} />
+          ))}
+        </ScrollView>
+
+        <Text style={styles.infoTitle}>Email ID</Text>
+        <View style={styles.infoRow}>
+          <Image source={sms} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{mainHostel.email}</Text>
+        </View>
+
+        <Text style={styles.infoTitle}>Contact Number</Text>
+        <View style={styles.infoRow}>
+          <Image source={call} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{mainHostel.phone}</Text>
+        </View>
+
+        <Text style={styles.infoTitle}>Address</Text>
+        <View style={styles.infoRow}>
+          <Image source={Building} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{mainHostel.address}</Text>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Other Hostels</Text>
+
       <ScrollView style={{ flex: 1 }}>
         {otherHostels.map((hostel) => (
           <View key={hostel.id} style={styles.otherCard}>
-            <Image source={HostelImg} style={styles.otherImg} />
-
+            <Image source={hostel.profilePhoto} style={styles.otherImg} />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.otherName}>{hostel.name}</Text>
               <Text style={styles.otherBadge}>{hostel.type}</Text>
             </View>
 
-            {/* SWITCH HOSTEL ICON */}
             <TouchableOpacity onPress={() => handleSwitchHostel(hostel)}>
               <Image source={ActiveIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
           </View>
         ))}
 
-        <View style={{ height: 140 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* FIXED BOTTOM BUTTON */}
       <View style={styles.fixedAddBtnWrapper}>
-  <TouchableOpacity
-    style={styles.figAddBtn}
-    onPress={() => navigation.navigate("AddPG")}
-  >
-    <Image
-      source={require("../../../Assets/Images/blue_circle.png")}
-      style={styles.figAddIcon}
-    />
-    <Text style={styles.figAddText}>Add New PG</Text>
-  </TouchableOpacity>
-</View>
+        <TouchableOpacity
+          style={styles.figAddBtn}
+          onPress={() => navigation.navigate("AddPG")}
+        >
+          <Image
+            source={PlusIcon}
+            style={styles.figAddIcon}
+          />
+          <Text style={styles.figAddText}>Add New PG</Text>
+        </TouchableOpacity>
+      </View>
 
-
-      {/* EDIT POPUP */}
-      {visiblePopup !== null && (
+      {visiblePopup && (
         <TouchableWithoutFeedback onPress={() => setVisiblePopup(null)}>
           <View style={styles.popupOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={[styles.popupBox, { top: popupPos.y, left: popupPos.x }]}>
-                <TouchableOpacity
-                  style={styles.popupItem}
-                  onPress={() => handleEdit(visiblePopup)}
-                >
-                  <Image source={EditIcon} style={styles.popupIcon} />
-                  <Text style={styles.popupText}>Edit</Text>
-                </TouchableOpacity>
+            <View
+              style={[
+                styles.popupBox,
+                { top: popupPos.y, left: popupPos.x },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.popupItem}
+                onPress={() => handleEdit(visiblePopup)}
+              >
+                <Image source={EditIcon} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Edit</Text>
+              </TouchableOpacity>
 
-                <View style={styles.divider} />
+              <View style={styles.divider} />
 
-                <TouchableOpacity
-                  style={styles.popupItem}
-                  onPress={handleDelete}
-                >
-                  <Image source={DeleteIcon} style={styles.popupIcon} />
-                  <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableWithoutFeedback>
+              <TouchableOpacity
+                style={styles.popupItem}
+                onPress={handleDelete}
+              >
+                <Image source={DeleteIcon} style={styles.popupIcon} />
+                <Text style={[styles.popupText, { color: "red" }]}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </TouchableWithoutFeedback>
       )}
 
-      {/* SWITCH HOSTEL BOTTOM SHEET */}
       {isSwitchVisible && (
         <TouchableWithoutFeedback onPress={closeSheet}>
           <View style={styles.switchOverlay}>
@@ -335,15 +321,22 @@ export default function SettingsPG({ navigation }) {
               <Text style={styles.switchTitle}>Switch to</Text>
 
               <View style={styles.switchCard}>
-                <Image source={HostelImg} style={styles.switchImg} />
+                <Image
+                  source={switchHostel?.profilePhoto}
+                  style={styles.switchImg}
+                />
                 <View style={{ marginLeft: 12 }}>
                   <Text style={styles.otherName}>{switchHostel?.name}</Text>
-                  <Text style={styles.otherBadge}>{switchHostel?.type}</Text>
+                  <Text style={styles.otherBadge} numberOfLines={1}>{switchHostel?.type}</Text>
+
                 </View>
               </View>
 
               <View style={styles.switchActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={closeSheet}
+                >
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
 
@@ -354,61 +347,48 @@ export default function SettingsPG({ navigation }) {
                   <Text style={styles.continueText}>Continue</Text>
                 </TouchableOpacity>
               </View>
-
             </Animated.View>
           </View>
         </TouchableWithoutFeedback>
       )}
 
-       {deletePGShow && (
-                      <Modal
-                        transparent
-                        animationType="fade"
-                        visible={deletePGShow}
-                        onRequestClose={() => setDeletePG(false)}
-                      >
-                        <View style={styles.deleteOverlay}>
-                          <View style={styles.deleteBox}>
-                    
-                            <Text style={styles.deleteTitle}>Delete PG?</Text>
-                            <Text style={styles.deleteSub}>
-                              Are you sure you want to delete this PG?
-                            </Text>
-                    
-                            <View style={styles.deleteBtnRow}>
-                              <TouchableOpacity
-                                style={styles.cancelBtn}
-                                onPress={() => setDeletePG(false)}
-                              >
-                                <Text style={styles.cancelText}>Cancel</Text>
-                              </TouchableOpacity>
-                    
-                              <TouchableOpacity
-                                style={styles.deleteBtn}
-                                onPress={() => {
-                                  console.log("DELETE CONFIRMED");
-                                  setDeletePG(false);
-                                }}
-                              >
-                                <Text style={styles.deleteBtnText}>Delete</Text>
-                              </TouchableOpacity>
-                            </View>
-                    
-                          </View>
-                        </View>
-                      </Modal>
-                    )}
+      {deletePGShow && (
+        <Modal transparent animationType="fade">
+          <View style={styles.deleteOverlay}>
+            <View style={styles.deleteBox}>
+              <Text style={styles.deleteTitle}>Delete PG?</Text>
+              <Text style={styles.deleteSub}>
+                Are you sure you want to delete this PG?
+              </Text>
 
+              <View style={styles.deleteBtnRow}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setDeletePG(false)}
+                >
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={() => {
+                    console.log("PG Deleted!");
+                    setDeletePG(false);
+                  }}
+                >
+                  <Text style={styles.deleteBtnText}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
 
-// =====================================
-// STYLES
-// =====================================
 
 const styles = StyleSheet.create({
-
   header: {
     paddingHorizontal: 16,
     paddingTop: 40,
@@ -417,7 +397,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  headerLeft: { flexDirection: "row", alignItems: "center" },
   backArrow: { width: 22, height: 22, marginRight: 10 },
   headerTitle: { fontSize: 20, fontWeight: "700" },
 
@@ -431,11 +410,8 @@ const styles = StyleSheet.create({
   },
 
   topRow: { flexDirection: "row", justifyContent: "space-between" },
-
-  dotsIcon: { width: 30, height: 30 },
-
+  dotsIcon: { width: 26, height: 26 },
   hostelImg: { width: 50, height: 50, borderRadius: 25 },
-
   hostelName: { fontSize: 18, fontWeight: "700" },
 
   badge: {
@@ -456,7 +432,7 @@ const styles = StyleSheet.create({
 
   col: { flex: 1, alignItems: "center" },
   label: { fontSize: 12, color: "#6B7280" },
-  num: { fontSize: 18, fontWeight: "700", marginTop: 4 , marginRight:44 },
+  num: { fontSize: 18, fontWeight: "700", marginTop: 4 },
 
   roomImg: {
     width: 100,
@@ -467,12 +443,9 @@ const styles = StyleSheet.create({
   },
 
   infoTitle: { marginTop: 14, fontWeight: "700" },
-
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 6 },
-
   infoIcon: { width: 18, height: 18, marginRight: 10 },
-
-  infoText: { fontSize: 14, fontWeight: "600", color: "#000", width: 240 },
+  infoText: { fontSize: 14, fontWeight: "600", width: 240 },
 
   sectionTitle: {
     marginLeft: 16,
@@ -494,58 +467,45 @@ const styles = StyleSheet.create({
   },
 
   otherImg: { width: 52, height: 52, borderRadius: 10 },
-
   otherName: { fontSize: 16, fontWeight: "700" },
 
-  otherBadge: {
-    backgroundColor: "#FFF3CF",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    marginTop: 4,
-    marginRight:40
+ otherBadge: {
+  backgroundColor: "#FFF3CF",
+  paddingHorizontal: 10,    
+  paddingVertical: 3,
+  borderRadius: 6,
+  marginTop: 4,
+  alignSelf: "flex-start",   
+},
+
+
+  fixedAddBtnWrapper: {
+    position: "absolute",
+    bottom: 20,
+    width: "100%",
+    alignItems: "center",
   },
 
- fixedAddBtnWrapper: {
-  position: "absolute",
-  bottom: 20,
-  left: 0,
-  right: 0,
-  alignItems: "center",
-},
+  figAddBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "90%",
+    paddingVertical: 14,
+    backgroundColor: "#F4F7FF",
+    borderRadius: 14,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "#2D6CDF",
+  },
 
-figAddBtn: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "90%",
-  paddingVertical: 14,
-  backgroundColor: "#F4F7FF",
-  borderRadius: 14,
-  borderWidth: 2,
-  borderStyle: "dashed",
-  borderColor: "#2D6CDF",
-},
-
-figAddIcon: {
-  width: 23,
-  height: 23,
-  marginRight: 8,
-  marginTop:3,
-  tintColor: "#2D6CDF",
-},
-
-figAddText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#2D6CDF",
-},
-
+  figAddIcon: { width: 23, height: 23, marginRight: 8, tintColor: "#2D6CDF" },
+  figAddText: { fontSize: 16, fontWeight: "600", color: "#2D6CDF" },
 
   popupOverlay: {
     position: "absolute",
-    top: -80,
-    left: -40,
+    top: 0,
+    left: 0,
     right: 0,
     bottom: 0,
   },
@@ -556,7 +516,7 @@ figAddText: {
     backgroundColor: "#fff",
     borderRadius: 10,
     paddingVertical: 8,
-    elevation: 8,
+    elevation: 10,
   },
 
   popupItem: {
@@ -567,9 +527,7 @@ figAddText: {
   },
 
   popupIcon: { width: 18, height: 18, marginRight: 10 },
-
   popupText: { fontSize: 15, fontWeight: "600" },
-
   divider: { height: 1, backgroundColor: "#EAEAEA" },
 
   switchOverlay: {
@@ -589,7 +547,6 @@ figAddText: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     position: "absolute",
-    bottom: 0,
   },
 
   handleBar: {
@@ -612,11 +569,7 @@ figAddText: {
     marginBottom: 20,
   },
 
-  switchImg: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-  },
+  switchImg: { width: 60, height: 60, borderRadius: 10 },
 
   switchActions: {
     flexDirection: "row",
@@ -641,82 +594,36 @@ figAddText: {
     alignItems: "center",
   },
 
-  cancelText: {
-    fontSize: 15,
-    color: "#444",
+  cancelText: { fontSize: 15, color: "#444" },
+  continueText: { fontSize: 15, color: "#fff", fontWeight: "700" },
+
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
-  continueText: {
-    fontSize: 15,
-    color: "#fff",
-    fontWeight: "700",
+  deleteBox: {
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 25,
+    borderRadius: 15,
+    alignItems: "center",
   },
 
-  
-deleteOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  deleteTitle: { fontSize: 18, fontWeight: "700" },
+  deleteSub: { fontSize: 14, color: "#555", textAlign: "center", marginBottom: 25 },
 
-deleteBox: {
-  width: "90%",
-  backgroundColor: "#fff",
-  padding: 25,
-  borderRadius: 15,
-  alignItems: "center",
-  elevation: 10,
-},
+  deleteBtnRow: { flexDirection: "row", width: "100%" },
 
-deleteTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  color: "#111",
-  marginBottom: 10,
-},
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#2D6CDF",
+    borderRadius: 10,
+    alignItems: "center",
+  },
 
-deleteSub: {
-  fontSize: 14,
-  color: "#555",
-  textAlign: "center",
-  marginBottom: 25,
-},
-
-deleteBtnRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  width: "100%",
-},
-
-cancelBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#2D6CDF",
-  marginRight: 10,
-  alignItems: "center",
-},
-
-cancelText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#2D6CDF",
-},
-
-deleteBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 10,
-  backgroundColor: "#2D6CDF",
-  alignItems: "center",
-},
-
-deleteBtnText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#fff",
-},
-
+  deleteBtnText: { fontSize: 16, fontWeight: "600", color: "#fff" },
 });

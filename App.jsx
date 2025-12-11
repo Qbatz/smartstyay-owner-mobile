@@ -90,6 +90,7 @@ import PlanDetailsScreen from './src/Component/SettingScreen/Subscription/PlanDe
 import Agreement from './src/Component/SettingScreen/SettingsAgreement/AgreementPolicy'
 import LoginContext from './src/Context/LoginContext';
 import CommonContext from './src/Context/CommonContext'
+import  PGContext  from './src/Context/PGContext';
 
 
 
@@ -102,7 +103,9 @@ function App() {
       <LoginContext>
         <CommonContext>
            <GeneralProvider>
+            <PGContext>
             <AppContent />
+            </PGContext>
             </GeneralProvider>
         </CommonContext>
       </LoginContext>      
