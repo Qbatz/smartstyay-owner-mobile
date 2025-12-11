@@ -31,6 +31,8 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
 
 
   useFocusEffect(
@@ -115,7 +117,10 @@ export default function GeneralDetailsScreen({ navigation }) {
         <View style={{ flex: 1 }}>
           <Text style={styles.userName}>{u.firstName} {u.lastName}</Text>
 
-          <TouchableOpacity onPress={() => setShowPasswordSheet(true)}>
+          <TouchableOpacity onPress={() => {
+    setSelectedUserId(u.userId);
+    setShowPasswordSheet(true);
+  }}>
             <Text style={styles.changePassword}>Change Password</Text>
           </TouchableOpacity>
         </View>
@@ -247,6 +252,7 @@ export default function GeneralDetailsScreen({ navigation }) {
       <ChangePasswordSheet
         visible={showPasswordSheet}
         onClose={() => setShowPasswordSheet(false)}
+         adminId={selectedUserId}
       />
 
     </>
