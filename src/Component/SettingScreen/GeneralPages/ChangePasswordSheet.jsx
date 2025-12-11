@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useGeneral } from "../../../Context/GeneralContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle"
 
 
 export default function ChangePasswordSheet({ visible, onClose,adminId }) {
@@ -129,9 +130,10 @@ const handlePasswordUpdate = async () => {
 }}
 />
 
-      {passError && (
-                  <Text style={styles.errText}>{passError}</Text>
-                )}
+   
+                 {passError && (
+                                    <ErrorMessage message={passError} type="error" />
+                                )}
 
         <View style={styles.btnRow}>
           <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>

@@ -20,6 +20,7 @@ import ChangePasswordSheet from './ChangePasswordSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useGeneral } from "../../../Context/GeneralContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 
 export default function GeneralDetailsScreen({ navigation }) {
@@ -213,7 +214,16 @@ export default function GeneralDetailsScreen({ navigation }) {
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
-            {getData.length > 0 && getData.map((u, index) => renderUserCard(u, index))}
+          
+            {getData.length === 0 ? (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyState} style={styles.emptyImage} />
+    <Text style={styles.emptyText}>No Data Found</Text>
+  </View>
+) : (
+  getData.map((u, index) => renderUserCard(u, index))
+)}
+
             <View style={{ height: 40 }} />
           </ScrollView>
 
@@ -430,5 +440,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700"
   },
+emptyContainer: {
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 150,
+},
+
+emptyImage: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+  opacity: 0.8
+},
+
+emptyText: {
+  marginTop: 14,
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#777",
+},
 
 });
