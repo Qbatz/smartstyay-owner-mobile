@@ -297,7 +297,7 @@ export default function DashboardScreen() {
           <View style={styles.hostelRow}>
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.hostelTitle}>{hostelList[0]?.name}</Text>
+            <Text style={styles.hostelTitle}>  {hostelList?.[0]?.name || "Select PG"}</Text>
               {/* <Text style={styles.changeText}>Change Hostel →</Text> */}
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                 <Text style={styles.changeText}>Change Hostel →</Text>
