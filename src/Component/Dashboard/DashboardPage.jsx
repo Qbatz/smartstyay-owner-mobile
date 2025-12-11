@@ -63,13 +63,14 @@ export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
   
- const { updateHostelList, hostelList } = useContext(CommonContexts);
+ const { updateHostelList, hostelList  , activeHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-
- 
 
   console.log("Hostels:", hostelList);
 
+  const activeHostel = hostelList.find(h =>
+  (h.hostelId ?? h.id) === activeHostelId
+) || hostelList[0];
 
 
   const navigation = useNavigation();
@@ -103,7 +104,7 @@ export default function DashboardScreen() {
     const { width } = Dimensions.get("window");
     // const [hostelList,setHostelList]=useState([])
 
-    console.log(hostelList)
+    console.log(hostelList , activeHostel)
 
   const months = ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024"];
   const advance = [100000, 150000, 23000, 31000, 28000];
@@ -297,7 +298,7 @@ export default function DashboardScreen() {
           <View style={styles.hostelRow}>
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
             <View style={{ marginLeft: 12 }}>
-            <Text style={styles.hostelTitle}>  {hostelList?.[0]?.name || "Select PG"}</Text>
+            <Text style={styles.hostelTitle}>  {activeHostel?.name || "Select PG"}</Text>
               {/* <Text style={styles.changeText}>Change Hostel →</Text> */}
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                 <Text style={styles.changeText}>Change Hostel →</Text>
@@ -901,7 +902,7 @@ const styles = StyleSheet.create({
 
   hostelRow: { flexDirection: "row", alignItems: "center" },
 
-  hostelTitle: { fontSize: 16, fontWeight: "700", color: "#1E293B" },
+  hostelTitle: { fontSize: 16, fontWeight: "700", color: "#1E293B", marginLeft:-8 },
 
   changeText: { fontSize: 12, color: "#2F80ED", marginTop: 3 },
 

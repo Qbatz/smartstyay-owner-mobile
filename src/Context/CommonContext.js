@@ -19,7 +19,7 @@ export const CommonContexts = createContext();
 const CommonContext = (props) => {
   const [HostelId, setHostelId] = useState();
   const [hostelList, setHostelList] = useState([])
-  
+   const [activeHostelId, setActiveHostelId] = useState(null);
 
   return (
     <CommonContexts.Provider
@@ -29,6 +29,8 @@ const CommonContext = (props) => {
 
         hostelList,               
         updateHostelList: setHostelList, 
+          activeHostelId,
+        setActiveHostelId,  
       }}
     >
       {props.children}

@@ -16,6 +16,8 @@ import {
 } from "react-native";
 
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
+
 
 import HostelImg from "../../../Assets/Images/PgImg.png";
 import PgRooms from "../../../Assets/Images/pgrooms.png";
@@ -31,8 +33,11 @@ import EmptyIcon from "../../../Assets/Images/Empty_state.png";
 import PlusIcon from "../../../Assets/Images/blue_circle.png"
 
 export default function SettingsPG({ navigation }) {
-  const { hostelList } = useContext(CommonContexts);
+  const { hostelList , updateHostelList , setActiveHostelId } = useContext(CommonContexts);
   console.log("Settings PG — API Hostels:", hostelList);
+  const { deletePG } = useContext(PGContext);
+
+
 
   const dotRefs = useRef({});
   const [visiblePopup, setVisiblePopup] = useState(null);
@@ -44,24 +49,35 @@ export default function SettingsPG({ navigation }) {
 
   const [deletePGShow, setDeletePG] = useState(false);
 
-  const formatHostels = hostelList?.map((h) => ({
-    id: h.hostelId,
-    name: h.name,
-    type: "Paying Guest", 
-    email: h.emailId || "N/A",
-    phone: h.mobile || "N/A",
-    address: `${h.houseNo || ""}, ${h.street || ""}, ${h.city || ""}`,
-    totalRooms: h.noOfRooms,
-    availableBeds: h.noOfAvailableBeds,
-    profilePhoto: h.mainImage ? { uri: h.mainImage } : HostelImg,
-    images: h.images?.length ? h.images.map((i) => ({ uri: i })) : [PgRooms],
-  }));
+  const clean = (text) => (text ? text.toString().trim() : "");
+
+
+ const formatHostels = hostelList?.map((h, index) => ({
+  id: h.hostelId ?? h.id ?? `hostel_${index}`, 
+  name: clean(h.name),
+  type: "Paying Guest",
+  email: clean(h.emailId),
+  phone: clean(h.mobile),
+  address: [
+    clean(h.houseNo),
+    clean(h.street),
+    clean(h.city)
+  ].filter(Boolean).join(", "),
+  totalRooms: h.noOfRooms,
+  availableBeds: h.noOfAvailableBeds,
+  profilePhoto: h.mainImage ? { uri: h.mainImage } : HostelImg,
+  images: h.images?.length ? h.images.map((i) => ({ uri: i })) : [PgRooms],
+}));
+
+
 
   const mainHostel = formatHostels?.[0];
   const otherHostels =
     formatHostels?.length > 1 ? formatHostels.slice(1) : [];
 
   const openPopup = (id) => {
+    console.log("id", id);
+    
     const ref = dotRefs.current[id];
     if (!ref) return;
 
@@ -97,10 +113,24 @@ export default function SettingsPG({ navigation }) {
     openSheet();
   };
 
-  const handleActivate = (id) => {
-    console.log("Switched PG to:", id);
-    closeSheet();
-  };
+  // const handleActivate = (id) => {
+  //   closeSheet();
+  // };
+
+ const handleActivate = (id) => {
+  // move selected hostel to top
+  const selected = hostelList.find(h => (h.hostelId ?? h.id) === id);
+  const others = hostelList.filter(h => (h.hostelId ?? h.id) !== id);
+
+  updateHostelList([selected, ...others]);
+
+  // ⭐ Store active hostel globally
+  setActiveHostelId(id);
+
+  closeSheet();
+};;
+
+
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
@@ -146,9 +176,50 @@ export default function SettingsPG({ navigation }) {
 
 
   const handleDelete = () => {
-    setVisiblePopup(null);
     setDeletePG(true);
   };
+
+  const handleDeletePG = async () => {
+  // Find the actual hostel object
+  const selectedHostel = hostelList.find(
+    (h) => (h.hostelId ?? h.id) === visiblePopup
+  );
+
+   console.log("selectedHostel", selectedHostel);
+  
+  if (!selectedHostel) {
+    console.log("Hostel not found");
+    return;
+  }
+
+  const backendId = selectedHostel.hostelId; 
+  console.log("hostelId", backendId);
+  
+
+  try {
+    const res = await deletePG(backendId);
+
+    if (res?.status === 200) {
+      console.log("res", res);
+      // Remove from list in UI
+      const updated = hostelList.filter(
+        (h) => (h.hostelId ?? h.id) !== visiblePopup
+      );
+       console.log("updated", updated);
+
+      updateHostelList(updated);
+      console.log("PG Deleted Successfully!");
+    } else {
+      console.log("Delete failed:", res);
+    }
+  } catch (err) {
+    console.log("DELETE ERROR:", err);
+  }
+
+  setDeletePG(false);
+};
+
+
 
 
   useEffect(() => {
@@ -170,13 +241,13 @@ export default function SettingsPG({ navigation }) {
     return () => backHandler.remove();
   }, [isSwitchVisible, visiblePopup]);
 
-  if (!mainHostel)
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-         <Image source={EmptyIcon} style={{width: 200, height: 160, marginBottom: 10}} />
-        <Text>No PG Data Found</Text>
-      </View>
-    );
+  // if (!mainHostel)
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  //        <Image source={EmptyIcon} style={{width: 200, height: 160, marginBottom: 10}} />
+  //       <Text>No PG Data Found</Text>
+  //     </View>
+  //   );
 
 
   return (
@@ -191,16 +262,16 @@ export default function SettingsPG({ navigation }) {
       <View style={styles.card}>
         <View style={styles.topRow}>
           <View style={{ flexDirection: "row" }}>
-            <Image source={mainHostel.profilePhoto} style={styles.hostelImg} />
+            <Image source={mainHostel?.profilePhoto} style={styles.hostelImg} />
             <View style={{ marginLeft: 10 }}>
-              <Text style={styles.hostelName}>{mainHostel.name}</Text>
-              <Text style={styles.badge}>{mainHostel.type}</Text>
+              <Text style={styles.hostelName}>{mainHostel?.name}</Text>
+              <Text style={styles.badge}>{mainHostel?.type}</Text>
             </View>
           </View>
 
           <TouchableOpacity
-            ref={(r) => (dotRefs.current[mainHostel.id] = r)}
-            onPress={() => openPopup(mainHostel.id)}
+            ref={(r) => (dotRefs.current[mainHostel?.id] = r)}
+            onPress={() => openPopup(mainHostel?.id)}
           >
             <Image source={Dots} style={styles.dotsIcon} />
           </TouchableOpacity>
@@ -209,17 +280,17 @@ export default function SettingsPG({ navigation }) {
         <View style={styles.rowBox}>
           <View style={styles.col}>
             <Text style={styles.label}>Total Rooms</Text>
-            <Text style={styles.num}>{mainHostel.totalRooms}</Text>
+            <Text style={styles.num}>{mainHostel?.totalRooms}</Text>
           </View>
 
           <View style={styles.col}>
             <Text style={styles.label}>Available Beds</Text>
-            <Text style={styles.num}>{mainHostel.availableBeds}</Text>
+            <Text style={styles.num}>{mainHostel?.availableBeds}</Text>
           </View>
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {mainHostel.images.map((img, i) => (
+          {mainHostel?.images.map((img, i) => (
             <Image key={i} source={img} style={styles.roomImg} />
           ))}
         </ScrollView>
@@ -227,26 +298,26 @@ export default function SettingsPG({ navigation }) {
         <Text style={styles.infoTitle}>Email ID</Text>
         <View style={styles.infoRow}>
           <Image source={sms} style={styles.infoIcon} />
-          <Text style={styles.infoText}>{mainHostel.email}</Text>
+          <Text style={styles.infoText}>{mainHostel?.email}</Text>
         </View>
 
         <Text style={styles.infoTitle}>Contact Number</Text>
         <View style={styles.infoRow}>
           <Image source={call} style={styles.infoIcon} />
-          <Text style={styles.infoText}>{mainHostel.phone}</Text>
+          <Text style={styles.infoText}>{mainHostel?.phone}</Text>
         </View>
 
         <Text style={styles.infoTitle}>Address</Text>
         <View style={styles.infoRow}>
           <Image source={Building} style={styles.infoIcon} />
-          <Text style={styles.infoText}>{mainHostel.address}</Text>
+          <Text style={styles.infoText}>{mainHostel?.address}</Text>
         </View>
       </View>
 
       <Text style={styles.sectionTitle}>Other Hostels</Text>
 
       <ScrollView style={{ flex: 1 }}>
-        {otherHostels.map((hostel) => (
+        {otherHostels &&  otherHostels?.filter(Boolean).map((hostel) => (
           <View key={hostel.id} style={styles.otherCard}>
             <Image source={hostel.profilePhoto} style={styles.otherImg} />
             <View style={{ flex: 1, marginLeft: 12 }}>
@@ -371,10 +442,7 @@ export default function SettingsPG({ navigation }) {
 
                 <TouchableOpacity
                   style={styles.deleteBtn}
-                  onPress={() => {
-                    console.log("PG Deleted!");
-                    setDeletePG(false);
-                  }}
+                  onPress={handleDeletePG}
                 >
                   <Text style={styles.deleteBtnText}>Delete</Text>
                 </TouchableOpacity>
