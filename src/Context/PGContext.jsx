@@ -98,8 +98,26 @@ const convertToBase64File = (json) => {
     }
   };
 
+  const deletePG = async (hostelId) => {
+  try {
+    setPgLoading(true);
+    setPgError(null);
+
+    const response = await AxiosConfig.delete(`/v2/hostel/${hostelId}`);
+
+    return response;
+  } catch (error) {
+    console.log("DELETE PG ERROR:", error);
+    setPgError(error);
+    return error;
+  } finally {
+    setPgLoading(false);
+  }
+};
+
+
   return (
-    <PGContext.Provider value={{ addPG, editPG, pgLoading, pgError }}>
+    <PGContext.Provider value={{ addPG, editPG,deletePG , pgLoading, pgError }}>
       {children}
     </PGContext.Provider>
   );
