@@ -68,9 +68,14 @@ export default function DashboardScreen() {
 
   console.log("Hostels:", hostelList);
 
-  const activeHostel = hostelList &&  hostelList.find(h =>
-  (h.hostelId ?? h.id) === activeHostelId
-) || hostelList[0];
+//   const activeHostel = hostelList &&  hostelList.find(h =>
+//   (h.hostelId ?? h.id) === activeHostelId
+// ) || hostelList[0];
+
+const activeHostel =
+  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+  hostelList?.[0] ??
+  null;
 
 
   const navigation = useNavigation();
