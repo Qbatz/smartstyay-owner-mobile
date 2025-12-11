@@ -1,4 +1,4 @@
-import React, { useState , useEffect , useRef} from "react";
+import React, { useState , useEffect , useRef,useContext} from "react";
 import {
   View,
   Text,
@@ -10,18 +10,81 @@ import {
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+import { useElectricity } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
+
 
 export default function ElectricitySettings({ navigation }) {
+const { hostelList } = useContext(CommonContexts);
+const { getElectricity } = useElectricity();
+const [ebunitList,setEbUnitList]= useState("")
+const hostelId = hostelList?.length > 0 ? hostelList[0].hostelId : null;
+ 
+
+
+useEffect(() => {
+  if (!hostelId) {
+    console.log("Hostel ID not loaded yet");
+    return;
+  }
+
+  console.log("Hostel ID →", hostelId);
+  loadElectricity(hostelId);
+
+}, [hostelId]);
+
+
+
+const loadElectricity = async (id) => {
+  const res = await getElectricity(id);
+  console.log("EB Data = ", res);
+  setEbUnitList(res.data)
+
+  if (res.success && res.data) {
+ 
+    setElectricityData({
+      amount: res.data.chargerPerUnit,
+      roomBased: res.data.isRoomBased,
+      hostelBased: res.data.isHostelBased
+    });
+  }
+};
+
+
+ console.log("ebunitList",ebunitList)
 
 
   const [electricityData, setElectricityData] = useState({
-    amount: 80,
     roomBased: false,
     hostelBased: true,
   })
 
   const [showEditSheet, setShowEditSheet] = useState(false)
   const editY = useRef(new Animated.Value(700)).current;
+  const [unitAmount,setUnitAmount] = useState("")
+
+const handleSave = async () => {
+  if (!hostelid) {
+    alert("Hostel ID Not Found");
+    return;
+  }
+
+  if (!unitAmount) {
+    alert("Enter Unit Price");
+    return;
+  }
+
+  const res = await updateElectricity(hostelid, Number(unitAmount));
+
+  if (res.success) {
+    alert("Updated Successfully");
+    closeEditSheet();
+    loadElectricity(); // refresh data
+  } else {
+    alert(res.data?.message || "Update Failed");
+  }
+};
 
 
 
@@ -183,7 +246,7 @@ const editPan = useRef(
       </View>
 
       {/* DATA CARD */}
-      {electricityData && (
+      {/* {ebunitList && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Electricity Information</Text>
 
@@ -193,7 +256,7 @@ const editPan = useRef(
              <View style={styles.cardborder} />
           <View style={styles.row}>
             <Text style={styles.label}>Per Unit Amount</Text>
-            <Text style={styles.value}>₹ {electricityData.amount}</Text>
+            <Text style={styles.value}>₹ {ebunitList.chargerPerUnit}</Text>
           </View>
 
           <View style={styles.row}>
@@ -224,9 +287,59 @@ const editPan = useRef(
             </View>
           </View>
         </View>
-      )}
+      )} */}
 
-      
+      {/* EMPTY STATE CHECK */}
+{!ebunitList ? (
+  <View style={{ alignItems: "center", marginTop: 200 }}>
+    <Image source={EmptyState} style={{ width: 180, height: 180 }} />
+    <Text style={{ marginTop: 12, fontSize: 16, color: "#777" }}>
+      No Electricity Settings Found
+    </Text>
+  </View>
+) : (
+  <View style={styles.card}>
+    <Text style={styles.cardTitle}>Electricity Information</Text>
+
+    <Text style={styles.cardSubtitle}>
+      Configure per-unit EB rate for tenant consumption calculation.
+    </Text>
+
+    <View style={styles.cardborder} />
+
+    <View style={styles.row}>
+      <Text style={styles.label}>Per Unit Amount</Text>
+      <Text style={styles.value}>₹ {ebunitList.chargerPerUnit}</Text>
+    </View>
+
+    <View style={styles.row}>
+      <Text style={styles.label}>Room Based Calculation</Text>
+      <View style={styles.switchRow}>
+        <Text style={styles.switchText}>
+          {electricityData.roomBased ? "On" : "Off"}
+        </Text>
+        <CustomSwitch
+          value={electricityData.roomBased}
+          onToggle={toggleRoomBased}
+        />
+      </View>
+    </View>
+
+    <View style={styles.row}>
+      <Text style={styles.label}>Hostel Based Calculation</Text>
+      <View style={styles.switchRow}>
+        <Text style={styles.switchText}>
+          {electricityData.hostelBased ? "On" : "Off"}
+        </Text>
+        <CustomSwitch
+          value={electricityData.hostelBased}
+          onToggle={toggleHostelBased}
+        />
+      </View>
+    </View>
+  </View>
+)}
+
 
  {showEditSheet && (
   <View style={styles.sheetOverlay}>
@@ -261,6 +374,8 @@ const editPan = useRef(
         style={styles.input}
         placeholder="Eg: ₹ 10"
         keyboardType="numeric"
+         value={unitAmount}
+  onChangeText={(v) => setUnitAmount(v)}
       />
 
       {/* Buttons */}
@@ -281,9 +396,7 @@ const editPan = useRef(
            
                      <TouchableOpacity
                        style={styles.saveBtn}
-                       onPress={() => {
-                         navigation.goBack();
-                       }}
+                      onPress={handleSave}
                      >
                        <Text style={styles.saveText}> Save</Text>
                      </TouchableOpacity>
