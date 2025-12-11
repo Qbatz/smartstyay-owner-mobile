@@ -68,7 +68,7 @@ export default function DashboardScreen() {
 
   console.log("Hostels:", hostelList);
 
-  const activeHostel = hostelList.find(h =>
+  const activeHostel = hostelList &&  hostelList.find(h =>
   (h.hostelId ?? h.id) === activeHostelId
 ) || hostelList[0];
 
