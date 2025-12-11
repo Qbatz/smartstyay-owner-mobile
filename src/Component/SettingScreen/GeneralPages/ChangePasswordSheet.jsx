@@ -135,7 +135,7 @@ const handlePasswordUpdate = async () => {
     <SuccessModal
   visible={showSuccess}
   message={message}
-  type={modalType}   // 🔥 dynamic
+  type={modalType}
   onClose={() => setShowSuccess(false)}
 />
 

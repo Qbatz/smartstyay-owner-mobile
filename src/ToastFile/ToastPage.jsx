@@ -5,100 +5,138 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Image,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Svg, { Path, G, ClipPath, Rect } from "react-native-svg";
 
 const SuccessModal = ({
   visible,
   onClose,
   message,
   type,
-  imageSource,
-  imageStyle = {},
   modalStyle = {},
   messageStyle = {},
 }) => {
+
+  // ---------------- SVG ICONS ---------------- //
+  const SuccessIcon = ({ size = 24, color = "#4CAF50" }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9 12.5L11 14.5L15 10.5"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M12 21C6.48 21 2 16.52 2 11C2 5.48 6.48 1 12 1C17.52 1 22 5.48 22 11C22 16.52 17.52 21 12 21Z"
+        stroke={color}
+        strokeWidth="2"
+      />
+    </Svg>
+  );
+
+  const ErrorIcon = ({ size = 24, color = "#F44336" }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G clipPath="url(#clip0)">
+        <Path
+          d="M12 9V14"
+          stroke={color}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M12.0001 21.4093H5.94005C2.47005 21.4093 1.02005 18.9293 2.70005 15.8993L5.82006 10.2793L8.76006 4.9993C10.5401 1.7893 13.4601 1.7893 15.2401 4.9993L18.1801 10.2893L21.3001 15.9093C22.9801 18.9393 21.5201 21.4193 18.0601 21.4193H12.0001V21.4093Z"
+          stroke={color}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M11.9945 17H12.0035"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </G>
+      <ClipPath id="clip0">
+        <Rect width="24" height="24" fill="white" />
+      </ClipPath>
+    </Svg>
+  );
+
+  const WarningIcon = ({ size = 24, color = "#FF9800" }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 8V13"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <Path
+        d="M12 17H12.01"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <Path
+        d="M10.29 3.85999L1.82001 18C1.09001 19.26 2.01001 21 3.47001 21H20.53C21.99 21 22.91 19.26 22.18 18L13.71 3.85999C12.98 2.59999 11.02 2.59999 10.29 3.85999Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+
+  // ---------------- ICON HANDLER ---------------- //
   const getIcon = () => {
-    if (imageSource) {
-      return (
-        <Image source={imageSource} style={[styles.iconImage, imageStyle]} />
-      );
-    }
-
     switch (type) {
-      case 'success':
-        return <Icon name="checkmark-circle" size={24} color="#4CAF50" />;
-      case 'error':
-        return <Icon name="close-circle" size={24} color="#F44336" />;
-      case 'warning':
-        return <Icon name="warning" size={24} color="#FF9800" />;
+      case "success":
+        return <SuccessIcon />;
+      case "error":
+        return <ErrorIcon />;
+      case "warning":
+        return <WarningIcon />;
       default:
-        return <Icon name="checkmark-circle" size={24} color="#4CAF50" />;
+        return <SuccessIcon />;
     }
   };
 
-  const getModalBackgroundColor = () => {
+  // ---------------- STYLE HANDLERS ---------------- //
+  const getBackground = () => {
     switch (type) {
-      case 'success':
-        return '#f8fff8';
-      case 'error':
-        return '#ffeaea';
-      case 'warning':
-        return '#fff8e1';
+      case "success":
+        return "#f8fff8";
+      case "error":
+        return "#ffeaea";
+      case "warning":
+        return "#fff8e1";
       default:
-        return 'white';
+        return "#fff";
     }
   };
 
-  const getMessageColor = () => {
+  const getTextColor = () => {
     switch (type) {
-      case 'success':
-        return '#2E7D32';
-      case 'error':
-        return '#D32F2F';
-      case 'warning':
-        return '#FF9800';
+      case "success":
+        return "#2E7D32";
+      case "error":
+        return "#D32F2F";
+      case "warning":
+        return "#FF9800";
       default:
-        return '#666';
-    }
-  };
-
-  const getBorderColor = () => {
-    switch (type) {
-      case 'success':
-        return '#4CAF50';
-      case 'error':
-        return '#F44336';
-      case 'warning':
-        return '#FF9800';
-      default:
-        return '#E0E0E0';
+        return "#333";
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={[styles.modalContainer, modalStyle]}>
-          <View style={styles.contentRow}>
+    <Modal visible={visible} transparent animationType="fade">
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
+        <View style={[styles.modalContainer, { backgroundColor: getBackground() }, modalStyle]}>
+          <View style={styles.row}>
             {getIcon()}
-            <Text
-              style={[
-                styles.message,
-                { color: getMessageColor() },
-                messageStyle,
-              ]}
-            >
+            <Text style={[styles.message, { color: getTextColor() }, messageStyle]}>
               {message}
             </Text>
           </View>
@@ -111,42 +149,26 @@ const SuccessModal = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',  
-    alignItems: 'center',
-    padding: 20,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
     paddingBottom: 40,
   },
   modalContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
+    width: "85%",
+    borderRadius: 14,
     padding: 16,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 280,
-    borderColor: 'white',
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 2,
+    elevation: 6,
   },
-  contentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconImage: {
-    width: 24,
-    height: 24,
-    marginRight: 12,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   message: {
     fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
-    lineHeight: 22,
-    flex: 1,
-    marginLeft: 8,
+    fontWeight: "600",
+    marginLeft: 10,
+    flexShrink: 1,
   },
 });
 
