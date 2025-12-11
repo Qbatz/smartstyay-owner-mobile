@@ -17,8 +17,8 @@ import {
 
 import { CommonContexts } from "../../../Context/CommonContext";
 import { PGContext } from "../../../Context/PGContext";
-
-
+import { LoginContexts } from "../../../Context/LoginContext";
+import { getHostels } from "../../../Action/HostelAction";
 import HostelImg from "../../../Assets/Images/PgImg.png";
 import PgRooms from "../../../Assets/Images/pgrooms.png";
 import call from "../../../Assets/Images/call.png";
@@ -33,9 +33,10 @@ import EmptyIcon from "../../../Assets/Images/Empty_state.png";
 import PlusIcon from "../../../Assets/Images/blue_circle.png"
 
 export default function SettingsPG({ navigation }) {
-  const { hostelList , updateHostelList , setActiveHostelId } = useContext(CommonContexts);
+  const { hostelList , updateHostelList , setActiveHostelId  , activeHostelId} = useContext(CommonContexts);
   console.log("Settings PG — API Hostels:", hostelList);
   const { deletePG } = useContext(PGContext);
+   const login = useContext(LoginContexts);
 
 
 
@@ -117,6 +118,24 @@ export default function SettingsPG({ navigation }) {
   //   closeSheet();
   // };
 
+  const reorderHostels = (list, activeId) => {
+  const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
+  const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
+
+  return selected ? [selected, ...others] : list;
+};
+
+useEffect(() => {
+  if (!login.getToken) return;
+  if(activeHostelId){
+  getHostels(login.getToken).then((res) => {
+    const reordered = reorderHostels(res.data, activeHostelId);
+    updateHostelList(reordered);
+  });
+  }
+}, [login.getToken, activeHostelId]);
+
+
  const handleActivate = (id) => {
   // move selected hostel to top
   const selected = hostelList.find(h => (h.hostelId ?? h.id) === id);
@@ -129,6 +148,13 @@ export default function SettingsPG({ navigation }) {
 
   closeSheet();
 };;
+
+const activeHostel =
+  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+  hostelList?.[0] ??
+  null;
+
+  console.log(hostelList , activeHostel)
 
 
 
@@ -179,35 +205,35 @@ export default function SettingsPG({ navigation }) {
     setDeletePG(true);
   };
 
-  const handleDeletePG = async () => {
-  // Find the actual hostel object
+const handleDeletePG = async () => {
   const selectedHostel = hostelList.find(
     (h) => (h.hostelId ?? h.id) === visiblePopup
   );
 
-   console.log("selectedHostel", selectedHostel);
-  
-  if (!selectedHostel) {
-    console.log("Hostel not found");
-    return;
-  }
+  if (!selectedHostel) return;
 
-  const backendId = selectedHostel.hostelId; 
-  console.log("hostelId", backendId);
-  
+  const backendId = selectedHostel.hostelId;
 
   try {
     const res = await deletePG(backendId);
 
     if (res?.status === 200) {
-      console.log("res", res);
-      // Remove from list in UI
       const updated = hostelList.filter(
         (h) => (h.hostelId ?? h.id) !== visiblePopup
       );
-       console.log("updated", updated);
 
+      console.log("updated", updated);
+
+      // ⭐ 1) Update the UI list
       updateHostelList(updated);
+
+      // ⭐ 2) Automatically move next hostel as main hostel
+      if (updated.length > 0) {
+        setActiveHostelId(updated[0].hostelId ?? updated[0].id);
+      } else {
+        setActiveHostelId(null); // no hostels left
+      }
+
       console.log("PG Deleted Successfully!");
     } else {
       console.log("Delete failed:", res);

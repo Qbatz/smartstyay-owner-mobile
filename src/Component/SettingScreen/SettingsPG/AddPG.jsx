@@ -13,7 +13,9 @@ import {
 } from "react-native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { PGContext } from "../../../Context/PGContext";
-
+import { LoginContexts } from "../../../Context/LoginContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { getHostels } from "../../../Action/HostelAction";
 import AddImageIcon from "../../../Assets/Images/blue_circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyProfileImage from "../../../Assets/Images/empty_pgprofile.png";
@@ -26,6 +28,8 @@ export default function AddPG({ navigation, route }) {
   const editData = route?.params?.data || null;
 
   const { addPG, editPG } = useContext(PGContext);
+  const { hostelList , updateHostelList , setActiveHostelId , activeHostelId  } = useContext(CommonContexts);
+  const login = useContext(LoginContexts);
 
   // Utility to convert image into file object for FormData
   const prepareImage = (img) => {
@@ -36,6 +40,13 @@ export default function AddPG({ navigation, route }) {
       name: img.fileName || `image_${Date.now()}.jpg`,
     };
   };
+
+  const reorderHostels = (list, activeId) => {
+  const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
+  const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
+  return selected ? [selected, ...others] : list;
+};
+
 
   // ---------------------------
   // FORM STATES
@@ -167,6 +178,10 @@ const handleSubmit = async () => {
   if (isEdit) {
     const res = await editPG(finalPayload);
     if (res?.status === 200 || res?.status === 201) {
+        const fresh = await getHostels(login.getToken);
+         console.log("updateddata", fresh);
+     const reordered = reorderHostels(fresh.data, activeHostelId);
+     updateHostelList(reordered);
       alert("PG Updated Successfully");
       navigation.goBack();
     } else {
@@ -177,6 +192,10 @@ const handleSubmit = async () => {
 
   const res = await addPG(finalPayload);
   if (res?.status === 201) {
+    const fresh = await getHostels(login.getToken);
+    console.log("updateddata", fresh);
+     const reordered = reorderHostels(fresh.data, activeHostelId);
+     updateHostelList(reordered);
     alert("PG Added Successfully");
     navigation.goBack();
   } else {

@@ -63,7 +63,7 @@ export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
   
- const { updateHostelList, hostelList  , activeHostelId } = useContext(CommonContexts);
+ const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
   console.log("Hostels:", hostelList);
@@ -143,6 +143,26 @@ const activeHostel =
       advanceReturn: advanceReturn[index]
     });
   };
+
+  
+  const reorderHostels = (list, activeId) => {
+  const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
+  const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
+
+  return selected ? [selected, ...others] : list;
+};
+
+  useEffect(() => {
+  if (!login.getToken) return;
+  if(activeHostelId){
+ getHostels(login.getToken).then((res) => {
+    const reordered = reorderHostels(res.data, activeHostelId);
+    updateHostelList(reordered);
+  });
+  }
+ 
+}, [login.getToken, activeHostelId]);
+
 
 
     // useEffect(()=>{
