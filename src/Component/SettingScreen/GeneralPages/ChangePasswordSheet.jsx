@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect,useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,63 @@ import {
   Animated,
   PanResponder
 } from "react-native";
+import { useGeneral } from "../../../Context/GeneralContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
-export default function ChangePasswordSheet({ visible, onClose }) {
+
+export default function ChangePasswordSheet({ visible, onClose,adminId }) {
   const sheetY = useRef(new Animated.Value(400)).current;
+  const { changePassword } = useGeneral();
+  const [newPass, setNewPass] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+const [message, setMessage] = useState("");
+const [passError,setPassError] = useState("")
+
+const handlePasswordUpdate = async () => {
+  if (!newPass.trim()) {
+    setPassError("Please Enter Password");
+   
+    return;
+  }
+
+  const res = await changePassword(adminId, newPass);
+
+  if (res.success) {
+    setMessage(res.data); 
+    setShowSuccess(true);
+   
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      
+      onClose(); 
+       setNewPass("")
+    }, 1500);
+
+  } else {
+    setMessage(res.data?.message || "Failed to update password");
+    setShowSuccess(true);
+
+    setTimeout(() => setShowSuccess(false), 2000);
+  }
+};
+
+// const handlePasswordUpdate = async () => {
+//   if (!newPass.trim()) {
+//     alert("Password is required");
+//     return;
+//   }
+
+//   const res = await changePassword(adminId, newPass);
+//   console.log("ressssss",res)
+// if (res.success) {
+//   alert(res.data);
+//   onClose();
+// } else {
+//   alert(res.data?.message || "Failed to update password");
+// }
+
+// };
 
   useEffect(() => {
     if (visible) {
@@ -46,8 +100,15 @@ export default function ChangePasswordSheet({ visible, onClose }) {
   if (!visible) return null;
 
   return (
+    <>
+     <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type="success"
+        onClose={() => setShowSuccess(false)}
+      />
     <View style={styles.overlay}>
-      {/* tap outside to close */}
+    
       <TouchableOpacity style={styles.touchArea} onPress={closeSheet} />
 
       <Animated.View
@@ -58,33 +119,39 @@ export default function ChangePasswordSheet({ visible, onClose }) {
 
         <Text style={styles.title}>Change Password</Text>
 
-        <Text style={styles.label}>Old Password *</Text>
-        <TextInput style={styles.input} placeholder="Enter old password" />
+       
 
-        <Text style={styles.label}>New Password *</Text>
-        <TextInput style={styles.input} placeholder="Enter new password" />
+        <Text style={styles.label}>New Password <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+        <TextInput style={styles.input} placeholder="Enter new password" value={newPass}
+       onChangeText={(t) => {
+  setNewPass(t);
+  setPassError(""); 
+}}
+/>
 
-        <Text style={styles.label}>Confirm New Password *</Text>
-        <TextInput style={styles.input} placeholder="Enter confirm password" />
+      {passError && (
+                  <Text style={styles.errText}>{passError}</Text>
+                )}
 
         <View style={styles.btnRow}>
           <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.updateBtn}>
+          <TouchableOpacity style={styles.updateBtn}  onPress={handlePasswordUpdate}>
             <Text style={styles.updateText}>Update</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
     </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 20,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
@@ -151,5 +218,11 @@ const styles = StyleSheet.create({
   updateText: {
     color: "#fff",
     fontWeight: "700",
+  },
+   errText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });

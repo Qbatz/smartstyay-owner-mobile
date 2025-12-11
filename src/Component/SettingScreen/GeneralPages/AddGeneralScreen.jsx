@@ -498,38 +498,37 @@ export default function AddGeneralScreen({ navigation, route }) {
     }
 
     setErrors({});
+     const payloadForApi = {
+    firstName,
+    lastName,
+    mobile,
+    mailId: email,
+    houseNo: flat,
+    street,
+    landmark,
+    city,
+    pincode: Number(pincode),
+    state: StateSelected
+  };
 
-    const payloadForApi = {
-      payload: {
-        firstName,
-        lastName,
-        mobile,
-        mailId: email,
-        houseNo: flat,
-        street,
-        landmark,
-        city,
-        pincode: Number(pincode),
-        state: StateSelected
-      }
-    };
+  const formData = new FormData();
+  const jsonBase64 = btoa(JSON.stringify(payloadForApi));
 
-    const formData = new FormData();
-    const jsonBase64 = btoa(JSON.stringify(payloadForApi));
+  formData.append("payload", {
+    uri: "data:application/json;base64," + jsonBase64,
+    type: "application/json",
+    name: "payload.json",
+  });
 
-    formData.append("payload", {
-      uri: "data:application/json;base64," + jsonBase64,
-      type: "application/json",
-      name: "payload.json",
+  if (selectedImage?.uri) {
+    formData.append("profilePic", {
+      uri: selectedImage.uri,
+      name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
+      type: selectedImage.type || "image/jpeg",
     });
+  }
 
-    if (selectedImage?.uri) {
-      formData.append("profilePic", {
-        uri: selectedImage.uri,
-        name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
-        type: selectedImage.type || "image/jpeg",
-      });
-    }
+  
 
     const res = await updateGeneral(editData.userId, formData);
 
@@ -781,7 +780,8 @@ export default function AddGeneralScreen({ navigation, route }) {
           <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" value={mobile}
             onChangeText={(t) => {
-              setMobile(t);
+              const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+              setMobile(cleaned);
               setErrors({ ...errors, mobile: "" });
               setPhoneError("")
             }} />
@@ -852,10 +852,12 @@ export default function AddGeneralScreen({ navigation, route }) {
 
           <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
-            onChangeText={(t) => {
-              setPincode(t);
-              setErrors({ ...errors, pincode: "" });
-            }} />
+             onChangeText={(t) => {
+    
+    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 6);
+    setPincode(cleaned);
+    setErrors({ ...errors, pincode: "" });
+  }} />
           {errors.pincode && (
             <Text style={styles.errText}>{errors.pincode}</Text>
           )}

@@ -114,6 +114,38 @@ export const GeneralProvider = ({ children }) => {
     }
   };
 
+  const changePassword = async (adminId, newPassword) => {
+  try {
+    const token = await retriveData("token");
+
+    const body = {
+      adminId,
+      password: newPassword
+    };
+
+    const response = await AxiosConfig.post(
+      "/v2/profile/change-password",
+      body,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("Password Change SUCCESS:", response);
+    return { success: true, data: response.data };
+
+  } catch (err) {
+    const errorData = err.response?.data || { message: err.message };
+    console.log("Password Change ERROR:", errorData);
+
+    return { success: false, data: errorData };
+  }
+};
+
+
   return (
     <GeneralContext.Provider
       value={{
@@ -121,6 +153,7 @@ export const GeneralProvider = ({ children }) => {
         getAdminList,
         updateGeneral,
         deleteGeneral,
+        changePassword,
         loading,
         errorMsg,
         successMsg,
