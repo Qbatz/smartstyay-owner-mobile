@@ -13,16 +13,16 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import { useElectricity } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
-
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle"
 
 export default function ElectricitySettings({ navigation }) {
-const { hostelList } = useContext(CommonContexts);
-const { getElectricity } = useElectricity();
+const { hostelList,activeHostelId } = useContext(CommonContexts);
+const { getElectricity,updateElectricity } = useElectricity();
 const [ebunitList,setEbUnitList]= useState("")
 const hostelId = hostelList?.length > 0 ? hostelList[0].hostelId : null;
  
 
-
+console.log("activeHostelId",hostelList)
 useEffect(() => {
   if (!hostelId) {
     console.log("Hostel ID not loaded yet");
@@ -39,14 +39,19 @@ useEffect(() => {
 const loadElectricity = async (id) => {
   const res = await getElectricity(id);
   console.log("EB Data = ", res);
-  setEbUnitList(res.data)
 
-  if (res.success && res.data) {
- 
+  if (!res || res.success === false) {
+    // no data or error
+    setEbUnitList(null);
+    return;
+  }
+
+  setEbUnitList(res.data); // res.data should be object (chargerPerUnit...)
+  if (res.data) {
     setElectricityData({
       amount: res.data.chargerPerUnit,
-      roomBased: res.data.isRoomBased,
-      hostelBased: res.data.isHostelBased
+      roomBased: !!res.data.isRoomBased,
+      hostelBased: !!res.data.isHostelBased,
     });
   }
 };
@@ -63,28 +68,31 @@ const loadElectricity = async (id) => {
   const [showEditSheet, setShowEditSheet] = useState(false)
   const editY = useRef(new Animated.Value(700)).current;
   const [unitAmount,setUnitAmount] = useState("")
+  const [unitAmountError,setUnitAmountError] = useState("")
 
 const handleSave = async () => {
-  if (!hostelid) {
+  if (!hostelId) {
     alert("Hostel ID Not Found");
     return;
   }
 
   if (!unitAmount) {
-    alert("Enter Unit Price");
+    setUnitAmountError("Please Enter Unit Amount");
     return;
   }
 
-  const res = await updateElectricity(hostelid, Number(unitAmount));
+ 
+  const res = await updateElectricity(hostelId, Number(unitAmount));
 
   if (res.success) {
     alert("Updated Successfully");
     closeEditSheet();
-    loadElectricity(); // refresh data
+    await loadElectricity(hostelId); 
   } else {
     alert(res.data?.message || "Update Failed");
   }
 };
+
 
 
 
@@ -140,17 +148,22 @@ useEffect(() => {
 
 
 
-
 const openEditSheet = () => {
-  setShowEditSheet(true);
+  // prefill from ebunitList if present
+  if (ebunitList?.chargerPerUnit != null) {
+    setUnitAmount(String(ebunitList.chargerPerUnit));
+  } else {
+    setUnitAmount("");
+  }
 
+  setShowEditSheet(true);
   Animated.timing(editY, {
     toValue: 0,
     duration: 240,
-    easing: undefined,
     useNativeDriver: true,
   }).start();
 };
+
 
 
 const closeEditSheet = () => {
@@ -240,56 +253,12 @@ const editPan = useRef(
 
         <TouchableOpacity style={styles.editBtn} onPress={openEditSheet}>
           <Text style={styles.editBtnText}>
-            {electricityData ? "Edit" : "Add"}
+            {ebunitList ? "Edit" : "Add"}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* DATA CARD */}
-      {/* {ebunitList && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Electricity Information</Text>
-
-          <Text style={styles.cardSubtitle}>
-            Configure per-unit EB rate for tenant consumption calculation.
-          </Text>
-             <View style={styles.cardborder} />
-          <View style={styles.row}>
-            <Text style={styles.label}>Per Unit Amount</Text>
-            <Text style={styles.value}>₹ {ebunitList.chargerPerUnit}</Text>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Room Based Calculation</Text>
-
-            <View style={styles.switchRow}>
-              <Text style={styles.switchText}>
-                {electricityData.roomBased ? "On" : "Off"}
-              </Text>
-              <CustomSwitch
-                value={electricityData.roomBased}
-                onToggle={toggleRoomBased}
-              />
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Hostel Based Calculation</Text>
-
-            <View style={styles.switchRow}>
-              <Text style={styles.switchText}>
-                {electricityData.hostelBased ? "On" : "Off"}
-              </Text>
-              <CustomSwitch
-                value={electricityData.hostelBased}
-                onToggle={toggleHostelBased}
-              />
-            </View>
-          </View>
-        </View>
-      )} */}
-
-      {/* EMPTY STATE CHECK */}
+    
 {!ebunitList ? (
   <View style={{ alignItems: "center", marginTop: 200 }}>
     <Image source={EmptyState} style={{ width: 180, height: 180 }} />
@@ -375,8 +344,16 @@ const editPan = useRef(
         placeholder="Eg: ₹ 10"
         keyboardType="numeric"
          value={unitAmount}
-  onChangeText={(v) => setUnitAmount(v)}
+ onChangeText={(v) => {
+  setUnitAmount(v);
+  setUnitAmountError("");
+}}
+
       />
+        {unitAmountError && (
+                                    <ErrorMessage message={unitAmountError} type="error" />
+                                )}
+
 
       {/* Buttons */}
       {/* <View style={styles.btnRow}>
