@@ -20,35 +20,65 @@ export default function ChangePasswordSheet({ visible, onClose,adminId }) {
   const [showSuccess, setShowSuccess] = useState(false);
 const [message, setMessage] = useState("");
 const [passError,setPassError] = useState("")
+const [modalType, setModalType] = useState("success");
 
 const handlePasswordUpdate = async () => {
   if (!newPass.trim()) {
     setPassError("Please Enter Password");
-   
     return;
   }
 
   const res = await changePassword(adminId, newPass);
 
   if (res.success) {
-    setMessage(res.data); 
+    setModalType("success");
+    setMessage(res.data);
     setShowSuccess(true);
-   
 
     setTimeout(() => {
       setShowSuccess(false);
-      
-      onClose(); 
-       setNewPass("")
+      onClose();
+      setNewPass("");
     }, 1500);
 
   } else {
+    setModalType("error");
     setMessage(res.data?.message || "Failed to update password");
     setShowSuccess(true);
 
     setTimeout(() => setShowSuccess(false), 2000);
   }
 };
+
+
+// const handlePasswordUpdate = async () => {
+//   if (!newPass.trim()) {
+//     setPassError("Please Enter Password");
+   
+//     return;
+//   }
+
+//   const res = await changePassword(adminId, newPass);
+// console.log("res",res)
+//   if (res.success) {
+//     setMessage(res.data); 
+//     setShowSuccess(true);
+   
+
+//     setTimeout(() => {
+//       setShowSuccess(false);
+      
+//       onClose(); 
+//        setNewPass("")
+//     }, 1500);
+
+//   } else {
+//     setMessage(res.data?.message || "Failed to update password");
+//     setShowSuccess(true);
+
+//     setTimeout(() => setShowSuccess(false), 2000);
+//   }
+// };
 
 // const handlePasswordUpdate = async () => {
 //   if (!newPass.trim()) {
@@ -102,12 +132,13 @@ const handlePasswordUpdate = async () => {
 
   return (
     <>
-     <SuccessModal
-        visible={showSuccess}
-        message={message}
-        type="success"
-        onClose={() => setShowSuccess(false)}
-      />
+    <SuccessModal
+  visible={showSuccess}
+  message={message}
+  type={modalType}   // 🔥 dynamic
+  onClose={() => setShowSuccess(false)}
+/>
+
     <View style={styles.overlay}>
     
       <TouchableOpacity style={styles.touchArea} onPress={closeSheet} />

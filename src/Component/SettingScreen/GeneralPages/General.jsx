@@ -156,10 +156,13 @@ export default function GeneralDetailsScreen({ navigation }) {
         <View style={styles.menuBox}>
           <TouchableOpacity
             style={styles.menuRow}
-            onPress={() => {
-              setShowPasswordSheet(true);
-              setActiveMenu(null);
-            }}
+          
+onPress={() => {
+  setSelectedUserId(u.userId); 
+  setShowPasswordSheet(true);
+  setActiveMenu(null);
+}}
+          
           >
             <Image source={Edit} style={styles.menuIcon} />
             <Text style={styles.menuText}>Change Password</Text>
