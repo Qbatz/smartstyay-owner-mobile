@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
   PanResponder,
   Keyboard,
   Modal,
-  ScrollView, BackHandler
+  ScrollView,
+  BackHandler,
 } from "react-native";
 
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -21,44 +22,131 @@ import Dots from "../../../Assets/Images/3dots.png";
 import ComplaintIcon from "../../../Assets/Images/chat.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 
+import { ComplaintContext } from "../../../Context/ComplaintContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import Loader from "../../../Component/Loader/Loader"
+
 export default function ComplaintsSettings({ navigation }) {
-  const [complaints, setComplaints] = useState([]);
+  const { activeHostelId } = useContext(CommonContexts);
+
+  const {
+    complaintTypes,
+    fetchComplaintTypes,
+    addComplaintType,
+    editComplaintType,
+    deleteComplaintType,
+  } = useContext(ComplaintContext);
+
   const [showSheet, setShowSheet] = useState(false);
   const [showMenuId, setShowMenuId] = useState(null);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-
   const [complaintText, setComplaintText] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [menuComplaintId, setMenuComplaintId] = useState(null);
+  const [originalComplaintName, setOriginalComplaintName] = useState("");
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+    const [loading , setLoading] = useState(false)
+    const [initialLoad, setInitialLoad] = useState(true);
+
+
 
   const sheetY = useRef(new Animated.Value(700)).current;
 
-  /* ---------------------------------------------------------
-     OPEN / CLOSE BOTTOMSHEET
-  --------------------------------------------------------- */
+   console.log("complaintTypes",complaintTypes );
+
+ 
+  // useEffect(() => {
+  //   fetchComplaintTypes(activeHostelId);
+  // }, []);
+
+  useEffect(() => {
+  async function loadData() {
+    await fetchComplaintTypes(activeHostelId);
+    setInitialLoad(false); 
+  }
+  loadData();
+}, []);
+
+
+ 
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+      navigation.goBack();
+      return true;
+    });
+    return () => backHandler.remove();
+  }, []);
+
+
+
+const sheetPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) sheetY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) closeSheet();
+      else
+        Animated.spring(sheetY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+    },
+  })
+).current;
+
+
+  // const openSheet = (edit = false, item = null) => {
+  //   sheetY.setValue(700);
+  //   setIsEdit(edit);
+
+  //   if (edit && item) {
+  //     setComplaintText(item.title);
+  //     setEditingId(item.id);
+  //   } else {
+  //     setComplaintText("");
+  //     setEditingId(null);
+  //   }
+
+  //   setShowSheet(true);
+
+  //   Animated.timing(sheetY, {
+  //     toValue: 0,
+  //     duration: 240,
+  //     useNativeDriver: true,
+  //   }).start();
+  // };
+
   const openSheet = (edit = false, item = null) => {
-    sheetY.setValue(700);
+  sheetY.setValue(700);
+  setIsEdit(edit);
 
-    setIsEdit(edit);
+  if (edit && item) {
+    setComplaintText(item.title);
+    setOriginalComplaintName(item.title); 
+    setEditingId(item.id);
+  } else {
+    setComplaintText("");
+    setOriginalComplaintName("");
+    setEditingId(null);
+  }
 
-    if (edit && item) {
-      setComplaintText(item.title);
-      setEditingId(item.id);
-    } else {
-      setComplaintText("");
-      setEditingId(null);
-    }
+  setShowSheet(true);
 
-    setShowSheet(true);
-
-    Animated.timing(sheetY, {
-      toValue: 0,
-      duration: 240,
-      useNativeDriver: true,
-    }).start();
-  };
+  Animated.timing(sheetY, {
+    toValue: 0,
+    duration: 240,
+    useNativeDriver: true,
+  }).start();
+};
 
   const closeSheet = () => {
     Animated.timing(sheetY, {
@@ -73,52 +161,11 @@ export default function ComplaintsSettings({ navigation }) {
     });
   };
 
-  /* ---------------------------------------------------------
-     SWIPE HANDLER — SWIPE ONLY FROM HANDLE
-  --------------------------------------------------------- */
-  const sheetPan = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
-
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) sheetY.setValue(g.dy);
-      },
-
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > 140) {
-          closeSheet();
-        } else {
-          Animated.spring(sheetY, {
-            toValue: 0,
-            bounciness: 6,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  /* ---------------------------------------------------------
-     KEYBOARD ANIMATION (FOLLOWS EXPENSES SHEET LOGIC)
-  --------------------------------------------------------- */
-
-   useEffect(() => {
-                  const backHandler = BackHandler.addEventListener(
-                    "hardwareBackPress",
-                    () => {
-                      navigation.goBack();  
-                      return true;
-                    }
-                  );
-                
-                  return () => backHandler.remove();
-                }, [])
+ 
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      const height = e.endCoordinates.height;
-
       Animated.timing(sheetY, {
-        toValue: -height + 60,
+        toValue: -e.endCoordinates.height + 60,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -138,108 +185,175 @@ export default function ComplaintsSettings({ navigation }) {
     };
   }, []);
 
-  /* ---------------------------------------------------------
-     DELETE CONFIRM
-  --------------------------------------------------------- */
-  const confirmDelete = () => {
-    setComplaints((prev) => prev.filter((i) => i.id !== deleteId));
-    setShowDeleteConfirm(false);
-  };
 
-  /* ---------------------------------------------------------
-     SAVE
-  --------------------------------------------------------- */
-  const handleSave = () => {
-    if (isEdit) {
-      setComplaints((prev) =>
-        prev.map((i) =>
-          i.id === editingId ? { ...i, title: complaintText } : i
-        )
-      );
-    } else {
-      setComplaints((prev) => [
-        ...prev,
-        { id: Date.now().toString(), title: complaintText.trim() },
-      ]);
+ const handleSave = async () => {
+ 
+  if (isEdit) {
+    const newValue = complaintText.trim();
+    const oldValue = originalComplaintName.trim();
+
+    if (newValue === oldValue) {
+      setModalType("warning");
+      setModalMessage("No changes detected");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
     }
+  }
 
-    closeSheet();
-  };
 
-  /* ---------------------------------------------------------
-     POPUP MENU
-  --------------------------------------------------------- */
+  let res;
+
+  if (isEdit) {
+    res = await editComplaintType({
+      id: editingId,
+      complaintTypeName: complaintText,
+      isActive: true,
+      hostelId: activeHostelId,
+    });
+  } else {
+    res = await addComplaintType({
+      hostelId: activeHostelId,
+      complaintTypeName: complaintText,
+    });
+  }
+
+ 
+  if (!res.success) {
+    setModalType("warning");
+    setModalMessage(res.message);
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+  setModalType("success");
+  setModalMessage(res.message);
+  setShowSuccessModal(true);
+
+  setTimeout(() => setShowSuccessModal(false), 1500);
+
+  closeSheet();
+};
+
+
+
+
+
+ const confirmDelete = async () => {
+  const res = await deleteComplaintType(deleteId, activeHostelId);
+
+  if (!res.success) {
+    setModalMessage(res.message);
+    setModalType("warning");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500);
+
+    return;
+  }
+
+  setShowDeleteConfirm(false);
+
+  setModalMessage(res.message || "Deleted successfully");
+  setModalType("success");
+  setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 1500);
+};
+
+
+
+  const complaints = complaintTypes;
+
   const renderPopupMenu = (item) => {
     if (showMenuId !== item.id) return null;
 
     return (
-      <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
-        <View style={styles.popupOverlayArea}>
-          <View style={styles.popupMenu}>
-            <TouchableOpacity
-              style={styles.popupItem}
-              onPress={() => {
-                setShowMenuId(null);
-                openSheet(true, item);
-              }}
-            >
-              <Image
-                source={require("../../../Assets/Images/editIcon.png")}
-                style={styles.popupIcon}
-              />
-              <Text style={styles.popupText}>Edit</Text>
-            </TouchableOpacity>
+     <View style={styles.popupOverlayArea}>
+  
+  <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
+    <View style={styles.menuOutsideArea} />
+  </TouchableWithoutFeedback>
 
-            <TouchableOpacity
-              style={styles.popupItem}
-              onPress={() => {
-                setDeleteId(item.id);
-                setShowMenuId(null);
-                setShowDeleteConfirm(true);
-              }}
-            >
-              <Image
-                source={require("../../../Assets/Images/trash.png")}
-                style={[styles.popupIcon, { tintColor: "red" }]}
-              />
-              <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
+  <View style={styles.popupMenu}>
+    <TouchableOpacity
+      style={styles.popupItem}
+      onPress={() => {
+        setShowMenuId(null);
+        openSheet(true, item);
+      }}
+    >
+      <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
+      <Text style={styles.popupText}>Edit</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.popupItem}
+      onPress={() => {
+        setDeleteId(item.id);
+        setShowMenuId(null);
+        setShowDeleteConfirm(true);
+      }}
+    >
+      <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
+      <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
+    </TouchableOpacity>
+  </View>
+
+</View>
+
     );
   };
 
-  /* ---------------------------------------------------------
-     LIST ITEM
-  --------------------------------------------------------- */
-  const renderComplaint = ({ item }) => (
-    <View style={{ position: "relative" }}>
-      <View style={styles.card}>
-        <View style={styles.cardLeft}>
-          <Image source={ComplaintIcon} style={styles.icon} />
-          <Text style={styles.cardText}>{item.title}</Text>
-        </View>
 
-        <TouchableOpacity
-          onPress={() =>
-            setShowMenuId((prev) => (prev === item.id ? null : item.id))
-          }
-        >
-          <Image source={Dots} style={styles.dots} />
-        </TouchableOpacity>
+ const renderComplaint = ({ item }) => (
+  <View style={styles.cardWrapper}>
+    
+    <View style={styles.card}>
+      <View style={styles.cardLeft}>
+        <Image source={ComplaintIcon} style={styles.icon} />
+        <Text style={styles.cardText}>{item.title}</Text>
       </View>
 
-      {renderPopupMenu(item)}
-    </View>
-  );
+    
 
-  /* ---------------------------------------------------------
-     UI
-  --------------------------------------------------------- */
+      <TouchableOpacity
+  onPress={(e) => {
+    e.target.measure((fx, fy, width, height, px, py) => {
+      setMenuPosition({ x: px, y: py });
+      setMenuComplaintId(item.id);
+      setShowMenu(true);
+    });
+  }}
+>
+  <Image source={Dots} style={styles.dots} />
+</TouchableOpacity>
+
+    </View>
+
+    {renderPopupMenu(item)}
+
+  </View>
+);
+
+
+
   return (
     <>
-      {/* MAIN SCREEN */}
+
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
       <View
         style={{
           flex: 1,
@@ -248,6 +362,8 @@ export default function ComplaintsSettings({ navigation }) {
           paddingTop: 40,
         }}
       >
+       {initialLoad || loading ? <Loader /> : null}
+
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backIcon} />
@@ -257,7 +373,7 @@ export default function ComplaintsSettings({ navigation }) {
 
         <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
           <View style={{ flex: 1 }}>
-            {complaints.length === 0 ? (
+     {!loading && !initialLoad && complaints.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Image source={EmptyComplaint} style={styles.emptyImg} />
                 <Text style={styles.emptyTitle}>No Complaints are there!</Text>
@@ -270,24 +386,69 @@ export default function ComplaintsSettings({ navigation }) {
                 </TouchableOpacity>
               </View>
             ) : (
+              
               <FlatList
                 data={complaints}
                 renderItem={renderComplaint}
-                keyExtractor={(i) => i.id}
+                keyExtractor={(i) => i.id.toString()}
                 contentContainerStyle={{ paddingBottom: 90 }}
               />
             )}
           </View>
         </TouchableWithoutFeedback>
 
-        {complaints.length > 0 && (
+        { !loading && complaints.length > 0 && (
           <TouchableOpacity style={styles.addBtn} onPress={() => openSheet(false)}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* DELETE POPUP */}
+      {showMenu && (
+  <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+    <View style={styles.menuOverlay}>
+
+      <View
+        style={[
+          styles.menuBox,
+          {
+            top: menuPosition.y + 20,
+            left: menuPosition.x - 120,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => {
+            const complaint = complaints.find((c) => c.id === menuComplaintId);
+            setShowMenu(false);
+            openSheet(true, complaint);
+          }}
+        >
+          <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
+          <Text style={styles.menuText}>Edit</Text>
+        </TouchableOpacity>
+
+        <View style={styles.menuDivider} />
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => {
+            setShowMenu(false);
+            setDeleteId(menuComplaintId);
+            setShowDeleteConfirm(true);
+          }}
+        >
+          <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
+          <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+        </TouchableOpacity>
+
+      </View>
+    </View>
+  </TouchableWithoutFeedback>
+)}
+
+
       {showDeleteConfirm && (
         <Modal visible transparent animationType="fade">
           <View style={styles.deleteOverlay}>
@@ -305,7 +466,10 @@ export default function ComplaintsSettings({ navigation }) {
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.deleteBtn} onPress={confirmDelete}>
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={confirmDelete}
+                >
                   <Text style={styles.deleteBtnText}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -314,61 +478,61 @@ export default function ComplaintsSettings({ navigation }) {
         </Modal>
       )}
 
-      {/* BOTTOM SHEET */}
-      {showSheet && (
-        <View style={styles.sheetOverlay} pointerEvents="box-none">
-          <TouchableWithoutFeedback onPress={closeSheet}>
-            <View style={styles.sheetDim} />
-          </TouchableWithoutFeedback>
+     {showSheet && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={closeSheet}>
+      <View style={styles.dimLayer} />
+    </TouchableWithoutFeedback>
 
-          <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+    <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+      {/* Drag Handle */}
+      <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
+        <View style={styles.sheetHandle} />
+      </View>
 
-            {/* SWIPE ONLY FROM HANDLE */}
-            <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
-              <View style={styles.sheetHandle} />
-            </View>
+      {/* Content */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
+        <Text style={styles.sheetTitle}>
+          {isEdit ? "Edit Complaint Type" : "Add Complaint Type"}
+        </Text>
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-              <Text style={styles.sheetTitle}>
-                {isEdit ? "Edit Complaint Type" : "Add Complaint Type"}
-              </Text>
+        <Text style={styles.inputLabel}>
+          Complaint Type <Text style={{ color: "red" }}>*</Text>
+        </Text>
 
-              <Text style={styles.inputLabel}>
-                Complaint Type <Text style={{ color: "red" }}>*</Text>
-              </Text>
+        <TextInput
+          style={styles.inputBox}
+          placeholder="Enter"
+          value={complaintText}
+          onChangeText={setComplaintText}
+        />
+      </ScrollView>
 
-              <TextInput
-                style={styles.inputBox}
-                placeholder="Enter"
-                value={complaintText}
-                onChangeText={setComplaintText}
-              />
-            </ScrollView>
+      <TouchableOpacity
+        style={[
+          styles.addTypeBtn,
+          { opacity: complaintText.trim() ? 1 : 0.4 },
+        ]}
+        disabled={!complaintText.trim()}
+        onPress={handleSave}
+      >
+        <Text style={styles.addTypeText}>
+          {isEdit ? "Update Type" : "Add Type"}
+        </Text>
+      </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.addTypeBtn,
-                { opacity: complaintText.trim() ? 1 : 0.4 },
-              ]}
-              disabled={!complaintText.trim()}
-              onPress={handleSave}
-            >
-              <Text style={styles.addTypeText}>
-                {isEdit ? "Update Type" : "Add Type"}
-              </Text>
-            </TouchableOpacity>
+      <View style={styles.bottomMask} />
+    </Animated.View>
+  </View>
+)}
 
-            {/* <View style={styles.bottomMask} /> */}
-          </Animated.View>
-        </View>
-      )}
     </>
   );
 }
 
-/* ---------------------------------------------------------
-     STYLES — unchanged except swipe improvements
---------------------------------------------------------- */
+
+
+
 const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 20, height: 20, marginRight: 10 },
@@ -403,26 +567,41 @@ const styles = StyleSheet.create({
   dots: { width: 24, height: 24 },
   cardText: { fontSize: 15, color: "#111", fontWeight: "600" },
 
-  popupOverlayArea: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
 
-  popupMenu: {
-    position: "absolute",
-    right: 10,
-    top: 50,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 8,
-    width: 160,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
+popupOverlayArea: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 100,
+},
+
+popupMenu: {
+  position: "absolute",
+  right: 10,
+  top: 50,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  paddingVertical: 8,
+  width: 160,
+  elevation: 20,
+  shadowColor: "#000",
+  shadowOpacity: 0.25,
+  shadowRadius: 6,
+  shadowOffset: { width: 0, height: 3 },
+  zIndex: 200,
+  overflow: "visible",
+},
+
+
+  menuOutsideArea: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
 
   popupItem: { flexDirection: "row", alignItems: "center", padding: 12 },
   popupIcon: { width: 18, height: 18, marginRight: 10 },
@@ -483,48 +662,52 @@ const styles = StyleSheet.create({
 
   deleteBtnText: { fontSize: 16, color: "#fff", fontWeight: "600" },
 
-  /* ----- Bottomsheet ----- */
-  sheetOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "flex-end",
-  },
+ sheetOverlay: {
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  justifyContent: "flex-end",
+  backgroundColor: "rgba(0,0,0,0.45)",
+},
+
+dimLayer: {
+  flex: 1,
+  backgroundColor: "transparent",
+},
 
   sheetDim: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
 
-  sheet: {
-    backgroundColor: "#fff",
-    width: "100%",
-    padding: 20,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    overflow: "hidden",
-  },
+sheet: {
+  backgroundColor: "#fff",
+  width: "100%",
+  padding: 20,
+  borderTopLeftRadius: 22,
+  borderTopRightRadius: 22,
+  overflow: "hidden",
+},
 
-  sheetHandle: {
-    width: 50,
-    height: 5,
-    backgroundColor: "#ccc",
-    borderRadius: 20,
-    marginBottom: 12,
-  },
+ handleWrapper: {
+  alignItems: "center",
+  paddingVertical: 12,
+},
 
-  handleWrapper: {
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-
-//   bottomMask: {
-//     position: "absolute",
-//     bottom: -200,
-//     left: 0,
-//     right: 0,
-//     height: 200,
-//     backgroundColor: "#fff",
-//   },
+sheetHandle: {
+  width: 50,
+  height: 5,
+  backgroundColor: "#ccc",
+  borderRadius: 20,
+  marginBottom: 12,
+},
+bottomMask: {
+  position: "absolute",
+  bottom: -180,
+  left: 0,
+  right: 0,
+  height: 200,
+  backgroundColor: "#fff",
+},
 
   sheetTitle: { fontSize: 18, fontWeight: "700", marginBottom: 16 },
 
@@ -547,4 +730,50 @@ const styles = StyleSheet.create({
   },
 
   addTypeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  cardWrapper: {
+  position: "relative",
+  zIndex: 10,    
+  overflow: "visible",
+},
+
+menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 9999,
+},
+
+menuBox: {
+  position: "absolute",
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  paddingVertical: 4,
+  paddingHorizontal: 4,
+  paddingLeft:0,
+  elevation: 12,
+  shadowColor: "#000",
+  shadowOpacity: 0.2,
+  shadowRadius: 6,
+  shadowOffset: { width: 0, height: 3 },
+},
+
+menuItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 12,
+  paddingHorizontal: 18,
+},
+
+popupIcon: { width: 18, height: 18, marginRight: 10 },
+
+menuText: { fontSize: 16, fontWeight: "600", color: "#000" },
+
+menuDivider: {
+  height: 1,
+  backgroundColor: "#E5E5E5",
+},
+
+
 });

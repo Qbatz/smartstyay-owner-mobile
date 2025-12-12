@@ -92,6 +92,8 @@ import LoginContext from './src/Context/LoginContext';
 import CommonContext from './src/Context/CommonContext'
 import  PGContext  from './src/Context/PGContext';
 import { ElectricityProvider } from "./src/Context/SettingContext";
+import ComplaintProvider from "./src/Context/ComplaintContext";
+
 
 
 
@@ -107,7 +109,9 @@ function App() {
            <GeneralProvider>
             <PGContext>
               <ElectricityProvider>
-            <AppContent />
+               <ComplaintProvider >   
+              <AppContent />
+            </ComplaintProvider >
             </ElectricityProvider>
             </PGContext>
             </GeneralProvider>
