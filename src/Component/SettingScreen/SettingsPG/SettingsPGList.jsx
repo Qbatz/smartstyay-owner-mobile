@@ -275,8 +275,34 @@ const handleDeletePG = async () => {
   //     </View>
   //   );
 
+  if (!hostelList || hostelList?.length === 0) {
+  return (
+    <View style={{ flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center" }}>
+
+      <Image source={EmptyIcon} style={{ width: 180, height: 160, marginBottom: 10 }} />
+
+      <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>No PG Available</Text>
+      {/* <Text style={{ fontSize: 14, color: "#666" }}>Please add a new PG to continue</Text> */}
+
+      {/* Bottom Add PG Button */}
+      <View style={{ position: "absolute", bottom: 20, width: "100%", alignItems: "center" }}>
+        <TouchableOpacity
+          style={styles.figAddBtn}
+          onPress={() => navigation.navigate("AddPG")}
+        >
+          <Image source={PlusIcon} style={styles.figAddIcon} />
+          <Text style={styles.figAddText}>Add New PG</Text>
+        </TouchableOpacity>
+      </View>
+
+    </View>
+  );
+}
+
+
 
   return (
+    
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -284,6 +310,8 @@ const handleDeletePG = async () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage PG</Text>
       </View>
+
+
 
       <View style={styles.card}>
         <View style={styles.topRow}>
@@ -340,27 +368,34 @@ const handleDeletePG = async () => {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Other Hostels</Text>
+     <Text style={styles.sectionTitle}>Other Hostels</Text>
 
-      <ScrollView style={{ flex: 1 }}>
-        {otherHostels &&  otherHostels?.filter(Boolean).map((hostel) => (
-          <View key={hostel.id} style={styles.otherCard}>
-            <Image source={hostel.profilePhoto} style={styles.otherImg} />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.otherName}>{hostel.name}</Text>
-              <Text style={styles.otherBadge}>{hostel.type}</Text>
-            </View>
+<View style={{ height: 200, marginBottom: 20 }}>
+  <ScrollView
+    showsVerticalScrollIndicator={true}
+    scrollIndicatorInsets={{ right: 6 }} 
+    style={{ paddingHorizontal: 0 }}
+    contentContainerStyle={{ paddingBottom: 20 }}
+  >
+    {otherHostels && otherHostels.filter(Boolean).map((hostel) => (
+      <View key={hostel.id} style={styles.otherCard}>
+        <Image source={hostel.profilePhoto} style={styles.otherImg} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.otherName}>{hostel.name}</Text>
+          <Text style={styles.otherBadge}>{hostel.type}</Text>
+        </View>
 
-            <TouchableOpacity onPress={() => handleSwitchHostel(hostel)}>
-              <Image source={ActiveIcon} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
-          </View>
-        ))}
-
-        <View style={{ height: 120 }} />
-      </ScrollView>
-
-      <View style={styles.fixedAddBtnWrapper}>
+        <TouchableOpacity onPress={() => handleSwitchHostel(hostel)}>
+          <Image source={ActiveIcon} style={{ width: 25, height: 25 }} />
+        </TouchableOpacity>
+      </View>
+    ))}
+  </ScrollView>
+</View>
+    
+    {hostelList && hostelList?.length > 0 &&
+    (
+       <View style={styles.fixedAddBtnWrapper}>
         <TouchableOpacity
           style={styles.figAddBtn}
           onPress={() => navigation.navigate("AddPG")}
@@ -372,6 +407,9 @@ const handleDeletePG = async () => {
           <Text style={styles.figAddText}>Add New PG</Text>
         </TouchableOpacity>
       </View>
+    )
+    }
+     
 
       {visiblePopup && (
         <TouchableWithoutFeedback onPress={() => setVisiblePopup(null)}>
@@ -578,6 +616,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     width: "100%",
     alignItems: "center",
+    backgroundColor:"#fff"
   },
 
   figAddBtn: {
