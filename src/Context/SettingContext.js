@@ -53,9 +53,44 @@ const updateElectricity = async (hostelId, unitPrice) => {
       return { success: false, data: err.response?.data };
     }
   };
+const changeRoomHostelElectricity = async (payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const query = new URLSearchParams({
+      isRoomBased: payload.isRoomBased,
+      isHostelBased: payload.isHostelBased,
+      isProRate: payload.isProRate ?? true,
+      calculationStartingDate:
+        payload.calculationStartingDate ?? Math.floor(Date.now() / 1000), // FIXED!!
+      frequent: payload.frequent ?? "monthly",
+      shouldIncludeInRent: payload.shouldIncludeInRent ?? true,
+    }).toString();
+
+    const url = `/v2/hostel/electricity/config/${payload.hostelId}?${query}`;
+
+    console.log("🔵 FINAL EB CONFIG URL →", url);
+
+    const res = await AxiosConfig.put(url, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("🟢 EB CONFIG SUCCESS →", res.data);
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    console.log("🔴 EB CONFIG ERROR →", err.response?.data || err.message);
+    return { success: false, data: err.response?.data || err.message };
+  }
+};
+
+
+
+
+
 
   return (
-    <ElectricityContext.Provider value={{ getElectricity,updateElectricity }}>
+    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity }}>
       {children}
     </ElectricityContext.Provider>
   );

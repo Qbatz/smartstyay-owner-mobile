@@ -41,7 +41,8 @@ const handlePasswordUpdate = async () => {
       setNewPass("");
     }, 1500);
 
-  } else {
+  } 
+  else {
     setModalType("error");
     setMessage(res.data?.message || "Failed to update password");
     setShowSuccess(true);
