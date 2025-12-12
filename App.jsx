@@ -91,7 +91,7 @@ import Agreement from './src/Component/SettingScreen/SettingsAgreement/Agreement
 import LoginContext from './src/Context/LoginContext';
 import CommonContext from './src/Context/CommonContext'
 import  PGContext  from './src/Context/PGContext';
-import { ElectricityProvider } from "./src/Context/SettingContext";
+import { SettingProvider } from "./src/Context/SettingContext";
 
 
 
@@ -106,9 +106,9 @@ function App() {
         <CommonContext>
            <GeneralProvider>
             <PGContext>
-              <ElectricityProvider>
+              <SettingProvider>
             <AppContent />
-            </ElectricityProvider>
+            </SettingProvider>
             </PGContext>
             </GeneralProvider>
         </CommonContext>
