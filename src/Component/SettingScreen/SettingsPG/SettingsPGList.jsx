@@ -277,15 +277,23 @@ const handleDeletePG = async () => {
 
   if (!hostelList || hostelList?.length === 0) {
   return (
+
+    <>
+       <View style={{ paddingHorizontal: 16, paddingTop: 40, paddingBottom: 12, flexDirection: "row",
+       alignItems: "center" , backgroundColor:'#fff'}}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={ArrowLeft} style={styles.backArrow} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Manage PG</Text>
+      </View>
+  
     <View style={{ flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center" }}>
 
       <Image source={EmptyIcon} style={{ width: 180, height: 160, marginBottom: 10 }} />
 
-      <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>No PG Available</Text>
-      {/* <Text style={{ fontSize: 14, color: "#666" }}>Please add a new PG to continue</Text> */}
-
-      {/* Bottom Add PG Button */}
-      <View style={{ position: "absolute", bottom: 20, width: "100%", alignItems: "center" }}>
+      <Text style={{ fontSize: 18, fontFamily: "Gilroy-Bold",   fontWeight: undefined , marginBottom: 8 }}>No PG Available</Text>
+    
+      <View style={{  width: "70%", alignItems: "center", marginTop:10 }}>
         <TouchableOpacity
           style={styles.figAddBtn}
           onPress={() => navigation.navigate("AddPG")}
@@ -296,6 +304,7 @@ const handleDeletePG = async () => {
       </View>
 
     </View>
+     </>
   );
 }
 

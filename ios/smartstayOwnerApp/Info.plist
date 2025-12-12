@@ -53,8 +53,8 @@
 	<array>
 		<string>Gilroy-Medium.ttf</string>
 		<string>Gilroy-Regular.ttf</string>
-		<string>Gilroy-Semibold.ttf</string>
 		<string>Gilroy-Bold.ttf</string>
+		<string>Gilroy-SemiBold.ttf</string>
 	</array>
 </dict>
 </plist>
