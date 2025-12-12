@@ -20,54 +20,42 @@ export default function ElectricitySettings({ navigation }) {
   const { hostelList, activeHostelId } = useContext(CommonContexts);
   const { getElectricity, updateElectricity, changeRoomHostelElectricity } = useElectricity();
   const [ebunitList, setEbUnitList] = useState("")
-  const hostelId = hostelList?.length > 0 ? hostelList[0].hostelId : null;
+  // const hostelId = hostelList?.length > 0 ? hostelList[0].hostelId : null;
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
 
 
-  console.log("activeHostelId", hostelList)
-  useEffect(() => {
-    if (!hostelId) {
-      console.log("Hostel ID not loaded yet");
-      return;
-    }
-
-    console.log("Hostel ID →", hostelId);
-    loadElectricity(hostelId);
-
-  }, [hostelId]);
+  console.log("activeHostelId", activeHostelId)
+  
 
 
+useEffect(() => {
+  if (!activeHostelId) return;
+  loadElectricity(activeHostelId);
+}, [activeHostelId]);
 
-  const loadElectricity = async (id) => {
-    const res = await getElectricity(id);
-    console.log("EB Data = ", res);
 
-    if (!res || res.success === false) {
-      // no data or error
-      setEbUnitList(null);
-      return;
-    }
+ const loadElectricity = async (id) => {
+  const res = await getElectricity(id);
 
-    setEbUnitList(res.data);
-    if (res.data) {
-      setElectricityData({
-        amount: res.data.chargerPerUnit,
-        roomBased: !!res.data.isRoomBased,
-        hostelBased: !!res.data.isHostelBased,
-      });
-    }
-  };
+  if (!res || res.success === false || !res.data) {
+    setEbUnitList(null);   
+    return;
+  }
+
+  setEbUnitList(res.data);  
+};
+
 
 
   console.log("ebunitList", ebunitList)
 
 
-  const [electricityData, setElectricityData] = useState({
-    roomBased: false,
-    hostelBased: true,
-  })
+  // const [electricityData, setElectricityData] = useState({
+  //   roomBased: false,
+  //   hostelBased: true,
+  // })
 
   const [showEditSheet, setShowEditSheet] = useState(false)
   const editY = useRef(new Animated.Value(700)).current;
@@ -75,7 +63,7 @@ export default function ElectricitySettings({ navigation }) {
   const [unitAmountError, setUnitAmountError] = useState("")
 
   const handleSave = async () => {
-    if (!hostelId) {
+    if (!activeHostelId) {
       setUnitAmountError("Hostel ID Not Found");
       return;
     }
@@ -86,7 +74,8 @@ export default function ElectricitySettings({ navigation }) {
     }
 
 
-    const res = await updateElectricity(hostelId, Number(unitAmount));
+    const res = await updateElectricity(activeHostelId, Number(unitAmount));
+
 
     if (res.success) {
 
@@ -94,7 +83,7 @@ export default function ElectricitySettings({ navigation }) {
       setMessage(res.data);
       setShowSuccess(true);
       closeEditSheet();
-      await loadElectricity(hostelId);
+      await loadElectricity(activeHostelId);
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -242,90 +231,82 @@ export default function ElectricitySettings({ navigation }) {
     );
   };
 
-  const toggleRoomBased = () => {
-    setElectricityData((prev) => ({
-      ...prev,
-      roomBased: !prev.roomBased,
-    }));
+  // const toggleRoomBased = () => {
+  //   setElectricityData((prev) => ({
+  //     ...prev,
+  //     roomBased: !prev.roomBased,
+  //   }));
+  // };
+
+  // const toggleHostelBased = () => {
+  //   setElectricityData((prev) => ({
+  //     ...prev,
+  //     hostelBased: !prev.hostelBased,
+  //   }));
+  // };
+ const handleRoomBased = async (value) => {
+  
+  // Update UI instantly
+  setEbUnitList((prev) => ({
+    ...prev,
+    isRoomBased: value,
+    isHostelBased: !value,
+  }));
+
+  const payload = {
+    hostelId: activeHostelId,
+    isRoomBased: value,
+    isHostelBased: !value,
   };
 
-  const toggleHostelBased = () => {
-    setElectricityData((prev) => ({
-      ...prev,
-      hostelBased: !prev.hostelBased,
-    }));
-  };
-  const handleRoomBased = async (value) => {
+  const res = await changeRoomHostelElectricity(payload);
 
+  if (res.success) {
+    setModalType("success");
+    setMessage("Updated Successfully");
+    setShowSuccess(true);
 
-    setElectricityData({
-      roomBased: value,
-      hostelBased: !value,
-    });
-
-    const payload = {
-      hostelId,
-      isRoomBased: value,
-      isHostelBased: !value,
-    };
-
-    const res = await changeRoomHostelElectricity(payload);
-
-
-    if (res.success) {
-
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        setShowSuccess(false);
-
-      }, 1500);
-    } else {
-      setModalType("error");
-      setMessage(res.data?.message || "Failed to update");
-      setShowSuccess(true);
-
-      setTimeout(() => setShowSuccess(false), 2000);
-    }
-
-  };
-
-  const handleHostelBased = async (value) => {
-
-    setElectricityData({
-      roomBased: !value,
-      hostelBased: value,
-    });
-
-    const payload = {
-      hostelId,
-      isRoomBased: !value,
-      isHostelBased: value,
-    };
-
-    const res = await changeRoomHostelElectricity(payload);
-
-
-    if (res.success) {
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        setShowSuccess(false);
-
-      }, 1500);
-    }
-else {
+    setTimeout(() => setShowSuccess(false), 1500);
+  } else {
     setModalType("error");
     setMessage(res.data?.message || "Failed to update");
     setShowSuccess(true);
-
     setTimeout(() => setShowSuccess(false), 2000);
-}
+  }
+};
+
+
+ const handleHostelBased = async (value) => {
+
+  // Update UI instantly
+  setEbUnitList((prev) => ({
+    ...prev,
+    isRoomBased: !value,
+    isHostelBased: value,
+  }));
+
+  const payload = {
+    hostelId: activeHostelId,
+    isRoomBased: !value,
+    isHostelBased: value,
   };
+
+  const res = await changeRoomHostelElectricity(payload);
+
+  if (res.success) {
+    setModalType("success");
+    setMessage("Updated Successfully");
+    setShowSuccess(true);
+
+    setTimeout(() => setShowSuccess(false), 1500);
+  } else {
+    setModalType("error");
+    setMessage(res.data?.message || "Failed to update");
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+  }
+};
+
 
 
 
@@ -385,14 +366,14 @@ else {
                 <Text style={styles.label}>Room Based Calculation</Text>
                 <View style={styles.switchRow}>
                   <Text style={styles.switchText}>
-                    {electricityData.roomBased ? "On" : "Off"}
+                    {ebunitList.isRoomBased ? "On" : "Off"}
                   </Text>
                   {/* <CustomSwitch
           value={electricityData.roomBased}
           onToggle={toggleRoomBased}
         /> */}
                   <CustomSwitch
-                    value={electricityData.roomBased}
+                    value={ebunitList.isRoomBased}
                     onToggle={handleRoomBased}
                   />
                 </View>
@@ -402,10 +383,10 @@ else {
                 <Text style={styles.label}>Hostel Based Calculation</Text>
                 <View style={styles.switchRow}>
                   <Text style={styles.switchText}>
-                    {electricityData.hostelBased ? "On" : "Off"}
+                    {ebunitList.isHostelBased ? "On" : "Off"}
                   </Text>
                   <CustomSwitch
-                    value={electricityData.hostelBased}
+                    value={ebunitList.isHostelBased}
                     onToggle={handleHostelBased}
                   />
 
