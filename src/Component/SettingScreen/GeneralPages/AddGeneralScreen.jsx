@@ -9,7 +9,8 @@ import Edit from "../../../Assets/Images/edit.png";
 import Eye from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
 import { useGeneral } from "../../../Context/GeneralContext";
-import SuccessModal from "../../../ToastFile/ToastPage"
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 
 
@@ -303,6 +304,9 @@ export default function AddGeneralScreen({ navigation, route }) {
   //     navigation.goBack();
   //   }, 1500);
   // };
+  const strongPasswordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 
   const handleSubmit = async () => {
     let newErrors = {};
@@ -310,7 +314,13 @@ export default function AddGeneralScreen({ navigation, route }) {
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
     if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
     if (!email.trim()) newErrors.email = "Please Enter Email ID";
-    if (!password.trim()) newErrors.password = "Please Enter Password";
+    if (!password.trim()) {
+  newErrors.password = "Please Enter Password";
+} else if (!strongPasswordRegex.test(password)) {
+  newErrors.password =
+    "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character";
+}
+
     if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     if (!city.trim()) newErrors.city = "Please Enter City";
     if (StateSelected === "Select State") newErrors.state = "Please Select State";
@@ -769,9 +779,10 @@ console.log("payloadForApi",payloadForApi)
               setFirstName(t);
               setErrors({ ...errors, firstName: "" });
             }} />
+        
           {errors.firstName && (
-            <Text style={styles.errText}>{errors.firstName}</Text>
-          )}
+                                    <ErrorMessage message={errors.firstName} type="error" />
+                                )}
 
           <Text style={styles.label}>Last Name</Text>
           <TextInput style={styles.input} placeholder="Enter last Name" value={lastName}
@@ -785,12 +796,19 @@ console.log("payloadForApi",payloadForApi)
               setErrors({ ...errors, mobile: "" });
               setPhoneError("")
             }} />
-          {errors.mobile && (
+          {/* {errors.mobile && (
             <Text style={styles.errText}>{errors.mobile}</Text>
-          )}
-          {phoneError !== "" && (
+          )} */}
+          
+          {errors.mobile && (
+                                    <ErrorMessage message={errors.mobile} type="error" />
+                                )}
+          {/* {phoneError !== "" && (
             <Text style={styles.errText}>{phoneError}</Text>
-          )}
+          )} */}
+           {phoneError !== "" &&  (
+                                    <ErrorMessage message={phoneError} type="error" />
+                                )}
 
           <Text style={styles.label}>Email ID  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="Enter Email" value={email}
@@ -800,12 +818,18 @@ console.log("payloadForApi",payloadForApi)
               setEmailError("");
             }}
           />
-          {emailError !== "" && (
+          {/* {emailError !== "" && (
             <Text style={styles.errText}>{emailError}</Text>
-          )}
-          {errors.email && (
+          )} */}
+            {emailError !== "" &&  (
+                                    <ErrorMessage message={emailError} type="error" />
+                                )}
+          {/* {errors.email && (
             <Text style={styles.errText}>{errors.email}</Text>
-          )}
+          )} */}
+            {errors.email && (
+                                    <ErrorMessage message={errors.email} type="error" />
+                                )}
           {!editData && (
             <>
               <Text style={styles.label}>Password  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
@@ -834,8 +858,8 @@ console.log("payloadForApi",payloadForApi)
               </View>
 
               {errors.password && (
-                <Text style={styles.errText}>{errors.password}</Text>
-              )}
+                                    <ErrorMessage message={errors.password} type="error" />
+                                )}
             </>
           )}
           <Text style={styles.label}>Flat, House no, Building...</Text>
@@ -858,9 +882,12 @@ console.log("payloadForApi",payloadForApi)
     setPincode(cleaned);
     setErrors({ ...errors, pincode: "" });
   }} />
-          {errors.pincode && (
+          {/* {errors.pincode && (
             <Text style={styles.errText}>{errors.pincode}</Text>
-          )}
+          )} */}
+           {errors.pincode && (
+                                    <ErrorMessage message={errors.pincode} type="error" />
+                                )}
 
           <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="Enter City" value={city}
@@ -868,10 +895,12 @@ console.log("payloadForApi",payloadForApi)
               setCity(t);
               setErrors({ ...errors, city: "" });
             }} />
-          {errors.city && (
+          {/* {errors.city && (
             <Text style={styles.errText}>{errors.city}</Text>
-          )}
-
+          )} */}
+  {errors.city && (
+                                    <ErrorMessage message={errors.city} type="error" />
+                                )}
 
           <Text style={styles.label}>State  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
 
@@ -911,15 +940,25 @@ console.log("payloadForApi",payloadForApi)
               </View>
             )}
           </View>
-          {errors.state && (
+          {/* {errors.state && (
             <Text style={styles.errText}>{errors.state}</Text>
-          )}
+          )} */}
+  {errors.state && (
+                                    <ErrorMessage message={errors.state} type="error" />
+                                )}
 
 
-
-          {topWarning !== "" && (
+          {/* {topWarning !== "" && (
             <Text style={styles.errText}>{topWarning}</Text>
-          )}
+          )} */}
+            {topWarning !== "" && (
+  <ErrorMessage 
+    message={topWarning} 
+    type="error" 
+    containerStyle={styles.centerWarning}
+  />
+)}
+
 
 
 
@@ -931,11 +970,14 @@ console.log("payloadForApi",payloadForApi)
             </Text>
           </TouchableOpacity>
 
-          {errorMsg !== "" && (
+          {/* {errorMsg !== "" && (
             <Text style={{ color: "red", textAlign: "center", marginTop: 5 }}>
               {errorMsg}
             </Text>
-          )}
+          )} */}
+            {errorMsg !== "" && (
+                                    <ErrorMessage message={errorMsg} type="error" />
+                                )}
           {/* {successMsg !== "" && (
     <Text style={{ color: "green", marginTop: 8 }}>{successMsg}</Text>
   )} */}
@@ -1097,6 +1139,13 @@ const styles = StyleSheet.create({
     height: 20,
     tintColor: "#999",
   },
+  centerWarning: {
+  alignSelf: "center",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  display:"flex"
+}
 
 
 });
