@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  Image, BackHandler, PanResponder, TouchableWithoutFeedback, TextInput
+  Image, BackHandler, PanResponder, TouchableWithoutFeedback, TextInput,Dimensions
 } from "react-native";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -127,30 +127,53 @@ useEffect(() => {
     });
     return () => back.remove();
   }, [showEditSheet]);
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    const keyboardHeight = e.endCoordinates.height;
+    Animated.timing(editY, {
+      toValue: -keyboardHeight + 40, // sheet top visible
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    Animated.timing(editY, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
 
 
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
-      Animated.timing(editY, {
-        toValue: -120,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    });
+  // useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", () => {
+  //     Animated.timing(editY, {
+  //       toValue: -250,
+  //       duration: 200,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
 
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(editY, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    });
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     Animated.timing(editY, {
+  //       toValue: 0,
+  //       duration: 200,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
 
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, []);
 
 
 
@@ -317,10 +340,10 @@ useEffect(() => {
         type={modalType}
 
       />
-      <KeyboardAvoidingView
+      {/* <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      > */}
         <View style={styles.container}>
           {/* HEADER */}
           <View style={styles.headerRow}>
@@ -471,7 +494,7 @@ useEffect(() => {
 
 
         </View>
-      </KeyboardAvoidingView>
+      {/* </KeyboardAvoidingView> */}
     </>
   )
 }
@@ -564,7 +587,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     minHeight: 330,
-    maxHeight: "70%",
+    maxHeight: Dimensions.get("window").height * 0.7,
+
   },
 
   sheetHandle: {
