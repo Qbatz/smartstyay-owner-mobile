@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, StyleSheet,Image, ScrollView } from "react-native";
+import React, { useState, useContext, useCallback } from "react";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function LongStayRecurring({ navigation }) {
-
+  const { addBillingRecurring, getBillingConfig } = UseSetting();
+  const { activeHostelId } = useContext(CommonContexts);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
   const billingDays = Array.from({ length: 31 }, (_, i) =>
     String(i + 1).padStart(2, "0")
@@ -25,183 +33,305 @@ export default function LongStayRecurring({ navigation }) {
 
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState("");
+  const [BillingDateError, setBillingDateError] = useState("")
+  const [dueDateError, setDueDateError] = useState("")
+  const [noticeError, setNoticeError] = useState("")
 
+
+  const handleSave = async () => {
+  let hasError = false;
+
+    if (!selectedBillingDay) {
+      setBillingDateError("Please select billing date");
+   hasError = true;
+    }
+
+    if (!selectedDueDay) {
+      setDueDateError("Please select due date");
+hasError = true;
+    }
+
+    if (!selectedNotice) {
+      setNoticeError("Please select notice period");
+hasError = true;
+    }
+      if (hasError) return;
+
+
+    const payload = {
+      hostelId: activeHostelId,
+      startDate: Number(selectedBillingDay),
+      dueDate: Number(selectedDueDay),
+      noticeDays: Number(selectedNotice),
+    };
+
+    console.log("📤 Sending Payload →", payload);
+
+    const res = await addBillingRecurring(payload);
+
+    if (res.success) {
+      setModalType("success");
+      setMessage("Saved Successfully");
+      setShowSuccess(true);
+
+      await getBillingConfig(activeHostelId);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigation.goBack();
+      }, 1200);
+
+    } else {
+      setModalType("error");
+      setMessage(res.data?.message || "Save Failed");
+      setShowSuccess(true);
+    }
+  };
+
+
+  // const handleSave = async () => {
+
+  //   if (!selectedBillingDay) {
+  //     setMessage("Please select billing date");
+  //     setModalType("error");
+  //     setShowSuccess(true);
+  //     return;
+  //   }
+
+  //   if (!selectedDueDay) {
+  //     setMessage("Please select due date");
+  //     setModalType("error");
+  //     setShowSuccess(true);
+  //     return;
+  //   }
+
+  //   if (!selectedNotice) {
+  //     setMessage("Please select notice period");
+  //     setModalType("error");
+  //     setShowSuccess(true);
+  //     return;
+  //   }
+
+  //   const payload = {
+  //     hostelId: activeHostelId,
+  //     startDate: Number(selectedBillingDay),
+  //     dueDate: Number(selectedDueDay),
+  //     noticeDays: Number(selectedNotice),
+  //   };
+
+  //   console.log("📤 Sending Payload →", payload);
+
+  //   const res = await addBillingRecurring(payload);
+
+  //   if (res.success) {
+  //     setModalType("success");
+  //     setMessage("Saved Successfully");
+  //     setShowSuccess(true);
+
+  //     setTimeout(() => {
+  //       setShowSuccess(false);
+  //       navigation.goBack();
+  //     }, 1500);
+
+  //   } else {
+  //     setModalType("error");
+  //     setMessage(res.data?.message || "Save Failed");
+  //     setShowSuccess(true);
+  //   }
+  // };
 
   return (
-    <View style={styles.container}>
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+      />
 
-      {/* Header */}
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={ArrowLeft} style={styles.backIcon} />
+      <View style={styles.container}>
+
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Long stay Recurring</Text>
+        </View>
+
+
+        <Text style={styles.label}>Billing Date Of Month *</Text>
+
+        <TouchableOpacity
+          style={styles.dropdownBox}
+          onPress={() => setBillingOpen(!billingOpen)}
+        >
+          <Text style={{ color: selectedBillingDay ? "#000" : "#9CA3AF" }}>
+            {selectedBillingDay || "Select Billing Date"}
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={styles.arrowIcon}
+          />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Long stay Recurring</Text>
+
+        {billingOpen && (
+          <View style={styles.billingDropdownMenu}>
+            <ScrollView style={{ maxHeight: 180 }}>
+              {billingDays.map((d, index) => {
+                const isSelected = d === selectedBillingDay;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.billingOption,
+                      isSelected && styles.billingOptionSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedBillingDay(d);
+                      setBillingOpen(false);
+                      setBillingDateError("")
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.billingOptionText,
+                        isSelected && styles.billingOptionTextSelected,
+                      ]}
+                    >
+                      {d}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+        {BillingDateError && (
+          <ErrorMessage message={BillingDateError} type="error" />
+        )}
+
+        {/* Due Date */}
+        <Text style={styles.label}>Due Date of Month</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setDueOpen(!dueOpen)}
+        >
+          <Text style={{ color: selectedDueDay ? "#000" : "#9CA3AF" }}>
+            {selectedDueDay || "Select Due Date of Month"}
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+
+        {dueOpen && (
+          <View style={styles.dueDropdownMenu}>
+            <ScrollView style={{ maxHeight: 180 }}>
+              {dueDays.map((d, index) => {
+                const isSelected = d === selectedDueDay;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.dueOption,
+                      isSelected && styles.dueOptionSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedDueDay(d);
+                      setDueOpen(false);
+                      setDueDateError("")
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.dueOptionText,
+                        isSelected && styles.dueOptionTextSelected,
+                      ]}
+                    >
+                      {d}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+        {dueDateError && (
+          <ErrorMessage message={dueDateError} type="error" />
+        )}
+
+        <Text style={styles.label}>Notice Period</Text>
+
+        <TouchableOpacity
+          style={styles.inputBox}
+          onPress={() => setNoticeOpen(!noticeOpen)}
+        >
+          <Text style={{ color: selectedNotice ? "#000" : "#9CA3AF" }}>
+            {selectedNotice || "Select Notice Period"}
+          </Text>
+
+          <Image source={DownArrow} style={styles.icon} />
+        </TouchableOpacity>
+
+        {noticeOpen && (
+          <View style={styles.noticeDropdownMenu}>
+            <ScrollView style={{ maxHeight: 180 }}>
+              {noticeDays.map((day, index) => {
+                const isSelected = selectedNotice === day;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.noticeOption,
+                      isSelected && styles.noticeOptionSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedNotice(day);
+                      setNoticeOpen(false);
+                      setNoticeError("")
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.noticeOptionText,
+                        isSelected && styles.noticeOptionTextSelected,
+                      ]}
+                    >
+                      {day}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+        {noticeError && (
+          <ErrorMessage message={noticeError} type="error" />
+        )}
+
+        {/* Button Row */}
+        <View style={styles.btnRow}>
+          <TouchableOpacity style={styles.cancelBtn}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+            <Text style={styles.saveText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+
       </View>
-
-
-      <Text style={styles.label}>Billing Date Of Month *</Text>
-
-      <TouchableOpacity
-        style={styles.dropdownBox}
-        onPress={() => setBillingOpen(!billingOpen)}
-      >
-        <Text style={{ color: selectedBillingDay ? "#000" : "#9CA3AF" }}>
-          {selectedBillingDay || "Select Billing Date"}
-        </Text>
-
-        <Image
-          source={DownArrow}
-          style={styles.arrowIcon}
-        />
-      </TouchableOpacity>
-
-      {billingOpen && (
-        <View style={styles.billingDropdownMenu}>
-          <ScrollView style={{ maxHeight: 180 }}>
-            {billingDays.map((d, index) => {
-              const isSelected = d === selectedBillingDay;
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.billingOption,
-                    isSelected && styles.billingOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setSelectedBillingDay(d);
-                    setBillingOpen(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.billingOptionText,
-                      isSelected && styles.billingOptionTextSelected,
-                    ]}
-                  >
-                    {d}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )}
-
-
-      {/* Due Date */}
-      <Text style={styles.label}>Due Date of Month</Text>
-
-      <TouchableOpacity
-        style={styles.inputBox}
-        onPress={() => setDueOpen(!dueOpen)}
-      >
-        <Text style={{ color: selectedDueDay ? "#000" : "#9CA3AF" }}>
-          {selectedDueDay || "Select Due Date of Month"}
-        </Text>
-
-        <Image
-          source={DownArrow}
-          style={styles.icon}
-        />
-      </TouchableOpacity>
-
-      {dueOpen && (
-        <View style={styles.dueDropdownMenu}>
-          <ScrollView style={{ maxHeight: 180 }}>
-            {dueDays.map((d, index) => {
-              const isSelected = d === selectedDueDay;
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.dueOption,
-                    isSelected && styles.dueOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setSelectedDueDay(d);
-                    setDueOpen(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.dueOptionText,
-                      isSelected && styles.dueOptionTextSelected,
-                    ]}
-                  >
-                    {d}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )}
-
-
-      <Text style={styles.label}>Notice Period</Text>
-
-      <TouchableOpacity
-        style={styles.inputBox}
-        onPress={() => setNoticeOpen(!noticeOpen)}
-      >
-        <Text style={{ color: selectedNotice ? "#000" : "#9CA3AF" }}>
-          {selectedNotice || "Select Notice Period"}
-        </Text>
-
-        <Image source={DownArrow} style={styles.icon} />
-      </TouchableOpacity>
-
-      {noticeOpen && (
-        <View style={styles.noticeDropdownMenu}>
-          <ScrollView style={{ maxHeight: 180 }}>
-            {noticeDays.map((day, index) => {
-              const isSelected = selectedNotice === day;
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.noticeOption,
-                    isSelected && styles.noticeOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setSelectedNotice(day);
-                    setNoticeOpen(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.noticeOptionText,
-                      isSelected && styles.noticeOptionTextSelected,
-                    ]}
-                  >
-                    {day}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )}
-
-
-      {/* Button Row */}
-      <View style={styles.btnRow}>
-        <TouchableOpacity style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.saveBtn}>
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-      </View>
-
-    </View>
+    </>
   );
 }
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20,paddingTop:40 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 40 },
 
   headerRow: {
     flexDirection: "row",
@@ -361,16 +491,20 @@ const styles = StyleSheet.create({
 
 
 
-
   billingDropdownMenu: {
-    marginTop: 4,
+    position: "absolute",
+    top: 190,
+    left: 20,
+    right: 20,
+    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#DDDDDD",
     borderRadius: 10,
-    backgroundColor: "#fff",
     maxHeight: 200,
-    overflow: "hidden",
+    zIndex: 999,
+    elevation: 8,
   },
+
 
   billingOption: {
     paddingVertical: 10,
@@ -378,7 +512,7 @@ const styles = StyleSheet.create({
   },
 
   billingOptionSelected: {
-    backgroundColor: "#1D5BEE",   // அந்த blue highlight
+    backgroundColor: "#1D5BEE",
   },
 
   billingOptionText: {
@@ -390,14 +524,21 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
   },
+
   dueDropdownMenu: {
-    marginTop: 4,
+    position: "absolute",
+    top: 280,
+    left: 20,
+    right: 20,
+    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#DDDDDD",
     borderRadius: 10,
-    backgroundColor: "#fff",
-    overflow: "hidden",
+    maxHeight: 200,
+    zIndex: 999,
+    elevation: 8,
   },
+
 
   dueOption: {
     paddingVertical: 10,
@@ -417,14 +558,21 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
   },
+
   noticeDropdownMenu: {
-    marginTop: 4,
+    position: "absolute",
+    top: 380,
+    left: 20,
+    right: 20,
+    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#DDDDDD",
     borderRadius: 10,
-    backgroundColor: "#fff",
-    overflow: "hidden",
+    maxHeight: 200,
+    zIndex: 999,
+    elevation: 8,
   },
+
 
   noticeOption: {
     paddingVertical: 10,

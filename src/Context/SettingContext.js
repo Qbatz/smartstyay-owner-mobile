@@ -4,9 +4,9 @@ import { retriveData } from "../Utils/Storage";
 
 
 const ElectricityContext = createContext();
-export const useElectricity = () => useContext(ElectricityContext);
+export const UseSetting = () => useContext(ElectricityContext);
 
-export const ElectricityProvider = ({ children }) => {
+export const SettingProvider = ({ children }) => {
 
 const getElectricity = async (hostelId) => {
   try {
@@ -53,9 +53,80 @@ const updateElectricity = async (hostelId, unitPrice) => {
       return { success: false, data: err.response?.data };
     }
   };
+const changeRoomHostelElectricity = async (payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const query = new URLSearchParams({
+      isRoomBased: payload.isRoomBased,
+      isHostelBased: payload.isHostelBased,
+      isProRate: payload.isProRate ?? true,
+      calculationStartingDate:
+        payload.calculationStartingDate ?? Math.floor(Date.now() / 1000), // FIXED!!
+      frequent: payload.frequent ?? "monthly",
+      shouldIncludeInRent: payload.shouldIncludeInRent ?? true,
+    }).toString();
+
+    const url = `/v2/hostel/electricity/config/${payload.hostelId}?${query}`;
+
+    console.log("🔵 FINAL EB CONFIG URL →", url);
+
+    const res = await AxiosConfig.put(url, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("🟢 EB CONFIG SUCCESS →", res.data);
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    console.log("🔴 EB CONFIG ERROR →", err.response?.data || err.message);
+    return { success: false, data: err.response?.data || err.message };
+  }
+};
+
+
+const getBillingConfig = async (hostelId) => {
+    try {
+      const token = await retriveData("token");
+
+      const res = await AxiosConfig.get(
+        `/v2/hostel/config/billing/${hostelId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return { success: true, data: res.data };
+
+    } catch (err) {
+      return { success: false, data: err.response?.data || err.message };
+    }
+  };
+
+const addBillingRecurring = async (payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.put(
+      `/v2/hostel/config/billing/${payload.hostelId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return { success: false, data: err.response?.data };
+  }
+};
+
+
 
   return (
-    <ElectricityContext.Provider value={{ getElectricity,updateElectricity }}>
+    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring}}>
       {children}
     </ElectricityContext.Provider>
   );
