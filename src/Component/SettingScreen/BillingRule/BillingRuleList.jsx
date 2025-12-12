@@ -1,32 +1,51 @@
-import React, { useState , useEffect , useRef} from "react";
+import React, { useState , useEffect , useRef,useContext} from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Animated,
-  Image, BackHandler ,PanResponder
+  Image, BackHandler,
 } from "react-native";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import Shield from "../../../Assets/Images/Shield.png";
-import Confiqure from "../../../Assets/Images/arrow-transfer.png"
+import Confiqure from "../../../Assets/Images/arrow-transfer.png";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { UseSetting } from "../../../Context/SettingContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function BillingRuleScreen({ navigation }) {
 
-
-  const [electricityData, setElectricityData] = useState({
-    amount: 80,
-    roomBased: false,
-    hostelBased: true,
-  })
+ const {activeHostelId } = useContext(CommonContexts);
+  const {getBillingConfig} = UseSetting();
+ 
 
   const [showEditSheet, setShowEditSheet] = useState(false)
+  const [billingData,setBillingData] = useState("")
   const editY = useRef(new Animated.Value(700)).current;
 
 
+useEffect(() => {
+  if (activeHostelId) {
+    loadBilling(activeHostelId);
+  }
+}, [activeHostelId]);
 
+const loadBilling = async (id) => {
+  const res = await getBillingConfig(id);
+  console.log("Billing Data →", res);
+  setBillingData(res.data)
+};
 
+useFocusEffect(
+  React.useCallback(() => {
+    if (activeHostelId) {
+      loadBilling(activeHostelId);  // Always refresh when screen open
+    }
+  }, [activeHostelId])
+);
+console.log("billingData", billingData);
  useEffect(() => {
   const backPress = BackHandler.addEventListener(
     "hardwareBackPress",
@@ -93,41 +112,30 @@ const closeEditSheet = () => {
 
 
 
-  const CustomSwitch = ({ value, onToggle }) => {
-    return (
-      <TouchableOpacity onPress={() => onToggle(!value)}>
-        <View
-          style={[
-            styles.switch,
-            { backgroundColor: value ? "#3562FF" : "#A68DE3" },
-          ]}
-        >
-          <Animated.View
-            style={[
-              styles.knob,
-              { transform: [{ translateX: value ? 18 : 0 }] },
-            ]}
-          >
-            <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
-          </Animated.View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+ const CustomSwitch = ({ value }) => {
+  return (
+    <View
+      style={[
+        styles.switch,
+        { backgroundColor: "#3562FF" }, 
+      ]}
+    >
+      <Animated.View
+        style={[
+          styles.knob,
+          { transform: [{ translateX: 18 }] }, // Always ON position
+        ]}
+      >
+        <Text style={styles.knobText}>✓</Text>
+      </Animated.View>
+    </View>
+  );
+};
 
-  const toggleRoomBased = () => {
-    setElectricityData((prev) => ({
-      ...prev,
-      roomBased: !prev.roomBased,
-    }));
-  };
 
-  const toggleHostelBased = () => {
-    setElectricityData((prev) => ({
-      ...prev,
-      hostelBased: !prev.hostelBased,
-    }));
-  };
+
+
+  
 
   return (
      <KeyboardAvoidingView
@@ -148,7 +156,7 @@ const closeEditSheet = () => {
       </View>
 
    
-      {electricityData && (
+      {billingData && (
         <View style={styles.card}>
        
 <View style={styles.titleRow}>
@@ -159,18 +167,22 @@ const closeEditSheet = () => {
   </View>
 </View>
 <View style={styles.infoRow}>
-  <Text style={styles.infoLabel}>Billing Date</Text>
-  <Text style={styles.infoValue}>01 of the Month</Text>
+  <Text style={styles.infoLabel}>Bill Start Date:</Text>
+  <Text style={styles.infoValue}>{billingData.billStartDate}</Text>
 </View>
 
 <View style={styles.infoRow}>
-  <Text style={styles.infoLabel}>Due Date</Text>
-  <Text style={styles.infoValue}>05 of the Month</Text>
+  <Text style={styles.infoLabel}>Bill Due Days:</Text>
+  <Text style={styles.infoValue}>{billingData.billDueDate}</Text>
 </View>
 
 <View style={styles.infoRow}>
-  <Text style={styles.infoLabel}>Duration</Text>
-  <Text style={styles.infoValue}>30 Days</Text>
+  <Text style={styles.infoLabel}>Notice Period:</Text>
+  <Text style={styles.infoValue}>{billingData.noticePeriod} days</Text>
+</View>
+<View style={styles.infoRow}>
+  <Text style={styles.infoLabel}>Starts From:</Text>
+  <Text style={styles.infoValue}>{billingData.startsFrom}</Text>
 </View>
 
 
@@ -193,11 +205,9 @@ const closeEditSheet = () => {
 
             <View style={styles.switchRow}>
               <Text style={styles.switchText}>
-                {electricityData.roomBased ? "On" : "Off"}
               </Text>
               <CustomSwitch
-                value={electricityData.roomBased}
-                onToggle={toggleRoomBased}
+              value={true}
               />
             </View>
           </View>

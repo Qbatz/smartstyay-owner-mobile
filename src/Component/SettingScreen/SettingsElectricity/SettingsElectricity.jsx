@@ -10,17 +10,16 @@ import {
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-import { useElectricity } from "../../../Context/SettingContext";
+import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle"
 import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function ElectricitySettings({ navigation }) {
-  const { hostelList, activeHostelId } = useContext(CommonContexts);
-  const { getElectricity, updateElectricity, changeRoomHostelElectricity } = useElectricity();
+  const {activeHostelId } = useContext(CommonContexts);
+  const { getElectricity, updateElectricity, changeRoomHostelElectricity } = UseSetting();
   const [ebunitList, setEbUnitList] = useState("")
-  // const hostelId = hostelList?.length > 0 ? hostelList[0].hostelId : null;
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");

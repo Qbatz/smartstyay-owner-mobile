@@ -4,9 +4,9 @@ import { retriveData } from "../Utils/Storage";
 
 
 const ElectricityContext = createContext();
-export const useElectricity = () => useContext(ElectricityContext);
+export const UseSetting = () => useContext(ElectricityContext);
 
-export const ElectricityProvider = ({ children }) => {
+export const SettingProvider = ({ children }) => {
 
 const getElectricity = async (hostelId) => {
   try {
@@ -85,12 +85,48 @@ const changeRoomHostelElectricity = async (payload) => {
 };
 
 
+const getBillingConfig = async (hostelId) => {
+    try {
+      const token = await retriveData("token");
 
+      const res = await AxiosConfig.get(
+        `/v2/hostel/config/billing/${hostelId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return { success: true, data: res.data };
+
+    } catch (err) {
+      return { success: false, data: err.response?.data || err.message };
+    }
+  };
+
+const addBillingRecurring = async (payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.put(
+      `/v2/hostel/config/billing/${payload.hostelId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return { success: false, data: err.response?.data };
+  }
+};
 
 
 
   return (
-    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity }}>
+    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring}}>
       {children}
     </ElectricityContext.Provider>
   );
