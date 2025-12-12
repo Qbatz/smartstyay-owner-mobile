@@ -182,7 +182,7 @@ const closeEditSheet = () => {
 </View>
 <View style={styles.infoRow}>
   <Text style={styles.infoLabel}>Starts From:</Text>
-  <Text style={styles.infoValue}>{billingData.startsFrom}</Text>
+  <Text style={styles.infoValue}>{billingData.startsFrom || "_"}</Text>
 </View>
 
 
