@@ -21,10 +21,24 @@ export default function ChangePasswordSheet({ visible, onClose,adminId }) {
 const [message, setMessage] = useState("");
 const [passError,setPassError] = useState("")
 const [modalType, setModalType] = useState("success");
+const strongPasswordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 
 const handlePasswordUpdate = async () => {
+  // if (!newPass.trim()) {
+  //   setPassError("Please Enter Password");
+  //   return;
+  // }
   if (!newPass.trim()) {
     setPassError("Please Enter Password");
+    return;
+  }
+
+  if (!strongPasswordRegex.test(newPass)) {
+    setPassError(
+      "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character"
+    );
     return;
   }
 
