@@ -376,7 +376,7 @@ const openSheet = (edit = false, item = null) => {
           paddingTop: 40,
         }}
       >
-       { loading && <Loader />}
+      
 
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -537,9 +537,10 @@ const openSheet = (edit = false, item = null) => {
 
       <View style={styles.bottomMask} />
     </Animated.View>
+
   </View>
 )}
-
+ { loading && <Loader />}
     </>
   );
 }

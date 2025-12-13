@@ -18,10 +18,11 @@ import Trash from "../../../Assets/Images/trash.png";
 import TenantAddBlue from "../../../Assets/Images/TenantAddBlue.png";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
 
 export default function RolesScreen({ navigation }) {
    const {activeHostelId } = useContext(CommonContexts);
-    const {getRoleByHostel,deleteRole} = UseSetting();
+    const {getRoleByHostel,deleteRole,loading} = UseSetting();
       const [openMenuId, setOpenMenuId] = useState(null);
  const [showAddSheet, setShowAddSheet] = useState(false);
  const [editData, setEditData] = useState(null);
@@ -93,6 +94,13 @@ const handleDelete = (roleId) => {
   }
 };
 
+const getPermissionCount = (role) => {
+  if (!role?.rolesPermissionDetails) return 0;
+
+  return role.rolesPermissionDetails.filter(p =>
+    p.canRead || p.canWrite || p.canUpdate || p.canDelete
+  ).length;
+};
 
   return (
     <>
@@ -109,7 +117,7 @@ const handleDelete = (roleId) => {
         <Text style={styles.headerTitle}>Roles</Text>
       </View>
 
-
+  { loading && <Loader />}
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
  {roleList.map((item, i) => (
   <View key={item.id} style={{ position: "relative" }}>
@@ -144,9 +152,9 @@ const handleDelete = (roleId) => {
 )}
       </View>
 
-      <Text style={styles.permissionCount}>
-        {item.permissionCount} Permissions Selected
-      </Text>
+    <Text style={styles.permissionCount}>
+  {getPermissionCount(item)} Permissions Selected
+</Text>
 
       <Text style={styles.desc}>{item.desc}</Text>
     </View>
@@ -190,7 +198,7 @@ const handleDelete = (roleId) => {
 
       </ScrollView>
 
-    
+    {!loading && (
       <TouchableOpacity style={styles.addButton} onPress={() => { 
   setShowAddSheet(true); 
   setEditData(null); 
@@ -198,6 +206,7 @@ const handleDelete = (roleId) => {
   >
   <Image source={TenantAddBlue} style={styles.addIcon} />
 </TouchableOpacity>
+    )}
     </View>
 
 

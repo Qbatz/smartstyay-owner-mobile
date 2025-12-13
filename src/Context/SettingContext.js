@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext,useState } from "react";
 import AxiosConfig from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
@@ -6,8 +6,9 @@ import { retriveData } from "../Utils/Storage";
 const ElectricityContext = createContext();
 export const UseSetting = () => useContext(ElectricityContext);
 
-export const SettingProvider = ({ children }) => {
 
+export const SettingProvider = ({ children }) => {
+const [loading, setLoading] = useState(false);
 const getElectricity = async (hostelId) => {
   try {
     const token = await retriveData("token");
@@ -122,16 +123,17 @@ const addBillingRecurring = async (payload) => {
     return { success: false, data: err.response?.data };
   }
 };
+
 const getRoleByHostel = async (hostelId) => {
   try {
+    setLoading(true);   // 🔵 START LOADER
+
     const token = await retriveData("token");
 
     const res = await AxiosConfig.get(
       `/v2/role/hostel/${hostelId}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
 
@@ -142,8 +144,34 @@ const getRoleByHostel = async (hostelId) => {
       success: false,
       data: err.response?.data || err.message,
     };
+  } finally {
+    setLoading(false);  // 🟢 STOP LOADER
   }
 };
+
+// const getRoleByHostel = async (hostelId) => {
+//    const [loading, setLoading] = useState(false);
+//   try {
+//     const token = await retriveData("token");
+
+//     const res = await AxiosConfig.get(
+//       `/v2/role/hostel/${hostelId}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+
+//     return { success: true, data: res.data };
+
+//   } catch (err) {
+//     return {
+//       success: false,
+//       data: err.response?.data || err.message,
+//     };
+//   }
+// };
 
 const getRoleModules = async () => {
   try {
@@ -235,7 +263,7 @@ const deleteRole = async (roleId) => {
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading}}>
       {children}
     </ElectricityContext.Provider>
   );
