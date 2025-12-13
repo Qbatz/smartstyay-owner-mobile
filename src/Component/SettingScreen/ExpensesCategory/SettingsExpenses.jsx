@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect ,useContext } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,10 @@ import {
   Modal,
   ScrollView, BackHandler ,
 } from "react-native";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyExpense from "../../../Assets/Images/Empty_state.png"; 
@@ -25,28 +29,45 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 
 
 export default function ExpensesSettings({ navigation }) {
-  const [expenses, setExpenses] = useState([
-    {
-      id: "1",
-      title: "EB Bill",
-      subcategories: [
-        { id: "a1", name: "Category A1" },
-        { id: "a2", name: "Category A2" },
-        { id: "a3", name: "Category A3" },
-      ],
-    },
-    {
-      id: "2",
-      title: "Building Rent",
-      subcategories: [],
-    },
-  ]);
+
+  const { activeHostelId } = useContext(CommonContexts);
+const {
+  expenses,
+  loading,
+  fetchExpenses,
+  addExpenseCategory,
+  addSubCategory,
+  setExpenses,
+} = useContext(ExpensesContext);
+
+
+  // const [expenses, setExpenses] = useState([
+  //   {
+  //     id: "1",
+  //     title: "EB Bill",
+  //     subcategories: [
+  //       { id: "a1", name: "Category A1" },
+  //       { id: "a2", name: "Category A2" },
+  //       { id: "a3", name: "Category A3" },
+  //     ],
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Building Rent",
+  //     subcategories: [],
+  //   },
+  // ]);
 
   const [showExpenseSheet, setShowExpenseSheet] = useState(false);
   const expenseSheetY = useRef(new Animated.Value(700)).current;
   const [expenseText, setExpenseText] = useState("");
   const [isExpenseEdit, setIsExpenseEdit] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success"); 
+
 
   const [showSubSheet, setShowSubSheet] = useState(false);
   const subSheetY = useRef(new Animated.Value(700)).current;
@@ -68,6 +89,28 @@ export default function ExpensesSettings({ navigation }) {
   const [showMenuId, setShowMenuId] = useState(null);
     const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
+
+  useEffect(() => {
+  if (activeHostelId) {
+    fetchExpenses(activeHostelId);
+  }
+  else {
+    setExpenses([]);
+  }
+}, [activeHostelId]);
+
+useEffect(() => {
+  if (showSuccessModal) {
+    const t = setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500);
+
+    return () => clearTimeout(t);
+  }
+}, [showSuccessModal]);
+
+
+
 
 
   const expensePan = useRef(
@@ -174,6 +217,13 @@ useEffect(() => {
                }, [])
 
   const openExpenseSheet = (edit = false, item = null) => {
+      if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please add a hostel first");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
     expenseSheetY.setValue(700);
     setIsExpenseEdit(edit);
     if (edit && item) {
@@ -261,16 +311,30 @@ useEffect(() => {
     });
   };
 
-  const saveExpense = () => {
-    const value = expenseText.trim();
-    if (!value) return;
-    if (isExpenseEdit && editingExpenseId) {
-      setExpenses((prev) => prev.map((p) => (p.id === editingExpenseId ? { ...p, title: value } : p)));
-    } else {
-      setExpenses((prev) => [...prev, { id: Date.now().toString(), title: value, subcategories: [] }]);
-    }
-    closeExpenseSheet();
-  };
+const saveExpense = async () => {
+  const value = expenseText.trim();
+  if (!value) return;
+
+  const res = await addExpenseCategory({
+    hostelId: activeHostelId,
+    categoryName: value,
+  });
+
+  if (!res.success) {
+    setModalMessage(res.message || "Failed to add category");
+    setModalType("error");
+    setShowSuccessModal(true);
+    return;
+  }
+
+  setModalMessage("Expense category added successfully");
+  setModalType("success");
+  setShowSuccessModal(true);
+
+  closeExpenseSheet();
+};
+
+
 
   const confirmDeleteExpense = (id) => {
     setDeleteExpenseId(id);
@@ -285,28 +349,29 @@ useEffect(() => {
 
   const getSelectedExpense = () => expenses.find((e) => e.id === selectedExpenseId) || null;
 
-  const saveSubcategory = () => {
-    const value = subName.trim();
-    if (!value || !selectedExpenseId) return;
+  const saveSubcategory = async () => {
+  const value = subName.trim();
+  if (!value || !selectedExpenseId) return;
 
-    setExpenses((prev) =>
-      prev.map((exp) => {
-        if (exp.id !== selectedExpenseId) return exp;
+  const res = await addSubCategory({
+    hostelId: activeHostelId,
+    categoryId: selectedExpenseId,
+    subCategory: value,
+  });
 
-        if (isSubAddEdit && editingSubId) {
-          return {
-            ...exp,
-            subcategories: exp.subcategories.map((s) => (s.id === editingSubId ? { ...s, name: value } : s)),
-          };
-        } else {
-          const newSub = { id: Date.now().toString(), name: value };
-          return { ...exp, subcategories: [...exp.subcategories, newSub] };
-        }
-      })
-    );
+  if (!res.success) {
+    setModalMessage(res.message || "Failed to add sub category");
+    setModalType("error");
+    setShowSuccessModal(true);
+    return;
+  }
 
-    closeSubAddSheet();
-  };
+  setModalMessage("Sub category added successfully");
+  setModalType("success");
+  setShowSuccessModal(true);
+
+  closeSubAddSheet();
+};
 
   const confirmDeleteSub = (subId) => {
     setDeleteSubId(subId);
@@ -389,6 +454,12 @@ useEffect(() => {
 
   return (
     <>
+     <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
       <View style={{ flex: 1 }}>
         <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
           <View style={[styles.container, { backgroundColor: showExpenseSheet || showSubSheet || showSubAddSheet ? "transparent" : "#fff" }]}>
@@ -402,7 +473,31 @@ useEffect(() => {
           
             </View>
 
-            {expenses.length === 0 ? (
+            {loading ? (
+ <Loader />
+) : expenses.length === 0 ? (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyExpense} style={styles.emptyImg} />
+    <Text style={styles.emptyTitle}>No Expenses are there!</Text>
+
+    <TouchableOpacity
+      style={styles.addButtonEmpty}
+      onPress={() => openExpenseSheet(false)}
+    >
+      <Text style={styles.addBtnText}>Add Expenses</Text>
+    </TouchableOpacity>
+  </View>
+) : (
+  <FlatList
+    data={expenses}
+    keyExtractor={(i) => i.id}
+    renderItem={renderExpense}
+    contentContainerStyle={{ paddingBottom: 140 }}
+  />
+)}
+
+
+            {/* {expenses.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Image source={EmptyExpense} style={styles.emptyImg} />
                 <Text style={styles.emptyTitle}>No Expenses are there!</Text>
@@ -413,9 +508,9 @@ useEffect(() => {
               </View>
             ) : (
               <FlatList data={expenses} keyExtractor={(i) => i.id} renderItem={renderExpense} contentContainerStyle={{ paddingBottom: 140 }} />
-            )}
+            )} */}
 
-            {expenses.length > 0 && (
+            {!loading && expenses?.length > 0 && (
               <TouchableOpacity style={styles.floatingBtn} onPress={() => openExpenseSheet(false)}>
                 <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
               </TouchableOpacity>

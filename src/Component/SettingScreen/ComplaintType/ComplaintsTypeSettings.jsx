@@ -31,7 +31,9 @@ export default function ComplaintsSettings({ navigation }) {
   const { activeHostelId } = useContext(CommonContexts);
 
   const {
+  
     complaintTypes,
+      loading,
     fetchComplaintTypes,
     addComplaintType,
     editComplaintType,
@@ -52,8 +54,6 @@ export default function ComplaintsSettings({ navigation }) {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
-    const [loading , setLoading] = useState(false)
-    const [initialLoad, setInitialLoad] = useState(true);
 
 
 
@@ -68,18 +68,11 @@ export default function ComplaintsSettings({ navigation }) {
 
 useEffect(() => {
   async function loadData() {
-    setLoading(true);
-
     if (!activeHostelId) {
-      setInitialLoad(false);
-      setLoading(false);
-      return;
+      return
     }
 
     await fetchComplaintTypes(activeHostelId);
-
-    setInitialLoad(false);
-    setLoading(false);
   }
 
   loadData();
@@ -383,7 +376,7 @@ const openSheet = (edit = false, item = null) => {
           paddingTop: 40,
         }}
       >
-       {initialLoad || loading ? <Loader /> : null}
+       { loading && <Loader />}
 
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -394,7 +387,7 @@ const openSheet = (edit = false, item = null) => {
 
         <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
           <View style={{ flex: 1 }}>
-     {!loading && !initialLoad && complaints.length === 0 ? (
+     {!loading &&  complaints.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Image source={EmptyComplaint} style={styles.emptyImg} />
                 <Text style={styles.emptyTitle}>No Complaints are there!</Text>
