@@ -66,13 +66,25 @@ export default function ComplaintsSettings({ navigation }) {
   //   fetchComplaintTypes(activeHostelId);
   // }, []);
 
-  useEffect(() => {
+useEffect(() => {
   async function loadData() {
+    setLoading(true);
+
+    if (!activeHostelId) {
+      setInitialLoad(false);
+      setLoading(false);
+      return;
+    }
+
     await fetchComplaintTypes(activeHostelId);
-    setInitialLoad(false); 
+
+    setInitialLoad(false);
+    setLoading(false);
   }
+
   loadData();
-}, []);
+}, [activeHostelId]);
+
 
 
  
@@ -124,14 +136,22 @@ const sheetPan = useRef(
   //     useNativeDriver: true,
   //   }).start();
   // };
+const openSheet = (edit = false, item = null) => {
 
-  const openSheet = (edit = false, item = null) => {
+  if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please add a hostel first");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
   sheetY.setValue(700);
   setIsEdit(edit);
 
   if (edit && item) {
     setComplaintText(item.title);
-    setOriginalComplaintName(item.title); 
+    setOriginalComplaintName(item.title);
     setEditingId(item.id);
   } else {
     setComplaintText("");
@@ -147,6 +167,7 @@ const sheetPan = useRef(
     useNativeDriver: true,
   }).start();
 };
+
 
   const closeSheet = () => {
     Animated.timing(sheetY, {

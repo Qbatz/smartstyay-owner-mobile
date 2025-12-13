@@ -104,16 +104,18 @@ const convertToBase64File = (json) => {
     setPgError(null);
 
     const response = await AxiosConfig.delete(`/v2/hostel/${hostelId}`);
-
     return response;
+
   } catch (error) {
-    console.log("DELETE PG ERROR:", error);
+    console.log("DELETE PG ERROR:", error?.response || error);
+
     setPgError(error);
-    return error;
+    return error?.response || error;
   } finally {
     setPgLoading(false);
   }
 };
+
 
 
   return (

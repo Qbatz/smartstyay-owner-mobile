@@ -137,15 +137,11 @@ useEffect(() => {
 
 
  const handleActivate = (id) => {
-  // move selected hostel to top
   const selected = hostelList.find(h => (h.hostelId ?? h.id) === id);
   const others = hostelList.filter(h => (h.hostelId ?? h.id) !== id);
 
   updateHostelList([selected, ...others]);
-
-  // ⭐ Store active hostel globally
   setActiveHostelId(id);
-
   closeSheet();
 };;
 
@@ -207,43 +203,54 @@ const activeHostel =
 
 const handleDeletePG = async () => {
   const selectedHostel = hostelList.find(
-    (h) => (h.hostelId ?? h.id) === visiblePopup
+    (h) => h.hostelId === visiblePopup
   );
 
-  if (!selectedHostel) return;
+  if (!selectedHostel) return
 
-  const backendId = selectedHostel.hostelId;
+  const deletedId = selectedHostel.hostelId
 
   try {
-    const res = await deletePG(backendId);
+    const res = await deletePG(deletedId)
 
-    if (res?.status === 200) {
-      const updated = hostelList.filter(
-        (h) => (h.hostelId ?? h.id) !== visiblePopup
-      );
-
-      console.log("updated", updated);
-
-      // ⭐ 1) Update the UI list
-      updateHostelList(updated);
-
-      // ⭐ 2) Automatically move next hostel as main hostel
-      if (updated.length > 0) {
-        setActiveHostelId(updated[0].hostelId ?? updated[0].id);
-      } else {
-        setActiveHostelId(null); // no hostels left
-      }
-
-      console.log("PG Deleted Successfully!");
-    } else {
-      console.log("Delete failed:", res);
+    if (res?.status === 400) {
+      const message = res?.data || "This hostel cannot be deleted because rooms or beds already exist.";
+      console.log("response", res?.data)
+   
+      alert(message)
+      return;
     }
+ 
+    if (res?.status !== 200) {
+      alert("Unable to delete PG. Please try again.");
+      return
+    }
+
+    const updated = hostelList.filter(
+      (h) => h.hostelId !== deletedId
+    );
+
+    updateHostelList(updated)
+  
+    if (activeHostelId === deletedId) {
+      if (updated.length > 0) {
+        setActiveHostelId(updated[0].hostelId);
+      } else {
+        setActiveHostelId(null);
+      }
+    }
+
+    console.log("PG Deleted Successfully!");
+
   } catch (err) {
     console.log("DELETE ERROR:", err);
+    alert("Something went wrong while deleting PG.");
+  } finally {
+    setDeletePG(false);
+    setVisiblePopup(null);
   }
-
-  setDeletePG(false);
 };
+
 
 
 

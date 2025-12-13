@@ -16,6 +16,9 @@ import { PGContext } from "../../../Context/PGContext";
 import { LoginContexts } from "../../../Context/LoginContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { getHostels } from "../../../Action/HostelAction";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+
 import AddImageIcon from "../../../Assets/Images/blue_circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyProfileImage from "../../../Assets/Images/empty_pgprofile.png";
@@ -27,11 +30,12 @@ export default function AddPG({ navigation, route }) {
   const isEdit = route?.params?.mode === "edit";
   const editData = route?.params?.data || null;
 
+
+
   const { addPG, editPG } = useContext(PGContext);
   const { hostelList , updateHostelList , setActiveHostelId , activeHostelId  } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
-  // Utility to convert image into file object for FormData
   const prepareImage = (img) => {
     if (!img?.uri) return null;
     return {
@@ -48,9 +52,7 @@ export default function AddPG({ navigation, route }) {
 };
 
 
-  // ---------------------------
-  // FORM STATES
-  // ---------------------------
+ 
   const [photo, setPhoto] = useState(
     editData?.mainImage ? { uri: editData.mainImage } : null
   );
@@ -69,6 +71,11 @@ export default function AddPG({ navigation, route }) {
   const [pincode, setPincode] = useState(editData?.pincode?.toString() || "");
   const [city, setCity] = useState(editData?.city || "");
   const [state, setState] = useState(editData?.state || "Select State");
+  const [topWarning, setTopWarning] = useState("");
+
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
   const stateList = [
     "Select State",
@@ -86,9 +93,7 @@ export default function AddPG({ navigation, route }) {
   const [errors, setErrors] = useState({});
 
 
-  // ---------------------------
-  // Android Back Button Override
-  // ---------------------------
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
       navigation.goBack();
@@ -101,9 +106,7 @@ export default function AddPG({ navigation, route }) {
     setStateOpen(false);
   };
 
-  // ---------------------------
-  // Image Picker
-  // ---------------------------
+
   const pickImage = async (setImage) => {
     const res = await launchImageLibrary({ mediaType: "photo", quality: 0.7 });
     if (res?.assets?.length) setImage(res.assets[0]);
@@ -116,29 +119,72 @@ export default function AddPG({ navigation, route }) {
 
   const [photoModal, setPhotoModal] = useState(false);
 
-  // ---------------------------
-  // Handle SUBMIT
-  // ---------------------------
+
 
   console.log("hostelid", editData?.hostelId);
+
+
+  const hasChanges = () => {
+  if (!isEdit || !editData) return true;
+
+  return !(
+    hostelName === (editData?.name || "") &&
+    mobile === (editData?.mobile || "") &&
+    email === (editData?.emailId || "") &&
+    houseNo === (editData?.houseNo || "") &&
+    street === (editData?.street || "") &&
+    landmark === (editData?.landmark || "") &&
+    city === (editData?.city || "") &&
+    String(pincode) === String(editData?.pincode || "") &&
+    state === (editData?.state || "Select State") &&
+    !photo &&
+    !img1 &&
+    !img2 &&
+    !img3 &&
+    !img4
+  );
+};
+
   
-const handleSubmit = async () => {
-  let errors = {};
+     const handleSubmit = async () => {
+          let errors = {};
 
-  if (!hostelName.trim()) errors.hostelName = "Please Enter PG Name";
-  if (!mobile.trim()) errors.mobile = "Please Enter Mobile Number";
-  if (!pincode.trim()) errors.pincode = "Please Enter Pincode";
-  if (!city.trim()) errors.city = "Please Enter City";
-  if (state === "Select State") errors.state = "Please Select State";
+if (!hostelName.trim())
+  errors.hostelName = "Please Enter PG Name";
 
-  if (Object.keys(errors).length > 0) {
-    setErrors(errors);
-    return;
-  }
+if (!mobile.trim()) {
+  errors.mobile = "Please Enter Mobile Number";
+} else if (mobile.length !== 10) {
+  errors.mobile = "Mobile number must be 10 digits";
+}
 
-  setErrors({});
 
-  // JSON payload same as web admin
+if (email && !emailRegex.test(email)) {
+  errors.email = "Please Enter Valid Email ID";
+}
+
+
+if (!pincode.trim()) {
+  errors.pincode = "Please Enter Pincode";
+} else if (pincode.length !== 6) {
+  errors.pincode = "Pincode must be 6 digits";
+}
+
+if (!city.trim())
+  errors.city = "Please Enter City";
+
+// 🏳 State
+if (state === "Select State")
+  errors.state = "Please Select State";
+
+if (Object.keys(errors).length > 0) {
+  setErrors(errors);
+  return;
+}
+
+setErrors({});
+
+
   const payload = {
     hostelName,
     mobile,
@@ -151,7 +197,7 @@ const handleSubmit = async () => {
     state,
   };
 
-  // Prepare File objects
+ 
   const formatFile = (img) =>
     img?.uri
       ? {
@@ -176,6 +222,12 @@ const handleSubmit = async () => {
   console.log("FINAL PG PAYLOAD ===>", finalPayload);
 
   if (isEdit) {
+
+    if (!hasChanges()) {
+    setTopWarning("No changes detected");
+    return;
+  }
+
     const res = await editPG(finalPayload);
     if (res?.status === 200 || res?.status === 201) {
         const fresh = await getHostels(login.getToken);
@@ -190,25 +242,33 @@ const handleSubmit = async () => {
     return;
   }
 
-  const res = await addPG(finalPayload);
-  if (res?.status === 201) {
-    const fresh = await getHostels(login.getToken);
-    console.log("updateddata", fresh);
-     const reordered = reorderHostels(fresh.data, activeHostelId);
-     updateHostelList(reordered);
-    alert("PG Added Successfully");
-    navigation.goBack();
-  } else {
-    alert("Add PG Failed");
+const res = await addPG(finalPayload)
+
+if (res?.status === 201) {
+  const fresh = await getHostels(login.getToken)
+  const data = fresh.data
+
+  if (!hostelList || hostelList.length === 0) {
+    const newHostelId = data[0].hostelId
+    setActiveHostelId(newHostelId) 
+    updateHostelList(data)
   }
+
+  else {
+    const reordered = reorderHostels(data, activeHostelId)
+    updateHostelList(reordered)
+  }
+
+  navigation.goBack()
+}
+
+
 };
 
 
 
 
-  // ---------------------------
-  // RENDER UI
-  // ---------------------------
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.fixedHeader}>
@@ -224,7 +284,7 @@ const handleSubmit = async () => {
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 60 }}>
           <View style={styles.container}>
 
-            {/* PROFILE PHOTO */}
+      
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <TouchableOpacity style={styles.profileBox} onPress={() => setPhotoModal(true)}>
                 {photo?.uri ? (
@@ -247,43 +307,154 @@ const handleSubmit = async () => {
               </View>
             </View>
 
-            {/* IMAGE PICKER MODAL */}
-            <Modal visible={photoModal} transparent animationType="fade">
-              <TouchableOpacity style={styles.modalOverlay} onPress={() => setPhotoModal(false)} />
-              <View style={styles.modalBox}>
-                <TouchableOpacity style={styles.modalBtn} onPress={() => { setPhotoModal(false); pickCamera(setPhoto); }}>
-                  <Text style={styles.modalText}>Take Photo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.modalBtn} onPress={() => { setPhotoModal(false); pickImage(setPhoto); }}>
-                  <Text style={styles.modalText}>Choose from Gallery</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.modalBtn, { backgroundColor: "#eee" }]} onPress={() => setPhotoModal(false)}>
-                  <Text style={[styles.modalText, { color: "#111" }]}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            </Modal>
+         
+           <Modal
+  visible={photoModal}
+  transparent
+  animationType="slide"  
+  onRequestClose={() => setPhotoModal(false)}
+>
+  <TouchableOpacity
+    style={styles.bottomOverlay}
+    activeOpacity={1}
+    onPress={() => setPhotoModal(false)}
+  />
 
-            {/* INPUT FIELDS */}
-            <InputField label="First Name *" value={hostelName} onChangeText={setHostelName} placeholder="Enter First name" />
-            <InputField label="Mobile Number *" value={mobile} onChangeText={setMobile} placeholder="98765 43210" keyboardType="phone-pad" />
-            <InputField label="Email ID" value={email} onChangeText={setEmail} placeholder="Enter Mail id" />
+  <View style={styles.bottomSheet}>
+    <TouchableOpacity
+      style={styles.sheetBtn}
+      onPress={() => {
+        setPhotoModal(false);
+        pickCamera(setPhoto);
+        setTopWarning(""); 
+      }}
+    >
+      <Text style={styles.sheetText}>Take Photo</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.sheetBtn}
+      onPress={() => {
+        setPhotoModal(false);
+        pickImage(setPhoto);
+        setTopWarning("");
+      }}
+    >
+      <Text style={styles.sheetText}>Choose from Gallery</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={[styles.sheetBtn, styles.cancelBtn]}
+      onPress={() => setPhotoModal(false)}
+    >
+      <Text style={styles.cancelText}>Cancel</Text>
+    </TouchableOpacity>
+  </View>
+</Modal>
+
+
+         
+<InputField
+  label="Hostel Name *"
+  value={hostelName}
+  onChangeText={(text) => {
+    setHostelName(text);
+    setTopWarning("");             
+    setErrors({ ...errors, hostelName: "" }); 
+  }}
+  placeholder="Enter Hostel Name"
+/>
+
+        
+        {errors.hostelName && (
+                                    <ErrorMessage message={errors.hostelName} type="error" />
+                                )}
+<InputField
+  label="Mobile Number *"
+  value={mobile}
+  keyboardType="numeric"
+  onChangeText={(t) => {
+    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+    setMobile(cleaned);
+    setErrors({ ...errors, mobile: "" });
+    setTopWarning("");
+  }}
+  placeholder="Enter Mobile Number"
+/>
+
+   {errors.mobile && (
+                                    <ErrorMessage message={errors.mobile} type="error" />
+                                )}
+
+ <InputField
+  label="Email ID"
+  value={email}
+  onChangeText={(t) => {
+    setEmail(t);
+    setErrors({ ...errors, email: "" });
+    setTopWarning("");
+  }}
+  placeholder="Enter Email ID"
+/>
+
+
+ {errors.email && (
+                                    <ErrorMessage message={errors.email} type="error" />
+                                )}
+
             <InputField label="Flat / House No / Apartment" value={houseNo} onChangeText={setHouseNo} placeholder="Enter House No" />
             <InputField label="Area / Street" value={street} onChangeText={setStreet} placeholder="Enter Street" />
             <InputField label="Landmark" value={landmark} onChangeText={setLandmark} placeholder="Near SBI" />
-            <InputField label="Pincode *" value={pincode} onChangeText={setPincode} placeholder="659 741" keyboardType="numeric" />
-            <InputField label="Town/City *" value={city} onChangeText={setCity} placeholder="Enter City" />
+<InputField
+  label="Pincode *"
+  value={pincode}
+  keyboardType="numeric"
+  onChangeText={(t) => {
+    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 6);
+    setTopWarning("");
+    setPincode(cleaned);
+    setErrors({ ...errors, pincode: "" });
+  }}
+  placeholder="Enter Pincode"
+/>
 
-            {/* STATE DROPDOWN */}
-            {renderSelect(
-              "State *",
-              state,
-              stateOpen,
-              setStateOpen,
-              stateList,
-              setState
-            )}
 
-            {/* ADDITIONAL IMAGES */}
+
+{errors.pincode && (
+                                    <ErrorMessage message={errors.pincode} type="error" />
+                                )}
+
+   <InputField
+  label="Town/City *"
+  value={city}
+  onChangeText={(text) => {
+    setCity(text);
+    setTopWarning("");             
+    setErrors({ ...errors, city: "" });
+  }}
+  placeholder="Enter City"
+/>
+
+
+               {errors.city && (
+                                    <ErrorMessage message={errors.city} type="error" />
+                                )}
+        
+{renderSelect(
+  "State *",
+  state,
+  stateOpen,
+  setStateOpen,
+  stateList,
+  (value) => {
+    setState(value);
+    setTopWarning("");
+    setErrors({ ...errors, state: "" }); 
+  },
+  errors.state 
+)}
+
+
             <View style={{ flexDirection: "row", marginTop: 12 }}>
               {renderImageBox(img1, setImg1)}
               {renderImageBox(img2, setImg2)}
@@ -291,7 +462,15 @@ const handleSubmit = async () => {
               {renderImageBox(img4, setImg4)}
             </View>
 
-            {/* SUBMIT BUTTON */}
+            {topWarning !== "" && (
+  <ErrorMessage
+    message={topWarning}
+    type="error"
+  />
+)}
+
+
+         
             <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
               <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
             </TouchableOpacity>
@@ -303,40 +482,71 @@ const handleSubmit = async () => {
   );
 }
 
-/* ====================== DROPDOWN SELECT FUNCTION ===================== */
 
-function renderSelect(label, selected, open, setOpen, list, onSelect) {
+function renderSelect(
+  label,
+  selected,
+  open,
+  setOpen,
+  list,
+  onSelect,
+  error
+) {
   return (
     <>
+     
       <View style={{ flexDirection: "row", marginBottom: 5 }}>
         <Text style={styles.label}>{label.replace("*", "")}</Text>
         {label.includes("*") && <Text style={{ color: "red" }}>*</Text>}
       </View>
 
-      <View style={{ position: "relative", marginBottom: 12 }}>
+      <View style={{ position: "relative", marginBottom: 6 }}>
         <TouchableOpacity
           style={styles.select}
           onPress={() => setOpen(!open)}
+          activeOpacity={0.9}
         >
-          <Text style={styles.selectText}>{selected}</Text>
+          <Text
+            style={[
+              styles.selectText,
+              selected === "Select State" && { color: "#A3A3A3" }
+            ]}
+          >
+            {selected}
+          </Text>
           <Text style={styles.caret}>⌄</Text>
         </TouchableOpacity>
 
         {open && (
           <View style={styles.dropdownMenu}>
-            <ScrollView style={{ maxHeight: 250 }}>
+            <ScrollView
+              style={{ maxHeight: 160 }}         
+              nestedScrollEnabled={true}          
+              keyboardShouldPersistTaps="handled" 
+            >
               {list.map((v, i) => {
                 const isSelected = selected === v;
                 return (
                   <TouchableOpacity
                     key={i}
-                    style={[styles.option, isSelected && { backgroundColor: "#E3EEFF" }]}
+                    style={[
+                      styles.option,
+                      isSelected && { backgroundColor: "#E3EEFF" }
+                    ]}
                     onPress={() => {
                       onSelect(v);
                       setOpen(false);
                     }}
                   >
-                    <Text style={[styles.optionText, isSelected && { color: "#2D6CDF", fontWeight: "700" }]}>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        isSelected && {
+                          color: "#2D6CDF",
+                          fontWeight: "700",
+                        },
+                      ]}
+                    >
                       {v}
                     </Text>
                   </TouchableOpacity>
@@ -346,11 +556,13 @@ function renderSelect(label, selected, open, setOpen, list, onSelect) {
           </View>
         )}
       </View>
+
+      {error && <ErrorMessage message={error} type="error" />}
     </>
   );
 }
 
-/* ====================== IMAGE BOX ===================== */
+
 
 function renderImageBox(image, setImage) {
   return (
@@ -383,12 +595,11 @@ function renderImageBox(image, setImage) {
   );
 }
 
-/* ====================== INPUT FIELD ===================== */
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType }) {
   return (
-    <View style={{ marginBottom: 12 }}>
-      <View style={{ flexDirection: "row", marginBottom: 6 }}>
+    <View style={{ marginBottom: 3 , marginTop:1 }}>
+      <View style={{ flexDirection: "row", marginBottom: 2 }}>
         <Text style={styles.label}>{label.replace("*", "")}</Text>
         {label.includes("*") && <Text style={{ color: "red" }}>*</Text>}
       </View>
@@ -404,7 +615,6 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType }) {
   );
 }
 
-/* ====================== STYLES ===================== */
 
 const styles = StyleSheet.create({
   container: {
@@ -525,5 +735,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  errText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 4,
+    marginLeft: 4,
+  },
+
+  bottomOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+},
+
+bottomSheet: {
+  backgroundColor: "#fff",
+  paddingHorizontal: 20,
+  paddingTop: 12,
+  paddingBottom:12,
+  paddingBottom: 0,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+},
+
+sheetBtn: {
+  paddingVertical: 14,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+sheetText: {
+  fontSize: 16,
+  textAlign: "center",
+  color: "#000",
+  fontWeight: "500",
+},
+
+cancelBtn: {
+  borderBottomWidth: 0,
+  marginTop: 8,
+  backgroundColor: "#f2f2f2",
+  borderRadius: 12,
+},
+
+cancelText: {
+  fontSize: 16,
+  textAlign: "center",
+  color: "#000",
+  fontWeight: "600",
+},
+
 });
 
