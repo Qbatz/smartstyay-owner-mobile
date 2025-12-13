@@ -80,10 +80,9 @@ const fetchComplaintTypes = async (hostelId) => {
     return { success: false, data: [] };
 
   } finally {
-    setTimeout(() => {
-        setLoading(false);  
-    }, 1500);
-    
+       setTimeout(() => {
+             setLoading(false);
+        }, 1000);    
   }
 };
 

@@ -93,7 +93,7 @@ import CommonContext from './src/Context/CommonContext'
 import  PGContext  from './src/Context/PGContext';
 import ComplaintProvider from "./src/Context/ComplaintContext";
 import { SettingProvider } from "./src/Context/SettingContext";
-
+import ExpensesProvider from "./src/Context/ExpensesContext"
 
 
 
@@ -110,9 +110,11 @@ function App() {
             <PGContext>
                <ComplaintProvider>   
               <SettingProvider>
+                <ExpensesProvider>
             <AppContent />
+            </ExpensesProvider>
             </SettingProvider>
-    </ComplaintProvider >
+         </ComplaintProvider >
             </PGContext>
             </GeneralProvider>
         </CommonContext>
