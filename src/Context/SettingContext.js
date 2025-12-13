@@ -122,11 +122,120 @@ const addBillingRecurring = async (payload) => {
     return { success: false, data: err.response?.data };
   }
 };
+const getRoleByHostel = async (hostelId) => {
+  try {
+    const token = await retriveData("token");
 
+    const res = await AxiosConfig.get(
+      `/v2/role/hostel/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  }
+};
+
+const getRoleModules = async () => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      "/v2/role/modules",
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return { success: false, data: err.response?.data || err.message };
+  }
+};
+const addRole = async (payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      "/v2/role",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  }
+};
+
+const updateRole = async (id, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.put(
+      `/v2/role/${id}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    return { success: false, data: err.response?.data || err.message };
+  }
+};
+// SettingContext.js
+
+const deleteRole = async (roleId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.delete(
+      `/v2/role/${roleId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  }
+};
 
 
   return (
-    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring}}>
+    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
+    getRoleModules,addRole,updateRole,deleteRole}}>
       {children}
     </ElectricityContext.Provider>
   );
