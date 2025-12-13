@@ -9,7 +9,7 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  BackHandler,
+  BackHandler,Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -35,6 +35,7 @@ export default function ComplaintDetails({
 }) {
   const navigation = useNavigation();
   const [deleteshow, setDeleteShow] = useState(false);
+   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -69,6 +70,22 @@ export default function ComplaintDetails({
       useNativeDriver: true,
     }).start(() => onClose());
   };
+   useEffect(() => {
+      if (!visible) return;
+  
+      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        setKeyboardHeight(e.endCoordinates.height - 60);
+      });
+  
+      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        setKeyboardHeight(0);
+      });
+  
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, [visible]);
 
   // open when visible changes
   useEffect(() => {
@@ -103,7 +120,8 @@ export default function ComplaintDetails({
         {...panResponder.panHandlers}
         style={[
           styles.sheet,
-          { transform: [{ translateY }] },
+            
+          {marginBottom: keyboardHeight, transform: [{ translateY }] },
         ]}
       >
         {/* drag handle */}
