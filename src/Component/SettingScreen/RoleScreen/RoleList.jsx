@@ -1,4 +1,4 @@
-import React, { useState,useCallback } from "react";
+import React, { useState,useCallback,useEffect,useContext } from "react";
 import {
   View,
   Text,
@@ -16,12 +16,38 @@ import Dots from "../../../Assets/Images/3dots.png";
 import editIcon from "../../../Assets/Images/editIcon.png";
 import Trash from "../../../Assets/Images/trash.png";
 import TenantAddBlue from "../../../Assets/Images/TenantAddBlue.png";
+import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 export default function RolesScreen({ navigation }) {
+   const {activeHostelId } = useContext(CommonContexts);
+    const {getRoleByHostel,deleteRole} = UseSetting();
       const [openMenuId, setOpenMenuId] = useState(null);
  const [showAddSheet, setShowAddSheet] = useState(false);
  const [editData, setEditData] = useState(null);
     const [deletePopup, setDeletePopup] = useState(false)
+  const [roleList,setRolesList] = useState([])
+ 
+const [selectedRoleId, setSelectedRoleId] = useState(null);
+
+
+    useEffect(() => {
+  if (!activeHostelId) return;
+
+  loadRoles();
+}, [activeHostelId]);
+
+const loadRoles = async () => {
+  const res = await getRoleByHostel(activeHostelId);
+
+  if (res.success) {
+    console.log("Roles →", res.data);
+    setRolesList(res.data);
+  } else {
+    console.log("Role API error →", res.data);
+  }
+};
+
 
     useFocusEffect(
            useCallback(() => {
@@ -45,31 +71,28 @@ export default function RolesScreen({ navigation }) {
            }, [ navigation])
          );
 
-  const roles = [
-    {
-      name: "Co Admin",
-      permissionCount: 18,
-      desc: "Manage all except Banking & Finance",
-      id:1
-    },
-    {
-      name: "Warden",
-      permissionCount: 4,
-      desc: "Read Access for tenants and My PG",
-      id:2
-    },
-    {
-      name: "Receptionist",
-      permissionCount: 12,
-      desc: "Manage all except Banking & Finance",
-      id:3
-    },
-  ];
-const handleDelete = () => {
+ 
+const handleDelete = (roleId) => {
+  setSelectedRoleId(roleId);
     setDeletePopup(true)
     setOpenMenuId(null)
   }
- 
+ const confirmDeleteRole = async () => {
+  if (!selectedRoleId) return;
+
+  const res = await deleteRole(selectedRoleId);
+
+  if (res.success) {
+    setDeletePopup(false);
+    setSelectedRoleId(null);
+
+    // 🔁 refresh role list
+    loadRoles();
+  } else {
+    alert(res.data?.message || "Failed to delete role");
+  }
+};
+
 
   return (
     <>
@@ -88,7 +111,7 @@ const handleDelete = () => {
 
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
- {roles.map((item, i) => (
+ {roleList.map((item, i) => (
   <View key={item.id} style={{ position: "relative" }}>
 
 
@@ -102,7 +125,7 @@ const handleDelete = () => {
           <Text style={styles.roleName}>{item.name}</Text>
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.menuBtn}
           onPress={() => setOpenMenuId(openMenuId === i ? null : i)}
         >
@@ -110,7 +133,15 @@ const handleDelete = () => {
             source={Dots}
             style={styles.dotsIcon}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        {![3, 4].includes(item.id) && (
+  <TouchableOpacity
+    style={styles.menuBtn}
+    onPress={() => setOpenMenuId(openMenuId === i ? null : i)}
+  >
+    <Image source={Dots} style={styles.dotsIcon} />
+  </TouchableOpacity>
+)}
       </View>
 
       <Text style={styles.permissionCount}>
@@ -142,7 +173,7 @@ const handleDelete = () => {
 
           <View style={styles.divider} />
 
-          <TouchableOpacity style={styles.optionRow} onPress={handleDelete}>
+          <TouchableOpacity style={styles.optionRow} onPress={() => handleDelete(item.id)}>
             <Image
               source={Trash}
               style={styles.optionIcon}
@@ -197,10 +228,7 @@ const handleDelete = () => {
                       {/* Delete Button */}
                       <TouchableOpacity
                         style={styles.deleteBtn}
-                        onPress={() => {
-                          console.log("DELETE CONFIRMED");
-                          setDeletePopup(false);
-                        }}
+                         onPress={confirmDeleteRole}
                       >
                         <Text style={styles.deleteBtnText}>Delete</Text>
                       </TouchableOpacity>
@@ -210,7 +238,7 @@ const handleDelete = () => {
                   </View>
                 </View>
               </Modal>
-    {showAddSheet && <AddCategorySheet onClose={() => setShowAddSheet(false)} editData={editData} navigation={navigation}/>}
+    {showAddSheet && <AddCategorySheet onClose={() => setShowAddSheet(false)} editData={editData} navigation={navigation}  onSuccess={loadRoles}/>}
     </>
   );
 }

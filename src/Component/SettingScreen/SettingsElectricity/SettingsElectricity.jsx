@@ -268,7 +268,7 @@ useEffect(() => {
   // };
  const handleRoomBased = async (value) => {
   
-  // Update UI instantly
+ 
   setEbUnitList((prev) => ({
     ...prev,
     isRoomBased: value,
