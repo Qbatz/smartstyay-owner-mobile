@@ -18,7 +18,8 @@ import Trash from "../../../Assets/Images/trash.png";
 import TenantAddBlue from "../../../Assets/Images/TenantAddBlue.png";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
-import Loader from "../../../Component/Loader/Loader"
+import Loader from "../../../Component/Loader/Loader";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 export default function RolesScreen({ navigation }) {
    const {activeHostelId } = useContext(CommonContexts);
@@ -118,6 +119,12 @@ const getPermissionCount = (role) => {
       </View>
 
   { loading && <Loader />}
+    { !loading && roleList.length === 0 &&
+      <View style={styles.emptyContainer}>
+        <Image source={EmptyState} style={styles.emptyImage} />
+        <Text style={styles.emptyText}>No Data Found</Text>
+      </View>
+     }
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
  {roleList.map((item, i) => (
   <View key={item.id} style={{ position: "relative" }}>
@@ -458,4 +465,23 @@ deleteOverlay: {
     fontSize: 16,
     fontWeight: '700',
   },
+  emptyContainer: {
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 150,
+},
+
+emptyImage: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+  opacity: 0.8
+},
+
+emptyText: {
+  marginTop: 14,
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#777",
+},
 });
