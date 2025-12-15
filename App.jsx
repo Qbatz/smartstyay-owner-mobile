@@ -94,7 +94,8 @@ import  PGContext  from './src/Context/PGContext';
 import ComplaintProvider from "./src/Context/ComplaintContext";
 import { SettingProvider } from "./src/Context/SettingContext";
 import ExpensesProvider from "./src/Context/ExpensesContext"
-import AmenityProvider from "./src/Context/AmenityContext"
+import AmenityProvider from "./src/Context/AmenityContext";
+import { CustomerProvider } from "./src/Context/CustomerContext";
 
 
 
@@ -112,7 +113,9 @@ function App() {
               <SettingProvider>
                 <ExpensesProvider>
                   <AmenityProvider>
+                    <CustomerProvider>
             <AppContent />
+            </CustomerProvider>
             </AmenityProvider>
             </ExpensesProvider>
             </SettingProvider>
