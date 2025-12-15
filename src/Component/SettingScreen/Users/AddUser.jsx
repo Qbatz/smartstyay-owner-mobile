@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState,useContext } from "react";
 import {
   View,
   Text,
@@ -13,17 +13,245 @@ import {
 } from "react-native";
 import EyeOpen from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
-
-export default function AddUserBottomSheet({ visible, onClose,editData }) {
+import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+export default function AddUserBottomSheet({ visible, onClose,editData,onSuccess }) {
+    const {activeHostelId } = useContext(CommonContexts);
+      const {getRoleByHostel,addUser,loading,updateUser} = UseSetting();
   const translateY = useRef(new Animated.Value(500)).current;
   const [roleOpen, setRoleOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("");
-  const roles = ["Accounts Manager", "Office Admin", "Hostel Manager", "Staff"];
- 
+ const [selectedRole, setSelectedRole] = useState(null);
+ const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [mobile, setMobile] = useState("");
+const [password, setPassword] = useState("");
+const [roles,setRoles] = useState([])
+ const [nameError,setNameError] =useState("")
+  const [mobilError,setMobileError] =useState("")
+  const [passwordError,setPasswordError] = useState("")
+    const [roleError,setRoleError] = useState("")
+ const [emailError,setEmailError] = useState("")
 
   const [description, setDescription] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+    useEffect(() => {
+  if (!activeHostelId) return;
+
+  loadRoles();
+}, [activeHostelId]);
+
+const loadRoles = async () => {
+  const res = await getRoleByHostel(activeHostelId);
+
+  if (res.success) {
+    console.log("Roles →", res.data);
+    setRoles(res.data);
+  } else {
+    console.log("Role API error →", res.data);
+  }
+};
+useEffect(() => {
+  if (!visible) return;
+
+  if (editData) {
+    setName(editData.firstName || "");
+    setEmail(editData.mailId || "");
+    setMobile(editData.mobileNo || "");
+    setDescription(editData.description || "");
+
+    setSelectedRole({
+      id: editData.roleId,
+      name: editData.roleName,
+    });
+  } else {
+    setName("");
+    setEmail("");
+    setMobile("");
+    setPassword("");
+    setDescription("");
+    setSelectedRole(null);
+  }
+}, [editData, visible]);
+
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const mobileRegex = /^[6-9]\d{9}$/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+const handleAddUser = async () => {
+  let valid = true;
+
+  setNameError("");
+  setEmailError("");
+  setMobileError("");
+  setPasswordError("");
+  setRoleError("");
+
+  if (!name.trim()) {
+    setNameError("Name is required");
+    valid = false;
+  }
+
+  if (!email.trim()) {
+    setEmailError("Email is required");
+    valid = false;
+  } else if (!emailRegex.test(email)) {
+    setEmailError("Enter valid email");
+    valid = false;
+  }
+
+  if (!mobile.trim()) {
+    setMobileError("Mobile number is required");
+    valid = false;
+  } else if (!mobileRegex.test(mobile)) {
+    setMobileError("Enter valid mobile number");
+    valid = false;
+  }
+
+  if (!selectedRole) {
+    setRoleError("Role is required");
+    valid = false;
+  }
+
+  // 🔐 Password ONLY for ADD
+  if (!editData) {
+    if (!password.trim()) {
+      setPasswordError("Password is required");
+      valid = false;
+    } else if (!passwordRegex.test(password)) {
+      setPasswordError(
+        "Password must have uppercase, number & special character"
+      );
+      valid = false;
+    }
+  }
+
+  if (!valid) return;
+
+  // 🟢 ADD USER
+  if (!editData) {
+    const payload = {
+      name: name.trim(),
+      emailId: email.trim(),
+      mobile: String(mobile),
+      password,
+      roleId: selectedRole.id,
+      description: description.trim(),
+    };
+
+    const res = await addUser(activeHostelId, payload);
+
+    if (res.success) {
+      alert("User added successfully");
+      onClose();
+      onSuccess && onSuccess();
+    } else {
+      setEmailError(res.data?.emailStatus);
+      setMobileError(res.data?.mobileStatus);
+    }
+    return;
+  }
+
+  // 🟡 EDIT USER
+  const payload = {
+    name: name.trim(),
+    emailId: email.trim(),
+    mobile: String(mobile),
+    role: selectedRole.id,
+    description: description.trim(),
+  };
+
+  const res = await updateUser(
+    activeHostelId,
+    editData.userId, 
+    payload
+  );
+
+  if (res.success) {
+    alert("User updated successfully");
+    onClose();
+    onSuccess && onSuccess();
+  } else {
+    alert(res.data?.message || "Update failed");
+  }
+};
+
+
+
+// const handleAddUser = async () => {
+//   let valid = true;
+
+//   // reset errors
+//   setNameError("");
+//   setEmailError("");
+//   setMobileError("");
+//   setPasswordError("");
+//   setRoleError("");
+
+//   if (!name.trim()) {
+//     setNameError("Name is required");
+//     valid = false;
+//   }
+
+//   if (!email.trim()) {
+//     setEmailError("Email is required");
+//     valid = false;
+//   } else if (!emailRegex.test(email)) {
+//     setEmailError("Enter valid email");
+//     valid = false;
+//   }
+
+//   if (!mobile.trim()) {
+//     setMobileError("Mobile number is required");
+//     valid = false;
+//   } else if (!mobileRegex.test(mobile)) {
+//     setMobileError("Enter valid 10 digit mobile");
+//     valid = false;
+//   }
+
+//   if (!editData) {
+//     if (!password.trim()) {
+//       setPasswordError("Password is required");
+//       valid = false;
+//     } else if (!passwordRegex.test(password)) {
+//       setPasswordError(
+//         "Password must contain uppercase, number & special character"
+//       );
+//       valid = false;
+//     }
+//   }
+
+//   if (!selectedRole) {
+//     setRoleError("Role is required");
+//     valid = false;
+//   }
+
+//   if (!valid) return;
+
+//   const payload = {
+//     name: name.trim(),
+//     emailId: email.trim(),
+//     mobile: String(mobile),
+//     password,
+//     roleId: selectedRole.id,
+//     description: description.trim(),
+//   };
+
+//   const res = await addUser(activeHostelId, payload);
+
+//   if (res.success) {
+//     alert("User added successfully");
+//     onClose();
+//       onSuccess && onSuccess();
+//   } else {
+//     setEmailError(res.data?.emailStatus)
+//     setMobileError(res.data?.mobileStatus)
+//   }
+// };
+
 
 
 useEffect(() => {
@@ -126,15 +354,32 @@ useEffect(() => {
 
        
           <Text style={styles.label}>Name *</Text>
-          <TextInput style={styles.input} placeholder="Enter Name" />
-
+          <TextInput style={styles.input} placeholder="Enter Name" value={name} onChangeText={(text) => {
+  setName(text);
+  setNameError("");
+}}/>
+{nameError && (
+              <ErrorMessage message={nameError} type="error" />
+            )}
       
           <Text style={styles.label}>Email ID *</Text>
-          <TextInput style={styles.input} placeholder="Enter Email" />
-
+          <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={(text) => {
+  setEmail(text);
+  setEmailError("");
+}}/>
+{emailError && (
+              <ErrorMessage message={emailError} type="error" />
+            )}
       
           <Text style={styles.label}>Mobile Number *</Text>
-          <TextInput style={styles.input} placeholder="+91 98765 43210" />
+          <TextInput style={styles.input} placeholder="+91 98765 43210"  value={mobile} onChangeText={(text) => {
+  setMobile(text);
+  setMobileError("");
+}}
+/>
+          {mobilError && (
+              <ErrorMessage message={mobilError} type="error" />
+            )}
 {!editData && (
     <>
        
@@ -144,7 +389,14 @@ useEffect(() => {
   <TextInput
     style={styles.passwordInput}
     placeholder="Enter Password"
-    secureTextEntry={!showPassword}
+   value={password}
+ onChangeText={(text) => {
+  setPassword(text);
+  setPasswordError("");
+}}
+secureTextEntry={!showPassword}
+
+  
   />
 
   <TouchableOpacity
@@ -157,6 +409,9 @@ useEffect(() => {
     />
   </TouchableOpacity>
 </View>
+          {passwordError && (
+              <ErrorMessage message={passwordError} type="error" />
+            )}
 </>
 )}
 
@@ -167,9 +422,10 @@ useEffect(() => {
             style={styles.dropdownBox}
             onPress={() => setRoleOpen(!roleOpen)}
           >
-            <Text style={{ color: selectedRole ? "#000" : "#9CA3AF" }}>
-              {selectedRole || "Select a role"}
-            </Text>
+           <Text style={{ color: selectedRole ? "#000" : "#9CA3AF" }}>
+  {selectedRole?.name || "Select a role"}
+</Text>
+ 
 
             <Image
               source={require("../../../Assets/Images/direction-down.png")}
@@ -177,46 +433,34 @@ useEffect(() => {
             />
           </TouchableOpacity>
           {roleOpen && (
-                                      <View style={styles.dropdownMenu}>
-                                          <ScrollView style={{ maxHeight: 150 }}>
-                                              {roles.map((v, index) => (
-                                                  <TouchableOpacity
-                                                      key={index}
-                                                      style={styles.option}
-                                                      onPress={() => {
-                                                          setSelectedRole(v);
-                                                          setRoleOpen(false);
-                                                      }}
-                                                  >
-                                                      <Text style={styles.optionText}>{v}</Text>
-                                                  </TouchableOpacity>
-                                              ))}
-                                          </ScrollView>
-                                      </View>
-                                  )}
+  <View style={styles.dropdownMenu}>
+    <ScrollView style={{ maxHeight: 150 }}>
+      {roles.map((role) => (
+        <TouchableOpacity
+          key={role.id}
+          style={styles.option}
+          onPress={() => {
+            setSelectedRole(role);
+            setRoleOpen(false);
+            setRoleError("")
+          }}
+        >
+          <Text style={styles.optionText}>{role.name}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+)}
+{roleError && (
+              <ErrorMessage message={roleError} type="error" />
+            )}
 
-          {/* Role list */}
-          {/* {roleOpen && (
-            <View style={styles.dropdownList}>
-              <ScrollView nestedScrollEnabled style={{ maxHeight: 160 }}>
-                {roles.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      setSelectedRole(item);
-                      setRoleOpen(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownText}>{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )} */}
+         
+
+        
              
 
-          {/* Description */}
+       
           <Text style={styles.label}>Description *</Text>
           <TextInput
             style={styles.textarea}
@@ -232,7 +476,7 @@ useEffect(() => {
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.addBtn}>
+            <TouchableOpacity style={styles.addBtn} onPress={handleAddUser}>
               <Text style={styles.addText}>{editData ? "Edit" : "Add"}</Text>
             </TouchableOpacity>
           </View>

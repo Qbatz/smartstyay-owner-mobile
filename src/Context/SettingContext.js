@@ -259,11 +259,89 @@ const deleteRole = async (roleId) => {
     };
   }
 };
+const getUsersByHostel = async (hostelId) => {
+  try {
+    setLoading(true); 
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      `/v2/profile/users-list/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+const addUser = async (hostelId, payload) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/profile/add-user/${hostelId}`, // ✅ IMPORTANT
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    console.log("ADD USER ERROR →", err.response?.data);
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const updateUser = async (hostelId, userId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.put(
+      `/v2/profile/users/${hostelId}/${userId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  }
+};
 
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser}}>
       {children}
     </ElectricityContext.Provider>
   );

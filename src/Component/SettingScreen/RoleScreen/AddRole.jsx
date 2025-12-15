@@ -19,7 +19,7 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function AddCategorySheet({ onClose, editData, onSuccess }) {
   const translateY = useRef(new Animated.Value(600)).current;
-  const { getRoleModules, addRole, getRoleByHostel, updateRole } = UseSetting();
+  const { getRoleModules, addRole, updateRole } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
   const [initialRoleName, setInitialRoleName] = useState("");
   const [initialPermState, setInitialPermState] = useState([]);
