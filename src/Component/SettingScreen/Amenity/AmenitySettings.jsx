@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,11 @@ import {
   ScrollView,
   BackHandler,
 } from "react-native";
-
+import { CommonContexts } from "../../../Context/CommonContext";
+import { AmenityContext } from "../../../Context/AmenityContext";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import Loader from "../../../Component/Loader/Loader"
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyAmenity from "../../../Assets/Images/Empty_state.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -54,10 +58,31 @@ const sampleUsersInit = [
 ];
 
 export default function AmenitySettings({ navigation }) {
-  const [amenities, setAmenities] = useState([
-    { id: "1", name: "Ethernet", price: 500, active: true },
-    { id: "2", name: "WiFi Floor One", price: 300, active: false },
-  ]);
+
+  
+const { activeHostelId } = useContext(CommonContexts);
+
+  const {
+        amenities,
+        amenityDetail,
+        loading,
+        GetAllAmenities,
+        ParticularAmenityDetails,
+        addAmenity,
+        updateAmenity,
+        deleteAmenity,
+        assignAmenity,
+        unAssignAmenity,
+} = useContext(AmenityContext);
+
+console.log("amenity",amenities ,  amenityDetail , addAmenity);
+
+
+  
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+const [modalMessage, setModalMessage] = useState("");
+const [modalType, setModalType] = useState("success");
 
 
   const [showMenu, setShowMenu] = useState(false);
@@ -67,28 +92,27 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   const [showSheet, setShowSheet] = useState(false);
   const sheetY = useRef(new Animated.Value(700)).current;
-  const sheetPan = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 5,
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) sheetY.setValue(g.dy);
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > 120) closeSheet();
-        else
-          Animated.spring(sheetY, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-      },
-    })
-  ).current;
+ 
 
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [initialAmenityState, setInitialAmenityState] = useState(null);
+  const [noChangeError, setNoChangeError] = useState("");
+
   const [amenityName, setAmenityName] = useState("");
   const [amenityPriceText, setAmenityPriceText] = useState("");
   const [amenityToggle, setAmenityToggle] = useState(true);
+
+  const [amenityError, setAmenityError] = useState("");
+const [priceError, setPriceError] = useState("");
+
+
+  useEffect(() => {
+  if (activeHostelId) {
+    GetAllAmenities(activeHostelId);
+  }
+}, [activeHostelId]);
+
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -139,23 +163,59 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
                   return () => backHandler.remove();
                 }, [])
 
-  const openSheet = (edit = false, item = null) => {
-    sheetY.setValue(700);
-    setIsEdit(edit);
-    if (edit && item) {
-      setAmenityName(item.name);
-      setAmenityPriceText(String(item.price ?? ""));
-      setAmenityToggle(Boolean(item.active));
-      setEditingId(item.id);
-    } else {
-      setAmenityName("");
-      setAmenityPriceText("");
-      setAmenityToggle(true);
-      setEditingId(null);
-    }
-    setShowSheet(true);
-    Animated.timing(sheetY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
-  };
+                 const sheetPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) sheetY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) closeSheet();
+        else
+          Animated.spring(sheetY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+      },
+    })
+  ).current;
+
+const openSheet = (edit = false, item = null) => {
+  sheetY.setValue(700);
+  setIsEdit(edit);
+
+  if (edit && item) {
+    setAmenityName(item.name);
+    setAmenityPriceText(String(item.amount));
+    setAmenityToggle(item.proRate);
+    setEditingId(item.id);
+
+    // ✅ STORE INITIAL STATE
+    setInitialAmenityState({
+      name: item.name,
+      amount: Number(item.amount),
+      proRate: item.proRate,
+    });
+  } else {
+    setAmenityName("");
+    setAmenityPriceText("");
+    setAmenityToggle(true);
+    setEditingId(null);
+    setInitialAmenityState(null);
+  }
+
+  setAmenityError("");
+  setPriceError("");
+  setNoChangeError("");
+
+  setShowSheet(true);
+  Animated.timing(sheetY, {
+    toValue: 0,
+    duration: 220,
+    useNativeDriver: true,
+  }).start();
+};
+
 
   const closeSheet = () => {
     Animated.timing(sheetY, { toValue: 700, duration: 200, useNativeDriver: true }).start(() => {
@@ -165,20 +225,161 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
       setAmenityToggle(true);
       setIsEdit(false);
       setEditingId(null);
+      setAmenityError("")
+      setPriceError("")
+      setNoChangeError("");
     });
   };
 
-  const saveAmenity = () => {
-    const name = amenityName.trim();
-    const price = Number((amenityPriceText || "").replace(/[^0-9]/g, ""));
-    if (!name) return;
-    if (isEdit && editingId) {
-      setAmenities((prev) => prev.map((a) => (a.id === editingId ? { ...a, name, price, active: amenityToggle } : a)));
-    } else {
-      setAmenities((prev) => [...prev, { id: Date.now().toString(), name, price, active: amenityToggle }]);
+// const saveAmenity = async () => {
+//   let valid = true;
+
+//   const name = amenityName.trim();
+//   const amount = Number(amenityPriceText);
+
+//   // RESET ERRORS
+//   setAmenityError("");
+//   setPriceError("");
+//   setNoChangeError("");
+
+//   if (!name) {
+//     setAmenityError("Please Enter Amenity Name");
+//     valid = false;
+//   }
+
+//   if (!amenityPriceText) {
+//     setPriceError("Please Enter Price");
+//     valid = false;
+//   } else if (isNaN(amount)) {
+//     setPriceError("Price Must Be a Number");
+//     valid = false;
+//   } else if (amount <= 0) {
+//     setPriceError("Price Must Be Greater Than 0");
+//     valid = false;
+//   }
+
+//   if (isEdit && initialAmenityState) {
+//     const isChanged =
+//       initialAmenityState.name !== name ||
+//       initialAmenityState.amount !== amount ||
+//       initialAmenityState.proRate !== amenityToggle;
+
+//     if (!isChanged) {
+//       setNoChangeError("No Changes Detected");
+//       valid = false;
+//     }
+//   }
+
+//   if (!valid) return;
+
+//   if (isEdit && editingId) {
+//     await updateAmenity({
+//       hostelId: activeHostelId,
+//       amenityId: editingId,
+//       payload: {
+//         amenityName: name,
+//         amount: amount,
+//         proRate: amenityToggle,
+//       },
+//     });
+//   } else {
+//     await addAmenity({
+//       hostelId: activeHostelId,
+//       payload: {
+//         amenityName: name,
+//         amount: amount,
+//         proRate: amenityToggle,
+//       },
+//     });
+//   }
+
+//   closeSheet();
+// };
+
+
+const saveAmenity = async () => {
+  let valid = true;
+
+  const name = amenityName.trim();
+  const amount = Number(amenityPriceText);
+
+  setAmenityError("");
+  setPriceError("");
+  setNoChangeError("");
+
+  if (!name) {
+    setAmenityError("Please Enter Amenity Name");
+    valid = false;
+  }
+
+  if (!amenityPriceText) {
+    setPriceError("Please Enter Price");
+    valid = false;
+  } else if (isNaN(amount)) {
+    setPriceError("Price Must Be a Number");
+    valid = false;
+  } else if (amount <= 0) {
+    setPriceError("Price Must Be Greater Than 0");
+    valid = false;
+  }
+
+  if (isEdit && initialAmenityState) {
+    const isChanged =
+      initialAmenityState.name !== name ||
+      initialAmenityState.amount !== amount ||
+      initialAmenityState.proRate !== amenityToggle;
+
+    if (!isChanged) {
+      setNoChangeError("No Changes Detected");
+      valid = false;
     }
-    closeSheet();
-  };
+  }
+
+  if (!valid) return;
+
+  let res;
+
+  if (isEdit && editingId) {
+    res = await updateAmenity({
+      hostelId: activeHostelId,
+      amenityId: editingId,
+      payload: {
+        amenityName: name,
+        amount: amount,
+        proRate: amenityToggle,
+      },
+    });
+  } else {
+    res = await addAmenity({
+      hostelId: activeHostelId,
+      payload: {
+        amenityName: name,
+        amount: amount,
+        proRate: amenityToggle,
+      },
+    });
+  }
+
+  if (!res?.success) {
+    setModalType("warning");
+    setModalMessage(res?.message || "Something went wrong");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+  setModalType("success");
+  setModalMessage(res.message);
+  setShowSuccessModal(true);
+
+  setTimeout(() => setShowSuccessModal(false), 1500);
+
+  closeSheet();
+};
+
+
+
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -186,15 +387,64 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
-  const doDelete = () => {
-    setAmenities((prev) => prev.filter((a) => a.id !== deleteId));
-    setShowDeleteConfirm(false);
-    setDeleteId(null);
-  };
 
-  const toggleActive = (id) => {
-    setAmenities((prev) => prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a)));
-  };
+
+//  const doDelete = async () => {
+//   if (!deleteId) return;
+
+//   await deleteAmenity({
+//     hostelId: activeHostelId,
+//     amenityId: deleteId,
+//   });
+
+//   setShowDeleteConfirm(false);
+//   setDeleteId(null);
+// };
+
+const doDelete = async () => {
+  if (!deleteId) return;
+
+  const res = await deleteAmenity({
+    hostelId: activeHostelId,
+    amenityId: deleteId,
+  });
+
+  if (!res?.success) {
+    setModalType("warning");
+    setModalMessage(res?.message || "Unable to delete amenity");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+  setModalType("success");
+  setModalMessage(res.message);
+  setShowSuccessModal(true);
+
+  setTimeout(() => setShowSuccessModal(false), 1500);
+
+  setShowDeleteConfirm(false);
+  setDeleteId(null);
+};
+
+
+
+const toggleActive = async (item) => {
+  const newValue = !item.proRate;
+
+  await updateAmenity({
+    hostelId: activeHostelId,
+    amenityId: item.id,
+    payload: {
+      amenityName: item.name,
+      amount: item.amount,     
+      proRate: newValue,
+    },
+  });
+};
+
+
 
   const [showAssign, setShowAssign] = useState(false);
   const assignY = useRef(new Animated.Value(900)).current;
@@ -214,12 +464,45 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [sampleUsers, setSampleUsers] = useState(sampleUsersInit.map((u) => ({ ...u, selected: false })));
   const [currentAmenityId, setCurrentAmenityId] = useState(null);
 
-  const openAssign = (amenityId) => {
-    setCurrentAmenityId(amenityId);
-    assignY.setValue(900);
-    setShowAssign(true);
-    Animated.timing(assignY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
-  };
+const openAssign = async (amenityId) => {
+  setCurrentAmenityId(amenityId);
+
+  const res = await ParticularAmenityDetails({
+    hostelId: activeHostelId,
+    amenityId,
+  });
+
+  if (res?.success) {
+    const assigned = res.data.assigned.map((u) => ({
+      ...u,
+      assigned: true,
+      selected: false,
+      id: u.customerId,
+      name: u.customerName,
+      floor: "",
+      room: "",
+      bed: "",
+    }));
+
+    const unAssigned = res.data.unAssigned.map((u) => ({
+      ...u,
+      assigned: false,
+      selected: false,
+      id: u.customerId,
+      name: u.customerName,
+      floor: "",
+      room: "",
+      bed: "",
+    }));
+
+    setSampleUsers([...unAssigned, ...assigned]);
+  }
+
+  assignY.setValue(900);
+  setShowAssign(true);
+  Animated.timing(assignY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
+};
+
 
   const closeAssign = () => {
     Animated.timing(assignY, { toValue: 900, duration: 200, useNativeDriver: true }).start(() => {
@@ -233,27 +516,40 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     setSampleUsers((prev) => prev.map((u) => (u.id === id ? { ...u, selected: !u.selected } : u)));
   };
 
-  const moveDownSelected = () => {
-    setSampleUsers((prev) =>
-      prev.map((u) => {
-        if (!u.assigned && u.selected) {
-          return { ...u, assigned: true, selected: false };
-        }
-        return u;
-      })
-    );
-  };
 
-  const moveUpSelected = () => {
-    setSampleUsers((prev) =>
-      prev.map((u) => {
-        if (u.assigned && u.selected) {
-          return { ...u, assigned: false, selected: false };
-        }
-        return u;
-      })
-    );
-  };
+const moveDownSelected = async () => {
+  const customers = sampleUsers
+    .filter((u) => !u.assigned && u.selected)
+    .map((u) => u.id);
+
+  if (customers.length === 0) return;
+
+  await assignAmenity({
+    hostelId: activeHostelId,
+    amenityId: currentAmenityId,
+    customers,
+  });
+
+  openAssign(currentAmenityId); 
+};
+
+
+const moveUpSelected = async () => {
+  const customers = sampleUsers
+    .filter((u) => u.assigned && u.selected)
+    .map((u) => u.id);
+
+  if (customers.length === 0) return;
+
+  await unAssignAmenity({
+    hostelId: activeHostelId,
+    amenityId: currentAmenityId,
+    customers,
+  });
+
+  openAssign(currentAmenityId);
+};
+
 
 
   const UserRow = ({ user }) => {
@@ -276,7 +572,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
           </View>
         </View>
 
-        {/* checkbox */}
        <TouchableOpacity style={styles.checkbox} onPress={() => toggleUserSelect(user.id)}>
   {user.selected ? <Text style={styles.tick}>✓</Text> : null}
 </TouchableOpacity>
@@ -285,7 +580,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     );
   };
 
-  // split arrays
   const unassigned = sampleUsers.filter((u) => !u.assigned);
   const assigned = sampleUsers.filter((u) => u.assigned);
   const anyUnassignedSelected = unassigned.some((u) => u.selected);
@@ -319,16 +613,15 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
       );
     };
 
-  // ---------- Amenity card render (with link icon to open assign sheet) ----------
   const renderAmenity = ({ item }) => (
     <View style={{ marginBottom: 14 }}>
       <View style={styles.amenityCard}>
         <View style={styles.cardTopRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.priceRow}>
-              ₹ {item.price ?? 0}.00
-              <Text style={styles.perMonth}>/month</Text>
+           <Text style={styles.cardTitle}>{item.name}</Text>
+           <Text style={styles.priceRow}>
+                    ₹ {item.amount ?? 0}.00
+          <Text style={styles.perMonth}>/month</Text>
             </Text>
           </View>
 
@@ -336,7 +629,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
             <TouchableOpacity
               style={{ marginRight: 10 }}
               onPress={() => {
-                // open assign sheet for this amenity
                 openAssign(item.id);
               }}
             >
@@ -362,20 +654,12 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
         <View style={styles.line} />
 
         <View style={styles.bottomRow}>
-          <Text style={styles.prorateLabel}>Prorate</Text>
+          <Text style={styles.prorateLabel}>Pro-Rate</Text>
 
-          {/* <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={styles.onOffText}>{item.active ? "On" : "Off"}</Text>
-            <TouchableOpacity
-              style={[styles.switch, { backgroundColor: item.active ? "#3562FF" : "#A68DE3" }]}
-              onPress={() => toggleActive(item.id)}
-            >
-              <View style={[styles.knob, { transform: [{ translateX: item.active ? 20 : 0 }] }]} />
-            </TouchableOpacity>
-          </View> */}
+       
 <CustomSwitch
-  value={item.active}
-  onToggle={() => toggleActive(item.id)}
+   value={item.proRate}
+   onToggle={() => toggleActive(item)}
 />
 
         </View>
@@ -385,8 +669,16 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   return (
     <>
+    <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
+
+ { loading && <Loader />}
+
       <View style={[styles.container, { backgroundColor: showSheet || showAssign ? "transparent" : "#fff" }]}>
-        {/* Header */}
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backIcon} />
@@ -395,13 +687,13 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
         </View>
 
         <View style={{ flex: 1 }}>
-          {amenities.length === 0 ? (
+          {!loading && amenities.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Image source={EmptyAmenity} style={styles.emptyImg} />
               <Text style={styles.emptyTitle}>No Amenities are there!</Text>
 
               <TouchableOpacity style={styles.addButtonEmpty} onPress={() => openSheet(false)}>
-                <Text style={styles.addBtnText}>Add Amenity</Text>
+                <Text style={styles.addBtnText}>+  Add Amenity</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -413,8 +705,7 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
             />
           )}
 
-          {/* floating add */}
-          {amenities.length > 0 && (
+          {!loading && amenities.length > 0 && (
             <TouchableOpacity style={styles.floatingBtn} onPress={() => openSheet(false)}>
               <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
             </TouchableOpacity>
@@ -429,8 +720,8 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
         style={[
           styles.menuBox,
           {
-            top: menuPosition.y + 20,  // little below the 3 dot
-            left: menuPosition.x - 120, // adjust leftwards so popup aligns beside dot
+            top: menuPosition.y + 20,  
+            left: menuPosition.x - 120, 
           },
         ]}
       >
@@ -473,7 +764,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
 
 
-      {/* Delete modal */}
       {showDeleteConfirm && (
         <Modal transparent visible animationType="fade">
           <View style={styles.deleteOverlay}>
@@ -494,7 +784,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
         </Modal>
       )}
 
-      {/* Add/Edit Bottomsheet (existing) */}
       {showSheet && (
         <View style={styles.sheetOverlay} pointerEvents="box-none">
           <TouchableWithoutFeedback onPress={closeSheet}>
@@ -512,32 +801,72 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
               <Text style={styles.inputLabel}>
                 Amenity <Text style={{ color: "red" }}>*</Text>
               </Text>
-              <TextInput style={styles.inputBox} placeholder="Enter Amenity" value={amenityName} onChangeText={setAmenityName} />
+    <TextInput
+  style={[
+    styles.inputBox,
+  ]}
+  placeholder="Enter Amenity"
+  value={amenityName}
+  onChangeText={(t) => {
+    setAmenityName(t);
+    if (amenityError) 
+      setAmenityError("");
+    setNoChangeError("");
+  }}
+/>
+
+
+
+   {amenityError && (
+                                    <ErrorMessage message={amenityError} type="error" />
+                                )}
+
 
               <Text style={[styles.inputLabel, { marginTop: 12 }]}>
                 Price <Text style={{ color: "red" }}>*</Text>
               </Text>
-              <TextInput
-                style={styles.inputBox}
-                placeholder="Enter Price"
-                keyboardType="number-pad"
-                value={amenityPriceText}
-                onChangeText={(t) => setAmenityPriceText(t.replace(/[^0-9]/g, ""))}
-              />
+             <TextInput
+  style={[
+    styles.inputBox,]}
+  placeholder="Enter Price"
+  keyboardType="number-pad"
+  value={amenityPriceText}
+  onChangeText={(t) => {
+    setAmenityPriceText(t.replace(/[^0-9]/g, ""));
+    if (priceError)
+       setPriceError("")
+       setNoChangeError("")
+  }}
+/>
+
+
+
+        {priceError && (
+                                    <ErrorMessage message={priceError} type="error" />
+                                )}
+
+  
+
+     {noChangeError && (
+                                    <ErrorMessage message={noChangeError} type="error" />
+                                )}
+
+
             </ScrollView>
 
             <TouchableOpacity
-              style={[styles.addTypeBtn, { opacity: amenityName.trim() && amenityPriceText.trim() ? 1 : 0.5 }]}
-              disabled={!amenityName.trim() || !amenityPriceText.trim()}
-              onPress={saveAmenity}
-            >
-              <Text style={styles.addTypeText}>{isEdit ? "Save Changes" : "Add Amenity"}</Text>
-            </TouchableOpacity>
+  style={styles.addTypeBtn}
+  onPress={saveAmenity}
+>
+  <Text style={styles.addTypeText}>
+    {isEdit ? "Save Changes" : "Add Amenity"}
+  </Text>
+</TouchableOpacity>
+
           </Animated.View>
         </View>
       )}
 
-      {/* ASSIGN AMENITIES BOTTOM SHEET */}
       {showAssign && (
         <View style={styles.sheetOverlay} pointerEvents="box-none">
           <TouchableWithoutFeedback onPress={closeAssign}>
@@ -551,24 +880,22 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   </View>
 
   <FlatList
-    data={[{ type: "header" }]}   // we use a dummy first item
+    data={[{ type: "header" }]}   
     keyExtractor={(_, i) => String(i)}
     renderItem={() => (
       <>
         <Text style={styles.assignTitle}>Assign Amenities</Text>
 
-        {/* Unassigned Section */}
         <Text style={styles.sectionLabel}>Un Assigned</Text>
         <FlatList
           data={unassigned}
           keyExtractor={(u) => u.id}
           renderItem={({ item }) => <UserRow user={item} />}
           ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No unassigned users</Text>}
-          scrollEnabled={false}   // IMPORTANT
+          scrollEnabled={false}   
         />
 
          <View style={{display:'flex', flexDirection:'row', justifyContent:"flex-end"}}>
-        {/* Down Arrow */}
         <View style={styles.assignActionsRow}>
           <TouchableOpacity
             disabled={!anyUnassignedSelected}
@@ -576,7 +903,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
             style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
           >
             <Image source={Arrowdown} style={{height:22, width:22}}/>
-            {/* <Text style={{ color: "#fff", fontWeight: "700" }}>↓</Text> */}
           </TouchableOpacity>
         </View>
 
@@ -592,17 +918,15 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
         </View>
 
-        {/* Assigned Section */}
         <Text style={styles.sectionLabel}>Assigned</Text>
         <FlatList
           data={assigned}
           keyExtractor={(u) => u.id}
           renderItem={({ item }) => <UserRow user={item} />}
-          scrollEnabled={false}   // IMPORTANT
+          scrollEnabled={false} 
           ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No assigned users</Text>}
         />
 
-        {/* Up Arrow */}
        
       </>
     )}
@@ -615,7 +939,6 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   );
 }
 
-// ------------------ STYLES ------------------
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, paddingTop: 40, backgroundColor: "#fff" },
 
@@ -706,7 +1029,6 @@ switchLabel: {
   deleteBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center" },
   deleteBtnText: { color: "#fff", fontWeight: "700" },
 
-  /* sheet overlay (common) */
   sheetOverlay: {
     position: "absolute",
     top: 0,
@@ -721,7 +1043,6 @@ switchLabel: {
     backgroundColor: "rgba(0,0,0,0.45)",
   },
 
-  /* add/edit sheet */
   sheet: {
     width: "100%",
     backgroundColor: "#fff",
@@ -738,7 +1059,6 @@ switchLabel: {
   addTypeBtn: { backgroundColor: "#1D5DFF", paddingVertical: 14, borderRadius: 12, alignItems: "center", marginBottom: 10 },
   addTypeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 
-  // ---------- ASSIGN SHEET styles ----------
   assignSheet: {
     width: "100%",
     backgroundColor: "#fff",
@@ -799,7 +1119,6 @@ checkbox: {
   downBtn: { width: 48, height: 48, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center", justifyContent: "center", marginHorizontal: 6 },
   upBtn: { width: 48, height: 48, borderRadius: 10, backgroundColor: "#E53935", alignItems: "center", justifyContent: "center", marginHorizontal: 6 },
 
-  // small utilities
   userListEmpty: { padding: 12, color: "#777" },
 
 menuOverlay: {
@@ -818,7 +1137,6 @@ menuBox: {
   paddingVertical: 4,
   paddingHorizontal:10
 
-  // dynamic values will be added from inline style
 },
 
 
