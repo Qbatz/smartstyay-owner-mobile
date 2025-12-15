@@ -337,11 +337,44 @@ const updateUser = async (hostelId, userId, payload) => {
     };
   }
 };
+// const deleteUser = async (userId) => {
+//   try {
+//     const res = await api.delete(`/v2/profile/delete-user/${userId}`);
+//     return res.data;
+//   } catch (err) {
+//     return {
+//       success: false,
+//       message: err?.response?.data?.message || "Delete failed",
+//     };
+//   }
+// };
 
+const deleteUser = async (userId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.delete(
+      `/v2/profile/delete-user/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  }
+};
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser}}>
       {children}
     </ElectricityContext.Provider>
   );

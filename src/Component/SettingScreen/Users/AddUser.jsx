@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState,useContext } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,266 +9,257 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Image,
-  ScrollView,Keyboard,BackHandler
+  ScrollView, Keyboard, BackHandler
 } from "react-native";
 import EyeOpen from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
-export default function AddUserBottomSheet({ visible, onClose,editData,onSuccess }) {
-    const {activeHostelId } = useContext(CommonContexts);
-      const {getRoleByHostel,addUser,loading,updateUser} = UseSetting();
+import SuccessModal from "../../../ToastFile/ToastPage";
+export default function AddUserBottomSheet({ visible, onClose, editData, onSuccess }) {
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getRoleByHostel, addUser, updateUser } = UseSetting();
   const translateY = useRef(new Animated.Value(500)).current;
   const [roleOpen, setRoleOpen] = useState(false);
- const [selectedRole, setSelectedRole] = useState(null);
- const [name, setName] = useState("");
-const [email, setEmail] = useState("");
-const [mobile, setMobile] = useState("");
-const [password, setPassword] = useState("");
-const [roles,setRoles] = useState([])
- const [nameError,setNameError] =useState("")
-  const [mobilError,setMobileError] =useState("")
-  const [passwordError,setPasswordError] = useState("")
-    const [roleError,setRoleError] = useState("")
- const [emailError,setEmailError] = useState("")
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
+  const [roles, setRoles] = useState([])
+  const [nameError, setNameError] = useState("")
+  const [mobilError, setMobileError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [roleError, setRoleError] = useState("")
+  const [emailError, setEmailError] = useState("")
 
   const [description, setDescription] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-    useEffect(() => {
-  if (!activeHostelId) return;
+  const [initialData, setInitialData] = useState(null);
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
-  loadRoles();
-}, [activeHostelId]);
+  useEffect(() => {
+    if (!activeHostelId) return;
 
-const loadRoles = async () => {
-  const res = await getRoleByHostel(activeHostelId);
+    loadRoles();
+  }, [activeHostelId]);
 
-  if (res.success) {
-    console.log("Roles →", res.data);
-    setRoles(res.data);
-  } else {
-    console.log("Role API error →", res.data);
-  }
-};
-useEffect(() => {
-  if (!visible) return;
+  const loadRoles = async () => {
+    const res = await getRoleByHostel(activeHostelId);
 
-  if (editData) {
-    setName(editData.firstName || "");
-    setEmail(editData.mailId || "");
-    setMobile(editData.mobileNo || "");
-    setDescription(editData.description || "");
+    if (res.success) {
+      console.log("Roles →", res.data);
+      setRoles(res.data);
+    } else {
+      console.log("Role API error →", res.data);
+    }
+  };
+  useEffect(() => {
+    if (!visible) return;
 
-    setSelectedRole({
-      id: editData.roleId,
-      name: editData.roleName,
-    });
-  } else {
-    setName("");
-    setEmail("");
-    setMobile("");
-    setPassword("");
-    setDescription("");
-    setSelectedRole(null);
-  }
-}, [editData, visible]);
+    if (editData) {
+      const init = {
+        name: editData.firstName || "",
+        email: editData.mailId || "",
+        mobile: editData.mobileNo || "",
+        roleId: editData.roleId,
+        description: editData.description || "",
+      };
+
+      setInitialData(init);
+
+      setName(init.name);
+      setEmail(init.email);
+      setMobile(init.mobile);
+      setDescription(init.description);
+
+      setSelectedRole({
+        id: init.roleId,
+        name: editData.roleName,
+      });
+    } else {
+      setInitialData(null);
+      setName("");
+      setEmail("");
+      setMobile("");
+      setPassword("");
+      setDescription("");
+      setSelectedRole(null);
+    }
+  }, [editData, visible]);
+  const isNoChangeDetected = () => {
+    if (!initialData || !editData) return false;
+
+    return (
+      name.trim() === initialData.name &&
+      email.trim() === initialData.email &&
+      mobile.trim() === initialData.mobile &&
+      description.trim() === initialData.description &&
+      selectedRole?.id === initialData.roleId
+    );
+  };
 
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const mobileRegex = /^[6-9]\d{9}$/;
-const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-const handleAddUser = async () => {
-  let valid = true;
 
-  setNameError("");
-  setEmailError("");
-  setMobileError("");
-  setPasswordError("");
-  setRoleError("");
 
-  if (!name.trim()) {
-    setNameError("Name is required");
-    valid = false;
-  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const mobileRegex = /^[6-9]\d{9}$/;
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  if (!email.trim()) {
-    setEmailError("Email is required");
-    valid = false;
-  } else if (!emailRegex.test(email)) {
-    setEmailError("Enter valid email");
-    valid = false;
-  }
+  const handleAddUser = async () => {
+    let valid = true;
 
-  if (!mobile.trim()) {
-    setMobileError("Mobile number is required");
-    valid = false;
-  } else if (!mobileRegex.test(mobile)) {
-    setMobileError("Enter valid mobile number");
-    valid = false;
-  }
+    setNameError("");
+    setEmailError("");
+    setMobileError("");
+    setPasswordError("");
+    setRoleError("");
 
-  if (!selectedRole) {
-    setRoleError("Role is required");
-    valid = false;
-  }
-
-  // 🔐 Password ONLY for ADD
-  if (!editData) {
-    if (!password.trim()) {
-      setPasswordError("Password is required");
-      valid = false;
-    } else if (!passwordRegex.test(password)) {
-      setPasswordError(
-        "Password must have uppercase, number & special character"
-      );
+    if (!name.trim()) {
+      setNameError("Name is required");
       valid = false;
     }
-  }
 
-  if (!valid) return;
+    if (!email.trim()) {
+      setEmailError("Email is required");
+      valid = false;
+    } else if (!emailRegex.test(email)) {
+      setEmailError("Enter valid email");
+      valid = false;
+    }
 
-  // 🟢 ADD USER
-  if (!editData) {
+    if (!mobile.trim()) {
+      setMobileError("Mobile number is required");
+      valid = false;
+    } else if (!mobileRegex.test(mobile)) {
+      setMobileError("Enter valid mobile number");
+      valid = false;
+    }
+
+    if (!selectedRole) {
+      setRoleError("Role is required");
+      valid = false;
+    }
+
+
+    if (!editData) {
+      if (!password.trim()) {
+        setPasswordError("Password is required");
+        valid = false;
+      } else if (!passwordRegex.test(password)) {
+        setPasswordError(
+          "Password must have uppercase, number & special character"
+        );
+        valid = false;
+      }
+    }
+
+    if (!valid) return;
+    if (editData && isNoChangeDetected()) {
+
+      setModalType("warning");
+      setMessage("No changes detected");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 800);
+      return;
+
+    }
+
+
+    if (!editData) {
+      const payload = {
+        name: name.trim(),
+        emailId: email.trim(),
+        mobile: String(mobile),
+        password,
+        roleId: selectedRole.id,
+        description: description.trim(),
+      };
+
+
+      const res = await addUser(activeHostelId, payload);
+
+      if (res.success) {
+
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false)
+          onClose();
+          onSuccess && onSuccess();
+        }, 800);
+
+      } else {
+        setEmailError(res.data?.emailStatus);
+        setMobileError(res.data?.mobileStatus);
+      }
+      return;
+    }
+
+
     const payload = {
       name: name.trim(),
       emailId: email.trim(),
       mobile: String(mobile),
-      password,
-      roleId: selectedRole.id,
+      role: selectedRole.id,
       description: description.trim(),
     };
 
-    const res = await addUser(activeHostelId, payload);
+    const res = await updateUser(
+      activeHostelId,
+      editData.userId,
+      payload
+    );
 
     if (res.success) {
-      alert("User added successfully");
-      onClose();
-      onSuccess && onSuccess();
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false)
+        onClose();
+        onSuccess && onSuccess();
+      }, 800);
     } else {
+
       setEmailError(res.data?.emailStatus);
       setMobileError(res.data?.mobileStatus);
     }
-    return;
-  }
-
-  // 🟡 EDIT USER
-  const payload = {
-    name: name.trim(),
-    emailId: email.trim(),
-    mobile: String(mobile),
-    role: selectedRole.id,
-    description: description.trim(),
   };
 
-  const res = await updateUser(
-    activeHostelId,
-    editData.userId, 
-    payload
-  );
-
-  if (res.success) {
-    alert("User updated successfully");
-    onClose();
-    onSuccess && onSuccess();
-  } else {
-    alert(res.data?.message || "Update failed");
-  }
-};
 
 
 
-// const handleAddUser = async () => {
-//   let valid = true;
+  useEffect(() => {
+    if (!visible) return;
 
-//   // reset errors
-//   setNameError("");
-//   setEmailError("");
-//   setMobileError("");
-//   setPasswordError("");
-//   setRoleError("");
+    const backAction = () => {
+      onClose();
+      setNameError("");
+      setEmailError("");
+      setMobileError("");
+      setPasswordError("");
+      setRoleError("");
+      return true;
+    };
 
-//   if (!name.trim()) {
-//     setNameError("Name is required");
-//     valid = false;
-//   }
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
-//   if (!email.trim()) {
-//     setEmailError("Email is required");
-//     valid = false;
-//   } else if (!emailRegex.test(email)) {
-//     setEmailError("Enter valid email");
-//     valid = false;
-//   }
-
-//   if (!mobile.trim()) {
-//     setMobileError("Mobile number is required");
-//     valid = false;
-//   } else if (!mobileRegex.test(mobile)) {
-//     setMobileError("Enter valid 10 digit mobile");
-//     valid = false;
-//   }
-
-//   if (!editData) {
-//     if (!password.trim()) {
-//       setPasswordError("Password is required");
-//       valid = false;
-//     } else if (!passwordRegex.test(password)) {
-//       setPasswordError(
-//         "Password must contain uppercase, number & special character"
-//       );
-//       valid = false;
-//     }
-//   }
-
-//   if (!selectedRole) {
-//     setRoleError("Role is required");
-//     valid = false;
-//   }
-
-//   if (!valid) return;
-
-//   const payload = {
-//     name: name.trim(),
-//     emailId: email.trim(),
-//     mobile: String(mobile),
-//     password,
-//     roleId: selectedRole.id,
-//     description: description.trim(),
-//   };
-
-//   const res = await addUser(activeHostelId, payload);
-
-//   if (res.success) {
-//     alert("User added successfully");
-//     onClose();
-//       onSuccess && onSuccess();
-//   } else {
-//     setEmailError(res.data?.emailStatus)
-//     setMobileError(res.data?.mobileStatus)
-//   }
-// };
-
-
-
-useEffect(() => {
-  if (!visible) return;
-
-  const backAction = () => {
-    onClose();
-    return true;
-  };
-
-  const handler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    backAction
-  );
-
-  return () => handler.remove();
-}, [visible]);
+    return () => handler.remove();
+  }, [visible]);
 
   useEffect(() => {
     Animated.timing(translateY, {
@@ -284,205 +275,205 @@ useEffect(() => {
     onPanResponderMove: (_, g) => {
       if (g.dy > 0) translateY.setValue(g.dy);
     },
+
     onPanResponderRelease: (_, g) => {
-      if (g.dy > 120) onClose();
-      else
+      if (g.dy > 120) {
+        onClose();
+        setNameError("");
+        setEmailError("");
+        setMobileError("");
+        setPasswordError("");
+        setRoleError("");
+      } else {
         Animated.spring(translateY, {
           toValue: 0,
           useNativeDriver: true,
         }).start();
+      }
     },
-  });
-useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height - 40); // adjust ↓
-  });
 
-  const hide = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
   });
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height - 40);
+    });
 
-  return () => {
-    show.remove();
-    hide.remove();
-  };
-}, []);
-// useEffect(() => {
-//   if (visible) {
-//     if (editData) {
-//       setName(editData.name || "");
-//       setEmail(editData.email || "");
-//       setMobile(editData.phone || "");
-//       setSelectedRole(editData.role || "");
-//       setDescription(editData.description || "");
-//     } else {
-//       setName("");
-//       setEmail("");
-//       setMobile("");
-//       setSelectedRole("");
-//       setDescription("");
-//     }
-//   }
-// }, [editData, visible]);
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
 
 
   if (!visible) return null;
 
   return (
-    
-    <View style={styles.overlay}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={{ flex: 1 }} />
-      </TouchableWithoutFeedback>
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
 
-   <Animated.View
-  style={[
-    styles.sheet,
-    { transform: [{ translateY }], paddingBottom: keyboardHeight }
-  ]}
-  {...panResponder.panHandlers}
->
-        <View style={styles.handle} />
+      />
+      <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
 
-        <ScrollView
-          style={{ paddingHorizontal: 20 }}
-          contentContainerStyle={{ paddingBottom: 50 }}
-          showsVerticalScrollIndicator={false}
+        <Animated.View
+          style={[
+            styles.sheet,
+            { transform: [{ translateY }], paddingBottom: keyboardHeight }
+          ]}
+          {...panResponder.panHandlers}
         >
-        
-          <Text style={styles.title}>{editData ? "Edit User" : "Add User"}</Text>
+          <View style={styles.handle} />
 
-       
-          <Text style={styles.label}>Name *</Text>
-          <TextInput style={styles.input} placeholder="Enter Name" value={name} onChangeText={(text) => {
-  setName(text);
-  setNameError("");
-}}/>
-{nameError && (
+          <ScrollView
+            style={{ paddingHorizontal: 20 }}
+            contentContainerStyle={{ paddingBottom: 50 }}
+            showsVerticalScrollIndicator={false}
+          >
+
+            <Text style={styles.title}>{editData ? "Edit User" : "Add User"}</Text>
+
+
+            <Text style={styles.label}>Name *</Text>
+            <TextInput style={styles.input} placeholder="Enter Name" value={name} onChangeText={(text) => {
+              setName(text);
+              setNameError("");
+            }} />
+            {nameError && (
               <ErrorMessage message={nameError} type="error" />
             )}
-      
-          <Text style={styles.label}>Email ID *</Text>
-          <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={(text) => {
-  setEmail(text);
-  setEmailError("");
-}}/>
-{emailError && (
+
+            <Text style={styles.label}>Email ID *</Text>
+            <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={(text) => {
+              setEmail(text);
+              setEmailError("");
+            }} />
+            {emailError && (
               <ErrorMessage message={emailError} type="error" />
             )}
-      
-          <Text style={styles.label}>Mobile Number *</Text>
-          <TextInput style={styles.input} placeholder="+91 98765 43210"  value={mobile} onChangeText={(text) => {
-  setMobile(text);
-  setMobileError("");
-}}
-/>
-          {mobilError && (
+
+            <Text style={styles.label}>Mobile Number *</Text>
+            <TextInput style={styles.input} placeholder="+91 98765 43210" value={mobile} onChangeText={(text) => {
+              setMobile(text);
+              setMobileError("");
+            }}
+            />
+            {mobilError && (
               <ErrorMessage message={mobilError} type="error" />
             )}
-{!editData && (
-    <>
-       
-         <Text style={styles.label}>Password *</Text>
-        
-          <View style={styles.passwordWrapper}>
-  <TextInput
-    style={styles.passwordInput}
-    placeholder="Enter Password"
-   value={password}
- onChangeText={(text) => {
-  setPassword(text);
-  setPasswordError("");
-}}
-secureTextEntry={!showPassword}
+            {!editData && (
+              <>
 
-  
-  />
+                <Text style={styles.label}>Password *</Text>
 
-  <TouchableOpacity
-    style={styles.eyeButton}
-    onPress={() => setShowPassword(!showPassword)}
-  >
-    <Image
-      source={showPassword ? EyeOpen : EyeClose}
-      style={styles.eyeIcon}
-    />
-  </TouchableOpacity>
-</View>
-          {passwordError && (
-              <ErrorMessage message={passwordError} type="error" />
+                <View style={styles.passwordWrapper}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Enter Password"
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      setPasswordError("");
+                    }}
+                    secureTextEntry={!showPassword}
+
+
+                  />
+
+                  <TouchableOpacity
+                    style={styles.eyeButton}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Image
+                      source={showPassword ? EyeOpen : EyeClose}
+                      style={styles.eyeIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {passwordError && (
+                  <ErrorMessage message={passwordError} type="error" />
+                )}
+              </>
             )}
-</>
-)}
 
-        
-          <Text style={styles.label}>Role *</Text>
 
-          <TouchableOpacity
-            style={styles.dropdownBox}
-            onPress={() => setRoleOpen(!roleOpen)}
-          >
-           <Text style={{ color: selectedRole ? "#000" : "#9CA3AF" }}>
-  {selectedRole?.name || "Select a role"}
-</Text>
- 
+            <Text style={styles.label}>Role *</Text>
 
-            <Image
-              source={require("../../../Assets/Images/direction-down.png")}
-              style={styles.arrowIcon}
-            />
-          </TouchableOpacity>
-          {roleOpen && (
-  <View style={styles.dropdownMenu}>
-    <ScrollView style={{ maxHeight: 150 }}>
-      {roles.map((role) => (
-        <TouchableOpacity
-          key={role.id}
-          style={styles.option}
-          onPress={() => {
-            setSelectedRole(role);
-            setRoleOpen(false);
-            setRoleError("")
-          }}
-        >
-          <Text style={styles.optionText}>{role.name}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </View>
-)}
-{roleError && (
+            <TouchableOpacity
+              style={styles.dropdownBox}
+              onPress={() => setRoleOpen(!roleOpen)}
+            >
+              <Text style={{ color: selectedRole ? "#000" : "#9CA3AF" }}>
+                {selectedRole?.name || "Select a role"}
+              </Text>
+
+
+              <Image
+                source={require("../../../Assets/Images/direction-down.png")}
+                style={styles.arrowIcon}
+              />
+            </TouchableOpacity>
+            {roleOpen && (
+              <View style={styles.dropdownMenu}>
+                <ScrollView style={{ maxHeight: 150 }}>
+                  {roles.map((role) => (
+                    <TouchableOpacity
+                      key={role.id}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedRole(role);
+                        setRoleOpen(false);
+                        setRoleError("")
+                      }}
+                    >
+                      <Text style={styles.optionText}>{role.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {roleError && (
               <ErrorMessage message={roleError} type="error" />
             )}
 
-         
 
-        
-             
 
-       
-          <Text style={styles.label}>Description *</Text>
-          <TextInput
-            style={styles.textarea}
-            placeholder="Enter Description"
-            multiline
-            value={description}
-            onChangeText={setDescription}
-          />
 
-          {/* Buttons */}
-          <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddUser}>
-              <Text style={styles.addText}>{editData ? "Edit" : "Add"}</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </Animated.View>
-    </View>
+
+
+            <Text style={styles.label}>Description *</Text>
+            <TextInput
+              style={styles.textarea}
+              placeholder="Enter Description"
+              multiline
+              value={description}
+              onChangeText={setDescription}
+            />
+
+            {/* Buttons */}
+            <View style={styles.btnRow}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.addBtn} onPress={handleAddUser}>
+                <Text style={styles.addText}>{editData ? "Edit" : "Add"}</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </Animated.View>
+      </View>
+    </>
   );
 }
 
@@ -610,51 +601,51 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    top: "67%", 
+    top: "67%",
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 10,
     zIndex: 999,
     elevation: 10,
-},
+  },
 
 
-    option: {
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-    },
+  option: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
 
-    optionText: {
-        fontSize: 15,
-        color: "#000",
-    },
+  optionText: {
+    fontSize: 15,
+    color: "#000",
+  },
 
-    passwordWrapper: {
-  position: "relative",
-  justifyContent: "center",
-},
+  passwordWrapper: {
+    position: "relative",
+    justifyContent: "center",
+  },
 
-passwordInput: {
-  borderWidth: 1,
-  borderColor: "#D4D4D4",
-  borderRadius: 10,
-  padding: 12,
-  paddingRight: 45,   // space for eye icon
-  marginTop: 6,
-  fontSize: 15,
-},
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: "#D4D4D4",
+    borderRadius: 10,
+    padding: 12,
+    paddingRight: 45,   // space for eye icon
+    marginTop: 6,
+    fontSize: 15,
+  },
 
-eyeButton: {
-  position: "absolute",
-  right: 12,
-  top: 22,  // perfect alignment
-},
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    top: 22,  // perfect alignment
+  },
 
-eyeIcon: {
-  width: 20,
-  height: 20,
-  tintColor: "#6A6A6A",
-},
+  eyeIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#6A6A6A",
+  },
 
 });

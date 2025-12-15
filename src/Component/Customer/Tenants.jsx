@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect,useContext } from "react";
 import {
   View,
   Text,
@@ -37,7 +37,10 @@ import dateImg from "../../Assets/Images/home-link.png";
 import room from "../../Assets/Images/PG_active.png";
 import Bed from "../../Assets/Images/bed.png";
 import { Dimensions } from "react-native";
-import CheckoutBottomSheet from './Checkout/CheckoutTenant'
+import CheckoutBottomSheet from './Checkout/CheckoutTenant';
+import { CommonContexts } from "../../Context/CommonContext";
+import { useCustomer } from "../../Context/CustomerContext";
+
 
 
 
@@ -46,10 +49,24 @@ import CheckoutBottomSheet from './Checkout/CheckoutTenant'
 export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
+ const { activeHostelId } = useContext(CommonContexts);
+const { getCustomersByHostel} = useCustomer();
 
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
+const [customers, setCustomers] = useState([]);
 
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchCustomers();
+    }
+  }, [activeHostelId]);
+
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data || []);
+  };
+  console.log("customers",customers)
 
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();

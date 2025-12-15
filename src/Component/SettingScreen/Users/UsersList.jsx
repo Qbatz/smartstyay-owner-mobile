@@ -1,11 +1,11 @@
-import React,{useCallback,useState,useEffect,useContext} from "react";
+import React, { useCallback, useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
-  ScrollView,BackHandler,TouchableWithoutFeedback,Modal
+  ScrollView, BackHandler, TouchableWithoutFeedback, Modal
 } from "react-native";
 
 import MenuIcon from "../../../Assets/Images/3dots.png";
@@ -19,205 +19,241 @@ import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
-export default function UsersScreen({navigation}) {
-   const {activeHostelId } = useContext(CommonContexts);
-      const {getUsersByHostel,loading} = UseSetting();
-      const [users,setUsers] = useState([])
- 
+export default function UsersScreen({ navigation }) {
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getUsersByHostel, loading, deleteUser } = UseSetting();
+  const [users, setUsers] = useState([])
+  const [deleteUserId, setDeleteUserId] = useState(null);
   const [showAddSheet, setShowAddSheet] = React.useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [editData, setEditData] = useState(null);
-   const [deletePopup, setDeletePopup] = useState(false)
+  const [deletePopup, setDeletePopup] = useState(false)
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
-   useEffect(() => {
-  if (!activeHostelId) return;
+  useEffect(() => {
+    if (!activeHostelId) return;
 
-  loadUsers();
-}, [activeHostelId]);
+    loadUsers();
+  }, [activeHostelId]);
 
-const loadUsers = async () => {
-  const res = await getUsersByHostel(activeHostelId);
-  
+  const loadUsers = async () => {
+    const res = await getUsersByHostel(activeHostelId);
 
-  if (res.success) {
-    setUsers(res.data);
-  }
-};
-console.log("res..?",users)
 
-  const handleDelete = () => {
+    if (res.success) {
+      setUsers(res.data);
+    }
+  };
+
+
+  const handleDelete = (userId) => {
     setDeletePopup(true)
     setOpenMenuId(null)
+    setDeleteUserId(userId)
   }
+  const handleConfirmDelete = async () => {
+    if (!deleteUserId) return;
 
-   useFocusEffect(
-       useCallback(() => {
-         const onBackPress = () => {
-         
-     
-           if (navigation.canGoBack()) {
-             navigation.goBack();
-             return true;
-           }
-     
-           return false;
-         };
-     
-         const subscription = BackHandler.addEventListener(
-           "hardwareBackPress",
-           onBackPress
-         );
-     
-         return () => subscription.remove();
-       }, [ navigation])
-     );
+    const res = await deleteUser(deleteUserId);
+    if (res.success) {
+
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false)
+        setDeletePopup(false);
+        setDeleteUserId(null);
+        loadUsers();
+      }, 800);
+    } else {
+      alert(res.message);
+    }
+  };
+
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+
+
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [navigation])
+  );
 
   return (
     <>
-    <View style={styles.container}>
-      
- 
-      <View style={styles.header}>
-       <TouchableOpacity onPress={() => navigation.goBack()}>
+      {loading && <Loader />}
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
 
-  <Image source={BackArrow} style={styles.backArrow}/>
-</TouchableOpacity>
-        <Text style={styles.headerTitle}>Users</Text>
-      </View>
+      />
+      <View style={styles.container}>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        {users.map((u, i) => (
-          <View key={i} style={styles.card}>
-            
-            {/* Top row */}
-            <View style={styles.rowBetween}>
-              <View>
-                <Text style={styles.name}>{u.firstName} {u.lastName}</Text>
-                <Text style={styles.role}>{u.roleName}</Text>
+
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+
+            <Image source={BackArrow} style={styles.backArrow} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Users</Text>
+        </View>
+
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+          {Array.isArray(users) && users.map((u, i) => (
+            <View key={i} style={styles.card}>
+
+              {/* Top row */}
+              <View style={styles.rowBetween}>
+                <View>
+                  <Text style={styles.name}>{u.firstName} {u.lastName}</Text>
+                  <Text style={styles.role}>{u.roleName}</Text>
+                </View>
+
+                <TouchableOpacity style={styles.menuIconWrap} onPress={() => setOpenMenuId(openMenuId === i ? null : i)}>
+                  <Image source={MenuIcon} style={styles.menuIcon} />
+                </TouchableOpacity>
+
+
+
               </View>
+              {openMenuId === i && (
+                <>
+                  <TouchableWithoutFeedback onPress={() => setOpenMenuId(null)}>
+                    <View style={styles.fullOverlay} />
+                  </TouchableWithoutFeedback>
+                  <View style={styles.dropdownBox}>
+                    <TouchableOpacity style={styles.optionRow} onPress={() => {
+                      setEditData(u);
+                      setShowAddSheet(true);
+                      setOpenMenuId(null);
+                    }}>
+                      <Image
+                        source={EditIcon}
+                        style={styles.optionIcon}
+                      />
+                      <Text style={styles.optionText}>Edit</Text>
+                    </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuIconWrap}  onPress={() => setOpenMenuId(openMenuId === i ? null : i)}>
-                <Image source={MenuIcon} style={styles.menuIcon} />
-              </TouchableOpacity>
+                    <View style={styles.divider} />
 
- 
+                    <TouchableOpacity style={styles.optionRow} onPress={() => handleDelete(u.userId)}>
+                      <Image
+                        source={Trash}
+                        style={styles.optionIcon}
+                      />
+                      <Text style={styles.optionText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+
+
+              <View style={styles.rowBetween}>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.label}>Email ID</Text>
+                  <Text style={styles.value}>{u.mailId}</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.label}>Contact Number</Text>
+                  <Text style={styles.value}>{u.mobileNo}</Text>
+                </View>
+              </View>
 
             </View>
-                         {openMenuId === i && (
-                          <>
-                          <TouchableWithoutFeedback onPress={() => setOpenMenuId(null)}>
-      <View style={styles.fullOverlay} />
-    </TouchableWithoutFeedback>
-  <View style={styles.dropdownBox}>
-    <TouchableOpacity style={styles.optionRow} onPress={() => {
-    setEditData(u);       
-    setShowAddSheet(true); 
-    setOpenMenuId(null);   
-  }}>
-      <Image 
-        source={EditIcon} 
-        style={styles.optionIcon} 
-      />
-      <Text style={styles.optionText}>Edit</Text>
-    </TouchableOpacity>
 
-    <View style={styles.divider} />
+          ))}
+          {!loading && users.length === 0 &&
+            <View style={styles.emptyContainer}>
+              <Image source={EmptyState} style={styles.emptyImage} />
+              <Text style={styles.emptyText}>No Data Found</Text>
+            </View>
+          }
+        </ScrollView>
 
-    <TouchableOpacity style={styles.optionRow} onPress={handleDelete}>
-      <Image 
-        source={Trash} 
-        style={styles.optionIcon} 
-      />
-      <Text style={styles.optionText}>Delete</Text>
-    </TouchableOpacity>
-  </View>
-  </>
-)}
+        {!loading && (
+          <TouchableOpacity
+            style={styles.fab}
 
-          
-            <View style={styles.rowBetween}>
-              <View style={{ width: "50%" }}>
-                <Text style={styles.label}>Email ID</Text>
-                <Text style={styles.value}>{u.mailId}</Text>
-              </View>
+            onPress={() => {
+              setEditData(null)
+              setShowAddSheet(true);
+              setOpenMenuId(null);
+            }}
+          >
+            <Image source={PlusIcon} style={styles.fabIcon} />
+          </TouchableOpacity>
+        )}
 
-              <View>
-                <Text style={styles.label}>Contact Number</Text>
-                <Text style={styles.value}>{u.mobileNo}</Text>
-              </View>
+
+      </View>
+
+
+
+      <Modal
+        transparent
+        animationType="fade"
+        visible={deletePopup}
+        onRequestClose={() => setDeletePopup(false)}
+      >
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteBox}>
+
+            <Text style={styles.deleteTitle}>Delete User?</Text>
+            <Text style={styles.deleteSub}>
+              Are you sure you want to delete this User?
+            </Text>
+
+            <View style={styles.deleteBtnRow}>
+
+
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setDeletePopup(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              {/* Delete Button */}
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={handleConfirmDelete}
+              >
+                <Text style={styles.deleteBtnText}>Delete</Text>
+              </TouchableOpacity>
+
             </View>
 
           </View>
-          
-        ))}
-      </ScrollView>
-
-    
-      <TouchableOpacity
-  style={styles.fab}
-
-   onPress={() => {
-       setEditData(null)
-    setShowAddSheet(true); 
-    setOpenMenuId(null);   
-  }}
->
-  <Image source={PlusIcon} style={styles.fabIcon} />
-</TouchableOpacity>
-
-
-
-    </View>
-
-
-
-    <Modal
-            transparent
-            animationType="fade"
-            visible={deletePopup}
-            onRequestClose={() => setDeletePopup(false)}
-          >
-            <View style={styles.deleteOverlay}>
-              <View style={styles.deleteBox}>
-    
-                <Text style={styles.deleteTitle}>Delete User?</Text>
-                <Text style={styles.deleteSub}>
-                  Are you sure you want to delete this User?
-                </Text>
-    
-                <View style={styles.deleteBtnRow}>
-    
-    
-                  <TouchableOpacity
-                    style={styles.cancelBtn}
-                    onPress={() => setDeletePopup(false)}
-                  >
-                    <Text style={styles.cancelText}>Cancel</Text>
-                  </TouchableOpacity>
-    
-                  {/* Delete Button */}
-                  <TouchableOpacity
-                    style={styles.deleteBtn}
-                    onPress={() => {
-                      console.log("DELETE CONFIRMED");
-                      setDeletePopup(false);
-                    }}
-                  >
-                    <Text style={styles.deleteBtnText}>Delete</Text>
-                  </TouchableOpacity>
-    
-                </View>
-    
-              </View>
-            </View>
-          </Modal>
-    <AddUserBottomSheet
-  visible={showAddSheet}
-  onClose={() => setShowAddSheet(false)}
-    editData={editData}
-    onSuccess={loadUsers}
-/>
+        </View>
+      </Modal>
+      <AddUserBottomSheet
+        visible={showAddSheet}
+        onClose={() => setShowAddSheet(false)}
+        editData={editData}
+        onSuccess={loadUsers}
+      />
 
     </>
   );
@@ -226,7 +262,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F7F8FA",
-    paddingTop:20
+    paddingTop: 20
   },
 
   header: {
@@ -236,19 +272,19 @@ const styles = StyleSheet.create({
   },
 
   backArrow: {
-  width:20,
-  height:20,
-  marginRight:8
+    width: 20,
+    height: 20,
+    marginRight: 8
   },
   fullOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "transparent",
-  zIndex: 1,
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 1,
+  },
 
 
   headerTitle: {
@@ -309,60 +345,60 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 64,
     right: 24,
-    
-  
+
+
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
-   
+
   },
 
   fabIcon: {
     width: 44,
     height: 44,
-   
+
   },
   dropdownBox: {
-  position: "absolute",
-  top: 40,
-  right: 10,
-  backgroundColor: "#fff",
-  paddingVertical: 6,
-  width: 200,
-  borderRadius: 12,
-  elevation: 6,
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowOffset: { width: 0, height: 2 },
-  zIndex: 999,
-},
+    position: "absolute",
+    top: 40,
+    right: 10,
+    backgroundColor: "#fff",
+    paddingVertical: 6,
+    width: 200,
+    borderRadius: 12,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    zIndex: 999,
+  },
 
-optionRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-},
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
 
-optionIcon: {
-  width: 18,
-  height: 18,
-  marginRight: 10,
- 
-},
+  optionIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
 
-optionText: {
-  fontSize: 14,
-  color: "#000",
-  fontWeight: "500",
-},
+  },
 
-divider: {
-  height: 1,
-  backgroundColor: "#eee",
-  marginVertical: 4,
-},
- deleteOverlay: {
+  optionText: {
+    fontSize: 14,
+    color: "#000",
+    fontWeight: "500",
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#eee",
+    marginVertical: 4,
+  },
+  deleteOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
@@ -430,5 +466,23 @@ divider: {
     fontSize: 16,
     fontWeight: '700',
   },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 150,
+  },
 
+  emptyImage: {
+    width: 180,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.8
+  },
+
+  emptyText: {
+    marginTop: 14,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#777",
+  },
 });
