@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState , useEffect , useContext} from "react";
 import {
    View,
   Text,
@@ -7,9 +7,12 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
- Dimensions , BackHandler
+ Dimensions , BackHandler , Modal
 } from "react-native";
 import {  useRoute} from "@react-navigation/native";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
+
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import DownArrow from "../../../Assets/Images/direction-down.png";
@@ -20,25 +23,44 @@ import RemoveIcon from "../../../Assets/Images/remove-circle.png";
 
 
 export default function CreateBill({navigation}) {
+
+
+    const {   getCustomersByHostel,
+        GetParticularCustomerDetails,
+        ParticularcustomerDetails,
+        resetParticularCustomer,
+        loading,
+        errorMsg,} = useCustomer();
+    const { activeHostelId } = useContext(CommonContexts);
+
   const itemOptions = ["Room rent", "EB", "Others"];
 
     const route = useRoute();
     const { mode, data } = route.params || {};
+     const [customers, setCustomers] = useState([]);
   const [customer, setCustomer] = useState("");
   const [invoiceNo, setInvoiceNo] = useState("");
 //   const [invoiceDate, setInvoiceDate] = useState("");
 //   const [dueDate, setDueDate] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
+  const [customerOpen, setCustomerOpen] = useState(false);
+const [selectedCustomer, setSelectedCustomer] = useState(null);
   
   const [openUpward, setOpenUpward] = useState(false);
-const [openinvoiceDatePicker, setOpenInvoiceDatePicker] = useState(false);
-const [opendueDatePicker, setOpenDueDatePicker] = useState(false);  
+const [openInvoiceDate, setOpenInvoiceDate] = useState(false);
+const [openDueDate, setOpenDueDate] = useState(false);
 
-  const [invoiceDate, setInvoiceDate] = useState(
-     new Date()
-  )
-   const [dueDate, setDueDate] = useState(new Date());
+const [invoiceDate, setInvoiceDate] = useState(null);
+const [dueDate, setDueDate] = useState(null);
+
+
+const [invoiceDateErr, setInvoiceDateErr] = useState("");
+const [dueDateErr, setDueDateErr] = useState("");
+const [customerErr, setCustomerErr] = useState("");
+const [itemErr, setItemErr] = useState("");
+
+
 
   const [items, setItems] = useState([]);
 
@@ -48,9 +70,49 @@ const [opendueDatePicker, setOpenDueDatePicker] = useState(false);
     (op) => op === "Others" || !selectedTypes.includes(op)
   );
 
-  const [customerOpen, setCustomerOpen] = useState(false);
-const [customerSelected, setCustomerSelected] = useState("");
+
+// { id, name }
+
 const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
+
+
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchCustomers();
+    }
+  }, [activeHostelId])
+  
+
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data || []);
+  };
+
+  const fetchCustomersDetails = async () => {
+  if (!selectedCustomer?.id) return;
+  await GetParticularCustomerDetails(selectedCustomer.id);
+};
+
+
+
+
+useEffect(() => {
+  if (selectedCustomer?.id) {
+    fetchCustomersDetails();
+  }
+}, [selectedCustomer?.id]);
+
+console.log("selectedCustomer", selectedCustomer , ParticularcustomerDetails);
+
+
+  const getJoiningDate = () => {
+  const jd = ParticularcustomerDetails?.hostelInfo?.joiningDate;
+  return jd ? dayjs(jd, "DD/MM/YYYY") : null;
+};
+
+
+
+  console.log("customers", customers);
 
          useEffect(() => {
               const backHandler = BackHandler.addEventListener(
@@ -75,6 +137,61 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
         // }, [mode, data]); 
 
           
+const handleInvoiceDateChange = (date) => {
+  setInvoiceDateErr("");
+
+  if (!date) {
+    setInvoiceDateErr("Please Select Invoice Date");
+    return;
+  }
+
+  const selected = dayjs(date);
+
+  if (selected.isAfter(dayjs(), "day")) {
+    setInvoiceDateErr("Future date not allowed");
+    return;
+  }
+
+  const joiningDate = getJoiningDate();
+  if (joiningDate && selected.isBefore(joiningDate)) {
+    setInvoiceDateErr("Before join date not allowed");
+    return;
+  }
+
+  if (dueDate && dayjs(dueDate).isBefore(selected)) {
+    setDueDateErr("Due date cannot be before invoice date");
+  } else {
+    setDueDateErr("");
+  }
+
+  setInvoiceDate(date);
+};
+
+
+const handleDueDateChange = (date) => {
+  setDueDateErr("");
+
+  if (!date) {
+    setDueDateErr("Please Select Due Date");
+    return;
+  }
+
+  const joiningDate = getJoiningDate();
+  const selected = dayjs(date);
+
+  if (joiningDate && selected.isBefore(joiningDate)) {
+    setDueDateErr("Before join date not allowed");
+    return;
+  }
+
+  if (invoiceDate && selected.isBefore(dayjs(invoiceDate))) {
+    setDueDateErr("Due date cannot be before invoice date");
+    return;
+  }
+
+  setDueDate(date);
+};
+
        
 
   const handleSelectItem = (type) => {
@@ -109,6 +226,64 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
     setCustomerDropdownVisible((v) => !v);
   };
 
+ const validateAndSubmit = () => {
+  let hasError = false;
+
+  setCustomerErr("");
+  setInvoiceDateErr("");
+  setDueDateErr("");
+  setItemErr("");
+
+  if (!selectedCustomer) {
+    setCustomerErr("Please Select Customer");
+    hasError = true;
+  }
+
+  if (!invoiceDate) {
+    setInvoiceDateErr("Please Select Invoice Date");
+    hasError = true;
+  }
+
+  if (!dueDate) {
+    setDueDateErr("Please Select Due Date");
+    hasError = true;
+  }
+
+  if (!items.length) {
+    setItemErr("Please add at least one item");
+    hasError = true;
+  } else if (
+    items.some(
+      (i) =>
+        !i.description?.trim() ||
+        !i.amount ||
+        isNaN(i.amount) ||
+        Number(i.amount) <= 0
+    )
+  ) {
+    setItemErr("Fill all item details & amount > 0");
+    hasError = true;
+  }
+
+  if (hasError) return;
+
+  // 🔥 SAME PAYLOAD FORMAT AS WEB
+  const payload = {
+    customerId: selectedCustomer.id,
+    invoiceDate: dayjs(invoiceDate).format("DD-MM-YYYY"),
+    dueDate: dayjs(dueDate).format("DD-MM-YYYY"),
+    invoiceNumber: invoiceNo,
+    items: items.map((i) => ({
+      invoiceItem: i.description,
+      amount: Number(i.amount),
+    })),
+  };
+
+  console.log("FINAL PAYLOAD", payload);
+};
+
+
+
   return (
 <>
  <View style={styles.topHeader}>
@@ -120,36 +295,46 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
 
 
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container}   scrollEnabled={!customerOpen}   >
     
-  <Text style={styles.label}>Customer *</Text>
+  <Text style={styles.label}>Customer <Text style={{color:'red'}}>*</Text></Text>
 
 <TouchableOpacity
   style={styles.customerdropdownBox}
-  onPress={() => setCustomerOpen(!customerOpen)}
+  onPress={() => setCustomerOpen((v) => !v)}
 >
-  <Text style={{ color: customerSelected ? "#000" : "#9CA3AF" }}>
-    {customerSelected || "Select Customer"}
+  <Text style={{ color: selectedCustomer ? "#000" : "#9CA3AF" }}>
+    {selectedCustomer?.name || "Select Customer"}
   </Text>
 
   <Image source={DownArrow} style={styles.arrowIcon} />
 </TouchableOpacity>
 
+
 {customerOpen && (
   <View style={styles.customerDropdownMenu}>
-    <ScrollView style={{ maxHeight: 130 }}>
-      {CustomerOptions.map((name, index) => {
-        const isSelected = name === customerSelected;
+    <ScrollView
+      style={{ maxHeight: 120 }}
+      nestedScrollEnabled={true}  
+    >
+      {customers.map((item) => {
+        const isSelected = selectedCustomer?.id === item.customerId;
+
         return (
           <TouchableOpacity
-            key={index}
+            key={item.customerId}
             style={[
               styles.customerOption,
               isSelected && styles.customerOptionSelected,
             ]}
             onPress={() => {
-              setCustomerSelected(name);
-              setCustomerOpen(false);
+              setSelectedCustomer({
+                id: item.customerId,
+                name: item.fullName,
+              });
+              setCustomerOpen(false)
+              setInvoiceDate(null)
+              setDueDate(null)
             }}
           >
             <Text
@@ -158,7 +343,7 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
                 isSelected && styles.customerOptionTextSelected,
               ]}
             >
-              {name}
+              {item.fullName}
             </Text>
           </TouchableOpacity>
         );
@@ -168,7 +353,8 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 )}
 
 
-      <Text style={styles.label}>Invoice No</Text>
+
+      <Text style={{ fontSize: 15, marginBottom: 6 , marginTop:7}}>Invoice No</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter Invoice Number"
@@ -176,58 +362,108 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
         onChangeText={setInvoiceNo}
       />
 
-      <Text style={styles.label}>Invoice Date</Text>
-          <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => {
-            setOpenInvoiceDatePicker(!openinvoiceDatePicker);
-          }}
-        >
-          <Text style={styles.inputText}>{dayjs(invoiceDate).format("DD/MM/YYYY")}</Text>
-          <Image source={CalendarIcon} style={styles.calendarIcon} />
-        </TouchableOpacity>
+      <Text style={styles.label}>
+  Invoice Date <Text style={{ color: "red" }}>*</Text>
+</Text>
 
-        {openinvoiceDatePicker && (
-          <View style={styles.dropdownBox}>
-            <DatePicker
-              mode="single"
-              date={invoiceDate}
-              onChange={(v) => {
-                setInvoiceDate(v.date || new Date());
-                setOpenInvoiceDatePicker(false);
-              }}
-              style={{ width: Platform.OS === "ios" ? 320 : "100%" }}
-            />
-          </View>
-        )}
+<TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => setOpenInvoiceDate(true)}
+>
+ <Text style={styles.inputText}>
+  {invoiceDate
+    ? dayjs(invoiceDate).format("DD-MM-YYYY")
+    : "Select a date"}
+</Text>
+
+  <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+</TouchableOpacity>
+
+<Modal
+  transparent
+  visible={openInvoiceDate}
+  animationType="fade"
+  onRequestClose={() => setOpenInvoiceDate(false)}
+>
+  <View style={styles.datePickerOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenInvoiceDate(false)}
+    />
+
+    <View style={styles.datePickerBox}>
+  <DatePicker
+  mode="single"
+  date={invoiceDate || new Date()}
+  maxDate={new Date()}   
+  onChange={(d) => {
+    handleInvoiceDateChange(d.date);
+    setOpenInvoiceDate(false);
+  }}
+/>
+
+    </View>
+  </View>
+</Modal>
+
+{invoiceDateErr !== "" && (
+  <Text style={{ color: "red", fontSize: 13 }}>{invoiceDateErr}</Text>
+)}
 
 
-      <Text style={styles.label}>Due Date</Text>
-         <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => {
-            setOpenDueDatePicker(!opendueDatePicker);
-          }}
-        >
-          <Text style={styles.inputText}>{dayjs(dueDate).format("DD/MM/YYYY")}</Text>
-          <Image source={CalendarIcon} style={styles.calendarIcon} />
-        </TouchableOpacity>
 
-        {opendueDatePicker && (
-          <View style={styles.dropdownBox}>
-            <DatePicker
-              mode="single"
-              date={dueDate}
-              onChange={(v) => {
-                setDueDate(v.date || new Date());
-                setOpenDueDatePicker(false);
-              }}
-              style={{ width: Platform.OS === "ios" ? 320 : "100%" }}
-            />
-          </View>
-        )}
 
-   <Text style={styles.label}>Items</Text>
+     <Text style={styles.label}>
+  Due Date <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => setOpenDueDate(true)}
+>
+<Text style={styles.inputText}>
+  {dueDate
+    ? dayjs(dueDate).format("DD-MM-YYYY")
+    : "Select a date"}
+</Text>
+
+  <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+</TouchableOpacity>
+
+<Modal
+  transparent
+  visible={openDueDate}
+  animationType="fade"
+  onRequestClose={() => setOpenDueDate(false)}
+>
+  <View style={styles.datePickerOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenDueDate(false)}
+    />
+
+    <View style={styles.datePickerBox}>
+      <DatePicker
+        mode="single"
+        date={dueDate || new Date()}
+        onChange={(d) => {
+        handleDueDateChange(d.date);
+        setOpenDueDate(false);
+        }}
+      />
+    </View>
+  </View>
+</Modal>
+
+{dueDateErr !== "" && (
+  <Text style={{ color: "red", fontSize: 13 }}>{dueDateErr}</Text>
+)}
+
+
+
+   <Text style={styles.label}>Items <Text style={{color:'red'}}>*</Text></Text>
 
 <TouchableOpacity
   style={styles.ItemdropdownBox}
@@ -305,9 +541,7 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
      
                <TouchableOpacity
                  style={styles.saveBtn}
-                 onPress={() => {
-                   navigation.goBack();
-                 }}
+                onPress={validateAndSubmit}
                >
                  <Text style={styles.saveText}> {mode === "edit" ? "Update Bill" : " Create Bill"}</Text>
                </TouchableOpacity>
@@ -618,5 +852,41 @@ customerOptionTextSelected: {
     fontSize: 15,
     fontWeight: "600",
   },
+
+  dateBox: {
+  height: 52,
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 12,
+  paddingHorizontal: 15,
+  justifyContent: "space-between",
+  alignItems: "center",
+  flexDirection: "row",
+  marginBottom: 8,
+},
+
+datePickerOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+outsideTouch: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+
+datePickerBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  elevation: 10,
+},
+
   
 });

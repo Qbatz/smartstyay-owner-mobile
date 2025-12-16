@@ -6,7 +6,14 @@ export const CustomerContext = createContext();
 
 export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("")
+
+   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
+
+    const getErrorMessage = (error) =>
+    error?.response?.data?.message ||
+    error?.response?.data ||
+    "Something went wrong";
 
   const getCustomersByHostel = async (
     hostelId,
@@ -45,12 +52,57 @@ export const CustomerProvider = ({ children }) => {
       setErrorMsg(msg);
       return [];
     }
+  }
+
+
+   const GetParticularCustomerDetails = async (customerId) => {
+    if (!customerId) return { success: false };
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const token = await retriveData("token");
+
+      const res = await AxiosConfig.get(
+        `/v2/customers/details/${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        setParticularCustomerDetails(res.data); // 🔥 STORE DATA
+        return { success: true, data: res.data };
+      }
+
+      return { success: false };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      console.log("CUSTOMER DETAILS ERROR:", msg);
+      setErrorMsg(msg);
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ----------------------------------
+  // RESET PARTICULAR CUSTOMER (OPTIONAL)
+  // ----------------------------------
+  const resetParticularCustomer = () => {
+    setParticularCustomerDetails(null);
   };
 
   return (
     <CustomerContext.Provider
       value={{
         getCustomersByHostel,
+        GetParticularCustomerDetails,
+        ParticularcustomerDetails,
+        resetParticularCustomer,
         loading,
         errorMsg,
       }}
