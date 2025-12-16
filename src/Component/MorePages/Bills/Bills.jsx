@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -14,11 +14,12 @@ import {
   BackHandler
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useLayoutEffect } from "react";
-
+import { useLayoutEffect } from "react"; 
+import { BillContext } from "../../../Context/BillsContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 import Profile from "../../../Assets/Images/profile.png";
-import FilterIcon from "../../../Assets/Images/filter.png";
+import FilterIcon from "../../../Assets/Images/filter.png";  
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import InProfile from "../../../Assets/Images/inActiveuser.png";
 import ActiveCheckout from "../../../Assets/Images/Active_checkout.png";
@@ -68,9 +69,15 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
+  const { BillDetails, loading, GetAllBillDetails } = useContext(BillContext);
+    const { activeHostelId } = useContext(CommonContexts);
+
+
   const [activeTab, setActiveTab] = useState("All Bills");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+ 
 const [selectedCustomer, setSelectedCustomer] = useState(null);
 const [showReAssignbed , setShowReAssignBed] = useState(false)
 const [showNotice, setShowNotice] = useState(false);
@@ -117,6 +124,16 @@ const refundModes = ["UPI", "Cash", "Bank Transfer"];
 
 
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+
+
+useEffect(() => {
+  GetAllBillDetails(activeHostelId);
+}, [activeHostelId]);
+
+
+
+
+  
 
 const dotsRef = useRef(null);
 
@@ -496,19 +513,19 @@ const handleShowCancelNotice = () => {
 navigation.navigate("CancelNotice")
 }
 
-const customerList = [
-  {
-    id: 1,
-    name: "Allwin A",
-    img: Profile,
-    floor: "Ground Floor",
-    room: "203",
-    bed: "03",
-    email: "rajkumar001@gmail.com",
-    phone: "+91 98765 43210",
-    joinDate: "10 July 2025",
-  },
-];
+// const customerList = [
+//   {
+//     id: 1,
+//     name: "Allwin A",
+//     img: Profile,
+//     floor: "Ground Floor",
+//     room: "203",
+//     bed: "03",
+//     email: "rajkumar001@gmail.com",
+//     phone: "+91 98765 43210",
+//     joinDate: "10 July 2025",
+//   },
+// ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -559,59 +576,62 @@ const customerList = [
 {activeTab === "All Bills" && (
   <View style={{ flex: 1 }}>
 
-    {customerList.length > 0 ? (
-      // 👉 SHOW LIST WHEN DATA EXISTS
-      <>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 50 }}
-        >
-          <Text style={styles.sectionTitle}>This Month</Text>
+    {BillDetails && BillDetails.length > 0 ? (
+  <ScrollView
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ paddingBottom: 50 }}
+  >
+    <Text style={styles.sectionTitle}>This Month</Text>
 
-          <View style={styles.tenantRow}>
-            <TouchableOpacity onPress={() => openBillDetails(customerList[0])}>
-              <Image source={ProfileImage} style={styles.profileImg} />
-            </TouchableOpacity>
+    {BillDetails.map((item) => (
+      <View key={item.invoiceId} style={styles.tenantRow}>
+        <TouchableOpacity onPress={() => openBillDetails(item)}>
+          <Image
+            source={item.profilePic ? { uri: item.profilePic } : ProfileImage}
+            style={styles.profileImg}
+          />
+        </TouchableOpacity>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name}>Allwin A</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.name}>{item.fullName}</Text>
 
-              <View style={styles.detailRow}>
-                <View style={styles.floorBadge}>
-                  <Text style={styles.floorText}>Advance</Text>
-                </View>
-
-                <Image source={Bills_Black_Icon} style={styles.iconSmall} />
-                <Text style={styles.detailText}>#12121212</Text>
-              </View>
+          <View style={styles.detailRow}>
+            <View style={styles.floorBadge}>
+              <Text style={styles.floorText}>{item.invoiceType}</Text>
             </View>
 
-            <View style={styles.rightSection}>
-              <TouchableOpacity ref={dotsRef} onPress={() => openMenu(customerList[0])}>
-                <Image
-                  source={Dots}
-                  style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                />
-              </TouchableOpacity>
-
-              <Text style={styles.dateText}>01/06</Text>
-            </View>
+            <Image source={Bills_Black_Icon} style={styles.iconSmall} />
+            <Text style={styles.detailText}>#{item.invoiceNumber}</Text>
           </View>
-        </ScrollView>
-      </>
-    ) : (
+        </View>
+
+        <View style={styles.rightSection}>
+          <TouchableOpacity ref={dotsRef} onPress={() => openMenu(item)}>
+            <Image
+              source={Dots}
+              style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+            />
+          </TouchableOpacity>
+
+          <Text style={styles.dateText}>{item.invoiceDate}</Text>
+        </View>
+      </View>
+    ))}
+  </ScrollView>
+) : (
+
       // 👉 EMPTY STATE WHEN NO DATA
       <View style={styles.centerContainer}>
         <Image source={EmptyFloor} style={styles.image} />
-        <Text style={styles.noFloorText}>No floors are there!</Text>
+        <Text style={styles.noFloorText}>No bills are there!</Text>
 
         <TouchableOpacity style={styles.addFloorBtn}>
-          <Text style={styles.addFloorText}>+ Add Floor</Text>
+          <Text style={styles.addFloorText}>+ Add Bill</Text>
         </TouchableOpacity>
       </View>
     )}
 
-    {customerList.length > 0 && (
+    {BillDetails.length > 0 && (
         <>
          <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
       <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
