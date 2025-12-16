@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect,useContext} from "react";
 import {
   View,
   Text,
@@ -10,16 +10,24 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
+import { CommonContexts } from "../../Context/CommonContext";
+import { useFloor } from "../../Context/PayingGuestContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddFloorSheet({ visible, onClose }) {
+export default function AddFloorSheet({ visible, onClose,onSuccess }) {
   const translateY = useRef(new Animated.Value(300)).current;
   const [floorName, setFloorName] = useState("");
+  const [floorNameError, setFloorNameError] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const inputRef = useRef(null);
+  const { activeHostelId } = useContext(CommonContexts);
+  const {addFloor } = useFloor();
+    const [modalType, setModalType] = useState("success");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
 
-  /** -------------------------------------
-   *  OPEN SHEET ANIMATION
-   * ------------------------------------- */
+ 
   const openSheet = () => {
     Animated.timing(translateY, {
       toValue: 0,
@@ -28,9 +36,7 @@ export default function AddFloorSheet({ visible, onClose }) {
     }).start();
   };
 
-  /** -------------------------------------
-   *  CLOSE SHEET ANIMATION
-   * ------------------------------------- */
+  
   const closeSheet = () => {
     Animated.timing(translateY, {
       toValue: 300,
@@ -43,29 +49,30 @@ export default function AddFloorSheet({ visible, onClose }) {
     });
   };
 
-  /** -------------------------------------
-   *  WHEN visible changes → OPEN SHEET
-   * ------------------------------------- */
+ useEffect(() => {
+  if (!visible) {
+    setFloorName("");
+    setFloorNameError("");
+    setKeyboardHeight(0);
+  }
+}, [visible]);
+
   useEffect(() => {
     if (visible) openSheet();
   }, [visible]);
 
-  /** -------------------------------------
-   *  FOCUS INPUT AFTER ANIMATION
-   * ------------------------------------- */
+ 
   useEffect(() => {
     if (!visible) return;
 
     const timer = setTimeout(() => {
       inputRef.current?.focus();
-    }, 350); // ensures animation fully ends first
+    }, 350); 
 
     return () => clearTimeout(timer);
   }, [visible]);
 
-  /** -------------------------------------
-   *  KEYBOARD LISTENERS
-   * ------------------------------------- */
+ 
   useEffect(() => {
     if (!visible) return;
 
@@ -83,9 +90,7 @@ export default function AddFloorSheet({ visible, onClose }) {
     };
   }, [visible]);
 
-  /** -------------------------------------
-   *  SWIPE DOWN TO CLOSE
-   * ------------------------------------- */
+ 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 4,
@@ -100,8 +105,44 @@ export default function AddFloorSheet({ visible, onClose }) {
   ).current;
 
   if (!visible) return null;
+ const handleAddFloor = async () => {
+
+    let valid = true;
+  if (!floorName.trim()) {
+      setFloorNameError("Please Enter FloorName");
+      valid = false;
+    }
+     if (!valid) return;
+  const res = await addFloor({
+    hostelId: activeHostelId,
+    floorName: floorName.trim(),
+  });
+
+  if (res.success) {
+     setModalType("success");
+  setMessage(res.data);
+  setShowSuccess(true);
+
+  setTimeout(() => {
+    setShowSuccess(false);
+    onSuccess && onSuccess();
+    onClose();  
+  }, 800);
+  } else {
+    setFloorNameError(res.message)
+    
+  }
+};
+
 
   return (
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+
+      />
     <View style={styles.overlay}>
       <TouchableWithoutFeedback onPress={closeSheet}>
         <View style={{ flex: 1 }} />
@@ -130,26 +171,29 @@ export default function AddFloorSheet({ visible, onClose }) {
           placeholder="Enter floor Name or No"
           style={styles.input}
           value={floorName}
-          onChangeText={setFloorName}
+        
+          onChangeText={(text) => {
+              setFloorName(text);
+              setFloorNameError("");
+            }}   
         />
-
-        {/* <TouchableOpacity style={styles.addBtn}>
-          <Text style={styles.addBtnText}>Add Floor</Text>
-        </TouchableOpacity> */}
+        <View style={styles.ErrorFloor}>
+ {floorNameError && (
+              <ErrorMessage message={floorNameError} type="error" />
+            )}
+            </View>
+    
         <TouchableOpacity
   style={styles.addBtn}
-  onPress={() => {
-    if (!floorName.trim()) return;
-    onClose();        // close sheet
-    onSave(floorName); // send to parent
-    setFloorName(""); // clear input
-  }}
+ 
+  onPress={handleAddFloor}
 >
   <Text style={styles.addBtnText}>Add Floor</Text>
 </TouchableOpacity>
 
       </Animated.View>
     </View>
+    </>
   );
 }
 
@@ -212,4 +256,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
+  ErrorFloor:{
+    paddingBottom:30
+  }
 });

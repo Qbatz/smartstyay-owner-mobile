@@ -96,7 +96,11 @@ import { SettingProvider } from "./src/Context/SettingContext";
 import ExpensesProvider from "./src/Context/ExpensesContext"
 import AmenityProvider from "./src/Context/AmenityContext";
 import { CustomerProvider } from "./src/Context/CustomerContext";
+
 import BillsProvider from "./src/Context/BillsContext"
+
+import { FloorProvider } from './src/Context/PayingGuestContext';
+
 
 
 
@@ -115,9 +119,17 @@ function App() {
                 <ExpensesProvider>
                   <AmenityProvider>
                     <CustomerProvider>
+
                       <BillsProvider>
+         <FloorProvider>
                 <AppContent />
+     </FloorProvider>
                       </BillsProvider>
+
+                 
+           
+           
+
             </CustomerProvider>
             </AmenityProvider>
             </ExpensesProvider>
