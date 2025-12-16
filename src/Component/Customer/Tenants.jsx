@@ -66,7 +66,7 @@ const [customers, setCustomers] = useState([]);
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data || []);
   };
-  console.log("customers",customers)
+  
 
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
@@ -98,7 +98,7 @@ useEffect(() => {
   }).start();
 }, [showFilter]);
 
-
+console.log("customers",selectedCustomer)
 const filterPanResponder = PanResponder.create({
   onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
   onPanResponderMove: (_, g) => {
@@ -283,20 +283,22 @@ const customerList = [
        contentContainerStyle={{ paddingBottom: 50 }} 
      >
         <Text style={styles.sectionTitle}>This Month</Text>
+        {/* {
+          customers.map((item)=>{
 <View style={styles.tenantRow}>
-        <TouchableOpacity  onPress={() => openCustomerDetails(customerList[0])}>
+        <TouchableOpacity  onPress={() => openCustomerDetails(item.customerId)}>
           <Image source={Profile} style={styles.profileImg} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>Rajkumar M</Text>
+            <Text style={styles.name}>{item.fullName} {item.lastName}</Text>
             <View style={styles.detailRow}>
               <View style={styles.floorBadge}>
-                <Text style={styles.floorText}>Ground Floor</Text>
+                <Text style={styles.floorText}>{item.floorName}</Text>
               </View>
               <Image source={room} style={styles.iconSmall} />
-              <Text style={styles.detailText}>203</Text>
+              <Text style={styles.detailText}>{item.roomName}</Text>
               <Image source={Bed} style={styles.iconSmall} />
-              <Text style={styles.detailText}>03</Text>
+              <Text style={styles.detailText}>{item.bedName}</Text>
             </View>
           </View>
           <View style={styles.rightSection}>
@@ -317,6 +319,60 @@ const customerList = [
           </View>
         
         </View>
+          })
+        } */}
+        {customers.map((item) => (
+  <View key={item.customerId} style={styles.tenantRow}>
+    
+    <TouchableOpacity onPress={() => openCustomerDetails(item)}>
+      <Image source={Profile} style={styles.profileImg} />
+    </TouchableOpacity>
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.name}>
+        {item.fullName}
+      </Text>
+
+      <View style={styles.detailRow}>
+        {item.floorName && (
+          <View style={styles.floorBadge}>
+            <Text style={styles.floorText}>{item.floorName}</Text>
+          </View>
+        )}
+
+        {item.roomName && (
+          <>
+            <Image source={room} style={styles.iconSmall} />
+            <Text style={styles.detailText}>{item.roomName}</Text>
+          </>
+        )}
+
+        {item.bedName && (
+          <>
+            <Image source={Bed} style={styles.iconSmall} />
+            <Text style={styles.detailText}>{item.bedName}</Text>
+          </>
+        )}
+      </View>
+    </View>
+
+    <View style={styles.rightSection}>
+      <TouchableOpacity ref={dotsRef} onPress={() => openMenu(item)}>
+        <Image
+          source={Dots}
+          style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+        />
+      </TouchableOpacity>
+
+      <Text style={styles.dateText}>
+        {item.bookedAt || "--"}
+      </Text>
+    </View>
+
+  </View>
+))}
+
+
         
       </ScrollView>
 
@@ -377,19 +433,19 @@ const customerList = [
 
 
         <View style={styles.modalProfileRow}>
-          <Image source={selectedCustomer?.img} style={styles.modalProfileImg} />
+          <Image source={Profile} style={styles.modalProfileImg} />
 
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.modalName}>{selectedCustomer?.name}</Text>
+            <Text style={styles.modalName}>{selectedCustomer?.firstName} {selectedCustomer?.lastName}</Text>
 
             <View style={styles.detailRow}>
               <View style={styles.floorBadge}>
-                <Text style={styles.floorText}>{selectedCustomer?.floor}</Text>
+                <Text style={styles.floorText}>{selectedCustomer?.floorName}</Text>
               </View>
               <Image source={room} style={{width:18,height:18}} />
-              <Text style={styles.detailText}>{selectedCustomer?.room}</Text>
+              <Text style={styles.detailText}>{selectedCustomer?.roomName}</Text>
               <Image source={Bed} style={{width:18,height:18}} />
-              <Text style={styles.detailText}>{selectedCustomer?.bed}</Text>
+              <Text style={styles.detailText}>{selectedCustomer?.bedName}</Text>
             </View>
           </View>
         </View>
@@ -402,7 +458,7 @@ const customerList = [
     style={{ width: 15, height: 15, marginRight: 5 }}
     resizeMode="contain"
   />
-  <Text style={styles.infoValue}>{selectedCustomer?.email}</Text>
+  <Text style={styles.infoValue}>{selectedCustomer?.emailId}</Text>
 </View>
 
 
@@ -413,7 +469,7 @@ const customerList = [
     style={{ width: 15, height: 15, marginRight: 5 }}
     resizeMode="contain"
   />
-  <Text style={styles.infoValue}>{selectedCustomer?.phone}</Text>
+  <Text style={styles.infoValue}>{selectedCustomer?.mobile}</Text>
 </View>
         <Text style={styles.infoLabel}>Joining Date</Text>
   <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -422,7 +478,7 @@ const customerList = [
     style={{ width: 15, height: 15, marginRight: 5 }}
     resizeMode="contain"
   />
-  <Text style={styles.infoValue}>{selectedCustomer?.joinDate}</Text>
+  <Text style={styles.infoValue}>{selectedCustomer?.actualJoining}</Text>
 </View>
         <TouchableOpacity style={styles.unassignBtn}>
           <Text style={styles.unassignText}>Un Assigned</Text>
