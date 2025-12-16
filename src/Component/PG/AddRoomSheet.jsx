@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,19 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
+import { useFloor } from "../../Context/PayingGuestContext";
+import { CommonContexts } from "../../Context/CommonContext";
 
-export default function AddRoomSheet({ visible, onClose }) {
+export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSuccessFloor }) {
   const translateY = useRef(new Animated.Value(300)).current;
   const [roomName, setRoomName] = useState("");
+  const [roomError, setRoomError] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const inputRef = useRef(null);
 
- 
+  const { addRoom } = useFloor();
+  const { activeHostelId } = useContext(CommonContexts);
+
   const openSheet = () => {
     Animated.timing(translateY, {
       toValue: 0,
@@ -26,68 +31,82 @@ export default function AddRoomSheet({ visible, onClose }) {
     }).start();
   };
 
- 
   const closeSheet = () => {
     Animated.timing(translateY, {
       toValue: 300,
       duration: 200,
       useNativeDriver: false,
     }).start(() => {
-      setKeyboardHeight(0);
       setRoomName("");
+      setRoomError("");
+      setKeyboardHeight(0);
       onClose();
     });
   };
 
- 
   useEffect(() => {
     if (visible) openSheet();
   }, [visible]);
 
-
-  useEffect(() => {
-    if (!visible) return;
-
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 350);
-
-    return () => clearTimeout(timer);
+  
+   useEffect(() => {
+    if (!visible) {
+      setRoomError("");
+      setRoomName("");
+      setKeyboardHeight(0);
+    }
   }, [visible]);
 
- 
   useEffect(() => {
     if (!visible) return;
 
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardHeight(e.endCoordinates.height - 20);
-    });
-
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardHeight(0);
-    });
+    const show = Keyboard.addListener("keyboardDidShow", (e) =>
+      setKeyboardHeight(e.endCoordinates.height - 20)
+    );
+    const hide = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardHeight(0)
+    );
 
     return () => {
-      showSub.remove();
-      hideSub.remove();
+      show.remove();
+      hide.remove();
     };
   }, [visible]);
 
- 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 4,
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) translateY.setValue(g.dy);
-      },
+      onPanResponderMove: (_, g) => g.dy > 0 && translateY.setValue(g.dy),
       onPanResponderRelease: (_, g) => {
-        if (g.dy > 120) closeSheet();
-        else openSheet();
+        g.dy > 120 ? closeSheet() : openSheet();
       },
     })
   ).current;
 
   if (!visible) return null;
+
+ 
+  const handleAddRoom = async () => {
+    if (!roomName.trim()) {
+      setRoomError("Please enter room name");
+      return;
+    }
+
+    const res = await addRoom({
+      hostelId: activeHostelId,
+      floorId,
+      roomName: roomName.trim(),
+    });
+
+    if (res.success) {
+      onSuccess && onSuccess();
+     
+      closeSheet();
+    } else {
+      setRoomError(res.message);
+      console.log("res.message",res.message)
+    }
+  };
 
   return (
     <View style={styles.overlay}>
@@ -98,10 +117,7 @@ export default function AddRoomSheet({ visible, onClose }) {
       <Animated.View
         style={[
           styles.sheet,
-          {
-            marginBottom: keyboardHeight,
-            transform: [{ translateY }],
-          },
+          { marginBottom: keyboardHeight, transform: [{ translateY }] },
         ]}
         {...panResponder.panHandlers}
       >
@@ -110,40 +126,30 @@ export default function AddRoomSheet({ visible, onClose }) {
         <Text style={styles.title}>Add Room</Text>
 
         <Text style={styles.label}>
-          Room Name or No <Text style={{ color: "red" }}>*</Text>
+          Room Name / No <Text style={{ color: "red" }}>*</Text>
         </Text>
 
         <TextInput
           ref={inputRef}
-          placeholder="Enter Room Name or No"
+          placeholder="Enter Room Name"
           style={styles.input}
           value={roomName}
-          onChangeText={setRoomName}
+          onChangeText={(t) => {
+            setRoomName(t);
+            setRoomError("");
+          }}
         />
 
-        {/* <TouchableOpacity style={styles.addBtn}>
-          <Text style={styles.addBtnText}>Add Floor</Text>
-        </TouchableOpacity> */}
-        <TouchableOpacity
-  style={styles.addBtn}
-  onPress={() => {
-    if (!roomName.trim()) return;
-    onClose();        // close sheet
-    onSave(roomName); // send to parent
-    setRoomName(""); // clear input
-  }}
->
-  <Text style={styles.addBtnText}>Add Room</Text>
-</TouchableOpacity>
+        {roomError ? <Text style={styles.error}>{roomError}</Text> : null}
 
+        <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
+          <Text style={styles.addBtnText}>Add Room</Text>
+        </TouchableOpacity>
       </Animated.View>
     </View>
   );
 }
 
-/* ------------------------------------------
- * STYLES
- * ----------------------------------------- */
 const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
@@ -151,14 +157,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "flex-end",
   },
-
   sheet: {
     backgroundColor: "#fff",
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
-
   handle: {
     width: 45,
     height: 5,
@@ -167,37 +171,21 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 12,
   },
-
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 20,
-  },
-
-  label: {
-    fontSize: 14,
-    color: "#444",
-    marginBottom: 8,
-  },
-
+  title: { fontSize: 18, fontWeight: "700", marginBottom: 20 },
+  label: { fontSize: 14, marginBottom: 8 },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 10,
     padding: 12,
-    marginBottom: 20,
+    marginBottom: 8,
   },
-
+  error: { color: "red", marginBottom: 12 },
   addBtn: {
     backgroundColor: "#1E45E1",
     paddingVertical: 14,
     borderRadius: 12,
     marginBottom: 40,
   },
-
-  addBtnText: {
-    textAlign: "center",
-    color: "#fff",
-    fontWeight: "600",
-  },
+  addBtnText: { color: "#fff", textAlign: "center", fontWeight: "600" },
 });
