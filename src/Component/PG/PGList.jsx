@@ -247,6 +247,9 @@ const [selectedFloorId, setSelectedFloorId] = useState(null);
  const [rooms, setRooms] = useState([]);
  const [selectedRoomId, setSelectedRoomId] = useState(null);
 const [beds, setBeds] = useState([]);
+const [selectedBedRoomId,setSelectedBedRoomId] = useState("")
+const [bedsByRoom, setBedsByRoom] = useState({});
+
 
 useEffect(() => {
   if (!activeHostelId) return;
@@ -285,22 +288,17 @@ const refreshRooms = async () => {
     setRooms(res.data); 
   }
 };
-useEffect(() => {
-  if (!selectedRoomId) {
-    setBeds([]);
-    return;
+
+
+const handleBedAdded = async (roomId) => {
+  const res = await getAllBedsByRoom(roomId);
+  if (res.success) {
+    setBedsByRoom(prev => ({
+      ...prev,
+      [roomId]: res.data,
+    }));
   }
-
-  const loadBeds = async () => {
-    const res = await getAllBedsByRoom(selectedRoomId);
-    if (res.success) {
-      setBeds(res.data);
-    }
-  };
-
-  loadBeds();
-}, [selectedRoomId]);
-
+};
 
 // useEffect(() => {
 //   const loadBeds = async () => {
@@ -315,7 +313,7 @@ useEffect(() => {
 
 //   loadBeds();
 // }, [selectedRoomId]);
-console.log("beds",beds)
+
 const getBedStatus = (bed) => {
   const statuses = [];
 
@@ -327,13 +325,26 @@ const getBedStatus = (bed) => {
   return statuses.length ? statuses.join(",") : "available";
 };
 
+// useEffect(() => {
+//   if (rooms.length > 0) {
+//     setSelectedRoomId(rooms[0].id);
+//   } else {
+//     setSelectedRoomId(null);
+//     setBeds([]);
+//   }
+// }, [rooms]);
 useEffect(() => {
-  if (rooms.length > 0) {
-    setSelectedRoomId(rooms[0].id);
-  } else {
-    setSelectedRoomId(null);
-    setBeds([]);
-  }
+  if (!rooms.length) return;
+
+  rooms.forEach(async (room) => {
+    const res = await getAllBedsByRoom(room.id);
+    if (res.success) {
+      setBedsByRoom(prev => ({
+        ...prev,
+        [room.id]: res.data,
+      }));
+    }
+  });
 }, [rooms]);
 
 
@@ -572,7 +583,11 @@ const handleCheckIn = ()=>{
    setShowDoubleStatus(false) 
    navigation.navigate("ReserveToCheckin") 
 }
-
+const handleAddBed = (roomId) => {
+  setSelectedBedRoomId(roomId);
+  setShowAddBed(true);
+  console.log("roomId",roomId)
+};
   
   return (
     <>
@@ -904,7 +919,9 @@ const handleCheckIn = ()=>{
 
   <TouchableOpacity
     style={styles.addRoomBtn}
-    onPress={() => setShowAddBed(true)}
+  onPress={() => handleAddBed(item.id)}
+
+
   >
     <Image source={AddIcon} style={{ width: 22, height: 22 }} />
   </TouchableOpacity>
@@ -985,15 +1002,14 @@ const handleCheckIn = ()=>{
                     <Text style={styles.bedLabel}>{b.label}</Text>
                   </TouchableOpacity>
                 ))} */}
-    {selectedRoomId === item.id &&
-  beds.map((b) => {
-    const status = getBedStatus(b);
+    {bedsByRoom[item.id]?.map((b) => {
+  const status = getBedStatus(b);
 
-    return (
-      <TouchableOpacity
-        key={b.id}
-        style={styles.bedItem}
-        onPress={() => {
+  return (
+    <TouchableOpacity
+      key={b.id}
+      style={styles.bedItem}
+      onPress={() => {
           const statuses = splitStatus(status);
 
           if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
@@ -1042,34 +1058,27 @@ const handleCheckIn = ()=>{
 }
 
         }}
-      >
-        <Image source={getBaseBed(status)} style={styles.bedIcon} />
+    >
+      <Image source={getBaseBed(status)} style={styles.bedIcon} />
 
-        {overlayIcons[getPrimaryStatus(status)] && (
-          <Image
-            source={overlayIcons[getPrimaryStatus(status)]}
-            style={styles.overlayIcon}
-          />
-        )}
+      {overlayIcons[getPrimaryStatus(status)] && (
+        <Image
+          source={overlayIcons[getPrimaryStatus(status)]}
+          style={styles.overlayIcon}
+        />
+      )}
 
-        {/* {getStatusCount(status) > 1 && (
-          <View style={styles.multiBadge}>
-            <Text style={styles.multiBadgeText}>
-              {getStatusCount(status)}
-            </Text>
-          </View>
-        )} */}
-        {b.onNotice && b.isBooked && (
-  <View style={styles.multiBadge}>
-    <Text style={styles.multiBadgeText}>2</Text>
-  </View>
-)}
+      {b.onNotice && b.isBooked && (
+        <View style={styles.multiBadge}>
+          <Text style={styles.multiBadgeText}>2</Text>
+        </View>
+      )}
 
+      <Text style={styles.bedLabel}>{b.bedName}</Text>
+    </TouchableOpacity>
+  );
+})}
 
-        <Text style={styles.bedLabel}>{b.bedName}</Text>
-      </TouchableOpacity>
-    );
-  })}
 
 
               </View>
@@ -1161,6 +1170,8 @@ const handleCheckIn = ()=>{
       <AddBedBottomSheet
         visible={showAddBed}
         onClose={() => setShowAddBed(false)}
+        selectedRoomId={selectedBedRoomId}
+         onBedAdded={handleBedAdded}
       />
 
       <ManageBedBottomSheet
