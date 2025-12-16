@@ -136,6 +136,40 @@ const addFloor = async ({ hostelId, floorName }) => {
   }
 };
 
+const addBed = async ({ bedName, roomId, hostelId, amount }) => {
+  try {
+    setLoading(true);
+    const token = await retriveData("token");
+
+    const payload = {
+      bedName,
+      roomId,
+      hostelId,
+      amount,
+    };
+
+    const res = await api.post(
+      `/v2/bed`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    console.log("Add Bed API error", err);
+    return {
+      success: false,
+      message: err?.response?.data || "Bed add failed",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <FloorContext.Provider
@@ -143,7 +177,7 @@ const addFloor = async ({ hostelId, floorName }) => {
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom
+        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed
       }}
     >
       {children}

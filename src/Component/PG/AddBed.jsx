@@ -1,15 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View, Text, TextInput, TouchableOpacity,
-  Animated, PanResponder, StyleSheet
+  Animated, PanResponder, Keyboard, TouchableWithoutFeedback, StyleSheet
 } from "react-native";
+import { useFloor } from "../../Context/PayingGuestContext";
+import { CommonContexts } from "../../Context/CommonContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddBedBottomSheet({ visible, onClose }) {
+export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, onBedAdded }) {
   const translateY = useRef(new Animated.Value(300)).current;
+  const { addBed, getAllBedsByRoom } = useFloor();
 
+  const { activeHostelId } = useContext(CommonContexts);
+  const keyboardOffset = useRef(new Animated.Value(0)).current;
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [bedName, setBedName] = useState("");
   const [amount, setAmount] = useState("");
-
+  const [bedNameError, setBedNameError] = useState("")
+  const [amountError, setAmountError] = useState("")
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
   const isDisabled = bedName.trim() === "" || amount.trim() === "";
 
   useEffect(() => {
@@ -27,6 +40,7 @@ export default function AddBedBottomSheet({ visible, onClose }) {
       }).start(() => {
         setBedName("");
         setAmount("");
+        setBedNameError("")
       });
     }
   }, [visible]);
@@ -42,46 +56,184 @@ export default function AddBedBottomSheet({ visible, onClose }) {
         Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
     },
   });
+  useEffect(() => {
+    if (!visible) return;
+
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [visible]);
+
+
 
   if (!visible) return null;
+  const handleSaveBed = async () => {
+  let valid = true;
 
+  // 🔥 TRIM ONLY HERE
+  const trimmedBedName = bedName.trim();
+  const trimmedAmount = amount.trim();
+
+  if (!trimmedBedName) {
+    setBedNameError("Bed name is required");
+    valid = false;
+  } else {
+    setBedNameError("");
+  }
+
+  if (!trimmedAmount) {
+    setAmountError("Amount is required");
+    valid = false;
+  } else {
+    setAmountError("");
+  }
+
+  if (!valid) return;
+
+  const res = await addBed({
+    bedName: trimmedBedName, 
+    roomId: selectedRoomId,
+    hostelId: activeHostelId,
+    amount: trimmedAmount,
+  });
+
+  if (res.success) {
+    setModalType("success");
+    setMessage(res.data);
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      onBedAdded(selectedRoomId);
+      onClose();
+    }, 800);
+  } else {
+    setBedNameError(res.message);
+  }
+};
+
+  // const handleSaveBed = async () => {
+  //   let valid = true;
+
+
+  //   if (!bedName.trim()) {
+  //     setBedNameError("Bed name is required");
+  //     valid = false;
+  //   } else {
+  //     setBedNameError("");
+  //   }
+
+
+  //   if (!amount.trim()) {
+  //     setAmountError("Amount is required");
+  //     valid = false;
+  //   } else {
+  //     setAmountError("");
+  //   }
+
+  //   if (!valid) return;
+  //   const res = await addBed({
+  //     bedName: bedName,
+  //     roomId: selectedRoomId,
+  //     hostelId: activeHostelId,
+  //     amount: amount,
+  //   });
+
+  //   if (res.success) {
+  //     // onClose();
+  //     //  onBedAdded(selectedRoomId);
+  //     setModalType("success");
+  //     setMessage(res.data);
+  //     setShowSuccess(true);
+
+  //     setTimeout(() => {
+  //       setShowSuccess(false);
+  //       onBedAdded(selectedRoomId);
+  //       onClose();
+  //     }, 800);
+  //   }
+  //   else {
+  //     setBedNameError(res.message)
+  //     console.log("res.message", res.message)
+
+  //   }
+  // };
   return (
-    <View style={styles.overlay}>
-      <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
 
-      <Animated.View
-        style={[styles.sheet, { transform: [{ translateY }] }]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.handle} />
-
-        <Text style={styles.title}>Add Bed</Text>
-
-        <Text style={styles.label}>Bed Name or No *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Bed Name or No"
-          value={bedName}
-          onChangeText={setBedName}
-        />
-
-        <Text style={styles.label}>Amount *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Amount"
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-        />
-
-        <TouchableOpacity
-          style={[styles.addButton, isDisabled && styles.addButtonDisabled]}
-          disabled={isDisabled}
+      />
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              transform: [
+                { translateY },
+                { translateY: -keyboardHeight }, // ✅ keyboard lift
+              ],
+            },
+          ]}
+          {...panResponder.panHandlers}
         >
-          <Text style={styles.addButtonText}>Add Bed</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+
+
+          <View style={styles.handle} />
+
+          <Text style={styles.title}>Add Bed</Text>
+
+          <Text style={styles.label}>Bed Name or No *</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Bed Name or No"
+            value={bedName}
+            // onChangeText={setBedName}
+            onChangeText={(text) => {
+              setBedName(text);
+              setBedNameError("");
+            }}
+          />
+          {bedNameError && (
+            <ErrorMessage message={bedNameError} type="error" />
+          )}
+          <Text style={styles.label}>Amount *</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Amount"
+            value={amount}
+
+            onChangeText={(text) => {
+              setAmount(text);
+              setAmountError("");
+            }}
+            keyboardType="numeric"
+          />
+          {amountError && (
+            <ErrorMessage message={amountError} type="error" />
+          )}
+          <TouchableOpacity
+            style={[styles.addButton, isDisabled && styles.addButtonDisabled]}
+            disabled={isDisabled}
+            onPress={handleSaveBed}
+          >
+            <Text style={styles.addButtonText}>Add Bed</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </>
   );
 }
 
@@ -91,7 +243,7 @@ const styles = StyleSheet.create({
     top: 0, bottom: 0, left: 0, right: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-    marginBottom: 40
+
   },
   overlayTouch: { flex: 1 },
   sheet: {
