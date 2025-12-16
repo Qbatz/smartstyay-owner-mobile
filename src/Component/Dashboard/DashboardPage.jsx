@@ -35,7 +35,8 @@ import CrateBill from '../../Assets/Images/create_bill.png';
 import WalkinImg from '../../Assets/Images/walkin_user.png';
 import AgreementImg from '../../Assets/Images/paperclip.png';
 import AdvanceHand from '../../Assets/Images/AdvanceHand.png';
-import ActiveCompliance from '../../Assets/Images/Active_compliance.png';
+import ActiveCompliance from '../../Assets/Images/ActiveCompliance.png';
+
 import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
@@ -322,8 +323,6 @@ const activeHostel =
     <View style={[styles.safe, { paddingTop: insets.top }]}>
 
       <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
-
-
 
       <LinearGradient
         colors={["#E9F2FF", "#F6FBFF"]}
