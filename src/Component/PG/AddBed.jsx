@@ -14,7 +14,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   console.log("editBedData",editBedData)
 
 
-  const { addBed, getAllBedsByRoom } = useFloor();
+  const { addBed, getAllBedsByRoom,updateBed  } = useFloor();
 
   const { activeHostelId } = useContext(CommonContexts);
   const keyboardOffset = useRef(new Animated.Value(0)).current;
@@ -28,20 +28,29 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [bedId,setBedId] = useState("")
+  const [initialBedName, setInitialBedName] = useState("");
+const [initialAmount, setInitialAmount] = useState("");
+
   const isDisabled =
   !bedName?.trim() || !String(amount)?.trim();
 
 
 
-  useEffect(() => {
+ useEffect(() => {
   if (isEdit && editBedData) {
-    setBedName(editBedData.bedName);
-    setBedId(editBedData.id); 
- 
-        setAmount(String(editBedData?.rentAmount ?? ""));
+    const name = editBedData.bedName ?? "";
+    const amt = String(editBedData?.rentAmount ?? "");
 
+    setBedName(name);
+    setAmount(amt);
+    setBedId(editBedData.id);
+
+    // 🔥 STORE INITIAL VALUES
+    setInitialBedName(name.trim());
+    setInitialAmount(amt.trim());
   }
 }, [editBedData]);
+
 
   useEffect(() => {
     if (visible) {
@@ -97,7 +106,6 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   const handleSaveBed = async () => {
   let valid = true;
 
-  // 🔥 TRIM ONLY HERE
   const trimmedBedName = bedName.trim();
   const trimmedAmount = amount.trim();
 
@@ -117,27 +125,100 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
 
   if (!valid) return;
 
-  const res = await addBed({
-    bedName: trimmedBedName, 
-    roomId: selectedRoomId,
-    hostelId: activeHostelId,
-    amount: trimmedAmount,
-  });
+  let res;
 
-  if (res.success) {
-    setModalType("success");
-    setMessage(res.data);
+  if (isEdit) {
+    // ✅ EDIT BED
+    if (
+    trimmedBedName === initialBedName &&
+    trimmedAmount === initialAmount
+  ) {
+    setModalType("warning");
+    setMessage("No changes detected");
     setShowSuccess(true);
 
     setTimeout(() => {
       setShowSuccess(false);
-      onBedAdded(selectedRoomId);
+    }, 800);
+
+    return;
+  }
+    res = await updateBed({
+      bedId: bedId,
+      bedName: trimmedBedName,
+      amount: trimmedAmount,
+    });
+  } else {
+    // ✅ ADD BED
+    res = await addBed({
+      bedName: trimmedBedName,
+      roomId: selectedRoomId,
+      hostelId: activeHostelId,
+      amount: trimmedAmount,
+    });
+  }
+
+  if (res.success) {
+    setModalType("success");
+    setMessage(
+      isEdit ? "Bed Updated Successfully" : "Bed Added Successfully"
+    );
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      onBedAdded(selectedRoomId); // 🔥 refresh beds
       onClose();
     }, 800);
   } else {
     setBedNameError(res.message);
   }
 };
+
+//   const handleSaveBed = async () => {
+//   let valid = true;
+
+//   // 🔥 TRIM ONLY HERE
+//   const trimmedBedName = bedName.trim();
+//   const trimmedAmount = amount.trim();
+
+//   if (!trimmedBedName) {
+//     setBedNameError("Bed name is required");
+//     valid = false;
+//   } else {
+//     setBedNameError("");
+//   }
+
+//   if (!trimmedAmount) {
+//     setAmountError("Amount is required");
+//     valid = false;
+//   } else {
+//     setAmountError("");
+//   }
+
+//   if (!valid) return;
+
+//   const res = await addBed({
+//     bedName: trimmedBedName, 
+//     roomId: selectedRoomId,
+//     hostelId: activeHostelId,
+//     amount: trimmedAmount,
+//   });
+
+//   if (res.success) {
+//     setModalType("success");
+//     setMessage(res.data);
+//     setShowSuccess(true);
+
+//     setTimeout(() => {
+//       setShowSuccess(false);
+//       onBedAdded(selectedRoomId);
+//       onClose();
+//     }, 800);
+//   } else {
+//     setBedNameError(res.message);
+//   }
+// };
 
   // const handleSaveBed = async () => {
   //   let valid = true;

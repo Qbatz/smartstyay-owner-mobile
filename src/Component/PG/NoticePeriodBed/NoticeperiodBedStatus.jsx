@@ -17,11 +17,16 @@ export default function NoticePeriodBedSheet({
   onClose,
   bed,
   room,
-  tenant,onClick,onFinalSheet,cancelNoticePeriod
+  tenant,onClick,onFinalSheet,cancelNoticePeriod,handleEditBed,selectedBed
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
   const [menuVisible, setMenuVisible] = useState(false);
   
+const handleEdit = () => {
+  if (!handleEditBed || !selectedBed) return;
+  handleEditBed(selectedBed);
+};
+
 
   useEffect(() => {
     Animated.timing(translateY, {
@@ -138,6 +143,14 @@ const handleCancelNoticePeriod = () => {
                   style={styles.menuIcon}
                 />
                 <Text style={styles.menuText}>Generate FS</Text>
+              </TouchableOpacity>
+               <TouchableOpacity style={styles.menuItem} 
+             onPress={handleEdit}>
+                <Image
+                  source={require("../../../Assets/Images/editIcon.png")}
+                  style={styles.menuIcon}
+                />
+                <Text style={styles.menuText}>Edit</Text>
               </TouchableOpacity>
             </View>
           )}

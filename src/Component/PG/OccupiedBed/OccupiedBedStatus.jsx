@@ -21,7 +21,7 @@ import Dots from "../../../Assets/Images/3dots.png";
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 
-export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign }) {
+export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed }) {
     const translateY = useRef(new Animated.Value(300)).current;
     
     // const [showNotice, setShowNotice] = useState(false);
@@ -34,6 +34,10 @@ const handleMoveClick = () => {
   setMenuOpen(false);
   onClose();          // close occupied sheet
   onMoveToNotice();   // tell parent to open notice period
+};
+const handleEdit = () => {
+  if (!handleEditBed || !selectedBed) return;
+  handleEditBed(selectedBed);
 };
 
 const handleReAssignBed=()=>{
@@ -105,6 +109,10 @@ const handleReAssignBed=()=>{
                             <TouchableOpacity style={styles.popupItem} onPress={handleMoveClick}>
                                 <Image source={NoticeIcon} style={styles.menuIcon} />
                                 <Text style={styles.popupText}>Move to Notice Period</Text>
+                            </TouchableOpacity>
+                             <TouchableOpacity style={styles.popupItem} onPress={handleEdit}>
+                                <Image source={NoticeIcon} style={styles.menuIcon} />
+                                <Text style={styles.popupText}>Edit</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
