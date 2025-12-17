@@ -12,6 +12,9 @@ import {
 import {  useRoute} from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
+import { BillContext } from "../../../Context/BillsContext";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -32,6 +35,11 @@ export default function CreateBill({navigation}) {
         loading,
         errorMsg,} = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
+
+    const { CreateManualBill, GetAllBillDetails,
+  // loading: billLoading,
+  // errorMsg: billError,
+} = useContext(BillContext);
 
   const itemOptions = ["Room rent", "EB", "Others"];
 
@@ -63,6 +71,12 @@ const [itemErr, setItemErr] = useState("");
 
 
   const [items, setItems] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+
 
   const selectedTypes = items.map((i) => i.type);
 
@@ -105,6 +119,7 @@ useEffect(() => {
 console.log("selectedCustomer", selectedCustomer , ParticularcustomerDetails);
 
 
+
   const getJoiningDate = () => {
   const jd = ParticularcustomerDetails?.hostelInfo?.joiningDate;
   return jd ? dayjs(jd, "DD/MM/YYYY") : null;
@@ -135,6 +150,68 @@ console.log("selectedCustomer", selectedCustomer , ParticularcustomerDetails);
         //     setDueDate(new Date(data?.dueDate));
         //   }
         // }, [mode, data]); 
+
+        const getRoomRentAmount = () => {
+  return Number(ParticularcustomerDetails?.hostelInfo?.monthlyRent || 0);
+};
+
+
+// useEffect(() => {
+//   if (!ParticularcustomerDetails) return;
+
+//   const rent = getRoomRentAmount();
+//   if (!rent) return;
+
+//   setItems((prev) => {
+//     const index = prev.findIndex((i) => i.type === "Room rent");
+
+  
+//     if (index !== -1) {
+//       const updated = [...prev];
+//       updated[index] = {
+//         ...updated[index],
+//         amount: String(rent),
+//       };
+//       return updated;
+//     }
+
+    
+//     return [
+//       {
+//         type: "Room rent",
+//         description: "Room rent",
+//         amount: String(rent),
+//       },
+//       ...prev,
+//     ];
+//   });
+// }, [ParticularcustomerDetails]);
+
+
+useEffect(() => {
+  if (!selectedCustomer || !ParticularcustomerDetails) return;
+
+  const rent = getRoomRentAmount();
+
+  setItems((prev) =>
+    prev.map((item) =>
+      item.type === "Room rent"
+        ? { ...item, amount: String(rent) }
+        : item
+    )
+  );
+}, [selectedCustomer?.id, ParticularcustomerDetails]);
+
+
+useEffect(() => {
+  const total = items.reduce((sum, item) => {
+    const amt = Number(item.amount);
+    return sum + (isNaN(amt) ? 0 : amt);
+  }, 0);
+
+  setTotalAmount(total);
+}, [items]);
+
 
           
 const handleInvoiceDateChange = (date) => {
@@ -195,24 +272,31 @@ const handleDueDateChange = (date) => {
        
 
   const handleSelectItem = (type) => {
-    let newCard;
+  let amount = "";
 
-    if (type === "Room rent") {
-      newCard = { type, description: "Room rent", amount: "" };
-    } else if (type === "EB") {
-      newCard = { type, description: "EB", amount: "" };
-    } else {
-      newCard = { type, description: "", amount: "" };
-    }
+  if (type === "Room rent") {
+    amount = selectedCustomer
+      ? String(getRoomRentAmount())
+      : "0";
+  }
 
-    setItems([...items, newCard]);
-    setDropdownOpen(false);
+  const newCard = {
+    type,
+    description: type === "Others" ? "" : type,
+    amount,
   };
+
+  setItems((prev) => [...prev, newCard]);
+  setDropdownOpen(false);
+  setItemErr("");
+};
+
 
   const updateCard = (index, key, value) => {
     const updated = [...items];
     updated[index][key] = value;
     setItems(updated);
+    setItemErr("")
   };
 
   const removeCard = (index) => {
@@ -226,7 +310,7 @@ const handleDueDateChange = (date) => {
     setCustomerDropdownVisible((v) => !v);
   };
 
- const validateAndSubmit = () => {
+ const validateAndSubmit = async () => {
   let hasError = false;
 
   setCustomerErr("");
@@ -267,12 +351,13 @@ const handleDueDateChange = (date) => {
 
   if (hasError) return;
 
-  // 🔥 SAME PAYLOAD FORMAT AS WEB
+  // 🔥 SAME AS WEBSITE
   const payload = {
     customerId: selectedCustomer.id,
     invoiceDate: dayjs(invoiceDate).format("DD-MM-YYYY"),
     dueDate: dayjs(dueDate).format("DD-MM-YYYY"),
     invoiceNumber: invoiceNo,
+    total_amount: totalAmount,
     items: items.map((i) => ({
       invoiceItem: i.description,
       amount: Number(i.amount),
@@ -280,12 +365,48 @@ const handleDueDateChange = (date) => {
   };
 
   console.log("FINAL PAYLOAD", payload);
+
+  const res = await CreateManualBill(payload);
+
+    if (!res?.success) {
+    setModalType("warning");
+    setModalMessage(res?.message || "Something went wrong");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+  setModalType("success");
+  setModalMessage(res.data);
+  setShowSuccessModal(true);
+  await GetAllBillDetails(activeHostelId);
+
+    navigation.goBack();
+
+  setTimeout(() => setShowSuccessModal(false), 1500);
+
+
+  // if (res.success) {
+  //   alert("Bill created successfully");
+   
+  // } else {
+  //   alert(res.message || "Unable to create bill");
+  // }
 };
+
 
 
 
   return (
 <>
+  <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
+
  <View style={styles.topHeader}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                           <Image source={ArrowLeft} style={styles.backIcon} />
@@ -335,6 +456,8 @@ const handleDueDateChange = (date) => {
               setCustomerOpen(false)
               setInvoiceDate(null)
               setDueDate(null)
+              setCustomerErr("")
+              // setItems([]); 
             }}
           >
             <Text
@@ -352,6 +475,11 @@ const handleDueDateChange = (date) => {
   </View>
 )}
 
+
+
+      {customerErr && (
+                    <ErrorMessage message={customerErr} type="error" />
+                                )}
 
 
       <Text style={{ fontSize: 15, marginBottom: 6 , marginTop:7}}>Invoice No</Text>
@@ -407,10 +535,11 @@ const handleDueDateChange = (date) => {
   </View>
 </Modal>
 
-{invoiceDateErr !== "" && (
-  <Text style={{ color: "red", fontSize: 13 }}>{invoiceDateErr}</Text>
-)}
 
+
+      {invoiceDateErr && (
+                    <ErrorMessage message={invoiceDateErr} type="error" />
+                                )}
 
 
 
@@ -457,9 +586,11 @@ const handleDueDateChange = (date) => {
   </View>
 </Modal>
 
-{dueDateErr !== "" && (
-  <Text style={{ color: "red", fontSize: 13 }}>{dueDateErr}</Text>
-)}
+
+
+      {dueDateErr && (
+                    <ErrorMessage message={dueDateErr} type="error" />
+                                )}
 
 
 
@@ -478,7 +609,7 @@ const handleDueDateChange = (date) => {
   <View style={styles.itemDropdownMenu}>
     <ScrollView style={{ maxHeight: 180 }}>
       {filteredOptions.map((op, index) => {
-        const isSelected = false; // optional highlight, since it does not stay selected in box
+        const isSelected = false; 
 
         return (
           <TouchableOpacity
@@ -529,10 +660,30 @@ const handleDueDateChange = (date) => {
             style={styles.input}
             keyboardType="numeric"
             value={item.amount}
+            // editable={item.type !== "Room rent"} 
             onChangeText={(txt) => updateCard(index, "amount", txt)}
           />
         </View>
       ))}
+
+
+      {itemErr && (
+                    <ErrorMessage message={itemErr} type="error" />
+                                )}
+
+<View style={{ marginTop: 10, marginBottom: 6 }}>
+  <Text
+    style={{
+      fontSize: 16,
+      fontWeight: "600",
+      textAlign: "right",
+      color: "#111",
+    }}
+  >
+    Total Amount: ₹ {totalAmount.toLocaleString("en-IN")}
+  </Text>
+</View>
+
 
        <View style={styles.btnRow}>
                <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
