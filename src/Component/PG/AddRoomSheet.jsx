@@ -15,7 +15,7 @@ import { CommonContexts } from "../../Context/CommonContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSuccessFloor,editRoomData }) {
+export default function AddRoomSheet({ visible, onClose, floorId, onSuccess, onSuccessFloor, editRoomData }) {
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editRoomData;
 
@@ -24,16 +24,16 @@ export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSu
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const inputRef = useRef(null);
 
-  const { addRoom,updateRoom  } = useFloor();
+  const { addRoom, updateRoom } = useFloor();
   const { activeHostelId } = useContext(CommonContexts);
-   const [modalType, setModalType] = useState("success");
-      const [showSuccess, setShowSuccess] = useState(false);
-      const [message, setMessage] = useState("");
-useEffect(() => {
-  if (visible && editRoomData) {
-    setRoomName(editRoomData.name); 
-  }
-}, [visible, editRoomData]);
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  useEffect(() => {
+    if (visible && editRoomData) {
+      setRoomName(editRoomData.name);
+    }
+  }, [visible, editRoomData]);
 
   const openSheet = () => {
     Animated.timing(translateY, {
@@ -60,8 +60,8 @@ useEffect(() => {
     if (visible) openSheet();
   }, [visible]);
 
-  
-   useEffect(() => {
+
+  useEffect(() => {
     if (!visible) {
       setRoomError("");
       setRoomName("");
@@ -98,101 +98,99 @@ useEffect(() => {
   if (!visible) return null;
 
   const handleAddRoom = async () => {
-  const trimmedName = roomName.trim();
+    const trimmedName = roomName.trim();
 
 
-  if (!trimmedName) {
-    setRoomError("Please Enter Room Name");
-    return;
-  }
+    if (!trimmedName) {
+      setRoomError("Please Enter Room Name");
+      return;
+    }
 
 
-  if (
-    isEdit &&
-    trimmedName.toLowerCase() === editRoomData.name.trim().toLowerCase()
-  ) {
-    // setRoomError("No changes detected");
-    
-        setModalType("error");
-  setMessage("No changes detected");
-  setShowSuccess(true);
+    if (
+      isEdit &&
+      trimmedName.toLowerCase() === editRoomData.name.trim().toLowerCase()
+    ) {
+      setModalType("error");
+      setMessage("No changes detected");
+      setShowSuccess(true);
 
-  setTimeout(() => {
-    setShowSuccess(false);
-  }, 800);
-    return;
-  }
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
+      return;
+    }
 
-  let res;
+    let res;
 
 
-  if (isEdit) {
-    res = await updateRoom({
-      roomId: editRoomData.id,
-      hostelId: editRoomData.hostelId,
-      roomName: trimmedName,
-    });
-  }
+    if (isEdit) {
+      res = await updateRoom({
+        roomId: editRoomData.id,
+        hostelId: editRoomData.hostelId,
+        roomName: trimmedName,
+      });
+    }
 
-  else {
-    res = await addRoom({
-      hostelId: activeHostelId,
-      floorId,
-      roomName: trimmedName,
-    });
-  }
-  if (res?.success) {
-  
-        setModalType("success");
-  setMessage(res.data);
-  setShowSuccess(true);
+    else {
+      res = await addRoom({
+        hostelId: activeHostelId,
+        floorId,
+        roomName: trimmedName,
+      });
+    }
+    if (res?.success) {
 
-  setTimeout(() => {
-    setShowSuccess(false);
-    onSuccess && onSuccess();
-   closeSheet();
-  }, 800);
-  }
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
 
-  else {
-    setRoomError(res?.message);
-  }
-};
+      setTimeout(() => {
+        setShowSuccess(false);
+        onSuccess && onSuccess();
+        closeSheet();
+      }, 800);
+    }
 
-// const handleAddRoom = async () => {
-//   const trimmedName = roomName.trim();
+    else {
+      setRoomError(res?.message);
+    }
+  };
 
-//   if (!trimmedName) {
-//     setRoomError("Please enter room name");
-//     return;
-//   }
+  // const handleAddRoom = async () => {
+  //   const trimmedName = roomName.trim();
 
-//   let res;
+  //   if (!trimmedName) {
+  //     setRoomError("Please enter room name");
+  //     return;
+  //   }
 
-//   if (isEdit) {
-//     res = await updateRoom({
-//       roomId: editRoomData.id,
-//       hostelId: editRoomData.hostelId,
-//       roomName: trimmedName,
-//     });
-//   } else {
-//     res = await addRoom({
-//       hostelId: activeHostelId,
-//       floorId,
-//       roomName: trimmedName,
-//     });
-//   }
+  //   let res;
 
-//   if (res.success) {
-//     onSuccess && onSuccess();
-//     closeSheet();
-//   } else {
-//     console.log("res",res)
-//     setRoomError(res.message);
-//   }
-// };
+  //   if (isEdit) {
+  //     res = await updateRoom({
+  //       roomId: editRoomData.id,
+  //       hostelId: editRoomData.hostelId,
+  //       roomName: trimmedName,
+  //     });
+  //   } else {
+  //     res = await addRoom({
+  //       hostelId: activeHostelId,
+  //       floorId,
+  //       roomName: trimmedName,
+  //     });
+  //   }
 
- 
+  //   if (res.success) {
+  //     onSuccess && onSuccess();
+  //     closeSheet();
+  //   } else {
+  //     console.log("res",res)
+  //     setRoomError(res.message);
+  //   }
+  // };
+
+
   // const handleAddRoom = async () => {
   //   if (!roomName.trim()) {
   //     setRoomError("Please enter room name");
@@ -207,7 +205,7 @@ useEffect(() => {
 
   //   if (res.success) {
   //     onSuccess && onSuccess();
-     
+
   //     closeSheet();
   //   } else {
   //     setRoomError(res.message);
@@ -223,47 +221,47 @@ useEffect(() => {
         type={modalType}
 
       />
-    <View style={styles.overlay}>
-      <TouchableWithoutFeedback onPress={closeSheet}>
-        <View style={{ flex: 1 }} />
-      </TouchableWithoutFeedback>
+      <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={closeSheet}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
 
-      <Animated.View
-        style={[
-          styles.sheet,
-          { marginBottom: keyboardHeight, transform: [{ translateY }] },
-        ]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.handle} />
+        <Animated.View
+          style={[
+            styles.sheet,
+            { marginBottom: keyboardHeight, transform: [{ translateY }] },
+          ]}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.handle} />
 
-        <Text style={styles.title}>Add Room</Text>
+          <Text style={styles.title}>Add Room</Text>
 
-        <Text style={styles.label}>
-          Room Name / No <Text style={{ color: "red" }}>*</Text>
-        </Text>
+          <Text style={styles.label}>
+            Room Name / No <Text style={{ color: "red" }}>*</Text>
+          </Text>
 
-        <TextInput
-          ref={inputRef}
-          placeholder="Enter Room Name"
-          style={styles.input}
-          value={roomName}
-          onChangeText={(t) => {
-            setRoomName(t);
-            setRoomError("");
-          }}
-        />
-  <View style={styles.ErrorFloor}>
-        {roomError && (
+          <TextInput
+            ref={inputRef}
+            placeholder="Enter Room Name"
+            style={styles.input}
+            value={roomName}
+            onChangeText={(t) => {
+              setRoomName(t);
+              setRoomError("");
+            }}
+          />
+          <View style={styles.ErrorFloor}>
+            {roomError && (
               <ErrorMessage message={roomError} type="error" />
             )}
-            </View>
+          </View>
 
-        <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
-          <Text style={styles.addBtnText}>Add Room</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+          <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
+            <Text style={styles.addBtnText}>Add Room</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
     </>
   );
 }
@@ -306,7 +304,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   addBtnText: { color: "#fff", textAlign: "center", fontWeight: "600" },
-   ErrorFloor:{
-    paddingBottom:30
+  ErrorFloor: {
+    paddingBottom: 30
   }
 });

@@ -203,6 +203,24 @@ const updateRoom = async ({ roomId, hostelId, roomName }) => {
   }
 };
 
+const deleteRoom = async (roomId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await api.delete(`/v2/room/${roomId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    return {
+      success: false,
+      message: err?.response?.data || "Room delete failed",
+    };
+  }
+};
 
 
   return (
@@ -211,7 +229,7 @@ const updateRoom = async ({ roomId, hostelId, roomName }) => {
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom
+        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom,deleteRoom
       }}
     >
       {children}
