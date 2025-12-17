@@ -1,18 +1,25 @@
-import React, { useRef, useEffect,useState } from "react";
-import { View, Text, TouchableOpacity, Animated, PanResponder, StyleSheet, Image ,TouchableWithoutFeedback} from "react-native";
+import React, { useRef, useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, Animated, PanResponder, StyleSheet, Image, TouchableWithoutFeedback } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useFloor } from "../../Context/PayingGuestContext";
 
 
-export default function ManageBedBottomSheet({ visible, onClose }) {
-      const navigation = useNavigation();
+export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed,onDeleteBed }) {
+  console.log("selectedBed", selectedBed)
+  const { getAllFloorsByHostel,getAllRoomsByFloor,getAllBedsByRoom,deleteBed } = useFloor();
+  const navigation = useNavigation();
   const translateY = useRef(new Animated.Value(300)).current;
-const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const handleEdit = () => {
+    handleEditBed(selectedBed);
+  }
 
-  
- const handleDelete=()=>{
-  setShowDeletePopup(true)
-  
- }
+  const handleDelete = () => {
+    setShowDeletePopup(true)
+
+  }
+
+
   useEffect(() => {
     if (visible) {
       Animated.timing(translateY, {
@@ -42,83 +49,92 @@ const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   return (
     <>
-    <View style={styles.overlay}>
-      <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
 
-      <Animated.View
-        style={[styles.sheet, { transform: [{ translateY }] }]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.handle} />
+        <Animated.View
+          style={[styles.sheet, { transform: [{ translateY }] }]}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.handle} />
 
-        <Text style={styles.title}>Manage Bed</Text>
+          <Text style={styles.title}>Manage Bed</Text>
 
-       
-        <TouchableOpacity style={styles.optionRow}onPress={() => {
-  navigation.navigate("AddTenant");
+
+          <TouchableOpacity style={styles.optionRow} onPress={() => {
+            navigation.navigate("AddTenant");
+            onClose();
+          }}
+          >
+            <Text style={styles.optionText}>Add Customer</Text>
+            <Image source={require("../../Assets/Images/addsquare.png")} style={styles.icon} />
+          </TouchableOpacity>
+
+
+          <TouchableOpacity style={styles.optionRow} onPress={() => {
+            onClose();
+            navigation.navigate("AssignTenant", {
+              roomNo: "101",
+              bedId: "A",
+            });
+          }}>
+            <Text style={styles.optionText}>Assign Tenant</Text>
+            <Image source={require("../../Assets/Images/Reports.png")} style={styles.icon} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.deleteRow}
+            onPress={handleEdit} >
+            <Text style={styles.optionText}>Edit</Text>
+            <Image source={require("../../Assets/Images/editIcon.png")} style={styles.deleteIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteRow} onPress={handleDelete}>
+            <Text style={styles.deleteText}>Delete</Text>
+            <Image source={require("../../Assets/Images/trash.png")} style={styles.deleteIcon} />
+          </TouchableOpacity>
+
+        </Animated.View>
+      </View>
+      {showDeletePopup && (
+        <TouchableWithoutFeedback onPress={() => setShowDeletePopup(false)}>
+          <View style={styles.popupOverlay}>
+
+            {/* STOP PROPAGATION so inside box won’t close */}
+            <TouchableWithoutFeedback>
+              <View style={styles.popupBox}>
+
+                <Text style={styles.popupTitle}>Delete Bed?</Text>
+                <Text style={styles.popupSubtitle}>
+                  Are you sure you want to delete this Bed?
+                </Text>
+
+                <View style={styles.popupBtnRow}>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => setShowDeletePopup(false)}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                  onPress={() => {
+  if (!selectedBed?.id) return;
+  onDeleteBed(selectedBed.id);
+  setShowDeletePopup(false);
   onClose();
 }}
->
-          <Text style={styles.optionText}>Add Customer</Text>
-          <Image source={require("../../Assets/Images/addsquare.png")} style={styles.icon} />
-        </TouchableOpacity>
 
-      
-        <TouchableOpacity style={styles.optionRow}  onPress={() => {
-    onClose();  
-    navigation.navigate("AssignTenant", {
-      roomNo: "101",
-      bedId: "A",
-    });
-  }}>
-          <Text style={styles.optionText}>Assign Tenant</Text>
-          <Image source={require("../../Assets/Images/Reports.png")} style={styles.icon} />
-        </TouchableOpacity>
+                  >
+                    <Text style={styles.deleteButton}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
 
-        <TouchableOpacity style={styles.deleteRow} onPress={handleDelete}>
-          <Text style={styles.deleteText}>Delete</Text>
-          <Image source={require("../../Assets/Images/trash.png")} style={styles.deleteIcon} />
-        </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
 
-      </Animated.View>
-    </View>
-{showDeletePopup && (
-  <TouchableWithoutFeedback onPress={() => setShowDeletePopup(false)}>
-    <View style={styles.popupOverlay}>
-      
-      {/* STOP PROPAGATION so inside box won’t close */}
-      <TouchableWithoutFeedback>
-        <View style={styles.popupBox}>
-          
-          <Text style={styles.popupTitle}>Delete Bed?</Text>
-          <Text style={styles.popupSubtitle}>
-            Are you sure you want to delete this Bed?
-          </Text>
-
-          <View style={styles.popupBtnRow}>
-            <TouchableOpacity 
-              style={styles.cancelBtn}
-              onPress={() => setShowDeletePopup(false)}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.deleteBtn}
-              onPress={() => {
-                setShowDeletePopup(false);
-              }}
-            >
-              <Text style={styles.deleteButton}>Delete</Text>
-            </TouchableOpacity>
           </View>
-
-        </View>
-      </TouchableWithoutFeedback>
-
-    </View>
-  </TouchableWithoutFeedback>
-)}
+        </TouchableWithoutFeedback>
+      )}
 
     </>
   );
@@ -130,7 +146,7 @@ const styles = StyleSheet.create({
     top: 0, bottom: 0, left: 0, right: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-    marginBottom:30
+    marginBottom: 30
   },
   overlayTouch: { flex: 1 },
   sheet: {
@@ -172,79 +188,79 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "red",
   },
-  deleteButton:{
- fontSize: 16,
+  deleteButton: {
+    fontSize: 16,
     color: "#FFFFFF",
   },
   icon: { width: 22, height: 22, tintColor: "#1E45E1" },
-  deleteIcon: { width: 22, height: 22, tintColor: "red" },
+  deleteIcon: { width: 22, height: 22 },
 
 
- popupOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "center",
-  alignItems: "center",
-  padding:20
-},
+  popupOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20
+  },
 
 
-popupBox: {
-  width: "100%",
-  backgroundColor: "#fff",
-  borderRadius: 18,
-  paddingVertical: 25,
-  paddingHorizontal: 20,
-  elevation: 10
-},
+  popupBox: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    paddingVertical: 25,
+    paddingHorizontal: 20,
+    elevation: 10
+  },
 
-popupTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  textAlign: "center",
-  marginBottom: 8
-},
+  popupTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8
+  },
 
-popupSubtitle: {
-  fontSize: 14,
-  color: "#555",
-  textAlign: "center",
-  marginBottom: 25
-},
+  popupSubtitle: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 25
+  },
 
-popupBtnRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-},
+  popupBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
 
-cancelBtn: {
-  width: "48%",
-  borderWidth: 1,
-  borderColor: "#1E45E1",
-  paddingVertical: 12,
-  borderRadius: 10,
-  justifyContent: "center",
-  alignItems: "center"
-},
+  cancelBtn: {
+    width: "48%",
+    borderWidth: 1,
+    borderColor: "#1E45E1",
+    paddingVertical: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
 
-cancelText: {
-  color: "#1E45E1",
-  fontSize: 16,
-  fontWeight: "600"
-},
+  cancelText: {
+    color: "#1E45E1",
+    fontSize: 16,
+    fontWeight: "600"
+  },
 
-deleteBtn: {
-  width: "48%",
-  backgroundColor: "#1E45E1",
-  paddingVertical: 12,
-  borderRadius: 10,
-  justifyContent: "center",
-  alignItems: "center"
-},
+  deleteBtn: {
+    width: "48%",
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
 
 
 });

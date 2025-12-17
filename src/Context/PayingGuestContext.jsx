@@ -221,6 +221,28 @@ const deleteRoom = async (roomId) => {
     };
   }
 };
+const deleteBed = async (bedId) => {
+  try {
+    const token = await retriveData("token");
+    console.log("DELETE BED TOKEN 👉", token); // 🔥 ADD THIS
+
+    const res = await api.delete(`/v2/bed/${bedId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    console.log("Delete Bed API error 👉", err?.response?.data);
+    return {
+      success: false,
+      message: err?.response?.data || "Bed delete failed",
+    };
+  }
+};
+
+
 
 
   return (
@@ -229,7 +251,7 @@ const deleteRoom = async (roomId) => {
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom,deleteRoom
+        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom,deleteRoom,deleteBed
       }}
     >
       {children}
