@@ -15,19 +15,36 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddFloorSheet({ visible, onClose,onSuccess }) {
+export default function AddFloorSheet({ visible, onClose,onSuccess,editFloorData }) {
   const translateY = useRef(new Animated.Value(300)).current;
+  const isEdit = !!editFloorData;
+  console.log("editFloorData",editFloorData)
+
   const [floorName, setFloorName] = useState("");
   const [floorNameError, setFloorNameError] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const inputRef = useRef(null);
   const { activeHostelId } = useContext(CommonContexts);
-  const {addFloor } = useFloor();
+  const {addFloor,updateFloor } = useFloor();
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
 
- 
+useEffect(() => {
+  if (visible && editFloorData) {
+    setFloorName(
+      editFloorData.floorName || editFloorData.name || ""
+    );
+  }
+}, [visible, editFloorData]);
+
+useEffect(() => {
+  if (!visible) {
+    setFloorName("");
+    setFloorNameError("");
+  }
+}, [visible]);
+
   const openSheet = () => {
     Animated.timing(translateY, {
       toValue: 0,
@@ -105,34 +122,89 @@ export default function AddFloorSheet({ visible, onClose,onSuccess }) {
   ).current;
 
   if (!visible) return null;
- const handleAddFloor = async () => {
+  const handleAddFloor = async () => {
+const trimmedName = floorName.trim();
 
-    let valid = true;
-  if (!floorName.trim()) {
-      setFloorNameError("Please Enter FloorName");
-      valid = false;
-    }
-     if (!valid) return;
-  const res = await addFloor({
-    hostelId: activeHostelId,
-    floorName: floorName.trim(),
-  });
+  if (!trimmedName) {
+    setFloorNameError("Please Enter Floor Name");
+    return;
+  }
 
-  if (res.success) {
-     setModalType("success");
-  setMessage(res.data);
-  setShowSuccess(true);
 
-  setTimeout(() => {
-    setShowSuccess(false);
-    onSuccess && onSuccess();
-    onClose();  
-  }, 800);
-  } else {
-    setFloorNameError(res.message)
+  if (
+    isEdit &&
+    trimmedName ===
+      (editFloorData.floorName || editFloorData.name || "")
+  ) {
+
+     setModalType("warning");
+    setMessage("No changes detected");
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
     
+    }, 800);
+    return;
+  }
+
+  let res;
+
+ if (isEdit) {
+  res = await updateFloor(editFloorData.id, {
+    floorName: trimmedName,
+    isActive: true,
+  });
+}else {
+    // ➕ ADD FLOOR
+    res = await addFloor({
+      hostelId: activeHostelId,
+      floorName:trimmedName,
+    });
+  }
+
+  if (res?.success) {
+    setModalType("success");
+    setMessage(res.data || "Floor updated successfully");
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      onSuccess && onSuccess();
+      onClose();
+    }, 800);
+  } else {
+    setFloorNameError(res?.message || "Operation failed");
   }
 };
+//  const handleAddFloor = async () => {
+
+//     let valid = true;
+//   if (!floorName.trim()) {
+//       setFloorNameError("Please Enter FloorName");
+//       valid = false;
+//     }
+//      if (!valid) return;
+//   const res = await addFloor({
+//     hostelId: activeHostelId,
+//     floorName: floorName.trim(),
+//   });
+
+//   if (res.success) {
+//      setModalType("success");
+//   setMessage(res.data);
+//   setShowSuccess(true);
+
+//   setTimeout(() => {
+//     setShowSuccess(false);
+//     onSuccess && onSuccess();
+//     onClose();  
+//   }, 800);
+//   } else {
+//     setFloorNameError(res.message)
+    
+//   }
+// };
 
 
   return (
@@ -160,7 +232,7 @@ export default function AddFloorSheet({ visible, onClose,onSuccess }) {
       >
         <View style={styles.handle} />
 
-        <Text style={styles.title}>Ad Floor</Text>
+        <Text style={styles.title}> {isEdit ? "Update Floor" : "Add Floor"}</Text>
 
         <Text style={styles.label}>
           Floor Name or No <Text style={{ color: "red" }}>*</Text>
@@ -188,7 +260,7 @@ export default function AddFloorSheet({ visible, onClose,onSuccess }) {
  
   onPress={handleAddFloor}
 >
-  <Text style={styles.addBtnText}>Add Floor</Text>
+  <Text style={styles.addBtnText}> {isEdit ? "Update Floor" : "Add Floor"}</Text>
 </TouchableOpacity>
 
       </Animated.View>
