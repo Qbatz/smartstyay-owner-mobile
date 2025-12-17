@@ -29,6 +29,7 @@ import InactiveTenantSheet from "./ReservedBed/MakeUsInActiveSheet"
 import { useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
+import Dots from "../../Assets/Images/3dots.png";
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
@@ -39,183 +40,7 @@ const IconCalendar = require("../../Assets/Images/Reservedbed.png");
 const IconRupee = require("../../Assets/Images/overdueImage.png");
 const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 
-// ---------- DUMMY DATA ----------
-// const initialFloors = [
-//   {
-//     id: "f1",
-//     name: "Floor 1",
-//     rooms: [
-//       {
-//         id: "r1",
-//         room_no: "001",
-//         roomId: "1",
-//         sharing: "10 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//           { id: "b4", label: "D", status: "available" },
-//           { id: "b5", label: "E", status: "reserved" },
-//           { id: "b6", label: "E", status: "noticeperiod" },
-//         ],
-//       },
-//       {
-//         id: "r2",
-//         room_no: "002",
-//         sharing: "6 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//         ],
-//       },
-//       {
-//         id: "r3",
-//         room_no: "002",
-//         sharing: "6 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "f2",
-//     name: "Floor 2",
-//     rooms: [
-//       {
-//         id: "r3",
-//         room_no: "101",
-//         roomId: "2",
-//         sharing: "3 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "occupied" },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "f3",
-//     name: "Floor 3",
-//     rooms: [
-//       {
-//         id: "r1",
-//         room_no: "001",
-//         roomId: "1",
-//         sharing: "10 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//           { id: "b4", label: "D", status: "available" },
-//           { id: "b5", label: "E", status: "reserved" },
-//           // 👇 multi-status example
-//           { id: "b6", label: "E", status: "noticeperiod,reserved" },
-//         ],
-//       },
-//       {
-//         id: "r2",
-//         room_no: "002",
-//         roomId: "2",
-//         sharing: "6 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//         ],
-//       },
-//       {
-//         id: "r3",
-//         room_no: "002",
-//         roomId: "3",
-//         sharing: "6 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "f4",
-//     name: "Floor 4",
-//     rooms: [
-//       {
-//         id: "r3",
-//         room_no: "101",
-//         roomId: "1",
-//         sharing: "3 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "occupied" },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "f5",
-//     name: "Floor 5",
-//     rooms: [
-//       {
-//         id: "r1",
-//         room_no: "001",
-//         roomId: "2",
-//         sharing: "10 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//           { id: "b4", label: "D", status: "available" },
-//           { id: "b5", label: "E", status: "reserved" },
-//           { id: "b6", label: "E", status: "noticeperiod" },
-//         ],
-//       },
-//       {
-//         id: "r2",
-//         room_no: "002",
-//         roomId: "3",
-//         sharing: "6 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//         ],
-//       },
-//       {
-//         id: "r3",
-//         room_no: "002",
-//         sharing: "6 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "overdue" },
-//           { id: "b3", label: "C", status: "occupied" },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "f6",
-//     name: "Floor 6",
-//     rooms: [
-//       {
-//         id: "r3",
-//         room_no: "101",
-//         sharing: "3 Sharing",
-//         beds: [
-//           { id: "b1", label: "A", status: "available" },
-//           { id: "b2", label: "B", status: "occupied" },
-//           { id: "b3", label: "C", status: "available" },
-//         ],
-//       },
-//     ],
-//   },
-// ];
 
-// ================== COMPONENT ===================
 export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   // const [floors, setFloors] = useState([]);
@@ -249,6 +74,10 @@ const [selectedFloorId, setSelectedFloorId] = useState(null);
 const [beds, setBeds] = useState([]);
 const [selectedBedRoomId,setSelectedBedRoomId] = useState("")
 const [bedsByRoom, setBedsByRoom] = useState({});
+const [openMenuRoomId, setOpenMenuRoomId] = useState(null);
+const [editRoomData, setEditRoomData] = useState(null);
+
+
 
 
 useEffect(() => {
@@ -729,7 +558,7 @@ const handleAddBed = (roomId) => {
         )}
 
       
-       {rooms.length === 0 && (
+  {floors.length > 0 && rooms.length === 0 && (
   <View style={styles.centerContainer}>
     <Image source={EmptyFloor} style={styles.image} />
     <Text style={styles.noFloorText}>No Rooms are there!</Text>
@@ -917,91 +746,51 @@ const handleAddBed = (roomId) => {
     <Text style={styles.roomSubtitle}>{item.sharing}</Text>
   </View>
 
-  <TouchableOpacity
-    style={styles.addRoomBtn}
-  onPress={() => handleAddBed(item.id)}
-
-
-  >
-    <Image source={AddIcon} style={{ width: 22, height: 22 }} />
-  </TouchableOpacity>
+ <TouchableOpacity
+  style={styles.addRoomBtn}
+  onPress={() => {
+    setOpenMenuRoomId(
+      openMenuRoomId === item.id ? null : item.id
+    );
+  }}
+>
+  <Image source={Dots} style={{ width: 22, height: 22 }} />
+</TouchableOpacity>
 </TouchableOpacity>
 
+{openMenuRoomId === item.id && (
+  <View style={styles.menuBox}>
+    <TouchableOpacity
+      style={styles.menuItem}
+   
+       onPress={() => {
+    setOpenMenuRoomId(null);
+    setEditRoomData(item);      // 👈 full room object
+    setShowAddRoom(true);       // 👈 same sheet open
+  }}
+    
+    >
+      <Text style={styles.menuText}>Edit</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.menuItem}
+      onPress={() => {
+        setOpenMenuRoomId(null);
+        console.log("DELETE ROOM", item.id);
+        // 👉 delete confirmation
+      }}
+    >
+      <Text style={[styles.menuText, { color: "red" }]}>
+        Delete
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
 
 
               <View style={styles.bedsRow}>
-                {/* {item.beds?.map((b) => (
-                  <TouchableOpacity
-                    key={b.id}
-                    style={styles.bedItem}
-                    onPress={() => {
-                      const statuses = splitStatus(b.status);
-
-                      // NOTICE + RESERVED together → Reserved sheet (priority B)
-                  if (
-  statuses.includes("noticeperiod") &&
-  statuses.includes("reserved")
-) {
-  setSelectedDouble({ bed: b, room: item }); 
-  setShowDoubleStatus(true);
-  return;
-}
-
-
-                      // RESERVED only
-                      if (b.status === "reserved") {
-                        setSelectedReserved({ bed: b, room: item });
-                        setShowReservedSheet(true);
-                        return;
-                      }
-
-                      // AVAILABLE
-                      if (b.status === "available") {
-                        setSelectedBed(b);
-                        setShowManageBed(true);
-                        return;
-                      }
-
-                      // OCCUPIED
-                      if (b.status === "occupied") {
-                        setSelectedOccupied({ bed: b, room: item });
-                        setShowOccupiedSheet(true);
-                        return;
-                      }
-
-                      // NOTICE only
-                      if (b.status === "noticeperiod") {
-                        setNoticeData({ bed: b, room: item });
-                        setShowNoticePeriodSheet(true);
-                        return;
-                      }
-                    }}
-                  >
-                    <Image
-                      source={getBaseBed(b.status)}
-                      style={styles.bedIcon}
-                    />
-
-              
-                    {overlayIcons[getPrimaryStatus(b.status)] && (
-                      <Image
-                        source={overlayIcons[getPrimaryStatus(b.status)]}
-                        style={styles.overlayIcon}
-                      />
-                    )}
-
-                   
-                    {getStatusCount(b.status) > 1 && (
-                      <View style={styles.multiBadge}>
-                        <Text style={styles.multiBadgeText}>
-                          {getStatusCount(b.status)}
-                        </Text>
-                      </View>
-                    )}
-
-                    <Text style={styles.bedLabel}>{b.label}</Text>
-                  </TouchableOpacity>
-                ))} */}
+               
     {bedsByRoom[item.id]?.map((b) => {
   const status = getBedStatus(b);
 
@@ -1079,7 +868,14 @@ const handleAddBed = (roomId) => {
   );
 })}
 
+<TouchableOpacity
+    style={styles.addRoomBtn}
+  onPress={() => handleAddBed(item.id)}
 
+
+  >
+    <Image source={AddIcon} style={{ width: 22, height: 22 }} />
+  </TouchableOpacity>
 
               </View>
             </View>
@@ -1159,13 +955,25 @@ const handleAddBed = (roomId) => {
         }}
       />
 
-      <AddRoomSheet
+      {/* <AddRoomSheet
         visible={showAddRoom}
         onClose={() => setShowAddRoom(false)}
         onSuccess={refreshRooms}
         onSuccessFloor={loadFloors}
         floorId={selectedFloorId}
-      />
+      /> */}
+    <AddRoomSheet
+  visible={showAddRoom}
+  onClose={() => {
+    setShowAddRoom(false);
+    setEditRoomData(null);
+  }}
+  floorId={selectedFloorId}
+  editRoomData={editRoomData}
+  onSuccess={refreshRooms}   // 🔥 MUST
+/>
+
+
 
       <AddBedBottomSheet
         visible={showAddBed}
@@ -1577,4 +1385,29 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
   },
+  menuBox: {
+  position: "absolute",
+  top: 45,
+  right: 10,
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  paddingVertical: 6,
+  width: 120,
+  elevation: 6,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  zIndex: 999,
+},
+
+menuItem: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+menuText: {
+  fontSize: 14,
+  color: "#333",
+},
+
 });

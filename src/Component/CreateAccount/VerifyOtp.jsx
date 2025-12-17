@@ -7,16 +7,19 @@ import {
     TouchableOpacity,
     Image,
     Dimensions,
-    Animated,
+    Animated,ImageBackground
 } from "react-native";
 import OtpRectangle from "../../Assets/Images/OtpRectangle.png";
 import LottieView from "lottie-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+
 
 
 const { width } = Dimensions.get("window");
 
 const VerifyAccountScreen = ({ navigation }) => {
-
+ const insets = useSafeAreaInsets();
     const [showPopup, setShowPopup] = useState(false);
     const scale = useRef(new Animated.Value(0.6)).current;
     const opacity = useRef(new Animated.Value(0)).current;
@@ -152,7 +155,14 @@ const VerifyAccountScreen = ({ navigation }) => {
             </View>
 
 
-            <Image source={OtpRectangle} style={styles.bottomGradient} />
+           <ImageBackground
+  source={OtpRectangle}
+  style={[
+    styles.bottomGradient,
+    { paddingBottom: insets.bottom } 
+  ]}
+  resizeMode="cover"
+/>
 
 
             {showPopup && (
@@ -316,14 +326,13 @@ const styles = StyleSheet.create({
         paddingBottom: 3,
     },
 
-    bottomGradient: {
-        width: "110%",
-        height: 240,
-        position: "absolute",
-        bottom: 0,
-        alignSelf: "center",
-        resizeMode: "stretch",
-    },
+bottomGradient: {
+  position: "absolute",
+  bottom: 0,
+  width: "100%",
+  height: Dimensions.get("window").height * 0.22,
+},
+
 
     popupContainer: {
         position: "absolute",
