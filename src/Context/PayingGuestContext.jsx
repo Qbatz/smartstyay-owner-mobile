@@ -171,13 +171,47 @@ const addBed = async ({ bedName, roomId, hostelId, amount }) => {
   }
 };
 
+
+const updateRoom = async ({ roomId, hostelId, roomName }) => {
+  try {
+    setLoading(true);
+    const token = await retriveData("token");
+
+    const res = await api.put(
+      `/v2/room/${roomId}/${hostelId}`,
+      {
+        roomName,
+        isActive: true,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    console.log("UPDATE ROOM ERROR", err?.response?.data || err);
+    return {
+      success: false,
+      message: err?.response?.data || "Room update failed",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
     <FloorContext.Provider
       value={{
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed
+        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom
       }}
     >
       {children}

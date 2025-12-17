@@ -12,16 +12,28 @@ import {
 } from "react-native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSuccessFloor }) {
+export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSuccessFloor,editRoomData }) {
   const translateY = useRef(new Animated.Value(300)).current;
+  const isEdit = !!editRoomData;
+
   const [roomName, setRoomName] = useState("");
   const [roomError, setRoomError] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const inputRef = useRef(null);
 
-  const { addRoom } = useFloor();
+  const { addRoom,updateRoom  } = useFloor();
   const { activeHostelId } = useContext(CommonContexts);
+   const [modalType, setModalType] = useState("success");
+      const [showSuccess, setShowSuccess] = useState(false);
+      const [message, setMessage] = useState("");
+useEffect(() => {
+  if (visible && editRoomData) {
+    setRoomName(editRoomData.name); 
+  }
+}, [visible, editRoomData]);
 
   const openSheet = () => {
     Animated.timing(translateY, {
@@ -85,30 +97,132 @@ export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSu
 
   if (!visible) return null;
 
- 
   const handleAddRoom = async () => {
-    if (!roomName.trim()) {
-      setRoomError("Please enter room name");
-      return;
-    }
+  const trimmedName = roomName.trim();
 
-    const res = await addRoom({
+
+  if (!trimmedName) {
+    setRoomError("Please Enter Room Name");
+    return;
+  }
+
+
+  if (
+    isEdit &&
+    trimmedName.toLowerCase() === editRoomData.name.trim().toLowerCase()
+  ) {
+    // setRoomError("No changes detected");
+    
+        setModalType("error");
+  setMessage("No changes detected");
+  setShowSuccess(true);
+
+  setTimeout(() => {
+    setShowSuccess(false);
+  }, 800);
+    return;
+  }
+
+  let res;
+
+
+  if (isEdit) {
+    res = await updateRoom({
+      roomId: editRoomData.id,
+      hostelId: editRoomData.hostelId,
+      roomName: trimmedName,
+    });
+  }
+
+  else {
+    res = await addRoom({
       hostelId: activeHostelId,
       floorId,
-      roomName: roomName.trim(),
+      roomName: trimmedName,
     });
+  }
+  if (res?.success) {
+  
+        setModalType("success");
+  setMessage(res.data);
+  setShowSuccess(true);
 
-    if (res.success) {
-      onSuccess && onSuccess();
+  setTimeout(() => {
+    setShowSuccess(false);
+    onSuccess && onSuccess();
+   closeSheet();
+  }, 800);
+  }
+
+  else {
+    setRoomError(res?.message);
+  }
+};
+
+// const handleAddRoom = async () => {
+//   const trimmedName = roomName.trim();
+
+//   if (!trimmedName) {
+//     setRoomError("Please enter room name");
+//     return;
+//   }
+
+//   let res;
+
+//   if (isEdit) {
+//     res = await updateRoom({
+//       roomId: editRoomData.id,
+//       hostelId: editRoomData.hostelId,
+//       roomName: trimmedName,
+//     });
+//   } else {
+//     res = await addRoom({
+//       hostelId: activeHostelId,
+//       floorId,
+//       roomName: trimmedName,
+//     });
+//   }
+
+//   if (res.success) {
+//     onSuccess && onSuccess();
+//     closeSheet();
+//   } else {
+//     console.log("res",res)
+//     setRoomError(res.message);
+//   }
+// };
+
+ 
+  // const handleAddRoom = async () => {
+  //   if (!roomName.trim()) {
+  //     setRoomError("Please enter room name");
+  //     return;
+  //   }
+
+  //   const res = await addRoom({
+  //     hostelId: activeHostelId,
+  //     floorId,
+  //     roomName: roomName.trim(),
+  //   });
+
+  //   if (res.success) {
+  //     onSuccess && onSuccess();
      
-      closeSheet();
-    } else {
-      setRoomError(res.message);
-      console.log("res.message",res.message)
-    }
-  };
+  //     closeSheet();
+  //   } else {
+  //     setRoomError(res.message);
+  //     console.log("res.message",res.message)
+  //   }
+  // };
 
   return (
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+
+      />
     <View style={styles.overlay}>
       <TouchableWithoutFeedback onPress={closeSheet}>
         <View style={{ flex: 1 }} />
@@ -139,14 +253,18 @@ export default function AddRoomSheet({ visible, onClose, floorId, onSuccess,onSu
             setRoomError("");
           }}
         />
-
-        {roomError ? <Text style={styles.error}>{roomError}</Text> : null}
+  <View style={styles.ErrorFloor}>
+        {roomError && (
+              <ErrorMessage message={roomError} type="error" />
+            )}
+            </View>
 
         <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
           <Text style={styles.addBtnText}>Add Room</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
+    </>
   );
 }
 
@@ -180,12 +298,15 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
   },
-  error: { color: "red", marginBottom: 12 },
+
   addBtn: {
     backgroundColor: "#1E45E1",
     paddingVertical: 14,
     borderRadius: 12,
-    marginBottom: 40,
+    marginBottom: 30,
   },
   addBtnText: { color: "#fff", textAlign: "center", fontWeight: "600" },
+   ErrorFloor:{
+    paddingBottom:30
+  }
 });
