@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react"; 
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
 
 import Profile from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";  
@@ -528,6 +529,10 @@ navigation.navigate("CancelNotice")
 // ];
 
   return (
+
+    <>
+     { loading && <Loader />}
+  
     <SafeAreaView style={styles.container}>
       {/* 🔍 Search Bar */}
 
@@ -576,7 +581,7 @@ navigation.navigate("CancelNotice")
 {activeTab === "All Bills" && (
   <View style={{ flex: 1 }}>
 
-    {BillDetails && BillDetails.length > 0 ? (
+    {!loading && BillDetails && BillDetails.length > 0 ? (
   <ScrollView
     showsVerticalScrollIndicator={false}
     contentContainerStyle={{ paddingBottom: 50 }}
@@ -631,7 +636,7 @@ navigation.navigate("CancelNotice")
       </View>
     )}
 
-    {BillDetails.length > 0 && (
+    {!loading && BillDetails.length > 0 && (
         <>
          <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
       <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
@@ -1628,6 +1633,7 @@ navigation.navigate("CancelNotice")
 
       
     </SafeAreaView>
+      </>
   );
 }
 
