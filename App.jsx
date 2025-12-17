@@ -100,7 +100,7 @@ import { CustomerProvider } from "./src/Context/CustomerContext";
 import BillsProvider from "./src/Context/BillsContext"
 
 import { FloorProvider } from './src/Context/PayingGuestContext';
-
+import BankingProvider from "./src/Context/BankingContext";
 
 
 
@@ -122,7 +122,9 @@ function App() {
 
                         <BillsProvider>
                           <FloorProvider>
+                            <BankingProvider>
                             <AppContent />
+                            </BankingProvider>
                           </FloorProvider>
                         </BillsProvider>
 
