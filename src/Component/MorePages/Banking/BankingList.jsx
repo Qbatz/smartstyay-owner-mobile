@@ -1,4 +1,4 @@
-import React, { useState , useEffect, useRef , useLayoutEffect , useCallback } from "react";
+import React, { useState , useEffect, useRef , useLayoutEffect , useCallback , useContext } from "react";
 import {
   View,
   Text,
@@ -20,9 +20,15 @@ import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+
 import AddBankingDesign from "./AddBanking"
 import AddTransaction from "./AddTransaction"
 import SelfTransferModal from "./SelfTransferScreen";
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -49,6 +55,16 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 
 export default function BankingScreen() {
   const navigation = useNavigation();
+  dayjs.extend(customParseFormat)
+
+  const { activeHostelId } = useContext(CommonContexts);
+const { bankList, transactionList,  loading, errorMsg, getBankListByHostel } =
+  useContext(BankingContext);
+
+  console.log("bankinglist", bankList , transactionList);
+  
+
+
   
   const [selectedBank, setSelectedBank] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
@@ -66,44 +82,44 @@ export default function BankingScreen() {
    const [selfTransferScreen,setSelfTransferScreen] = useState(false)
 
 
-  const bankList = [
-    {
-      id: 1,
-      title: "Canara Bank",
-      subtitle: "Savings A/C",
-      name: "Immanuel",
-      acc: "4561 2013 6210 6540",
-      balance: "₹2,500",
-      Icon : BankIcon
-    },
-    {
-      id: 2,
-      title: "UPI",
-      subtitle: "Net Banking",
-      name: "Immanuel",
-      acc: "imman@oksbi",
-      balance: "₹2,100",
-       Icon : UpiIcon
-    },
-      {
-      id: 3,
-      title: "Card",
-      subtitle: "Credit Card",
-      name: "Immanuel",
-      acc: "imman@oksbi",
-      balance: "₹4,000",
-       Icon : CardIcon
-    },
-    {
-      id: 4,
-      title: "Cash",
-      subtitle: "Petty Cash",
-      name: "Immanuel",
-      acc: "",
-      balance: "₹4,320",
-       Icon : CashIcon
-    },
-  ];
+  // const bankList = [
+  //   {
+  //     id: 1,
+  //     title: "Canara Bank",
+  //     subtitle: "Savings A/C",
+  //     name: "Immanuel",
+  //     acc: "4561 2013 6210 6540",
+  //     balance: "₹2,500",
+  //     Icon : BankIcon
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "UPI",
+  //     subtitle: "Net Banking",
+  //     name: "Immanuel",
+  //     acc: "imman@oksbi",
+  //     balance: "₹2,100",
+  //      Icon : UpiIcon
+  //   },
+  //     {
+  //     id: 3,
+  //     title: "Card",
+  //     subtitle: "Credit Card",
+  //     name: "Immanuel",
+  //     acc: "imman@oksbi",
+  //     balance: "₹4,000",
+  //      Icon : CardIcon
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "Cash",
+  //     subtitle: "Petty Cash",
+  //     name: "Immanuel",
+  //     acc: "",
+  //     balance: "₹4,320",
+  //      Icon : CashIcon
+  //   },
+  // ];
 
   const transactions = [
     { id: 1, type: "income", title: "Record Payment",ArrowImage : ArrowUp,  icon : MoneyPlus, category: "Rent Income", amount: "+ ₹7,500.00", date: "12 May 2025" ,},
@@ -146,6 +162,12 @@ export default function BankingScreen() {
       { name: "Mattresses", model: "SB-989543", brand: "CURL ON", price: "₹7,500" },
     ];
   
+
+    useEffect(() => {
+  if (activeHostelId) {
+    getBankListByHostel(activeHostelId);
+  }
+}, [activeHostelId]);
   
     useLayoutEffect(() => {
       navigation.getParent()?.setOptions({
@@ -238,7 +260,107 @@ export default function BankingScreen() {
     const assignTranslateY = useRef(new Animated.Value(0)).current;
   
   
+    const getUniqueBanks = (banks = []) => {
+  const map = new Map();
+
+  banks.forEach((b) => {
+    let key = "";
+
+    if (b.accountType === "BANK") {
+      key = `BANK-${b.bankName}-${b.accountNumber}`;
+    } else if (b.accountType === "UPI") {
+      key = `UPI-${b.upiId}`;
+    } else if (b.accountType === "CARD") {
+      key = `CARD-${b.creditCardNumber || b.debitCardNumber}`;
+    } else if (b.accountType === "CASH") {
+      key = "CASH";
+    }
+
+    if (!map.has(key)) {
+      map.set(key, b);
+    }
+  });
+
+  return Array.from(map.values());
+};
+
   
+const mappedBankList = getUniqueBanks(bankList).map((b) => {
+  if (b.accountType === "BANK") {
+    return {
+      id: b.bankingId,
+      title: b.bankName || "Bank",
+      subtitle: "Savings A/C",
+      name: b.accountHolderName,
+      acc: b.accountNumber,
+      balance: `₹${b.accountBalance ?? 0}`,
+      Icon: BankIcon,
+      raw: b,
+    };
+  }
+
+  if (b.accountType === "UPI") {
+    return {
+      id: b.bankingId,
+      title: "UPI",
+      subtitle: "UPI ID",
+      name: b.accountHolderName,
+      acc: b.upiId,
+      balance: "—",
+      Icon: UpiIcon,
+      raw: b,
+    };
+  }
+
+  if (b.accountType === "CARD") {
+    return {
+      id: b.bankingId,
+      title: "Card",
+      subtitle: b.cardType || "Card",
+      name: b.accountHolderName,
+      acc: b.creditCardNumber || b.debitCardNumber,
+      balance: "—",
+      Icon: CardIcon,
+      raw: b,
+    };
+  }
+
+  if (b.accountType === "CASH") {
+    return {
+      id: b.bankingId,
+      title: "Cash",
+      subtitle: "Petty Cash",
+      name: b.accountHolderName,
+      acc: "",
+      balance: "—",
+      Icon: CashIcon,
+      raw: b,
+    };
+  }
+
+  return null;
+}).filter(Boolean);
+
+const mappedTransactions = (transactionList || []).map((t) => {
+  const isCredit = t.type === "CREDIT";
+
+  return {
+    id: t.transactionId,
+    type: isCredit ? "income" : "expense",
+    title: t.source === "INVOICE" ? "Bill Payment" : "Transaction",
+    category: t.source,
+    Accountholder : t.accountHolder,
+    amount: `${isCredit ? "+" : "-"} ₹${t.amount}`,
+   date: dayjs(t.createdAt, "DD/MM/YYYY", true).isValid()
+      ? dayjs(t.createdAt, "DD/MM/YYYY", true).format("DD/MM/YYYY")
+      : t.createdAt,
+    ArrowImage: isCredit ? ArrowUp : ArrowDown,
+    icon: isCredit ? MoneyPlus : MoneyMinus,
+    raw: t,
+  };
+});
+
+
   
     const panResponder = useRef(
       PanResponder.create({
@@ -254,7 +376,6 @@ export default function BankingScreen() {
               useNativeDriver: true,
             }).start(() => {
               setShowTransaction(false);
-            //   setShowFilter(false)
               translateY.setValue(0);
             });
           } else {
@@ -294,10 +415,10 @@ export default function BankingScreen() {
     setAmountDropdownVisible((v) => !v);
   };
 
-  // SCROLL ANIMATION STATE
+
 const scrollY = useRef(new Animated.Value(0)).current;
 
-// BANK LIST COLLAPSE ANIMATION
+
 const bankListHeight = scrollY.interpolate({
   inputRange: [0, 200],
   outputRange: [190, 0],
@@ -350,13 +471,12 @@ const handleEditBanking = (item) => {
     tab: item.title === "Canara Bank" ? "Bank" :
          item.title === "UPI" ? "UPI" :
          item.title === "Cash" ? "Cash" :
-         "Bank",  // fallback
+         "Bank",  
   });
 };
 
 
  const handleShowAddTransaction  = () => {
-    // setTransactionShow(true)
     navigation.navigate("AddTransaction")
  }
 
@@ -381,7 +501,7 @@ const handleEditBanking = (item) => {
           <Text style={styles.heading}>Banking</Text>
         </View>
 
-        {/* SEARCH BAR */}
+   
         <View style={styles.searchBox}>
           <Image
             source={{ uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png" }}
@@ -395,7 +515,7 @@ const handleEditBanking = (item) => {
         </View>
       </View>
 
-      {/* ACTUAL SCREEN CONTENT */}
+      
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 130 }}
@@ -406,7 +526,7 @@ const handleEditBanking = (item) => {
         scrollEventThrottle={16}
       >
 
-        {/* BANK LIST TITLE */}
+    
         <Animated.View style={{ opacity: bankListOpacity }}>
           <View style={{ flexDirection: "row",
     justifyContent: "space-between",
@@ -421,17 +541,16 @@ const handleEditBanking = (item) => {
           </View>
         </Animated.View>
 
-        {/* BANK LIST (COLLAPSIBLE) */}
+    
         <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {bankList.map((item) => (
-              <View key={item.id} style={styles.bankCard}>
+            {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item , index) => (
+              <View key={index} style={styles.bankCard}>
 
   <View
    style={{backgroundColor:'#f7f5ff',  padding:20}}
   >
 
-    {/* TOP ROW */}
     <View style={styles.topRow}>
       <View style={styles.bankLeft}>
         <View style={styles.bankIconBg}>
@@ -447,18 +566,17 @@ const handleEditBanking = (item) => {
       </View>
 
       <TouchableOpacity style={styles.moreIcon}   ref={(ref) => (dotsRef.current[item.id] = ref)}  onPress={() => openMenu(item)}>
-        {/* <Text style={{ fontSize: 20 }}>⋮</Text> */}
         <Image source={ThreeDotsIcon}  style={styles.popupIcon}/>
       </TouchableOpacity>
     </View>
 
-    {/* NAME & ACCOUNT */}
+ 
     <View style={{ marginTop: 12 }}>
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.acc}>{item.acc}</Text>
     </View>
 
-    {/* DEFAULT + CHANGE */}
+
     <View style={styles.defaultRow}>
       <Text style={styles.defaultText}>Default Bank A/C</Text>
       <Text style={styles.changeText}>Change</Text>
@@ -466,7 +584,6 @@ const handleEditBanking = (item) => {
 
   </View>
 
-  {/* BOTTOM WHITE BALANCE BAR */}
   <View style={styles.balanceRow}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <Text style={styles.balanceText}>Balance</Text>
@@ -480,13 +597,13 @@ const handleEditBanking = (item) => {
           </ScrollView>
         </Animated.View>
 
-        {/* ALL TRANSACTIONS */}
+     
         <View style={[styles.rowBetween, { marginBottom: 15 ,  marginTop:20}]}>
           <Text style={styles.sectionTitle}>All Transactions</Text>
         </View>
 
-        {/* TRANSACTION LIST */}
-        {transactions.map((t) => (
+       
+        {mappedTransactions && mappedTransactions.length > 0 &&  mappedTransactions?.map((t) => (
             <TouchableOpacity  key={t.id} onPress={()=>handleshowTransaction(t)}>
           <View style={styles.transCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -511,14 +628,14 @@ const handleEditBanking = (item) => {
               </View>
 
               <View>
-                <Text style={styles.transTitle}>{t.title}</Text>
+                <Text style={styles.transTitle}>{t.Accountholder}</Text>
                 <Text style={styles.category}>{t.category}</Text>
               </View>
             </View>
          
 
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.date}>{t.date}</Text>
+            <Text style={styles.date}>{t?.date}</Text>
               <Text
                 style={[
                   styles.amount,
@@ -534,12 +651,12 @@ const handleEditBanking = (item) => {
 
       </Animated.ScrollView>
 
-      {/* FLOATING FILTER BUTTON */}
+   
       <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
         <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
 
-      {/* FLOATING ADD BUTTON */}
+    
       <TouchableOpacity style={styles.addBtn} onPress={handleShowAddTransaction}>
         <Image source={AddIcon} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
@@ -607,7 +724,7 @@ const handleEditBanking = (item) => {
       <View style={styles.fromToRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>From</Text>
-          <Text style={styles.valueText}>-----</Text>
+          <Text style={styles.valueText}> {selectedTransaction?.raw?.accountHolder}</Text>
         </View>
 
         <View style={{ flex: 1 }}>
@@ -637,6 +754,7 @@ const handleEditBanking = (item) => {
       <Text style={styles.label}>Description</Text>
       <Text style={styles.description}>
         Transfer Rs:10,000 for Balance maintenance
+        {selectedTransaction?.raw?.referenceNumber || "-"}
       </Text>
     </Animated.View>
   </View>
