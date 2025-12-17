@@ -8,8 +8,12 @@ import { CommonContexts } from "../../Context/CommonContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, onBedAdded }) {
+export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, onBedAdded,editBedData }) {
   const translateY = useRef(new Animated.Value(300)).current;
+  const isEdit = !!editBedData;
+  console.log("editBedData",editBedData)
+
+
   const { addBed, getAllBedsByRoom } = useFloor();
 
   const { activeHostelId } = useContext(CommonContexts);
@@ -23,7 +27,21 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const isDisabled = bedName.trim() === "" || amount.trim() === "";
+  const [bedId,setBedId] = useState("")
+  const isDisabled =
+  !bedName?.trim() || !String(amount)?.trim();
+
+
+
+  useEffect(() => {
+  if (isEdit && editBedData) {
+    setBedName(editBedData.bedName);
+    setBedId(editBedData.id); 
+ 
+        setAmount(String(editBedData?.rentAmount ?? ""));
+
+  }
+}, [editBedData]);
 
   useEffect(() => {
     if (visible) {

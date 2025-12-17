@@ -48,7 +48,7 @@ export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   // const [floors, setFloors] = useState([]);
 const { activeHostelId } = useContext(CommonContexts);
-const { getAllFloorsByHostel , loading,getAllRoomsByFloor,getAllBedsByRoom,deleteRoom } = useFloor();
+const { getAllFloorsByHostel , loading,getAllRoomsByFloor,getAllBedsByRoom,deleteRoom,deleteBed } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState(false);
@@ -84,8 +84,19 @@ const [editRoomData, setEditRoomData] = useState(null);
    const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
+   
+    const [editBedData, setEditBedData] = useState(null);
 
-
+// const handleEditBed = ()=>{
+//   setEditBed(true)
+//   setShowAddBed(true)
+//   setShowManageBed(false)
+// }
+const handleEditBed = (bed) => {
+  setEditBedData(bed);   // 👈 STORE BED OBJECT
+  setShowAddBed(true);
+  setShowManageBed(false);
+};
 
  const handleDelete = (roomId) => {
     setDeletePopup(true)
@@ -98,6 +109,7 @@ const handleConfirmDelete = async () => {
   const res = await deleteRoom(deleteRoomId);
 
   if (res?.success) {
+    console.log("RES",res)
     setModalType("success");
     setMessage(res.data);
     setShowSuccess(true); 
@@ -120,6 +132,26 @@ const handleConfirmDelete = async () => {
   }
 };
 
+ const handleDeleteBed = async (bedId) => {
+  const res = await deleteBed(bedId);
+
+  if (res?.success) {
+    setModalType("success");
+    setMessage(res.data);
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      handleBedAdded(selectedBedRoomId); // ✅ correct room refresh
+    }, 500);
+
+  } else {
+    setModalType("warning");
+    setMessage(res?.message || "Bed delete failed");
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 800);
+  }
+};
 
 //   const handleConfirmDelete = async () => {
 //   if (!deleteRoomId) return;
@@ -887,11 +919,17 @@ const handleAddBed = (roomId) => {
             return;
           }
 
+          // if (status === "available") {
+          //   setSelectedBed(b);
+          //   setShowManageBed(true);
+          //   return;
+          // }
           if (status === "available") {
-            setSelectedBed(b);
-            setShowManageBed(true);
-            return;
-          }
+  setSelectedBed(b);
+  setSelectedBedRoomId(item.id); // ✅ IMPORTANT
+  setShowManageBed(true);
+  return;
+}
 
           if (status === "occupied") {
             setSelectedOccupied({ bed: b, room: item });
@@ -1048,17 +1086,31 @@ const handleAddBed = (roomId) => {
 />
 
 
-
+{/* 
       <AddBedBottomSheet
         visible={showAddBed}
         onClose={() => setShowAddBed(false)}
         selectedRoomId={selectedBedRoomId}
          onBedAdded={handleBedAdded}
-      />
+      /> */}
+      <AddBedBottomSheet
+  visible={showAddBed}
+  onClose={() => {
+    setShowAddBed(false);
+    setEditBedData(null);
+  }}
+  selectedRoomId={selectedBedRoomId}
+  editBedData={editBedData}   // 👈 PASS BED
+  onBedAdded={handleBedAdded}
+/>
+
 
       <ManageBedBottomSheet
         visible={showManageBed}
+        selectedBed={selectedBed}
         onClose={() => setShowManageBed(false)}
+        handleEditBed={handleEditBed}
+        onDeleteBed={handleDeleteBed} 
       />
 
       <ReservedBedBottomSheet
