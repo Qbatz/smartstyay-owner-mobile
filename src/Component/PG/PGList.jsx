@@ -12,7 +12,9 @@ import {
   BackHandler,
   Animated,
   PanResponder,
+  Modal,TouchableWithoutFeedback
 } from "react-native";
+import SuccessModal from "../../ToastFile/ToastPage";
 import AddFloorSheet from "./AddFloorSheet";
 import AddRoomSheet from "./AddRoomSheet";
 import HostelImg from "../../Assets/Images/PgImg.png";
@@ -31,6 +33,7 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import Dots from "../../Assets/Images/3dots.png";
 
+
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -45,7 +48,7 @@ export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   // const [floors, setFloors] = useState([]);
 const { activeHostelId } = useContext(CommonContexts);
-const { getAllFloorsByHostel , loading,getAllRoomsByFloor,getAllBedsByRoom } = useFloor();
+const { getAllFloorsByHostel , loading,getAllRoomsByFloor,getAllBedsByRoom,deleteRoom } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState(false);
@@ -76,8 +79,76 @@ const [selectedBedRoomId,setSelectedBedRoomId] = useState("")
 const [bedsByRoom, setBedsByRoom] = useState({});
 const [openMenuRoomId, setOpenMenuRoomId] = useState(null);
 const [editRoomData, setEditRoomData] = useState(null);
+  const [deletePopup, setDeletePopup] = useState(false)
+  const [deleteRoomId, setDeleteRoomId] = useState(null);
+   const [modalType, setModalType] = useState("success");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
 
 
+
+ const handleDelete = (roomId) => {
+    setDeletePopup(true)
+    setOpenMenuRoomId(null)
+   setDeleteRoomId(roomId)
+  }
+const handleConfirmDelete = async () => {
+  if (!deleteRoomId) return;
+
+  const res = await deleteRoom(deleteRoomId);
+
+  if (res?.success) {
+    setModalType("success");
+    setMessage(res.data);
+    setShowSuccess(true); 
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      setDeletePopup(false);
+      setDeleteRoomId(null);
+      refreshRooms();
+    }, 800);
+
+  } else {
+    setModalType("warning");
+    setMessage(res?.message || "Room delete failed");
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 800);
+  }
+};
+
+
+//   const handleConfirmDelete = async () => {
+//   if (!deleteRoomId) return;
+
+//   const res = await deleteRoom(deleteRoomId);
+
+//   if (res.success) {
+//      setModalType("success");
+//       setMessage(res.data);
+//       setShowSuccess(true);
+
+//       setTimeout(() => {
+//         setDeletePopup(false);
+//     setDeleteRoomId(null);
+//       }, 800);
+   
+
+   
+//     refreshRooms();
+//   } else {
+//       setModalType("error");
+//       setMessage(res.data);
+//       setShowSuccess(true);
+//        setTimeout(() => {
+//       setShowSuccess(false)
+//       }, 800);
+
+//   }
+// };
 
 
 useEffect(() => {
@@ -420,6 +491,12 @@ const handleAddBed = (roomId) => {
   
   return (
     <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+
+      />
       <View style={styles.container}>
         {/* HEADER */}
         <View style={styles.header}>
@@ -775,11 +852,8 @@ const handleAddBed = (roomId) => {
 
     <TouchableOpacity
       style={styles.menuItem}
-      onPress={() => {
-        setOpenMenuRoomId(null);
-        console.log("DELETE ROOM", item.id);
-        // 👉 delete confirmation
-      }}
+   
+      onPress={() => handleDelete(item.id)}
     >
       <Text style={[styles.menuText, { color: "red" }]}>
         Delete
@@ -1053,6 +1127,47 @@ const handleAddBed = (roomId) => {
       visible={showInactiveSheet}
       onClose={() => setShowInactiveSheet(false)}
     />
+  <Modal
+  transparent
+  animationType="fade"
+  visible={deletePopup}
+  onRequestClose={() => setDeletePopup(false)}
+>
+  <TouchableWithoutFeedback onPress={() => setDeletePopup(false)}>
+    <View style={styles.deleteOverlay}>
+      
+      {/* ❗ Stop propagation inside box */}
+      <TouchableWithoutFeedback>
+        <View style={styles.deleteBox}>
+
+          <Text style={styles.deleteTitle}>Delete Room?</Text>
+          <Text style={styles.deleteSub}>
+            Are you sure you want to delete this room?
+          </Text>
+
+          <View style={styles.deleteBtnRow}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => setDeletePopup(false)}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={handleConfirmDelete}
+            >
+              <Text style={styles.deleteBtnText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+
+        </View>
+      </TouchableWithoutFeedback>
+
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
+
 
     </>
   );
@@ -1409,5 +1524,72 @@ menuText: {
   fontSize: 14,
   color: "#333",
 },
+ deleteOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
+  deleteBox: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+  },
+
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111',
+    textAlign: 'center',
+  },
+
+  deleteSub: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  deleteBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 22,
+  },
+
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginRight: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  cancelText: {
+    color: '#444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
