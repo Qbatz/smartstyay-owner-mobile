@@ -243,6 +243,39 @@ const deleteBed = async (bedId) => {
 };
 
 
+const updateBed = async ({ bedId, bedName, amount }) => {
+  try {
+    setLoading(true);
+    const token = await retriveData("token");
+
+    const payload = {
+      bedName,
+      isActive: true,
+      amount: Number(amount),
+    };
+
+    const res = await api.put(
+      `/v2/bed/${bedId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    console.log("UPDATE BED ERROR 👉", err?.response?.data || err);
+    return {
+      success: false,
+      message: err?.response?.data || "Bed update failed",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -251,7 +284,7 @@ const deleteBed = async (bedId) => {
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom,deleteRoom,deleteBed
+        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom,deleteRoom,deleteBed,updateBed
       }}
     >
       {children}

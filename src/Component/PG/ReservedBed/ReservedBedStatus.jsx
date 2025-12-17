@@ -6,7 +6,7 @@ import {
     PanResponder,
     TouchableOpacity,
     Image,
-    StyleSheet, TouchableWithoutFeedback,BackHandler
+    StyleSheet, TouchableWithoutFeedback, BackHandler
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
@@ -18,35 +18,39 @@ import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useNavigation } from "@react-navigation/native";
 
 
-export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
-     const navigation = useNavigation();
+export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed }) {
+    const navigation = useNavigation();
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
-    const [showInactiveSheet,setShowInactiveSheet] =useState(false)
-      useEffect(() => {
+    const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+    useEffect(() => {
         if (selectTap) {
-         selectTap(!showInactiveSheet);
+            selectTap(!showInactiveSheet);
         }
-      }, [showInactiveSheet]);
+    }, [showInactiveSheet]);
+    const handleEdit = () => {
+        if (!handleEditBed || !selectedBed) return;
+        handleEditBed(selectedBed);
+    };
 
-      useEffect(() => {
-          const onBack = () => {
+    useEffect(() => {
+        const onBack = () => {
             if (showInactiveSheet) {
-              setShowInactiveSheet(false);
-          
-              return true;
+                setShowInactiveSheet(false);
+
+                return true;
             }
-           if(menuOpen){
-   setMenuOpen(false)
-   return true;
-           }
-      
-          
+            if (menuOpen) {
+                setMenuOpen(false)
+                return true;
+            }
+
+
             return false;
-          };
-          const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
-          return () => sub.remove();
-        }, [showInactiveSheet,menuOpen]);
+        };
+        const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+        return () => sub.remove();
+    }, [showInactiveSheet, menuOpen]);
 
     useEffect(() => {
         if (visible) {
@@ -76,154 +80,160 @@ export default function ReservedBedBottomSheet({ visible, onClose,selectTap }) {
         },
     });
 
-   if (!visible) {
-  return (
-    <InactiveTenantSheet
-      visible={showInactiveSheet}
-      onClose={() => setShowInactiveSheet(false)}
-    />
-  );
-}
-const handleOuterClick=()=>{
-    onClose()
-    setMenuOpen(false)
-}
-const handleCheckIn = ()=>{
-   setMenuOpen(false) 
-   navigation.navigate("ReserveToCheckin") 
-}
+    if (!visible) {
+        return (
+            <InactiveTenantSheet
+                visible={showInactiveSheet}
+                onClose={() => setShowInactiveSheet(false)}
+            />
+        );
+    }
+    const handleOuterClick = () => {
+        onClose()
+        setMenuOpen(false)
+    }
+    const handleCheckIn = () => {
+        setMenuOpen(false)
+        navigation.navigate("ReserveToCheckin")
+    }
 
     return (
         <>
-        <View style={styles.overlay}>
-            <TouchableOpacity style={styles.overlayTouch} onPress={handleOuterClick} />
+            <View style={styles.overlay}>
+                <TouchableOpacity style={styles.overlayTouch} onPress={handleOuterClick} />
 
-            <Animated.View
-                style={[styles.sheet, { transform: [{ translateY }] }]}
-                {...panResponder.panHandlers}
-            >
+                <Animated.View
+                    style={[styles.sheet, { transform: [{ translateY }] }]}
+                    {...panResponder.panHandlers}
+                >
 
-                <View style={styles.handle} />
-
-
-                <View style={styles.headerRow}>
-                    <Text style={styles.title}>Bed Status</Text>
+                    <View style={styles.handle} />
 
 
-                    <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
-
-                        <Image source={Dots} style={styles.dots} />
-                    </TouchableOpacity>
-                </View>
+                    <View style={styles.headerRow}>
+                        <Text style={styles.title}>Bed Status</Text>
 
 
-                {menuOpen && (
-                    <View style={styles.menuWrapper} pointerEvents="box-none">
+                        <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
 
-                        {/* BACKDROP CLICK → CLOSE */}
-                        <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
-                            <View style={styles.overlayMenu} />
-                        </TouchableWithoutFeedback>
+                            <Image source={Dots} style={styles.dots} />
+                        </TouchableOpacity>
+                    </View>
 
-                        {/* POPUP */}
-                        <View style={styles.popupMenu}>
-                            <TouchableOpacity style={styles.popupItem} onPress={handleCheckIn}>
-                                <View style={styles.row}>
-                                    <Image source={Checkin} style={styles.iconCheck} />
-                                    <Text style={styles.popupText}>Check-In</Text>
-                                </View>
-                            </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.popupItem}  onPress={() => {
-  setMenuOpen(false);
+                    {menuOpen && (
+                        <View style={styles.menuWrapper} pointerEvents="box-none">
 
-  // Step 1: Close Reserved Sheet
-  onClose();
+                            {/* BACKDROP CLICK → CLOSE */}
+                            <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
+                                <View style={styles.overlayMenu} />
+                            </TouchableWithoutFeedback>
 
-  // Step 2: Open Inactive sheet after animation delay
-  setTimeout(() => {
-    setShowInactiveSheet(true);
-  }, 250); // same as animation duration
-}}
->
-                                <View style={styles.row}>
-                                    <Image source={MakeUs} style={styles.icon} />
-                                    <Text style={styles.popupText}>Make as Inactive</Text>
-                                </View>
-                            </TouchableOpacity>
+                            {/* POPUP */}
+                            <View style={styles.popupMenu}>
+                                <TouchableOpacity style={styles.popupItem} onPress={handleCheckIn}>
+                                    <View style={styles.row}>
+                                        <Image source={Checkin} style={styles.iconCheck} />
+                                        <Text style={styles.popupText}>Check-In</Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.popupItem} onPress={() => {
+                                    setMenuOpen(false);
+
+                                    // Step 1: Close Reserved Sheet
+                                    onClose();
+
+                                    // Step 2: Open Inactive sheet after animation delay
+                                    setTimeout(() => {
+                                        setShowInactiveSheet(true);
+                                    }, 250); // same as animation duration
+                                }}
+                                >
+                                    <View style={styles.row}>
+                                        <Image source={MakeUs} style={styles.icon} />
+                                        <Text style={styles.popupText}>Make as Inactive</Text>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.popupItem} onPress={handleEdit}>
+                                    <View style={styles.row}>
+                                        <Image source={Checkin} style={styles.iconCheck} />
+                                        <Text style={styles.popupText}>Edit</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
                         </View>
+                    )}
 
+
+
+                    {/* TAGS */}
+                    <View style={styles.tagRow}>
+                        <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
+                            <Text style={styles.tagText}>Ground Floor</Text>
+                        </View>
+                        <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
+                            <Text style={styles.tagText}>002 - F</Text>
+                        </View>
                     </View>
-                )}
+
+                    <Text style={styles.sub}>Reserved by</Text>
 
 
+                    <View style={styles.userRow}>
+                        <Image
+                            source={Profile}
+                            style={styles.userImg}
+                        />
 
-                {/* TAGS */}
-                <View style={styles.tagRow}>
-                    <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
-                        <Text style={styles.tagText}>Ground Floor</Text>
+                        <View>
+                            <Text style={styles.userName}>Daniel Jebakumar</Text>
+                            <Text style={styles.phone}>+91 98765 43210</Text>
+                        </View>
                     </View>
-                    <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
-                        <Text style={styles.tagText}>002 - F</Text>
+
+
+                    <View style={{ marginTop: 15 }}>
+                        <Text style={styles.infoLabel}>Booked Date</Text>
+
+                        <View style={styles.amountRow}>
+                            <Image source={Calendar} style={styles.amountIcon} />
+                            <Text style={styles.amountText}>10 June 2024</Text>
+                        </View>
                     </View>
-                </View>
-
-                <Text style={styles.sub}>Reserved by</Text>
 
 
-                <View style={styles.userRow}>
-                    <Image
-                        source={Profile}
-                        style={styles.userImg}
-                    />
+                    <View style={{ marginTop: 15 }}>
+                        <Text style={styles.infoLabel}>Booking Amount</Text>
 
-                    <View>
-                        <Text style={styles.userName}>Daniel Jebakumar</Text>
-                        <Text style={styles.phone}>+91 98765 43210</Text>
+                        <View style={styles.amountRow}>
+                            <Image source={Money} style={styles.amountIcon} />
+                            <Text style={styles.amountText}>₹ 500</Text>
+                        </View>
                     </View>
-                </View>
 
 
-                <View style={{ marginTop: 15 }}>
-                    <Text style={styles.infoLabel}>Booked Date</Text>
 
-                    <View style={styles.amountRow}>
-                        <Image source={Calendar} style={styles.amountIcon} />
-                        <Text style={styles.amountText}>10 June 2024</Text>
+                    <View style={{ marginTop: 15 }}>
+                        <Text style={styles.infoLabel}>Joining Date</Text>
+
+                        <View style={styles.amountRow}>
+                            <Image source={Calendar} style={styles.amountIcon} />
+                            <Text style={styles.amountText}>10 June 2024</Text>
+                        </View>
                     </View>
-                </View>
 
 
-                <View style={{ marginTop: 15 }}>
-                    <Text style={styles.infoLabel}>Booking Amount</Text>
-
-                    <View style={styles.amountRow}>
-                        <Image source={Money} style={styles.amountIcon} />
-                        <Text style={styles.amountText}>₹ 500</Text>
-                    </View>
-                </View>
-
-
-
-                <View style={{ marginTop: 15 }}>
-                    <Text style={styles.infoLabel}>Joining Date</Text>
-
-                    <View style={styles.amountRow}>
-                        <Image source={Calendar} style={styles.amountIcon} />
-                        <Text style={styles.amountText}>10 June 2024</Text>
-                    </View>
-                </View>
-
-
-                <TouchableOpacity style={styles.reservedBtn}>
-                    <Text style={styles.resText}>Reserved</Text>
-                </TouchableOpacity>
-            </Animated.View>
-        </View>
-        <InactiveTenantSheet
-  visible={showInactiveSheet}
-  onClose={() => setShowInactiveSheet(false)}
-/>
+                    <TouchableOpacity style={styles.reservedBtn}>
+                        <Text style={styles.resText}>Reserved</Text>
+                    </TouchableOpacity>
+                </Animated.View>
+            </View>
+            <InactiveTenantSheet
+                visible={showInactiveSheet}
+                onClose={() => setShowInactiveSheet(false)}
+            />
 
         </>
     );
@@ -389,7 +399,7 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#000",
     },
- 
+
     row: {
         flexDirection: "row",
         alignItems: "center",

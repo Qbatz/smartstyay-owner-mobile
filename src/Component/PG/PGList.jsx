@@ -1,5 +1,5 @@
 // PGPageFull.js
-import React, { useState, useEffect,useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   BackHandler,
   Animated,
   PanResponder,
-  Modal,TouchableWithoutFeedback
+  Modal, TouchableWithoutFeedback
 } from "react-native";
 import SuccessModal from "../../ToastFile/ToastPage";
 import AddFloorSheet from "./AddFloorSheet";
@@ -47,8 +47,8 @@ const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   // const [floors, setFloors] = useState([]);
-const { activeHostelId } = useContext(CommonContexts);
-const { getAllFloorsByHostel , loading,getAllRoomsByFloor,getAllBedsByRoom,deleteRoom,deleteBed } = useFloor();
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState(false);
@@ -68,221 +68,225 @@ const { getAllFloorsByHostel , loading,getAllRoomsByFloor,getAllBedsByRoom,delet
   const [noticeData, setNoticeData] = useState(null);
   const [showNewBooking, setShowNewBooking] = useState(false);
   const [showDoubleStatus, setShowDoubleStatus] = useState(false);
-const [selectedDouble, setSelectedDouble] = useState(null);
-const [showInactiveSheet,setShowInactiveSheet] =useState(false)
-const [floors, setFloors] = useState([]);
-const [selectedFloorId, setSelectedFloorId] = useState(null);
- const [rooms, setRooms] = useState([]);
- const [selectedRoomId, setSelectedRoomId] = useState(null);
-const [beds, setBeds] = useState([]);
-const [selectedBedRoomId,setSelectedBedRoomId] = useState("")
-const [bedsByRoom, setBedsByRoom] = useState({});
-const [openMenuRoomId, setOpenMenuRoomId] = useState(null);
-const [editRoomData, setEditRoomData] = useState(null);
+  const [selectedDouble, setSelectedDouble] = useState(null);
+  const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+  const [floors, setFloors] = useState([]);
+  const [selectedFloorId, setSelectedFloorId] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [beds, setBeds] = useState([]);
+  const [selectedBedRoomId, setSelectedBedRoomId] = useState("")
+  const [bedsByRoom, setBedsByRoom] = useState({});
+  const [openMenuRoomId, setOpenMenuRoomId] = useState(null);
+  const [editRoomData, setEditRoomData] = useState(null);
   const [deletePopup, setDeletePopup] = useState(false)
   const [deleteRoomId, setDeleteRoomId] = useState(null);
-   const [modalType, setModalType] = useState("success");
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [message, setMessage] = useState("");
-   
-    const [editBedData, setEditBedData] = useState(null);
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
-// const handleEditBed = ()=>{
-//   setEditBed(true)
-//   setShowAddBed(true)
-//   setShowManageBed(false)
-// }
-const handleEditBed = (bed) => {
-  setEditBedData(bed);   // 👈 STORE BED OBJECT
-  setShowAddBed(true);
-  setShowManageBed(false);
-};
+  const [editBedData, setEditBedData] = useState(null);
 
- const handleDelete = (roomId) => {
+  // const handleEditBed = ()=>{
+  //   setEditBed(true)
+  //   setShowAddBed(true)
+  //   setShowManageBed(false)
+  // }
+  const handleEditBed = (bed) => {
+    setEditBedData(bed);   // 👈 STORE BED OBJECT
+    setShowAddBed(true);
+    setShowManageBed(false);
+    setShowNoticePeriodSheet(false)
+    setShowOccupiedSheet(false)
+    setShowReservedSheet(false)
+  };
+
+  const handleDelete = (roomId) => {
     setDeletePopup(true)
     setOpenMenuRoomId(null)
-   setDeleteRoomId(roomId)
+    setDeleteRoomId(roomId)
   }
-const handleConfirmDelete = async () => {
-  if (!deleteRoomId) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteRoomId) return;
 
-  const res = await deleteRoom(deleteRoomId);
+    const res = await deleteRoom(deleteRoomId);
 
-  if (res?.success) {
-    console.log("RES",res)
-    setModalType("success");
-    setMessage(res.data);
-    setShowSuccess(true); 
+    if (res?.success) {
+      console.log("RES", res)
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
 
-    setTimeout(() => {
-      setShowSuccess(false);
-      setDeletePopup(false);
-      setDeleteRoomId(null);
-      refreshRooms();
-    }, 800);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setDeletePopup(false);
+        setDeleteRoomId(null);
+        refreshRooms();
+      }, 800);
 
-  } else {
-    setModalType("warning");
-    setMessage(res?.message || "Room delete failed");
-    setShowSuccess(true);
+    } else {
+      setModalType("warning");
+      setMessage(res?.message || "Room delete failed");
+      setShowSuccess(true);
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 800);
-  }
-};
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
+    }
+  };
 
- const handleDeleteBed = async (bedId) => {
-  const res = await deleteBed(bedId);
+  const handleDeleteBed = async (bedId) => {
+    const res = await deleteBed(bedId);
+    console.log("res", res)
+    if (res?.success) {
 
-  if (res?.success) {
-    setModalType("success");
-    setMessage(res.data);
-    setShowSuccess(true);
+      setModalType("success");
+      setMessage("Bed Deleted Successfully");
+      setShowSuccess(true);
 
-    setTimeout(() => {
-      setShowSuccess(false);
-      handleBedAdded(selectedBedRoomId); // ✅ correct room refresh
-    }, 500);
+      setTimeout(() => {
+        setShowSuccess(false);
+        handleBedAdded(selectedBedRoomId);
+      }, 500);
 
-  } else {
-    setModalType("warning");
-    setMessage(res?.message || "Bed delete failed");
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 800);
-  }
-};
+    } else {
+      setModalType("warning");
+      setMessage(res?.message || "Bed delete failed");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 800);
+    }
+  };
 
-//   const handleConfirmDelete = async () => {
-//   if (!deleteRoomId) return;
+  //   const handleConfirmDelete = async () => {
+  //   if (!deleteRoomId) return;
 
-//   const res = await deleteRoom(deleteRoomId);
+  //   const res = await deleteRoom(deleteRoomId);
 
-//   if (res.success) {
-//      setModalType("success");
-//       setMessage(res.data);
-//       setShowSuccess(true);
+  //   if (res.success) {
+  //      setModalType("success");
+  //       setMessage(res.data);
+  //       setShowSuccess(true);
 
-//       setTimeout(() => {
-//         setDeletePopup(false);
-//     setDeleteRoomId(null);
-//       }, 800);
-   
-
-   
-//     refreshRooms();
-//   } else {
-//       setModalType("error");
-//       setMessage(res.data);
-//       setShowSuccess(true);
-//        setTimeout(() => {
-//       setShowSuccess(false)
-//       }, 800);
-
-//   }
-// };
+  //       setTimeout(() => {
+  //         setDeletePopup(false);
+  //     setDeleteRoomId(null);
+  //       }, 800);
 
 
-useEffect(() => {
-  if (!activeHostelId) return;
 
-  loadFloors();
-}, [activeHostelId]);
+  //     refreshRooms();
+  //   } else {
+  //       setModalType("error");
+  //       setMessage(res.data);
+  //       setShowSuccess(true);
+  //        setTimeout(() => {
+  //       setShowSuccess(false)
+  //       }, 800);
 
-const loadFloors = async () => {
-  const res = await getAllFloorsByHostel(activeHostelId);
-  if (res.success) {
-    setFloors(res.data);
-     setActiveFloorIndex(0);
-    setSelectedFloorId(res.data[0].id);
-
-  }
-};
+  //   }
+  // };
 
 
-useEffect(() => {
-  const loadRooms = async () => {
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    loadFloors();
+  }, [activeHostelId]);
+
+  const loadFloors = async () => {
+    const res = await getAllFloorsByHostel(activeHostelId);
+    if (res.success) {
+      setFloors(res.data);
+      setActiveFloorIndex(0);
+      setSelectedFloorId(res.data[0].id);
+
+    }
+  };
+
+
+  useEffect(() => {
+    const loadRooms = async () => {
+      if (!selectedFloorId) return;
+
+      const res = await getAllRoomsByFloor(selectedFloorId);
+      if (res.success) {
+        setRooms(res.data);
+      }
+    };
+
+    loadRooms();
+  }, [selectedFloorId]);
+  const refreshRooms = async () => {
     if (!selectedFloorId) return;
 
     const res = await getAllRoomsByFloor(selectedFloorId);
     if (res.success) {
-      setRooms(res.data); 
+      setRooms(res.data);
     }
   };
 
-  loadRooms();
-}, [selectedFloorId]);
-const refreshRooms = async () => {
-  if (!selectedFloorId) return;
 
-  const res = await getAllRoomsByFloor(selectedFloorId);
-  if (res.success) {
-    setRooms(res.data); 
-  }
-};
-
-
-const handleBedAdded = async (roomId) => {
-  const res = await getAllBedsByRoom(roomId);
-  if (res.success) {
-    setBedsByRoom(prev => ({
-      ...prev,
-      [roomId]: res.data,
-    }));
-  }
-};
-
-// useEffect(() => {
-//   const loadBeds = async () => {
-  
-
-//     const res = await getAllBedsByRoom(selectedRoomId);
-//     if (res.success) {
-//       console.log("res",res)
-//       setBeds(res.data);
-//     }
-//   };
-
-//   loadBeds();
-// }, [selectedRoomId]);
-
-const getBedStatus = (bed) => {
-  const statuses = [];
-
-  if (bed.isBooked) statuses.push("reserved");
-  if (bed.onNotice) statuses.push("noticeperiod");
-  if (bed.overDue) statuses.push("overdue");
-  if (bed.isOccupied) statuses.push("occupied");
-
-  return statuses.length ? statuses.join(",") : "available";
-};
-
-// useEffect(() => {
-//   if (rooms.length > 0) {
-//     setSelectedRoomId(rooms[0].id);
-//   } else {
-//     setSelectedRoomId(null);
-//     setBeds([]);
-//   }
-// }, [rooms]);
-useEffect(() => {
-  if (!rooms.length) return;
-
-  rooms.forEach(async (room) => {
-    const res = await getAllBedsByRoom(room.id);
+  const handleBedAdded = async (roomId) => {
+    const res = await getAllBedsByRoom(roomId);
     if (res.success) {
       setBedsByRoom(prev => ({
         ...prev,
-        [room.id]: res.data,
+        [roomId]: res.data,
       }));
     }
-  });
-}, [rooms]);
+  };
+
+  // useEffect(() => {
+  //   const loadBeds = async () => {
+
+
+  //     const res = await getAllBedsByRoom(selectedRoomId);
+  //     if (res.success) {
+  //       console.log("res",res)
+  //       setBeds(res.data);
+  //     }
+  //   };
+
+  //   loadBeds();
+  // }, [selectedRoomId]);
+
+  const getBedStatus = (bed) => {
+    const statuses = [];
+
+    if (bed.isBooked) statuses.push("reserved");
+    if (bed.onNotice) statuses.push("noticeperiod");
+    if (bed.overDue) statuses.push("overdue");
+    if (bed.isOccupied) statuses.push("occupied");
+
+    return statuses.length ? statuses.join(",") : "available";
+  };
+
+  // useEffect(() => {
+  //   if (rooms.length > 0) {
+  //     setSelectedRoomId(rooms[0].id);
+  //   } else {
+  //     setSelectedRoomId(null);
+  //     setBeds([]);
+  //   }
+  // }, [rooms]);
+  useEffect(() => {
+    if (!rooms.length) return;
+
+    rooms.forEach(async (room) => {
+      const res = await getAllBedsByRoom(room.id);
+      if (res.success) {
+        setBedsByRoom(prev => ({
+          ...prev,
+          [room.id]: res.data,
+        }));
+      }
+    });
+  }, [rooms]);
 
 
   console.log("Selected Floor ID:", rooms);
 
-console.log("floors",floors)
+  console.log("floors", floors)
   const translateY = React.useRef(new Animated.Value(300)).current;
 
 
@@ -291,18 +295,18 @@ console.log("floors",floors)
     return status.split(",").map((s) => s.trim());
   };
 
-  
-const getPrimaryStatus = (status) => {
-  if (!status) return "";
-  const statuses = splitStatus(status);
 
-  if (statuses.includes("noticeperiod")) return "noticeperiod"; // 🔥 highest
-  if (statuses.includes("overdue")) return "overdue";
-  if (statuses.includes("reserved")) return "reserved";
-  if (statuses.includes("occupied")) return "occupied";
+  const getPrimaryStatus = (status) => {
+    if (!status) return "";
+    const statuses = splitStatus(status);
 
-  return statuses[0];
-};
+    if (statuses.includes("noticeperiod")) return "noticeperiod"; // 🔥 highest
+    if (statuses.includes("overdue")) return "overdue";
+    if (statuses.includes("reserved")) return "reserved";
+    if (statuses.includes("occupied")) return "occupied";
+
+    return statuses[0];
+  };
 
 
   const getStatusCount = (status) => {
@@ -313,7 +317,7 @@ const getPrimaryStatus = (status) => {
   const getBaseBed = (status) => {
     if (status === "available") return BedEmpty;
     if (status === "reserved") return BedEmpty;
-    
+
     return BedGreen;
   };
 
@@ -369,16 +373,16 @@ const getPrimaryStatus = (status) => {
     if (route?.params?.setShowTabBar) {
       route.params.setShowTabBar(
         !showAddFloor &&
-          !showActionSheet &&
-          !showAddRoom &&
-          !showAddBed &&
-          !showManageBed &&
-          !showReservedSheet &&
-          !showOccupiedSheet &&
-          !showNoticePeriodSheet &&
-          !showNewBooking &&
-          !showDoubleStatus &&
-          !showInactiveSheet
+        !showActionSheet &&
+        !showAddRoom &&
+        !showAddBed &&
+        !showManageBed &&
+        !showReservedSheet &&
+        !showOccupiedSheet &&
+        !showNoticePeriodSheet &&
+        !showNewBooking &&
+        !showDoubleStatus &&
+        !showInactiveSheet
       );
     }
   }, [
@@ -390,8 +394,8 @@ const getPrimaryStatus = (status) => {
     showReservedSheet,
     showOccupiedSheet,
     showNoticePeriodSheet,
-    showNewBooking,showDoubleStatus,
-    route,showInactiveSheet
+    showNewBooking, showDoubleStatus,
+    route, showInactiveSheet
   ]);
 
   // ---------- Android Back Handler ----------
@@ -433,13 +437,13 @@ const getPrimaryStatus = (status) => {
         setShowNewBooking(false);
         return true;
       }
-        if (showDoubleStatus) {
+      if (showDoubleStatus) {
         setShowDoubleStatus(false);
         return true;
       }
-      if(showInactiveSheet){
-setShowInactiveSheet(false)
-return true;
+      if (showInactiveSheet) {
+        setShowInactiveSheet(false)
+        return true;
       }
       return false;
     };
@@ -455,7 +459,7 @@ return true;
     showReservedSheet,
     showOccupiedSheet,
     showNoticePeriodSheet,
-    showNewBooking,showDoubleStatus,showInactiveSheet
+    showNewBooking, showDoubleStatus, showInactiveSheet
   ]);
 
   // ---------- Actions ----------
@@ -498,7 +502,7 @@ return true;
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
     navigation.navigate("FinalSettlement");
-      setShowDoubleStatus(false)
+    setShowDoubleStatus(false)
   };
 
   const handleShowCancelNotice = () => {
@@ -506,21 +510,21 @@ return true;
     navigation.navigate("CancelNotice");
     setShowDoubleStatus(false)
   };
-const handleMakeUsInActive=()=>{
-   setShowDoubleStatus(false)
-   setShowInactiveSheet(true)
-}
+  const handleMakeUsInActive = () => {
+    setShowDoubleStatus(false)
+    setShowInactiveSheet(true)
+  }
 
-const handleCheckIn = ()=>{
-   setShowDoubleStatus(false) 
-   navigation.navigate("ReserveToCheckin") 
-}
-const handleAddBed = (roomId) => {
-  setSelectedBedRoomId(roomId);
-  setShowAddBed(true);
-  console.log("roomId",roomId)
-};
-  
+  const handleCheckIn = () => {
+    setShowDoubleStatus(false)
+    navigation.navigate("ReserveToCheckin")
+  }
+  const handleAddBed = (roomId) => {
+    setSelectedBedRoomId(roomId);
+    setShowAddBed(true);
+    console.log("roomId", roomId)
+  };
+
   return (
     <>
       <SuccessModal
@@ -600,20 +604,20 @@ const handleAddBed = (roomId) => {
             contentContainerStyle={{ paddingLeft: 13, paddingRight: 20 }}
           >
             {floors.map((f, i) => (
-            
-              <TouchableOpacity
-    key={f.id}
-    style={[
-      styles.floorTab,
-      activeFloorIndex === i && styles.floorTabActive,
-    ]}
-    onPress={() => {
-      setActiveFloorIndex(i);
-      setSelectedFloorId(f.id);  
 
-    
-    }}
-  >
+              <TouchableOpacity
+                key={f.id}
+                style={[
+                  styles.floorTab,
+                  activeFloorIndex === i && styles.floorTabActive,
+                ]}
+                onPress={() => {
+                  setActiveFloorIndex(i);
+                  setSelectedFloorId(f.id);
+
+
+                }}
+              >
                 <View
                   style={{
                     flexDirection: "column",
@@ -666,20 +670,20 @@ const handleAddBed = (roomId) => {
           </View>
         )}
 
-      
-  {floors.length > 0 && rooms.length === 0 && (
-  <View style={styles.centerContainer}>
-    <Image source={EmptyFloor} style={styles.image} />
-    <Text style={styles.noFloorText}>No Rooms are there!</Text>
 
-    <TouchableOpacity
-      style={styles.addFloorBtn}
-      onPress={() => setShowAddRoom(true)}
-    >
-      <Text style={styles.addFloorText}>+ Add Rooms</Text>
-    </TouchableOpacity>
-  </View>
-)}
+        {floors.length > 0 && rooms.length === 0 && (
+          <View style={styles.centerContainer}>
+            <Image source={EmptyFloor} style={styles.image} />
+            <Text style={styles.noFloorText}>No Rooms are there!</Text>
+
+            <TouchableOpacity
+              style={styles.addFloorBtn}
+              onPress={() => setShowAddRoom(true)}
+            >
+              <Text style={styles.addFloorText}>+ Add Rooms</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
 
         {/* ROOMS + BEDS */}
@@ -688,306 +692,156 @@ const handleAddBed = (roomId) => {
           data={rooms}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-//             <View style={styles.roomCard}>
-//               <View style={styles.roomHeader}>
-//                 <View>
-//                   <Text style={styles.roomTitle}>Room No {item.name}</Text>
-//                   <Text style={styles.roomSubtitle}>{item.sharing}</Text>
-//                 </View>
+           
+            <View style={styles.roomCard}>
+              <TouchableOpacity
+                style={styles.roomHeader}
+                activeOpacity={0.8}
+                onPress={() => {
+                  console.log("ROOM CLICKED:", item.roomId);
+                  setSelectedRoomId(item.roomId);
+                }}
+              >
+                <View>
+                  <Text style={styles.roomTitle}>Room No {item.name}</Text>
+                  <Text style={styles.roomSubtitle}>{item.sharing}</Text>
+                </View>
 
-//                 <TouchableOpacity
-//                   style={styles.addRoomBtn}
-//                   onPress={() => setShowAddBed(true)}
-//                 >
-//                   <Image source={AddIcon} style={{ width: 22, height: 22 }} />
-//                 </TouchableOpacity>
-//               </View>
+                <TouchableOpacity
+                  style={styles.addRoomBtn}
+                  onPress={() => {
+                    setOpenMenuRoomId(
+                      openMenuRoomId === item.id ? null : item.id
+                    );
+                  }}
+                >
+                  <Image source={Dots} style={{ width: 22, height: 22 }} />
+                </TouchableOpacity>
+              </TouchableOpacity>
 
-//               <View style={styles.bedsRow}>
-//                 {/* {item.beds?.map((b) => (
-//                   <TouchableOpacity
-//                     key={b.id}
-//                     style={styles.bedItem}
-//                     onPress={() => {
-//                       const statuses = splitStatus(b.status);
+              {openMenuRoomId === item.id && (
+                <View style={styles.menuBox}>
+                  <TouchableOpacity
+                    style={styles.menuItem}
 
-//                       // NOTICE + RESERVED together → Reserved sheet (priority B)
-//                   if (
-//   statuses.includes("noticeperiod") &&
-//   statuses.includes("reserved")
-// ) {
-//   setSelectedDouble({ bed: b, room: item }); 
-//   setShowDoubleStatus(true);
-//   return;
-// }
+                    onPress={() => {
+                      setOpenMenuRoomId(null);
+                      setEditRoomData(item);     
+                      setShowAddRoom(true);  
+                    }}
 
+                  >
+                    <Text style={styles.menuText}>Edit</Text>
+                  </TouchableOpacity>
 
-//                       // RESERVED only
-//                       if (b.status === "reserved") {
-//                         setSelectedReserved({ bed: b, room: item });
-//                         setShowReservedSheet(true);
-//                         return;
-//                       }
+                  <TouchableOpacity
+                    style={styles.menuItem}
 
-//                       // AVAILABLE
-//                       if (b.status === "available") {
-//                         setSelectedBed(b);
-//                         setShowManageBed(true);
-//                         return;
-//                       }
-
-//                       // OCCUPIED
-//                       if (b.status === "occupied") {
-//                         setSelectedOccupied({ bed: b, room: item });
-//                         setShowOccupiedSheet(true);
-//                         return;
-//                       }
-
-//                       // NOTICE only
-//                       if (b.status === "noticeperiod") {
-//                         setNoticeData({ bed: b, room: item });
-//                         setShowNoticePeriodSheet(true);
-//                         return;
-//                       }
-//                     }}
-//                   >
-//                     <Image
-//                       source={getBaseBed(b.status)}
-//                       style={styles.bedIcon}
-//                     />
-
-              
-//                     {overlayIcons[getPrimaryStatus(b.status)] && (
-//                       <Image
-//                         source={overlayIcons[getPrimaryStatus(b.status)]}
-//                         style={styles.overlayIcon}
-//                       />
-//                     )}
-
-                   
-//                     {getStatusCount(b.status) > 1 && (
-//                       <View style={styles.multiBadge}>
-//                         <Text style={styles.multiBadgeText}>
-//                           {getStatusCount(b.status)}
-//                         </Text>
-//                       </View>
-//                     )}
-
-//                     <Text style={styles.bedLabel}>{b.label}</Text>
-//                   </TouchableOpacity>
-//                 ))} */}
-//                 {selectedRoomId === item.id &&
-//   beds.map((b) => {
-//     const status = getBedStatus(b);
-
-//     return (
-//       <TouchableOpacity
-//         key={b.id}
-//         style={styles.bedItem}
-//         onPress={() => {
-//           const statuses = splitStatus(status);
-
-//           if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
-//             setSelectedDouble({ bed: b, room: item });
-//             setShowDoubleStatus(true);
-//             return;
-//           }
-
-//           if (status === "reserved") {
-//             setSelectedReserved({ bed: b, room: item });
-//             setShowReservedSheet(true);
-//             return;
-//           }
-
-//           if (status === "available") {
-//             setSelectedBed(b);
-//             setShowManageBed(true);
-//             return;
-//           }
-
-//           if (status === "occupied") {
-//             setSelectedOccupied({ bed: b, room: item });
-//             setShowOccupiedSheet(true);
-//             return;
-//           }
-
-//           if (status === "noticeperiod") {
-//             setNoticeData({ bed: b, room: item });
-//             setShowNoticePeriodSheet(true);
-//           }
-//         }}
-//       >
-//         <Image source={getBaseBed(status)} style={styles.bedIcon} />
-
-//         {overlayIcons[getPrimaryStatus(status)] && (
-//           <Image
-//             source={overlayIcons[getPrimaryStatus(status)]}
-//             style={styles.overlayIcon}
-//           />
-//         )}
-
-//         {getStatusCount(status) > 1 && (
-//           <View style={styles.multiBadge}>
-//             <Text style={styles.multiBadgeText}>
-//               {getStatusCount(status)}
-//             </Text>
-//           </View>
-//         )}
-
-//         <Text style={styles.bedLabel}>{b.bedName}</Text>
-//       </TouchableOpacity>
-//     );
-//   })}
-
-//               </View>
-//             </View>
-  <View style={styles.roomCard}>
-           <TouchableOpacity
-  style={styles.roomHeader}
-  activeOpacity={0.8}
-  onPress={() => {
-    console.log("ROOM CLICKED:", item.roomId);
-    setSelectedRoomId(item.roomId); // ✅ FIX
-  }}
->
-  <View>
-    <Text style={styles.roomTitle}>Room No {item.name}</Text>
-    <Text style={styles.roomSubtitle}>{item.sharing}</Text>
-  </View>
-
- <TouchableOpacity
-  style={styles.addRoomBtn}
-  onPress={() => {
-    setOpenMenuRoomId(
-      openMenuRoomId === item.id ? null : item.id
-    );
-  }}
->
-  <Image source={Dots} style={{ width: 22, height: 22 }} />
-</TouchableOpacity>
-</TouchableOpacity>
-
-{openMenuRoomId === item.id && (
-  <View style={styles.menuBox}>
-    <TouchableOpacity
-      style={styles.menuItem}
-   
-       onPress={() => {
-    setOpenMenuRoomId(null);
-    setEditRoomData(item);      // 👈 full room object
-    setShowAddRoom(true);       // 👈 same sheet open
-  }}
-    
-    >
-      <Text style={styles.menuText}>Edit</Text>
-    </TouchableOpacity>
-
-    <TouchableOpacity
-      style={styles.menuItem}
-   
-      onPress={() => handleDelete(item.id)}
-    >
-      <Text style={[styles.menuText, { color: "red" }]}>
-        Delete
-      </Text>
-    </TouchableOpacity>
-  </View>
-)}
+                    onPress={() => handleDelete(item.id)}
+                  >
+                    <Text style={[styles.menuText, { color: "red" }]}>
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
 
               <View style={styles.bedsRow}>
-               
-    {bedsByRoom[item.id]?.map((b) => {
-  const status = getBedStatus(b);
 
-  return (
-    <TouchableOpacity
-      key={b.id}
-      style={styles.bedItem}
-      onPress={() => {
-          const statuses = splitStatus(status);
+                {bedsByRoom[item.id]?.map((b) => {
+                  const status = getBedStatus(b);
 
-          if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
-            setSelectedDouble({ bed: b, room: item });
-            setShowDoubleStatus(true);
-            return;
-          }
-
-          if (status === "reserved") {
-            setSelectedReserved({ bed: b, room: item });
-            setShowReservedSheet(true);
-            return;
-          }
-
-          // if (status === "available") {
-          //   setSelectedBed(b);
-          //   setShowManageBed(true);
-          //   return;
-          // }
-          if (status === "available") {
-  setSelectedBed(b);
-  setSelectedBedRoomId(item.id); // ✅ IMPORTANT
-  setShowManageBed(true);
-  return;
-}
-
-          if (status === "occupied") {
-            setSelectedOccupied({ bed: b, room: item });
-            setShowOccupiedSheet(true);
-            return;
-          }
-          //   if (status === "overdue") {
-          //   setSelectedOccupied({ bed: b, room: item });
-          //   setShowOccupiedSheet(true);
-          //   return;
-          // }
-          if (b.overDue && b.isOccupied) {
-  setSelectedOccupied({ bed: b, room: item });
-  setShowOccupiedSheet(true);
-  return;
-}
+                  return (
+                    <TouchableOpacity
+                      key={b.id}
+                      style={styles.bedItem}
+                      onPress={() => {
+                        const statuses = splitStatus(status);
 
 
-          // if (status === "noticeperiod") {
-          //   setNoticeData({ bed: b, room: item });
-          //   setShowNoticePeriodSheet(true);
-          // }
-          if (b.onNotice && b.isOccupied) {
-  setNoticeData({ bed: b, room: item });
-  setShowNoticePeriodSheet(true);
-  return;
-}
+                        if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
+                          setSelectedDouble({ bed: b, room: item });
+                          setShowDoubleStatus(true);
+                          return;
+                        }
 
-        }}
-    >
-      <Image source={getBaseBed(status)} style={styles.bedIcon} />
-
-      {overlayIcons[getPrimaryStatus(status)] && (
-        <Image
-          source={overlayIcons[getPrimaryStatus(status)]}
-          style={styles.overlayIcon}
-        />
-      )}
-
-      {b.onNotice && b.isBooked && (
-        <View style={styles.multiBadge}>
-          <Text style={styles.multiBadgeText}>2</Text>
-        </View>
-      )}
-
-      <Text style={styles.bedLabel}>{b.bedName}</Text>
-    </TouchableOpacity>
-  );
-})}
-
-<TouchableOpacity
-    style={styles.addRoomBtn}
-  onPress={() => handleAddBed(item.id)}
+                        if (b.onNotice && b.isOccupied) {
+                          setNoticeData({ bed: b, room: item });
+                          setSelectedBed(b);              
+                          setSelectedBedRoomId(item.id); 
+                          setShowNoticePeriodSheet(true);
+                          return;
+                        }
+                      
 
 
-  >
-    <Image source={AddIcon} style={{ width: 22, height: 22 }} />
-  </TouchableOpacity>
+                        if (b.overDue && b.isOccupied) {
+                          setSelectedBed(b);
+                          setSelectedOccupied({ bed: b, room: item });
+                          setShowOccupiedSheet(true);
+                          return;
+                        }
+
+
+                        if (status === "reserved") {
+                          setSelectedBed(b);
+                          setSelectedReserved({ bed: b, room: item });
+                          setShowReservedSheet(true);
+                          return;
+                        }
+
+                        // 5️⃣ OCCUPIED
+                        if (status === "occupied") {
+                          setSelectedBed(b);
+                          setSelectedOccupied({ bed: b, room: item });
+                          setShowOccupiedSheet(true);
+                          return;
+                        }
+
+                        // 6️⃣ AVAILABLE
+                        if (status === "available") {
+                          setSelectedBed(b);
+                          setSelectedBedRoomId(item.id);
+                          setShowManageBed(true);
+                          return;
+                        }
+                      }}
+
+                    >
+                      <Image source={getBaseBed(status)} style={styles.bedIcon} />
+
+                      {overlayIcons[getPrimaryStatus(status)] && (
+                        <Image
+                          source={overlayIcons[getPrimaryStatus(status)]}
+                          style={styles.overlayIcon}
+                        />
+                      )}
+
+                      {b.onNotice && b.isBooked && (
+                        <View style={styles.multiBadge}>
+                          <Text style={styles.multiBadgeText}>2</Text>
+                        </View>
+                      )}
+
+                      <Text style={styles.bedLabel}>{b.bedName}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+
+
+                <View style={styles.addBedHead}>
+                  <TouchableOpacity
+                    style={styles.addBedBox}
+                    onPress={() => handleAddBed(item.id)}
+                  >
+                    <View style={styles.addIconBox}>
+                      <Image source={AddIcon} style={styles.addIconImg} />
+                    </View>
+
+                    <Text style={styles.addBedText}>Add bed</Text>
+                  </TouchableOpacity>
+                </View>
 
               </View>
             </View>
@@ -1067,42 +921,30 @@ const handleAddBed = (roomId) => {
         }}
       />
 
-      {/* <AddRoomSheet
+     
+      <AddRoomSheet
         visible={showAddRoom}
-        onClose={() => setShowAddRoom(false)}
-        onSuccess={refreshRooms}
-        onSuccessFloor={loadFloors}
+        onClose={() => {
+          setShowAddRoom(false);
+          setEditRoomData(null);
+        }}
         floorId={selectedFloorId}
-      /> */}
-    <AddRoomSheet
-  visible={showAddRoom}
-  onClose={() => {
-    setShowAddRoom(false);
-    setEditRoomData(null);
-  }}
-  floorId={selectedFloorId}
-  editRoomData={editRoomData}
-  onSuccess={refreshRooms}   // 🔥 MUST
-/>
+        editRoomData={editRoomData}
+        onSuccess={refreshRooms}   
+      />
 
 
-{/* 
+    
       <AddBedBottomSheet
         visible={showAddBed}
-        onClose={() => setShowAddBed(false)}
+        onClose={() => {
+          setShowAddBed(false);
+          setEditBedData(null);
+        }}
         selectedRoomId={selectedBedRoomId}
-         onBedAdded={handleBedAdded}
-      /> */}
-      <AddBedBottomSheet
-  visible={showAddBed}
-  onClose={() => {
-    setShowAddBed(false);
-    setEditBedData(null);
-  }}
-  selectedRoomId={selectedBedRoomId}
-  editBedData={editBedData}   // 👈 PASS BED
-  onBedAdded={handleBedAdded}
-/>
+        editBedData={editBedData}
+        onBedAdded={handleBedAdded}
+      />
 
 
       <ManageBedBottomSheet
@@ -1110,7 +952,7 @@ const handleAddBed = (roomId) => {
         selectedBed={selectedBed}
         onClose={() => setShowManageBed(false)}
         handleEditBed={handleEditBed}
-        onDeleteBed={handleDeleteBed} 
+        onDeleteBed={handleDeleteBed}
       />
 
       <ReservedBedBottomSheet
@@ -1119,6 +961,8 @@ const handleAddBed = (roomId) => {
         bed={selectedReserved?.bed}
         room={selectedReserved?.room}
         selectTap={route?.params?.setShowTabBar}
+        handleEditBed={handleEditBed}
+        selectedBed={selectedBed}
       />
 
       <OccupiedBedSheet
@@ -1131,6 +975,8 @@ const handleAddBed = (roomId) => {
         room={selectedOccupied?.room}
         onMoveToNotice={handleOpenNoticeSheet}
         onReAssign={handleReAssignBed}
+        handleEditBed={handleEditBed}
+        selectedBed={selectedBed}
       />
 
       {showNotice && (
@@ -1142,6 +988,7 @@ const handleAddBed = (roomId) => {
           reason={reason}
           setRequestDate={setReqDate}
           setCheckoutDate={setOutDate}
+
         />
       )}
 
@@ -1156,6 +1003,8 @@ const handleAddBed = (roomId) => {
         onFinalSheet={handleShowFinalSettlement}
         navigation={navigation}
         cancelNoticePeriod={handleShowCancelNotice}
+        handleEditBed={handleEditBed}
+        selectedBed={selectedBed}
       />
 
       <NewBookingSheet
@@ -1165,60 +1014,60 @@ const handleAddBed = (roomId) => {
         room={selectedOccupied?.room}
       />
       <DoubleStatusSheet
-    visible={showDoubleStatus}
-    onClose={() => setShowDoubleStatus(false)}
-    bed={selectedDouble?.bed}
-    room={selectedDouble?.room}
-    handleNoticeToBookin={handleNoticeToBookin}
-    handleShowFinalSettlement={handleShowFinalSettlement}
-    handleReAssignBed={handleShowCancelNotice}
-    handleMakeUsInActive={handleMakeUsInActive}
-    handleCheckIn={handleCheckIn}
-/>
- <InactiveTenantSheet
-      visible={showInactiveSheet}
-      onClose={() => setShowInactiveSheet(false)}
-    />
-  <Modal
-  transparent
-  animationType="fade"
-  visible={deletePopup}
-  onRequestClose={() => setDeletePopup(false)}
->
-  <TouchableWithoutFeedback onPress={() => setDeletePopup(false)}>
-    <View style={styles.deleteOverlay}>
-      
-      {/* ❗ Stop propagation inside box */}
-      <TouchableWithoutFeedback>
-        <View style={styles.deleteBox}>
+        visible={showDoubleStatus}
+        onClose={() => setShowDoubleStatus(false)}
+        bed={selectedDouble?.bed}
+        room={selectedDouble?.room}
+        handleNoticeToBookin={handleNoticeToBookin}
+        handleShowFinalSettlement={handleShowFinalSettlement}
+        handleReAssignBed={handleShowCancelNotice}
+        handleMakeUsInActive={handleMakeUsInActive}
+        handleCheckIn={handleCheckIn}
+      />
+      <InactiveTenantSheet
+        visible={showInactiveSheet}
+        onClose={() => setShowInactiveSheet(false)}
+      />
+      <Modal
+        transparent
+        animationType="fade"
+        visible={deletePopup}
+        onRequestClose={() => setDeletePopup(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setDeletePopup(false)}>
+          <View style={styles.deleteOverlay}>
 
-          <Text style={styles.deleteTitle}>Delete Room?</Text>
-          <Text style={styles.deleteSub}>
-            Are you sure you want to delete this room?
-          </Text>
+            {/* ❗ Stop propagation inside box */}
+            <TouchableWithoutFeedback>
+              <View style={styles.deleteBox}>
 
-          <View style={styles.deleteBtnRow}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => setDeletePopup(false)}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
+                <Text style={styles.deleteTitle}>Delete Room?</Text>
+                <Text style={styles.deleteSub}>
+                  Are you sure you want to delete this room?
+                </Text>
 
-            <TouchableOpacity
-              style={styles.deleteBtn}
-              onPress={handleConfirmDelete}
-            >
-              <Text style={styles.deleteBtnText}>Delete</Text>
-            </TouchableOpacity>
+                <View style={styles.deleteBtnRow}>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => setDeletePopup(false)}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={handleConfirmDelete}
+                  >
+                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </TouchableWithoutFeedback>
+
           </View>
-
-        </View>
-      </TouchableWithoutFeedback>
-
-    </View>
-  </TouchableWithoutFeedback>
-</Modal>
+        </TouchableWithoutFeedback>
+      </Modal>
 
 
     </>
@@ -1553,30 +1402,30 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   menuBox: {
-  position: "absolute",
-  top: 45,
-  right: 10,
-  backgroundColor: "#fff",
-  borderRadius: 10,
-  paddingVertical: 6,
-  width: 120,
-  elevation: 6,
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowRadius: 10,
-  zIndex: 999,
-},
+    position: "absolute",
+    top: 45,
+    right: 10,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingVertical: 6,
+    width: 120,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    zIndex: 999,
+  },
 
-menuItem: {
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-},
+  menuItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
 
-menuText: {
-  fontSize: 14,
-  color: "#333",
-},
- deleteOverlay: {
+  menuText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  deleteOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
@@ -1644,4 +1493,34 @@ menuText: {
     fontSize: 16,
     fontWeight: '700',
   },
+  addBedBox: {
+    width: 50,
+    alignItems: "start",
+    justifyContent: "center",
+  },
+
+  addIconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+
+  },
+
+  addIconImg: {
+    width: 30,
+    height: 30,
+
+  },
+
+  addBedText: {
+    fontSize: 12,
+    color: "#1E45E1",
+    fontWeight: "600",
+  },
+  addBedHead: {
+    marginTop: "-4"
+  }
+
 });
