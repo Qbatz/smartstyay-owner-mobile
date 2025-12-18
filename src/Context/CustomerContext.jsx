@@ -128,6 +128,33 @@ const addCustomer = async (hostelId, payloads, image) => {
 };
 
 
+const getBedsByHostelAndDate = async (hostelId, joiningDate) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      `/v2/bed/initialize/${hostelId}`,
+      {
+        params: {
+          joiningDate, // DD-MM-YYYY
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false };
+  } catch (error) {
+    console.log("BED INIT ERROR:", error?.response?.data);
+    return { success: false };
+  }
+};
+
 
 
 
@@ -142,7 +169,7 @@ const addCustomer = async (hostelId, payloads, image) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer
+        addCustomer,getBedsByHostelAndDate
       }}
     >
       {children}
