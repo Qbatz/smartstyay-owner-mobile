@@ -96,6 +96,43 @@ export const CustomerProvider = ({ children }) => {
     setParticularCustomerDetails(null);
   };
 
+const addCustomer = async (hostelId, payloads, image) => {
+  const token = await retriveData("token");
+
+  const formData = new FormData();
+
+  // ✅ customerInfo MUST be JSON with string + type
+  formData.append("customerInfo", {
+    string: JSON.stringify(payloads.customerInfo),
+    type: "application/json",
+  });
+
+  if (image?.uri) {
+    formData.append("profilePic", {
+      uri: image.uri,
+      type: image.type || "image/jpeg",
+      name: image.fileName || "profile.jpg",
+    });
+  }
+
+  return AxiosConfig.post(
+    `/v2/customers/${hostelId}`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+
+
+
+
+
+
   return (
     <CustomerContext.Provider
       value={{
@@ -105,6 +142,7 @@ export const CustomerProvider = ({ children }) => {
         resetParticularCustomer,
         loading,
         errorMsg,
+        addCustomer
       }}
     >
       {children}

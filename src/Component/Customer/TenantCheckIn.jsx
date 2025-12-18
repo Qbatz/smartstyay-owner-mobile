@@ -9,36 +9,41 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
-  Image,
+  Image,TouchableWithoutFeedback
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
 import AddCircle from "../../Assets/Images/add-circle.png";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import RemoveIcon from "../../Assets/Images/remove.png";
+import DownArrow from "../../Assets/Images/direction-down.png";
+import Calendar from "../../Assets/Images/calendar.png";
 
 export default function TenantCheckIn({ navigation }) {
   const [tab, setTab] = useState("long");
 
-  const floors = ["Ground Floor", "First Floor", "Second Floor"];
-  const rooms = {
-    "Ground Floor": ["Room No 1", "Room No 2"],
-    "First Floor": ["101", "102", "103"],
-    "Second Floor": ["201", "202"],
-  };
-  const beds = {
-    "Room No 1": ["001", "002"],
-    "Room No 2": ["003", "004"],
-    "101": ["A", "B"],
-    "102": ["C"],
-    "201": ["X"],
-  };
+  
+ 
 
-  const [selectedFloor, setSelectedFloor] = useState(floors[0]);
-  const [selectedRoom, setSelectedRoom] = useState(rooms[floors[0]][0]);
-  const [selectedBed, setSelectedBed] = useState(beds[rooms[floors[0]][0]][0]);
 
+    const floors = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
+      const [floorOpen, setFloorOpen] = useState(false);
+      const [selectedFloor, setSelectedFloor] = useState("Select a Floor");
+   
+   const rooms = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
+    const [roomOpen, setRoomOpen] = useState(false);
+   
+  
+  const [selectedRoom, setSelectedRoom] = useState("Select a Room");
+
+    const beds = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
+      const [bedOpen, setBedOpen] = useState(false);
+     
+  const [selectedBed, setSelectedBed] = useState("Select a Bed");
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+    const [purchaseDate, setPurchaseDate] = useState(dayjs());
   const [joiningDate, setJoiningDate] = useState(new Date());
   const [showJoiningPicker, setShowJoiningPicker] = useState(false);
 
@@ -111,6 +116,7 @@ const removeNonRefundable = (index) => {
   };
 
   return (
+    <>
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -157,35 +163,9 @@ const removeNonRefundable = (index) => {
         </View>
 
         <ScrollView style={styles.container}>
-          <View style={styles.field}>
-            <Text style={styles.label}>Floor</Text>
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={selectedFloor}
-                onValueChange={onFloorChange}
-              >
-                {floors.map((f) => (
-                  <Picker.Item key={f} label={f} value={f} />
-                ))}
-              </Picker>
-            </View>
-          </View>
+         
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Room</Text>
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={selectedRoom}
-                onValueChange={(v) => setSelectedRoom(v)}
-              >
-                {(rooms[selectedFloor] || []).map((r) => (
-                  <Picker.Item key={r} label={r} value={r} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-
-          <View style={styles.field}>
+          {/* <View style={styles.field}>
             <Text style={styles.label}>Bed</Text>
             <View style={styles.pickerWrap}>
               <Picker
@@ -197,33 +177,116 @@ const removeNonRefundable = (index) => {
                 ))}
               </Picker>
             </View>
-          </View>
+          </View> */}
 
           {tab === "long" && (
             <View>
-              <View style={styles.field}>
-                <Text style={styles.label}>Joining Date *</Text>
-                <TouchableOpacity
-                  style={styles.input}
-                  onPress={() => setShowJoiningPicker(true)}
-                >
-                  <Text>{joiningDate.toLocaleDateString()}</Text>
-                </TouchableOpacity>
+         <Text style={styles.label}>Floor</Text>
 
-                {showJoiningPicker && (
-              <DateTimePicker
-               value={joiningDate}
-               mode="date"
-               display={showJoiningPicker ? "default" : "none"}
-               maximumDate={new Date()}
-               onChange={(e, d) => {
-    setShowJoiningPicker(false);
-    if (d) setJoiningDate(d);
-  }}
-/>
+                    <View style={{ position: "relative" }}>
+                        <TouchableOpacity
+                            style={styles.select}
+                            onPress={() => setFloorOpen(!floorOpen)}
+                            activeOpacity={0.9}
+                        >
+                            <Text style={styles.selectText}>{selectedFloor}</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
 
-                )}
-              </View>
+                        {floorOpen && (
+                            <View style={styles.dropdownMenu}>
+                                <ScrollView style={{ maxHeight: 160 }}>
+                                    {floors.map((v, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.option}
+                                            onPress={() => {
+                                                setSelectedFloor(v);
+                                                setFloorOpen(false);
+                                            }}
+                                        >
+                                            <Text style={styles.optionText}>{v}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
+                    </View>
+         
+          <Text style={styles.label}>Room</Text>
+          
+                              <View style={{ position: "relative" }}>
+                                  <TouchableOpacity
+                                      style={styles.select}
+                                      onPress={() => setRoomOpen(!roomOpen)}
+                                      activeOpacity={0.9}
+                                  >
+                                      <Text style={styles.selectText}>{selectedRoom}</Text>
+                                      <Image source={DownArrow} style={styles.arrow} />
+                                  </TouchableOpacity>
+          
+                                  {roomOpen && (
+                                      <View style={styles.dropdownMenu}>
+                                          <ScrollView style={{ maxHeight: 160 }}>
+                                              {rooms.map((v, index) => (
+                                                  <TouchableOpacity
+                                                      key={index}
+                                                      style={styles.option}
+                                                      onPress={() => {
+                                                          setSelectedRoom(v);
+                                                          setRoomOpen(false);
+                                                      }}
+                                                  >
+                                                      <Text style={styles.optionText}>{v}</Text>
+                                                  </TouchableOpacity>
+                                              ))}
+                                          </ScrollView>
+                                      </View>
+                                  )}
+                              </View>
+ <Text style={styles.label}>Bed</Text>
+
+                    <View style={{ position: "relative" }}>
+                        <TouchableOpacity
+                            style={styles.select}
+                            onPress={() => setBedOpen(!bedOpen)}
+                            activeOpacity={0.9}
+                        >
+                            <Text style={styles.selectText}>{selectedBed}</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
+
+                        {bedOpen && (
+                            <View style={styles.dropdownMenu}>
+                                <ScrollView style={{ maxHeight: 160 }}>
+                                    {beds.map((v, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.option}
+                                            onPress={() => {
+                                                setSelectedBed(v);
+                                                setBedOpen(false);
+                                            }}
+                                        >
+                                            <Text style={styles.optionText}>{v}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
+                    </View>
+               <Text style={styles.label}>Joining Date</Text>
+              
+                                  <TouchableOpacity
+                                      style={styles.dateBox}
+                                      onPress={() => setOpenDatePicker(true)}
+                                  >
+                                      <Text style={styles.placeholder}>
+                                          {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                                      </Text>
+                                      <Image source={Calendar} style={styles.calendarIcon} />
+                                  </TouchableOpacity>
+             
 
               <View style={styles.field}>
                 <Text style={styles.label}>Advance Amount *</Text>
@@ -329,125 +392,145 @@ const removeNonRefundable = (index) => {
               </View>
             </View>
           )}
-
+     
           {tab === "short" && (
-            <View>
-              <View style={styles.field}>
-                <Text style={styles.label}>Check-in Date *</Text>
-                <TouchableOpacity
-                  style={styles.input}
-                  onPress={() => setShowCheckinPicker(true)}
-                >
-                  <Text>{checkinDate.toLocaleDateString()}</Text>
-                </TouchableOpacity>
+            // <View>
+            //   <View style={styles.field}>
+            //     <Text style={styles.label}>Check-in Date *</Text>
+            //     <TouchableOpacity
+            //       style={styles.input}
+            //       onPress={() => setShowCheckinPicker(true)}
+            //     >
+            //       <Text>{checkinDate.toLocaleDateString()}</Text>
+            //     </TouchableOpacity>
 
-                {showCheckinPicker && (
-                  <DateTimePicker
-                   value={checkinDate}
-                   mode="date"
-                   display={showCheckinPicker ? "default" : "none"}
-                   minimumDate={new Date()}
-                   onChange={(e, d) => {
-                   setShowCheckinPicker(false);
-                   if (d) setCheckinDate(d);
-                   }}
-                  />
+            //     {showCheckinPicker && (
+            //       <DateTimePicker
+            //        value={checkinDate}
+            //        mode="date"
+            //        display={showCheckinPicker ? "default" : "none"}
+            //        minimumDate={new Date()}
+            //        onChange={(e, d) => {
+            //        setShowCheckinPicker(false);
+            //        if (d) setCheckinDate(d);
+            //        }}
+            //       />
 
-                )}
-              </View>
+            //     )}
+            //   </View>
 
-              <View style={styles.field}>
-                <Text style={styles.label}>Check-in Time *</Text>
-                <TouchableOpacity
-                  style={styles.input}
-                  onPress={() => setShowTimePicker(true)}
-                >
-                  <Text>
-                    {checkinTime.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Text>
-                </TouchableOpacity>
+            //   <View style={styles.field}>
+            //     <Text style={styles.label}>Check-in Time *</Text>
+            //     <TouchableOpacity
+            //       style={styles.input}
+            //       onPress={() => setShowTimePicker(true)}
+            //     >
+            //       <Text>
+            //         {checkinTime.toLocaleTimeString([], {
+            //           hour: "2-digit",
+            //           minute: "2-digit",
+            //         })}
+            //       </Text>
+            //     </TouchableOpacity>
 
-                {showTimePicker && (
-                 <DateTimePicker
-                 value={checkinTime}
-                 mode="time"
-                 display={showTimePicker ? "default" : "none"}
-                 onChange={(e, d) => {
-                 setShowTimePicker(false);
-                 if (d) setCheckinTime(d);
-                }}
-               />
+            //     {showTimePicker && (
+            //      <DateTimePicker
+            //      value={checkinTime}
+            //      mode="time"
+            //      display={showTimePicker ? "default" : "none"}
+            //      onChange={(e, d) => {
+            //      setShowTimePicker(false);
+            //      if (d) setCheckinTime(d);
+            //     }}
+            //    />
 
-                )}
-              </View>
+            //     )}
+            //   </View>
 
-              <View style={styles.field}>
-                <Text style={styles.label}>Rental Amount/Day *</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={amountPerDay}
-                  onChangeText={setAmountPerDay}
-                />
-              </View>
+            //   <View style={styles.field}>
+            //     <Text style={styles.label}>Rental Amount/Day *</Text>
+            //     <TextInput
+            //       style={styles.input}
+            //       keyboardType="numeric"
+            //       value={amountPerDay}
+            //       onChangeText={setAmountPerDay}
+            //     />
+            //   </View>
 
-              <View style={styles.field}>
-                <Text style={styles.label}>Checkout Date (Expected)</Text>
-                <TouchableOpacity
-                  style={styles.input}
-                  onPress={() => setShowCheckoutPicker(true)}
-                >
-                  <Text>{checkoutDate.toLocaleDateString()}</Text>
-                </TouchableOpacity>
+            //   <View style={styles.field}>
+            //     <Text style={styles.label}>Checkout Date (Expected)</Text>
+            //     <TouchableOpacity
+            //       style={styles.input}
+            //       onPress={() => setShowCheckoutPicker(true)}
+            //     >
+            //       <Text>{checkoutDate.toLocaleDateString()}</Text>
+            //     </TouchableOpacity>
 
-                {showCheckoutPicker && (
-                  <DateTimePicker
-                   value={checkoutDate}
-                   mode="date"
-                   display={showCheckoutPicker ? "default" : "none"}
-                   minimumDate={checkinDate}
-                   onChange={(e, d) => {
-                   setShowCheckoutPicker(false);
-                   if (d) setCheckoutDate(d);
-                    }}
-                 />
+            //     {showCheckoutPicker && (
+            //       <DateTimePicker
+            //        value={checkoutDate}
+            //        mode="date"
+            //        display={showCheckoutPicker ? "default" : "none"}
+            //        minimumDate={checkinDate}
+            //        onChange={(e, d) => {
+            //        setShowCheckoutPicker(false);
+            //        if (d) setCheckoutDate(d);
+            //         }}
+            //      />
 
-                )}
-              </View>
+            //     )}
+            //   </View>
 
-              <View style={styles.field}>
-                <Text style={styles.label}>Billing Mode</Text>
-                <View style={styles.pickerWrap}>
-                  <Picker
-                    selectedValue={billingMode}
-                    onValueChange={(v) => setBillingMode(v)}
-                  >
-                    {billingModeOptions.map((opt) => (
-                      <Picker.Item key={opt} label={opt} value={opt} />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
+            //   <View style={styles.field}>
+            //     <Text style={styles.label}>Billing Mode</Text>
+            //     <View style={styles.pickerWrap}>
+            //       <Picker
+            //         selectedValue={billingMode}
+            //         onValueChange={(v) => setBillingMode(v)}
+            //       >
+            //         {billingModeOptions.map((opt) => (
+            //           <Picker.Item key={opt} label={opt} value={opt} />
+            //         ))}
+            //       </Picker>
+            //     </View>
+            //   </View>
 
-              <View style={styles.BtnRow}>
-                <TouchableOpacity style={styles.CancelBtn}>
-                  <Text style={{ color: "grey", fontWeight: "600" }}>
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
+            //   <View style={styles.BtnRow}>
+            //     <TouchableOpacity style={styles.CancelBtn}>
+            //       <Text style={{ color: "grey", fontWeight: "600" }}>
+            //         Cancel
+            //       </Text>
+            //     </TouchableOpacity>
 
-                <TouchableOpacity style={styles.submitBtn} onPress={submitShortStay}>
-                  <Text style={styles.submitText}>Assign Bed</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            //     <TouchableOpacity style={styles.submitBtn} onPress={submitShortStay}>
+            //       <Text style={styles.submitText}>Assign Bed</Text>
+            //     </TouchableOpacity>
+            //   </View>
+            // </View>
+            <View><Text>Comming Soon</Text></View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+     {openDatePicker && (
+                <View style={styles.sheetOverlay}>
+                    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+                        <View style={{ flex: 1 }} />
+                    </TouchableWithoutFeedback>
+
+                    <View style={styles.datePickerBox}>
+                        <DatePicker
+                            mode="single"
+                            date={joiningDate}
+                            onChange={(p) => {
+                                setJoiningDate(p.date || dayjs());
+                                setOpenDatePicker(false);
+                            }}
+                        />
+                    </View>
+                </View>
+            )}
+    </>
   );
 }
 
@@ -602,4 +685,78 @@ const styles = StyleSheet.create({
   },
 
   submitText: { color: "#fff", fontWeight: "600" },
+
+
+
+  
+    select: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+     dropdownMenu: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 999,
+        elevation: 10,
+    },
+
+    option: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    optionText: {
+        fontSize: 15,
+        color: "#000",
+    },
+      arrow: { width: 18, height: 18, tintColor: "#777" },
+
+
+       dateBox: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    placeholder: { color: "#555" },
+    calendarIcon: { width: 20, height: 20, tintColor: "#444" },
+       datePickerPopup: {
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 10,
+        width: "100%",
+    },
+    sheetOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "flex-end",
+    },
+      datePickerBox: {
+        backgroundColor: "#fff",
+        width: "80%",
+
+        borderRadius: 20,
+        padding: 10,
+        marginBottom: 190
+    },
+
+
 });

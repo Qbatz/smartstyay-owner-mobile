@@ -1,17 +1,26 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback,useContext } from "react";
 import {View,Text,StyleSheet,SafeAreaView,ScrollView,TouchableOpacity,TextInput,Image,BackHandler,} from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import { launchImageLibrary } from 'react-native-image-picker';
+import { useCustomer } from "../../Context/CustomerContext";
+import { CommonContexts } from "../../Context/CommonContext";
 
 
 
 export default function AddTenant() {
+    const { addCustomer } = useCustomer();
+const { activeHostelId } = useContext(CommonContexts);
     const navigation = useNavigation();
     const [step, setStep] = useState(1);
     const [selectedImage, setSelectedImage] = useState(null);
+
+
+
+
+
 
 
 
@@ -117,6 +126,82 @@ export default function AddTenant() {
         { label: "Uttarakhand", value: "Uttarakhand" },
         { label: "West Bengal", value: "West Bengal" },
     ]
+const handleCreateTenant = async () => {
+  const hasAddress =
+    addressDetails.flat ||
+    addressDetails.area ||
+    addressDetails.landmark ||
+    addressDetails.city ||
+    addressDetails.pincode ||
+    selectedState !== "Select State";
+
+  const payloads = {
+    customerInfo: {
+      firstName: basicDetails.firstName,
+      mobileNumber: basicDetails.mobile, // ✅ mandatory
+      ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
+      ...(basicDetails.email && { emailId: basicDetails.email }),
+      type: 1,
+
+      ...(hasAddress && {
+        address: {
+          ...(addressDetails.flat && { houseNo: addressDetails.flat }),
+          ...(addressDetails.area && { street: addressDetails.area }),
+          ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
+          ...(addressDetails.city && { city: addressDetails.city }),
+          ...(addressDetails.pincode && {
+            pincode: Number(addressDetails.pincode),
+          }),
+          ...(selectedState !== "Select State" && { state: selectedState }),
+        },
+      }),
+    },
+  };
+
+  console.log("FINAL customerInfo 👉", payloads.customerInfo);
+
+  const res = await addCustomer(activeHostelId, payloads, selectedImage);
+
+  if (res?.data) {
+    alert("Customer added successfully ✅");
+    navigation.goBack();
+  } else {
+    alert("Customer add failed ❌");
+  }
+};
+
+
+
+//         const handleCreateTenant = async () => {
+//   const payloads = {
+//     firstName: basicDetails.firstName,
+//     lastName: basicDetails.lastName,
+//     mobile: basicDetails.mobile,
+//     emailId: basicDetails.email,
+//     type: 1,
+//     address: {
+//     houseNo: addressDetails.flat || "",
+//     street: addressDetails.area || "",
+//     landmark: addressDetails.landmark || "",
+//     city: addressDetails.city || "",
+//     pincode: addressDetails.pincode || "",
+//     state: addressDetails.state || selectedState,
+//   },
+//   };
+
+//   const res = await addCustomer(
+//     activeHostelId,
+//     payloads,
+//     selectedImage
+//   );
+
+//   if (res.success) {
+//     alert("Customer added successfully ✅");
+//     navigation.goBack();
+//   } else {
+//     alert(res.message || "Customer add failed ❌");
+//   }
+// };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -289,7 +374,7 @@ export default function AddTenant() {
                                     !isBasicValid && styles.secondaryBtnDisabled
                                 ]}
                                 disabled={!isBasicValid}
-                            >
+                          onPress={handleCreateTenant}  >
                                 <Text
                                     style={[
                                         styles.secondaryText,
@@ -454,7 +539,8 @@ export default function AddTenant() {
                                             !isAddressValid && styles.primaryBtnDisabled
                                         ]}
                                         disabled={!isAddressValid}
-                                        onPress={() => navigation.goBack()}
+                                        // onPress={() => navigation.goBack()}
+                                         onPress={handleCreateTenant} 
                                     >
                                         <Text
                                             style={[styles.primaryText,]}
