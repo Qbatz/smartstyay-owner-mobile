@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,
+  ScrollView,Dimensions
 } from "react-native";
 import SmartstayIcon from "../../Assets/Images/Sm_Icon.png"
 import EyeIcon from "../../Assets/Images/EyeIcon.png";
@@ -18,6 +18,7 @@ import { ACCESS_TOKEN } from '../../Utils/Constant'
 import { LoginContexts } from "../../Context/LoginContext";
 
 
+
 export default function LoginDesign() {
 
   const context = useContext(LoginContexts)
@@ -26,7 +27,7 @@ export default function LoginDesign() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [showPassword, setShowPassword] = useState(false);
-
+const { height } = Dimensions.get("window");
 
   // const loginClick=()=>{
   //       const data= {
@@ -259,13 +260,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  // bottomWave: {
+  //   width: "100%",
+  //   height: 180,
+  //   position: "absolute",
+  //   bottom: 0,
+  //   left: 0,
+  // },
   bottomWave: {
-    width: "100%",
-    height: 180,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-  },
+  width: "100%",
+  aspectRatio: 3,   
+  position: "absolute",
+  bottom: 0,
+  height: Dimensions.get("window").height * 0.22,
+}
 
 
 

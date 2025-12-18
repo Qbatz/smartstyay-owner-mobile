@@ -627,7 +627,7 @@ console.log("res",res)
   </TouchableOpacity>
         </View>
 {showFloorMenu && (
-  <View style={styles.menuBox}>
+  <View style={styles.menuBox1}>
     <TouchableOpacity
       style={styles.menuItem}
      onPress={() => {
@@ -1522,7 +1522,7 @@ const styles = StyleSheet.create({
   },
   menuBox: {
   position: "absolute",
-  top: 120,    
+  top: 50,    
   right: 16,
   backgroundColor: "#fff",
   borderRadius: 10,
@@ -1534,6 +1534,21 @@ const styles = StyleSheet.create({
   shadowRadius: 10,
   zIndex: 999,
 },
+  menuBox1: {
+  position: "absolute",
+  top: 150,    
+  right: 16,
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  paddingVertical: 6,
+  width: 120,
+  elevation: 6,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  zIndex: 999,
+},
+
 
   // menuBox: {
   //   position: "absolute",

@@ -393,7 +393,7 @@ const customerList = [
    <CheckoutList/>
   )}
   {activeTab === "Walkin" && (
-   <WalkinScreen setShowTabBar = {setShowTabBar} 
+   <WalkinScreen setShowTabBar = {setShowTabBar} navigation={navigation}
    handleWalkinFilter={handleWalkinFilter}  />
   )}
  

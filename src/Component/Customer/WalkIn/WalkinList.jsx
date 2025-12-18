@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect,useContext,useCallback,useRef } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   Modal,
   TextInput,
   BackHandler,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback 
 } from "react-native";
 
 import PhoneIcon from "../../../Assets/Images/call.png";
@@ -18,13 +18,20 @@ import UserIcon from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import PlusIcon from "../../../Assets/Images/TenantAdd.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+import { useCustomer } from "../../../Context/CustomerContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+
 
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 
-export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
+export default function WalkinScreen({ setShowTabBar,handleWalkinFilter,navigation }) {
+ const { getCustomersByHostel } = useCustomer();
+const { activeHostelId } = useContext(CommonContexts);
  
+const [walkinCustomers, setWalkinCustomers] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
   const [status, setStatus] = useState("All");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -33,6 +40,52 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
   
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+const [selectedItem, setSelectedItem] = useState(null);
+
+const dotsRef = useRef(null);
+
+const openMenu = (event, item) => {
+  const { pageX, pageY } = event.nativeEvent;
+
+  // SAME ITEM → toggle
+  if (menuVisible && selectedItem?.customerId === item.customerId) {
+    setMenuVisible(false);
+    return;
+  }
+
+  // DIFFERENT ITEM → move menu
+  setMenuPosition({
+    x: pageX - 190,
+    y: pageY - 140,
+  });
+
+  setSelectedItem(item);
+  setMenuVisible(true);
+};
+
+// const openMenu = (event, item) => {
+//   const { pageX, pageY } = event.nativeEvent;
+
+//   setMenuPosition({
+//     x: pageX - 190,   
+//     y: pageY + -140,   
+//   });
+
+//   setSelectedItem(item);
+//   setMenuVisible(true);
+// };
+
+const handleShowTennantCheckin = () => {
+navigation.navigate("TenantCheckin")
+setMenuVisible(false)
+}
+const handleShowAddBooking = () => {
+navigation.navigate("AddBooking")
+setMenuVisible(false)
+}
+
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
   useLayoutEffect(() => {
     setShowTabBar(!showFilter);
@@ -40,7 +93,22 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
 
 
 
+useFocusEffect(
+  useCallback(() => {
+    fetchWalkinCustomers();
+  }, [activeHostelId])
+);
 
+const fetchWalkinCustomers = async () => {
+  const data = await getCustomersByHostel(
+    activeHostelId,
+    "",
+    "Inactive" 
+  );
+  setWalkinCustomers(data);
+};
+
+console.log("setWalkinCustomers",walkinCustomers)
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -60,80 +128,7 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
     return () => handler.remove();
   }, [showFilter]);
   
-  const customerList = [
-  {
-    id: 1,
-    name: "Rajkumar M",
-    phone: "+91 98765 43210",
-    date: "01/06",
-  },
-  {
-    id: 2,
-    name: "Ram Kumar S",
-    phone: "+91 98765 12345",
-    date: "01/06",
-  },
-  {
-    id: 3,
-    name: "Karthick V",
-    phone: "+91 90031 45678",
-    date: "02/06",
-  },
-  {
-    id: 4,
-    name: "Dinesh P",
-    phone: "+91 98012 88765",
-    date: "02/06",
-  },
-  {
-    id: 5,
-    name: "Ajay Kannan R",
-    phone: "+91 94561 11223",
-    date: "03/06",
-  },
-  {
-    id: 6,
-    name: "Murali M",
-    phone: "+91 95512 99887",
-    date: "03/06",
-  },
-  {
-    id: 7,
-    name: "Sathish R",
-    phone: "+91 90234 66778",
-    date: "04/06",
-  },
-  {
-    id: 8,
-    name: "Vimal Kumar",
-    phone: "+91 98761 44321",
-    date: "04/06",
-  },
-  {
-    id: 9,
-    name: "Manikandan S",
-    phone: "+91 99554 77661",
-    date: "05/06",
-  },
-  {
-    id: 10,
-    name: "Suresh K",
-    phone: "+91 99881 33221",
-    date: "05/06",
-  },
-  {
-    id: 11,
-    name: "Suresh K",
-    phone: "+91 99881 33221",
-    date: "05/06",
-  },
-  {
-    id: 12,
-    name: "Suresh K",
-    phone: "+91 99881 33221",
-    date: "05/06",
-  },
-];
+ 
 
 
   return (
@@ -147,26 +142,27 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
 >
 
         
-        {/* ITEM */}
-       {customerList.map((item) => (
-  <View key={item.id} style={styles.row}>
+       
+     {walkinCustomers.map((item) => (
+  <View key={item.customerId}  style={styles.row}>
     <View style={styles.avatarBox}>
       <Image source={UserIcon} style={styles.avatar} />
     </View>
 
     <View style={{ flex: 1 }}>
-      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.name}>{item.fullName}</Text>
 
       <View style={styles.phoneRow}>
         <Image source={PhoneIcon} style={styles.phoneIcon} />
-        <Text style={styles.phoneText}>{item.phone}</Text>
+        <Text style={styles.phoneText}>+ {item.countryCode} {item.mobile}</Text>
       </View>
     </View>
 
     <View style={styles.right}>
-      <TouchableOpacity>
-        <Image source={MenuDots} style={styles.dotIcon} />
-      </TouchableOpacity>
+     <TouchableOpacity onPress={(e) => openMenu(e, item)}>
+  <Image source={MenuDots} style={styles.dotIcon} />
+</TouchableOpacity>
+
       <Text style={styles.date}>{item.date}</Text>
     </View>
   </View>
@@ -174,6 +170,39 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
 
 
       </ScrollView>
+{menuVisible && (
+  <TouchableOpacity
+     activeOpacity={1}
+  style={styles.menuOverlay}
+  onPressOut={() => setMenuVisible(false)}
+  >
+    <View
+      style={[
+        styles.menuBox,
+        {
+          top: menuPosition.y,
+          left: menuPosition.x,
+        },
+      ]}
+    >
+      <TouchableOpacity style={styles.menuRow} onPress={handleShowTennantCheckin}>
+        <Image source={CalendarIcon} style={styles.menuIcon} />
+        <Text style={styles.menuText}>Check In</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuRow} onPress={handleShowAddBooking}>
+        <Image source={CalendarIcon} style={styles.menuIcon} />
+        <Text style={styles.menuText}>Add booking</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuRow}>
+        <Image source={require("../../../Assets/Images/trash.png")} style={styles.menuIcon} />
+        <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  </TouchableOpacity>
+)}
+
 
   
       <TouchableOpacity style={styles.filterBtn} onPress={handleWalkinFilter}>
@@ -181,7 +210,7 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
       </TouchableOpacity>
 
  
-      <TouchableOpacity style={styles.addBtn}>
+      <TouchableOpacity style={styles.addBtn}  onPress={() => navigation.navigate("AddTenant")}>
         <Image source={PlusIcon} style={{ width: 50, height: 50 }} />
       </TouchableOpacity>
 
@@ -272,7 +301,6 @@ export default function WalkinScreen({ setShowTabBar,handleWalkinFilter }) {
       
                 <View style={{ width: 15 }} />
       
-                {/* TO DATE */}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>To</Text>
       
@@ -646,4 +674,44 @@ filterHandle: {
   },
 
   applyText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+
+
+
+  menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 9999,
+},
+
+menuBox: {
+  position: "absolute",
+  width: 180,
+  backgroundColor: "#fff",
+  borderRadius: 14,
+  paddingVertical: 6,
+  elevation: 15,
+},
+
+
+menuRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+menuIcon: {
+  width: 18,
+  height: 18,
+  marginRight: 10,
+},
+
+menuText: {
+  fontSize: 14,
+  color: "#111",
+},
+
 });
