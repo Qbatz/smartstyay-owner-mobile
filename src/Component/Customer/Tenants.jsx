@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect,useContext } from "react";
+import React, { useState, useRef, useEffect,useContext,useCallback } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,9 @@ import {
 TouchableWithoutFeedback,
 Modal,Animated,BackHandler,PanResponder
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
+
 
 
 import Profile from "../../Assets/Images/profile.png";
@@ -55,19 +56,23 @@ const { getCustomersByHostel} = useCustomer();
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
 const [customers, setCustomers] = useState([]);
-
-  useEffect(() => {
+const [menuVisible, setMenuVisible] = useState(false);
+const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+ useFocusEffect(
+  useCallback(() => {
     if (activeHostelId) {
       fetchCustomers();
     }
-  }, [activeHostelId]);
+  }, [activeHostelId])
+);
+
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data || []);
   };
   
-
+console.log("customer",customers)
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -119,12 +124,23 @@ const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
 const dotsRef = useRef(null);
 
-const openMenu = (item) => {
-  dotsRef.current.measure((fx, fy, width, height, px, py) => {
-    setPopupPosition({ x: px, y: py });
-    setSelectedCustomer(item);
-    setShowMenu(true);
+const openMenu = (event, item) => {
+  const { pageX, pageY } = event.nativeEvent;
+
+  // SAME ITEM → toggle
+  if (menuVisible && selectedItem?.customerId === item.customerId) {
+    setMenuVisible(false);
+    return;
+  }
+
+ 
+  setMenuPosition({
+    x: pageX - 190,
+    y: pageY - 140,
   });
+
+  // setSelectedItem(item);
+  setMenuVisible(true);
 };
 const DeleteMenu = ()=>{
   setDeleteTenants(true)
@@ -357,7 +373,7 @@ const customerList = [
     </View>
 
     <View style={styles.rightSection}>
-      <TouchableOpacity ref={dotsRef} onPress={() => openMenu(item)}>
+      <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
         <Image
           source={Dots}
           style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
@@ -539,9 +555,110 @@ const customerList = [
 
 
     <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} />
+{menuVisible && (
+  <TouchableOpacity
+     activeOpacity={1}
+  style={styles.menuOverlay}
+  onPressOut={() => setMenuVisible(false)}
+  >
+    <View
+      style={[
+        styles.menuBox,
+        {
+          top: menuPosition.y,
+          left: menuPosition.x,
+        },
+      ]}
+    >
+       {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowAddBooking} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Add Booking</Text>
+      </TouchableOpacity> */}
+
+      {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowTennantCheckin} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Tenant Check-in</Text>
+      </TouchableOpacity> */}
+    
+      <TouchableOpacity style={styles.popupRow} onPress={handleShowReAssignBed} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Re-Assign Bed</Text>
+      </TouchableOpacity>
+
+        <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Final Settlemnent</Text>
+      </TouchableOpacity>
+
+      
+    <TouchableOpacity
+  style={styles.popupRow}
+  onPress={() => {
+    setShowMenu(false);
+    setShowNotice(true); 
+  }}
+>
+  <Image
+    source={require("../../Assets/Images/ReAssign.png")}
+    style={styles.popupIcon}
+  />
+  <Text style={styles.popupText}>Move to Notice Period</Text>
+</TouchableOpacity>
 
 
-{showMenu && (
+  <TouchableOpacity
+  style={styles.popupRow}
+  onPress={() => {
+    setShowMenu(false);
+    setShowCheckout(true);
+  }}
+>
+  <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+  <Text style={styles.popupText}>Checkout</Text>
+</TouchableOpacity>
+
+
+
+
+  <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Cancel Notice Period</Text>
+      </TouchableOpacity>
+
+ {/* <TouchableOpacity
+  style={styles.popupRow}
+  onPress={() => {
+    setShowMenu(false);
+    setDeleteTenants(true);
+  }}
+>
+  <Image
+    source={require("../../Assets/Images/trash.png")}
+    style={styles.popupIcon}
+  />
+  <Text style={styles.popupText}>Delete</Text>
+</TouchableOpacity> */}
+    </View>
+  </TouchableOpacity>
+)}
+
+
+{/* {showMenu && (
   <TouchableOpacity
     activeOpacity={1}
     onPress={() => setShowMenu(false)}
@@ -639,7 +756,7 @@ const customerList = [
 </TouchableOpacity>
     </View>
   </TouchableOpacity>
-)}
+)} */}
 
 {showFilter && (
   <View style={styles.filterOverlay}>
@@ -1415,7 +1532,43 @@ deleteBtnText: {
   fontWeight: "600",
   color: "#fff",
 },
+ menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 9999,
+},
 
+
+menuBox: {
+  position: "absolute",
+  width: 180,
+  backgroundColor: "#fff",
+  borderRadius: 14,
+  paddingVertical: 6,
+  elevation: 15,
+},
+
+
+menuRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+menuIcon: {
+  width: 18,
+  height: 18,
+  marginRight: 10,
+},
+
+menuText: {
+  fontSize: 14,
+  color: "#111",
+},
 
 
 

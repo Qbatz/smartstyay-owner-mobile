@@ -156,6 +156,29 @@ const getBedsByHostelAndDate = async (hostelId, joiningDate) => {
 };
 
 
+const checkInCustomer = async (customerId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/check-in/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.log("CHECK-IN ERROR:", error.response?.data);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Check-in failed",
+    };
+  }
+};
 
 
 
@@ -169,7 +192,7 @@ const getBedsByHostelAndDate = async (hostelId, joiningDate) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer,getBedsByHostelAndDate
+        addCustomer,getBedsByHostelAndDate,checkInCustomer
       }}
     >
       {children}
