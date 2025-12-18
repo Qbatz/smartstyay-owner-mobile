@@ -78,7 +78,12 @@ const openMenu = (event, item) => {
 // };
 
 const handleShowTennantCheckin = () => {
-navigation.navigate("TenantCheckin")
+// navigation.navigate("TenantCheckin")
+  navigation.navigate("TenantCheckin", {
+    customerId: selectedItem.customerId,
+    customer: selectedItem, // full details (optional)
+  });
+
 setMenuVisible(false)
 }
 const handleShowAddBooking = () => {

@@ -23,11 +23,12 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
 import Delete from "../../Assets/Images/remove.png";
-export default function TenantCheckIn({ navigation }) {
+export default function TenantCheckIn({ navigation,route }) {
+    const { customerId, customer } = route.params || {};
   const [tab, setTab] = useState("long");
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
-  const { getBedsByHostelAndDate } = useCustomer();
+  const { getBedsByHostelAndDate,checkInCustomer,getCustomersByHostel } = useCustomer();
 
   const [floors, setFloors] = useState([]);
   const [floorOpen, setFloorOpen] = useState(false);
@@ -56,6 +57,7 @@ export default function TenantCheckIn({ navigation }) {
 
     }
   };
+  console.log("customer",customer)
 
   const loadRooms = async (floorId) => {
     const res = await getAllRoomsByFloor(floorId);
@@ -197,21 +199,47 @@ console.log("nonRefundables",extraCharges)
     setSelectedRoom(r);
     setSelectedBed(b);
   };
-
-  const submitLongStay = () => {
-    const payload = {
-      type: "long",
-      floor: selectedFloor,
-      room: selectedRoom,
-      bed: selectedBed,
-      joiningDate: joiningDate.toISOString(),
-      advanceAmount,
-      rentalAmount,
-      maintenanceAmount,
-      nonRefundables,
-    };
-    console.log("submitLongStay", payload);
+ const submitLongStay = async () => {
+  const payload = {
+    floorId: selectedFloor.id,
+    roomId: selectedRoom.id,
+    bedId: selectedBed.bedId,
+    joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+    advanceAmount: Number(advanceAmount),
+    rentalAmount: Number(rentalAmount),
+    stayType: "LONG",
+    deductions: extraCharges.map(e => ({
+      type: e.type.toLowerCase(),
+      amount: Number(e.amount),
+    })),
   };
+
+  const res = await checkInCustomer(customerId, payload);
+  
+  if (res.success) {
+    alert("Customer Checked-in Successfully ✅");
+    navigation.goBack();
+  } else {
+    alert(res.message);
+  }
+};
+
+
+
+  // const submitLongStay = () => {
+  //   const payload = {
+  //     type: "long",
+  //     floor: selectedFloor,
+  //     room: selectedRoom,
+  //     bed: selectedBed,
+  //     joiningDate: joiningDate.toISOString(),
+  //     advanceAmount,
+  //     rentalAmount,
+  //     maintenanceAmount,
+  //     nonRefundables,
+  //   };
+  //   console.log("submitLongStay", payload);
+  // };
 
   const submitShortStay = () => {
     const payload = {
