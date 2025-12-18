@@ -34,7 +34,7 @@ export const FloorProvider = ({ children }) => {
       setLoading(false);
     }
   };
-const addFloor = async ({ hostelId, floorName }) => {
+  const addFloor = async ({ hostelId, floorName }) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
@@ -75,7 +75,7 @@ const addFloor = async ({ hostelId, floorName }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-    
+
 
       return { success: true, data: res.data };
     } catch (err) {
@@ -114,168 +114,233 @@ const addFloor = async ({ hostelId, floorName }) => {
     }
   };
   const getAllBedsByRoom = async (roomId) => {
-  try {
-    setLoading(true);
-    const token = await retriveData("token");
+    try {
+      setLoading(true);
+      const token = await retriveData("token");
 
-    const res = await api.get(
-      `/v2/bed/all-beds/${roomId}`,
-      {
+      const res = await api.get(
+        `/v2/bed/all-beds/${roomId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.log("Bed API error", err);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addBed = async ({ bedName, roomId, hostelId, amount }) => {
+    try {
+      setLoading(true);
+      const token = await retriveData("token");
+
+      const payload = {
+        bedName,
+        roomId,
+        hostelId,
+        amount,
+      };
+
+      const res = await api.post(
+        `/v2/bed`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.log("Add Bed API error", err);
+      return {
+        success: false,
+        message: err?.response?.data || "Bed add failed",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const updateRoom = async ({ roomId, hostelId, roomName }) => {
+    try {
+      setLoading(true);
+      const token = await retriveData("token");
+
+      const res = await api.put(
+        `/v2/room/${roomId}/${hostelId}`,
+        {
+          roomName,
+          isActive: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.log("UPDATE ROOM ERROR", err?.response?.data || err);
+      return {
+        success: false,
+        message: err?.response?.data || "Room update failed",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteRoom = async (roomId) => {
+    try {
+      const token = await retriveData("token");
+
+      const res = await api.delete(`/v2/room/${roomId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      });
 
-    return { success: true, data: res.data };
-  } catch (err) {
-    console.log("Bed API error", err);
-    return { success: false };
-  } finally {
-    setLoading(false);
-  }
-};
+      return { success: true, data: res.data };
+    } catch (err) {
+      return {
+        success: false,
+        message: err?.response?.data || "Room delete failed",
+      };
+    }
+  };
+  const deleteBed = async (bedId) => {
+    try {
+      const token = await retriveData("token");
+      console.log("DELETE BED TOKEN 👉", token); // 🔥 ADD THIS
 
-const addBed = async ({ bedName, roomId, hostelId, amount }) => {
-  try {
-    setLoading(true);
-    const token = await retriveData("token");
-
-    const payload = {
-      bedName,
-      roomId,
-      hostelId,
-      amount,
-    };
-
-    const res = await api.post(
-      `/v2/bed`,
-      payload,
-      {
+      const res = await api.delete(`/v2/bed/${bedId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-      }
-    );
+      });
 
-    return { success: true, data: res.data };
-  } catch (err) {
-    console.log("Add Bed API error", err);
-    return {
-      success: false,
-      message: err?.response?.data || "Bed add failed",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.log("Delete Bed API error 👉", err?.response?.data);
+      return {
+        success: false,
+        message: err?.response?.data || "Bed delete failed",
+      };
+    }
+  };
 
 
-const updateRoom = async ({ roomId, hostelId, roomName }) => {
-  try {
-    setLoading(true);
-    const token = await retriveData("token");
+  const updateBed = async ({ bedId, bedName, amount }) => {
+    try {
+      setLoading(true);
+      const token = await retriveData("token");
 
-    const res = await api.put(
-      `/v2/room/${roomId}/${hostelId}`,
-      {
-        roomName,
+      const payload = {
+        bedName,
         isActive: true,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+        amount: Number(amount),
+      };
+
+      const res = await api.put(
+        `/v2/bed/${bedId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.log("UPDATE BED ERROR 👉", err?.response?.data || err);
+      return {
+        success: false,
+        message: err?.response?.data || "Bed update failed",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateFloor = async (floorId, data) => {
+    try {
+      setLoading(true);
+      const token = await retriveData("token");
+
+      const res = await api.put(
+        `/v2/floor/${floorId}`,   // ✅ floorId ONLY in URL
+        {
+          floorName: data.floorName,
+          isActive: data.isActive,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    return { success: true, data: res.data };
-  } catch (err) {
-    console.log("UPDATE ROOM ERROR", err?.response?.data || err);
-    return {
-      success: false,
-      message: err?.response?.data || "Room update failed",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      console.log("UPDATE FLOOR ERROR 👉", err?.response?.data);
+      return {
+        success: false,
+        message:
+          err?.response?.data?.message ||
+          "Floor update failed",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const deleteRoom = async (roomId) => {
-  try {
-    const token = await retriveData("token");
+  const deleteFloor = async (floorId) => {
+    try {
+      const token = await retriveData("token");
 
-    const res = await api.delete(`/v2/room/${roomId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return { success: true, data: res.data };
-  } catch (err) {
-    return {
-      success: false,
-      message: err?.response?.data || "Room delete failed",
-    };
-  }
-};
-const deleteBed = async (bedId) => {
-  try {
-    const token = await retriveData("token");
-    console.log("DELETE BED TOKEN 👉", token); // 🔥 ADD THIS
-
-    const res = await api.delete(`/v2/bed/${bedId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return { success: true, data: res.data };
-  } catch (err) {
-    console.log("Delete Bed API error 👉", err?.response?.data);
-    return {
-      success: false,
-      message: err?.response?.data || "Bed delete failed",
-    };
-  }
-};
+      const res = await api.delete(
+        `/v2/floor/${floorId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
 
-const updateBed = async ({ bedId, bedName, amount }) => {
-  try {
-    setLoading(true);
-    const token = await retriveData("token");
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      console.log("DELETE FLOOR ERROR 👉", err?.response || err);
+      console.log("res", err)
+      return {
+        success: false,
+        message: err?.response?.data || "Floor delete failed",
+      };
+    }
+  };
 
-    const payload = {
-      bedName,
-      isActive: true,
-      amount: Number(amount),
-    };
-
-    const res = await api.put(
-      `/v2/bed/${bedId}`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-  } catch (err) {
-    console.log("UPDATE BED ERROR 👉", err?.response?.data || err);
-    return {
-      success: false,
-      message: err?.response?.data || "Bed update failed",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
 
 
   return (
@@ -284,7 +349,7 @@ const updateBed = async ({ bedId, bedName, amount }) => {
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor,getAllRoomsByFloor,addRoom,getAllBedsByRoom,addBed,updateRoom,deleteRoom,deleteBed,updateBed
+        addFloor, getAllRoomsByFloor, addRoom, getAllBedsByRoom, addBed, updateRoom, deleteRoom, deleteBed, updateBed, updateFloor, deleteFloor
       }}
     >
       {children}

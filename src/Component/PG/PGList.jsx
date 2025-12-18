@@ -48,7 +48,7 @@ export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   // const [floors, setFloors] = useState([]);
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed } = useFloor();
+  const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed,deleteFloor } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState(false);
@@ -84,6 +84,11 @@ export default function PGPageFull({ route }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [showFloorMenu, setShowFloorMenu] = useState(false);
+  const [editFloorData, setEditFloorData] = useState(null);
+    const [deleteFloorId, setDeleteFloorId] = useState(null);
+ const [floordeletePopup, setFloorDeletePopup] = useState(false)
+
 
   const [editBedData, setEditBedData] = useState(null);
 
@@ -106,6 +111,32 @@ export default function PGPageFull({ route }) {
     setOpenMenuRoomId(null)
     setDeleteRoomId(roomId)
   }
+  const handleFloorDelete = (FloorId) => {
+    setFloorDeletePopup(true)
+    setOpenMenuRoomId(null)
+    setDeleteFloorId(FloorId)
+  }
+  const handleDeleteFloor = async (floorId) => {
+  const res = await deleteFloor(floorId);
+console.log("res",res)
+  if (res.success) {
+    setModalType("success");
+    setMessage("Floor deleted successfully");
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      loadFloors();        
+    }, 800);
+  } else {
+    setModalType("warning");
+    setMessage(res.message);
+    setShowSuccess(true);
+
+    setTimeout(() => setShowSuccess(false), 800);
+  }
+};
+
   const handleConfirmDelete = async () => {
     if (!deleteRoomId) return;
 
@@ -524,6 +555,8 @@ export default function PGPageFull({ route }) {
     setShowAddBed(true);
     console.log("roomId", roomId)
   };
+  const activeFloor = floors[activeFloorIndex];
+
 
   return (
     <>
@@ -584,8 +617,41 @@ export default function PGPageFull({ route }) {
               <Image source={IconNotice} style={styles.filterIcon} />
               <Text style={styles.filterText}>Notice Period</Text>
             </View>
+
           </ScrollView>
+                         <TouchableOpacity
+    style={styles.addRoomBtn}
+    onPress={() => setShowFloorMenu(!showFloorMenu)}
+  >
+    <Image source={Dots} style={{ width: 22, height: 22 }} />
+  </TouchableOpacity>
         </View>
+{showFloorMenu && (
+  <View style={styles.menuBox}>
+    <TouchableOpacity
+      style={styles.menuItem}
+     onPress={() => {
+        setShowFloorMenu(false);
+        setEditFloorData(activeFloor); // ✅ active floor object
+        setShowAddFloor(true);         // open sheet
+      }}
+    >
+      <Text style={styles.menuText}>Edit</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.menuItem}
+      onPress={() => {
+        setShowFloorMenu(false);
+        handleFloorDelete(activeFloor.id); // ✅ FLOOR ID HERE
+      }}
+    >
+      <Text style={[styles.menuText, { color: "red" }]}>
+        Delete
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
 
         {/* just spacing row */}
         <View style={{ paddingVertical: 12 }}>
@@ -911,15 +977,26 @@ export default function PGPageFull({ route }) {
       )}
 
       {/* BOTTOM SHEETS */}
-      <AddFloorSheet
+      {/* <AddFloorSheet
         visible={showAddFloor}
         onClose={() => setShowAddFloor(false)}
         onSuccess={loadFloors}
+         editFloorData={editFloorData}
         onSave={(name) => {
           handleAddFloor(name);
           setShowAddFloor(false);
         }}
-      />
+      /> */}
+      <AddFloorSheet
+  visible={showAddFloor}
+  onClose={() => {
+    setShowAddFloor(false);
++   setEditFloorData(null);   // 🔥 THIS IS THE KEY
+  }}
+  onSuccess={loadFloors}
+  editFloorData={editFloorData}
+/>
+
 
      
       <AddRoomSheet
@@ -1068,7 +1145,49 @@ export default function PGPageFull({ route }) {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+  <Modal
+        transparent
+        animationType="fade"
+        visible={floordeletePopup}
+        onRequestClose={() => setFloorDeletePopup(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setFloorDeletePopup(false)}>
+          <View style={styles.deleteOverlay}>
 
+           
+            <TouchableWithoutFeedback>
+              <View style={styles.deleteBox}>
+
+                <Text style={styles.deleteTitle}>Delete Floor?</Text>
+                <Text style={styles.deleteSub}>
+                  Are you sure you want to delete this Floor?
+                </Text>
+
+                <View style={styles.deleteBtnRow}>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => setFloorDeletePopup(false)}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={() => {
+    setFloorDeletePopup(false);
+    handleDeleteFloor(deleteFloorId); // ✅ pass ID
+  }}
+                  >
+                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </TouchableWithoutFeedback>
+
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
     </>
   );
@@ -1402,19 +1521,34 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   menuBox: {
-    position: "absolute",
-    top: 45,
-    right: 10,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingVertical: 6,
-    width: 120,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    zIndex: 999,
-  },
+  position: "absolute",
+  top: 120,    
+  right: 16,
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  paddingVertical: 6,
+  width: 120,
+  elevation: 6,
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  zIndex: 999,
+},
+
+  // menuBox: {
+  //   position: "absolute",
+  //   top: 45,
+  //   right: 10,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 10,
+  //   paddingVertical: 6,
+  //   width: 120,
+  //   elevation: 6,
+  //   shadowColor: "#000",
+  //   shadowOpacity: 0.1,
+  //   shadowRadius: 10,
+  //   zIndex: 999,
+  // },
 
   menuItem: {
     paddingVertical: 10,
