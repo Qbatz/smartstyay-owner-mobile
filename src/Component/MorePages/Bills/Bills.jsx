@@ -17,7 +17,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react"; 
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { BankingContext } from "../../../Context/BankingContext";
 import Loader from "../../../Component/Loader/Loader"
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 import Profile from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";  
@@ -70,14 +73,22 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
-  const { BillDetails, loading, GetAllBillDetails } = useContext(BillContext);
-    const { activeHostelId } = useContext(CommonContexts);
+  const { BillDetails, loading, GetAllBillDetails , RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError } = useContext(BillContext);
+  const { activeHostelId } = useContext(CommonContexts);
+  const {bankList, getBankListByHostel } = useContext(BankingContext);
+
+    console.log("bills", BillDetails);
+    console.log("bankList", bankList);
 
 
   const [activeTab, setActiveTab] = useState("All Bills");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
+ const [refundInitDetails, setRefundInitDetails] = useState(null);
+const [refundLoading, setRefundLoading] = useState(false);
 
+const [refundAmountError, setRefundAmountError] = useState("");
+const [refundFromError, setRefundFromError] = useState("");
  
 const [selectedCustomer, setSelectedCustomer] = useState(null);
 const [showReAssignbed , setShowReAssignBed] = useState(false)
@@ -94,29 +105,42 @@ const [deleteTenants,setDeleteTenants] = useState(false)
 const [showWriteOff, setShowWriteOff] = useState(false);
 const [writeOffReason, setWriteOffReason] = useState("");
 
+//record payement
+
 const [showRecordPayment, setShowRecordPayment] = useState(false);
 
+const [paidDate, setPaidDate] = useState(null);
+const [openPaidDate, setOpenPaidDate] = useState(false);
+
+
 const [paidAmount, setPaidAmount] = useState("");
-const [paidDate, setPaidDate] = useState(new Date());
+const [balanceAmount, setBalanceAmount] = useState(0);
+const [selectedMode, setSelectedMode] = useState("");
+const [transactionId, setTransactionId] = useState("");
+const [amountError, setAmountError] = useState("");
+const [dateError, setDateError] = useState("");
+const [modeError, setModeError] = useState("");
+
+const [recordLoading, setRecordLoading] = useState(false);
 
 const [showPaymentMode, setShowPaymentMode] = useState(false);
 const paymentModes = ["Cash", "UPI", "Bank Transfer"];
-const [selectedMode, setSelectedMode] = useState("");
 
-const [openPaidDate, setOpenPaidDate] = useState(false);
 
 const [showRefundPayment, setShowRefundPayment] = useState(false);
 
-const [refundAmount, setRefundAmount] = useState("5600");
-const [refundDate, setRefundDate] = useState(new Date());
+const [refundAmount, setRefundAmount] = useState("");
+const [refundBalance, setRefundBalance] = useState(0);
+
+const [refundDate, setRefundDate] = useState(null);
 const [openRefundDate, setOpenRefundDate] = useState(false);
+const [refundDateError, setRefundDateError] = useState("");
 const [refundFrom, setRefundFrom] = useState("");
 const [showRefundFrom, setShowRefundFrom] = useState(false);
 
 const [refundMode, setRefundMode] = useState("");
 const [showRefundMode, setShowRefundMode] = useState(false);
 
-const [transactionId, setTransactionId] = useState("");
 
 const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
 const refundModes = ["UPI", "Cash", "Bank Transfer"];
@@ -131,6 +155,11 @@ useEffect(() => {
   GetAllBillDetails(activeHostelId);
 }, [activeHostelId]);
 
+    useEffect(() => {
+  if (activeHostelId) {
+    getBankListByHostel(activeHostelId);
+  }
+}, [activeHostelId]);
 
 
 
@@ -174,13 +203,33 @@ const dotsRef = useRef(null);
 };
 
 
-const openMenu = (item) => {
-  dotsRef.current.measure((fx, fy, width, height, px, py) => {
-    setPopupPosition({ x: px, y: py });
+// const openMenu = (item) => {
+//   dotsRef.current.measure((fx, fy, width, height, px, py) => {
+//     setPopupPosition({ x: px, y: py });
+//     setSelectedCustomer(item);
+//     setShowMenu(true);
+//   });
+// };
+
+
+const transactionOptions = (bankList || []).map((item) => ({
+  label: `${item.accountHolderName || "Account"} - ${item.accountType}`,
+  value: item.bankingId,
+}));
+
+
+const openMenu = (event, item) => {
+  event.target.measureInWindow((x, y, width, height) => {
+    setPopupPosition({
+      x: x,
+      y: y + height,
+    });
+      setSelectedBill(item);
     setSelectedCustomer(item);
     setShowMenu(true);
   });
 };
+
 
 const DeleteMenu = ()=>{
   setDeleteTenants(true)
@@ -488,16 +537,319 @@ const handleShowWriteOff = () => {
 }
 
 const handleShowRecordPayment  = () => {
-   setShowRecordPayment(true);
+  setShowMenu(false);
+  setShowRecordPayment(true);
 }
 
 const handleCreateBill = () => {
 navigation.navigate("CreateBills" , {mode: "add"})
 }
 
+
+const handlePaidAmountChange = (value) => {
+  setAmountError("");
+
+  let num = Number(value);
+
+  if (isNaN(num)) num = 0;
+
+  // ❗ paid amount > due amount block
+  if (num > (selectedBill?.dueAmount || 0)) {
+    num = selectedBill?.dueAmount || 0;
+  }
+
+  setPaidAmount(String(num));
+  setBalanceAmount((selectedBill?.dueAmount || 0) - num);
+};
+
+const formatDateForPayload = (date) => {
+  if (!date) return null;
+
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60000);
+
+  const day = String(localDate.getDate()).padStart(2, "0");
+  const month = String(localDate.getMonth() + 1).padStart(2, "0");
+  const year = localDate.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
+
+
+const handleSaveRecordPayment = async () => {
+  const formattedPaidDate = formatDateForPayload(paidDate);
+
+  // ---------- VALIDATION ----------
+  if (!paidAmount || Number(paidAmount) <= 0) {
+    setAmountError("Please Enter Amount");
+    return;
+  }
+
+  if (!formattedPaidDate) {
+    setDateError("Please Select Date");
+    return;
+  }
+
+  // Paid date < invoice date block
+  const billDate = dayjs(selectedBill?.invoiceDate, "DD/MM/YYYY");
+  const paid = dayjs(formattedPaidDate, "DD-MM-YYYY");
+
+  if (paid.isBefore(billDate, "day")) {
+    setDateError("Paid date should not be before Bill date");
+    return;
+  }
+
+  if (!selectedMode) {
+    setModeError("Please Select Transaction Type");
+    return;
+  }
+
+  // ---------- API CALL ----------
+  try {
+    setRecordLoading(true);
+
+    const res = await RecordPayment({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      data: {
+        bankId: selectedMode,
+        paymentDate: formattedPaidDate,
+        referenceId: transactionId,
+        amount: Number(paidAmount),
+      },
+    });
+
+    if (res.success) {
+      // refresh bills
+      await GetAllBillDetails(activeHostelId);
+
+      setShowRecordPayment(false);
+
+      // reset
+      setPaidAmount("");
+      setBalanceAmount(0);
+      setSelectedMode("");
+      setTransactionId("");
+
+      alert("Payment recorded successfully");
+    } 
+    else if (res.payableAmount) {
+      // backend validation (same as web PAYABLE_AMOUNT)
+      alert(res.payableAmount);
+    } 
+    else {
+      alert(res.message || "Payment failed");
+    }
+  } catch (err) {
+    alert("Something went wrong");
+  } finally {
+    setRecordLoading(false);
+  }
+};
+
+
+
+
+
+
+// const handleSaveInvoiceList = async () => {
+//   const formatpaiddate = formatDateForPayload(paidDate);
+
+//   const res = await RecordPayment({
+//     hostelId,
+//     invoiceId: invoiceList.InvoiceId,
+//     data: {
+//       bankId: invoiceList.transaction,
+//       paymentDate: formatpaiddate,
+//       referenceId: transactionId,
+//       amount: payableAmount,
+//     },
+//   });
+
+//   if (res.success) {
+//     toast.success(res.data, {
+//       position: "bottom-center",
+//       autoClose: 2000,
+//       hideProgressBar: true,
+//     });
+//   } else if (res.payableAmount) {
+//     // same as PAYABLE_AMOUNT reducer
+//     setPayableAmount(res.payableAmount);
+//   } else {
+//     alert(res.message);
+//   }
+// };
+
+
+const fetchRefundInitialize = async () => {
+  try {
+    setRefundLoading(true);
+
+    const res = await GetInitializeRefundDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill.invoiceId,
+    });
+
+    if (res.success) {
+      setRefundInitDetails(res.data);
+    } else {
+      alert(res.message);
+    }
+  } catch (err) {
+    alert("Failed to load refund details");
+  } finally {
+    setRefundLoading(false);
+  }
+};
+
+console.log("refunddetails" , refundInitDetails , selectedBill?.invoiceDate);
+
+
 const handleShowRefundPayment = () => {
   setShowRefundPayment(true)
+  setShowMenu(false);
+  if (selectedBill?.invoiceId && activeHostelId) {
+    fetchRefundInitialize();
+  }
 }
+
+useEffect(() => {
+  if (refundInitDetails?.refundableAmount != null) {
+    setRefundBalance(refundInitDetails.refundableAmount);
+    setRefundAmount("");
+  }
+}, [refundInitDetails]);
+
+
+
+const today = dayjs().startOf("day");
+
+const invoiceDate = selectedBill?.invoiceDate
+  ? dayjs(selectedBill.invoiceDate, "DD/MM/YYYY").startOf("day")
+  : null;
+
+
+  const normalizeDate = (value) => {
+  if (!value) return null;
+
+  // Date object
+  if (value instanceof Date) {
+    return dayjs(value).startOf("day");
+  }
+
+  // dayjs object
+  if (dayjs.isDayjs(value)) {
+    return value.startOf("day");
+  }
+
+  // string (DD/MM/YYYY)
+  if (typeof value === "string") {
+    const d = dayjs(value, "DD/MM/YYYY");
+    return d.isValid() ? d.startOf("day") : null;
+  }
+
+  return null;
+};
+
+
+const parseInvoiceDate = (date) => {
+  if (!date) return null;
+
+  // If already Date
+  if (date instanceof Date) {
+    return dayjs(date).startOf("day");
+  }
+
+  if (typeof date === "string") {
+    // 🔥 CLEAN invisible chars + trim
+    const cleaned = date
+      .replace(/\u00A0/g, " ") // non-breaking space
+      .trim();
+
+    // Try DD/MM/YYYY
+    const dmy = dayjs(cleaned, "DD/MM/YYYY");
+    if (dmy.isValid()) return dmy.startOf("day");
+
+    // Fallback (ISO etc)
+    const fallback = dayjs(cleaned);
+    return fallback.isValid() ? fallback.startOf("day") : null;
+  }
+
+  return null;
+};
+
+useEffect(() => {
+  if (selectedBill?.invoiceDate && !refundDate) {
+    const inv = parseInvoiceDate(selectedBill.invoiceDate);
+    if (inv) setRefundDate(inv.toDate());
+  }
+}, [selectedBill]);
+
+
+
+
+
+const refundBankOptions = (refundInitDetails?.listBanks || []).map((b) => ({
+  label: `${b?.bankName}`,
+  value: b?.bankId,
+}));
+
+const handleSaveRefund = async () => {
+  setRefundAmountError("");
+  setRefundDateError("");
+  setRefundFromError("");
+
+  let valid = true;
+
+  if (!refundAmount || Number(refundAmount) <= 0) {
+    setRefundAmountError("Please enter refund amount");
+    valid = false;
+  }
+
+  if (!refundDate) {
+    setRefundDateError("Please select refund date");
+    valid = false;
+  }
+
+  if (!refundFrom) {
+    setRefundFromError("Please select refund account");
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  const payload = {
+    refundAmount: Number(refundAmount),
+    refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
+    bankId: refundFrom,
+    referenceNumber: transactionId || "",
+  };
+
+  const res = await CreateRefund({
+    hostelId: activeHostelId,
+    invoiceId: selectedBill.invoiceId,
+    payload,
+  });
+
+  if (res.success) {
+    alert("Refund successfully");
+    GetAllBillDetails(activeHostelId);
+    setShowRefundPayment(false);
+    setRefundAmount("");
+    setRefundDate(null);
+    setRefundFrom("");
+    setTransactionId("");
+   
+  } else if (res.refundableError) {
+     alert(res.refundableError);
+  } else {
+    alert(res.message);
+  }
+};
+
+
+
+
 const handleEditBill = () => {
 
  navigation.navigate("CreateBills", {
@@ -611,7 +963,7 @@ navigation.navigate("CancelNotice")
         </View>
 
         <View style={styles.rightSection}>
-          <TouchableOpacity ref={dotsRef} onPress={() => openMenu(item)}>
+          <TouchableOpacity ref={dotsRef}  onPress={(e) => openMenu(e, item)}>
             <Image
               source={Dots}
               style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
@@ -1026,7 +1378,7 @@ navigation.navigate("CancelNotice")
 )}
 
 
-{showRecordPayment && (
+{showRecordPayment && selectedBill && (
   <View style={styles.sheetOverlay}>
 
     {/* Close on tap outside */}
@@ -1059,7 +1411,7 @@ navigation.navigate("CancelNotice")
 
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
-              Jebin
+              {selectedBill?.fullName || "-"}
             </Text>
 
             <View style={{ flexDirection: "row", marginTop: 4 }}>
@@ -1073,21 +1425,26 @@ navigation.navigate("CancelNotice")
                 }}
               >
                 <Text style={{ color: "#C67506", fontWeight: "600", fontSize: 12 }}>
-                  Checkout Inv
+                 {selectedBill?.invoiceType || "-"}
                 </Text>
               </View>
 
               <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }} />
-              <Text style={{ fontSize: 13, color: "#555" }}>#1212121212</Text>
+              <Text style={{ fontSize: 13, color: "#555" }}> #{selectedBill?.invoiceNumber || "-"}</Text>
             </View>
           </View>
         </View>
 
         {/* DUE AMOUNT */}
         <Text style={styles.label}>Due Amount</Text>
-        <View style={styles.inputBox}>
-          <Text style={{ fontSize: 16 }}>₹ 3200</Text>
-        </View>
+       <TextInput
+  style={[
+    styles.input,
+    { backgroundColor: "#EFF2FF", color: "grey" }
+  ]}
+  value={`₹ ${selectedBill?.dueAmount || 0}`}
+  editable={false}   
+/>
 
         {/* PAID AMOUNT */}
         <Text style={styles.label}>Paid Amount</Text>
@@ -1096,73 +1453,179 @@ navigation.navigate("CancelNotice")
           keyboardType="numeric"
           placeholder="₹ 0"
           value={paidAmount}
-          onChangeText={setPaidAmount}
+          onChangeText={handlePaidAmountChange}
+        />
+
+ {amountError && (
+                    <ErrorMessage message={amountError} type="error" />
+                                )}
+
+
+
+        
+
+         <Text style={styles.label}>Balance Amount</Text>
+        <TextInput
+           style={[styles.input, { backgroundColor: "#EFF2FF", color: "grey" }]}
+           value={`₹ ${balanceAmount}`}
+           editable={false}
         />
 
         {/* PAID DATE */}
-        <Text style={styles.label}>Paid Date</Text>
+       <Text style={styles.label}>
+  Paid Date <Text style={{ color: "red" }}>*</Text>
+</Text>
 
-        <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => setOpenPaidDate(!openPaidDate)}
-        >
-          <Text style={{ fontSize: 15 }}>
-            {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-          </Text>
+<TouchableOpacity
+  style={styles.inputBox}
+  onPress={() => {
+    setDateError("");
+    setOpenPaidDate(true);
+  }}
+>
+  <Text style={{ fontSize: 15 }}>
+    {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+  </Text>
 
-          <Image
-            source={CalendarIcon}
-            style={{ width: 22, height: 22, tintColor: "#444" }}
+  <Image
+    source={CalendarIcon}
+    style={{ width: 22, height: 22, tintColor: "#444" }}
+  />
+</TouchableOpacity>
+
+ {dateError && (
+                    <ErrorMessage message={dateError} type="error" />
+                                )}
+
+<Modal
+  visible={openPaidDate}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setOpenPaidDate(false)}
+>
+  <TouchableWithoutFeedback onPress={() => setOpenPaidDate(false)}>
+    <View style={styles.dateModalOverlay}>
+      <TouchableWithoutFeedback>
+        <View style={styles.dateModalBox}>
+          <DatePicker
+            mode="single"
+            date={paidDate || new Date()}
+            onChange={(v) => {
+              const selected = v.date;
+              if (!selected) return;
+
+              const invoiceDate = selectedBill?.invoiceDate
+                ? dayjs(selectedBill.invoiceDate, "DD/MM/YYYY").startOf("day")
+                : null;
+
+              const pickedDate = dayjs(selected).startOf("day");
+              const today = dayjs().startOf("day");
+
+              if (invoiceDate && pickedDate.isBefore(invoiceDate)) {
+                setDateError("Paid date should not be before Bill date");
+                return;
+              }
+
+              if (pickedDate.isAfter(today)) {
+                setDateError("Paid date cannot be a future date");
+                return;
+              }
+
+              setDateError("");
+              setPaidDate(selected);
+              setOpenPaidDate(false);
+            }}
           />
-        </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
 
-        {openPaidDate && (
-          <View style={styles.dropdownBox}>
-            <DatePicker
-              mode="single"
-              date={paidDate}
-              onChange={(v) => {
-                setPaidDate(v.date || new Date());
-                setOpenPaidDate(false);
+{/* {dateError ? (
+  <Text style={{ color: "red", marginTop: 4, fontSize: 13 }}>
+    {dateError}
+  </Text>
+) : null} */}
+
+
+
+      <Text style={styles.label}>
+  Transaction Mode <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  style={styles.inputBox}
+  onPress={() => {
+    setModeError("");
+    setShowPaymentMode((v) => !v);
+  }}
+>
+  <Text style={{ fontSize: 15 }}>
+    {selectedMode
+      ? transactionOptions.find(o => o.value === selectedMode)?.label
+      : "Select mode"}
+  </Text>
+
+  <Image
+    source={DownArrow}
+    style={{ width: 18, height: 18, tintColor: "#555" }}
+  />
+</TouchableOpacity>
+
+
+
+{showPaymentMode && (
+  <View style={styles.transactiondropdown}>
+    <ScrollView
+      nestedScrollEnabled
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.dropdownContent} 
+    >
+      {transactionOptions.length > 0 ? (
+        transactionOptions.map((opt) => {
+          const isSelected = selectedMode === opt.value;
+
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.dropdownRow,
+                isSelected && styles.dropdownRowSelected,
+              ]}
+              onPress={() => {
+                setSelectedMode(opt.value);
+                setShowPaymentMode(false);
               }}
-            />
-          </View>
-        )}
-
-        {/* TRANSACTION MODE */}
-        <Text style={styles.label}>Transaction Mode</Text>
-
-        <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => setShowPaymentMode((v) => !v)}
-        >
-          <Text style={{ fontSize: 15 }}>
-            {selectedMode ? selectedMode : "Select mode"}
-          </Text>
-
-          <Image
-            source={DownArrow}
-            style={{ width: 18, height: 18, tintColor: "#555" }}
-          />
-        </TouchableOpacity>
-
-        {/* Dropdown mode */}
-        {showPaymentMode && (
-          <View style={styles.transactiondropdown}>
-            {paymentModes.map((mode) => (
-              <TouchableOpacity
-                key={mode}
-                style={{ padding: 12 }}
-                onPress={() => {
-                  setSelectedMode(mode);
-                  setShowPaymentMode(false);
-                }}
+            >
+              <Text
+                style={
+                  isSelected
+                    ? styles.dropdownTextSelected
+                    : styles.dropdownText
+                }
               >
-                <Text style={{ fontSize: 15 }}>{mode}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })
+      ) : (
+        <Text style={{ padding: 12, color: "#777" }}>
+          No accounts available
+        </Text>
+      )}
+    </ScrollView>
+  </View>
+)}
+
+ {modeError && (
+                    <ErrorMessage message={modeError} type="error" />
+                                )}
+
+
+
+
 
         {/* Buttons */}
           <View style={styles.btnRow}>
@@ -1172,7 +1635,7 @@ navigation.navigate("CancelNotice")
             
                       <TouchableOpacity
                         style={styles.saveBtn}
-                       
+                       onPress={handleSaveRecordPayment}
                       >
                         <Text style={styles.saveText}>Record</Text>
                       </TouchableOpacity>
@@ -1214,7 +1677,7 @@ navigation.navigate("CancelNotice")
 
           <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
-              Jebin
+               {selectedBill?.fullName || "-"}
             </Text>
 
             <View style={{ flexDirection: "row", marginTop: 4 }}>
@@ -1228,7 +1691,7 @@ navigation.navigate("CancelNotice")
                 }}
               >
                 <Text style={{ color: "#C67506", fontSize: 11, fontWeight: "600" }}>
-                  Checkout Inv
+                 {selectedBill?.invoiceType || "-"}
                 </Text>
               </View>
 
@@ -1236,7 +1699,7 @@ navigation.navigate("CancelNotice")
                 source={Bills_Black_Icon}
                 style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
               />
-              <Text style={{ fontSize: 11, color: "#555" }}>#1212121212</Text>
+              <Text style={{ fontSize: 11, color: "#555" }}>#{selectedBill?.invoiceNumber}</Text>
             </View>
           </View>
 
@@ -1244,7 +1707,7 @@ navigation.navigate("CancelNotice")
           <View style={{ alignItems: "flex-end" }}>
             <Text style={{ color: "#444", fontSize: 13 }}>Refund Amount</Text>
             <Text style={{ fontSize: 16, fontWeight: "700", color: "#000" }}>
-              ₹ 5,600.00
+              ₹ {refundInitDetails?.pendingRefund || 0}
             </Text>
           </View>
         </View>
@@ -1253,117 +1716,189 @@ navigation.navigate("CancelNotice")
         <Text style={styles.label}>
           Refund amount <Text style={{ color: "red" , fontSize:16}}>*</Text>
         </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="₹ 0.00"
-          keyboardType="numeric"
-          value={refundAmount}
-          onChangeText={setRefundAmount}
-        />
+   <TextInput
+  style={styles.input}
+  placeholder="₹ 0.00"
+  keyboardType="numeric"
+  value={refundAmount}
+  onChangeText={(val) => {
+    let num = Number(val);
+    if (isNaN(num)) num = 0;
+
+    const max = refundInitDetails?.refundableAmount || 0;
+
+    // ❌ block more than refundable
+    if (num > max) num = max;
+
+    setRefundAmount(String(num));
+    setRefundBalance(max - num);  
+    setRefundAmountError("") 
+  }}
+/>
+
+
+ {refundAmountError && (
+                    <ErrorMessage message={refundAmountError} type="error" />
+                                )}
+
+
+
+
 
         {/* BALANCE DUE */}
-        <Text style={styles.label}>Balance Due</Text>
-        <View style={styles.inputBox}>
-          <Text style={{ fontSize: 16 }}>₹ 0.00</Text>
-        </View>
+       <Text style={styles.label}>Balance Due <Text style={{ color: "red" , fontSize:16}}>*</Text></Text>
+<View style={styles.inputBox}>
+ <Text style={{ fontSize: 16 }}>
+    ₹ {refundBalance}
+  </Text>
+</View>
+
 
         {/* REFUND DATE */}
-        <Text style={styles.label}>Refund Date</Text>
+     <Text style={styles.label}>
+  Refund Date <Text style={{ color: "red", fontSize: 16 }}>*</Text>
+</Text>
 
-        <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => setOpenRefundDate(!openRefundDate)}
-        >
-          <Text style={{ fontSize: 15 }}>
-            {refundDate ? dayjs(refundDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-          </Text>
+<TouchableOpacity
+  style={styles.inputBox}
+  onPress={() => {
+    setRefundDateError("");
+    setOpenRefundDate(true);
+  }}
+>
+  <Text style={{ fontSize: 15 }}>
+    {refundDate ? dayjs(refundDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+  </Text>
 
-          <Image
-            source={CalendarIcon}
-            style={{ width: 22, height: 22, tintColor: "#444" }}
-          />
-        </TouchableOpacity>
+  <Image source={CalendarIcon} style={{ width: 22, height: 22 }} />
+</TouchableOpacity>
 
-        {openRefundDate && (
-          <View style={styles.dropdownBox}>
-            <DatePicker
-              mode="single"
-              date={refundDate}
-              onChange={(v) => {
-                setRefundDate(v.date || new Date());
-                setOpenRefundDate(false);
-              }}
-            />
-          </View>
-        )}
+{/* ERROR MESSAGE */}
+
+
+ {refundDateError && (
+                    <ErrorMessage message={refundDateError} type="error" />
+                                )}
+
+
+
+ <Modal
+  visible={openRefundDate}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setOpenRefundDate(false)}
+>
+  {/* OUTSIDE TAP CLOSE */}
+  <TouchableWithoutFeedback onPress={() => setOpenRefundDate(false)}>
+    <View style={styles.dateModalOverlay}>
+      
+      {/* PREVENT CLOSE WHEN CLICKING INSIDE */}
+      <TouchableWithoutFeedback>
+        <View style={styles.dateModalBox}>
+ <DatePicker
+  mode="single"
+  date={refundDate || new Date()}
+  onChange={(v) => {
+    if (!v?.date) return;
+
+    const pickedDate = normalizeDate(v.date);
+    if (!pickedDate) return;
+
+    const invoiceDate = normalizeDate(selectedBill?.invoiceDate);
+    const today = dayjs().startOf("day");
+
+    console.log(
+      "Invoice:",
+      invoiceDate?.format("DD/MM/YYYY"),
+      "Selected:",
+      pickedDate.format("DD/MM/YYYY")
+    );
+
+    // ❌ BEFORE INVOICE DATE
+    if (invoiceDate && pickedDate.isBefore(invoiceDate)) {
+      setRefundDateError("Refund date should not be before Invoice date");
+      return;
+    }
+
+    // ❌ FUTURE DATE
+    if (pickedDate.isAfter(today)) {
+      setRefundDateError("Refund date cannot be a future date");
+      return;
+    }
+
+    // ✅ VALID
+    setRefundDate(pickedDate.toDate());
+    setRefundDateError("");
+    setOpenRefundDate(false);
+  }}
+/>
+
+
+
+
+
+
+
+        </View>
+      </TouchableWithoutFeedback>
+
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
+
 
         {/* REFUND FROM */}
-        <Text style={styles.label}>Refund From</Text>
+        <Text style={styles.label}>Refund From <Text style={{ color: "red" , fontSize:16}}>*</Text></Text>
 
-        <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => setShowRefundFrom((v) => !v)}
-        >
-          <Text style={{ fontSize: 15 }}>
-            {refundFrom ? refundFrom : "Select bank"}
-          </Text>
+<TouchableOpacity
+  style={styles.inputBox}
+  onPress={() => setShowRefundFrom((v) => !v)}
+>
+  <Text style={{ fontSize: 15 }}>
+    {refundFrom
+      ? refundBankOptions.find(o => o.value === refundFrom)?.label
+      : "Select bank"}
+  </Text>
 
-          <Image
-            source={DownArrow}
-            style={{ width: 18, height: 18, tintColor: "#555" }}
-          />
-        </TouchableOpacity>
+  <Image source={DownArrow} style={{ width: 18, height: 18 }} />
+</TouchableOpacity>
 
-        {showRefundFrom && (
-          <View style={styles.transactiondropdown}>
-            {bankOptions.map((bank) => (
-              <TouchableOpacity
-                key={bank}
-                style={{ padding: 12 }}
-                onPress={() => {
-                  setRefundFrom(bank);
-                  setShowRefundFrom(false);
-                }}
-              >
-                <Text style={{ fontSize: 15 }}>{bank}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
-        {/* REFUND MODE */}
-        <Text style={styles.label}>Refund Mode</Text>
+       {showRefundFrom && (
+  <View style={styles.transactiondropdown}>
+    <ScrollView>
+      {refundBankOptions.length > 0 ? (
+        refundBankOptions.map((opt) => (
+          <TouchableOpacity
+            key={opt.value}
+            style={{ padding: 12 }}
+            onPress={() => {
+              setRefundFrom(opt.value);   
+              setShowRefundFrom(false);
+              setRefundFromError("")
+            }}
+          >
+            <Text style={{ fontSize: 15 }}>{opt.label}</Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={{ padding: 12, color: "#777" }}>
+          No banks available
+        </Text>
+      )}
+    </ScrollView>
+  </View>
+)}
 
-        <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => setShowRefundMode((v) => !v)}
-        >
-          <Text style={{ fontSize: 15 }}>
-            {refundMode ? refundMode : "Select mode"}
-          </Text>
 
-          <Image
-            source={DownArrow}
-            style={{ width: 18, height: 18, tintColor: "#555" }}
-          />
-        </TouchableOpacity>
 
-        {showRefundMode && (
-          <View style={styles.transactiondropdown}>
-            {refundModes.map((m) => (
-              <TouchableOpacity
-                key={m}
-                style={{ padding: 12 }}
-                onPress={() => {
-                  setRefundMode(m);
-                  setShowRefundMode(false);
-                }}
-              >
-                <Text style={{ fontSize: 15 }}>{m}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+ {refundFromError && (
+                    <ErrorMessage message={refundFromError} type="error" />
+                                )}
+
+
+
+      
 
         {/* TRANSACTION ID */}
         <Text style={styles.label}>Transaction ID</Text>
@@ -1383,7 +1918,7 @@ navigation.navigate("CancelNotice")
             
                       <TouchableOpacity
                         style={styles.saveBtn}
-                       
+                        onPress={handleSaveRefund}
                       >
                         <Text style={styles.saveText}>Record</Text>
                       </TouchableOpacity>
@@ -2052,23 +2587,51 @@ dropdownText: {
   color: "#111",
   fontSize: 15,
 },
-transactiondropdown : {
- borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E6E6E6",
-    backgroundColor: "#fff",
-    marginTop: 5,
-    overflow: "hidden",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-      },
-      android: { elevation: 3 },
-    }),
+transactiondropdown: {
+  minHeight: 130,       
+  maxHeight: 130,        
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#E6E6E6",
+  backgroundColor: "#fff",
+  marginTop: 5,
+  overflow: "hidden",
+  ...Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+    },
+    android: { elevation: 3 },
+  }),
 },
+
+dropdownContent: {
+  minHeight: 130,   
+  maxHeight:130
+},
+
+dropdownRow: {
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+},
+
+dropdownRowSelected: {
+  backgroundColor: "#1E45E1", 
+},
+
+dropdownText: {
+  color: "#111",
+  fontSize: 15,
+},
+
+dropdownTextSelected: {
+  color: "#fff", // 👈 WHITE
+  fontSize: 15,
+  fontWeight: "600",
+},
+
 
 arrow: { fontSize: 18, color: "#555" },
 
@@ -2510,4 +3073,33 @@ inputBox: {
     fontSize: 15,
     marginBottom: 12,
   },
+//   dateModalOverlay: {
+//   flex: 1,
+//   backgroundColor: "rgba(0,0,0,0.4)",
+//   justifyContent: "center",
+//   alignItems: "center",
+// },
+
+// dateModalBox: {
+//   backgroundColor: "#fff",
+//   borderRadius: 12,
+//   padding: 16,
+//   width: "90%",
+// },
+
+dateModalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+dateModalBox: {
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 16,
+  width: "90%",
+},
+
+
 });
