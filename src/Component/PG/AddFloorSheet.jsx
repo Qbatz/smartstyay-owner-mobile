@@ -19,22 +19,7 @@ export default function AddFloorSheet({ visible, onClose,onSuccess,editFloorData
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editFloorData;
   console.log("editFloorData",editFloorData)
-const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", e => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
-
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
-
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
 
   const [floorName, setFloorName] = useState("");
   const [floorNameError, setFloorNameError] = useState("");
@@ -207,17 +192,16 @@ const trimmedName = floorName.trim();
 // };
 
 const sheetContent = (
-<Animated.View
-  style={[
-    styles.sheet,
-    {
-      transform: [{ translateY }],
-      paddingBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 40,
-    },
-  ]}
-  {...panResponder.panHandlers}
->
-
+  <Animated.View
+    style={[
+      styles.sheet,
+      {
+        transform: [{ translateY }],
+        paddingBottom: 20,   // 🔥 FIXED value
+      },
+    ]}
+    {...panResponder.panHandlers}
+  >
     <View style={styles.handle} />
 
     <Text style={styles.title}>
@@ -233,6 +217,8 @@ const sheetContent = (
       placeholder="Enter floor Name or No"
       style={styles.input}
       value={floorName}
+      returnKeyType="done"
+      onSubmitEditing={handleAddFloor}   // ✅ keyboard ✔ save
       onChangeText={(text) => {
         setFloorName(text);
         setFloorNameError("");
@@ -243,6 +229,7 @@ const sheetContent = (
       <ErrorMessage message={floorNameError} type="error" />
     )}
 
+    {/* 🔥 BUTTON ALWAYS JUST BELOW INPUT */}
     <TouchableOpacity style={styles.addBtn} onPress={handleAddFloor}>
       <Text style={styles.addBtnText}>
         {isEdit ? "Update Floor" : "Add Floor"}
@@ -250,6 +237,7 @@ const sheetContent = (
     </TouchableOpacity>
   </Animated.View>
 );
+
 
  return (
   <>
@@ -287,12 +275,13 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
 
-  sheet: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
+sheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  maxHeight: "85%",    // 🔥 prevents big empty space
+},
 
   handle: {
     width: 45,
@@ -323,12 +312,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  addBtn: {
-    backgroundColor: "#1E45E1",
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginBottom: 40,
-  },
+addBtn: {
+  backgroundColor: "#1E45E1",
+  paddingVertical: 14,
+  borderRadius: 12,
+  marginBottom: 10,    // 🔥 reduced
+},
 
   addBtnText: {
     textAlign: "center",
