@@ -20,6 +20,7 @@ import PlusIcon from "../../../Assets/Images/TenantAdd.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 import DatePicker from "react-native-ui-datepicker";
@@ -28,7 +29,7 @@ import { useLayoutEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function WalkinScreen({ setShowTabBar,handleWalkinFilter,navigation }) {
- const { getCustomersByHostel } = useCustomer();
+ const { getCustomersByHostel,deleteCustomer } = useCustomer();
 const { activeHostelId } = useContext(CommonContexts);
  
 const [walkinCustomers, setWalkinCustomers] = useState([]);
@@ -43,6 +44,39 @@ const [walkinCustomers, setWalkinCustomers] = useState([]);
   const [menuVisible, setMenuVisible] = useState(false);
 const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 const [selectedItem, setSelectedItem] = useState(null);
+const [deleteTenants,setDeleteTenants] = useState(false)
+const [deleteUserId,setDeleteUserId] = useState("")
+const [modalType, setModalType] = useState("success");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
+const DeleteMenu = ()=>{
+  setDeleteTenants(true)
+  setMenuVisible(false)
+}
+const CloseDelete = () =>{
+  setDeleteTenants(false)
+}
+const handleDeleteCustomer = async () => {
+  if (!deleteUserId) return;
+
+  const res = await deleteCustomer(activeHostelId, deleteUserId);
+
+  if (res.success) {
+     setModalType("success");
+    setMessage("Deleted Successful");
+    setShowSuccess(true);
+     setTimeout(() => {
+      setShowSuccess(false);
+     setDeleteTenants(false);
+    setMenuVisible(false);
+    }, 800);
+   
+    fetchWalkinCustomers(); // refresh
+  } else {
+    alert(res.message);
+  }
+};
+
 
 const dotsRef = useRef(null);
 
@@ -54,7 +88,7 @@ const openMenu = (event, item) => {
     setMenuVisible(false);
     return;
   }
-
+setDeleteUserId(item.customerId)
   // DIFFERENT ITEM → move menu
   setMenuPosition({
     x: pageX - 190,
@@ -137,6 +171,8 @@ console.log("setWalkinCustomers",walkinCustomers)
 
 
   return (
+    <>
+     <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.container}>
       
       <Text style={styles.monthHeading}>This Month</Text>
@@ -200,7 +236,7 @@ console.log("setWalkinCustomers",walkinCustomers)
         <Text style={styles.menuText}>Add booking</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.menuRow}>
+      <TouchableOpacity style={styles.menuRow} onPress={DeleteMenu}>
         <Image source={require("../../../Assets/Images/trash.png")} style={styles.menuIcon} />
         <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
       </TouchableOpacity>
@@ -404,9 +440,42 @@ console.log("setWalkinCustomers",walkinCustomers)
     </View>
   </View>
 </Modal>
+<Modal
+    transparent
+    animationType="fade"
+    visible={deleteTenants}
+    onRequestClose={() => setDeleteTenants(false)}
+  >
+    <View style={styles.deleteOverlay}>
+      <View style={styles.deleteBox}>
 
+        <Text style={styles.deleteTitle}>Delete Customer?</Text>
+        <Text style={styles.deleteSub}>
+          Are you sure you want to delete this Customer?
+        </Text>
+
+        <View style={styles.deleteBtnRow}>
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={() => setDeleteTenants(false)}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.deleteBtn}
+            onPress={handleDeleteCustomer}
+          >
+            <Text style={styles.deleteBtnText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+
+      </View>
+    </View>
+  </Modal>
 
     </View>
+    </>
   );
 }
 
@@ -721,6 +790,71 @@ menuIcon: {
 menuText: {
   fontSize: 14,
   color: "#111",
+},
+deleteOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+deleteBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  padding: 25,
+  borderRadius: 15,
+  alignItems: "center",
+  elevation: 10,
+},
+
+deleteTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#111",
+  marginBottom: 10,
+},
+
+deleteSub: {
+  fontSize: 14,
+  color: "#555",
+  textAlign: "center",
+  marginBottom: 25,
+},
+
+deleteBtnRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
+},
+
+cancelBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#2D6CDF",
+  marginRight: 10,
+  alignItems: "center",
+},
+
+cancelText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#2D6CDF",
+},
+
+deleteBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  backgroundColor: "#2D6CDF",
+  alignItems: "center",
+},
+
+deleteBtnText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#fff",
 },
 
 });
