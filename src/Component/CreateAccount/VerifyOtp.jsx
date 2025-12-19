@@ -7,7 +7,7 @@ import {
     TouchableOpacity,
     Image,
     Dimensions,
-    Animated,ImageBackground,
+    Animated,ImageBackground,KeyboardAvoidingView, Platform,ScrollView
 } from "react-native";
 import OtpRectangle from "../../Assets/Images/OtpRectangle.png";
 import LottieView from "lottie-react-native";
@@ -24,6 +24,7 @@ const VerifyAccountScreen = ({ navigation }) => {
     const scale = useRef(new Animated.Value(0.6)).current;
     const opacity = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(80)).current;
+const BOTTOM_IMAGE_HEIGHT = 200;
 
     const showSuccessPopup = () => {
         setShowPopup(true);
@@ -89,8 +90,20 @@ const VerifyAccountScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+     <View style={styles.container}>
 
+    {/* 🔥 CONTENT – moves with keyboard */}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+     <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: BOTTOM_IMAGE_HEIGHT + 20, // 🔥 IMPORTANT
+      }}
+      keyboardShouldPersistTaps="handled"
+    >
             <View style={styles.contentBox}>
                 <Text style={styles.title}>Verify Your Account</Text>
 
@@ -153,6 +166,8 @@ const VerifyAccountScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             </View>
+            </ScrollView>
+</KeyboardAvoidingView>
 
 
            <ImageBackground
@@ -332,14 +347,20 @@ const styles = StyleSheet.create({
 //   width: "100%",
 //   height: Dimensions.get("window").height * 0.22,
 // },
+// bottomGradient: {
+//   position: "absolute",
+//   bottom: 0,
+//   left: 0,
+//   width: "100%",
+//   aspectRatio: 375 / 180, // 🔥 your image real ratio
+// },
 bottomGradient: {
   position: "absolute",
   bottom: 0,
   left: 0,
-  width: "100%",
-  aspectRatio: 375 / 180, // 🔥 your image real ratio
+  right: 0,
+  height: 200,        
 },
-
     popupContainer: {
         position: "absolute",
         top: 0,

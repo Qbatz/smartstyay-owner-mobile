@@ -84,81 +84,89 @@ const { activeHostelId } = useContext(CommonContexts);
         state: "",
     });
 
-    const isBasicValid =
-        basicDetails.firstName.trim() !== "" && basicDetails.mobile.trim() !== "";
+  const isBasicValid =
+  basicDetails.firstName.trim().length > 0 &&
+  basicDetails.mobile.trim().length === 10;
 
-    const isAddressValid =
-        addressDetails.flat.trim() !== "" &&
-        addressDetails.pincode.trim() !== "" &&
-        addressDetails.city.trim() !== "" &&
-        addressDetails.state.trim() !== "";
 
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
+   
+const isAddressValid =
+  addressDetails.flat.trim().length > 0 &&
+  addressDetails.area.trim().length > 0 &&        // ✅ ADD THIS
+  addressDetails.landmark.trim().length > 0 &&
+  addressDetails.city.trim().length > 0 &&
+  addressDetails.pincode.trim().length === 6 &&   // ✅ proper pincode
+  selectedState !== "Select State";
+
+   
     const [selectedState, setSelectedState] = useState("Select State");
-    const items = [
-        { label: "Andhra Pradesh", value: "Andhra Pradesh" },
-        { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
-        { label: "Assam", value: "Assam" },
-        { label: "Bihar", value: "Bihar" },
-        { label: "Chhattisgarh", value: "Chhattisgarh" },
-        { label: "Goa", value: "Goa" },
-        { label: "Gujarat", value: "Gujarat" },
-        { label: "Haryana", value: "Haryana" },
-        { label: "Himachal Pradesh", value: "Himachal Pradesh" },
-        { label: "Jharkhand", value: "Jharkhand" },
-        { label: "Karnataka", value: "Karnataka" },
-        { label: "Kerala", value: "Kerala" },
-        { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-        { label: "Maharashtra", value: "Maharashtra" },
-        { label: "Manipur", value: "Manipur" },
-        { label: "Meghalaya", value: "Meghalaya" },
-        { label: "Mizoram", value: "Mizoram" },
-        { label: "Nagaland", value: "Nagaland" },
-        { label: "Odisha", value: "Odisha" },
-        { label: "Punjab", value: "Punjab" },
-        { label: "Rajasthan", value: "Rajasthan" },
-        { label: "Sikkim", value: "Sikkim" },
-        { label: "Tamil Nadu", value: "Tamil Nadu" },
-        { label: "Telangana", value: "Telangana" },
-        { label: "Tripura", value: "Tripura" },
-        { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-        { label: "Uttarakhand", value: "Uttarakhand" },
-        { label: "West Bengal", value: "West Bengal" },
-    ]
-const handleCreateTenant = async () => {
-  const hasAddress =
+  
+
+       const [stateOpen, setStateOpen] = useState(false);
+    const stateList = [
+      { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+      { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+      { label: "Assam", value: "Assam" },
+      { label: "Bihar", value: "Bihar" },
+      { label: "Chhattisgarh", value: "Chhattisgarh" },
+      { label: "Goa", value: "Goa" },
+      { label: "Gujarat", value: "Gujarat" },
+      { label: "Haryana", value: "Haryana" },
+      { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+      { label: "Jharkhand", value: "Jharkhand" },
+      { label: "Karnataka", value: "Karnataka" },
+      { label: "Kerala", value: "Kerala" },
+      { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+      { label: "Maharashtra", value: "Maharashtra" },
+      { label: "Manipur", value: "Manipur" },
+      { label: "Meghalaya", value: "Meghalaya" },
+      { label: "Mizoram", value: "Mizoram" },
+      { label: "Nagaland", value: "Nagaland" },
+      { label: "Odisha", value: "Odisha" },
+      { label: "Punjab", value: "Punjab" },
+      { label: "Rajasthan", value: "Rajasthan" },
+      { label: "Sikkim", value: "Sikkim" },
+      { label: "Tamil Nadu", value: "Tamil Nadu" },
+      { label: "Telangana", value: "Telangana" },
+      { label: "Tripura", value: "Tripura" },
+      { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+      { label: "Uttarakhand", value: "Uttarakhand" },
+      { label: "West Bengal", value: "West Bengal" },
+    ];
+    const handleCreateTenant = async () => {
+  const payloads = {
+    customerInfo: {
+      firstName: basicDetails.firstName,
+      mobileNumber: basicDetails.mobile,
+      type: 1,
+
+      ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
+      ...(basicDetails.email && { emailId: basicDetails.email }),
+    },
+  };
+
+  // 🔥 ADD ADDRESS ONLY IF PRESENT
+  if (
     addressDetails.flat ||
     addressDetails.area ||
     addressDetails.landmark ||
     addressDetails.city ||
     addressDetails.pincode ||
-    selectedState !== "Select State";
-
-  const payloads = {
-    customerInfo: {
-      firstName: basicDetails.firstName,
-      mobileNumber: basicDetails.mobile, // ✅ mandatory
-      ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
-      ...(basicDetails.email && { emailId: basicDetails.email }),
-      type: 1,
-
-      ...(hasAddress && {
-        address: {
-          ...(addressDetails.flat && { houseNo: addressDetails.flat }),
-          ...(addressDetails.area && { street: addressDetails.area }),
-          ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
-          ...(addressDetails.city && { city: addressDetails.city }),
-          ...(addressDetails.pincode && {
-            pincode: Number(addressDetails.pincode),
-          }),
-          ...(selectedState !== "Select State" && { state: selectedState }),
-        },
+    selectedState !== "Select State"
+  ) {
+    payloads.customerInfo.address = {
+      ...(addressDetails.flat && { houseNo: addressDetails.flat }),
+      ...(addressDetails.area && { street: addressDetails.area }),
+      ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
+      ...(addressDetails.city && { city: addressDetails.city }),
+      ...(addressDetails.pincode && {
+        pincode: Number(addressDetails.pincode),
       }),
-    },
-  };
+      ...(selectedState !== "Select State" && { state: selectedState }),
+    };
+  }
 
-  console.log("FINAL customerInfo 👉", payloads.customerInfo);
+  console.log("FINAL PAYLOAD 👉", JSON.stringify(payloads, null, 2));
 
   const res = await addCustomer(activeHostelId, payloads, selectedImage);
 
@@ -169,6 +177,60 @@ const handleCreateTenant = async () => {
     alert("Customer add failed ❌");
   }
 };
+console.log({
+  flat: addressDetails.flat,
+  area: addressDetails.area,
+  landmark: addressDetails.landmark,
+  city: addressDetails.city,
+  pincode: addressDetails.pincode,
+  selectedState,
+  isAddressValid,
+});
+
+
+// const handleCreateTenant = async () => {
+//   const hasAddress =
+//     addressDetails.flat ||
+//     addressDetails.area ||
+//     addressDetails.landmark ||
+//     addressDetails.city ||
+//     addressDetails.pincode ||
+//     selectedState !== "Select State";
+
+//   const payloads = {
+//     customerInfo: {
+//       firstName: basicDetails.firstName,
+//       mobileNumber: basicDetails.mobile, // ✅ mandatory
+//       ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
+//       ...(basicDetails.email && { emailId: basicDetails.email }),
+//       type: 1,
+
+//       ...(hasAddress && {
+//         address: {
+//           ...(addressDetails.flat && { houseNo: addressDetails.flat }),
+//           ...(addressDetails.area && { street: addressDetails.area }),
+//           ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
+//           ...(addressDetails.city && { city: addressDetails.city }),
+//           ...(addressDetails.pincode && {
+//             pincode: Number(addressDetails.pincode),
+//           }),
+//           ...(selectedState !== "Select State" && { state: selectedState }),
+//         },
+//       }),
+//     },
+//   };
+
+//   console.log("FINAL customerInfo 👉", payloads.customerInfo);
+
+//   const res = await addCustomer(activeHostelId, payloads, selectedImage);
+
+//   if (res?.data) {
+//     alert("Customer added successfully ✅");
+//     navigation.goBack();
+//   } else {
+//     alert("Customer add failed ❌");
+//   }
+// };
 
 
 
@@ -342,16 +404,19 @@ const handleCreateTenant = async () => {
                             <Text style={styles.label}>Mobile Number *</Text>
                             <View style={styles.mobileWrapper}>
                                 <Text style={styles.countryCode}>+91</Text>
-                                <TextInput
-                                    style={styles.mobileInput}
-                                    placeholder="98765 43210"
-                                    keyboardType="phone-pad"
-                                    placeholderTextColor="#A1A1A1"
-                                    value={basicDetails.mobile}
-                                    onChangeText={(t) =>
-                                        setBasicDetails({ ...basicDetails, mobile: t })
-                                    }
-                                />
+                               <TextInput
+  style={styles.mobileInput}
+  keyboardType="number-pad"
+  maxLength={10}
+  value={basicDetails.mobile}
+  onChangeText={(t) =>
+    setBasicDetails({
+      ...basicDetails,
+      mobile: t.replace(/[^0-9]/g, ""),
+    })
+  }
+/>
+
                             </View>
 
                             <Text style={styles.label}>Email ID</Text>
@@ -445,15 +510,18 @@ const handleCreateTenant = async () => {
                                     />
 
                                     <Text style={styles.label}>Pincode *</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="000 000"
-                                        keyboardType="numeric"
-                                        value={addressDetails.pincode}
-                                        onChangeText={(t) =>
-                                            setAddressDetails({ ...addressDetails, pincode: t })
-                                        }
-                                    />
+                                   <TextInput
+  style={styles.input}
+  keyboardType="number-pad"
+  maxLength={6}
+  value={addressDetails.pincode}
+  onChangeText={(t) =>
+    setAddressDetails({
+      ...addressDetails,
+      pincode: t.replace(/[^0-9]/g, ""),
+    })
+  }
+/>
 
                                             <Text style={styles.label}>City *</Text>
                                             <TextInput
@@ -467,58 +535,42 @@ const handleCreateTenant = async () => {
 
 
                                   
-                              
-                                    <View style={{ zIndex: 2000, marginBottom: open ? 180 : 12 }}>
-                                        <Text style={styles.label}>State *</Text>
 
-                                        <View style={{ position: "relative" }}>
-                                            <TouchableOpacity
-                                                style={styles.select}
-                                                onPress={() => setOpen(!open)}
-                                            >
-                                                <Text style={styles.selectText}>{selectedState}</Text>
-                                                <Image source={DownArrow} style={styles.arrow} />
-                                            </TouchableOpacity>
 
-                                            {open && (
-                                                <View style={styles.dropdownMenu}>
-                                                    <ScrollView
-                                                        nestedScrollEnabled={true}
-                                                        style={{ maxHeight: 150 }}      
-                                                        showsVerticalScrollIndicator={true}
-                                                    >
-                                                        {items.map((v, index) => (
-                                                            <TouchableOpacity
-                                                                  key={index}
-    style={[
-        styles.option,
-        selectedState === v.label && styles.selectedOption
-    ]}
 
-                                                                onPress={() => {
-                                                                    setSelectedState(v.label);
-                                                                    setAddressDetails({ ...addressDetails, state: v.label });
-                                                                    setOpen(false);
-                                                                }}
-                                                            >
-                                                                <Text
-        style={[
-            styles.optionText,
-            selectedState === v.label && styles.selectedOptionText
-        ]}
+<Text style={styles.label}>State</Text>
+
+                  <View style={{ position: "relative" }}>
+    <TouchableOpacity
+        style={styles.select}
+        onPress={() => setStateOpen(!stateOpen)}
+        activeOpacity={0.9}
     >
-        {v.label}
-    </Text>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
-                                    </View>
+        <Text style={styles.selectText}>
+            {selectedState || "Select State"}
+        </Text>
+        <Image source={DownArrow} style={styles.arrow} />
+    </TouchableOpacity>
 
-
-
+    {stateOpen && (
+        <View style={styles.dropdownMenu}>
+            <ScrollView style={{ maxHeight: 160 }}>
+                {stateList.map((v, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={styles.option}
+                        onPress={() => {
+                            setSelectedState(v.label);   
+                            setStateOpen(false);
+                        }}
+                    >
+                        <Text style={styles.optionText}>{v.label}</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    )}
+</View>
 
 
 
@@ -864,10 +916,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
     },
-
-    selectText: { color: "#555" },
-    arrow: { width: 18, height: 18, tintColor: "#777" },
-    dropdownMenu: {
+     dropdownMenu: {
         position: "absolute",
         top: 50,
         left: 0,
@@ -876,11 +925,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         borderRadius: 12,
-        zIndex: 9999,   // 🔥 increase zIndex
+        zIndex: 999,
         elevation: 10,
-        maxHeight: 250, // 🔥 ensure scroll works
-    }
-    ,
+    },
 
     option: {
         paddingVertical: 12,
@@ -891,6 +938,23 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: "#000",
     },
+    arrow: { width: 18, height: 18, tintColor: "#777" },
+    // dropdownMenu: {
+    //     position: "absolute",
+    //     top: 50,
+    //     left: 0,
+    //     right: 0,
+    //     backgroundColor: "#fff",
+    //     borderWidth: 1,
+    //     borderColor: "#ddd",
+    //     borderRadius: 12,
+    //     zIndex: 9999,   // 🔥 increase zIndex
+    //     elevation: 10,
+    //     maxHeight: 250, // 🔥 ensure scroll works
+    // }
+   
+
+   
 selectedOption: {
     backgroundColor: "#1E45E1",
 },
