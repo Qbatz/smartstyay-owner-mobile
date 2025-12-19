@@ -76,7 +76,7 @@ export default function TenantCheckIn({ navigation,route }) {
     loadBeds(joiningDate);
   }, [activeHostelId]);
 
-  //  const rooms = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
+
 
   const loadBeds = async (date) => {
     if (!activeHostelId) return;

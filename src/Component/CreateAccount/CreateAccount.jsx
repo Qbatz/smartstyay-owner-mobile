@@ -110,11 +110,7 @@ else{
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 50 }}
-        >
+       
           <View style={styles.content}>
 
             <Image source={SmartstayIcon} style={styles.logo} />
@@ -202,7 +198,7 @@ else{
             </Text>
 
           </View>
-        </ScrollView>
+      
       </KeyboardAvoidingView>
 
       <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover" />
@@ -218,7 +214,7 @@ const styles = StyleSheet.create({
 
   content: {
     paddingHorizontal: 25,
-    paddingTop: 50,
+    paddingTop: 20,
   },
 
   logo: {
@@ -306,6 +302,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: 180,
+    height: 60,
   },
 });

@@ -6,47 +6,28 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,Dimensions,ImageBackground,KeyboardAvoidingView, Platform
+  ScrollView,
+  Platform,
 } from "react-native";
-import SmartstayIcon from "../../Assets/Images/Sm_Icon.png"
+
+import SmartstayIcon from "../../Assets/Images/Sm_Icon.png";
 import EyeIcon from "../../Assets/Images/EyeIcon.png";
 import WaveImage from "../../Assets/Images/login_Rectangle.png";
-import { useNavigation } from "@react-navigation/native";
-import { setLogin } from "../../Action/LoginAction"
-import { storeData } from "../../Utils/Storage";
-import { ACCESS_TOKEN } from '../../Utils/Constant'
-import { LoginContexts } from "../../Context/LoginContext";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useNavigation } from "@react-navigation/native";
+import { setLogin } from "../../Action/LoginAction";
+import { storeData } from "../../Utils/Storage";
+import { ACCESS_TOKEN } from "../../Utils/Constant";
+import { LoginContexts } from "../../Context/LoginContext";
 
 export default function LoginDesign() {
-
-  const context = useContext(LoginContexts)
- const insets = useSafeAreaInsets();
+  const context = useContext(LoginContexts);
   const navigation = useNavigation();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-const { height } = Dimensions.get("window");
 
-  // const loginClick=()=>{
-  //       const data= {
-  //         emailId: email,
-  //         password: password,
-  //       }
-
-  //       setLogin(data).then(r=>{
-  //         console.log(r)
-  //         context.updateToken(r.data)
-  //         if(r.status==200){
-  //             storeData(ACCESS_TOKEN,r.data)
-  //             console.log(r.data)
-
-  //             navigation.navigate('VerifyAccountScreen')
-  //         }
-  //       })
-
-  // }
   const loginClick = () => {
     const data = {
       emailId: email,
@@ -54,47 +35,23 @@ const { height } = Dimensions.get("window");
     };
 
     setLogin(data).then((r) => {
-      console.log("LOGIN RESPONSE:", r);
-
-      if (r.status == 200) {
-        const token = r.data; // ✅ Correct way
-
-        if (token) {
-          context.updateToken(token);          // Save into Context + AsyncStorage
-          storeData(ACCESS_TOKEN, token);      // If needed separately
-          console.log("TOKEN STORED:", token);
-
-          navigation.navigate("VerifyAccountScreen");
-        } else {
-          console.log("No token returned by API");
-        }
+      if (r?.status === 200 && r?.data) {
+        context.updateToken(r.data);
+        storeData(ACCESS_TOKEN, r.data);
+        navigation.navigate("VerifyAccountScreen");
       }
     });
   };
 
-
   return (
     <View style={styles.container}>
-
-      {/* 🔹 CONTENT (moves with keyboard) */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-     
+      {/* 🔹 SCROLLABLE CONTENT */}
       <ScrollView
-  contentContainerStyle={{
-    flexGrow: 1,
-    paddingBottom: 120,
-  }}
-    keyboardShouldPersistTaps="handled"
->
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.content}>
-
-          <Image
-            source={SmartstayIcon}
-            style={styles.logo}
-          />
+          <Image source={SmartstayIcon} style={styles.logo} />
 
           <Text style={styles.welcome}>Welcome Back Admin 👋</Text>
           <Text style={styles.subtitle}>Login here</Text>
@@ -104,12 +61,11 @@ const { height } = Dimensions.get("window");
             <TextInput
               placeholder="admin@gmail.com"
               placeholderTextColor="#A1A1A1"
-              autoCapitalize="false"
               style={styles.input}
               value={email}
               onChangeText={setEmail}
+              autoCapitalize="none"
             />
-
           </View>
 
           <Text style={styles.label}>Password</Text>
@@ -123,23 +79,17 @@ const { height } = Dimensions.get("window");
               onChangeText={setPassword}
             />
 
-
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeIcon}
             >
-              <Image
-                source={
-                  showPassword
-                    ? EyeIcon
-                    : EyeIcon
-                }
-                style={{ width: 22, height: 22 }}
-              />
+              <Image source={EyeIcon} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity onPress={() => navigation.replace("ForgotPassword")}>
+          <TouchableOpacity
+            onPress={() => navigation.replace("ForgotPassword")}
+          >
             <Text style={styles.forgot}>Forgot Password?</Text>
           </TouchableOpacity>
 
@@ -156,24 +106,11 @@ const { height } = Dimensions.get("window");
               Create Account
             </Text>
           </Text>
-
         </View>
       </ScrollView>
 
-      {/* <Image
-        source={WaveImage}
-        style={styles.bottomWave}
-        resizeMode="cover"
-      /> */}
-      </KeyboardAvoidingView>
-              <ImageBackground
-        source={WaveImage}
-        style={[
-          styles.bottomWave,
-          { paddingBottom: insets.bottom } 
-        ]}
-        resizeMode="cover"
-      />
+      {/* 🔹 BOTTOM WAVE (ALWAYS FIXED) */}
+      <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover" />
     </View>
   );
 }
@@ -181,9 +118,13 @@ const { height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
-    paddingTop: 70
+    backgroundColor: "#fff",
   },
+
+  scrollContent: {
+    paddingBottom: 160, // 🔥 space for bottom wave
+  },
+
   content: {
     paddingHorizontal: 25,
     paddingTop: 40,
@@ -196,17 +137,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    textAlign: "center",
-    color: "#000",
-  },
-
   welcome: {
     fontSize: 26,
     fontWeight: "600",
-    color: '#16151C',
+    color: "#16151C",
     textAlign: "center",
     marginTop: 10,
   },
@@ -216,7 +150,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#A2A1A8",
     marginBottom: 30,
-    marginTop: 12
+    marginTop: 12,
   },
 
   label: {
@@ -224,7 +158,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#202020",
-    lineHeight: 12
   },
 
   inputBox: {
@@ -274,7 +207,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 18,
     fontSize: 16,
-    color: '#202020'
+    color: "#202020",
   },
 
   registerLink: {
@@ -282,15 +215,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-
  bottomWave: {
-  width: "100%",
-  aspectRatio: 375 / 180,  
   position: "absolute",
   bottom: 0,
   left: 0,
+  right: 0,
+  width: "100%",
+  height: 120,
 },
-
-
 
 });

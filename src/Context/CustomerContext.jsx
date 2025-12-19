@@ -96,36 +96,81 @@ export const CustomerProvider = ({ children }) => {
     setParticularCustomerDetails(null);
   };
 
-const addCustomer = async (hostelId, payloads, image) => {
-  const token = await retriveData("token");
 
-  const formData = new FormData();
+  const addCustomer = async (hostelId, payloads, image) => {
+  try {
+    const token = await retriveData("token");
 
-  // ✅ customerInfo MUST be JSON with string + type
-  formData.append("customerInfo", {
-    string: JSON.stringify(payloads.customerInfo),
-    type: "application/json",
-  });
+    const formData = new FormData();
 
-  if (image?.uri) {
-    formData.append("profilePic", {
-      uri: image.uri,
-      type: image.type || "image/jpeg",
-      name: image.fileName || "profile.jpg",
+    formData.append("customerInfo", {
+      string: JSON.stringify(payloads.customerInfo),
+      type: "application/json",
     });
-  }
 
-  return AxiosConfig.post(
-    `/v2/customers/${hostelId}`,
-    formData,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
+    if (image?.uri) {
+      formData.append("profilePic", {
+        uri: image.uri,
+        type: image.type || "image/jpeg",
+        name: image.fileName || "profile.jpg",
+      });
     }
-  );
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/${hostelId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error?.response?.data ||
+        "Customer already exists with this mobile number",
+      status: error?.response?.status,
+    };
+  }
 };
+
+
+// const addCustomer = async (hostelId, payloads, image) => {
+//   const token = await retriveData("token");
+
+//   const formData = new FormData();
+
+//   // ✅ customerInfo MUST be JSON with string + type
+//   formData.append("customerInfo", {
+//     string: JSON.stringify(payloads.customerInfo),
+//     type: "application/json",
+//   });
+
+//   if (image?.uri) {
+//     formData.append("profilePic", {
+//       uri: image.uri,
+//       type: image.type || "image/jpeg",
+//       name: image.fileName || "profile.jpg",
+//     });
+//   }
+
+//   return AxiosConfig.post(
+//     `/v2/customers/${hostelId}`,
+//     formData,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "multipart/form-data",
+//       },
+//     }
+//   );
+// };
 
 
 const getBedsByHostelAndDate = async (hostelId, joiningDate) => {
