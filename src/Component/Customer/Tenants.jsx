@@ -88,6 +88,8 @@ const [status, setStatus] = useState("All");
 const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 const [showDetailsMenu, setShowDetailsMenu] = useState(false);
 const [deleteTenants,setDeleteTenants] = useState(false)
+const [selectedItem, setSelectedItem] = useState(null);
+
 const handleWalkinFilter = () => {
   setShowFilter(true);   
 };
@@ -125,23 +127,27 @@ const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 const dotsRef = useRef(null);
 
 const openMenu = (event, item) => {
-  const { pageX, pageY } = event.nativeEvent;
+  event.stopPropagation();
+
+  const { pageX, pageY } = event.nativeEvent; // ✅ CORRECT
 
   // SAME ITEM → toggle
   if (menuVisible && selectedItem?.customerId === item.customerId) {
     setMenuVisible(false);
+    setSelectedItem(null);
     return;
   }
 
- 
+  setSelectedItem(item);
+
   setMenuPosition({
-    x: pageX - 190,
-    y: pageY - 140,
+    x: Math.max(10, pageX - 180),
+    y: pageY + 8,
   });
 
-  // setSelectedItem(item);
   setMenuVisible(true);
 };
+
 const DeleteMenu = ()=>{
   setDeleteTenants(true)
 }
@@ -556,11 +562,9 @@ const customerList = [
 
     <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} />
 {menuVisible && (
-  <TouchableOpacity
-     activeOpacity={1}
-  style={styles.menuOverlay}
-  onPressOut={() => setMenuVisible(false)}
-  >
+   <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+<View style={styles.menuOverlay}>
+<TouchableWithoutFeedback>
     <View
       style={[
         styles.menuBox,
@@ -570,40 +574,18 @@ const customerList = [
         },
       ]}
     >
-       {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowAddBooking} >
+       
+    {
+  selectedItem && selectedItem.currentStatus === "Checked In" &&
+  <>
+ <TouchableOpacity style={styles.popupRow} onPress={handleShowReAssignBed} >
         <Image
           source={require("../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
         />
-        <Text style={styles.popupText}>Add Booking</Text>
-      </TouchableOpacity> */}
-
-      {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowTennantCheckin} >
-        <Image
-          source={require("../../Assets/Images/ReAssign.png")}
-          style={styles.popupIcon}
-        />
-        <Text style={styles.popupText}>Tenant Check-in</Text>
-      </TouchableOpacity> */}
-    
-      <TouchableOpacity style={styles.popupRow} onPress={handleShowReAssignBed} >
-        <Image
-          source={require("../../Assets/Images/ReAssign.png")}
-          style={styles.popupIcon}
-        />
-        <Text style={styles.popupText}>Re-Assign Bed</Text>
+        <Text style={styles.popupText}>Change_Bed</Text>
       </TouchableOpacity>
-
-        <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
-        <Image
-          source={require("../../Assets/Images/ReAssign.png")}
-          style={styles.popupIcon}
-        />
-        <Text style={styles.popupText}>Final Settlemnent</Text>
-      </TouchableOpacity>
-
-      
-    <TouchableOpacity
+        <TouchableOpacity
   style={styles.popupRow}
   onPress={() => {
     setShowMenu(false);
@@ -616,8 +598,33 @@ const customerList = [
   />
   <Text style={styles.popupText}>Move to Notice Period</Text>
 </TouchableOpacity>
+      </>
+      
+    }
+     
+ {selectedItem &&
+  !["Checked In", "Settlement Generated"].includes(selectedItem.currentStatus) && (
 
+  <>
+        <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Final Settlemnent</Text>
+      </TouchableOpacity>
 
+       <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+        <Image
+          source={require("../../Assets/Images/ReAssign.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Cancel Notice Period</Text>
+      </TouchableOpacity>
+  </>
+  )}
+ {selectedItem &&
+  !["Checked In", "Notice Period",].includes(selectedItem.currentStatus) && (
   <TouchableOpacity
   style={styles.popupRow}
   onPress={() => {
@@ -629,16 +636,10 @@ const customerList = [
   <Text style={styles.popupText}>Checkout</Text>
 </TouchableOpacity>
 
+  )}
 
 
-
-  <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
-        <Image
-          source={require("../../Assets/Images/ReAssign.png")}
-          style={styles.popupIcon}
-        />
-        <Text style={styles.popupText}>Cancel Notice Period</Text>
-      </TouchableOpacity>
+ 
 
  {/* <TouchableOpacity
   style={styles.popupRow}
@@ -654,7 +655,9 @@ const customerList = [
   <Text style={styles.popupText}>Delete</Text>
 </TouchableOpacity> */}
     </View>
-  </TouchableOpacity>
+    </TouchableWithoutFeedback>
+  </View>
+  </TouchableWithoutFeedback>
 )}
 
 

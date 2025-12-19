@@ -226,6 +226,31 @@ const checkInCustomer = async (customerId, payload) => {
 };
 
 
+const deleteCustomer = async (hostelId, customerId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.delete(
+      `/v2/customers/${hostelId}/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.log("DELETE CUSTOMER ERROR:", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Unable to delete customer",
+    };
+  }
+};
 
 
   return (
@@ -237,7 +262,7 @@ const checkInCustomer = async (customerId, payload) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer,getBedsByHostelAndDate,checkInCustomer
+        addCustomer,getBedsByHostelAndDate,checkInCustomer,deleteCustomer
       }}
     >
       {children}
