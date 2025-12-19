@@ -798,39 +798,45 @@ const handleSaveRefund = async () => {
   setRefundAmountError("");
   setRefundDateError("");
   setRefundFromError("");
-
+ 
   let valid = true;
-
+ 
   if (!refundAmount || Number(refundAmount) <= 0) {
-    setRefundAmountError("Please enter refund amount");
+    setRefundAmountError("Please Enter Refund Amount");
     valid = false;
   }
-
+ 
   if (!refundDate) {
-    setRefundDateError("Please select refund date");
+    setRefundDateError("Please Select Refund Date");
     valid = false;
   }
-
+ 
   if (!refundFrom) {
-    setRefundFromError("Please select refund account");
+    setRefundFromError("Please Select Refund Account");
     valid = false;
   }
-
+ 
   if (!valid) return;
+ 
+ const payload = {
+  refundAmount: String(refundAmount),
+  refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
+  bankId: refundFrom,
+  referenceNumber: transactionId || "",
+  invoiceId: selectedBill.invoiceId,
+  hostelId: activeHostelId,
+};
+ 
+console.log("payload", payload);
 
-  const payload = {
-    refundAmount: Number(refundAmount),
-    refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
-    bankId: refundFrom,
-    referenceNumber: transactionId || "",
-  };
+
 
   const res = await CreateRefund({
     hostelId: activeHostelId,
     invoiceId: selectedBill.invoiceId,
     payload,
   });
-
+ 
   if (res.success) {
     alert("Refund successfully");
     GetAllBillDetails(activeHostelId);
@@ -839,14 +845,12 @@ const handleSaveRefund = async () => {
     setRefundDate(null);
     setRefundFrom("");
     setTransactionId("");
-   
   } else if (res.refundableError) {
-     alert(res.refundableError);
+    alert(res.refundableError);
   } else {
     alert(res.message);
   }
 };
-
 
 
 

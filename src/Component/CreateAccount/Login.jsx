@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,Dimensions
+  ScrollView,Dimensions,ImageBackground
 } from "react-native";
 import SmartstayIcon from "../../Assets/Images/Sm_Icon.png"
 import EyeIcon from "../../Assets/Images/EyeIcon.png";
@@ -16,13 +16,13 @@ import { setLogin } from "../../Action/LoginAction"
 import { storeData } from "../../Utils/Storage";
 import { ACCESS_TOKEN } from '../../Utils/Constant'
 import { LoginContexts } from "../../Context/LoginContext";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 
 export default function LoginDesign() {
 
   const context = useContext(LoginContexts)
-
+ const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
@@ -75,7 +75,13 @@ const { height } = Dimensions.get("window");
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      {/* <ScrollView contentContainerStyle={{ flexGrow: 1 }}> */}
+      <ScrollView
+  contentContainerStyle={{
+    flexGrow: 1,
+    paddingBottom: 120, // prevents content hiding behind wave
+  }}
+>
         <View style={styles.content}>
 
           <Image
@@ -147,9 +153,17 @@ const { height } = Dimensions.get("window");
         </View>
       </ScrollView>
 
-      <Image
+      {/* <Image
         source={WaveImage}
         style={styles.bottomWave}
+        resizeMode="cover"
+      /> */}
+              <ImageBackground
+        source={WaveImage}
+        style={[
+          styles.bottomWave,
+          { paddingBottom: insets.bottom } 
+        ]}
         resizeMode="cover"
       />
     </View>
@@ -260,20 +274,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // bottomWave: {
-  //   width: "100%",
-  //   height: 180,
-  //   position: "absolute",
-  //   bottom: 0,
-  //   left: 0,
-  // },
-  bottomWave: {
+
+ bottomWave: {
   width: "100%",
-  aspectRatio: 3,   
+  aspectRatio: 375 / 180,  
   position: "absolute",
   bottom: 0,
-  height: Dimensions.get("window").height * 0.22,
-}
+  left: 0,
+},
 
 
 
