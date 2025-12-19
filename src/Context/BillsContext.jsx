@@ -152,28 +152,28 @@ const GetInitializeRefundDetails = async ({ hostelId, invoiceId }) => {
 };
 
 
- const CreateRefund = async ({ hostelId, invoiceId, payload }) => {
+const CreateRefund = async ({ hostelId, invoiceId, payload }) => {
     try {
       setLoading(true);
       setRefundError("");
-
-      const res = await AxiosConfigV2.post(
+ 
+      const res = await AxiosConfig.post(
         `/v2/transaction/refund/${hostelId}/${invoiceId}`,
         payload
+       
       );
-
+ 
       if (res.status === 200) {
         return {
           success: true,
           data: res.data,
         };
       }
-
+ 
       return { success: false, message: "Refund failed" };
     } catch (error) {
       const status = error?.response?.status;
-
-      // SAME AS REDUX: REFUNDABLE_ERROR
+ 
       if (status === 400 || status === 403) {
         setRefundError(error?.response?.data);
         return {
@@ -181,7 +181,7 @@ const GetInitializeRefundDetails = async ({ hostelId, invoiceId }) => {
           refundableError: error?.response?.data,
         };
       }
-
+ 
       return {
         success: false,
         message: getErrorMessage(error),
@@ -190,6 +190,13 @@ const GetInitializeRefundDetails = async ({ hostelId, invoiceId }) => {
       setLoading(false);
     }
   };
+
+
+
+
+
+
+
 
 
   return (
