@@ -5,6 +5,9 @@ export const BillContext = createContext();
 
 export default function BillsProvider({ children }) {
   const [BillDetails, setBillDetails] = useState([]);
+  const [recurringBills, setRecurringBills] = useState([]);
+  const [receiptsList, setReceiptsList] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [refundError, setRefundError] = useState("");
@@ -112,7 +115,7 @@ const RecordPayment = async ({ hostelId, invoiceId, data }) => {
 };
 
 
-// GET INITIALIZE REFUND DETAILS
+//  REFUND DETAILS
 const GetInitializeRefundDetails = async ({ hostelId, invoiceId }) => {
   try {
     setLoading(true);
@@ -194,7 +197,156 @@ const CreateRefund = async ({ hostelId, invoiceId, payload }) => {
 
 
 
+const GetRecurringBills = async (hostelId) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
 
+    const res = await AxiosConfig.get(
+      `/v2/customers/config/${hostelId}`
+    );
+
+    if (res.status === 200) {
+      setRecurringBills(res.data || []);
+
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch recurring bills",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// UPDATE RECURRING BILL STATUS
+// ----------------------------------
+const UpdateTenantRecurringStatus = async ({
+  hostelId,
+  customerId,
+  status, // boolean
+}) => {
+  if (!hostelId || !customerId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const body = {
+      status: String(status), // API expects "true" / "false"
+    };
+
+    const res = await AxiosConfig.put(
+      `/v2/customers/config/${hostelId}/${customerId}`,
+      body
+    );
+
+    if (res.status === 200) {
+      setRecurringBills((prev) => {
+        if (!prev?.customers) return prev;
+
+        return {
+          ...prev,
+          customers: prev.customers.map((c) =>
+            c.customerId === customerId
+              ? { ...c, currentStatus: status }
+              : c
+          ),
+        };
+      });
+
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update recurring status",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// GET RECEIPTS LIST
+// ----------------------------------
+const GetReceiptsList = async (hostelId) => {
+  if (!hostelId) {
+    return { success: false, message: "Invalid hostelId" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const res = await AxiosConfig.get(
+      `/v2/bills/receipts/${hostelId}`
+    );
+
+    if (res.status === 200) {
+      setReceiptsList(res.data || []);
+
+      return {
+        success: true,
+        data: res.data || [],
+        statusCode: res.status,
+      };
+    }
+
+    if (res.status === 400) {
+      setReceiptsList([]);
+      return {
+        success: false,
+        message: res.data || "No receipts found",
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch receipts",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -203,6 +355,8 @@ const CreateRefund = async ({ hostelId, invoiceId, payload }) => {
     <BillContext.Provider
       value={{
         BillDetails,
+        recurringBills,
+        receiptsList,
         loading,
         errorMsg,
         refundError,
@@ -210,7 +364,10 @@ const CreateRefund = async ({ hostelId, invoiceId, payload }) => {
         CreateManualBill,
         RecordPayment,
         GetInitializeRefundDetails,
-        CreateRefund
+        CreateRefund , 
+        GetRecurringBills ,
+         UpdateTenantRecurringStatus,
+         GetReceiptsList,
       }}
     >
       {children}
