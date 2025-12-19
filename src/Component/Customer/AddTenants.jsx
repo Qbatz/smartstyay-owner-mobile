@@ -1,26 +1,46 @@
-import React, { useState, useCallback,useContext } from "react";
-import {View,Text,StyleSheet,SafeAreaView,ScrollView,TouchableOpacity,TextInput,Image,BackHandler,} from "react-native";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import React, { useState, useCallback, useContext } from "react";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler, KeyboardAvoidingView, Platform } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 
 
 
-export default function AddTenant() {
+export default function AddTenant({ route, navigation }) {
+
+    const { refreshWalkins } = route.params || {};
     const { addCustomer } = useCustomer();
-const { activeHostelId } = useContext(CommonContexts);
-    const navigation = useNavigation();
+    const { activeHostelId } = useContext(CommonContexts);
+
     const [step, setStep] = useState(1);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [mobileError, setMobileError] = useState("")
+    const [emailError, setEmailError] = useState("")
+    const [pincodeError, setPincodeError] = useState("")
+
+    console.log("refreshWalkins", refreshWalkins)
 
 
 
+    const isMobileDuplicate = (mobile) => {
+        return refreshWalkins.some(
+            (item) => item.mobile === mobile
+        );
+    };
+    const isEmailDuplicate = (email) => {
+        if (!email) return false;
 
-
+        return refreshWalkins.some(
+            (item) =>
+                item.emailId &&
+                item.emailId.toLowerCase() === email.toLowerCase()
+        );
+    };
 
 
 
@@ -84,199 +104,175 @@ const { activeHostelId } = useContext(CommonContexts);
         state: "",
     });
 
-  const isBasicValid =
-  basicDetails.firstName.trim().length > 0 &&
-  basicDetails.mobile.trim().length === 10;
+    const isBasicValid =
+        basicDetails.firstName.trim().length > 0 &&
+        basicDetails.mobile.trim().length === 10;
 
 
-   
-const isAddressValid =
-  addressDetails.flat.trim().length > 0 &&
-  addressDetails.area.trim().length > 0 &&        // ✅ ADD THIS
-  addressDetails.landmark.trim().length > 0 &&
-  addressDetails.city.trim().length > 0 &&
-  addressDetails.pincode.trim().length === 6 &&   // ✅ proper pincode
-  selectedState !== "Select State";
 
-   
+    const isAddressValid =
+        addressDetails.flat.trim() !== "" &&
+        addressDetails.pincode.trim() !== "" &&
+        addressDetails.city.trim() !== "" &&
+        selectedState !== "Select State" &&
+        addressDetails.landmark.trim() !== "";
+
+
+
     const [selectedState, setSelectedState] = useState("Select State");
-  
 
-       const [stateOpen, setStateOpen] = useState(false);
+
+    const [stateOpen, setStateOpen] = useState(false);
     const stateList = [
-      { label: "Andhra Pradesh", value: "Andhra Pradesh" },
-      { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
-      { label: "Assam", value: "Assam" },
-      { label: "Bihar", value: "Bihar" },
-      { label: "Chhattisgarh", value: "Chhattisgarh" },
-      { label: "Goa", value: "Goa" },
-      { label: "Gujarat", value: "Gujarat" },
-      { label: "Haryana", value: "Haryana" },
-      { label: "Himachal Pradesh", value: "Himachal Pradesh" },
-      { label: "Jharkhand", value: "Jharkhand" },
-      { label: "Karnataka", value: "Karnataka" },
-      { label: "Kerala", value: "Kerala" },
-      { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-      { label: "Maharashtra", value: "Maharashtra" },
-      { label: "Manipur", value: "Manipur" },
-      { label: "Meghalaya", value: "Meghalaya" },
-      { label: "Mizoram", value: "Mizoram" },
-      { label: "Nagaland", value: "Nagaland" },
-      { label: "Odisha", value: "Odisha" },
-      { label: "Punjab", value: "Punjab" },
-      { label: "Rajasthan", value: "Rajasthan" },
-      { label: "Sikkim", value: "Sikkim" },
-      { label: "Tamil Nadu", value: "Tamil Nadu" },
-      { label: "Telangana", value: "Telangana" },
-      { label: "Tripura", value: "Tripura" },
-      { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-      { label: "Uttarakhand", value: "Uttarakhand" },
-      { label: "West Bengal", value: "West Bengal" },
+        { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+        { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+        { label: "Assam", value: "Assam" },
+        { label: "Bihar", value: "Bihar" },
+        { label: "Chhattisgarh", value: "Chhattisgarh" },
+        { label: "Goa", value: "Goa" },
+        { label: "Gujarat", value: "Gujarat" },
+        { label: "Haryana", value: "Haryana" },
+        { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+        { label: "Jharkhand", value: "Jharkhand" },
+        { label: "Karnataka", value: "Karnataka" },
+        { label: "Kerala", value: "Kerala" },
+        { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+        { label: "Maharashtra", value: "Maharashtra" },
+        { label: "Manipur", value: "Manipur" },
+        { label: "Meghalaya", value: "Meghalaya" },
+        { label: "Mizoram", value: "Mizoram" },
+        { label: "Nagaland", value: "Nagaland" },
+        { label: "Odisha", value: "Odisha" },
+        { label: "Punjab", value: "Punjab" },
+        { label: "Rajasthan", value: "Rajasthan" },
+        { label: "Sikkim", value: "Sikkim" },
+        { label: "Tamil Nadu", value: "Tamil Nadu" },
+        { label: "Telangana", value: "Telangana" },
+        { label: "Tripura", value: "Tripura" },
+        { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+        { label: "Uttarakhand", value: "Uttarakhand" },
+        { label: "West Bengal", value: "West Bengal" },
     ];
-    const handleCreateTenant = async () => {
-  const payloads = {
-    customerInfo: {
-      firstName: basicDetails.firstName,
-      mobileNumber: basicDetails.mobile,
-      type: 1,
-
-      ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
-      ...(basicDetails.email && { emailId: basicDetails.email }),
-    },
-  };
-
-  // 🔥 ADD ADDRESS ONLY IF PRESENT
-  if (
-    addressDetails.flat ||
-    addressDetails.area ||
-    addressDetails.landmark ||
-    addressDetails.city ||
-    addressDetails.pincode ||
-    selectedState !== "Select State"
-  ) {
-    payloads.customerInfo.address = {
-      ...(addressDetails.flat && { houseNo: addressDetails.flat }),
-      ...(addressDetails.area && { street: addressDetails.area }),
-      ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
-      ...(addressDetails.city && { city: addressDetails.city }),
-      ...(addressDetails.pincode && {
-        pincode: Number(addressDetails.pincode),
-      }),
-      ...(selectedState !== "Select State" && { state: selectedState }),
+    const validateMobile = (value) => {
+        if (!value) return "Mobile number is required";
+        if (value.length !== 10) return "Mobile number must be 10 digits";
+        if (value.startsWith("0")) return "Mobile number cannot start with 0";
+        return "";
     };
-  }
 
-  console.log("FINAL PAYLOAD 👉", JSON.stringify(payloads, null, 2));
+    const validatePincode = (value) => {
 
-  const res = await addCustomer(activeHostelId, payloads, selectedImage);
+        if (!value) return "";
 
-  if (res?.data) {
-    alert("Customer added successfully ✅");
-    navigation.goBack();
-  } else {
-    alert("Customer add failed ❌");
-  }
-};
-console.log({
-  flat: addressDetails.flat,
-  area: addressDetails.area,
-  landmark: addressDetails.landmark,
-  city: addressDetails.city,
-  pincode: addressDetails.pincode,
-  selectedState,
-  isAddressValid,
-});
+        if (value.length !== 6) return "Pincode must be 6 digits";
+        if (value.startsWith("0")) return "Pincode cannot start with 0";
 
+        return "";
+    };
+    const [apiError, setApiError] = useState(false);
+    const handleNext = () => {
+        // mobile basic validation
+        const mobileErr = validateMobile(basicDetails.mobile);
+        setMobileError(mobileErr);
 
-// const handleCreateTenant = async () => {
-//   const hasAddress =
-//     addressDetails.flat ||
-//     addressDetails.area ||
-//     addressDetails.landmark ||
-//     addressDetails.city ||
-//     addressDetails.pincode ||
-//     selectedState !== "Select State";
+        if (mobileErr) return;
 
-//   const payloads = {
-//     customerInfo: {
-//       firstName: basicDetails.firstName,
-//       mobileNumber: basicDetails.mobile, // ✅ mandatory
-//       ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
-//       ...(basicDetails.email && { emailId: basicDetails.email }),
-//       type: 1,
+        // 🔥 duplicate mobile check
+        if (isMobileDuplicate(basicDetails.mobile)) {
+            setMobileError("This mobile number already exists");
+            return;
+        }
 
-//       ...(hasAddress && {
-//         address: {
-//           ...(addressDetails.flat && { houseNo: addressDetails.flat }),
-//           ...(addressDetails.area && { street: addressDetails.area }),
-//           ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
-//           ...(addressDetails.city && { city: addressDetails.city }),
-//           ...(addressDetails.pincode && {
-//             pincode: Number(addressDetails.pincode),
-//           }),
-//           ...(selectedState !== "Select State" && { state: selectedState }),
-//         },
-//       }),
-//     },
-//   };
+        // 🔥 duplicate email check
+        if (isEmailDuplicate(basicDetails.email)) {
+            setEmailError("This email ID already exists");
+            return;
+        }
 
-//   console.log("FINAL customerInfo 👉", payloads.customerInfo);
-
-//   const res = await addCustomer(activeHostelId, payloads, selectedImage);
-
-//   if (res?.data) {
-//     alert("Customer added successfully ✅");
-//     navigation.goBack();
-//   } else {
-//     alert("Customer add failed ❌");
-//   }
-// };
+        // ✅ all good → go next step
+        setStep(2);
+    };
 
 
+    const handleCreateTenant = async () => {
+        const mobileErr = validateMobile(basicDetails.mobile);
+        const pinErr = validatePincode(addressDetails.pincode);
 
-//         const handleCreateTenant = async () => {
-//   const payloads = {
-//     firstName: basicDetails.firstName,
-//     lastName: basicDetails.lastName,
-//     mobile: basicDetails.mobile,
-//     emailId: basicDetails.email,
-//     type: 1,
-//     address: {
-//     houseNo: addressDetails.flat || "",
-//     street: addressDetails.area || "",
-//     landmark: addressDetails.landmark || "",
-//     city: addressDetails.city || "",
-//     pincode: addressDetails.pincode || "",
-//     state: addressDetails.state || selectedState,
-//   },
-//   };
+        setMobileError(mobileErr);
+        setPincodeError(pinErr);
 
-//   const res = await addCustomer(
-//     activeHostelId,
-//     payloads,
-//     selectedImage
-//   );
 
-//   if (res.success) {
-//     alert("Customer added successfully ✅");
-//     navigation.goBack();
-//   } else {
-//     alert(res.message || "Customer add failed ❌");
-//   }
-// };
+        if (mobileErr || pinErr) return;
+        const hasAddress =
+            addressDetails.flat ||
+            addressDetails.area ||
+            addressDetails.landmark ||
+            addressDetails.city ||
+            addressDetails.pincode ||
+            selectedState !== "Select State";
+
+        const payloads = {
+            customerInfo: {
+                firstName: basicDetails.firstName,
+                mobileNumber: basicDetails.mobile,
+                type: 1,
+                ...(basicDetails.lastName && { lastName: basicDetails.lastName }),
+                ...(basicDetails.email && { emailId: basicDetails.email }),
+            },
+        };
+
+        if (hasAddress) {
+            payloads.customerInfo.address = {
+                ...(addressDetails.flat && { houseNo: addressDetails.flat }),
+                ...(addressDetails.area && { street: addressDetails.area }),
+                ...(addressDetails.landmark && { landmark: addressDetails.landmark }),
+                ...(addressDetails.city && { city: addressDetails.city }),
+                ...(addressDetails.pincode && {
+                    pincode: Number(addressDetails.pincode),
+                }),
+                ...(selectedState !== "Select State" && { state: selectedState }),
+            };
+        }
+
+        const res = await addCustomer(activeHostelId, payloads, selectedImage);
+
+        if (res?.data) {
+            alert("Customer added successfully ✅");
+            navigation.goBack();
+        } else {
+
+            console.log("res", res.message.mobileStatus)
+            setMobileError(res.message.mobileStatus)
+            setEmailError(res.message.emailStatus)
+        }
+    };
+
+    console.log({
+        flat: addressDetails.flat,
+        area: addressDetails.area,
+        landmark: addressDetails.landmark,
+        city: addressDetails.city,
+        pincode: addressDetails.pincode,
+        selectedState,
+        isAddressValid,
+    });
+
+
+
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* HEADER */}
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 10}
+            >
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Add Tenant</Text>
                 </View>
-
-                {/* STEPPER */}
                 <View style={styles.stepContainer}>
                     {/* STEP 1 */}
                     <View style={styles.stepItem}>
@@ -335,277 +331,306 @@ console.log({
                         </Text>
                     </View>
                 </View>
-
-                {step === 1 && (
-                    <>
-
-
-                        <View style={styles.profileSection}>
-
-
-                            <View style={styles.profileWrapper}>
-                                <Image
-                                    source={selectedImage ? selectedImage : Profile}
-                                    style={styles.profileImage}
-                                />
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{ paddingBottom: 120 }}
+                >
 
 
-                                {/* <TouchableOpacity style={styles.editIconWrapper}>
+
+                    {/* STEPPER */}
+
+
+                    {step === 1 && (
+                        <>
+
+
+                            <View style={styles.profileSection}>
+
+
+                                <View style={styles.profileWrapper}>
+                                    <Image
+                                        source={selectedImage ? selectedImage : Profile}
+                                        style={styles.profileImage}
+                                    />
+
+
+                                    {/* <TouchableOpacity style={styles.editIconWrapper}>
                                     <Image
                                         source={require("../../Assets/Images/edit.png")}
                                         style={styles.editIcon}
                                     />
                                 </TouchableOpacity> */}
-                                <TouchableOpacity style={styles.editIconWrapper} onPress={pickImage}>
-                                    <Image
-                                        source={require("../../Assets/Images/edit.png")}
-                                        style={styles.editIcon}
+                                    <TouchableOpacity style={styles.editIconWrapper} onPress={pickImage}>
+                                        <Image
+                                            source={require("../../Assets/Images/edit.png")}
+                                            style={styles.editIcon}
+                                        />
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                {/* RIGHT SIDE - TEXT */}
+                                <View style={styles.profileTextBox}>
+                                    <Text style={styles.profileTitle}>Profile Photo</Text>
+                                    <Text style={styles.profileSub}>
+                                        Add Profile Image of Vendor/Business.{"\n"}
+                                        Max size of image 2 MB
+                                    </Text>
+                                </View>
+
+                            </View>
+
+
+
+                            <View style={styles.form}>
+                                <Text style={styles.label}>First Name *</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter First Name"
+                                    placeholderTextColor="#A1A1A1"
+                                    value={basicDetails.firstName}
+                                    onChangeText={(t) =>
+                                        setBasicDetails({ ...basicDetails, firstName: t })
+                                    }
+                                />
+
+                                <Text style={styles.label}>Last Name</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter Last Name"
+                                    placeholderTextColor="#A1A1A1"
+                                    value={basicDetails.lastName}
+                                    onChangeText={(t) =>
+                                        setBasicDetails({ ...basicDetails, lastName: t })
+                                    }
+                                />
+
+                                <Text style={styles.label}>Mobile Number *</Text>
+                                <View style={styles.mobileWrapper}>
+                                    <Text style={styles.countryCode}>+91</Text>
+                                    <TextInput
+                                        style={styles.mobileInput}
+                                        keyboardType="number-pad"
+                                        placeholder="9876543210"
+                                        placeholderTextColor="#A1A1A1"
+                                        maxLength={10}
+                                        value={basicDetails.mobile}
+                                        onChangeText={(t) => {
+                                            const value = t.replace(/[^0-9]/g, "");
+
+                                            setBasicDetails({
+                                                ...basicDetails,
+                                                mobile: value,
+                                            });
+
+                                            setMobileError("");
+                                        }}
+
                                     />
+
+                                </View>
+                                {mobileError && (
+                                    <ErrorMessage message={mobileError} type="error" />
+                                )}
+                                <Text style={styles.label}>Email ID</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter Email ID"
+                                    value={basicDetails.email}
+                                    onChangeText={(t) => {
+                                        setBasicDetails({ ...basicDetails, email: t });
+                                        setEmailError("");
+                                    }}
+                                />
+                            </View>
+                            {emailError && (
+                                <ErrorMessage message={emailError} type="error" />
+                            )}
+
+                            <View style={styles.btnRow}>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.secondaryBtn,
+                                        !isBasicValid && styles.secondaryBtnDisabled
+                                    ]}
+                                    disabled={!isBasicValid}
+                                    onPress={handleCreateTenant}  >
+                                    <Text
+                                        style={[
+                                            styles.secondaryText,
+                                            !isBasicValid && styles.secondaryTextDisabled
+                                        ]}
+                                    >
+                                        Save Info
+                                    </Text>
                                 </TouchableOpacity>
 
-                            </View>
-
-                            {/* RIGHT SIDE - TEXT */}
-                            <View style={styles.profileTextBox}>
-                                <Text style={styles.profileTitle}>Profile Photo</Text>
-                                <Text style={styles.profileSub}>
-                                    Add Profile Image of Vendor/Business.{"\n"}
-                                    Max size of image 2 MB
-                                </Text>
-                            </View>
-
-                        </View>
-
-
-
-                        <View style={styles.form}>
-                            <Text style={styles.label}>First Name *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter First Name"
-                                placeholderTextColor="#A1A1A1"
-                                value={basicDetails.firstName}
-                                onChangeText={(t) =>
-                                    setBasicDetails({ ...basicDetails, firstName: t })
-                                }
-                            />
-
-                            <Text style={styles.label}>Last Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Last Name"
-                                placeholderTextColor="#A1A1A1"
-                                value={basicDetails.lastName}
-                                onChangeText={(t) =>
-                                    setBasicDetails({ ...basicDetails, lastName: t })
-                                }
-                            />
-
-                            <Text style={styles.label}>Mobile Number *</Text>
-                            <View style={styles.mobileWrapper}>
-                                <Text style={styles.countryCode}>+91</Text>
-                               <TextInput
-  style={styles.mobileInput}
-  keyboardType="number-pad"
-  maxLength={10}
-  value={basicDetails.mobile}
-  onChangeText={(t) =>
-    setBasicDetails({
-      ...basicDetails,
-      mobile: t.replace(/[^0-9]/g, ""),
-    })
-  }
-/>
-
-                            </View>
-
-                            <Text style={styles.label}>Email ID</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Email ID"
-                                placeholderTextColor="#A1A1A1"
-                                value={basicDetails.email}
-                                onChangeText={(t) =>
-                                    setBasicDetails({ ...basicDetails, email: t })
-                                }
-                            />
-                        </View>
-
-
-                        <View style={styles.btnRow}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.secondaryBtn,
-                                    !isBasicValid && styles.secondaryBtnDisabled
-                                ]}
-                                disabled={!isBasicValid}
-                          onPress={handleCreateTenant}  >
-                                <Text
+                                <TouchableOpacity
                                     style={[
-                                        styles.secondaryText,
-                                        !isBasicValid && styles.secondaryTextDisabled
+                                        styles.primaryBtn,
+                                        !isBasicValid && styles.primaryBtnDisabled
                                     ]}
+                                    disabled={!isBasicValid}
+                                    onPress={handleNext}
                                 >
-                                    Save Info
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={[
-                                    styles.primaryBtn,
-                                    !isBasicValid && styles.primaryBtnDisabled
-                                ]}
-                                disabled={!isBasicValid}
-                                onPress={() => setStep(2)}
-                            >
-                                <Text
-                                    style={[
-                                        styles.primaryText,
-                                        !isBasicValid && styles.primaryTextDisabled
-                                    ]}
-                                >
-                                    Next
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-
-                    </>
-                )}
-
-
-                {/* STEP 2 */}
-                {step === 2 && (
-                    <>
-                        <SafeAreaView style={styles.container1}>
-                            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-
-                                <View style={styles.form}>
-                                    <Text style={styles.label}>Flat, House no., Building *</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter Flat, House no., Building..."
-                                        value={addressDetails.flat}
-                                        onChangeText={(t) =>
-                                            setAddressDetails({ ...addressDetails, flat: t })
-                                        }
-                                    />
-                                    <Text style={styles.label}>Area , Street , Sector , Village *</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter Area"
-                                        value={addressDetails.area}
-                                        onChangeText={(t) =>
-                                            setAddressDetails({ ...addressDetails, area: t })
-                                        }
-                                    />
-                                    <Text style={styles.label}>Landmark *</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Ex : Near SBI Bank"
-                                        value={addressDetails.landmark}
-                                        onChangeText={(t) =>
-                                            setAddressDetails({ ...addressDetails, landmark: t })
-                                        }
-                                    />
-
-                                    <Text style={styles.label}>Pincode *</Text>
-                                   <TextInput
-  style={styles.input}
-  keyboardType="number-pad"
-  maxLength={6}
-  value={addressDetails.pincode}
-  onChangeText={(t) =>
-    setAddressDetails({
-      ...addressDetails,
-      pincode: t.replace(/[^0-9]/g, ""),
-    })
-  }
-/>
-
-                                            <Text style={styles.label}>City *</Text>
-                                            <TextInput
-                                                style={styles.input}
-                                                placeholder="Enter Your City Name"
-                                                value={addressDetails.city}
-                                                onChangeText={(t) =>
-                                                    setAddressDetails({ ...addressDetails, city: t })
-                                                }
-                                            />
-
-
-                                  
-
-
-
-<Text style={styles.label}>State</Text>
-
-                  <View style={{ position: "relative" }}>
-    <TouchableOpacity
-        style={styles.select}
-        onPress={() => setStateOpen(!stateOpen)}
-        activeOpacity={0.9}
-    >
-        <Text style={styles.selectText}>
-            {selectedState || "Select State"}
-        </Text>
-        <Image source={DownArrow} style={styles.arrow} />
-    </TouchableOpacity>
-
-    {stateOpen && (
-        <View style={styles.dropdownMenu}>
-            <ScrollView style={{ maxHeight: 160 }}>
-                {stateList.map((v, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        style={styles.option}
-                        onPress={() => {
-                            setSelectedState(v.label);   
-                            setStateOpen(false);
-                        }}
-                    >
-                        <Text style={styles.optionText}>{v.label}</Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </View>
-    )}
-</View>
-
-
-
-                                </View>
-
-
-                                <View style={styles.btnRow}>
-                                    <TouchableOpacity
-                                        style={styles.secondaryBtn}
-                                        onPress={() => setStep(1)}
-                                    >
-                                        <Text style={styles.secondaryText}>Previous</Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
+                                    <Text
                                         style={[
-                                            styles.primaryBtn,
-                                            !isAddressValid && styles.primaryBtnDisabled
+                                            styles.primaryText,
+                                            !isBasicValid && styles.primaryTextDisabled
                                         ]}
-                                        disabled={!isAddressValid}
-                                        // onPress={() => navigation.goBack()}
-                                         onPress={handleCreateTenant} 
                                     >
-                                        <Text
-                                            style={[styles.primaryText,]}
+                                        Next
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+
+
+                        </>
+                    )}
+
+
+                    {/* STEP 2 */}
+                    {step === 2 && (
+                        <>
+                            <SafeAreaView style={styles.container1}>
+                                <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+
+                                    <View style={styles.form}>
+                                        <Text style={styles.label}>Flat, House no., Building *</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Enter Flat, House no., Building..."
+                                            value={addressDetails.flat}
+                                            onChangeText={(t) =>
+                                                setAddressDetails({ ...addressDetails, flat: t })
+                                            }
+                                        />
+                                        <Text style={styles.label}>Area , Street , Sector , Village *</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Enter Area"
+                                            value={addressDetails.area}
+                                            onChangeText={(t) =>
+                                                setAddressDetails({ ...addressDetails, area: t })
+                                            }
+                                        />
+                                        <Text style={styles.label}>Landmark *</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Ex : Near SBI Bank"
+                                            value={addressDetails.landmark}
+                                            onChangeText={(t) =>
+                                                setAddressDetails({ ...addressDetails, landmark: t })
+                                            }
+                                        />
+
+                                        <Text style={styles.label}>Pincode *</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            keyboardType="number-pad"
+                                            placeholder="123 456"
+                                            maxLength={6}
+                                            value={addressDetails.pincode}
+                                            onChangeText={(t) => {
+                                                const value = t.replace(/[^0-9]/g, "");
+
+                                                setAddressDetails({
+                                                    ...addressDetails,
+                                                    pincode: value,
+                                                });
+
+                                                setPincodeError(""); // ✅ clear error while typing
+                                            }}
+                                        />
+                                        {pincodeError && (
+                                            <ErrorMessage message={pincodeError} type="error" />
+                                        )}
+                                        <Text style={styles.label}>City *</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Enter Your City Name"
+                                            value={addressDetails.city}
+                                            onChangeText={(t) =>
+                                                setAddressDetails({ ...addressDetails, city: t })
+                                            }
+                                        />
+
+
+
+
+
+
+                                        <Text style={styles.label}>State</Text>
+
+                                        <View style={{ position: "relative" }}>
+                                            <TouchableOpacity
+                                                style={styles.select}
+                                                onPress={() => setStateOpen(!stateOpen)}
+                                                activeOpacity={0.9}
+                                            >
+                                                <Text style={styles.selectText}>
+                                                    {selectedState || "Select State"}
+                                                </Text>
+                                                <Image source={DownArrow} style={styles.arrow} />
+                                            </TouchableOpacity>
+
+                                            {stateOpen && (
+                                                <View style={styles.dropdownMenu}>
+                                                    <ScrollView style={{ maxHeight: 160 }}>
+                                                        {stateList.map((v, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.option}
+                                                                onPress={() => {
+                                                                    setSelectedState(v.label);
+                                                                    setStateOpen(false);
+                                                                }}
+                                                            >
+                                                                <Text style={styles.optionText}>{v.label}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+
+
+
+                                    </View>
+
+
+                                    <View style={styles.btnRow}>
+                                        <TouchableOpacity
+                                            style={styles.secondaryBtn}
+                                            onPress={() => setStep(1)}
                                         >
-                                            Create Tenant
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </ScrollView>
-                        </SafeAreaView>
-                    </>
-                )}
-            </ScrollView>
+                                            <Text style={styles.secondaryText}>Previous</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.primaryBtn,
+                                                !isAddressValid && styles.primaryBtnDisabled
+                                            ]}
+
+                                            // onPress={() => navigation.goBack()}
+                                            onPress={handleCreateTenant}
+                                        >
+                                            <Text
+                                                style={[styles.primaryText,]}
+                                            >
+                                                Create Tenant
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </ScrollView>
+                            </SafeAreaView>
+                        </>
+                    )}
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
@@ -664,7 +689,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         overflow: "hidden",
     },
-     
+
     picker: {
         height: 50,
         color: "#111827",
@@ -916,7 +941,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
     },
-     dropdownMenu: {
+    dropdownMenu: {
         position: "absolute",
         top: 50,
         left: 0,
@@ -952,16 +977,16 @@ const styles = StyleSheet.create({
     //     elevation: 10,
     //     maxHeight: 250, // 🔥 ensure scroll works
     // }
-   
 
-   
-selectedOption: {
-    backgroundColor: "#1E45E1",
-},
-selectedOptionText: {
-    color: "#fff",
-    fontWeight: "600"
-},
+
+
+    selectedOption: {
+        backgroundColor: "#1E45E1",
+    },
+    selectedOptionText: {
+        color: "#fff",
+        fontWeight: "600"
+    },
 
 
 });

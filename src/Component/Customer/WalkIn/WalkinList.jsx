@@ -215,7 +215,11 @@ console.log("setWalkinCustomers",walkinCustomers)
       </TouchableOpacity>
 
  
-      <TouchableOpacity style={styles.addBtn}  onPress={() => navigation.navigate("AddTenant")}>
+      <TouchableOpacity style={styles.addBtn}   onPress={() =>
+    navigation.navigate("AddTenant", {
+      refreshWalkins: walkinCustomers,
+    })
+  }>
         <Image source={PlusIcon} style={{ width: 50, height: 50 }} />
       </TouchableOpacity>
 

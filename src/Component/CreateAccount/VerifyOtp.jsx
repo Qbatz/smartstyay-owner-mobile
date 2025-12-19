@@ -9,7 +9,7 @@ import {
     Dimensions,
     Animated,ImageBackground,KeyboardAvoidingView, Platform,ScrollView
 } from "react-native";
-import OtpRectangle from "../../Assets/Images/OtpRectangle.png";
+import OtpRectangle from "../../Assets/Images/login_Rectangle.png";
 import LottieView from "lottie-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -97,13 +97,7 @@ const BOTTOM_IMAGE_HEIGHT = 200;
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-     <ScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: BOTTOM_IMAGE_HEIGHT + 20, // 🔥 IMPORTANT
-      }}
-      keyboardShouldPersistTaps="handled"
-    >
+   
             <View style={styles.contentBox}>
                 <Text style={styles.title}>Verify Your Account</Text>
 
@@ -166,7 +160,7 @@ const BOTTOM_IMAGE_HEIGHT = 200;
                     </TouchableOpacity>
                 </View>
             </View>
-            </ScrollView>
+          
 </KeyboardAvoidingView>
 
 
@@ -225,7 +219,7 @@ const styles = StyleSheet.create({
     contentBox: {
         flex: 1,
         alignItems: "center",
-        paddingTop: 150,
+        paddingTop: 50,
     },
 
     contentText: {
@@ -359,7 +353,7 @@ bottomGradient: {
   bottom: 0,
   left: 0,
   right: 0,
-  height: 200,        
+  height: 120,        
 },
     popupContainer: {
         position: "absolute",
