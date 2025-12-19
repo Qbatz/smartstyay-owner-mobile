@@ -1,4 +1,4 @@
-import React, { useState , useRef , useEffect} from "react";
+import React, { useState , useRef , useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -14,6 +14,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { BillContext } from "../../../Context/BillsContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
@@ -38,6 +42,12 @@ import EditIcon from  "../../../Assets/Images/editIcon.png"
 
 const Receipt = () => {
 
+  const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
+      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList} = useContext(BillContext);
+    const { activeHostelId } = useContext(CommonContexts);
+  
+        console.log("receiptsList", receiptsList);
+
   const dotsRefs = useRef({});
   const navigation = useNavigation();
 
@@ -53,6 +63,7 @@ const [selectedCustomer, setSelectedCustomer] = useState(null);
   
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   
   const [fromDate, setFromDate] = useState(dayjs());
@@ -74,35 +85,21 @@ const [selectedCustomer, setSelectedCustomer] = useState(null);
             const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
             const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
 
-  const [data, setData] = useState([
-    {
-      id: "1",
-      name: "Jobin",
-      tag: "Checkout Inv",
-      bill: "#1212121212",
-      date: "01/06/25",
-      photo: ProfileImage,
-      status: true,
-    },
-    {
-      id: "2",
-      name: "Vivekananth J",
-      tag: "Rental Inv",
-      bill: "#1212121212",
-      date: "01/06/25",
-      photo: ProfileImage,
-      status: true,
-    },
-    {
-      id: "3",
-      name: "Ajmal Muhammed",
-      tag: "Checkout Inv",
-      bill: "#1212121212",
-      date: "01/06/25",
-      photo: ProfileImage,
-      status: false,
-    },
-  ]);
+            dayjs.extend(customParseFormat);
+
+const formatApiDate = (date) =>
+  date
+    ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
+    : "--";
+
+
+ 
+
+  useEffect(() => {
+  if (activeHostelId) {
+    GetReceiptsList(activeHostelId);
+  }
+}, [activeHostelId]);
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -263,27 +260,43 @@ const handleEditBill = () => {
 const renderItem = ({ item }) => {
   return (
     <View style={styles.row}>
-      <TouchableOpacity onPress={handleBillDetails}>
-        <Image source={item.photo} style={styles.avatar} />
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedReceipt(item);
+          setShowBillDetails(true);
+        }}
+      >
+        <Image
+          source={
+            item.profilePic
+              ? { uri: item.profilePic }
+              : ProfileImage
+          }
+          style={styles.avatar}
+        />
       </TouchableOpacity>
 
       <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.fullName}</Text>
 
         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
           <View style={styles.tagBox}>
-            <Text style={styles.tag}>{item.tag}</Text>
+            <Text style={styles.tag}>{item.invoiceType}</Text>
           </View>
 
-          <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }} />
-          <Text style={styles.bill}>{item.bill}</Text>
+          <Image
+            source={Bills_Black_Icon}
+            style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
+          />
+
+          <Text style={styles.bill}>{item.invoiceNumber}</Text>
         </View>
       </View>
 
       <View style={styles.rightSection}>
         <TouchableOpacity
-          ref={(r) => (dotsRefs.current[item.id] = r)}
-          onPress={() => openMenu(item, item.id)}
+          ref={(r) => (dotsRefs.current[item.transactionId] = r)}
+          onPress={() => openMenu(item, item.transactionId)}
         >
           <Image
             source={Dots}
@@ -291,7 +304,9 @@ const renderItem = ({ item }) => {
           />
         </TouchableOpacity>
 
-        <Text style={styles.dateText}>01/06</Text>
+        <Text style={styles.dateText}>
+          {formatApiDate(item.paidAt)}
+        </Text>
       </View>
     </View>
   );
@@ -299,18 +314,32 @@ const renderItem = ({ item }) => {
 
 
 
+
   return (
     <View style={styles.container}>
-      {/* Top: This Month + Dropdown */}
       <View style={styles.headerRow}>
         <Text style={styles.monthText}>This Month</Text>
 
    
       </View>
 
-      <FlatList data={data} renderItem={renderItem} keyExtractor={(i) => i.id} />
+  <FlatList
+  data={receiptsList || []}
+  renderItem={renderItem}
+  keyExtractor={(item) => item.transactionId}
+  showsVerticalScrollIndicator={false}
+/>
 
-      {/* Filter button */}
+{(!receiptsList || receiptsList.length === 0) && !loading && (
+  <View style={{ alignItems: "center", marginTop: 80 }}>
+    <Image source={EmptyFloor} style={{ width: 120, height: 120 }} />
+    <Text style={{ marginTop: 10, color: "#777" }}>
+      No Receipts Found
+    </Text>
+  </View>
+)}
+
+
       <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
           <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
@@ -374,12 +403,10 @@ const renderItem = ({ item }) => {
             >
               <View style={styles.sheetHandle} />
         
-              {/* TOP HEADER TITLE */}
               
         
               <ScrollView showsVerticalScrollIndicator={false}>
         
-          {/* HEADER ROW */}
           <View style={styles.billHeaderRow}>
             <Text style={styles.billHeaderText}>Bill Details</Text>
         
@@ -399,12 +426,11 @@ const renderItem = ({ item }) => {
             </View>
           </View>
         
-          {/* USER SECTION */}
           <View style={styles.userRow}>
             <Image source={ProfileImage} style={styles.userImg} />
         
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.userName}>Ajmal Muhammed</Text>
+              <Text style={styles.userName}>  {selectedReceipt?.fullName || "--"}</Text>
         
               <View style={{ flexDirection: "row", marginTop: 4 }}>
                 <View style={styles.invTypeBadge}>
@@ -421,13 +447,12 @@ const renderItem = ({ item }) => {
 
         
         
-          {/* DATES SECTION */}
           <View style={styles.twoColRow}>
             <View style={styles.colItem}>
               <Text style={styles.label}>Payment date</Text>
               <View style={styles.rowAlign}>
                 <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-                <Text style={styles.value}>5 Aug 2025</Text>
+                <Text style={styles.value}>  {formatApiDate(selectedReceipt?.paidAt)}</Text>
               </View>
             </View>
         
@@ -435,7 +460,7 @@ const renderItem = ({ item }) => {
               <Text style={styles.label}>Payment Mode</Text>
               <View style={styles.rowAlign}>
                 <Image source={Payment} style={styles.iconSmall} />
-                <Text style={styles.value}>Cash</Text>
+                <Text style={styles.value}> {selectedReceipt?.invoiceMode || "--"}</Text>
               </View>
             </View>
           </View>
@@ -447,12 +472,11 @@ const renderItem = ({ item }) => {
                     <Image source={Payment} style={{   width: 18,
             height: 18, marginTop:5 , marginRight:5
           }} />
-                <Text style={styles.amountValue}>IOB - smartstay PG</Text>
+                <Text style={styles.amountValue}>  {selectedReceipt?.bankName || "--"}</Text>
               </View>
             </View>
              </View>
         
-          {/* AMOUNT SECTION */}
           <View style={styles.twoColRow}>
             <View style={styles.colItem}>
               <Text style={styles.label}>Amount</Text>
@@ -460,7 +484,7 @@ const renderItem = ({ item }) => {
                     <Image source={MoneyCheckIcon} style={{   width: 18,
             height: 18, marginTop:5 , marginRight:5
           }} />
-                <Text style={styles.amountValue}>₹7,000</Text>
+                <Text style={styles.amountValue}> ₹{selectedReceipt?.paidAmount ?? "--"}</Text>
               </View>
             </View>
              <View style={styles.colItem}>
@@ -469,14 +493,13 @@ const renderItem = ({ item }) => {
                     <Image source={Telegram} style={{   width: 18,
             height: 18, marginTop:2 , marginRight:5
           }} />
-                <Text style={styles.amountValue}>3B2034D106</Text>
+                <Text style={styles.amountValue}>{selectedReceipt?.transactionNumber || "--"}</Text>
               </View>
             </View>
         
           
           </View>
         
-          {/* PREVIEW BUTTON */}
           <TouchableOpacity style={styles.previewBtn} onPress={handleShowReceiptPdf} >
             <View style={{display:'flex', flexDirection:'row'}}>
                        <Image source={PreviewIcon} style={{   width: 18,
@@ -701,8 +724,8 @@ dropCard: {
   backgroundColor: "#fff",
   borderRadius: 12,
   paddingVertical: 8,
-  elevation: 10,       // ANDROID popup FIX
-  zIndex: 9999,        // IMPORTANT → Put on top of list
+  elevation: 10,       
+  zIndex: 9999,       
   shadowColor: "#000",
   shadowRadius: 5,
   shadowOpacity: 0.25,
@@ -774,15 +797,7 @@ optionText: {
     color: "#878787",
   },
 
-//   filterButton: {
-//     position: "absolute",
-//     right: 20,
-//     bottom: 40,
-//     backgroundColor: "#3562FF",
-//     padding: 18,
-//     borderRadius: 50,
-//     elevation: 5,
-//   },
+
    filterButton: {
     position: "absolute",
     bottom: 90,
@@ -960,7 +975,7 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
     justifyContent: "space-between",
     borderWidth: 1,
     borderColor: "#E0E0E0",
-    height: 50,   // 🔥 consistent height
+    height: 50,   
     paddingHorizontal: 12,
     borderRadius: 12,
   },

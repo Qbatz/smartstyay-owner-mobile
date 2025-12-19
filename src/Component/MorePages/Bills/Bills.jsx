@@ -73,12 +73,12 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
-  const { BillDetails, loading, GetAllBillDetails , RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError } = useContext(BillContext);
+  const { BillDetails, loading, GetAllBillDetails , RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  , GetRecurringBills, recurringBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
 
     console.log("bills", BillDetails);
-    console.log("bankList", bankList);
+    console.log("recurringBills", recurringBills);
 
 
   const [activeTab, setActiveTab] = useState("All Bills");
@@ -162,6 +162,11 @@ useEffect(() => {
 }, [activeHostelId]);
 
 
+useEffect(() => {
+  if (activeHostelId) {
+    GetRecurringBills(activeHostelId);
+  }
+}, [activeHostelId]);
 
   
 
