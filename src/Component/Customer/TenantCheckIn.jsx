@@ -23,12 +23,13 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
 import Delete from "../../Assets/Images/remove.png";
-export default function TenantCheckIn({ navigation,route }) {
-    const { customerId, customer } = route.params || {};
+import ErrorMessage from '../ErrorMessagr/Errormessagestyle';
+export default function TenantCheckIn({ navigation, route }) {
+  const { customerId, customer } = route.params || {};
   const [tab, setTab] = useState("long");
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
-  const { getBedsByHostelAndDate,checkInCustomer,getCustomersByHostel } = useCustomer();
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel } = useCustomer();
 
   const [floors, setFloors] = useState([]);
   const [floorOpen, setFloorOpen] = useState(false);
@@ -38,10 +39,15 @@ export default function TenantCheckIn({ navigation,route }) {
 
 
   const [selectedRoom, setSelectedRoom] = useState(null);
- 
+
   const [beds, setBeds] = useState([]);
   const [bedOpen, setBedOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState(null);
+  const [floorError, setFloorError] = useState("")
+  const [roomError, setRoomError] = useState("")
+  const [bedError, setBedError] = useState('')
+  const [advanceError, setAdvanceError] = useState("")
+  const [rentError, setRentError] = useState("")
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -57,7 +63,7 @@ export default function TenantCheckIn({ navigation,route }) {
 
     }
   };
-  console.log("customer",customer)
+  console.log("customer", customer)
 
   const loadRooms = async (floorId) => {
     const res = await getAllRoomsByFloor(floorId);
@@ -130,8 +136,8 @@ export default function TenantCheckIn({ navigation,route }) {
 
   const [maintenanceAmount, setMaintenanceAmount] = useState("");
   const [nonRefundables, setNonRefundables] = useState([]);
-   const [extraCharges, setExtraCharges] = useState([]);
-    const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
+  const [extraCharges, setExtraCharges] = useState([]);
+  const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const TYPE_OPTIONS = ["Maintenance", "Others"];
@@ -180,7 +186,7 @@ export default function TenantCheckIn({ navigation,route }) {
     );
   };
 
-console.log("nonRefundables",extraCharges)
+  console.log("nonRefundables", extraCharges)
   const addNonRefundable = () => {
     setNonRefundables(prev => [
       ...prev,
@@ -199,30 +205,71 @@ console.log("nonRefundables",extraCharges)
     setSelectedRoom(r);
     setSelectedBed(b);
   };
- const submitLongStay = async () => {
-  const payload = {
-    floorId: selectedFloor.id,
-    roomId: selectedRoom.id,
-    bedId: selectedBed.bedId,
-    joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-    advanceAmount: Number(advanceAmount),
-    rentalAmount: Number(rentalAmount),
-    stayType: "LONG",
-    deductions: extraCharges.map(e => ({
-      type: e.type.toLowerCase(),
-      amount: Number(e.amount),
-    })),
+  const validateLongStay = () => {
+    let valid = true;
+
+    // reset errors
+    setFloorError("");
+    setRoomError("");
+    setBedError("");
+    setAdvanceError("");
+    setRentError("");
+
+    if (!selectedFloor) {
+      setFloorError("Please select a floor");
+      valid = false;
+    }
+
+    if (!selectedRoom) {
+      setRoomError("Please select a room");
+      valid = false;
+    }
+
+    if (!selectedBed) {
+      setBedError("Please select a bed");
+      valid = false;
+    }
+
+    if (!advanceAmount || Number(advanceAmount) <= 0) {
+      setAdvanceError("Please enter advance amount");
+      valid = false;
+    }
+
+    if (!rentalAmount || Number(rentalAmount) <= 0) {
+      setRentError("Please enter rental amount");
+      valid = false;
+    }
+
+    return valid;
   };
 
-  const res = await checkInCustomer(customerId, payload);
-  
-  if (res.success) {
-    alert("Customer Checked-in Successfully ✅");
-    navigation.goBack();
-  } else {
-    alert(res.message);
-  }
-};
+  const submitLongStay = async () => {
+    const isValid = validateLongStay();
+
+    if (!isValid) return;
+    const payload = {
+      floorId: selectedFloor.id,
+      roomId: selectedRoom.id,
+      bedId: selectedBed.bedId,
+      joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+      advanceAmount: Number(advanceAmount),
+      rentalAmount: Number(rentalAmount),
+      stayType: "LONG",
+      deductions: extraCharges.map(e => ({
+        type: e.type.toLowerCase(),
+        amount: Number(e.amount),
+      })),
+    };
+
+    const res = await checkInCustomer(customerId, payload);
+
+    if (res.success) {
+      alert("Customer Checked-in Successfully ✅");
+      navigation.goBack();
+    } else {
+      alert(res.message);
+    }
+  };
 
 
 
@@ -382,7 +429,9 @@ console.log("nonRefundables",extraCharges)
                     </View>
                   )}
                 </View>
-
+                {floorError && (
+                  <ErrorMessage message={floorError} type="error" />
+                )}
 
                 {/* <Text style={styles.label}>Room</Text>
           
@@ -449,6 +498,9 @@ console.log("nonRefundables",extraCharges)
                     </View>
                   )}
                 </View>
+                {roomError && (
+                  <ErrorMessage message={roomError} type="error" />
+                )}
                 <Text style={styles.label}>Bed</Text>
 
                 <View style={{ position: "relative" }}>
@@ -487,39 +539,9 @@ console.log("nonRefundables",extraCharges)
                     </View>
                   )}
                 </View>
-
-
-                {/* <Text style={styles.label}>Bed</Text>
-
-                    <View style={{ position: "relative" }}>
-                        <TouchableOpacity
-                            style={styles.select}
-                            onPress={() => setBedOpen(!bedOpen)}
-                            activeOpacity={0.9}
-                        >
-                            <Text style={styles.selectText}>{selectedBed}</Text>
-                            <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
-
-                        {bedOpen && (
-                            <View style={styles.dropdownMenu}>
-                                <ScrollView style={{ maxHeight: 160 }}>
-                                    {beds.map((v, index) => (
-                                        <TouchableOpacity
-                                            key={index}
-                                            style={styles.option}
-                                            onPress={() => {
-                                                setSelectedBed(v);
-                                                setBedOpen(false);
-                                            }}
-                                        >
-                                            <Text style={styles.optionText}>{v}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </ScrollView>
-                            </View>
-                        )}
-                    </View> */}
+                {bedError && (
+                  <ErrorMessage message={bedError} type="error" />
+                )}
 
 
 
@@ -533,189 +555,127 @@ console.log("nonRefundables",extraCharges)
                     onChangeText={setAdvanceAmount}
                   />
                 </View>
+                {advanceError && (
+                  <ErrorMessage message={advanceError} type="error" />
+                )}
 
                 <View style={styles.field}>
                   <Text style={styles.label}>Rental Amount *</Text>
-                 <TextInput
-  style={styles.input}
-  keyboardType="numeric"
-  value={rentalAmount}
-  placeholder={
-    selectedBed?.rentAmount
-      ? String(selectedBed.rentAmount)
-      : "Enter Rental Amount"
-  }
-  placeholderTextColor="#9CA3AF"
-  onChangeText={setRentalAmount}
-/>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    value={rentalAmount}
+                    placeholder={
+                      selectedBed?.rentAmount
+                        ? String(selectedBed.rentAmount)
+                        : "Enter Rental Amount"
+                    }
+                    placeholderTextColor="#9CA3AF"
+                    onChangeText={setRentalAmount}
+                  />
 
                 </View>
+                {rentError && (
+                  <ErrorMessage message={rentError} type="error" />
+                )}
 
-                {/* <View style={styles.nonRefundContainer}>
-
-                  <View style={styles.nonRefundHeader}>
+                <View style={styles.nonRefund}>
+                  <View style={styles.extraHeader}>
                     <Text style={styles.label}>Non Refundable Amount</Text>
 
-                    <TouchableOpacity style={styles.addBtn} onPress={addNonRefundable}>
-                      <View style={styles.iconCircle}>
-                        <Image source={AddCircle} style={styles.iconImage} />
-                      </View>
-                      <Text style={styles.addText}>Add</Text>
+                    <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
+                      <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
                     </TouchableOpacity>
                   </View>
 
-                  <View style={styles.nonRefundRow}>
-                    <View style={[styles.inputBox, { flex: 1 }]}>
-                      <Text style={styles.fixedLabel}>Maintenance</Text>
-                    </View>
+                  {extraCharges.map((item) => (
+                    <View key={item.id} style={styles.figmaRowWrapper}>
 
-                    <View style={{ width: 120 }}>
-                      <TextInput
-                        value={maintenanceAmount}
-                        onChangeText={setMaintenanceAmount}
-                        keyboardType="numeric"
-                        placeholder="Enter Amount"
-                        style={styles.inputBox}
-                      />
-                    </View>
-                  </View>
+                      {/* CLOSE BTN */}
+                      <TouchableOpacity
+                        onPress={() => removeCharge(item.id, item.type)}
+                        style={styles.figmaCloseBtn}
+                      >
 
-                  {nonRefundables.map((item, index) => (
-                    <View key={index} style={styles.nonRefundRow}>
-
-                      <TextInput
-                        placeholder="Reason"
-                        value={item.reason}
-                        onChangeText={(t) => {
-                          const updated = [...nonRefundables];
-                          updated[index].reason = t;
-                          setNonRefundables(updated);
-                        }}
-                        style={[styles.inputBox, { flex: 1 }]}
-                      />
-
-                      <View style={{ width: 120 }}>
-                        <TextInput
-                          placeholder="Amount"
-                          value={item.amount}
-                          onChangeText={(t) => {
-                            const updated = [...nonRefundables];
-                            updated[index].amount = t;
-                            setNonRefundables(updated);
-                          }}
-                          keyboardType="numeric"
-                          style={[styles.inputBox, { paddingRight: 30 }]}
+                        <Image
+                          source={Delete}
+                          style={styles.figmaCloseText}
                         />
+                      </TouchableOpacity>
 
-                        <TouchableOpacity
-                          style={styles.closeInside}
-                          onPress={() => removeNonRefundable(index)}
-                        >
-                          <Image source={RemoveIcon} style={{ width: 12, height: 12 }} />
-                        </TouchableOpacity>
+
+                      <View style={styles.figmaRow}>
+
+
+                        {item.type === "" ? (
+                          <TouchableOpacity
+                            style={styles.figmaLeftBox}
+                            onPress={() =>
+                              setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                            }
+                          >
+                            <Text style={{ color: "#777" }}>Select...</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                          </TouchableOpacity>
+                        ) : item.type === "Others" ? (
+                          <TextInput
+                            style={styles.figmaLeftBox}
+                            placeholder="Enter reason"
+                            value={item.title}
+                            onChangeText={(t) => updateTitle(item.id, t)}
+                          />
+                        ) : (
+                          <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                            <Text>Maintenance</Text>
+                          </View>
+                        )}
+
+                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                        {item.type === "" ? (
+                          <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                            <Text style={{ color: "#999" }}>Enter amount</Text>
+                          </View>
+                        ) : (
+                          <TextInput
+                            style={styles.figmaRightBox}
+                            placeholder="Enter amount"
+                            keyboardType="numeric"
+                            value={item.amount}
+                            onChangeText={(t) => updateAmount(item.id, t)}
+                          />
+                        )}
+
                       </View>
+
+
+                      {openDropdownId === item.id && item.type === "" && (
+                        <View style={styles.dropdownMenuone}>
+                          {TYPE_OPTIONS.map((t) => {
+
+                            const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                            return (
+                              <TouchableOpacity
+                                key={t}
+                                disabled={disabled}
+                                onPress={() => !disabled && selectType(item.id, t)}
+                                style={{ opacity: disabled ? 0.3 : 1 }}
+                              >
+                                <Text style={styles.dropdownItem}>{t}</Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      )}
 
                     </View>
                   ))}
 
-                </View> */}
-  <View style={styles.nonRefund}>
-              <View style={styles.extraHeader}>
-                <Text style={styles.label}>Non Refundable Amount</Text>
-
-                <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                  <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
-                </TouchableOpacity>
-              </View>
-
-              {extraCharges.map((item) => (
-                <View key={item.id} style={styles.figmaRowWrapper}>
-
-                  {/* CLOSE BTN */}
-                  <TouchableOpacity
-                    onPress={() => removeCharge(item.id, item.type)}
-                    style={styles.figmaCloseBtn}
-                  >
-
-                    <Image
-                      source={Delete}
-                      style={styles.figmaCloseText}
-                    />
-                  </TouchableOpacity>
 
 
-                  <View style={styles.figmaRow}>
 
-
-                    {item.type === "" ? (
-                      <TouchableOpacity
-                        style={styles.figmaLeftBox}
-                        onPress={() =>
-                          setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                        }
-                      >
-                        <Text style={{ color: "#777" }}>Select...</Text>
-                        <Image source={DownArrow} style={styles.arrow} />
-                      </TouchableOpacity>
-                    ) : item.type === "Others" ? (
-                      <TextInput
-                        style={styles.figmaLeftBox}
-                        placeholder="Enter reason"
-                        value={item.title}
-                        onChangeText={(t) => updateTitle(item.id, t)}
-                      />
-                    ) : (
-                      <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                        <Text>Maintenance</Text>
-                      </View>
-                    )}
-
-                    {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                    {item.type === "" ? (
-                      <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                        <Text style={{ color: "#999" }}>Enter amount</Text>
-                      </View>
-                    ) : (
-                      <TextInput
-                        style={styles.figmaRightBox}
-                        placeholder="Enter amount"
-                        keyboardType="numeric"
-                        value={item.amount}
-                        onChangeText={(t) => updateAmount(item.id, t)}
-                      />
-                    )}
-
-                  </View>
-
-
-                  {openDropdownId === item.id && item.type === "" && (
-                    <View style={styles.dropdownMenuone}>
-                      {TYPE_OPTIONS.map((t) => {
-
-                        const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
-                        return (
-                          <TouchableOpacity
-                            key={t}
-                            disabled={disabled}
-                            onPress={() => !disabled && selectType(item.id, t)}
-                            style={{ opacity: disabled ? 0.3 : 1 }}
-                          >
-                            <Text style={styles.dropdownItem}>{t}</Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
 
                 </View>
-              ))}
-
-
-
-
-
-            </View>
 
 
                 <View style={styles.BtnRow}>
@@ -1108,25 +1068,25 @@ const styles = StyleSheet.create({
     marginBottom: 190
   },
 
- nonRefund: {
+  nonRefund: {
     backgroundColor: "#F7F9FF",
     padding: 10,
     marginTop: 10,
     borderRadius: 20
   },
 
-addBtn: {
+  addBtn: {
     backgroundColor: "#2D6CDF",
     paddingHorizontal: 18,
     paddingVertical: 8,
     borderRadius: 8,
   },
-    extraHeader: {
+  extraHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 18,
   },
-   figmaRowWrapper: {
+  figmaRowWrapper: {
     marginTop: 20,
     position: "relative",
   },
@@ -1140,7 +1100,7 @@ addBtn: {
   figmaLeftBox: {
     width: "48%",
     height: 50,
-backgroundColor:"#FFFFFF",
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingHorizontal: 15,
     borderWidth: 1,
@@ -1153,7 +1113,7 @@ backgroundColor:"#FFFFFF",
   figmaRightBox: {
     width: "45%",
     height: 50,
-backgroundColor:"#FFFFFF",
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingHorizontal: 15,
     borderWidth: 1,
@@ -1178,7 +1138,7 @@ backgroundColor:"#FFFFFF",
     width: 10,
     height: 10
   },
-   dropdownMenuone: {
+  dropdownMenuone: {
     marginTop: 6,
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -1186,7 +1146,7 @@ backgroundColor:"#FFFFFF",
     borderRadius: 10,
 
   },
-   dropdownItem: {
+  dropdownItem: {
     padding: 12,
     fontSize: 14,
     borderBottomWidth: 1,

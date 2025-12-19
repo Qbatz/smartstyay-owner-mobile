@@ -8,7 +8,7 @@ import {
   Animated,
   PanResponder,
   Keyboard,
-  TouchableWithoutFeedback,
+  TouchableWithoutFeedback, KeyboardAvoidingView, Platform
 } from "react-native";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useFloor } from "../../Context/PayingGuestContext";
@@ -19,10 +19,26 @@ export default function AddFloorSheet({ visible, onClose,onSuccess,editFloorData
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editFloorData;
   console.log("editFloorData",editFloorData)
+const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", e => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
 
   const [floorName, setFloorName] = useState("");
   const [floorNameError, setFloorNameError] = useState("");
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const inputRef = useRef(null);
   const { activeHostelId } = useContext(CommonContexts);
   const {addFloor,updateFloor } = useFloor();
@@ -60,7 +76,7 @@ useEffect(() => {
       duration: 200,
       useNativeDriver: false,
     }).start(() => {
-      setKeyboardHeight(0);
+   
       setFloorName("");
       onClose();
     });
@@ -70,7 +86,7 @@ useEffect(() => {
   if (!visible) {
     setFloorName("");
     setFloorNameError("");
-    setKeyboardHeight(0);
+   
   }
 }, [visible]);
 
@@ -90,23 +106,7 @@ useEffect(() => {
   }, [visible]);
 
  
-  useEffect(() => {
-    if (!visible) return;
-
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardHeight(e.endCoordinates.height - 20);
-    });
-
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [visible]);
-
+ 
  
   const panResponder = useRef(
     PanResponder.create({
@@ -206,67 +206,74 @@ const trimmedName = floorName.trim();
 //   }
 // };
 
+const sheetContent = (
+<Animated.View
+  style={[
+    styles.sheet,
+    {
+      transform: [{ translateY }],
+      paddingBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 40,
+    },
+  ]}
+  {...panResponder.panHandlers}
+>
 
-  return (
-    <>
-      <SuccessModal
-        visible={showSuccess}
-        message={message}
-        type={modalType}
+    <View style={styles.handle} />
 
-      />
+    <Text style={styles.title}>
+      {isEdit ? "Update Floor" : "Add Floor"}
+    </Text>
+
+    <Text style={styles.label}>
+      Floor Name or No <Text style={{ color: "red" }}>*</Text>
+    </Text>
+
+    <TextInput
+      ref={inputRef}
+      placeholder="Enter floor Name or No"
+      style={styles.input}
+      value={floorName}
+      onChangeText={(text) => {
+        setFloorName(text);
+        setFloorNameError("");
+      }}
+    />
+
+    {floorNameError && (
+      <ErrorMessage message={floorNameError} type="error" />
+    )}
+
+    <TouchableOpacity style={styles.addBtn} onPress={handleAddFloor}>
+      <Text style={styles.addBtnText}>
+        {isEdit ? "Update Floor" : "Add Floor"}
+      </Text>
+    </TouchableOpacity>
+  </Animated.View>
+);
+
+ return (
+  <>
+    <SuccessModal visible={showSuccess} message={message} type={modalType} />
+
     <View style={styles.overlay}>
       <TouchableWithoutFeedback onPress={closeSheet}>
         <View style={{ flex: 1 }} />
       </TouchableWithoutFeedback>
 
-      <Animated.View
-        style={[
-          styles.sheet,
-          {
-            marginBottom: keyboardHeight,
-            transform: [{ translateY }],
-          },
-        ]}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.handle} />
-
-        <Text style={styles.title}> {isEdit ? "Update Floor" : "Add Floor"}</Text>
-
-        <Text style={styles.label}>
-          Floor Name or No <Text style={{ color: "red" }}>*</Text>
-        </Text>
-
-        <TextInput
-          ref={inputRef}
-          placeholder="Enter floor Name or No"
-          style={styles.input}
-          value={floorName}
-        
-          onChangeText={(text) => {
-              setFloorName(text);
-              setFloorNameError("");
-            }}   
-        />
-        <View style={styles.ErrorFloor}>
- {floorNameError && (
-              <ErrorMessage message={floorNameError} type="error" />
-            )}
-            </View>
-    
-        <TouchableOpacity
-  style={styles.addBtn}
- 
-  onPress={handleAddFloor}
->
-  <Text style={styles.addBtnText}> {isEdit ? "Update Floor" : "Add Floor"}</Text>
-</TouchableOpacity>
-
-      </Animated.View>
+      {Platform.OS === "ios" ? (
+        <KeyboardAvoidingView
+          behavior="padding"
+          keyboardVerticalOffset={20}
+        >
+          {sheetContent}
+        </KeyboardAvoidingView>
+      ) : (
+        sheetContent   // 🔥 ANDROID – NO KeyboardAvoidingView
+      )}
     </View>
-    </>
-  );
+  </>
+);
+
 }
 
 /* ------------------------------------------
