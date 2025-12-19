@@ -7,7 +7,7 @@ import {
     TouchableOpacity,
     Image,
     Dimensions,
-    Animated,ImageBackground
+    Animated,ImageBackground,
 } from "react-native";
 import OtpRectangle from "../../Assets/Images/OtpRectangle.png";
 import LottieView from "lottie-react-native";
@@ -326,13 +326,19 @@ const styles = StyleSheet.create({
         paddingBottom: 3,
     },
 
+// bottomGradient: {
+//   position: "absolute",
+//   bottom: 0,
+//   width: "100%",
+//   height: Dimensions.get("window").height * 0.22,
+// },
 bottomGradient: {
   position: "absolute",
   bottom: 0,
+  left: 0,
   width: "100%",
-  height: Dimensions.get("window").height * 0.22,
+  aspectRatio: 375 / 180, // 🔥 your image real ratio
 },
-
 
     popupContainer: {
         position: "absolute",
