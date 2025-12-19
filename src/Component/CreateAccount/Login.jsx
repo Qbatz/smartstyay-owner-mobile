@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,Dimensions,ImageBackground
+  ScrollView,Dimensions,ImageBackground,KeyboardAvoidingView, Platform
 } from "react-native";
 import SmartstayIcon from "../../Assets/Images/Sm_Icon.png"
 import EyeIcon from "../../Assets/Images/EyeIcon.png";
@@ -75,12 +75,19 @@ const { height } = Dimensions.get("window");
 
   return (
     <View style={styles.container}>
-      {/* <ScrollView contentContainerStyle={{ flexGrow: 1 }}> */}
+
+      {/* 🔹 CONTENT (moves with keyboard) */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+     
       <ScrollView
   contentContainerStyle={{
     flexGrow: 1,
-    paddingBottom: 120, // prevents content hiding behind wave
+    paddingBottom: 120,
   }}
+    keyboardShouldPersistTaps="handled"
 >
         <View style={styles.content}>
 
@@ -158,6 +165,7 @@ const { height } = Dimensions.get("window");
         style={styles.bottomWave}
         resizeMode="cover"
       /> */}
+      </KeyboardAvoidingView>
               <ImageBackground
         source={WaveImage}
         style={[
