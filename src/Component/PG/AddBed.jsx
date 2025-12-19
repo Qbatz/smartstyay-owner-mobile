@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View, Text, TextInput, TouchableOpacity,
-  Animated, PanResponder, Keyboard, TouchableWithoutFeedback, StyleSheet
+  Animated, PanResponder, Keyboard, TouchableWithoutFeedback, StyleSheet,ScrollView
 } from "react-native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
@@ -17,7 +17,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   const { addBed, getAllBedsByRoom,updateBed  } = useFloor();
 
   const { activeHostelId } = useContext(CommonContexts);
-  const keyboardOffset = useRef(new Animated.Value(0)).current;
+
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [bedName, setBedName] = useState("");
@@ -276,61 +276,79 @@ const [initialAmount, setInitialAmount] = useState("");
       />
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
-        <Animated.View
-          style={[
-            styles.sheet,
-            {
-              transform: [
-                { translateY },
-                { translateY: -keyboardHeight }, // ✅ keyboard lift
-              ],
-            },
-          ]}
-          {...panResponder.panHandlers}
-        >
+<Animated.View
+  style={[
+    styles.sheet,
+    { transform: [{ translateY }] },
+  ]}
+  {...panResponder.panHandlers}
+>
+  <ScrollView
+    keyboardShouldPersistTaps="handled"
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      paddingBottom: keyboardHeight > 0 ? 80 : 30,
+    }}
+  >
+    <View style={styles.handle} />
 
+    <Text style={styles.title}>Add Bed</Text>
 
-          <View style={styles.handle} />
+    <Text style={styles.label}>Bed Name or No *</Text>
+   <TextInput
+  style={styles.input}
+  placeholder="Enter Bed Name or No"
+  value={bedName}
+  returnKeyType="next"
+  onSubmitEditing={() => amountRef.current?.focus()}
+  onChangeText={(t) => {
+    setBedName(t);
+    setBedNameError("");
+  }}
+/>
+    {bedNameError && <ErrorMessage message={bedNameError} type="error" />}
 
-          <Text style={styles.title}>Add Bed</Text>
+    <Text style={styles.label}>Amount *</Text>
+    {/* <TextInput
+      style={styles.input}
+      placeholder="Enter Amount"
+      keyboardType="numeric"
+      value={amount}
+      onChangeText={(t) => {
+        setAmount(t);
+        setAmountError("");
+      }}
+    /> */}
+    <TextInput
+  style={styles.input}
+  placeholder="Enter Amount"
+  value={amount}
+  keyboardType="numeric"
+  returnKeyType="done"     // ✅ shows ✔ / Done
+  blurOnSubmit={false}
+  onSubmitEditing={() => {
+    if (!isDisabled) {
+      handleSaveBed();     // ✅ SAVE triggered
+    }
+  }}
+  onChangeText={(text) => {
+    setAmount(text);
+    setAmountError("");
+  }}
+/>
 
-          <Text style={styles.label}>Bed Name or No *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Bed Name or No"
-            value={bedName}
-            // onChangeText={setBedName}
-            onChangeText={(text) => {
-              setBedName(text);
-              setBedNameError("");
-            }}
-          />
-          {bedNameError && (
-            <ErrorMessage message={bedNameError} type="error" />
-          )}
-          <Text style={styles.label}>Amount *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Amount"
-            value={amount}
+    {amountError && <ErrorMessage message={amountError} type="error" />}
 
-            onChangeText={(text) => {
-              setAmount(text);
-              setAmountError("");
-            }}
-            keyboardType="numeric"
-          />
-          {amountError && (
-            <ErrorMessage message={amountError} type="error" />
-          )}
-          <TouchableOpacity
-            style={[styles.addButton, isDisabled && styles.addButtonDisabled]}
-            disabled={isDisabled}
-            onPress={handleSaveBed}
-          >
-            <Text style={styles.addButtonText}>Add Bed</Text>
-          </TouchableOpacity>
-        </Animated.View>
+    <TouchableOpacity
+      style={[styles.addButton, isDisabled && styles.addButtonDisabled]}
+      disabled={isDisabled}
+      onPress={handleSaveBed}
+    >
+      <Text style={styles.addButtonText}>Add Bed</Text>
+    </TouchableOpacity>
+  </ScrollView>
+</Animated.View>
+
       </View>
     </>
   );
@@ -346,7 +364,7 @@ const styles = StyleSheet.create({
   },
   overlayTouch: { flex: 1 },
   sheet: {
-    height: 340,
+    // height: 360,
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
