@@ -58,6 +58,8 @@ const { getCustomersByHostel} = useCustomer();
 const [customers, setCustomers] = useState([]);
 const [menuVisible, setMenuVisible] = useState(false);
 const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+const [reassignCustomer, setReassignCustomer] = useState(null);
+
  useFocusEffect(
   useCallback(() => {
     if (activeHostelId) {
@@ -224,6 +226,7 @@ const openCustomerDetails = (customer) => {
 
 const handleShowReAssignBed = () => {
   setShowReAssignBed(true)
+  setMenuVisible(false)
 }
 
 const handlecloseReAssignbed = () => {
@@ -560,7 +563,7 @@ const customerList = [
 
 
 
-    <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} />
+    
 {menuVisible && (
    <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
 <View style={styles.menuOverlay}>
@@ -578,7 +581,14 @@ const customerList = [
     {
   selectedItem && selectedItem.currentStatus === "Checked In" &&
   <>
- <TouchableOpacity style={styles.popupRow} onPress={handleShowReAssignBed} >
+ <TouchableOpacity
+  style={styles.popupRow}
+  onPress={() => {
+    setReassignCustomer(selectedItem);
+    handleShowReAssignBed();
+  }}
+>
+
         <Image
           source={require("../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
@@ -986,6 +996,11 @@ const customerList = [
 
       
     </SafeAreaView>
+    {
+      showReAssignbed &&
+          <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} customer={reassignCustomer}/>
+
+    }
     {
   showCheckout &&
   <CheckoutBottomSheet
