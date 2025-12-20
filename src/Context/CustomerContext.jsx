@@ -252,6 +252,35 @@ const deleteCustomer = async (hostelId, customerId) => {
   }
 };
 
+const changeBedCustomer = async (hostelId, customerId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/change-bed/${hostelId}/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false };
+  } catch (error) {
+    console.log("CHANGE BED ERROR:", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message || "Change bed failed",
+    };
+  }
+};
 
   return (
     <CustomerContext.Provider
@@ -262,7 +291,7 @@ const deleteCustomer = async (hostelId, customerId) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer,getBedsByHostelAndDate,checkInCustomer,deleteCustomer
+        addCustomer,getBedsByHostelAndDate,checkInCustomer,deleteCustomer,changeBedCustomer
       }}
     >
       {children}

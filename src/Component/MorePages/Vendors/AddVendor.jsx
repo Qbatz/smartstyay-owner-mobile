@@ -54,7 +54,7 @@ export default function AddVendorSheet({onClose, vendorData }) {
     } else if (response.errorMessage) {
       console.log("Error:", response.errorMessage);
     } else {
-      setSelectedImage(response.assets[0]);   // store full object
+      setSelectedImage(response.assets[0]);   
     }
   });
 };
