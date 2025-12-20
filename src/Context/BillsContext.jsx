@@ -21,8 +21,8 @@ export default function BillsProvider({ children }) {
   const GetAllBillDetails = async (hostelId) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.get(`v2/bills/${hostelId}`);
-
+      const res = await AxiosConfig.get(`v2/bills/new/${hostelId}`);
+ 
       if (res.status === 200) {
         setBillDetails(res.data || []);
         return { success: true, data: res.data };
@@ -37,6 +37,56 @@ export default function BillsProvider({ children }) {
       setLoading(false);
     }
   };
+
+  // ----------------------------------
+// FILTER BILLS
+// ----------------------------------
+const GetFilteredBills = async (hostelId, filters = {}) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const res = await AxiosConfig.get(`/v2/bills/new/${hostelId}`, {
+      params: {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        type: filters.type,
+        createdBy: filters.createdBy,
+        modes: filters.modes,
+        paymentStatus: filters.paymentStatus,
+        search: filters.search,
+      },
+      paramsSerializer: (params) =>
+        Object.keys(params)
+          .map((key) => {
+            const value = params[key];
+            if (Array.isArray(value)) {
+              return value.map((v) => `${key}=${v}`).join("&");
+            }
+            if (value !== undefined && value !== null && value !== "") {
+              return `${key}=${value}`;
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .join("&"),
+    });
+
+    if (res.status === 200) {
+      setBillDetails(res.data || []);
+      return { success: true, data: res.data };
+    }
+
+    return { success: false };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   const CreateManualBill = async (payload, hostelId) => {
@@ -361,6 +411,7 @@ const GetReceiptsList = async (hostelId) => {
         errorMsg,
         refundError,
         GetAllBillDetails,
+        GetFilteredBills, 
         CreateManualBill,
         RecordPayment,
         GetInitializeRefundDetails,
