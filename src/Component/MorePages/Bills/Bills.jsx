@@ -21,6 +21,7 @@ import { BankingContext } from "../../../Context/BankingContext";
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import MultiSelectDropdown from "./MultiSelectDropdown"
 
 import Profile from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";  
@@ -73,11 +74,39 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
-  const { BillDetails, loading, GetAllBillDetails , RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  , GetRecurringBills, recurringBills } = useContext(BillContext);
+  const { BillDetails, GetFilteredBills , loading, GetAllBillDetails ,
+     RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  
+     , GetRecurringBills, recurringBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
 
-    console.log("bills", BillDetails);
+
+  const filterOptions = BillDetails?.filterOptions;
+
+  const billStatusOptions = filterOptions?.paymentStatus?.map(i => ({
+  label: i?.name,
+  value: i?.type,
+}));
+
+
+const typeOptions = filterOptions?.invoiceTypes?.map(i => ({
+  label: i?.name,
+  value: i?.type,
+}));
+
+const modeOptions = filterOptions?.invoiceModes?.map(i => ({
+  label: i?.name,
+  value: i?.mode,
+}));
+
+
+const createdByOptions = filterOptions?.createdBy?.map(u => ({
+  label: u?.name.trim(),
+  value: u?.userId,
+}));
+
+
+    console.log("bills", BillDetails , filterOptions);
     console.log("recurringBills", recurringBills);
 
 
@@ -145,6 +174,14 @@ const [showRefundMode, setShowRefundMode] = useState(false);
 const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
 const refundModes = ["UPI", "Cash", "Bank Transfer"];
 
+
+// filter 
+const [billStatus, setBillStatus] = useState([]);
+const [type, setType] = useState([]);
+const [mode, setMode] = useState([]);
+const [createdBy, setCreatedBy] = useState([]);
+const [appliedFilters, setAppliedFilters] = useState(null);
+const [filterError, setFilterError] = useState("");
 
 
 
@@ -243,14 +280,27 @@ const CloseDelete = () =>{
   setDeleteTenants(false)
 }
 
-    const [fromDate, setFromDate] = useState(dayjs());
-    const [toDate, setToDate] = useState(dayjs());
+     const [fromDate, setFromDate] = useState(null);
+     const [toDate, setToDate] = useState(null);
+
 
     const [openFrom, setOpenFrom] = useState(false);
     const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
 
-    const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+    // const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+    const formatDate = (d) => {
+  if (!d) return "Select Date";
+  return dayjs(d).format("DD-MM-YYYY");
+};
+
+const payload = {
+  startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+  endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+};
+
+console.log("datepayload", payload);
+
 
     const [showBillDetails, setShowBillDetails] = useState(false);
     const [selectedBill, setSelectedBill] = useState(null);
@@ -710,6 +760,68 @@ const fetchRefundInitialize = async () => {
 console.log("refunddetails" , refundInitDetails , selectedBill?.invoiceDate);
 
 
+const handleApplyFilter = async () => {
+  // 🔹 Validation 1: End date without start date
+  if (!fromDate && toDate) {
+    setFilterError("Please select Start Date");
+    return;
+  }
+
+  // 🔹 Build filters object
+  const filters = {
+    startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+    endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+    paymentStatus: billStatus,
+    type: type,
+    modes: mode,
+    createdBy: createdBy,
+  };
+
+  // 🔹 Validation 2: At least one filter selected
+  const hasAnyFilter =
+    filters.startDate ||
+    filters.endDate ||
+    (filters.paymentStatus && filters.paymentStatus.length > 0) ||
+    (filters.type && filters.type.length > 0) ||
+    (filters.modes && filters.modes.length > 0) ||
+    (filters.createdBy && filters.createdBy.length > 0);
+
+  if (!hasAnyFilter) {
+    setFilterError("Please select at least one filter");
+    return;
+  }
+
+  // 🔹 API call
+  await GetFilteredBills(activeHostelId, filters);
+
+  // 🔹 Save applied filters for chips
+  setAppliedFilters(filters);
+
+  setShowFilter(false);
+};
+
+
+
+const handleResetFilters = async () => {
+  // 1️⃣ Clear filter states
+  setFromDate(null);
+  setToDate(null);
+  setBillStatus([]);
+  setType([]);
+  setMode([]);
+  setCreatedBy([]);
+
+  // 2️⃣ Remove chips
+  setAppliedFilters(null);
+  setFilterError("")
+
+  // 3️⃣ Normal GET bills API
+  await GetAllBillDetails(activeHostelId);
+};
+
+
+
+
 const handleShowRefundPayment = () => {
   setShowRefundPayment(true)
   setShowMenu(false);
@@ -942,14 +1054,64 @@ navigation.navigate("CancelNotice")
 {activeTab === "All Bills" && (
   <View style={{ flex: 1 }}>
 
-    {!loading && BillDetails && BillDetails.length > 0 ? (
+    {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
   <ScrollView
     showsVerticalScrollIndicator={false}
     contentContainerStyle={{ paddingBottom: 50 }}
   >
-    <Text style={styles.sectionTitle}>This Month</Text>
 
-    {BillDetails.map((item) => (
+    
+
+
+    {appliedFilters && (
+  <View style={{ marginTop: 10 }}>
+
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+
+        {/* STATUS */}
+        {appliedFilters.paymentStatus?.map((s) => (
+          <View key={s} style={styles.chip}>
+            <Text style={styles.chipText}>Status is : {s}</Text>
+          </View>
+        ))}
+
+        {/* TYPE */}
+        {appliedFilters.type?.map((t) => (
+          <View key={t} style={styles.chip}>
+            <Text style={styles.chipText}>Type is : {t}</Text>
+          </View>
+        ))}
+
+        {/* MODE */}
+        {appliedFilters.modes?.map((m) => (
+          <View key={m} style={styles.chip}>
+            <Text style={styles.chipText}>Mode is : {m}</Text>
+          </View>
+        ))}
+
+        {/* DATE RANGE */}
+        {appliedFilters.startDate && appliedFilters.endDate && (
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>
+              Date Region is : {appliedFilters.startDate} - {appliedFilters.endDate}
+            </Text>
+          </View>
+        )}
+
+      </View>
+    </ScrollView>
+
+    {/* RESET */}
+    <TouchableOpacity onPress={handleResetFilters}>
+      <Text style={styles.resetTextSmall}>Reset</Text>
+    </TouchableOpacity>
+
+  </View>
+)}
+
+
+    {BillDetails?.listInvoices?.map((item) => (
       <View key={item.invoiceId} style={styles.tenantRow}>
         <TouchableOpacity onPress={() => openBillDetails(item)}>
           <Image
@@ -984,9 +1146,10 @@ navigation.navigate("CancelNotice")
       </View>
     ))}
   </ScrollView>
-) : (
+) }
 
-      // 👉 EMPTY STATE WHEN NO DATA
+{( 
+   !loading && BillDetails?.listInvoices && BillDetails.listInvoices.length === 0 &&
       <View style={styles.centerContainer}>
         <Image source={EmptyFloor} style={styles.image} />
         <Text style={styles.noFloorText}>No bills are there!</Text>
@@ -997,9 +1160,9 @@ navigation.navigate("CancelNotice")
       </View>
     )}
 
-    {!loading && BillDetails.length > 0 && (
+    {!loading && BillDetails?.listInvoices?.length > 0 && (
         <>
-         <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
+         <TouchableOpacity style={styles.FilterButton} onPress={() => setShowFilter(true)}>
       <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
     </TouchableOpacity>
 
@@ -1965,9 +2128,9 @@ navigation.navigate("CancelNotice")
                    <Text style={styles.label}>Date Range</Text>
                    <TouchableOpacity
                      onPress={() => {
-                       setFromDate(dayjs());
-                       setToDate(dayjs());
-                       setAmountSelected(amountOptions[0]);
+                       setFromDate(null);
+                       setToDate(null);
+                       setFilterError("")
                      }}
                    >
                      <Text style={styles.resetTextSmall}>Reset</Text>
@@ -1985,68 +2148,96 @@ navigation.navigate("CancelNotice")
                      <Image source={CalendarIcon} style={styles.calIcon} />
                    </TouchableOpacity>
                  </View>
+                     
      
                  <View style={styles.quickRow}>
                    <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                     <Text style={styles.quickText}>Today</Text>
+                     <Text style={styles.quickText}>This Month</Text>
                    </TouchableOpacity>
      
                    <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                     <Text style={styles.quickText}>This Week</Text>
+                     <Text style={styles.quickText}>Last Month</Text>
                    </TouchableOpacity>
      
                    <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                     <Text style={styles.quickText}>This Month</Text>
+                     <Text style={styles.quickText}>Last 3 Months</Text>
                    </TouchableOpacity>
                  </View>
+
+   <MultiSelectDropdown
+  label="Bill Status"
+  placeholder="Select Bill Status"
+  options={billStatusOptions}
+  selected={billStatus}
+  onChange={(values) => {
+    setBillStatus(values);
+    setFilterError("");  
+  }}
+/>
+
+<MultiSelectDropdown
+  label="Type"
+  placeholder="Select Type"
+  options={typeOptions}
+  selected={type}
+  onChange={(values) => {
+    setType(values);
+    setFilterError("");  
+  }}
+/>
+
+
+<MultiSelectDropdown
+  label="Mode"
+  placeholder="Select Mode"
+  options={modeOptions}
+  selected={mode}
+   onChange={(values) => {
+    setMode(values);
+    setFilterError("");  
+  }}
+/>
+
+
+<MultiSelectDropdown
+  label="Created By"
+  placeholder="Select User"
+  options={createdByOptions}
+  selected={createdBy}
+   onChange={(values) => {
+    setCreatedBy(values);
+    setFilterError("");  
+  }}
+/>
+
+
+{/* <MultiSelectDropdown
+  label="Period"
+  placeholder="Select Period"
+  options={["This Month", "Last Month", "Last 3 Months"]}
+/> */}
      
-                 <Text style={[styles.label, { marginTop: 18 }]}>Type</Text>
-     
-                 <View
-                   style={styles.selectWrapper}
-                   onLayout={(event) => {
-                     const { y, height } = event.nativeEvent.layout;
-                     const screenHeight = Dimensions.get("window").height;
-                     const bottomSpace = screenHeight - (y + height);
-     
-                     setOpenUpward(bottomSpace < 250);
-                   }}
-                 >
-                   <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
-                     <Text style={styles.selectedText}>{amountSelected}</Text>
-                     <Image source={DownArrow} style={styles.downArrow} />
-                   </TouchableOpacity>
-     
-                   {amountDropdownVisible && (
-                     <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
-                       <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                         {amountOptions.map((opt) => (
-                           <TouchableOpacity key={opt} style={styles.option}
-                             onPress={() => {
-                               setAmountSelected(opt);
-                               setAmountDropdownVisible(false);
-                             }}
-                           >
-                             <Text style={styles.optionText}>{opt}</Text>
-                           </TouchableOpacity>
-                         ))}
-                       </ScrollView>
-                     </View>
-                   )}
-                 </View>
+      {filterError && (
+                    <ErrorMessage message={filterError} type="error" />
+                                )}
+                
      
                  <View style={styles.bottomButtons}>
                    <TouchableOpacity style={styles.resetBtn}
-                     onPress={() => {
-                       setFromDate(dayjs());
-                       setToDate(dayjs());
-                       setAmountSelected(amountOptions[0]);
+                      onPress={() => {
+                       setFromDate(null);
+                       setToDate(null);
+                       setCreatedBy([]);
+                       setBillStatus([]);
+                       setType([]);
+                       setMode([]);
+                       setFilterError("")
                      }}
                    >
                      <Text style={styles.resetBtnText}>Reset All</Text>
                    </TouchableOpacity>
      
-                   <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                   <TouchableOpacity style={styles.applyBtn} onPress={handleApplyFilter}>
                      <Text style={styles.applyBtnText}>Apply</Text>
                    </TouchableOpacity>
                  </View>
@@ -2070,13 +2261,15 @@ navigation.navigate("CancelNotice")
       <TouchableWithoutFeedback>
         <View>
           <DatePicker
-            mode="single"
-            date={fromDate}
-            onChange={(d) => {
-              setFromDate(d.date);
-              setOpenFrom(false);
-            }}
-          />
+  mode="single"
+  date={fromDate ? dayjs(fromDate) : dayjs()}
+  onChange={(d) => {
+    setFromDate(d.date);
+    setOpenFrom(false);
+    setFilterError("")
+  }}
+/>
+
         </View>
       </TouchableWithoutFeedback>
     </View>
@@ -2102,14 +2295,16 @@ navigation.navigate("CancelNotice")
     <View style={styles.datePickerBox}>
       <TouchableWithoutFeedback>
         <View>
-          <DatePicker
-            mode="single"
-            date={toDate}
-            onChange={(d) => {
-              setToDate(d.date);
-              setOpenTo(false);
-            }}
-          />
+         <DatePicker
+  mode="single"
+  date={toDate ? dayjs(toDate) : dayjs()}
+  onChange={(d) => {
+    setToDate(d.date);
+    setOpenTo(false);
+    setFilterError("")
+  }}
+/>
+
         </View>
       </TouchableWithoutFeedback>
     </View>
@@ -2396,10 +2591,10 @@ activeText: {
 //     right: 10,
 //     bottom: 50,
 //   },
-   editButton: {
+   FilterButton: {
    position: "absolute",
     bottom: 120,
-    right: 20,
+    right: 15,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
@@ -2680,6 +2875,7 @@ bottomButtons: {
   flexDirection: "row",
   justifyContent: "space-between",
   marginTop: 25,
+  marginBottom: 5
 },
 
 resetBtn: {
@@ -2878,7 +3074,7 @@ downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   optionText: { fontSize: 15, color: "#000" },
 
  filterTitle: { fontSize: 20, fontWeight: "700" },
-  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
+  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" , marginLeft:10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
@@ -2901,7 +3097,7 @@ downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
- bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
+//  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
@@ -3110,5 +3306,19 @@ dateModalBox: {
   width: "90%",
 },
 
+chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F2F4F7",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  chipText: {
+    fontSize: 13,
+    marginRight: 6,
+  },
 
 });
