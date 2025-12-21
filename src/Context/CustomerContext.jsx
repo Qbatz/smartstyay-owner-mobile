@@ -279,6 +279,42 @@ export const CustomerProvider = ({ children }) => {
     }
   };
 
+const moveToNoticePeriod = async (hostelId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/notice/${hostelId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 201 || res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Failed to move notice" };
+
+  }
+  catch (error) {
+  console.log("NOTICE ERROR FULL 👉", error.response?.data);
+  return {
+    success: false,
+    message:
+      error?.response?.data?.message ||
+      JSON.stringify(error?.response?.data) ||
+      "Move to notice failed",
+  };
+}
+
+};
+
+
 
   return (
     <CustomerContext.Provider
@@ -289,7 +325,7 @@ export const CustomerProvider = ({ children }) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer, getBedsByHostelAndDate, checkInCustomer, deleteCustomer, changeBedCustomer, getCustomerDetails
+        addCustomer, getBedsByHostelAndDate, checkInCustomer, deleteCustomer, changeBedCustomer, getCustomerDetails,moveToNoticePeriod
       }}
     >
       {children}

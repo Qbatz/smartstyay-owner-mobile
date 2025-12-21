@@ -80,8 +80,7 @@ export default function TenantsScreen({ route }) {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showReAssignbed, setShowReAssignBed] = useState(false)
   const [showNotice, setShowNotice] = useState(false);
-  const [reqDate, setReqDate] = useState("31/07/2025");
-  const [outDate, setOutDate] = useState("30/08/2025");
+
   const [reason, setReason] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
@@ -602,10 +601,16 @@ export default function TenantsScreen({ route }) {
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.popupRow}
+                        // onPress={() => {
+                        //   setShowMenu(false);
+                        //   setShowNotice(true);
+                        // }}
                         onPress={() => {
-                          setShowMenu(false);
-                          setShowNotice(true);
-                        }}
+  setSelectedCustomer(selectedItem); 
+  setShowMenu(false);
+  setShowNotice(true);
+}}
+
                       >
                         <Image
                           source={require("../../Assets/Images/ReAssign.png")}
@@ -986,12 +991,10 @@ export default function TenantsScreen({ route }) {
           <MoveNoticeSheet
             visible={showNotice}
             onClose={() => setShowNotice(false)}
-            tenant={selectedCustomer}
-            requestDate={reqDate}
-            checkoutDate={outDate}
-            reason={reason}
-            setRequestDate={setReqDate}
-            setCheckoutDate={setOutDate}
+           customer={selectedCustomer}
+            onSuccess={fetchCustomers}
+        
+          
 
 
           />
