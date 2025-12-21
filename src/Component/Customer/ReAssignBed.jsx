@@ -21,18 +21,20 @@ import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
 import { useFloor } from "../../Context/PayingGuestContext";
+import SuccessModal from "../../ToastFile/ToastPage";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
-export default function ReassignBedSheet({ visible, onClose, customer }) {
+export default function ReassignBedSheet({ visible, onClose, customer, onSuccess }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  console.log("customer", customer)
+
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel,changeBedCustomer } = useCustomer();
-  const [reFloor, setReFloor] = useState("");
-  const [reRoom, setReRoom] = useState("");
-  const [reBed, setReBed] = useState("");
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
+
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
   const [date, setDate] = useState(null);
 
@@ -43,17 +45,10 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
   const [floors, setFloors] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [beds, setBeds] = useState([]);
-
-  // const [floors,setFloors]  =useState ["Floor 1", "Floor 2", "Floor 3", "Floor 4", "Floor 5"];
-  const [floorOpen, setFloorOpen] = useState(false);
+  const [sameAsCurrent, setSameAsCurrent] = useState(false);
   const [floorSelected, setFloorSelected] = useState(null);
-  // const [rooms,setRooms] = useState["Room_1", "Room_2", "Room_3", "Room_4", "Room_5"];
-  const [roomOpen, setRoomOpen] = useState(false);
   const [roomSelected, setRoomSelected] = useState(null);
-  // const [beds,setBeds] =useState ["one", "two", "three", "four", "five"];
-  const [bedOpen, setBedOpen] = useState(false);
   const [bedSelected, setBedSelected] = useState(null);
-
   const [dateError, setDateError] = useState("")
   const [floorError, setFloorError] = useState("")
   const [roomError, setRoomError] = useState("")
@@ -62,11 +57,36 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
   const [disableSheetDrag, setDisableSheetDrag] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [disableSheetScroll, setDisableSheetScroll] = useState(false);
+  const [rentAmount, setRentAmount] = useState("")
   const isFloorDisabled = !date;
   const isRoomDisabled = !date || !floorSelected;
   const isBedDisabled = !date || !floorSelected || !roomSelected;
+  const [currentFloorName, setCurrentFloorName] = useState("")
+  const [currentRoomName, setCurrentRoomName] = useState("")
+  const [currentBedName, setCurrentBedName] = useState("")
 
-  // values: "floor" | "room" | "bed" | null
+
+  useEffect(() => {
+    if (visible && customer?.customerId) {
+      fetchCustomerDetails();
+    }
+  }, [visible, customer]);
+
+  const fetchCustomerDetails = async () => {
+    const res = await getCustomerDetails(customer.customerId);
+
+    if (res.success) {
+      setRentAmount(String(res.data.hostelInfo?.monthlyRent || ""));
+
+      setCurrentFloorName(res.data.hostelInfo.floorName)
+      setCurrentRoomName(res.data.hostelInfo.roomName)
+      setCurrentBedName(res.data.hostelInfo.bedName)
+
+    } else {
+      alert(res.message);
+    }
+  };
+
   useEffect(() => {
     const isOpen = openDropdown !== null;
     setDisableSheetDrag(isOpen);
@@ -82,15 +102,8 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
     setFloorSelected("Select a Floor");
     setRoomSelected("Select a Room");
     setBedSelected("Select a Bed");
-
-
-    // setFloorOpen(false);
     setOpenDropdown(null)
-    // setRoomOpen(false);
-    // setBedOpen(false);
     setOpenDatePicker(false);
-
-
     setDateError("");
     setFloorError("");
     setRoomError("");
@@ -180,14 +193,12 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
         setFloors([]);
       }
     } catch (e) {
-      console.log("Floor error", e);
+    
       setFloors([]);
     }
   };
 
 
-
-  console.log("floors", floors)
   const loadRoomsByFloor = async (floorId) => {
     if (!floorId) return;
 
@@ -200,12 +211,10 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
         setRooms([]);
       }
     } catch (e) {
-      console.log("Room error", e);
       setRooms([]);
     }
   };
 
-  console.log("rooms", rooms)
   useEffect(() => {
     if (visible && activeHostelId) {
       loadFloors();        // 🔥 FLOOR API CALL
@@ -216,8 +225,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
 
     const formattedDate = dayjs(selectedDate).format("DD-MM-YYYY");
 
-    console.log("Calling bed API with:", formattedDate);
-
+  
     try {
       const res = await getBedsByHostelAndDate(
         activeHostelId,
@@ -226,25 +234,17 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
 
       if (res?.success) {
         setBeds(res.data.listBeds || []);
-        console.log("test", res.data.listBeds)
+       
       } else {
         setBeds([]);
       }
     } catch (err) {
-      console.log("BED FETCH ERROR:", err);
+    
       setBeds([]);
     }
   };
-  console.log("beds", beds)
-  // const filteredBeds = beds.filter((b) => {
-  //   if (!floorSelected || !roomSelected) return false;
 
-  //   return (
-  //     b.floorName === floorSelected &&
-  //     b.roomName === roomSelected &&
-  //     b.currentStatus === "VACANT"
-  //   );
-  // });
+
   const filteredBeds = beds.filter(bed => {
     if (!floorSelected || !roomSelected) return false;
 
@@ -253,107 +253,89 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
       bed.roomId === roomSelected.id &&
       bed.currentStatus === "VACANT"
     );
+
   });
 
 
+  const handleSubmit = async () => {
+    const customerId = customer?.customerId || customer?.id;
+    let valid = true;
+
+    // reset errors
+    setDateError("");
+    setFloorError("");
+    setRoomError("");
+    setBedError("");
+    setRentError("");
+
+    if (!date) {
+      setDateError("Date is required");
+      valid = false;
+    }
+
+    if (!floorSelected) {
+      setFloorError("Please select a floor");
+      valid = false;
+    }
+
+    if (!roomSelected) {
+      setRoomError("Please select a room");
+      valid = false;
+    }
+
+    if (!bedSelected) {
+      setBedError("Please select a bed");
+      valid = false;
+    }
+
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      setRentError("Enter valid rent amount");
+      valid = false;
+    }
+
+    if (!valid) return;
 
 
+    const payload = {
+      bedId: bedSelected.bedId,
+      rentAmount: Number(amount),
+      joiningDate: dayjs(date).format("YYYY-MM-DD"),
+      reason: reason || "",
+    };
+    const res = await changeBedCustomer(
+      activeHostelId,
+      customerId,
+      payload
+    );
 
-  console.log("filteredBeds", filteredBeds)
- const handleSubmit = async () => {
-  const customerId = customer?.customerId || customer?.id;
+    if (res.success) {
 
-  if (!customerId) {
-    alert("Customer ID missing");
-    return;
-  }
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      onSuccess && onSuccess();
+      setTimeout(() => {
+        setShowSuccess(false);
+        closeSheet();
 
-  if (!bedSelected?.bedId) {
-    alert("Bed not selected properly");
-    return;
-  }
+      }, 800);
 
-  const payload = {
-    bedId: bedSelected.bedId,
-    rentAmount: Number(amount),
-    joiningDate: dayjs(date).format("YYYY-MM-DD"),
-    reason: reason || "",
+
+    } else {
+
+      alert(res.message || "Change bed failed");
+    }
   };
 
-  console.log("CHANGE BED PAYLOAD", payload);
-
-  const res = await changeBedCustomer(
-    activeHostelId,
-    customerId,
-    payload
-  );
-
-  if (res.success) {
-    await getCustomersByHostel(activeHostelId);
-    closeSheet();
-  } else {
-    console.log("API FAIL MSG:", res.message);
-    alert(res.message || "Change bed failed");
-  }
-};
 
 
-  // const handleSubmit = () => {
-  //   let valid = true;
-
-  //   // reset errors
-  //   setDateError("");
-  //   setFloorError("");
-  //   setRoomError("");
-  //   setBedError("");
-  //   setRentError("");
-
-  //   if (!date) {
-  //     setDateError("Date is required");
-  //     valid = false;
-  //   }
-
-  //   if (floorSelected === "Select a Floor") {
-  //     setFloorError("Please select a floor");
-  //     valid = false;
-  //   }
-
-  //   if (roomSelected === "Select a Room") {
-  //     setRoomError("Please select a room");
-  //     valid = false;
-  //   }
-
-  //   if (bedSelected === "Select a Bed") {
-  //     setBedError("Please select a bed");
-  //     valid = false;
-  //   }
-
-  //   if (!amount || amount.trim() === "") {
-  //     setRentError("Rent amount is required");
-  //     valid = false;
-  //   }
-
-  //   if (!valid) return;
-
-
-  //   console.log("SUBMIT DATA", {
-  //     floorSelected,
-  //     roomSelected,
-  //     bedSelected,
-  //     date: dayjs(date).format("YYYY-MM-DD"),
-  //     amount,
-  //     reason,
-  //   });
-
-  //   closeSheet();
-  // };
   const hasRooms = rooms && rooms.length > 0;
   const hasBeds = filteredBeds && filteredBeds.length > 0;
 
 
   return (
     <>
-
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <TouchableWithoutFeedback onPress={closeSheet}>
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
@@ -374,6 +356,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
                   const selectedDate = p.date;
                   setDate(selectedDate);
                   setOpenDatePicker(false);
+                  setDateError("")
 
 
                   setRooms([]);
@@ -412,8 +395,8 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
             <TextInput
               placeholder="Enter Floor"
               keyboardType="numeric"
-              // value={customer.floorName || "--"}
-              onChangeText={setAmount}
+              value={currentFloorName}
+
               style={{ flex: 1 }}
             />
           </View>
@@ -423,8 +406,8 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
             <TextInput
               placeholder="Enter Room"
               keyboardType="numeric"
-              value={amount}
-              onChangeText={setAmount}
+              value={currentRoomName}
+
               style={{ flex: 1 }}
             />
           </View>
@@ -433,14 +416,14 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
             <TextInput
               placeholder="Enter Bed"
               keyboardType="numeric"
-              value={amount}
-              onChangeText={setAmount}
+              value={currentBedName}
+
               style={{ flex: 1 }}
             />
           </View>
-          <Text style={styles.label}>Date</Text>
+          <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
           <TouchableOpacity
-            style={styles.inputBox}
+            style={styles.inputBoxdate}
             onPress={() => setOpenDatePicker(true)}
           >
             <Text>
@@ -455,7 +438,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
 
 
 
-          <Text style={styles.label}>Floor</Text>
+          <Text style={styles.label}>Floor <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -473,31 +456,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
             </TouchableOpacity>
 
 
-            {/*           
-           {openDropdown === "floor" && (
-              <View style={styles.dropdownMenu}>
-  <ScrollView
-  nestedScrollEnabled
-  keyboardShouldPersistTaps="handled"
-  onTouchStart={() => setDisableSheetDrag(true)}
-  onTouchEnd={() => setDisableSheetDrag(false)}
-  style={{ maxHeight: 160 }}
->
-                  {floors.map((v, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.option}
-                     onPress={() => {
-  setFloorSelected(v);
-  setOpenDropdown(null);
-}}
-                    >
-                      <Text style={styles.optionText}>{v}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )} */}
+
             {openDropdown === "floor" && (
               <View style={styles.dropdownMenu}>
                 <ScrollView style={{ maxHeight: 160 }}>
@@ -507,14 +466,14 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
                       style={styles.option}
                       onPress={() => {
 
-                        setFloorSelected(f);          // ✅ FULL OBJECT
+                        setFloorSelected(f);
                         setOpenDropdown(null);
 
                         setRoomSelected(null);
                         setBedSelected(null);
                         setRooms([]);
 
-
+                        setFloorError("")
                         loadRoomsByFloor(f.id);
                       }}
 
@@ -530,7 +489,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
           {floorError && (
             <ErrorMessage message={floorError} type="error" />
           )}
-          <Text style={styles.label}>Room</Text>
+          <Text style={styles.label}>Room <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -566,6 +525,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
                           setRoomSelected(r);
                           setOpenDropdown(null);
                           setBedSelected(null);
+                          setRoomError("")
                         }}
                       >
                         <Text style={styles.optionText}>{r.name}</Text>
@@ -581,7 +541,7 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
           {roomError && (
             <ErrorMessage message={roomError} type="error" />
           )}
-          <Text style={styles.label}>Bed</Text>
+          <Text style={styles.label}>Bed <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -612,10 +572,19 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
                       <TouchableOpacity
                         key={b.bedId}
                         style={styles.option}
+
                         onPress={() => {
                           setBedSelected(b);
                           setOpenDropdown(null);
+                          setBedError("");
+
+
+                          if (!sameAsCurrent) {
+                            setAmount(String(b.rentAmount));
+                            setRentError("");
+                          }
                         }}
+
                       >
                         <Text style={styles.optionText}>{b.bedName}</Text>
                       </TouchableOpacity>
@@ -630,22 +599,62 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
           {bedError && (
             <ErrorMessage message={bedError} type="error" />
           )}
-          <Text style={styles.label}>Date *</Text>
 
-          <Text style={styles.label}>New Rent Amount *</Text>
-          <View style={styles.inputBox}>
+          <View style={styles.rentHeader}>
+            <Text style={styles.label}>
+              New Rent Amount <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <TouchableOpacity
+              style={styles.sameRow}
+              onPress={() => {
+                const val = !sameAsCurrent;
+                setSameAsCurrent(val);
+
+                if (val) {
+                  setAmount(rentAmount);
+                  setRentError("");
+                } else {
+                  setAmount("");
+                }
+              }}
+              activeOpacity={0.8}
+            >
+
+              <View style={[styles.checkbox, sameAsCurrent && styles.checkboxChecked]}>
+                {sameAsCurrent && <Text style={styles.tick}>✓</Text>}
+              </View>
+              <Text style={styles.sameText}>Same as Current</Text>
+            </TouchableOpacity>
+          </View>
+
+
+          <View
+            style={[
+              styles.inputBox,
+              sameAsCurrent && styles.disabledInput,
+            ]}
+          >
             <TextInput
               placeholder="Enter Amount"
               keyboardType="numeric"
               value={amount}
-              onChangeText={setAmount}
-              style={{ flex: 1 }}
+
+              onChangeText={(text) => {
+                setAmount(text);
+                setRentError("");
+              }}
+              style={{ flex: 1, color: sameAsCurrent ? "#000" : "#000" }}
             />
+
           </View>
+
           {rentError && (
             <ErrorMessage message={rentError} type="error" />
           )}
-          <Text style={styles.label}>Reason *</Text>
+
+
+          <Text style={styles.label}>Reason </Text>
           <View style={styles.textArea}>
             <TextInput
               multiline
@@ -673,31 +682,21 @@ export default function ReassignBedSheet({ visible, onClose, customer }) {
   );
 }
 
-/* ---------- Styles ---------- */
+
 const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
   },
-  // sheet: {
-  //   position: "absolute",
-  //   left: 0,           
-  //   right: 0,      
-  //   bottom: 0,
-  //   width: "100%",
-  //   backgroundColor: "#fff",
-  //   borderTopLeftRadius: 30,
-  //   borderTopRightRadius: 30,
-  //   padding: 20,
-  // },
+
   sheet: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
 
-    height: "95%",     
+    height: "95%",
     maxHeight: "90%",
 
     backgroundColor: "#fff",
@@ -721,7 +720,16 @@ const styles = StyleSheet.create({
   star: { color: "red" },
   inputBox: {
     backgroundColor: "#F6F8FF",
-    padding: 14,
+    padding: 5,
+    borderRadius: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  inputBoxdate: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    padding: 15,
     borderRadius: 12,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -841,7 +849,64 @@ const styles = StyleSheet.create({
     color: "#999",
     fontStyle: "italic",
     fontSize: 14,
-  }
+  },
+  rentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 14,
+  },
+
+  sameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  sameText: {
+    fontSize: 14,
+    color: "#2563EB",
+    marginLeft: 6,
+  },
+
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderWidth: 1.5,
+    borderColor: "#2563EB",
+    borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  checkboxChecked: {
+    backgroundColor: "#2563EB",
+  },
+
+  tick: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+
+  checkboxDot: {
+    width: 8,
+    height: 8,
+    backgroundColor: "#fff",
+    borderRadius: 2,
+  },
+
+
+
+  disabledInput: {
+    backgroundColor: "#F6F8FF",
+    padding: 5,
+    borderRadius: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
 
 
 

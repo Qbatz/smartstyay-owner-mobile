@@ -24,6 +24,8 @@ import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
 import Delete from "../../Assets/Images/remove.png";
 import ErrorMessage from '../ErrorMessagr/Errormessagestyle';
+import SuccessModal from '../../ToastFile/ToastPage';
+
 export default function TenantCheckIn({ navigation, route }) {
   const { customerId, customer } = route.params || {};
   const [tab, setTab] = useState("long");
@@ -37,7 +39,9 @@ export default function TenantCheckIn({ navigation, route }) {
   const [rooms, setRooms] = useState([]);
   const [roomOpen, setRoomOpen] = useState(false);
 
-
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
   const [selectedRoom, setSelectedRoom] = useState(null);
 
   const [beds, setBeds] = useState([]);
@@ -48,6 +52,12 @@ export default function TenantCheckIn({ navigation, route }) {
   const [bedError, setBedError] = useState('')
   const [advanceError, setAdvanceError] = useState("")
   const [rentError, setRentError] = useState("")
+   const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [joiningDate, setJoiningDate] = useState(new Date());
+  const [advanceAmount, setAdvanceAmount] = useState("");
+  const [rentalAmount, setRentalAmount] = useState("");
+   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [extraCharges, setExtraCharges] = useState([]);
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -63,7 +73,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
     }
   };
-  console.log("customer", customer)
+
 
   const loadRooms = async (floorId) => {
     const res = await getAllRoomsByFloor(floorId);
@@ -74,7 +84,7 @@ export default function TenantCheckIn({ navigation, route }) {
     }
   };
 
-  console.log("floors...?", rooms)
+
 
   useEffect(() => {
     if (!activeHostelId || !joiningDate) return;
@@ -100,7 +110,7 @@ export default function TenantCheckIn({ navigation, route }) {
       setBeds([]);
     }
   };
-  console.log("Beds", beds)
+
   const filteredBeds = beds.filter(bed => {
     if (!selectedFloor || !selectedRoom) return false;
 
@@ -110,36 +120,10 @@ export default function TenantCheckIn({ navigation, route }) {
       bed.currentStatus === "VACANT"
     );
   });
-  console.log("Filtered Beds:", filteredBeds);
 
-
-  const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [purchaseDate, setPurchaseDate] = useState(dayjs());
-  const [joiningDate, setJoiningDate] = useState(new Date());
-  const [showJoiningPicker, setShowJoiningPicker] = useState(false);
-
-  const [advanceAmount, setAdvanceAmount] = useState("");
-  const [rentalAmount, setRentalAmount] = useState("");
-
-  const [checkinDate, setCheckinDate] = useState(new Date());
-  const [showCheckinPicker, setShowCheckinPicker] = useState(false);
-  const [checkinTime, setCheckinTime] = useState(new Date());
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [checkoutDate, setCheckoutDate] = useState(new Date());
-  const [showCheckoutPicker, setShowCheckoutPicker] = useState(false);
-
-  const [amountPerDay, setAmountPerDay] = useState("500");
-
-  const billingModeOptions = ["Check-out Date", "Monthly", "Daily"];
-  const [billingMode, setBillingMode] = useState(billingModeOptions[0]);
-
-
-  const [maintenanceAmount, setMaintenanceAmount] = useState("");
-  const [nonRefundables, setNonRefundables] = useState([]);
-  const [extraCharges, setExtraCharges] = useState([]);
   const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
-  const [openDropdownId, setOpenDropdownId] = useState(null);
+ 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
 
 
@@ -186,17 +170,7 @@ export default function TenantCheckIn({ navigation, route }) {
     );
   };
 
-  console.log("nonRefundables", extraCharges)
-  const addNonRefundable = () => {
-    setNonRefundables(prev => [
-      ...prev,
-      { reason: "", amount: "" }
-    ]);
-  };
 
-  const removeNonRefundable = (index) => {
-    setNonRefundables(prev => prev.filter((_, i) => i !== index));
-  };
 
   const onFloorChange = (v) => {
     setSelectedFloor(v);
@@ -264,8 +238,15 @@ export default function TenantCheckIn({ navigation, route }) {
     const res = await checkInCustomer(customerId, payload);
 
     if (res.success) {
-      alert("Customer Checked-in Successfully ✅");
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
       navigation.goBack();
+      setTimeout(() => {
+        setShowSuccess(false);
+
+      }, 800);
+
     } else {
       alert(res.message);
     }
@@ -273,38 +254,11 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
 
-  // const submitLongStay = () => {
-  //   const payload = {
-  //     type: "long",
-  //     floor: selectedFloor,
-  //     room: selectedRoom,
-  //     bed: selectedBed,
-  //     joiningDate: joiningDate.toISOString(),
-  //     advanceAmount,
-  //     rentalAmount,
-  //     maintenanceAmount,
-  //     nonRefundables,
-  //   };
-  //   console.log("submitLongStay", payload);
-  // };
 
-  const submitShortStay = () => {
-    const payload = {
-      type: "short",
-      floor: selectedFloor,
-      room: selectedRoom,
-      bed: selectedBed,
-      checkinDate: checkinDate.toISOString(),
-      checkinTime: checkinTime.toISOString(),
-      checkoutDate: checkoutDate.toISOString(),
-      amountPerDay,
-      billingMode,
-    };
-    console.log("submitShortStay", payload);
-  };
 
   return (
     <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -353,19 +307,7 @@ export default function TenantCheckIn({ navigation, route }) {
           <ScrollView style={styles.container}>
 
 
-            {/* <View style={styles.field}>
-            <Text style={styles.label}>Bed</Text>
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={selectedBed}
-                onValueChange={(v) => setSelectedBed(v)}
-              >
-                {(beds[selectedRoom] || []).map((b) => (
-                  <Picker.Item key={b} label={b} value={b} />
-                ))}
-              </Picker>
-            </View>
-          </View> */}
+
 
             {tab === "long" && (
               <View>
@@ -398,16 +340,7 @@ export default function TenantCheckIn({ navigation, route }) {
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
                         {floors.map((v) => (
-                          // <TouchableOpacity
-                          //   key={v.id}
-                          //   style={styles.option}
-                          //   onPress={() => {
-                          //     setSelectedFloor(v);   // store whole object
-                          //     setFloorOpen(false);
-                          //   }}
-                          // >
-                          //   <Text style={styles.optionText}>{v.name}</Text>
-                          // </TouchableOpacity>
+
                           <TouchableOpacity
                             key={v.id}
                             style={styles.option}
@@ -415,11 +348,10 @@ export default function TenantCheckIn({ navigation, route }) {
                               setSelectedFloor(v);
                               setFloorOpen(false);
 
-                              setSelectedRoom(null);   // reset room
-                              setSelectedBed(null);    // reset bed
-                              setRooms([]);            // clear old rooms
-
-                              loadRooms(v.id);         // 🔥 CALL API WITH FLOOR ID
+                              setSelectedRoom(null);
+                              setSelectedBed(null);
+                              setRooms([]);
+                              loadRooms(v.id);
                             }}
                           >
                             <Text style={styles.optionText}>{v.name}</Text>
@@ -433,37 +365,7 @@ export default function TenantCheckIn({ navigation, route }) {
                   <ErrorMessage message={floorError} type="error" />
                 )}
 
-                {/* <Text style={styles.label}>Room</Text>
-          
-                              <View style={{ position: "relative" }}>
-                                  <TouchableOpacity
-                                      style={styles.select}
-                                      onPress={() => setRoomOpen(!roomOpen)}
-                                      activeOpacity={0.9}
-                                  >
-                                      <Text style={styles.selectText}>{selectedRoom}</Text>
-                                      <Image source={DownArrow} style={styles.arrow} />
-                                  </TouchableOpacity>
-          
-                                  {roomOpen && (
-                                      <View style={styles.dropdownMenu}>
-                                          <ScrollView style={{ maxHeight: 160 }}>
-                                              {rooms.map((v, index) => (
-                                                  <TouchableOpacity
-                                                      key={index}
-                                                      style={styles.option}
-                                                      onPress={() => {
-                                                          setSelectedRoom(v);
-                                                          setRoomOpen(false);
-                                                      }}
-                                                  >
-                                                      <Text style={styles.optionText}>{v}</Text>
-                                                  </TouchableOpacity>
-                                              ))}
-                                          </ScrollView>
-                                      </View>
-                                  )}
-                              </View> */}
+
                 <Text style={styles.label}>Room</Text>
 
                 <View style={{ position: "relative" }}>
@@ -471,7 +373,7 @@ export default function TenantCheckIn({ navigation, route }) {
                     style={styles.select}
                     onPress={() => setRoomOpen(!roomOpen)}
                     activeOpacity={0.9}
-                    disabled={!rooms.length}   // no rooms → disable
+                    disabled={!rooms.length}
                   >
                     <Text style={styles.selectText}>
                       {selectedRoom ? selectedRoom.name : "Select a Room"}
@@ -693,119 +595,7 @@ export default function TenantCheckIn({ navigation, route }) {
             )}
 
             {tab === "short" && (
-              // <View>
-              //   <View style={styles.field}>
-              //     <Text style={styles.label}>Check-in Date *</Text>
-              //     <TouchableOpacity
-              //       style={styles.input}
-              //       onPress={() => setShowCheckinPicker(true)}
-              //     >
-              //       <Text>{checkinDate.toLocaleDateString()}</Text>
-              //     </TouchableOpacity>
-
-              //     {showCheckinPicker && (
-              //       <DateTimePicker
-              //        value={checkinDate}
-              //        mode="date"
-              //        display={showCheckinPicker ? "default" : "none"}
-              //        minimumDate={new Date()}
-              //        onChange={(e, d) => {
-              //        setShowCheckinPicker(false);
-              //        if (d) setCheckinDate(d);
-              //        }}
-              //       />
-
-              //     )}
-              //   </View>
-
-              //   <View style={styles.field}>
-              //     <Text style={styles.label}>Check-in Time *</Text>
-              //     <TouchableOpacity
-              //       style={styles.input}
-              //       onPress={() => setShowTimePicker(true)}
-              //     >
-              //       <Text>
-              //         {checkinTime.toLocaleTimeString([], {
-              //           hour: "2-digit",
-              //           minute: "2-digit",
-              //         })}
-              //       </Text>
-              //     </TouchableOpacity>
-
-              //     {showTimePicker && (
-              //      <DateTimePicker
-              //      value={checkinTime}
-              //      mode="time"
-              //      display={showTimePicker ? "default" : "none"}
-              //      onChange={(e, d) => {
-              //      setShowTimePicker(false);
-              //      if (d) setCheckinTime(d);
-              //     }}
-              //    />
-
-              //     )}
-              //   </View>
-
-              //   <View style={styles.field}>
-              //     <Text style={styles.label}>Rental Amount/Day *</Text>
-              //     <TextInput
-              //       style={styles.input}
-              //       keyboardType="numeric"
-              //       value={amountPerDay}
-              //       onChangeText={setAmountPerDay}
-              //     />
-              //   </View>
-
-              //   <View style={styles.field}>
-              //     <Text style={styles.label}>Checkout Date (Expected)</Text>
-              //     <TouchableOpacity
-              //       style={styles.input}
-              //       onPress={() => setShowCheckoutPicker(true)}
-              //     >
-              //       <Text>{checkoutDate.toLocaleDateString()}</Text>
-              //     </TouchableOpacity>
-
-              //     {showCheckoutPicker && (
-              //       <DateTimePicker
-              //        value={checkoutDate}
-              //        mode="date"
-              //        display={showCheckoutPicker ? "default" : "none"}
-              //        minimumDate={checkinDate}
-              //        onChange={(e, d) => {
-              //        setShowCheckoutPicker(false);
-              //        if (d) setCheckoutDate(d);
-              //         }}
-              //      />
-
-              //     )}
-              //   </View>
-
-              //   <View style={styles.field}>
-              //     <Text style={styles.label}>Billing Mode</Text>
-              //     <View style={styles.pickerWrap}>
-              //       <Picker
-              //         selectedValue={billingMode}
-              //         onValueChange={(v) => setBillingMode(v)}
-              //       >
-              //         {billingModeOptions.map((opt) => (
-              //           <Picker.Item key={opt} label={opt} value={opt} />
-              //         ))}
-              //       </Picker>
-              //     </View>
-              //   </View>
-
-              //   <View style={styles.BtnRow}>
-              //     <TouchableOpacity style={styles.CancelBtn}>
-              //       <Text style={{ color: "grey", fontWeight: "600" }}>
-              //         Cancel
-              //       </Text>
-              //     </TouchableOpacity>
-
-              //     <TouchableOpacity style={styles.submitBtn} onPress={submitShortStay}>
-              //       <Text style={styles.submitText}>Assign Bed</Text>
-              //     </TouchableOpacity>
-              //   </View>
-              // </View>
+             
               <View><Text>Comming Soon</Text></View>
             )}
           </ScrollView>
