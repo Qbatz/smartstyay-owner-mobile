@@ -1,6 +1,6 @@
-import React, { useRef, useEffect,useState,useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback, useContext } from "react";
 import {
- View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, BackHandler, TouchableWithoutFeedback, Animated,
+  View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, BackHandler, TouchableWithoutFeedback, Animated,
   PanResponder,
 
 } from "react-native";
@@ -11,20 +11,36 @@ import QuestionIcon from "../../Assets/Images/help.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
+import { CommonContexts } from "../../Context/CommonContext";
+import { useCustomer } from "../../Context/CustomerContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 
 export default function MoveNoticeSheet({
-  visible, onClose, requestDate, checkoutDate, reason, setRequestDate, setCheckoutDate, setReason,
+  visible, onClose, customer, onSuccess
 }) {
   if (!visible) return null;
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getCustomersByHostel, loading, moveToNoticePeriod } = useCustomer();
 
-   useFocusEffect(
+  const [reason, setReason] = useState("");
+
+  const [reqDate, setReqDate] = useState(null);
+  const [outDate, setOutDate] = useState(null);
+  const [reqDateError, setReqDateError] = useState("");
+  const [outDateError, setOutDateError] = useState("");
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  console.log("customer", customer)
+  useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
 
-        console.log("Back Pressed - Modal Visible:", visible);
+
 
         if (visible) {
           onClose();
@@ -75,102 +91,173 @@ export default function MoveNoticeSheet({
       },
     })
   ).current;
+  const handleMoveNotice = async () => {
+
+
+    let hasError = false;
+
+
+    setReqDateError("");
+    setOutDateError("");
+
+    if (!reqDate) {
+      setReqDateError("Please select request date");
+      hasError = true;
+    }
+
+    if (!outDate) {
+      setOutDateError("Please select checkout date");
+      hasError = true;
+    }
+
+    if (!customer?.customerId) {
+      alert("Customer not found");
+      return;
+    }
+
+    if (hasError) return;
+
+    const payload = {
+      customerId: customer.customerId,
+      requestDate: dayjs(reqDate).format("DD-MM-YYYY"),
+      checkoutDate: dayjs(outDate).format("DD-MM-YYYY"),
+      reason: reason || "",
+    };
+
+
+
+    const res = await moveToNoticePeriod(activeHostelId, payload);
+
+    if (res.success) {
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      onSuccess && onSuccess();
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+      }, 800);
+
+
+    } else {
+      alert(res.message || "Move to notice failed ❌");
+    }
+  };
+
+  const getNoticeDays = () => {
+    if (!reqDate || !outDate) return 0;
+
+    const start = dayjs(reqDate);
+    const end = dayjs(outDate);
+
+    return end.diff(start, "day") + 1;
+  };
+
+
+
+
 
   return (
     <>
-    <View style={styles.overlay}>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <View style={styles.overlay}>
 
-      {/* Tap outside to close */}
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={{ flex: 1 }} />
-      </TouchableWithoutFeedback>
+        {/* Tap outside to close */}
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
 
-      {/* Bottom Sheet */}
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[styles.sheet, { transform: [{ translateY }] }]}
-      >
-        <View style={styles.handle} />
+        {/* Bottom Sheet */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[styles.sheet, { transform: [{ translateY }] }]}
+        >
+          <View style={styles.handle} />
 
-        <Text style={styles.title}>Move to Notice Period?</Text>
-        <Text style={styles.noticeDays}>
-          Notice Days : <Text style={{ color: "#2D6CDF" }}>30</Text>
-        </Text>
+          <Text style={styles.title}>Move to Notice Period?</Text>
+          <Text style={styles.noticeDays}>
+            Notice Days : <Text style={{ color: "#2D6CDF" }}> {getNoticeDays()}</Text>
+          </Text>
 
-        {/* CUSTOMER INFO */}
-        <View style={styles.profileRow}>
-          <Image source={ Profile} style={styles.profileImg} />
 
-          <View style={{ marginLeft: 12 }}>
-            <Text style={styles.name}>PounRaj</Text>
+          <View style={styles.profileRow}>
+            <Image source={Profile} style={styles.profileImg} />
 
-            <View style={styles.badgeRow}>
-              <View style={styles.badgeYellow}>
-                <Text style={styles.badgeText}>GrounFloor</Text>
-              </View>
+            <View style={{ marginLeft: 12 }}>
+              <Text style={styles.name}>{customer.fullName}</Text>
 
-              <View style={styles.badgeRed}>
-                <Text style={styles.badgeText}>
-                  Room_1 - Bed_1
-                </Text>
+              <View style={styles.badgeRow}>
+                <View style={styles.badgeYellow}>
+                  <Text style={styles.badgeText}>{customer.floorName}</Text>
+                </View>
+
+                <View style={styles.badgeRed}>
+                  <Text style={styles.badgeText}>
+                    {customer.roomName} - {customer.bedName}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Request Date */}
-              <Text style={styles.label}>Request Date</Text>
-              <TouchableOpacity
-                style={styles.inputBox}
-                onPress={() => setOpenRequestPicker(true)}
-              >
-                <Text style={styles.textInput}>
-                  {requestDate || "Select Request Date"}
-                </Text>
-                <Image source={CalendarIcon} style={styles.calendarIcon} />
-              </TouchableOpacity>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Request Date */}
+            <Text style={styles.label}>Request Date</Text>
+            <TouchableOpacity
+              style={styles.inputBox}
+              onPress={() => setOpenRequestPicker(true)}
+            >
+              <Text style={styles.textInput}>
+                {reqDate ? dayjs(reqDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+              </Text>
+              <Image source={CalendarIcon} style={styles.calendarIcon} />
+            </TouchableOpacity>
+            {reqDateError && (
+              <ErrorMessage message={reqDateError} type="error" />
+            )}
 
-              {/* Checkout Date */}
-              <Text style={styles.label}>Checkout Date</Text>
-              <TouchableOpacity
-                style={styles.inputBox}
-                onPress={() => setOpenCheckoutPicker(true)}
-              >
-                <Text style={styles.textInput}>
-                  {checkoutDate || "Select Checkout Date"}
-                </Text>
-                <Image source={CalendarIcon} style={styles.calendarIcon} />
-              </TouchableOpacity>
+            {/* Checkout Date */}
+            <Text style={styles.label}>Checkout Date</Text>
+            <TouchableOpacity
+              style={styles.inputBox}
+              onPress={() => setOpenCheckoutPicker(true)}
+            >
+              <Text style={styles.textInput}>
+                {outDate ? dayjs(outDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+              </Text>
+              <Image source={CalendarIcon} style={styles.calendarIcon} />
+            </TouchableOpacity>
+            {outDateError && (
+              <ErrorMessage message={outDateError} type="error" />
+            )}
+            {/* Reason */}
+            <Text style={styles.label}>Reason (Comments)</Text>
+            <TextInput
+              style={styles.textArea}
+              value={reason}
+              onChangeText={setReason}
+              placeholder="Enter Reason"
+              multiline
+            />
+          </ScrollView>
 
-              {/* Reason */}
-              <Text style={styles.label}>Reason (Comments)</Text>
-              <TextInput
-                style={styles.textArea}
-                value={reason}
-                // onChangeText={setReason}
-                placeholder="Enter Reason"
-                multiline
-              />
-            </ScrollView>
+          <View style={styles.footer}>
+            <TouchableOpacity onPress={onClose} style={styles.CancelBtn}>
+              <Text style={styles.cancel}>Cancel</Text>
+            </TouchableOpacity>
 
-        {/* Footer */}
-         <View style={styles.footer}>
-              <TouchableOpacity onPress={onClose} style={styles.CancelBtn}>
-                <Text style={styles.cancel}>Cancel</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.moveBtn}
+              onPress={handleMoveNotice}
+            >
+              <Text style={styles.moveText}>Move</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-  style={styles.moveBtn}
-  onPress={() => setShowNoticeModal(true)}
->
-  <Text style={styles.moveText}>Move</Text>
-</TouchableOpacity>
-
-            </View>
-      </Animated.View>
-    </View>
-    <Modal
+          </View>
+        </Animated.View>
+      </View>
+      <Modal
         visible={openRequestPicker}
         transparent
         animationType="fade"
@@ -184,16 +271,20 @@ export default function MoveNoticeSheet({
           <View style={styles.calendarBox}>
             <DatePicker
               mode="single"
-              date={dayjs()}
+              date={reqDate ?? undefined}
               onChange={(p) => {
-                setRequestDate(dayjs(p.date).format("DD/MM/YYYY"));
+                setReqDate(p.date);
+                setReqDateError("");
                 setOpenRequestPicker(false);
               }}
             />
+
+
+
           </View>
         </View>
       </Modal>
-     <Modal
+      <Modal
         visible={openCheckoutPicker}
         transparent
         animationType="fade"
@@ -207,58 +298,62 @@ export default function MoveNoticeSheet({
           <View style={styles.calendarBox}>
             <DatePicker
               mode="single"
-              date={dayjs()}
+              date={outDate ?? undefined}
               onChange={(p) => {
-                setCheckoutDate(dayjs(p.date).format("DD/MM/YYYY"));
+                setOutDate(p.date);
+                setOutDateError("");
                 setOpenCheckoutPicker(false);
               }}
             />
+
+
+
           </View>
         </View>
       </Modal>
-  <Modal
-  visible={showNoticeModal}
-  transparent
-  animationType="fade"
-  onRequestClose={() => setShowNoticeModal(false)}
->
-  <View style={styles.confirmOverlay}>
-    <View style={styles.confirmBox}>
-      
-      {/* Title Row */}
-      <View style={styles.confirmTitleRow}>
-        <Image source={QuestionIcon} style={styles.confirmIcon} />
-        <Text style={styles.confirmTitle}>Move to Notice period?</Text>
-      </View>
+      <Modal
+        visible={showNoticeModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNoticeModal(false)}
+      >
+        <View style={styles.confirmOverlay}>
+          <View style={styles.confirmBox}>
 
-      {/* Message */}
-      <Text style={styles.confirmMessage}>
-        Are you sure you want to move this tenant to the notice period?
-      </Text>
+            {/* Title Row */}
+            <View style={styles.confirmTitleRow}>
+              <Image source={QuestionIcon} style={styles.confirmIcon} />
+              <Text style={styles.confirmTitle}>Move to Notice period?</Text>
+            </View>
 
-      {/* Buttons */}
-      <View style={styles.confirmButtons}>
-        <TouchableOpacity
-          style={styles.cancelConfirmBtn}
-          onPress={() => setShowNoticeModal(false)}
-        >
-          <Text style={styles.cancelConfirmText}>Cancel</Text>
-        </TouchableOpacity>
+            {/* Message */}
+            <Text style={styles.confirmMessage}>
+              Are you sure you want to move this tenant to the notice period?
+            </Text>
 
-        <TouchableOpacity
-          style={styles.okConfirmBtn}
-          onPress={() => {
-            setShowNoticeModal(false);
-            onMove(); 
-          }}
-        >
-          <Text style={styles.okConfirmText}>Confirm</Text>
-        </TouchableOpacity>
-      </View>
+            {/* Buttons */}
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity
+                style={styles.cancelConfirmBtn}
+                onPress={() => setShowNoticeModal(false)}
+              >
+                <Text style={styles.cancelConfirmText}>Cancel</Text>
+              </TouchableOpacity>
 
-    </View>
-  </View>
-</Modal> 
+              <TouchableOpacity
+                style={styles.okConfirmBtn}
+                onPress={() => {
+                  setShowNoticeModal(false);
+                  onMove();
+                }}
+              >
+                <Text style={styles.okConfirmText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
 
     </>
   );
@@ -339,12 +434,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
- footer: {
+  footer: {
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 20,
     paddingBottom: 50,
-},
+  },
 
 
   cancel: { fontSize: 18, color: "#6B7280" },
@@ -376,73 +471,73 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 10,
   },
- 
-    confirmOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "center",
-  alignItems: "center",
-},
 
-confirmBox: {
-  width: "90%",
-  backgroundColor: "#fff",
-  padding: 20,
-  borderRadius: 16,
-  elevation: 10,
-},
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-confirmTitleRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 10,
-},
+  confirmBox: {
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 16,
+    elevation: 10,
+  },
 
-confirmIcon: { width: 22, height: 22, marginRight: 8 },
+  confirmTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
 
-confirmTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  color: "#111",
-},
+  confirmIcon: { width: 22, height: 22, marginRight: 8 },
 
-confirmMessage: {
-  fontSize: 14,
-  color: "#555",
-  marginBottom: 20,
-  lineHeight: 20,
-},
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111",
+  },
 
-confirmButtons: {
-  flexDirection: "row",
-  justifyContent: "flex-end",
-},
+  confirmMessage: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 20,
+    lineHeight: 20,
+  },
 
-cancelConfirmBtn: {
-  borderWidth: 1,
-  borderColor: "#C7C7CC",
-  paddingHorizontal: 22,
-  paddingVertical: 10,
-  borderRadius: 10,
-  marginRight: 10,
-},
+  confirmButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
 
-cancelConfirmText: {
-  fontSize: 15,
-  color: "#555",
-  fontWeight: "600",
-},
+  cancelConfirmBtn: {
+    borderWidth: 1,
+    borderColor: "#C7C7CC",
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginRight: 10,
+  },
 
-okConfirmBtn: {
-  backgroundColor: "#2D6CDF",
-  paddingHorizontal: 25,
-  paddingVertical: 10,
-  borderRadius: 10,
-},
+  cancelConfirmText: {
+    fontSize: 15,
+    color: "#555",
+    fontWeight: "600",
+  },
 
-okConfirmText: {
-  color: "#fff",
-  fontSize: 15,
-  fontWeight: "700",
-},
+  okConfirmBtn: {
+    backgroundColor: "#2D6CDF",
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+
+  okConfirmText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
+  },
 });

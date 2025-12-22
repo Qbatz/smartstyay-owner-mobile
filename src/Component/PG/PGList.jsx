@@ -91,7 +91,7 @@ export default function PGPageFull({ route }) {
 
 
   const [editBedData, setEditBedData] = useState(null);
-
+console.log("selectedBed",selectedBed)
   // const handleEditBed = ()=>{
   //   setEditBed(true)
   //   setShowAddBed(true)
