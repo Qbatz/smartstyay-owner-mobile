@@ -399,6 +399,59 @@ const GetReceiptsList = async (hostelId) => {
 };
 
 
+const DeleteReceipt = async ({ hostelId, receiptId }) => {
+  if (!hostelId || !receiptId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const res = await AxiosConfig.delete(
+      `/v2/transaction/receipts/${hostelId}/${receiptId}`
+    );
+
+    if (res.status === 204) {
+      setReceiptsList((prev) =>
+        prev.filter((item) => item.transactionId !== receiptId)
+      );
+
+      return {
+        success: true,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to delete receipt",
+    };
+  } catch (error) {
+    const status = error?.response?.status;
+
+    if (status === 400 || status === 403) {
+      return {
+        success: false,
+        message: error?.response?.data,
+        statusCode: status,
+      };
+    }
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
 
   return (
@@ -419,6 +472,7 @@ const GetReceiptsList = async (hostelId) => {
         GetRecurringBills ,
          UpdateTenantRecurringStatus,
          GetReceiptsList,
+         DeleteReceipt , 
       }}
     >
       {children}

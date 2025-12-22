@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   BackHandler, Platform
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import General from "../../Assets/Images/General.png";
 import Manage from "../../Assets/Images/Manage.png";
 import Security from "../../Assets/Images/security.png";
@@ -52,17 +54,38 @@ export default function SettingsScreen({ navigation }) {
   { icon: AgreementIcon, title: "Agreement & Policy",screen:"Agreement"  },
 ];
 
-useEffect(() => {
-  const backHandler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    () => {
-      navigation.navigate("MoreDesign");
-      return true; 
-    }
-  );
+// useEffect(() => {
+//   const backHandler = BackHandler.addEventListener(
+//     "hardwareBackPress",
+//     () => {
+//       navigation.navigate("MoreDesign");
+//       return true; 
+//     }
+//   );
 
-  return () => backHandler.remove();
-}, []);
+//   return () => backHandler.remove();
+// }, []);
+
+
+
+useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      navigation.navigate("MoreDesign");
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove(); 
+  }, [navigation])
+);
+
+
+
 const renderItem = (item) => (
   <TouchableOpacity style={styles.itemRow}  onPress={() => navigation.navigate(item.screen)}>
     <View style={styles.itemLeft}>
@@ -85,7 +108,7 @@ const renderItem = (item) => (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.replace("MoreDesign")}>
+       <TouchableOpacity onPress={() => navigation.navigate("MoreDesign")}>
           <Image
             source={BackArrow}
             style={styles.backIcon}

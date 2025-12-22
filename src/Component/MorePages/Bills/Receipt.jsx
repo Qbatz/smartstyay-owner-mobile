@@ -43,7 +43,7 @@ import EditIcon from  "../../../Assets/Images/editIcon.png"
 const Receipt = () => {
 
   const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
-      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList} = useContext(BillContext);
+      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt} = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
   
         console.log("receiptsList", receiptsList);
@@ -60,6 +60,10 @@ const Receipt = () => {
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 const [selectedCustomer, setSelectedCustomer] = useState(null);
 
+
+ const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
   
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
@@ -229,6 +233,8 @@ const openMenu = (item, id) => {
   });
 };
 
+console.log('selected', selectedCustomer);
+
 
 const handleShowReceiptPdf = () => {
 navigation.navigate("ReceiptPdf")
@@ -247,6 +253,36 @@ const handleEditBill = () => {
   });
     setShowMenu(false);
 }
+
+ console.log("selectedReceipt", selectedReceipt);
+
+const handleDeleteReceipt = async () => {
+
+  
+  const res = await DeleteReceipt({
+    hostelId: activeHostelId,
+    receiptId: selectedCustomer?.transactionId,
+  });
+
+  
+
+  if (res.success) {
+     
+  setModalType("success");
+  setModalMessage("Deleted Successfully");
+  setShowSuccessModal(true);
+  setDeleteReceipt(false)
+
+  setTimeout(() => setShowSuccessModal(false), 1500);
+  } else {
+   setModalType("warning");
+   setModalMessage(res?.message || "Something went wrong");
+   setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500); 
+  }
+};
+
   
 
   const toggleSwitch = (id) => {
@@ -316,6 +352,16 @@ const renderItem = ({ item }) => {
 
 
   return (
+
+    <>
+    
+      <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
+  
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.monthText}>This Month</Text>
@@ -654,10 +700,7 @@ const renderItem = ({ item }) => {
               
                         <TouchableOpacity
                           style={styles.deleteBtn}
-                          onPress={() => {
-                            console.log("DELETE CONFIRMED");
-                            setDeleteReceipt(false);
-                          }}
+                         onPress={()=> handleDeleteReceipt()}
                         >
                           <Text style={styles.deleteBtnText}>Delete</Text>
                         </TouchableOpacity>
@@ -669,6 +712,7 @@ const renderItem = ({ item }) => {
               )}
               
     </View>
+      </>
   );
 };
 
