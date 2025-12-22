@@ -76,7 +76,7 @@ export default function BillsDesign({ route }) {
 
   const { BillDetails, GetFilteredBills , loading, GetAllBillDetails ,
      RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  
-     , GetRecurringBills, recurringBills } = useContext(BillContext);
+     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
 
@@ -87,6 +87,9 @@ export default function BillsDesign({ route }) {
   label: i?.name,
   value: i?.type,
 }));
+
+console.log("BillPdfdetails", BillPdfdetails);
+
 
 
 const typeOptions = filterOptions?.invoiceTypes?.map(i => ({
@@ -587,6 +590,8 @@ const openBillDetails = (item) => {
   setShowBillDetails(true);
 };
 
+
+
 const handleShowWriteOff = () => {
   setShowWriteOff(true);
 }
@@ -979,9 +984,18 @@ const handleEditBill = () => {
   });
 }
 
-const handleShowBillPdf = () => {
+const handleShowBillPdf = async () => {
 navigation.navigate("BillsPdf")
+  const res = await getBillsPdfDetails(
+      selectedBill.hostelId,
+      selectedBill.invoiceId
+    );
+    console.log("res", res);
+    
 }
+
+console.log("selectedbill", selectedBill);
+
 
 const handleShowCancelNotice = () => {
 navigation.navigate("CancelNotice")
@@ -1227,20 +1241,26 @@ navigation.navigate("CancelNotice")
 
   {/* USER SECTION */}
   <View style={styles.userRow}>
-    <Image source={ProfileImage} style={styles.userImg} />
+    <Image 
+      source={
+         selectedBill?.profilePic
+           ? { uri: selectedBill.profilePic }
+           : ProfileImage
+       }
+    style={styles.userImg} />
 
     <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.userName}>Ajmal Muhammed</Text>
+      <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
 
       <View style={{ flexDirection: "row", marginTop: 4 }}>
         <View style={styles.invTypeBadge}>
-          <Text style={styles.invTypeText}>Checkout Inv</Text>
+          <Text style={styles.invTypeText}>{selectedBill?.invoiceType}</Text>
         </View>
  
         <Image source={Bills_Black_Icon} style={{   width: 12,
     height: 12, marginTop:5 , marginRight:5
   }} />
-        <Text style={styles.billNumber}>#1212121212</Text>
+        <Text style={styles.billNumber}>#{selectedBill?.invoiceNumber || "--"}</Text>
       </View>
     </View>
   </View>
@@ -1251,7 +1271,7 @@ navigation.navigate("CancelNotice")
       <Text style={styles.label}>Invoice date</Text>
       <View style={styles.rowAlign}>
         <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-        <Text style={styles.value}>5 Aug 2025</Text>
+        <Text style={styles.value}>{selectedBill?.invoiceDate}</Text>
       </View>
     </View>
 
@@ -1259,7 +1279,7 @@ navigation.navigate("CancelNotice")
       <Text style={styles.label}>Due date</Text>
       <View style={styles.rowAlign}>
         <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-        <Text style={styles.value}>8 Aug 2025</Text>
+        <Text style={styles.value}>{selectedBill?.dueDate}</Text>
       </View>
     </View>
   </View>
@@ -1272,7 +1292,7 @@ navigation.navigate("CancelNotice")
             <Image source={MoneyCheckIcon} style={{   width: 18,
     height: 18, marginTop:5 , marginRight:5
   }} />
-        <Text style={styles.amountValue}>₹7,000</Text>
+        <Text style={styles.amountValue}>₹{selectedBill?.invoiceAmount ?? "--"}</Text>
       </View>
     </View>
 
@@ -1282,7 +1302,7 @@ navigation.navigate("CancelNotice")
            <Image source={DueIcon} style={{   width: 18,
     height: 18, marginTop:5 , marginRight:5
   }} />
-        <Text style={styles.dueValue}>₹0.00</Text>
+        <Text style={styles.dueValue}>₹{selectedBill?.dueAmount ?? "--"}</Text>
       </View>
     </View>
   </View>

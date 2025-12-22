@@ -1,5 +1,6 @@
-import React from "react";
+import React , {useContext}from "react";
 import { View, Text, Image, ScrollView, StyleSheet } from "react-native";
+import { BillContext } from "../../../Context/BillsContext";
 import HostelImage from "../../../Assets/Images/PgImg.png";
 import PaymentReceivedIcon from "../../../Assets/Images/paymentreceived_image.png";
 import SigantureIcon from "../../../Assets/Images/signature.png";
@@ -7,6 +8,12 @@ import SigantureIcon from "../../../Assets/Images/signature.png";
 
 const ReceiptPdfViewer = ({ route }) => {
   const { pdfDetails } = route.params || {};
+
+  
+      const {  ReceiptPdfdetails  } = useContext(BillContext);
+      console.log("ReceiptPdfdetails", ReceiptPdfdetails);
+  
+      if (!ReceiptPdfdetails) return null;
 
   const receiptname = "PaymentReceipt"
 

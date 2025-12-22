@@ -43,7 +43,7 @@ import EditIcon from  "../../../Assets/Images/editIcon.png"
 const Receipt = () => {
 
   const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
-      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt} = useContext(BillContext);
+      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt , getReceiptPdfDetails} = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
   
         console.log("receiptsList", receiptsList);
@@ -233,12 +233,19 @@ const openMenu = (item, id) => {
   });
 };
 
-console.log('selected', selectedCustomer);
+console.log('selected', selectedCustomer ,  activeHostelId,
+      );
 
 
-const handleShowReceiptPdf = () => {
+const handleShowReceiptPdf = async () => {
 navigation.navigate("ReceiptPdf")
+  const res = await getReceiptPdfDetails(
+      activeHostelId,
+      selectedReceipt?.transactionId
+    );
+    console.log("res", res);
 }
+
 
 const handleCreateBill = () => {
 navigation.navigate("CreateReceipt" , {mode: "add"})
