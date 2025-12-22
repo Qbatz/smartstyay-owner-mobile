@@ -341,6 +341,31 @@ export const FloorProvider = ({ children }) => {
     }
   };
 
+const getBedById = async (bedId) => {
+  try {
+    setLoading(true);
+    const token = await retriveData("token");
+
+    const res = await api.get(
+      `/v2/bed/${bedId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (err) {
+    console.log("GET BED BY ID ERROR 👉", err?.response?.data || err);
+    return {
+      success: false,
+      message: err?.response?.data || "Failed to fetch bed",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -349,7 +374,7 @@ export const FloorProvider = ({ children }) => {
         floors,
         loading,
         getAllFloorsByHostel,
-        addFloor, getAllRoomsByFloor, addRoom, getAllBedsByRoom, addBed, updateRoom, deleteRoom, deleteBed, updateBed, updateFloor, deleteFloor
+        addFloor, getAllRoomsByFloor, addRoom, getAllBedsByRoom, addBed, updateRoom, deleteRoom, deleteBed, updateBed, updateFloor, deleteFloor,getBedById
       }}
     >
       {children}

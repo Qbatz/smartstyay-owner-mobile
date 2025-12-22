@@ -50,7 +50,7 @@ export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel,loading } = useCustomer();
+  const { getCustomersByHostel, loading } = useCustomer();
 
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -396,12 +396,12 @@ export default function TenantsScreen({ route }) {
                 </View>
               ))}
 
-   {!loading && customers.length === 0 &&
-            <View style={styles.emptyContainer}>
-              <Image source={EmptyState} style={styles.emptyImage} />
-              <Text style={styles.emptyText}>No Data Found</Text>
-            </View>
-          }
+              {!loading && customers.length === 0 &&
+                <View style={styles.emptyContainer}>
+                  <Image source={EmptyState} style={styles.emptyImage} />
+                  <Text style={styles.emptyText}>No Data Found</Text>
+                </View>
+              }
 
             </ScrollView>
 
@@ -606,10 +606,10 @@ export default function TenantsScreen({ route }) {
                         //   setShowNotice(true);
                         // }}
                         onPress={() => {
-  setSelectedCustomer(selectedItem); 
-  setShowMenu(false);
-  setShowNotice(true);
-}}
+                          setSelectedCustomer(selectedItem);
+                          setShowMenu(false);
+                          setShowNotice(true);
+                        }}
 
                       >
                         <Image
@@ -991,10 +991,10 @@ export default function TenantsScreen({ route }) {
           <MoveNoticeSheet
             visible={showNotice}
             onClose={() => setShowNotice(false)}
-           customer={selectedCustomer}
+            customer={selectedCustomer}
             onSuccess={fetchCustomers}
-        
-          
+
+
 
 
           />
@@ -1595,7 +1595,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111",
   },
-   emptyContainer: {
+  emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
     marginTop: 150,

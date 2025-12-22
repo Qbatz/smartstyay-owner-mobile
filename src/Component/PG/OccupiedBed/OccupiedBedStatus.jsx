@@ -23,7 +23,7 @@ import NoticeIcon from "../../../Assets/Images/Logout.png";
 
 export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed }) {
     const translateY = useRef(new Animated.Value(300)).current;
-    
+    console.log("selectedBed",selectedBed)
     // const [showNotice, setShowNotice] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
 // const [reqDate, setReqDate] = useState("31/07/2025");
@@ -121,10 +121,10 @@ const handleReAssignBed=()=>{
                 {/* FLOOR + BED TAG */}
                 <View style={styles.tagRow}>
                     <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
-                        <Text style={styles.tagText}>Ground Floor</Text>
+                        <Text style={styles.tagText}>{selectedBed.floorName}</Text>
                     </View>
                     <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
-                        <Text style={styles.tagText}>{room?.room_no} - {bed?.label}</Text>
+                        <Text style={styles.tagText}>{selectedBed.roomName} - {selectedBed.bedName}</Text>
                     </View>
                 </View>
 
@@ -134,8 +134,8 @@ const handleReAssignBed=()=>{
                 <View style={styles.userRow}>
                     <Image source={Profile} style={styles.userImg} />
                     <View>
-                        <Text style={styles.userName}>Daniel Jebakumar</Text>
-                        <Text style={styles.phone}>+91 98765 43210</Text>
+                        <Text style={styles.userName}>{selectedBed.currentTenantInfo.tenantFullName}</Text>
+                        <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo.mobile}</Text>
                     </View>
                 </View>
 
@@ -143,21 +143,21 @@ const handleReAssignBed=()=>{
                 <Text style={styles.label}>Rental Amount</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Money} style={styles.icon} />
-                    <Text style={styles.value}>₹ 5,500</Text>
+                    <Text style={styles.value}>₹ {selectedBed.currentTenantInfo.rentAmount}</Text>
                 </View>
 
                 {/* JOINED DATE */}
                 <Text style={styles.label}>Joined Date</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Calendar} style={styles.icon} />
-                    <Text style={styles.value}>10 June 2024</Text>
+                    <Text style={styles.value}>{selectedBed.currentTenantInfo.joiningDate}</Text>
                 </View>
 
               
                 <Text style={styles.label}>Last Invoice</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Invoice} style={styles.icon} />
-                    <Text style={styles.value}>INV-563 & 2 more</Text>
+                    <Text style={styles.value}>{selectedBed.currentTenantInfo.lastInvoiceNumber} & {selectedBed.currentTenantInfo.totalInvoices} more</Text>
                 </View>
 
                 <TouchableOpacity style={styles.statusBtn}>
