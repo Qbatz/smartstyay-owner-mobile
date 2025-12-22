@@ -48,7 +48,7 @@ export default function PGPageFull({ route }) {
   const navigation = useNavigation();
   // const [floors, setFloors] = useState([]);
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed,deleteFloor } = useFloor();
+  const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed,deleteFloor,getBedById  } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState(false);
@@ -88,6 +88,7 @@ export default function PGPageFull({ route }) {
   const [editFloorData, setEditFloorData] = useState(null);
     const [deleteFloorId, setDeleteFloorId] = useState(null);
  const [floordeletePopup, setFloorDeletePopup] = useState(false)
+ const [bedUserDetails,setBedUserDetails] = useState("")
 
 
   const [editBedData, setEditBedData] = useState(null);
@@ -187,6 +188,65 @@ console.log("res",res)
       setTimeout(() => setShowSuccess(false), 800);
     }
   };
+  const handleBedPress = async (bed, room) => {
+  // 🔥 latest bed data fetch
+  const res = await getBedById(bed.id);
+
+  if (!res.success) return;
+
+  const freshBed = res.data;
+  const status = getBedStatus(freshBed);
+  const statuses = splitStatus(status);
+
+  // 1️⃣ NOTICE + RESERVED (Double)
+  if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
+    setSelectedDouble({ bed: freshBed, room });
+    setShowDoubleStatus(true);
+    return;
+  }
+
+  // 2️⃣ NOTICE + OCCUPIED
+  if (freshBed.onNotice && freshBed.isOccupied) {
+    setNoticeData({ bed: freshBed, room });
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setShowNoticePeriodSheet(true);
+    return;
+  }
+
+  // 3️⃣ OVERDUE + OCCUPIED
+  if (freshBed.overDue && freshBed.isOccupied) {
+    setSelectedBed(freshBed);
+    setSelectedOccupied({ bed: freshBed, room });
+    setShowOccupiedSheet(true);
+    return;
+  }
+
+  // 4️⃣ RESERVED
+  if (status === "reserved") {
+    setSelectedBed(freshBed);
+    setSelectedReserved({ bed: freshBed, room });
+    setShowReservedSheet(true);
+    return;
+  }
+
+  // 5️⃣ OCCUPIED
+  if (status === "occupied") {
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setSelectedOccupied({ bed: freshBed, room });
+    setShowOccupiedSheet(true);
+    return;
+  }
+
+  // 6️⃣ AVAILABLE
+  if (status === "available") {
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setShowManageBed(true);
+  }
+};
+
 
   //   const handleConfirmDelete = async () => {
   //   if (!deleteRoomId) return;
@@ -216,6 +276,16 @@ console.log("res",res)
 
   //   }
   // };
+const fetchBedDetails = async (bedId) => {
+  const res = await getBedById(bedId);
+
+  if (res.success) {
+    console.log("BED DETAILS 👉", res.data);
+    setBedUserDetails(res.data);
+  } else {
+    console.log("ERROR 👉", res.message);
+  }
+};
 
 
   useEffect(() => {
@@ -260,13 +330,14 @@ console.log("res",res)
   const handleBedAdded = async (roomId) => {
     const res = await getAllBedsByRoom(roomId);
     if (res.success) {
+      console.log("res.data",res.data)
       setBedsByRoom(prev => ({
         ...prev,
         [roomId]: res.data,
       }));
     }
   };
-
+console.log("getAllBedsByRoom",bedsByRoom)
   // useEffect(() => {
   //   const loadBeds = async () => {
 
@@ -822,57 +893,58 @@ console.log("res",res)
                     <TouchableOpacity
                       key={b.id}
                       style={styles.bedItem}
-                      onPress={() => {
-                        const statuses = splitStatus(status);
+                        onPress={() => handleBedPress(b, item)}
+                      // onPress={() => {
+                      //   const statuses = splitStatus(status);
 
 
-                        if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
-                          setSelectedDouble({ bed: b, room: item });
-                          setShowDoubleStatus(true);
-                          return;
-                        }
+                      //   if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
+                      //     setSelectedDouble({ bed: b, room: item });
+                      //     setShowDoubleStatus(true);
+                      //     return;
+                      //   }
 
-                        if (b.onNotice && b.isOccupied) {
-                          setNoticeData({ bed: b, room: item });
-                          setSelectedBed(b);              
-                          setSelectedBedRoomId(item.id); 
-                          setShowNoticePeriodSheet(true);
-                          return;
-                        }
+                      //   if (b.onNotice && b.isOccupied) {
+                      //     setNoticeData({ bed: b, room: item });
+                      //     setSelectedBed(b);              
+                      //     setSelectedBedRoomId(item.id); 
+                      //     setShowNoticePeriodSheet(true);
+                      //     return;
+                      //   }
                       
 
 
-                        if (b.overDue && b.isOccupied) {
-                          setSelectedBed(b);
-                          setSelectedOccupied({ bed: b, room: item });
-                          setShowOccupiedSheet(true);
-                          return;
-                        }
+                      //   if (b.overDue && b.isOccupied) {
+                      //     setSelectedBed(b);
+                      //     setSelectedOccupied({ bed: b, room: item });
+                      //     setShowOccupiedSheet(true);
+                      //     return;
+                      //   }
 
 
-                        if (status === "reserved") {
-                          setSelectedBed(b);
-                          setSelectedReserved({ bed: b, room: item });
-                          setShowReservedSheet(true);
-                          return;
-                        }
+                      //   if (status === "reserved") {
+                      //     setSelectedBed(b);
+                      //     setSelectedReserved({ bed: b, room: item });
+                      //     setShowReservedSheet(true);
+                      //     return;
+                      //   }
 
-                        // 5️⃣ OCCUPIED
-                        if (status === "occupied") {
-                          setSelectedBed(b);
-                          setSelectedOccupied({ bed: b, room: item });
-                          setShowOccupiedSheet(true);
-                          return;
-                        }
+                      //   // 5️⃣ OCCUPIED
+                      //   if (status === "occupied") {
+                      //     setSelectedBed(b);
+                      //     setSelectedOccupied({ bed: b, room: item });
+                      //     setShowOccupiedSheet(true);
+                      //     return;
+                      //   }
 
-                        // 6️⃣ AVAILABLE
-                        if (status === "available") {
-                          setSelectedBed(b);
-                          setSelectedBedRoomId(item.id);
-                          setShowManageBed(true);
-                          return;
-                        }
-                      }}
+                      //   // 6️⃣ AVAILABLE
+                      //   if (status === "available") {
+                      //     setSelectedBed(b);
+                      //     setSelectedBedRoomId(item.id);
+                      //     setShowManageBed(true);
+                      //     return;
+                      //   }
+                      // }}
 
                     >
                       <Image source={getBaseBed(status)} style={styles.bedIcon} />
@@ -1065,6 +1137,9 @@ console.log("res",res)
           reason={reason}
           setRequestDate={setReqDate}
           setCheckoutDate={setOutDate}
+          selectedBed={selectedBed}
+            roomId={selectedBedRoomId} 
+           onBedAdded={handleBedAdded}
 
         />
       )}
