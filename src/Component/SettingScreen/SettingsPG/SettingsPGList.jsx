@@ -8,8 +8,6 @@ import {
   TouchableOpacity,
   BackHandler,
   TouchableWithoutFeedback,
-  UIManager,
-  findNodeHandle,
   Animated,
   PanResponder,
   Modal,
@@ -76,20 +74,18 @@ export default function SettingsPG({ navigation }) {
   const otherHostels =
     formatHostels?.length > 1 ? formatHostels.slice(1) : [];
 
-  const openPopup = (id) => {
-    console.log("id", id);
-    
-    const ref = dotRefs.current[id];
-    if (!ref) return;
 
-    UIManager.measure(
-      findNodeHandle(ref),
-      (fx, fy, width, height, px, py) => {
-        setPopupPos({ x: px - 130, y: py + height + 5 });
-        setVisiblePopup(id);
-      }
-    );
-  };
+  const openPopup = (id) => {
+  const pos = dotRefs.current[id];
+  if (!pos) return;
+
+  setPopupPos({
+    x: pos.x - 130,
+    y: pos.y + pos.height + 5,
+  });
+  setVisiblePopup(id);
+};
+
 
 
   const openSheet = () => {
@@ -125,15 +121,28 @@ export default function SettingsPG({ navigation }) {
   return selected ? [selected, ...others] : list;
 };
 
+const hasFetched = useRef(false);
+
 useEffect(() => {
-  if (!login.getToken) return;
-  if(activeHostelId){
+  if (!login.getToken || !activeHostelId || hasFetched.current) return;
+
+  hasFetched.current = true;
+
   getHostels(login.getToken).then((res) => {
     const reordered = reorderHostels(res.data, activeHostelId);
     updateHostelList(reordered);
   });
-  }
 }, [login.getToken, activeHostelId]);
+
+// useEffect(() => {
+//   if (!login.getToken) return;
+//   if(activeHostelId){
+//   getHostels(login.getToken).then((res) => {
+//     const reordered = reorderHostels(res.data, activeHostelId);
+//     updateHostelList(reordered);
+//   });
+//   }
+// }, [login.getToken, activeHostelId]);
 
 
  const handleActivate = (id) => {
@@ -338,13 +347,16 @@ const handleDeletePG = async () => {
               <Text style={styles.badge}>{mainHostel?.type}</Text>
             </View>
           </View>
+<TouchableOpacity
+  onLayout={(e) => {
+    const { x, y, height } = e.nativeEvent.layout;
+    dotRefs.current[mainHostel.id] = { x, y, height };
+  }}
+  onPress={() => openPopup(mainHostel.id)}
+>
+  <Image source={Dots} style={styles.dotsIcon} />
+</TouchableOpacity>
 
-          <TouchableOpacity
-            ref={(r) => (dotRefs.current[mainHostel?.id] = r)}
-            onPress={() => openPopup(mainHostel?.id)}
-          >
-            <Image source={Dots} style={styles.dotsIcon} />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.rowBox}>
