@@ -4,7 +4,7 @@ import {
   PanResponder,
 
 } from "react-native";
-
+import { Calendar } from "react-native-calendars";
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import Profile from "../../Assets/Images/profile.png";
 import QuestionIcon from "../../Assets/Images/help.png";
@@ -31,6 +31,7 @@ export default function MoveNoticeSheet({
   const { getAllBedsByRoom } = useFloor();
 
   const [reason, setReason] = useState("");
+const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
 
   const [reqDate, setReqDate] = useState(null);
   const [outDate, setOutDate] = useState(null);
@@ -196,6 +197,74 @@ export default function MoveNoticeSheet({
     return false;
   };
 
+const markedDates = {};
+
+const start = joiningDate
+  ? dayjs(joiningDate)
+  : null;
+
+const end = dayjs(); 
+
+
+for (let i = -90; i <= 90; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  const disabled =
+    (start && d.isBefore(start, "day")) ||
+    d.isAfter(end, "day");
+
+  if (disabled) {
+    markedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,          // 🔥 THIS IS WHAT YOU WANT
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+const isCheckoutDisabled = (date) => {
+  if (!date) return false;
+
+
+  if (reqDate && dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
+
+  return false;
+};
+
+const checkoutMarkedDates = {};
+
+// show +- 90 days (safe window)
+for (let i = -90; i <= 90; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isCheckoutDisabled(d)) {
+    checkoutMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,          // 🔥 faded look
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
 
   return (
     <>
@@ -309,44 +378,26 @@ export default function MoveNoticeSheet({
           />
           <View style={styles.calendarBox}>
 
-            <DatePicker
-              mode="single"
-              date={reqDate ?? undefined}
+           <Calendar
+  markingType="custom"
+  markedDates={markedDates}
 
-              onChange={(p) => {
-                if (isDisabledDate(dayjs(p.date))) return;
-                setReqDate(p.date);
-                setReqDateError("");
-                setOpenRequestPicker(false);
-              }}
+  onDayPress={(day) => {
+    setReqDate(day.dateString);
+    setReqDateError("");
+    setOpenRequestPicker(false);
+  }}
 
-              dayStyle={(date) => {
-                const disabled = isDisabledDate(dayjs(date));
+  theme={{
+    textDisabledColor: "#9CA3AF",     
+    disabledArrowColor: "#D1D5DB",
+    todayTextColor: "#000000",
+    selectedDayBackgroundColor: "#2563EB",
+    selectedDayTextColor: "#FFFFFF",
+    textDayFontWeight: "500",
+  }}
+/>
 
-                if (disabled) {
-                  return {
-                    backgroundColor: "#F3F4F6",
-                    borderRadius: 8,
-                  };
-                }
-
-                return {};
-              }}
-
-              dayTextStyle={(date) => {
-                const disabled = isDisabledDate(dayjs(date));
-
-                if (disabled) {
-                  return {
-                    color: "#9CA3AF",
-                  };
-                }
-
-                return {
-                  color: "#111827",
-                };
-              }}
-            />
 
 
 
@@ -372,40 +423,28 @@ export default function MoveNoticeSheet({
             onPress={() => setOpenCheckoutPicker(false)}
           />
           <View style={styles.calendarBox}>
-            <DatePicker
-              mode="single"
-              date={outDate ?? undefined}
+   <Calendar
+  current={formatDate(outDate || reqDate || dayjs())}
 
-              onChange={(p) => {
-                if (isDisabledCheckoutDate(dayjs(p.date))) return; // 🔒 safety
-                setOutDate(p.date);
-                setOutDateError("");
-                setOpenCheckoutPicker(false);
-              }}
+  markingType="custom"
+  markedDates={checkoutMarkedDates}
 
-              dayStyle={(date) => {
-                const disabled = isDisabledCheckoutDate(dayjs(date));
+  onDayPress={(day) => {
+    if (isCheckoutDisabled(dayjs(day.dateString))) return;
 
-                if (disabled) {
-                  return {
-                    backgroundColor: "#F3F4F6",
-                    borderRadius: 8,
-                  };
-                }
-                return {};
-              }}
+    setOutDate(day.dateString);
+    setOutDateError("");
+    setOpenCheckoutPicker(false);
+  }}
 
-              dayTextStyle={(date) => {
-                const disabled = isDisabledCheckoutDate(dayjs(date));
+  theme={{
+    todayTextColor: "#2563EB",
+    selectedDayBackgroundColor: "#2563EB",
+    selectedDayTextColor: "#FFFFFF",
+    arrowColor: "#111827",
+  }}
+/>
 
-                if (disabled) {
-                  return {
-                    color: "#9CA3AF",
-                  };
-                }
-                return { color: "#111827" };
-              }}
-            />
 
 
 
