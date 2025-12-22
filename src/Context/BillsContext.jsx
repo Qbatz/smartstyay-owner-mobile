@@ -7,6 +7,8 @@ export default function BillsProvider({ children }) {
   const [BillDetails, setBillDetails] = useState([]);
   const [recurringBills, setRecurringBills] = useState([]);
   const [receiptsList, setReceiptsList] = useState([]);
+  const [BillPdfdetails, setBillsPdfDetails] = useState(null);
+  const [ReceiptPdfdetails, setReceiptPdfDetails] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -450,8 +452,54 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
   }
 };
 
+ const getBillsPdfDetails = async (hostelId, invoiceId) => {
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await AxiosConfig.get(
+        `/v2/bills/${hostelId}/${invoiceId}`
+      );
+
+      if (res.status === 200) {
+        setBillsPdfDetails(res.data);
+        return { success: true, data: res.data };
+      }
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
+  const getReceiptPdfDetails = async (hostelId, transactionId) => {
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await AxiosConfig.get(
+        `/v2/transaction/${hostelId}/${transactionId}`
+      );
+
+      if (res.status === 200) {
+        setReceiptPdfDetails(res.data);
+        return { success: true, data: res.data };
+      }
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  
 
 
   return (
@@ -460,6 +508,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
         BillDetails,
         recurringBills,
         receiptsList,
+        BillPdfdetails ,
+        ReceiptPdfdetails ,
         loading,
         errorMsg,
         refundError,
@@ -473,6 +523,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
          UpdateTenantRecurringStatus,
          GetReceiptsList,
          DeleteReceipt , 
+         getBillsPdfDetails , 
+         getReceiptPdfDetails
       }}
     >
       {children}
