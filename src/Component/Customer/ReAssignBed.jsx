@@ -74,7 +74,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId);
-
+console.log("fetchCustomerDetails",res)
     if (res.success) {
       setRentAmount(String(res.data.hostelInfo?.monthlyRent || ""));
 
