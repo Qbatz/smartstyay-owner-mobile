@@ -99,7 +99,7 @@ export default function PGPageFull({ route }) {
   //   setShowManageBed(false)
   // }
   const handleEditBed = (bed) => {
-    setEditBedData(bed);   // 👈 STORE BED OBJECT
+    setEditBedData(bed);  
     setShowAddBed(true);
     setShowManageBed(false);
     setShowNoticePeriodSheet(false)
@@ -206,7 +206,7 @@ export default function PGPageFull({ route }) {
     }
 
 
-    if (freshBed.onNotice && freshBed.isOccupied) {
+    if (freshBed.isOnNotice && freshBed.isOccupied) {
       setNoticeData({ bed: freshBed, room });
       setSelectedBed(freshBed);
       setSelectedBedRoomId(room.id);
@@ -534,6 +534,8 @@ export default function PGPageFull({ route }) {
     navigation.navigate("ReassignBedScreen", {
       tenant: selectedOccupied,
       floors: floors,
+      rooms:rooms,
+      
     });
 
     setShowOccupiedSheet(false);
