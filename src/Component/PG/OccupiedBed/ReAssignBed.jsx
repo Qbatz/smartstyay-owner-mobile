@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useContext,useEffect } from "react";
 import {
   View,
   Text,
@@ -13,24 +13,80 @@ import BedGreen from "../../../Assets/Images/OccubiedBedImg.png";
 import BedEmpty from "../../../Assets/Images/EmptyBed.png";
 import Tick from "../../../Assets/Images/tick.png";
 import ConfirmReassignSheet from "./ReAssignBottomSheet";
+import { useFloor } from "../../../Context/PayingGuestContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import EmptyState from "../../../Assets/Images/Empty_state.png"; 
 
 
 export default function ReassignBedScreen({ route, navigation }) {
-  const { tenant, floors } = route.params;
+    const { activeHostelId } = useContext(CommonContexts);
+    const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed, deleteFloor, getBedById } = useFloor();
+  const { tenant, floors, } = route.params;
   const [selectedFloor, setSelectedFloor] = useState(0);
   const [selectedNewBed, setSelectedNewBed] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
-console.log("tenant",tenant)
-  const selectedDetails =
-  selectedNewBed
-    ? {
-        roomNo: floors[selectedFloor].rooms.find(r => r.id === selectedNewBed.roomId)?.room_no,
-        bedLabel: floors[selectedFloor].rooms
-          .find(r => r.id === selectedNewBed.roomId)
-          ?.beds.find(b => b.id === selectedNewBed.bedId)?.label,
-        sharing: floors[selectedFloor].rooms.find(r => r.id === selectedNewBed.roomId)?.sharing
-      }
-    : null;
+  const [bedsByRoom, setBedsByRoom] = useState({});
+  const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id);
+const [rooms, setRooms] = useState([]);
+
+useEffect(() => {
+  if (!selectedFloorId) return;
+
+  const loadRooms = async () => {
+    const res = await getAllRoomsByFloor(selectedFloorId);
+    if (res.success) {
+      setRooms(res.data);
+    } else {
+      setRooms([]);
+    }
+  };
+
+  loadRooms();
+}, [selectedFloorId]);
+
+
+ useEffect(() => {
+  if (!rooms.length) return;
+
+  setBedsByRoom({}); // clear old beds
+
+  rooms.forEach(async (room) => {
+    const res = await getAllBedsByRoom(room.id);
+    if (res.success) {
+      setBedsByRoom(prev => ({
+        ...prev,
+        [room.id]: res.data,
+      }));
+    }
+  });
+}, [rooms]);
+
+
+ const selectedDetails = selectedNewBed
+  ? (() => {
+      const room = rooms.find(r => r.id === selectedNewBed.roomId);
+      const bed = bedsByRoom?.[room?.id]?.find(
+        b => b.id === selectedNewBed.bedId
+      );
+
+      return {
+        roomNo: room?.name,
+        bedLabel: bed?.bedName || bed?.label,
+        sharing: room?.sharing,
+      };
+    })()
+  : null;
+
+
+const isAvailableBed = (b) =>
+  !b.isOccupied &&
+  !b.isBooked &&
+  !b.onNotice &&
+  !b.overDue;
+
+const selectedFloorRooms = rooms.filter(
+  (r) => r.floorId === floors[selectedFloor].id
+);
 
 
   return (
@@ -60,14 +116,18 @@ console.log("tenant",tenant)
     contentContainerStyle={{ paddingLeft: 18, gap: 12 }}
   >
         {floors.map((f, i) => (
-          <TouchableOpacity
-            key={i}
-            onPress={() => setSelectedFloor(i)}
-            style={[
-              styles.floorCard,
-              selectedFloor === i && styles.floorCardActive
-            ]}
-          >
+        <TouchableOpacity
+  key={f.id}
+  onPress={() => {
+    setSelectedFloor(i);
+    setSelectedFloorId(f.id); // 🔥 trigger API
+  }}
+  style={[
+    styles.floorCard,
+    selectedFloor === i && styles.floorCardActive
+  ]}
+>
+
             <View
               style={[
                 styles.floorCircle,
@@ -108,96 +168,67 @@ console.log("tenant",tenant)
         </View>
       </View>
 
-      {/* ROOMS */}
-      <ScrollView style={{ flex: 1, paddingHorizontal: 18 }}>
-        {floors[selectedFloor].rooms.map((room) => (
-          <View key={room.id} style={styles.roomCard}>
+     
+     <ScrollView style={{ flex: 1, paddingHorizontal: 18 }}>
+  {selectedFloorRooms.map((room) => (
+    <View key={room.id} style={styles.roomCard}>
 
-            <Text style={styles.roomTitle}>Room No {room.room_no}</Text>
-            <Text style={styles.roomSub}>{room.sharing}</Text>
+      <Text style={styles.roomTitle}>Room No {room.name}</Text>
+      <Text style={styles.roomSub}>{room.sharing}</Text>
 
-            <View style={styles.bedsRow}>
-              {room.beds
-                .filter((b) => b.status === "available") // ONLY AVAILABLE BEDS
-                .map((b) => (
-                  <TouchableOpacity
-                    key={b.id}
-                   onPress={() =>
-  setSelectedNewBed({
-    floorId: floors[selectedFloor].id,
-    roomId: room.id,
-    bedId: b.id,
-  })
-}
+   <View style={styles.bedsRow}>
+  {(bedsByRoom?.[room.id] || [])
+  .filter(isAvailableBed)
+    .map((b) => (
+      <TouchableOpacity
+        key={b.id}
+        onPress={() =>
+          setSelectedNewBed({
+            floorId: floors[selectedFloor].id,
+            roomId: room.id,
+            bedId: b.id,
+          })
+        }
+        style={{ alignItems: "center" }}
+      >
+        <View style={{ position: "relative", alignItems: "center" }}>
+          <Image source={BedEmpty} style={styles.bedImg} />
 
-                    style={{ alignItems: "center" }}
-                  >
-                    {/* <Image
-                      source={BedEmpty}
-                      style={[
-                        styles.bedImg,
-                        selectedNewBed?.bed?.id === b.id && styles.bedSelected
-                      ]}
-                    /> */}
-  {/* <Image
-  source={BedEmpty}
-  style={[
-    styles.bedImg,
-    selectedNewBed?.floorId === floors[selectedFloor].id &&
-    selectedNewBed?.roomId === room.id &&
-    selectedNewBed?.bedId === b.id
-      ? styles.bedSelected
-      : null
-  ]}
-/> */}
-{/* <View style={{ position: "relative" }}>
-  <Image
-    source={BedEmpty}
-    style={[
-      styles.bedImg,
-      selectedNewBed?.floorId === floors[selectedFloor].id &&
-      selectedNewBed?.roomId === room.id &&
-      selectedNewBed?.bedId === b.id
-        ? styles.bedSelected
-        : null
-    ]}
-  />
+          {selectedNewBed?.roomId === room.id &&
+            selectedNewBed?.bedId === b.id && (
+              <View style={styles.tickBadge}>
+                <Image source={Tick} style={styles.tickText} />
+              </View>
+          )}
+        </View>
 
-
-  {selectedNewBed?.floorId === floors[selectedFloor].id &&
-  selectedNewBed?.roomId === room.id &&
-  selectedNewBed?.bedId === b.id && (
-    <View style={styles.tickBadge}>
-     <Image source={Tick} style={styles.tickText}/>
-    </View>
-  )}
-</View> */}
-<View style={{ position: "relative", alignItems: "center" }}>
-  <Image
-    source={BedEmpty}
-    style={styles.bedImg}
-  />
-
-  {selectedNewBed?.floorId === floors[selectedFloor].id &&
-    selectedNewBed?.roomId === room.id &&
-    selectedNewBed?.bedId === b.id && (
-      <View style={styles.tickBadge}>
-        <Image source={Tick} style={styles.tickText} />
-      </View>
-  )}
+        <Text>{b.bedName || b.label}</Text>
+      </TouchableOpacity>
+    ))}
+    {(bedsByRoom?.[room.id] || []).filter(isAvailableBed).length === 0 && (
+  <Text style={{ color: "#999", marginTop: 8 }}>
+    No available beds
+  </Text>
+)}
 </View>
 
 
-
-
-                    <Text>{b.label}</Text>
-                  </TouchableOpacity>
-                ))}
+    </View>
+  ))}
+  {
+    selectedFloorRooms.length === 0 &&
+    //  <Text style={{ color: "#999", marginTop: 8 }}>
+    // No available Rooms
+  // </Text>
+     <View style={styles.centerContainer}>
+              <Image source={EmptyState} style={styles.image} />
+              <Text style={styles.noFloorText}>No Rooms are there!</Text>
+  
+            
             </View>
+  }
+</ScrollView>
 
-          </View>
-        ))}
-      </ScrollView>
 
       
 {selectedNewBed && (
@@ -415,7 +446,18 @@ bottomBar: {
 bottomValue:{
 color:"#1E45E1"
 },
+centerContainer: {
+    flex: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
+  image: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
 
 
 });
