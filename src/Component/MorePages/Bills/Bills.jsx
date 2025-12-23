@@ -38,6 +38,9 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
+import Download from "../../../Assets/Images/download.png";
+import Telegram from "../../../Assets/Images/telegram.png";
+import Payment from "../../../Assets/Images/payment.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import RecurringBills from "./RecurringBills"
@@ -76,7 +79,7 @@ export default function BillsDesign({ route }) {
 
   const { BillDetails, GetFilteredBills , loading, GetAllBillDetails ,
      RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  
-     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails } = useContext(BillContext);
+     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
 
@@ -136,6 +139,12 @@ const [showDetailsMenu, setShowDetailsMenu] = useState(false);
 const [deleteTenants,setDeleteTenants] = useState(false)
 const [showWriteOff, setShowWriteOff] = useState(false);
 const [writeOffReason, setWriteOffReason] = useState("");
+
+ const [showReceiptDetails, setShowReceiptDetails] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+ 
+
 
 //record payement
 
@@ -215,6 +224,7 @@ const dotsRef = useRef(null);
     const detailsY = useRef(new Animated.Value(0)).current;
     const detailsSheetY = useRef(new Animated.Value(0)).current;
     const writeoffSheetY = useRef(new Animated.Value(0)).current;
+     const receiptdetailsSheetY = useRef(new Animated.Value(0)).current;
 
     const handleRefundRecord = () => {
   // Basic validation
@@ -399,6 +409,11 @@ useLayoutEffect(() => {
       return true;
     }
 
+    if(showReceiptDetails){
+      setShowReceiptDetails(false)
+       return true;
+    }
+
     if (showWriteOff) {
       setShowWriteOff(false);
       return true;
@@ -424,7 +439,7 @@ useLayoutEffect(() => {
   );
 
   return () => handler.remove();
-}, [showDetailModal, showFilter , showBillDetails , showWriteOff , showRecordPayment , showRefundPayment]);
+}, [showDetailModal, showFilter , showBillDetails , showWriteOff , showRecordPayment , showRefundPayment , showReceiptDetails]);
 
   useEffect(() => {
               const backHandler = BackHandler.addEventListener(
@@ -519,6 +534,33 @@ useLayoutEffect(() => {
   })
 ).current;
 
+   const receiptDetailsPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) receiptdetailsSheetY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          Animated.timing(receiptdetailsSheetY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowReceiptDetails(false);
+            receiptdetailsSheetY.setValue(0);
+          });
+        } else {
+          Animated.spring(receiptdetailsSheetY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+
 
 
 const writeoffPan = useRef(
@@ -605,6 +647,27 @@ const handleCreateBill = () => {
 navigation.navigate("CreateBills" , {mode: "add"})
 }
 
+const formatApiDate = (date) =>
+  date
+    ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
+    : "--";
+
+
+ const handleOpenReceiptSheet = (item) => {
+  console.log(item);
+  
+    setSelectedReceipt(item);
+    setShowReceiptDetails(true);
+  };
+
+  const handleShowReceiptPdf = async () => {
+navigation.navigate("ReceiptPdf")
+  const res = await getReceiptPdfDetails(
+      activeHostelId,
+      selectedReceipt?.transactionId
+    );
+    console.log("res", res);
+}
 
 const handlePaidAmountChange = (value) => {
   setAmountError("");
@@ -1196,7 +1259,7 @@ navigation.navigate("CancelNotice")
    <RecurringBills />
   )}
   {activeTab === "Receipt" && (
-   <Receipt />
+   <Receipt onSelectReceipt={handleOpenReceiptSheet}  />
   )}
  
 {showBillDetails && (
@@ -1324,6 +1387,134 @@ navigation.navigate("CancelNotice")
   </View>
 )}
 
+ {showReceiptDetails && (
+          <View style={styles.sheetOverlay}>
+        
+            <TouchableWithoutFeedback onPress={() => setShowReceiptDetails(false)}>
+              <View style={{ flex: 1 }} />
+            </TouchableWithoutFeedback>
+        
+            <Animated.View
+              style={[
+                styles.transactionSheet,
+                { height: "58%", transform: [{ translateY: receiptdetailsSheetY }] }
+              ]}
+              {...receiptDetailsPan.panHandlers}
+            >
+              <View style={styles.sheetHandle} />
+        
+              
+        
+              <ScrollView showsVerticalScrollIndicator={false}>
+        
+          <View style={styles.billHeaderRow}>
+            <Text style={styles.billHeaderText}>Bill Details</Text>
+        
+        
+            <View style={{display:'flex', flexDirection:'row'}}>
+            <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>Paid</Text>
+              </View>
+
+        
+            <TouchableOpacity>
+              <Image
+                source={Dots}
+                style={{ width: 28, height: 28,  }}
+              />
+            </TouchableOpacity>
+            </View>
+          </View>
+        
+          <View style={styles.userRow}>
+            <Image source={ProfileImage} style={styles.userImg} />
+        
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.userName}>  {selectedReceipt?.fullName || "--"}</Text>
+        
+              <View style={{ flexDirection: "row", marginTop: 4 }}>
+                <View style={styles.invTypeBadge}>
+                  <Text style={styles.invTypeText}>Checkout Inv</Text>
+                </View>
+         
+                <Image source={Bills_Black_Icon} style={{   width: 12,
+            height: 12, marginTop:5 , marginRight:5
+          }} />
+                <Text style={styles.billNumber}>#1212121212</Text>
+              </View>
+            </View>
+          </View>
+
+        
+        
+          <View style={styles.twoColRow}>
+            <View style={styles.colItem}>
+              <Text style={styles.label}>Payment date</Text>
+              <View style={styles.rowAlign}>
+                <Image source={CalendarBlueIcon} style={styles.iconSmall} />
+                <Text style={styles.value}>  {formatApiDate(selectedReceipt?.paidAt)}</Text>
+              </View>
+            </View>
+        
+            <View style={styles.colItem}>
+              <Text style={styles.label}>Payment Mode</Text>
+              <View style={styles.rowAlign}>
+                <Image source={Payment} style={styles.iconSmall} />
+                <Text style={styles.value}> {selectedReceipt?.invoiceMode || "--"}</Text>
+              </View>
+            </View>
+          </View>
+
+           <View style={styles.twoColRow}>
+            <View style={styles.colItem}>
+              <Text style={styles.label}>Payment to</Text>
+              <View style={styles.rowAlign}>
+                    <Image source={Payment} style={{   width: 18,
+            height: 18, marginTop:5 , marginRight:5
+          }} />
+                <Text style={styles.amountValue}>  {selectedReceipt?.bankName || "--"}</Text>
+              </View>
+            </View>
+             </View>
+        
+          <View style={styles.twoColRow}>
+            <View style={styles.colItem}>
+              <Text style={styles.label}>Amount</Text>
+              <View style={styles.rowAlign}>
+                    <Image source={MoneyCheckIcon} style={{   width: 18,
+            height: 18, marginTop:5 , marginRight:5
+          }} />
+                <Text style={styles.amountValue}> ₹{selectedReceipt?.paidAmount ?? "--"}</Text>
+              </View>
+            </View>
+             <View style={styles.colItem}>
+              <Text style={styles.label}>Transaction Id</Text>
+              <View style={styles.rowAlign}>
+                    <Image source={Telegram} style={{   width: 18,
+            height: 18, marginTop:2 , marginRight:5
+          }} />
+                <Text style={styles.amountValue}>{selectedReceipt?.transactionNumber || "--"}</Text>
+              </View>
+            </View>
+        
+          
+          </View>
+        
+          <TouchableOpacity style={styles.previewBtn} onPress={handleShowReceiptPdf} >
+            <View style={{display:'flex', flexDirection:'row'}}>
+                       <Image source={PreviewIcon} style={{   width: 18,
+            height: 18, marginTop:3 , marginRight:12
+          }} />
+            <Text style={styles.previewText}>Preview</Text>
+            </View>
+          </TouchableOpacity>
+        
+        </ScrollView>
+        
+        
+            </Animated.View>
+          </View>
+        )}
 
  {showDetailModal && showDetailsMenu && (
   <>

@@ -9,7 +9,8 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
-
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 import SmartstayIcon from "../../Assets/Images/Sm_Icon.png";
 import EyeIcon from "../../Assets/Images/EyeIcon.png";
 import WaveImage from "../../Assets/Images/login_Rectangle.png";
@@ -27,25 +28,123 @@ export default function LoginDesign() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+  
 
-  const loginClick = () => {
-    const data = {
-      emailId: email,
-      password: password,
-    };
 
-    setLogin(data).then((r) => {
-      if (r?.status === 200 && r?.data) {
-        context.updateToken(r.data);
-        storeData(ACCESS_TOKEN, r.data);
-        navigation.navigate("VerifyAccountScreen");
-      }
-    });
+  // const loginClick = () => {
+  //   const data = {
+  //     emailId: email,
+  //     password: password,
+  //   };
+
+  //   setLogin(data).then((r) => {
+  //     if (r?.status === 200 && r?.data) {
+  //       context.updateToken(r.data);
+  //       storeData(ACCESS_TOKEN, r.data);
+  //       navigation.navigate("VerifyAccountScreen");
+  //     }
+  //   });
+  // };
+
+  const validate = () => {
+  let valid = true;
+
+  setEmailError("");
+  setPasswordError("");
+
+  if (!email.trim()) {
+    setEmailError("Please Enter Email");
+    valid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setEmailError("Please Enter Valid Email");
+    valid = false;
+  }
+
+  if (!password.trim()) {
+    setPasswordError("Please Enter Password");
+    valid = false;
+  }
+
+  return valid;
+};
+
+const loginClick = async () => {
+  if (!validate()) return;
+
+  const data = {
+    emailId: email,
+    password: password,
   };
 
+  try {
+    const response = await setLogin(data);
+     console.log("res", response);
+    if (response?.status === 200 && response?.data) {
+      context.updateToken(response?.data);
+      await storeData(ACCESS_TOKEN, response?.data);
+      // navigation.navigate("VerifyAccountScreen");
+      navigation.navigate("VerifyAccountScreen", {
+        email: email,
+      });
+        setModalType("success");
+        setModalMessage("Login Successfully");
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 2500);
+    } 
+   else if (response?.status === 400) {
+  setModalType("error");
+  setModalMessage(
+    response?.data?.message || response?.message || "Bad Request"
+  );
+  setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+}
+else if (response?.status === 403) {
+  setModalType("error");
+  setModalMessage("Invalid Email or Password");
+  setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+}
+    else {
+    setModalType("error");
+    setModalMessage(response?.message || "Something went wrong");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+
+    }
+
+  } catch (error) {
+       setModalType("error");
+    setModalMessage(error?.response?.data?.message);
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+   
+  }
+};
+
+
+ 
+
+
   return (
+
+    <>
+      <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
+   
     <View style={styles.container}>
-      {/* 🔹 SCROLLABLE CONTENT */}
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
@@ -59,25 +158,41 @@ export default function LoginDesign() {
           <Text style={styles.label}>Username / Email</Text>
           <View style={styles.inputBox}>
             <TextInput
-              placeholder="admin@gmail.com"
+              placeholder="Please Enter Email"
               placeholderTextColor="#A1A1A1"
               style={styles.input}
               value={email}
-              onChangeText={setEmail}
+             onChangeText={(text) => {
+    setEmail(text.toLowerCase());
+    setEmailError("");
+  }}
               autoCapitalize="none"
             />
+ 
+
           </View>
+
+
+ {emailError && (
+                    <ErrorMessage message={emailError} type="error" />
+                                )}
+
 
           <Text style={styles.label}>Password</Text>
           <View style={styles.inputBox}>
+          
             <TextInput
-              placeholder="Enter Password"
-              placeholderTextColor="#A1A1A1"
-              secureTextEntry={!showPassword}
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-            />
+  placeholder="Please Enter Password"
+  secureTextEntry={!showPassword}
+  style={styles.input}
+  placeholderTextColor="#A1A1A1"
+  value={password}
+  onChangeText={(text) => {
+    setPassword(text);
+    setPasswordError("");
+  }}
+/>
+
 
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
@@ -86,6 +201,13 @@ export default function LoginDesign() {
               <Image source={EyeIcon} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
           </View>
+ 
+                    {passwordError && (
+                    <ErrorMessage message={passwordError} type="error" />
+                                )}
+                  
+
+
 
           <TouchableOpacity
             onPress={() => navigation.replace("ForgotPassword")}
@@ -109,9 +231,9 @@ export default function LoginDesign() {
         </View>
       </ScrollView>
 
-      {/* 🔹 BOTTOM WAVE (ALWAYS FIXED) */}
       <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover" />
     </View>
+     </>
   );
 }
 
@@ -122,7 +244,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: 160, // 🔥 space for bottom wave
+    paddingBottom: 160, 
   },
 
   content: {
@@ -223,5 +345,13 @@ const styles = StyleSheet.create({
   width: "100%",
   height: 120,
 },
+errorText: {
+  color: "red",
+  fontSize: 12,
+  marginTop: 4,
+},
+
+
+
 
 });

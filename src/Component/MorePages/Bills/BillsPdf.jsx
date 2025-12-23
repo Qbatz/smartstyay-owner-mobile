@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect , useContext} from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
+import { BackHandler } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { BillContext } from "../../../Context/BillsContext";
 import RoomSerach from '../../../Assets/Images/roomsearch_logo.png';
 import Qr from '../../../Assets/Images/pdfImage/QRimg.png';
@@ -13,6 +17,23 @@ const InvoiceDesign = () => {
 
     const {  BillPdfdetails  } = useContext(BillContext);
     console.log("BillPdfdetails", BillPdfdetails);
+  const navigation = useNavigation();
+
+    useFocusEffect(
+        useCallback(() => {
+          const onBackPress = () => {
+            navigation.goBack();   
+            return true;
+          };
+    
+          const subscription = BackHandler.addEventListener(
+            "hardwareBackPress",
+            onBackPress
+          );
+    
+          return () => subscription.remove();
+        }, [navigation])
+      );
 
     if (!BillPdfdetails) return null;
 
@@ -430,7 +451,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop:20,
   },
-  logo: { height: 40, width: 50, borderRadius: 6, paddingLeft: 15 },
+  logo: { height: 60, width: 120, borderRadius: 6, marginLeft: 25 },
   hostelName: { fontSize: 14, fontWeight: "bold", color: "#2B2B2B" },
   address: { fontSize: 12, color: "#4B4B4B", flexWrap: "wrap", width: 150 },
 
