@@ -21,7 +21,7 @@ import Dots from "../../../Assets/Images/3dots.png";
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 
-export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed }) {
+export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed,onBedAdded }) {
     const translateY = useRef(new Animated.Value(300)).current;
     console.log("selectedBed",selectedBed)
     // const [showNotice, setShowNotice] = useState(false);

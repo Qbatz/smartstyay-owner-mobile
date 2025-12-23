@@ -313,7 +313,7 @@ const moveToNoticePeriod = async (hostelId, payload) => {
 }
 
 };
-
+ 
 
 
   return (

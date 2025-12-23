@@ -256,7 +256,7 @@ const sheetContent = (
           {sheetContent}
         </KeyboardAvoidingView>
       ) : (
-        sheetContent   // 🔥 ANDROID – NO KeyboardAvoidingView
+        sheetContent  
       )}
     </View>
   </>

@@ -52,11 +52,11 @@ export default function TenantCheckIn({ navigation, route }) {
   const [bedError, setBedError] = useState('')
   const [advanceError, setAdvanceError] = useState("")
   const [rentError, setRentError] = useState("")
-   const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [openDatePicker, setOpenDatePicker] = useState(false);
   const [joiningDate, setJoiningDate] = useState(new Date());
   const [advanceAmount, setAdvanceAmount] = useState("");
   const [rentalAmount, setRentalAmount] = useState("");
-   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [extraCharges, setExtraCharges] = useState([]);
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
   const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
- 
+
   const TYPE_OPTIONS = ["Maintenance", "Others"];
 
 
@@ -137,9 +137,6 @@ export default function TenantCheckIn({ navigation, route }) {
   const removeCharge = (id) => {
     setExtraCharges(prev => prev.filter(i => i.id !== id));
 
-    // if (type === "Maintenance") {
-    //   setDisabledTypes([]);
-    // }
   };
 
   const selectType = (id, type) => {
@@ -229,8 +226,12 @@ export default function TenantCheckIn({ navigation, route }) {
       advanceAmount: Number(advanceAmount),
       rentalAmount: Number(rentalAmount),
       stayType: "LONG",
-      deductions: extraCharges.map(e => ({
-        type: e.type.toLowerCase(),
+
+      deductions: extraCharges.map((e) => ({
+        type:
+          e.type === "Others"
+            ? e.title.trim().toLowerCase()
+            : e.type.toLowerCase(),
         amount: Number(e.amount),
       })),
     };
@@ -595,7 +596,7 @@ export default function TenantCheckIn({ navigation, route }) {
             )}
 
             {tab === "short" && (
-             
+
               <View><Text>Comming Soon</Text></View>
             )}
           </ScrollView>

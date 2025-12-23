@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../Context/PayingGuestContext";
 
 
-export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed,onDeleteBed }) {
+export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed,onDeleteBed,onBedAdded }) {
   console.log("selectedBed", selectedBed)
   const { getAllFloorsByHostel,getAllRoomsByFloor,getAllBedsByRoom,deleteBed } = useFloor();
   const navigation = useNavigation();
@@ -76,6 +76,9 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
             navigation.navigate("AssignTenant", {
               roomNo: "101",
               bedId: "A",
+              selectedBed,
+              onBedAdded
+              
             });
           }}>
             <Text style={styles.optionText}>Assign Tenant</Text>
