@@ -40,7 +40,7 @@ import DeleteIcon from  "../../../Assets/Images/trash.png"
 import EditIcon from  "../../../Assets/Images/editIcon.png"  
 
 
-const Receipt = () => {
+const Receipt = ({onSelectReceipt}) => {
 
   const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
       UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt , getReceiptPdfDetails} = useContext(BillContext);
@@ -237,19 +237,28 @@ console.log('selected', selectedCustomer ,  activeHostelId,
       );
 
 
-const handleShowReceiptPdf = async () => {
-navigation.navigate("ReceiptPdf")
-  const res = await getReceiptPdfDetails(
-      activeHostelId,
-      selectedReceipt?.transactionId
-    );
-    console.log("res", res);
-}
+// const handleShowReceiptPdf = async () => {
+// navigation.navigate("ReceiptPdf")
+//   const res = await getReceiptPdfDetails(
+//       activeHostelId,
+//       selectedReceipt?.transactionId
+//     );
+//     console.log("res", res);
+// }
 
 
 const handleCreateBill = () => {
 navigation.navigate("CreateReceipt" , {mode: "add"})
 }
+
+// const handleViewReceiptDetails = (item) => {
+//       setSelectedReceipt(item);
+//       setShowBillDetails(true);
+//     }
+
+     const handleViewReceiptDetails = (item) => {
+      onSelectReceipt(item);
+       };
 
 
 const handleEditBill = () => {
@@ -304,10 +313,7 @@ const renderItem = ({ item }) => {
   return (
     <View style={styles.row}>
       <TouchableOpacity
-        onPress={() => {
-          setSelectedReceipt(item);
-          setShowBillDetails(true);
-        }}
+        onPress={() => {handleViewReceiptDetails(item)}}
       >
         <Image
           source={
@@ -440,7 +446,7 @@ const renderItem = ({ item }) => {
 
 
 
-        {showBillDetails && (
+        {/* {showBillDetails && (
           <View style={styles.sheetOverlay}>
         
             <TouchableWithoutFeedback onPress={() => setShowBillDetails(false)}>
@@ -567,7 +573,7 @@ const renderItem = ({ item }) => {
         
             </Animated.View>
           </View>
-        )}
+        )} */}
 
 
         {showFilter && (

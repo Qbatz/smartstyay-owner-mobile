@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState  } from "react";
+import { useRoute } from "@react-navigation/native";
 import {
     View,
     Text,
@@ -19,6 +20,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width } = Dimensions.get("window");
 
 const VerifyAccountScreen = ({ navigation }) => {
+    const route = useRoute();
+  const { email } = route.params || {};
  const insets = useSafeAreaInsets();
     const [showPopup, setShowPopup] = useState(false);
     const scale = useRef(new Animated.Value(0.6)).current;
@@ -111,7 +114,7 @@ const BOTTOM_IMAGE_HEIGHT = 200;
                     <Text style={styles.smallText}>
                         We’ve sent you an email with Confirmation
                     </Text>
-                    <Text style={styles.emailText}>arunkumar77@gmail.com</Text>
+                    <Text style={styles.emailText}>{email}</Text>
                 </View>
 
                 <View style={styles.labelWrap}>
@@ -267,7 +270,8 @@ const styles = StyleSheet.create({
     emailText: {
         fontSize: 16,
         marginTop: 6,
-        color: "#555",
+        color: "black",
+        fontWeight:600,
     },
 
     label: {
