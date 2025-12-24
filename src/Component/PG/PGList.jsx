@@ -1,5 +1,5 @@
 // PGPageFull.js
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext,useCallback } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import Dots from "../../Assets/Images/3dots.png";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
@@ -197,7 +198,7 @@ export default function PGPageFull({ route }) {
     const freshBed = res.data;
     const status = getBedStatus(freshBed);
     const statuses = splitStatus(status);
-
+console.log("freshBed",freshBed)
 
     if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
       setSelectedDouble({ bed: freshBed, room });
@@ -260,6 +261,7 @@ export default function PGPageFull({ route }) {
   };
 
 
+
   useEffect(() => {
     if (!activeHostelId) return;
 
@@ -309,6 +311,19 @@ export default function PGPageFull({ route }) {
       }));
     }
   };
+  useFocusEffect(
+  React.useCallback(() => {
+    rooms.forEach(async (room) => {
+      const res = await getAllBedsByRoom(room.id);
+      if (res.success) {
+        setBedsByRoom(prev => ({
+          ...prev,
+          [room.id]: res.data,
+        }));
+      }
+    });
+  }, [rooms])
+);
 
 
 
@@ -322,21 +337,28 @@ export default function PGPageFull({ route }) {
 
     return statuses.length ? statuses.join(",") : "available";
   };
+// useEffect(() => {
+//   if (!rooms.length) return;
+
+//   rooms.forEach(room => {
+//     handleBedAdded(room.id);
+//   });
+// }, [rooms]);
 
 
-  useEffect(() => {
-    if (!rooms.length) return;
+  // useEffect(() => {
+  //   if (!rooms.length) return;
 
-    rooms.forEach(async (room) => {
-      const res = await getAllBedsByRoom(room.id);
-      if (res.success) {
-        setBedsByRoom(prev => ({
-          ...prev,
-          [room.id]: res.data,
-        }));
-      }
-    });
-  }, [rooms]);
+  //   rooms.forEach(async (room) => {
+  //     const res = await getAllBedsByRoom(room.id);
+  //     if (res.success) {
+  //       setBedsByRoom(prev => ({
+  //         ...prev,
+  //         [room.id]: res.data,
+  //       }));
+  //     }
+  //   });
+  // }, [rooms]);
 
 
 

@@ -134,8 +134,8 @@ const handleReAssignBed=()=>{
                 <View style={styles.userRow}>
                     <Image source={Profile} style={styles.userImg} />
                     <View>
-                        <Text style={styles.userName}>{selectedBed.currentTenantInfo.tenantFullName}</Text>
-                        <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo.mobile}</Text>
+                        <Text style={styles.userName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                        <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
                     </View>
                 </View>
 
@@ -143,21 +143,21 @@ const handleReAssignBed=()=>{
                 <Text style={styles.label}>Rental Amount</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Money} style={styles.icon} />
-                    <Text style={styles.value}>₹ {selectedBed.currentTenantInfo.rentAmount}</Text>
+                    <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
                 </View>
 
                 {/* JOINED DATE */}
                 <Text style={styles.label}>Joined Date</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Calendar} style={styles.icon} />
-                    <Text style={styles.value}>{selectedBed.currentTenantInfo.joiningDate}</Text>
+                    <Text style={styles.value}>{selectedBed.currentTenantInfo[0]?.joiningDate}</Text>
                 </View>
 
               
                 <Text style={styles.label}>Last Invoice</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Invoice} style={styles.icon} />
-                    <Text style={styles.value}>{selectedBed.currentTenantInfo.lastInvoiceNumber} & {selectedBed.currentTenantInfo.totalInvoices} more</Text>
+                    <Text style={styles.value}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
                 </View>
 
                 <TouchableOpacity style={styles.statusBtn}>

@@ -28,6 +28,7 @@ export default function ReassignBedScreen({ route, navigation }) {
   const [bedsByRoom, setBedsByRoom] = useState({});
   const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id);
 const [rooms, setRooms] = useState([]);
+const [bedDetails,setBedDetails] = useState([])
 
 useEffect(() => {
   if (!selectedFloorId) return;
@@ -76,7 +77,7 @@ useEffect(() => {
       };
     })()
   : null;
-
+console.log("selectedDetails",selectedNewBed)
 
 const isAvailableBed = (b) =>
   !b.isOccupied &&
@@ -187,7 +188,10 @@ const selectedFloorRooms = rooms.filter(
             floorId: floors[selectedFloor].id,
             roomId: room.id,
             bedId: b.id,
+             bed: b,   
+         
           })
+          
         }
         style={{ alignItems: "center" }}
       >
@@ -261,6 +265,7 @@ const selectedFloorRooms = rooms.filter(
     room: tenant.room?.room_no,
     bed: tenant.bed?.label,
   }}
+  selectedNewBed={selectedNewBed}
   next={{
     floor: selectedFloor + 1 + " Floor",
     room: selectedNewBed?.roomId,
