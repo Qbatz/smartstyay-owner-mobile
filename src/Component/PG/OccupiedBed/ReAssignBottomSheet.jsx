@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState,useContext } from "react";
 import {
   View,
   Text,
@@ -19,20 +19,28 @@ import BedIcon from "../../../Assets/Images/RoomImg.png";
 import SwapIcon from "../../../Assets/Images/swap.png";
 import Calendar from "../../../Assets/Images/calendar.png";
 import Assign from "../../../Assets/Images/exchange.png";
+import { useFloor } from "../../../Context/PayingGuestContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
 
 export default function ConfirmReassignSheet({
   visible,
   onClose,
   current,
   next,
+  selectedNewBed
 }) {
 
   const translateY = useRef(new Animated.Value(500)).current;
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [sameAsCurrent, setSameAsCurrent] = useState(false);
+  const { activeHostelId } = useContext(CommonContexts);
+    const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
+    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
 
   // 👉 1. FIRST HOOK – Open/Close Bottom Sheet
+  console.log("selectedNewBedbottom",selectedNewBed)
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 500,

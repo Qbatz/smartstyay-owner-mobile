@@ -121,7 +121,7 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
 
     const tenantId =
       customer?.customerId ||
-      selectedBed?.currentTenantInfo?.tenetId;
+      selectedBed?.currentTenantInfo[0]?.tenetId;
 
     if (!tenantId) {
       alert("Customer not found");
@@ -155,7 +155,7 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
   };
   const joiningDateRaw =
     customer?.actualJoining ||
-    selectedBed?.currentTenantInfo?.joiningDate;
+    selectedBed?.currentTenantInfo[0]?.joiningDate;
 
   const joiningDate = joiningDateRaw
     ? dayjs(joiningDateRaw, ["DD/MM/YYYY", "DD-MM-YYYY", "YYYY-MM-DD"])
@@ -293,7 +293,7 @@ for (let i = -90; i <= 90; i++) {
             <Image source={Profile} style={styles.profileImg} />
 
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.name}>{customer?.fullName || selectedBed.currentTenantInfo.tenantFullName}</Text>
+              <Text style={styles.name}>{customer?.fullName || selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
 
               <View style={styles.badgeRow}>
                 <View style={styles.badgeYellow}>

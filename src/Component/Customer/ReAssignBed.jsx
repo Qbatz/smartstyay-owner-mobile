@@ -29,7 +29,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
+  const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
 
   const [modalType, setModalType] = useState("success");
@@ -74,7 +74,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId);
-console.log("fetchCustomerDetails",res)
+    console.log("fetchCustomerDetails", res)
     if (res.success) {
       setRentAmount(String(res.data.hostelInfo?.monthlyRent || ""));
 
@@ -155,11 +155,11 @@ console.log("fetchCustomerDetails",res)
     });
   };
 
-  /* 🔹 Swipe Gesture */
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => {
-        if (disableSheetDrag) return false; // 🚫 block sheet drag
+        if (disableSheetDrag) return false;
         return Math.abs(g.dy) > 5;
       },
       onPanResponderMove: (_, g) => {
@@ -193,7 +193,7 @@ console.log("fetchCustomerDetails",res)
         setFloors([]);
       }
     } catch (e) {
-    
+
       setFloors([]);
     }
   };
@@ -217,7 +217,7 @@ console.log("fetchCustomerDetails",res)
 
   useEffect(() => {
     if (visible && activeHostelId) {
-      loadFloors();        // 🔥 FLOOR API CALL
+      loadFloors();
     }
   }, [visible, activeHostelId]);
   const loadBedsByDate = async (selectedDate) => {
@@ -225,7 +225,7 @@ console.log("fetchCustomerDetails",res)
 
     const formattedDate = dayjs(selectedDate).format("DD-MM-YYYY");
 
-  
+
     try {
       const res = await getBedsByHostelAndDate(
         activeHostelId,
@@ -234,12 +234,12 @@ console.log("fetchCustomerDetails",res)
 
       if (res?.success) {
         setBeds(res.data.listBeds || []);
-       
+
       } else {
         setBeds([]);
       }
     } catch (err) {
-    
+
       setBeds([]);
     }
   };
@@ -314,6 +314,7 @@ console.log("fetchCustomerDetails",res)
       setMessage(res.data);
       setShowSuccess(true);
       onSuccess && onSuccess();
+      await getAllBedsByRoom(roomSelected.id);
       setTimeout(() => {
         setShowSuccess(false);
         closeSheet();

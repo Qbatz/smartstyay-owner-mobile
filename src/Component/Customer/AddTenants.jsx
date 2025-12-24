@@ -201,7 +201,7 @@ export default function AddTenant() {
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.container}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  
+
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <Image source={ArrowLeft} style={styles.backIcon} />
@@ -209,9 +209,9 @@ export default function AddTenant() {
                         <Text style={styles.headerTitle}>Add Tenant</Text>
                     </View>
 
-                    
+
                     <View style={styles.stepContainer}>
-                      
+
                         <View style={styles.stepItem}>
                             <View
                                 style={[
@@ -420,6 +420,7 @@ export default function AddTenant() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter Flat, House no., Building..."
+                                            placeholderTextColor="#9CA3AF"
                                             value={addressDetails.flat}
                                             onChangeText={(t) =>
                                                 setAddressDetails({ ...addressDetails, flat: t })
@@ -429,6 +430,7 @@ export default function AddTenant() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter Area"
+                                            placeholderTextColor="#9CA3AF"
                                             value={addressDetails.area}
                                             onChangeText={(t) =>
                                                 setAddressDetails({ ...addressDetails, area: t })
@@ -438,6 +440,7 @@ export default function AddTenant() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Ex : Near SBI Bank"
+                                            placeholderTextColor="#9CA3AF"
                                             value={addressDetails.landmark}
                                             onChangeText={(t) =>
                                                 setAddressDetails({ ...addressDetails, landmark: t })
@@ -447,6 +450,8 @@ export default function AddTenant() {
                                         <Text style={styles.label}>Pincode *</Text>
                                         <TextInput
                                             style={styles.input}
+                                            placeholder="123456"
+                                            placeholderTextColor="#9CA3AF"
                                             keyboardType="number-pad"
                                             maxLength={6}
                                             value={addressDetails.pincode}
@@ -462,6 +467,7 @@ export default function AddTenant() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter Your City Name"
+                                            placeholderTextColor="#9CA3AF"
                                             value={addressDetails.city}
                                             onChangeText={(t) =>
                                                 setAddressDetails({ ...addressDetails, city: t })
@@ -481,15 +487,16 @@ export default function AddTenant() {
                                                 onPress={() => setStateOpen(!stateOpen)}
                                                 activeOpacity={0.9}
                                             >
-                                                <Text style={styles.selectText}>
-                                                    {selectedState || "Select State"}
-                                                </Text>
+                                                <Text style={styles.selectText}>{selectedState}</Text>
                                                 <Image source={DownArrow} style={styles.arrow} />
                                             </TouchableOpacity>
 
                                             {stateOpen && (
                                                 <View style={styles.dropdownMenu}>
-                                                    <ScrollView style={{ maxHeight: 160 }}>
+                                                    <ScrollView
+                                                        nestedScrollEnabled={true}
+                                                        keyboardShouldPersistTaps="handled"
+                                                    >
                                                         {stateList.map((v, index) => (
                                                             <TouchableOpacity
                                                                 key={index}
@@ -862,9 +869,23 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         borderRadius: 12,
-        zIndex: 999,
-        elevation: 10,
+        zIndex: 9999,      // 🔥 important
+        elevation: 20,     // 🔥 Android
+        maxHeight: 200,    // 🔥 enable scrolling
     },
+
+    // dropdownMenu: {
+    //     position: "absolute",
+    //     top: 50,
+    //     left: 0,
+    //     right: 0,
+    //     backgroundColor: "#fff",
+    //     borderWidth: 1,
+    //     borderColor: "#ddd",
+    //     borderRadius: 12,
+    //     zIndex: 999,
+    //     elevation: 10,
+    // },
 
     option: {
         paddingVertical: 12,

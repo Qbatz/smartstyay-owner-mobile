@@ -30,7 +30,7 @@ export default function TenantCheckIn({ navigation, route }) {
   const { customerId, customer } = route.params || {};
   const [tab, setTab] = useState("long");
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
+  const { getAllFloorsByHostel, getAllRoomsByFloor,getAllBedsByRoom } = useFloor();
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel } = useCustomer();
 
   const [floors, setFloors] = useState([]);
@@ -59,6 +59,8 @@ export default function TenantCheckIn({ navigation, route }) {
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [extraCharges, setExtraCharges] = useState([]);
 
+  console.log("selectedBed",customer)
+
   useEffect(() => {
     if (!activeHostelId) return;
 
@@ -83,6 +85,15 @@ export default function TenantCheckIn({ navigation, route }) {
       setRooms([]);
     }
   };
+
+
+
+
+
+
+
+
+  
 
 
 
@@ -242,6 +253,8 @@ export default function TenantCheckIn({ navigation, route }) {
       setModalType("success");
       setMessage(res.data);
       setShowSuccess(true);
+     
+    await getAllBedsByRoom(selectedRoom.id);
       navigation.goBack();
       setTimeout(() => {
         setShowSuccess(false);
