@@ -19,9 +19,10 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 
 export default function ReassignBedScreen({ route, navigation }) {
+
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed, deleteFloor, getBedById } = useFloor();
-  const { tenant, floors, } = route.params;
+  const { tenant, floors,selectedBed } = route.params;
   const [selectedFloor, setSelectedFloor] = useState(0);
   const [selectedNewBed, setSelectedNewBed] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -265,7 +266,9 @@ const selectedFloorRooms = rooms.filter(
     room: tenant.room?.room_no,
     bed: tenant.bed?.label,
   }}
+  
   selectedNewBed={selectedNewBed}
+  selectedBed={selectedBed}
   next={{
     floor: selectedFloor + 1 + " Floor",
     room: selectedNewBed?.roomId,
