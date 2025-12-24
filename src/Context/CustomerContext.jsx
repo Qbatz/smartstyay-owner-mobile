@@ -7,6 +7,7 @@ export const CustomerContext = createContext();
 export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("")
+  
 
   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
 

@@ -87,7 +87,8 @@ import RolesScreen from "./src/Component/SettingScreen/RoleScreen/RoleList"
 import BillTemplate from "./src/Component/SettingScreen/BillTemplate/SettingsBillTemplate";
 import SubscriptionPlans from './src/Component/SettingScreen/Subscription/SubscriptionPlan';
 import PlanDetailsScreen from './src/Component/SettingScreen/Subscription/PlanDetailsScreen'
-import Agreement from './src/Component/SettingScreen/SettingsAgreement/AgreementPolicy'
+import Agreement from './src/Component/SettingScreen/SettingsAgreement/AgreementPolicy';
+import PGPageFull from './src/Component/PG/PGList';
 import LoginContext from './src/Context/LoginContext';
 import CommonContext from './src/Context/CommonContext'
 import PGContext from './src/Context/PGContext';
@@ -101,6 +102,7 @@ import BillsProvider from "./src/Context/BillsContext"
 
 import { FloorProvider } from './src/Context/PayingGuestContext';
 import BankingProvider from "./src/Context/BankingContext";
+
 
 
 
@@ -217,6 +219,7 @@ function AppContent() {
           <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
           <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
           <Navigation.Screen name="Agreement" component={Agreement} />
+           <Navigation.Screen name="PG" component={PGPageFull} />
 
 
         </Navigation.Navigator>

@@ -557,6 +557,7 @@ console.log("freshBed",freshBed)
       tenant: selectedOccupied,
       floors: floors,
       rooms:rooms,
+      selectedBed
       
     });
 
@@ -596,6 +597,7 @@ console.log("freshBed",freshBed)
 
   };
   const activeFloor = floors[activeFloorIndex];
+
 
 
   return (
