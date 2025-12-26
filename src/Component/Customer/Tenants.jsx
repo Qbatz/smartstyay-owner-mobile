@@ -40,6 +40,7 @@ import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from "../../Context/CustomerContext";
 import EmptyState from "../../Assets/Images/Empty_state.png";
 import Loader from "../Loader/Loader";
+import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet"
 
 
 
@@ -58,6 +59,7 @@ export default function TenantsScreen({ route }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [reassignCustomer, setReassignCustomer] = useState(null);
+   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -66,6 +68,7 @@ export default function TenantsScreen({ route }) {
       }
     }, [activeHostelId])
   );
+
 
 
   const fetchCustomers = async () => {
@@ -121,6 +124,10 @@ export default function TenantsScreen({ route }) {
       }
     },
   });
+   const handleMakeUsInActive = () => {
+   setShowDetailsMenu(false);
+    setShowInactiveSheet(true)
+  }
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -567,7 +574,6 @@ export default function TenantsScreen({ route }) {
 
 
 
-
         {menuVisible && (
           <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
             <View style={styles.menuOverlay}>
@@ -621,9 +627,34 @@ export default function TenantsScreen({ route }) {
                     </>
 
                   }
-
+                   {
+                    selectedItem && selectedItem.currentStatus === "Booked" &&
+                    <>
+                   <TouchableOpacity
+                style={styles.popupRow}
+                // onPress={() => {
+                //   setShowDetailsMenu(false);
+                //   // setShowNotice(true);
+                // }}
+                onPress={handleMakeUsInActive}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Make Us InActive</Text>
+              </TouchableOpacity>
+ <TouchableOpacity
+                style={styles.popupRow}
+                onPress={() => {
+                  setShowDetailsMenu(false);
+                  // setShowNotice(true);
+                }}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Checkin</Text>
+              </TouchableOpacity>
+</>
+}
                   {selectedItem &&
-                    !["Checked In", "Settlement Generated"].includes(selectedItem.currentStatus) && (
+                    !["Checked In", "Settlement Generated","Booked"].includes(selectedItem.currentStatus) && (
 
                       <>
                         <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
@@ -644,7 +675,7 @@ export default function TenantsScreen({ route }) {
                       </>
                     )}
                   {selectedItem &&
-                    !["Checked In", "Notice Period",].includes(selectedItem.currentStatus) && (
+                    !["Checked In", "Notice Period","Booked"].includes(selectedItem.currentStatus) && (
                       <TouchableOpacity
                         style={styles.popupRow}
                         onPress={() => {
@@ -1009,6 +1040,10 @@ export default function TenantsScreen({ route }) {
         <ReassignBedModal visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
 
       }
+        <InactiveTenantSheet
+              visible={showInactiveSheet}
+              onClose={() => setShowInactiveSheet(false)}
+            />
       {
         showCheckout &&
         <CheckoutBottomSheet

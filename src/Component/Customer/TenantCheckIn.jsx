@@ -89,20 +89,11 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
 
-
-
-
-
-  
-
-
-
   useEffect(() => {
     if (!activeHostelId || !joiningDate) return;
 
     loadBeds(joiningDate);
   }, [activeHostelId]);
-
 
 
   const loadBeds = async (date) => {
