@@ -77,7 +77,7 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
-  const { BillDetails, GetFilteredBills , loading, GetAllBillDetails ,
+  const { BillDetails , loading, GetAllBillDetails ,
      RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  
      , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -124,7 +124,9 @@ const [refundLoading, setRefundLoading] = useState(false);
 
 const [refundAmountError, setRefundAmountError] = useState("");
 const [refundFromError, setRefundFromError] = useState("");
+const [searchText, setSearchText] = useState("");
  
+
 const [selectedCustomer, setSelectedCustomer] = useState(null);
 const [showReAssignbed , setShowReAssignBed] = useState(false)
 const [showNotice, setShowNotice] = useState(false);
@@ -198,6 +200,7 @@ const [filterError, setFilterError] = useState("");
 
 
 const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+const isBillLocked = true;
 
 
 useEffect(() => {
@@ -772,6 +775,21 @@ const handleSaveRecordPayment = async () => {
 
 
 
+const handleSearch = async (text) => {
+  const filters = {
+    startDate: appliedFilters?.startDate || null,
+    endDate: appliedFilters?.endDate || null,
+    paymentStatus: appliedFilters?.paymentStatus || [],
+    type: appliedFilters?.type || [],
+    modes: appliedFilters?.modes || [],
+    createdBy: appliedFilters?.createdBy || [],
+    search: text || null, 
+  };
+
+  await GetAllBillDetails(activeHostelId, filters);
+};
+
+
 
 
 
@@ -860,7 +878,7 @@ const handleApplyFilter = async () => {
   }
 
   // 🔹 API call
-  await GetFilteredBills(activeHostelId, filters);
+  await GetAllBillDetails(activeHostelId, filters);
 
   // 🔹 Save applied filters for chips
   setAppliedFilters(filters);
@@ -871,7 +889,6 @@ const handleApplyFilter = async () => {
 
 
 const handleResetFilters = async () => {
-  // 1️⃣ Clear filter states
   setFromDate(null);
   setToDate(null);
   setBillStatus([]);
@@ -879,7 +896,6 @@ const handleResetFilters = async () => {
   setMode([]);
   setCreatedBy([]);
 
-  // 2️⃣ Remove chips
   setAppliedFilters(null);
   setFilterError("")
 
@@ -1099,6 +1115,11 @@ navigation.navigate("CancelNotice")
       style={styles.searchInput}
       placeholder="Search Bills"
       placeholderTextColor="#9CA3AF"
+      value={searchText}
+      onChangeText={(text) => {
+      setSearchText(text);
+      handleSearch(text);
+    }}
     />
   </View>
 
@@ -1202,7 +1223,7 @@ navigation.navigate("CancelNotice")
 
           <View style={styles.detailRow}>
             <View style={styles.floorBadge}>
-              <Text style={styles.floorText}>{item.invoiceType}</Text>
+              <Text style={styles.floorText}>{item.invoiceType}-{item?.invoiceMode}</Text>
             </View>
 
             <Image source={Bills_Black_Icon} style={styles.iconSmall} />
@@ -1584,15 +1605,40 @@ navigation.navigate("CancelNotice")
 
    
 
-      <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+      {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
         />
-        <Text style={styles.popupText}>Download</Text>
-      </TouchableOpacity>
+        <Text style={styles.popupText}>Download</Text> 
+      </TouchableOpacity> */}
+
+      <TouchableOpacity
+  style={[
+    styles.popupRow,
+    isBillLocked && styles.popupRowDisabled,
+  ]}
+  disabled={isBillLocked}
+  onPress={() => {
+    setShowMenu(false);
+    setDeleteTenants(true);
+  }}
+>
+  <Image
+    source={require("../../../Assets/Images/ReAssign.png")}
+    style={styles.popupIcon}
+  />
+  <Text
+    style={[
+      styles.popupText,
+      isBillLocked && styles.popupTextDisabled,
+    ]}
+  >
+    Download
+  </Text>
+</TouchableOpacity>
      
-     
+        {selectedBill?.invoiceAmount < 0 && selectedBill?.paymentStatus !== "Refunded" && selectedBill?.paymentStatus !== "Cancelled" && (
         <TouchableOpacity style={styles.popupRow} onPress={handleShowRefundPayment} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
@@ -1600,10 +1646,10 @@ navigation.navigate("CancelNotice")
         />
         <Text style={styles.popupText}>Refund Amount</Text>
       </TouchableOpacity>
+    )}
      
      
-
-      
+{ (selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") &&(
     <TouchableOpacity style={styles.popupRow} onPress={handleShowRecordPayment} >
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
@@ -1612,13 +1658,41 @@ navigation.navigate("CancelNotice")
   <Text style={styles.popupText}>Record Payment</Text>
 </TouchableOpacity>
 
-  <TouchableOpacity style={styles.popupRow} onPress={handleShowWriteOff} >
+      )}
+
+<TouchableOpacity
+  style={[
+    styles.popupRow,
+    isBillLocked && styles.popupRowDisabled,
+  ]}
+  disabled={isBillLocked}
+  onPress={handleShowWriteOff}
+>
+  <Image
+    source={require("../../../Assets/Images/ReAssign.png")}
+    style={styles.popupIcon}
+  />
+  <Text
+    style={[
+      styles.popupText,
+      isBillLocked && styles.popupTextDisabled,
+    ]}
+  >
+    Write-off
+  </Text>
+</TouchableOpacity>
+
+
+  {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowWriteOff} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
         />
         <Text style={styles.popupText}>Write-off</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+      
+                    { (selectedBill?.invoiceMode === "Recurring" && selectedBill?.paymentStatus === "Pending") &&( 
        <TouchableOpacity style={styles.popupRow} onPress={handleEditBill} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
@@ -1626,8 +1700,58 @@ navigation.navigate("CancelNotice")
         />
         <Text style={styles.popupText}>Edit</Text>
       </TouchableOpacity>
+          )}
 
- <TouchableOpacity
+
+      <TouchableOpacity
+  style={[
+    styles.popupRow,
+    isBillLocked && styles.popupRowDisabled,
+  ]}
+  disabled={isBillLocked}
+  onPress={handleEditBill}
+>
+  <Image
+    source={require("../../../Assets/Images/ReAssign.png")}
+    style={styles.popupIcon}
+  />
+  <Text
+    style={[
+      styles.popupText,
+      isBillLocked && styles.popupTextDisabled,
+    ]}
+  >
+    Edit
+  </Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+  style={[
+    styles.popupRow,
+    isBillLocked && styles.popupRowDisabled,
+  ]}
+  disabled={isBillLocked}
+  onPress={() => {
+    setShowMenu(false);
+    setDeleteTenants(true);
+  }}
+>
+  <Image
+    source={require("../../../Assets/Images/trash.png")}
+    style={styles.popupIcon}
+  />
+  <Text
+    style={[
+      styles.popupText,
+      isBillLocked && styles.popupTextDisabled,
+    ]}
+  >
+    Delete
+  </Text>
+</TouchableOpacity>
+
+
+ {/* <TouchableOpacity
   style={styles.popupRow}
   onPress={() => {
     setShowMenu(false);
@@ -1639,7 +1763,7 @@ navigation.navigate("CancelNotice")
     style={styles.popupIcon}
   />
   <Text style={styles.popupText}>Delete</Text>
-</TouchableOpacity>
+</TouchableOpacity> */}
     </View>
   </TouchableOpacity>
 )}
@@ -2777,12 +2901,12 @@ activeText: {
     fontWeight: "500",
   },
   iconSmall: {
-    width: 14,
-    height: 14,
+    width: 12,
+    height: 12,
     marginHorizontal: 3,
   },
   detailText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#4B5563",
   },
   rightSection: {
@@ -2931,6 +3055,9 @@ popupRow: {
   paddingVertical: 10,
   paddingHorizontal: 12,
 },
+ popupRowDisabled: {
+    opacity: 0.4,         
+  },
 
 popupIcon: {
   width: 20,
@@ -2943,6 +3070,9 @@ popupText: {
   color: "#333",
 },
 
+ popupTextDisabled: {
+    color: "#9CA3AF", 
+  },
 
 filterOverlay: {
   position: "absolute",

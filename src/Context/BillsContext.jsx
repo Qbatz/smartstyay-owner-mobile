@@ -20,35 +20,33 @@ export default function BillsProvider({ children }) {
     "Something went wrong";
 
  
-  const GetAllBillDetails = async (hostelId) => {
-    try {
-      setLoading(true);
-      const res = await AxiosConfig.get(`v2/bills/new/${hostelId}`);
+  // const GetAllBillDetails = async (hostelId) => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await AxiosConfig.get(`v2/bills/new/${hostelId}`);
  
-      if (res.status === 200) {
-        setBillDetails(res.data || []);
-        return { success: true, data: res.data };
-      }
+  //     if (res.status === 200) {
+  //       setBillDetails(res.data || []);
+  //       return { success: true, data: res.data };
+  //     }
 
-      return { success: false };
-    } catch (error) {
-      const msg = getErrorMessage(error);
-      setErrorMsg(msg);
-      return { success: false, message: msg };
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     return { success: false };
+  //   } catch (error) {
+  //     const msg = getErrorMessage(error);
+  //     setErrorMsg(msg);
+  //     return { success: false, message: msg };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  // ----------------------------------
-// FILTER BILLS
-// ----------------------------------
-const GetFilteredBills = async (hostelId, filters = {}) => {
+
+const GetAllBillDetails = async (hostelId, filters = {}) => {
   try {
     setLoading(true);
     setErrorMsg("");
 
-    const res = await AxiosConfig.get(`/v2/bills/new/${hostelId}`, {
+    const res = await AxiosConfig.get(`/v2/bills/${hostelId}`, {
       params: {
         startDate: filters.startDate,
         endDate: filters.endDate,
@@ -103,9 +101,9 @@ const GetFilteredBills = async (hostelId, filters = {}) => {
 
 
       if (res.status === 200 || res.status === 201) {
-        // if (hostelId) {
-        //   await GetAllBillDetails(hostelId); 
-        // }
+        if (hostelId) {
+          await GetAllBillDetails(hostelId); 
+        }
 
         return { success: true, data: res.data };
       }
@@ -514,7 +512,7 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
         errorMsg,
         refundError,
         GetAllBillDetails,
-        GetFilteredBills, 
+        // GetFilteredBills, 
         CreateManualBill,
         RecordPayment,
         GetInitializeRefundDetails,

@@ -398,7 +398,7 @@ const handleToggleRecurring = async (item) => {
             <Animated.View
               style={[
                 styles.transactionSheet,
-                { height: "68%", transform: [{ translateY: detailsSheetY }] }
+                { height: "44%", transform: [{ translateY: detailsSheetY }] }
               ]}
               {...billDetailsPan.panHandlers}
             >
@@ -411,18 +411,18 @@ const handleToggleRecurring = async (item) => {
         
         
             <View style={{display:'flex', flexDirection:'row'}}>
-           <Image
+           {/* <Image
                 source={Download}
                 style={{ width: 23, height: 23, marginRight:10 }}
-              />
+              /> */}
 
         
-            <TouchableOpacity>
+            {/* <TouchableOpacity>
               <Image
                 source={Dots}
                 style={{ width: 28, height: 28,  }}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             </View>
           </View>
         
@@ -519,14 +519,14 @@ const handleToggleRecurring = async (item) => {
           
           </View>
         
-          <TouchableOpacity style={styles.previewBtn} >
+          {/* <TouchableOpacity style={styles.previewBtn} >
             <View style={{display:'flex', flexDirection:'row'}}>
                        <Image source={PreviewIcon} style={{   width: 18,
             height: 18, marginTop:3 , marginRight:12
           }} />
             <Text style={styles.previewText}>Preview</Text>
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         
         </ScrollView>
         
