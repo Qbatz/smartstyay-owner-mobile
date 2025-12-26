@@ -1,5 +1,5 @@
 // PGPageFull.js
-import React, { useState, useEffect, useContext,useCallback } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -47,7 +47,6 @@ const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 
 export default function PGPageFull({ route }) {
   const navigation = useNavigation();
-  // const [floors, setFloors] = useState([]);
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed, deleteFloor, getBedById } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
@@ -94,13 +93,9 @@ export default function PGPageFull({ route }) {
 
   const [editBedData, setEditBedData] = useState(null);
 
-  // const handleEditBed = ()=>{
-  //   setEditBed(true)
-  //   setShowAddBed(true)
-  //   setShowManageBed(false)
-  // }
+ 
   const handleEditBed = (bed) => {
-    setEditBedData(bed);  
+    setEditBedData(bed);
     setShowAddBed(true);
     setShowManageBed(false);
     setShowNoticePeriodSheet(false)
@@ -190,19 +185,25 @@ export default function PGPageFull({ route }) {
     }
   };
   const handleBedPress = async (bed, room) => {
-    // 🔥 latest bed data fetch
     const res = await getBedById(bed.id);
 
     if (!res.success) return;
 
     const freshBed = res.data;
     const status = getBedStatus(freshBed);
-    const statuses = splitStatus(status);
-console.log("freshBed",freshBed)
 
-    if (statuses.includes("noticeperiod") && statuses.includes("reserved")) {
+    const statuses = splitStatus(status);
+    console.log("freshBed", freshBed)
+    console.log("status", status)
+
+    if (
+      freshBed.isOnNotice &&
+      freshBed.isBooked &&
+      freshBed.isOccupied
+    ) {
       setSelectedDouble({ bed: freshBed, room });
       setShowDoubleStatus(true);
+      setSelectedBed(freshBed);
       return;
     }
 
@@ -312,18 +313,18 @@ console.log("freshBed",freshBed)
     }
   };
   useFocusEffect(
-  React.useCallback(() => {
-    rooms.forEach(async (room) => {
-      const res = await getAllBedsByRoom(room.id);
-      if (res.success) {
-        setBedsByRoom(prev => ({
-          ...prev,
-          [room.id]: res.data,
-        }));
-      }
-    });
-  }, [rooms])
-);
+    React.useCallback(() => {
+      rooms.forEach(async (room) => {
+        const res = await getAllBedsByRoom(room.id);
+        if (res.success) {
+          setBedsByRoom(prev => ({
+            ...prev,
+            [room.id]: res.data,
+          }));
+        }
+      });
+    }, [rooms])
+  );
 
 
 
@@ -337,13 +338,13 @@ console.log("freshBed",freshBed)
 
     return statuses.length ? statuses.join(",") : "available";
   };
-// useEffect(() => {
-//   if (!rooms.length) return;
+  // useEffect(() => {
+  //   if (!rooms.length) return;
 
-//   rooms.forEach(room => {
-//     handleBedAdded(room.id);
-//   });
-// }, [rooms]);
+  //   rooms.forEach(room => {
+  //     handleBedAdded(room.id);
+  //   });
+  // }, [rooms]);
 
 
   // useEffect(() => {
@@ -556,9 +557,9 @@ console.log("freshBed",freshBed)
     navigation.navigate("ReassignBedScreen", {
       tenant: selectedOccupied,
       floors: floors,
-      rooms:rooms,
+      rooms: rooms,
       selectedBed
-      
+
     });
 
     setShowOccupiedSheet(false);
@@ -859,6 +860,7 @@ console.log("freshBed",freshBed)
                 {bedsByRoom[item.id]?.map((b) => {
                   const status = getBedStatus(b);
 
+
                   return (
                     <TouchableOpacity
                       key={b.id}
@@ -869,7 +871,7 @@ console.log("freshBed",freshBed)
                     >
                       <Image source={getBaseBed(status)} style={styles.bedIcon} />
 
-                      {overlayIcons[getPrimaryStatus(status)] && (
+                      {/* {overlayIcons[getPrimaryStatus(status)] && (
                         <Image
                           source={overlayIcons[getPrimaryStatus(status)]}
                           style={styles.overlayIcon}
@@ -880,7 +882,24 @@ console.log("freshBed",freshBed)
                         <View style={styles.multiBadge}>
                           <Text style={styles.multiBadgeText}>2</Text>
                         </View>
+                      )} */}
+
+                      {!(b.onNotice && b.isBooked) &&
+                        overlayIcons[getPrimaryStatus(status)] && (
+                          <Image
+                            source={overlayIcons[getPrimaryStatus(status)]}
+                            style={styles.overlayIcon}
+                          />
+                        )
+                      }
+
+                      {/* Multi status badge */}
+                      {b.onNotice && b.isBooked && (
+                        <View style={styles.multiBadge}>
+                          <Text style={styles.multiBadgeText}>2</Text>
+                        </View>
                       )}
+
 
                       <Text style={styles.bedLabel}>{b.bedName}</Text>
                     </TouchableOpacity>
@@ -1076,6 +1095,8 @@ console.log("freshBed",freshBed)
         onClose={() => setShowNewBooking(false)}
         bed={selectedOccupied?.bed}
         room={selectedOccupied?.room}
+        selectedBed={selectedBed}
+        onBedAdded={handleBedAdded}
       />
       <DoubleStatusSheet
         visible={showDoubleStatus}

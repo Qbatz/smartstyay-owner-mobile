@@ -129,9 +129,9 @@ export default function TenantsScreen({ route }) {
   const openMenu = (event, item) => {
     event.stopPropagation();
 
-    const { pageX, pageY } = event.nativeEvent; // ✅ CORRECT
+    const { pageX, pageY } = event.nativeEvent; 
 
-    // SAME ITEM → toggle
+   
     if (menuVisible && selectedItem?.customerId === item.customerId) {
       setMenuVisible(false);
       setSelectedItem(null);
