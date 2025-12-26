@@ -314,7 +314,38 @@ const moveToNoticePeriod = async (hostelId, payload) => {
 }
 
 };
- 
+ const bookCustomer = async (hostelId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/booking/${hostelId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Booking failed" };
+  } catch (error) {
+    console.log("BOOKING ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Booking failed",
+    };
+  }
+};
+
 
 
   return (
@@ -326,7 +357,7 @@ const moveToNoticePeriod = async (hostelId, payload) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer, getBedsByHostelAndDate, checkInCustomer, deleteCustomer, changeBedCustomer, getCustomerDetails,moveToNoticePeriod
+        addCustomer, getBedsByHostelAndDate, checkInCustomer, deleteCustomer, changeBedCustomer, getCustomerDetails,moveToNoticePeriod,bookCustomer
       }}
     >
       {children}
