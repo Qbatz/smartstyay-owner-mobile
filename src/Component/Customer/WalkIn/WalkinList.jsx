@@ -123,7 +123,11 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
     setMenuVisible(false)
   }
   const handleShowAddBooking = () => {
-    navigation.navigate("AddBooking")
+    // navigation.navigate("AddBooking")
+      navigation.navigate("AddBooking", {
+    selectedItem: selectedItem,
+  });
+
     setMenuVisible(false)
   }
 

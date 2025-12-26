@@ -6,7 +6,7 @@ import {
     PanResponder,
     TouchableOpacity,
     Image,
-    StyleSheet, TouchableWithoutFeedback, BackHandler
+    StyleSheet, TouchableWithoutFeedback, BackHandler,ScrollView
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
@@ -20,6 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 
 export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed }) {
     const navigation = useNavigation();
+    console.log("selectedBed",selectedBed)
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
     const [showInactiveSheet, setShowInactiveSheet] = useState(false)
@@ -102,132 +103,133 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
             <View style={styles.overlay}>
                 <TouchableOpacity style={styles.overlayTouch} onPress={handleOuterClick} />
 
-                <Animated.View
+                {/* <Animated.View
                     style={[styles.sheet, { transform: [{ translateY }] }]}
                     {...panResponder.panHandlers}
-                >
+                > */}
+  <Animated.View
+  style={[
+    styles.sheet,
+    {
+      transform: [{ translateY }],
+      maxHeight: "80%",   
+    },
+  ]}
+  {...panResponder.panHandlers}  
+>
+
 
                     <View style={styles.handle} />
 
 
                     <View style={styles.headerRow}>
-                        <Text style={styles.title}>Bed Status</Text>
-
-
-                        <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
-
-                            <Image source={Dots} style={styles.dots} />
-                        </TouchableOpacity>
+                        <Text style={styles.title}>Bed Status</Text>                     
                     </View>
+<View style={styles.tagRow}>
+      <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
+        <Text style={styles.tagText}>{selectedBed.floorName}</Text>
+      </View>
+      <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
+        <Text style={styles.tagText}>{selectedBed.roomName} - {selectedBed.bedName}</Text>
+      </View>
+    </View>
+
+                  
+
+<ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 20 }}
+>
+{selectedBed?.newTenantInfo?.map((item, index) => (
+  <View key={index}>
+   
+
+   <View style={styles.reservedRow}>
+  <Text style={styles.sub}>Reserved by</Text>
+
+  <View style={{ position: "relative" }}>
+    <TouchableOpacity onPress={() => setMenuOpen(index)}>
+      <Image source={Dots} style={styles.dots} />
+    </TouchableOpacity>
+
+    {menuOpen === index && (
+      <View style={styles.dotMenu}>
+        <TouchableOpacity onPress={handleCheckIn} style={styles.menuItem}>
+          <Image source={Checkin} style={styles.menuIcon} />
+          <Text style={styles.menuText}>Check-In</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => {
+            setMenuOpen(null);
+            onClose();
+            setTimeout(() => setShowInactiveSheet(true), 250);
+          }}
+        >
+          <Image source={MakeUs} style={styles.menuIcon} />
+          <Text style={styles.menuText}>Make as Inactive</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => {
+            setMenuOpen(null);
+            handleEdit();
+          }}
+        >
+          <Image source={Checkin} style={styles.menuIcon} />
+          <Text style={styles.menuText}>Edit</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </View>
+</View>
 
 
-                    {menuOpen && (
-                        <View style={styles.menuWrapper} pointerEvents="box-none">
+    <View style={styles.userRow}>
+      <Image source={Profile} style={styles.userImg} />
 
-                            {/* BACKDROP CLICK → CLOSE */}
-                            <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
-                                <View style={styles.overlayMenu} />
-                            </TouchableWithoutFeedback>
+      <View>
+        <Text style={styles.userName}>{item.tenantFullName}</Text>
+        <Text style={styles.phone}>+91 {item.mobile}</Text>
+      </View>
+    </View>
 
-                            {/* POPUP */}
-                            <View style={styles.popupMenu}>
-                                <TouchableOpacity style={styles.popupItem} onPress={handleCheckIn}>
-                                    <View style={styles.row}>
-                                        <Image source={Checkin} style={styles.iconCheck} />
-                                        <Text style={styles.popupText}>Check-In</Text>
-                                    </View>
-                                </TouchableOpacity>
+    <View style={{ marginTop: 15 }}>
+      <Text style={styles.infoLabel}>Booked Date</Text>
+      <View style={styles.amountRow}>
+        <Image source={Calendar} style={styles.amountIcon} />
+        <Text style={styles.amountText}>{item.bookingDate}</Text>
+      </View>
+    </View>
 
-                                <TouchableOpacity style={styles.popupItem} onPress={() => {
-                                    setMenuOpen(false);
+    <View style={{ marginTop: 15 }}>
+      <Text style={styles.infoLabel}>Booking Amount</Text>
+      <View style={styles.amountRow}>
+        <Image source={Money} style={styles.amountIcon} />
+        <Text style={styles.amountText}>₹ {item.bookingAmount}</Text>
+      </View>
+    </View>
 
-                                    // Step 1: Close Reserved Sheet
-                                    onClose();
+    <View style={{ marginTop: 15 }}>
+      <Text style={styles.infoLabel}>Joining Date</Text>
+      <View style={styles.amountRow}>
+        <Image source={Calendar} style={styles.amountIcon} />
+        <Text style={styles.amountText}>{item.joiningDate}</Text>
+      </View>
+    </View>
+  </View>
+))}
+</ScrollView>
+                  
 
-                                    // Step 2: Open Inactive sheet after animation delay
-                                    setTimeout(() => {
-                                        setShowInactiveSheet(true);
-                                    }, 250); // same as animation duration
-                                }}
-                                >
-                                    <View style={styles.row}>
-                                        <Image source={MakeUs} style={styles.icon} />
-                                        <Text style={styles.popupText}>Make as Inactive</Text>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.popupItem} onPress={handleEdit}>
-                                    <View style={styles.row}>
-                                        <Image source={Checkin} style={styles.iconCheck} />
-                                        <Text style={styles.popupText}>Edit</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
+                   
 
-                        </View>
-                    )}
-
-
-
-                    {/* TAGS */}
-                    <View style={styles.tagRow}>
-                        <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
-                            <Text style={styles.tagText}>Ground Floor</Text>
-                        </View>
-                        <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
-                            <Text style={styles.tagText}>002 - F</Text>
-                        </View>
-                    </View>
-
-                    <Text style={styles.sub}>Reserved by</Text>
-
-
-                    <View style={styles.userRow}>
-                        <Image
-                            source={Profile}
-                            style={styles.userImg}
-                        />
-
-                        <View>
-                            <Text style={styles.userName}>Daniel Jebakumar</Text>
-                            <Text style={styles.phone}>+91 98765 43210</Text>
-                        </View>
-                    </View>
-
-
-                    <View style={{ marginTop: 15 }}>
-                        <Text style={styles.infoLabel}>Booked Date</Text>
-
-                        <View style={styles.amountRow}>
-                            <Image source={Calendar} style={styles.amountIcon} />
-                            <Text style={styles.amountText}>10 June 2024</Text>
-                        </View>
-                    </View>
-
-
-                    <View style={{ marginTop: 15 }}>
-                        <Text style={styles.infoLabel}>Booking Amount</Text>
-
-                        <View style={styles.amountRow}>
-                            <Image source={Money} style={styles.amountIcon} />
-                            <Text style={styles.amountText}>₹ 500</Text>
-                        </View>
-                    </View>
-
-
-
-                    <View style={{ marginTop: 15 }}>
-                        <Text style={styles.infoLabel}>Joining Date</Text>
-
-                        <View style={styles.amountRow}>
-                            <Image source={Calendar} style={styles.amountIcon} />
-                            <Text style={styles.amountText}>10 June 2024</Text>
-                        </View>
-                    </View>
-
-
-                    <TouchableOpacity style={styles.reservedBtn}>
+                    {/* <TouchableOpacity style={styles.reservedBtn}>
                         <Text style={styles.resText}>Reserved</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
+      
                 </Animated.View>
             </View>
             <InactiveTenantSheet
@@ -243,7 +245,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 const styles = StyleSheet.create({
     overlay: {
         position: "absolute",
-        left: 0, right: 0, top: 0, bottom: 0,
+        left: 0, right: 0, top: 0, bottom: 40,
         backgroundColor: "rgba(0,0,0,0.4)",
         justifyContent: "flex-end",
     },
@@ -423,6 +425,43 @@ const styles = StyleSheet.create({
         alignItems: "flex-end",
         zIndex: 999,
     },
+    reservedRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 20,
+},
+dotMenu: {
+  position: "absolute",
+  top: 36,            // 👈 dot keela
+  right: 0,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  paddingVertical: 6,
+  width: 180,
+  elevation: 10,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 10,
+  zIndex: 999,
+},
+menuItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+},
+menuIcon: {
+  width: 18,
+  height: 18,
+  marginRight: 10,
+  tintColor: "#1E45E1",
+},
+
+menuText: {
+  fontSize: 14,
+  color: "#000",
+},
 
 
 
