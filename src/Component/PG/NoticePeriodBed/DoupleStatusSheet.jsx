@@ -1,4 +1,3 @@
-// DoubleStatusSheet.js  (NO MODAL VERSION)
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -10,7 +9,7 @@ import {
   PanResponder,
   Dimensions,
   TouchableWithoutFeedback,
-  Easing,
+  Easing,ScrollView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -24,18 +23,18 @@ export default function DoubleStatusSheet({
   onPressNotice,
   handleShowFinalSettlement,
   handleNoticeToBookin,
-  handleReAssignBed,handleMakeUsInActive,handleCheckIn
+  handleReAssignBed,handleMakeUsInActive,handleCheckIn,selectedBed
 }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
    const navigation = useNavigation();
 
   const [showOccupiedMenu, setShowOccupiedMenu] = useState(false);
-  const [showReservedMenu, setShowReservedMenu] = useState(false);
+  const [showReservedMenu, setShowReservedMenu] = useState(null);
 
   const roomChip = room?.room_no ? `${room.room_no} - ${bed?.label || ""}` : "Room";
 
-  /* ---------------- OPEN ---------------- */
+ console.log("selectedBed",selectedBed)
   const openSheet = () => {
     translateY.setValue(SCREEN_HEIGHT);
     overlayOpacity.setValue(0);
@@ -127,15 +126,21 @@ const handleBookToCheckin=()=>{
   return (
     <View style={styles.absoluteContainer} pointerEvents="box-none">
       
-      {/* DIM BACKGROUND */}
+      
       <TouchableWithoutFeedback onPress={closeSheet}>
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]} />
       </TouchableWithoutFeedback>
 
       {/* SHEET */}
-      <Animated.View
-        style={[styles.sheet, { transform: [{ translateY }] }]}
-        {...panResponder.panHandlers}
+        <Animated.View
+        style={[
+          styles.sheet,
+          {
+            transform: [{ translateY }],
+            maxHeight: "80%",   
+          },
+        ]}
+        {...panResponder.panHandlers}  
       >
         <View style={styles.handle} />
 
@@ -145,14 +150,18 @@ const handleBookToCheckin=()=>{
         {/* CHIPS */}
         <View style={styles.chipRow}>
           <View style={styles.chip}>
-            <Text style={styles.chipText}>Ground Floor</Text>
+            <Text style={styles.chipText}>{selectedBed.floorName}</Text>
           </View>
           <View style={[styles.chip, styles.chipSoft]}>
-            <Text style={[styles.chipText, styles.chipSoftText]}>{roomChip}</Text>
+            <Text style={[styles.chipText, styles.chipSoftText]}>{selectedBed.roomName}-{selectedBed.bedName}</Text>
           </View>
         </View>
-
-        {/* OCCUPIED SECTION */}
+<ScrollView
+  showsVerticalScrollIndicator={false}
+  showsHorizontalScrollIndicator={false}
+  indicatorStyle="white"   
+>
+        
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Occupied by</Text>
 
@@ -163,8 +172,8 @@ const handleBookToCheckin=()=>{
                 style={styles.avatar}
               />
               <View>
-                <Text style={styles.name}>Daniel Jebakumar</Text>
-                <Text style={styles.phone}>+91 98765 43210</Text>
+                <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
               </View>
             </View>
 
@@ -181,15 +190,15 @@ const handleBookToCheckin=()=>{
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Rental Amount</Text>
-            <Text style={styles.value}>₹ 5,500</Text>
+            <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Checkout Date</Text>
-            <Text style={styles.value}>10 June 2024</Text>
+            <Text style={styles.value}> {selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Last Invoice</Text>
-            <Text style={styles.link}>INV-563 & 2 more</Text>
+            <Text style={styles.link}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
           </View>
 
           {showOccupiedMenu && (
@@ -216,19 +225,25 @@ const handleBookToCheckin=()=>{
         <View style={[styles.section, { borderBottomWidth: 0 }]}>
           <Text style={styles.sectionTitle}>Reserved by</Text>
 
-          <View style={styles.headerRow}>
+          {
+            selectedBed.newTenantInfo.map((item,index)=>{
+              return(
+
+              
+<View style={{ position: "relative" }}  key={index}>
+ <View style={styles.headerRow}>
             <View style={styles.personRow}>
               <Image
                 source={require("../../../Assets/Images/profile.png")}
                 style={styles.avatar}
               />
               <View>
-                <Text style={styles.name}>Xavier</Text>
-                <Text style={styles.phone}>+91 98765 43210</Text>
+                <Text style={styles.name}>{item.tenantFullName}</Text>
+                <Text style={styles.phone}>+91 {item.mobile}</Text>
               </View>
             </View>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.dotsButton}
               onPress={() => {
                 setShowReservedMenu(!showReservedMenu);
@@ -236,39 +251,72 @@ const handleBookToCheckin=()=>{
               }}
             >
               <Text style={styles.dots}>⋯</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+  style={styles.dotsButton}
+  onPress={() => {
+    setShowReservedMenu(
+      showReservedMenu === index ? null : index
+    );
+    setShowOccupiedMenu(false);
+  }}
+>
+  <Text style={styles.dots}>⋯</Text>
+</TouchableOpacity>
+
           </View>
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Booking Amount</Text>
-            <Text style={styles.value}>₹ 5,500</Text>
+            <Text style={styles.value}>₹  {item.bookingAmount}</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Check-In Date</Text>
-            <Text style={styles.value}>10 June 2024</Text>
+            <Text style={styles.value}> {item.joiningDate}</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Last Invoice</Text>
-            <Text style={styles.link}>BK-563</Text>
+            <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
+</Text>
           </View>
+           {showReservedMenu === index && (
+    <View style={styles.inlineMenu}>
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={handleBookToCheckin}
+      >
+        <Image
+          style={styles.menuIconAdd}
+          source={require("../../../Assets/Images/add-circle.png")}
+        />
+        <Text style={styles.menuText}>Check-in</Text>
+      </TouchableOpacity>
 
-          {showReservedMenu && (
-            <View style={styles.menuCard}>
-              <TouchableOpacity style={styles.menuItem} onPress={handleBookToCheckin}>
-                <Image style={styles.menuIconAdd} source={require("../../../Assets/Images/add-circle.png")} />
-                <Text style={styles.menuText}>Check-in</Text>
-              </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={handleMakeUsIn}
+      >
+        <Image
+          style={styles.menuIcon}
+          source={require("../../../Assets/Images/Logout.png")}
+        />
+        <Text style={styles.menuText}>Make as Inactive</Text>
+      </TouchableOpacity>
+    </View>
+  )}
+          
+</View>
+              )
+            })
+          }
 
-              <TouchableOpacity style={styles.menuItem} onPress={handleMakeUsIn}>
-                <Image style={styles.menuIcon} source={require("../../../Assets/Images/Logout.png")} />
-                <Text style={styles.menuText}>Make as Inactive</Text>
-              </TouchableOpacity>
+         
 
-            </View>
-          )}
+         
         </View>
+        </ScrollView>
 
         {/* FOOTER */}
         <View style={styles.footer}>
@@ -423,4 +471,17 @@ const styles = StyleSheet.create({
   },
 
   reservedText: { color: "#1E45E1", fontWeight: "700", fontSize: 14 },
+  inlineMenu: {
+  position: "absolute",
+  top: 40,   
+  right: 0,
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#E6E9F0",
+  elevation: 6,
+  paddingVertical: 6,
+  zIndex: 999,
+},
+
 });

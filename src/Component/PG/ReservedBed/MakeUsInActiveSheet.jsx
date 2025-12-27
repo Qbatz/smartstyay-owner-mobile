@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState,useContext } from "react";
 import {
   View,
   Text,
@@ -11,17 +11,19 @@ import {
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-
+import { useCustomer } from "../../../Context/CustomerContext";
 import Calendar from "../../../Assets/Images/calendar.png"; 
+import { CommonContexts } from "../../../Context/CommonContext";
 
-export default function InactiveTenantSheet({ visible, onClose }) {
+export default function InactiveTenantSheet({ visible, onClose,selectedBed }) {
   const translateY = useRef(new Animated.Value(400)).current;
   const [joiningDate, setJoiningDate] = useState(dayjs());
   const [comments, setComments] = useState("");
-
+  const { activeHostelId } = useContext(CommonContexts);
+const { cancelCheckout } = useCustomer();
    const [openJoinDatePic, setOpenJoinDatePic] = useState("");
   
-
+console.log("selectedBed",selectedBed)
 
 useEffect(() => {
   Animated.timing(translateY, {
@@ -52,6 +54,29 @@ const panResponder = PanResponder.create({
   }, [visible]);
 
   if (!visible) return null;
+
+  const handleConfirm = async () => {
+  if (!joiningDate || !comments) {
+    alert("Joining date & reason required");
+    return;
+  }
+
+  const payload = {
+    bedId: bedId,
+    reCheckInDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+    reason: comments,
+  };
+
+  const res = await cancelCheckout(activeHostelId, customerId, payload);
+
+  if (res.success) {
+    alert("Tenant moved to inactive successfully");
+    onClose();
+  } else {
+    alert(res.message || "Failed");
+  }
+};
+
 
   return (
     <>
@@ -102,7 +127,7 @@ const panResponder = PanResponder.create({
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.confirmBtn}>
+          <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm}>
             <Text style={styles.confirmText}>Confirm</Text>
           </TouchableOpacity>
         </View>

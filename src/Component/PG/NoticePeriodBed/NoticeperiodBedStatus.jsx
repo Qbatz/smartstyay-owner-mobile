@@ -21,7 +21,7 @@ export default function NoticePeriodBedSheet({
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
   const [menuVisible, setMenuVisible] = useState(false);
-  
+  console.log("selectedBed",selectedBed)
 const handleEdit = () => {
   if (!handleEditBed || !selectedBed) return;
   handleEditBed(selectedBed);
@@ -98,13 +98,13 @@ const handleCancelNoticePeriod = () => {
           <View style={styles.tagRow}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>
-                {tenant?.floor || "Ground Floor"}
+               {selectedBed.floorName}
               </Text>
             </View>
 
             <View style={styles.tag}>
               <Text style={styles.tagText}>
-                {room?.room_no} - {bed?.label}
+                {selectedBed.roomName} - {selectedBed.bedName}
               </Text>
             </View>
 
@@ -160,8 +160,8 @@ const handleCancelNoticePeriod = () => {
           <View style={styles.profileRow}>
             <Image source={Profile} style={styles.profileImg} />
             <View>
-              <Text style={styles.tenantName}>priya</Text>
-              <Text style={styles.tenantPhone}>9876543210</Text>
+              <Text style={styles.tenantName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+              <Text style={styles.tenantPhone}>+91{selectedBed.currentTenantInfo[0]?.mobile}</Text>
             </View>
           </View>
 
@@ -172,7 +172,7 @@ const handleCancelNoticePeriod = () => {
               source={require("../../../Assets/Images/money.png")}
               style={styles.icon}
             />
-            <Text style={styles.dateText}> ₹ 400</Text>
+            <Text style={styles.dateText}> ₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
           </View>
 
           <Text style={styles.label}>Checkout Date</Text>
@@ -181,7 +181,7 @@ const handleCancelNoticePeriod = () => {
               source={require("../../../Assets/Images/calendar_blue.png")}
               style={styles.icon}
             />
-            <Text style={styles.dateText}>10 Jun 2025</Text>
+            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
           </View>
 
           <Text style={styles.label}>Request Date</Text>
@@ -190,7 +190,7 @@ const handleCancelNoticePeriod = () => {
               source={require("../../../Assets/Images/calendar_blue.png")}
               style={styles.icon}
             />
-            <Text style={styles.dateText}>10 Jun 2025</Text>
+            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.joiningDate}</Text>
           </View>
 
           <TouchableOpacity style={styles.noticeBtn}>

@@ -249,9 +249,11 @@ export default function TenantsScreen({ route }) {
     navigation.navigate("AddBooking")
   }
 
-  const handleShowCancelNotice = () => {
-    navigation.navigate("CancelNotice")
-  }
+const handleShowCancelNotice = () => {
+  navigation.navigate("CancelNotice", {
+    selectedItem: selectedItem,
+  });
+};
 
   const customerList = [
     {

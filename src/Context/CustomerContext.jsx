@@ -346,6 +346,37 @@ const moveToNoticePeriod = async (hostelId, payload) => {
   }
 };
 
+const cancelCheckout = async (hostelId, customerId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/cancel-checkout/${hostelId}/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Cancel checkout failed" };
+  } catch (error) {
+    console.log("CANCEL CHECKOUT ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Cancel checkout failed",
+    };
+  }
+};
 
 
   return (
@@ -357,7 +388,13 @@ const moveToNoticePeriod = async (hostelId, payload) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer, getBedsByHostelAndDate, checkInCustomer, deleteCustomer, changeBedCustomer, getCustomerDetails,moveToNoticePeriod,bookCustomer
+        addCustomer, 
+        getBedsByHostelAndDate, 
+        checkInCustomer, deleteCustomer,
+         changeBedCustomer, 
+         getCustomerDetails,
+         moveToNoticePeriod,
+         bookCustomer,cancelCheckout
       }}
     >
       {children}

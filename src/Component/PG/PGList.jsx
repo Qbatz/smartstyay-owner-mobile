@@ -580,7 +580,9 @@ export default function PGPageFull({ route }) {
 
   const handleShowCancelNotice = () => {
     setShowNoticePeriodSheet(false);
-    navigation.navigate("CancelNotice");
+   navigation.navigate("CancelNotice", {
+    selectedBed: selectedBed,
+  });
     setShowDoubleStatus(false)
   };
   const handleMakeUsInActive = () => {
@@ -1108,10 +1110,12 @@ export default function PGPageFull({ route }) {
         handleReAssignBed={handleShowCancelNotice}
         handleMakeUsInActive={handleMakeUsInActive}
         handleCheckIn={handleCheckIn}
+        selectedBed={selectedBed}
       />
       <InactiveTenantSheet
         visible={showInactiveSheet}
         onClose={() => setShowInactiveSheet(false)}
+        selectedBed={selectedBed}
       />
       <Modal
         transparent

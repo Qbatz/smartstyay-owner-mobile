@@ -154,7 +154,7 @@ export default function AddBookingScreen({ navigation, route }) {
     setRoomError("")
     setBedError("")
 
- if (!selectedFloor) {
+    if (!selectedFloor) {
       setFloorError("Please select Floor");
       valid = false;
     }
@@ -162,7 +162,7 @@ export default function AddBookingScreen({ navigation, route }) {
       setRoomError("Please select Room");
       valid = false;
     }
-     if (!selectedBed) {
+    if (!selectedBed) {
       setBedError("Please select Room");
       valid = false;
     }
@@ -210,8 +210,14 @@ export default function AddBookingScreen({ navigation, route }) {
     const res = await bookCustomer(activeHostelId, payload);
 
     if (res.success) {
-      alert("Booking successful ✅");
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
       navigation.goBack();
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
     } else {
       alert(res.message || "Booking failed");
     }
@@ -220,6 +226,7 @@ export default function AddBookingScreen({ navigation, route }) {
 
   return (
     <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 20 }}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -267,11 +274,11 @@ export default function AddBookingScreen({ navigation, route }) {
               keyboardType="numeric"
               value={amount}
               // onChangeText={setAmount}
-               onChangeText={(t) => {
-              setAmount(t);
-              setBookingAmountError("");
-             
-            }}
+              onChangeText={(t) => {
+                setAmount(t);
+                setBookingAmountError("");
+
+              }}
             />
           </View>
           {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
@@ -331,8 +338,8 @@ export default function AddBookingScreen({ navigation, route }) {
               </View>
             )}
           </View>
- {floorError && <ErrorMessage message={floorError} type="error" />}
-      
+          {floorError && <ErrorMessage message={floorError} type="error" />}
+
           <Text style={styles.label}>Room</Text>
 
           <View style={{ position: "relative" }}>
@@ -368,7 +375,7 @@ export default function AddBookingScreen({ navigation, route }) {
               </View>
             )}
           </View>
- {roomError && <ErrorMessage message={roomError} type="error" />}
+          {roomError && <ErrorMessage message={roomError} type="error" />}
           <Text style={styles.label}>Bed</Text>
 
           <View style={{ position: "relative" }}>
@@ -396,7 +403,7 @@ export default function AddBookingScreen({ navigation, route }) {
                         setSelectedBed(b);
                         setBedOpen(false);
                         setBedError("")
-                       
+
                       }}
                     >
                       <Text style={styles.optionText}>
@@ -408,7 +415,7 @@ export default function AddBookingScreen({ navigation, route }) {
               </View>
             )}
           </View>
-           {bedError && <ErrorMessage message={bedError} type="error" />}
+          {bedError && <ErrorMessage message={bedError} type="error" />}
           <Text style={styles.label}>Transferred Account <Text style={{ color: "red" }}>*</Text></Text>
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -423,7 +430,7 @@ export default function AddBookingScreen({ navigation, route }) {
               </Text>
               <Image source={DownArrow} style={styles.arrow} />
             </TouchableOpacity>
-          
+
             {accountOpen && (
               <View style={styles.dropdownMenu}>
                 <ScrollView style={{ maxHeight: 150 }}>
@@ -444,7 +451,7 @@ export default function AddBookingScreen({ navigation, route }) {
               </View>
             )}
           </View>
-           {bankIdError && <ErrorMessage message={bankIdError} type="error" />}
+          {bankIdError && <ErrorMessage message={bankIdError} type="error" />}
           <Text style={styles.label}>Transaction Id</Text>
           <TextInput
             placeholder="Enter Transaction Id"
@@ -477,7 +484,7 @@ export default function AddBookingScreen({ navigation, route }) {
               onDayPress={(day) => {
                 const selected = dayjs(day.dateString);
                 setBookingDate(selected);
-                 setBookingDateError("");
+                setBookingDateError("");
                 setShowDatePicker(false);
 
 
@@ -514,18 +521,18 @@ export default function AddBookingScreen({ navigation, route }) {
               minDate={
                 bookingDate
                   ? bookingDate.format("YYYY-MM-DD")
-                  : "2100-01-01"  
+                  : "2100-01-01"
               }
               maxDate={
                 bookingDate
                   ? undefined
-                  : "1900-01-01"  
+                  : "1900-01-01"
               }
               onDayPress={(day) => {
-                if (!bookingDate) return; 
+                if (!bookingDate) return;
 
                 setJoiningDate(dayjs(day.dateString));
-                 setJoiningDateError("");
+                setJoiningDateError("");
                 setShowJoinDatePicker(false);
               }}
               markedDates={
@@ -576,13 +583,13 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: "600", marginBottom: 6, marginTop: 12 },
 
   inputBox: {
-    borderColor:"#e1e1e1",
+    borderColor: "#e1e1e1",
     padding: 14,
     borderRadius: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderWidth:1
+    borderWidth: 1
   },
 
   icon: { width: 20, height: 20, tintColor: "#555" },
