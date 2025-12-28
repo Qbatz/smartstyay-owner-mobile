@@ -223,6 +223,12 @@ export default function PGPageFull({ route }) {
       setShowOccupiedSheet(true);
       return;
     }
+     if (freshBed.isOccupied && freshBed.isBooked) {
+      setSelectedBed(freshBed);
+      setSelectedOccupied({ bed: freshBed, room });
+      setShowOccupiedSheet(true);
+      return;
+    }
 
 
     if (status === "reserved") {
@@ -574,7 +580,11 @@ export default function PGPageFull({ route }) {
 
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
-    navigation.navigate("FinalSettlement");
+    // navigation.navigate("FinalSettlement");
+     navigation.navigate("FinalSettlement", {
+    selectedBed:selectedBed
+    // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+});
     setShowDoubleStatus(false)
   };
 

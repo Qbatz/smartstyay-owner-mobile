@@ -239,7 +239,10 @@ export default function TenantsScreen({ route }) {
   }
 
   const handleShowFinalSettlement = () => {
-    navigation.navigate("FinalSettlement")
+   navigation.navigate("FinalSettlement", {
+    selectedItem:selectedItem
+    // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+});
   }
 
   const handleShowTennantCheckin = () => {

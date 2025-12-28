@@ -378,6 +378,39 @@ const cancelCheckout = async (hostelId, customerId, payload) => {
   }
 };
 
+const getSettlementByCustomerId = async (customerId) => {
+  if (!customerId) {
+    return { success: false, message: "CustomerId missing" };
+  }
+
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      `/v2/customers/settlement/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Failed to fetch settlement" };
+  } catch (error) {
+    console.log("SETTLEMENT API ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Settlement fetch failed",
+    };
+  }
+};
 
   return (
     <CustomerContext.Provider
@@ -394,7 +427,7 @@ const cancelCheckout = async (hostelId, customerId, payload) => {
          changeBedCustomer, 
          getCustomerDetails,
          moveToNoticePeriod,
-         bookCustomer,cancelCheckout
+         bookCustomer,cancelCheckout,getSettlementByCustomerId
       }}
     >
       {children}
