@@ -13,6 +13,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   const isEdit = !!editBedData;
   console.log("editBedData",editBedData)
 
+const amountRef = useRef(null);
 
   const { addBed, getAllBedsByRoom,updateBed  } = useFloor();
 
@@ -320,6 +321,7 @@ const [initialAmount, setInitialAmount] = useState("");
       }}
     /> */}
     <TextInput
+     ref={amountRef}  
   style={styles.input}
   placeholder="Enter Amount"
   value={amount}

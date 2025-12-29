@@ -431,7 +431,7 @@ export default function AssignTenant({ navigation, route }) {
                           if (bookingMarkedDates[day.dateString]?.disabled) return;
 
                           setPurchaseDate(day.dateString);
-                          setJoiningDate(null); // 🔥 important: reset joining date
+                          setJoiningDate(null);
                           setOpenDatePicker(false);
                         }}
                         theme={{

@@ -1064,6 +1064,7 @@ const handleShowCancelNotice = () => {
             setShowCheckout(false);
           }}
           setShowTabBar={setShowTabBar}
+          selectedItem={selectedItem}
 
         />
       }

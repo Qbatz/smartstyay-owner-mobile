@@ -412,6 +412,92 @@ const getSettlementByCustomerId = async (customerId) => {
   }
 };
 
+const submitSettlement = async (customerId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/settlement/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 201 || res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Settlement failed" };
+  } catch (error) {
+    console.log("SETTLEMENT SUBMIT ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Settlement submit failed",
+    };
+  }
+};
+const initializeCheckout = async (hostelId, customerId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/bookings/initialize/checkout/${hostelId}/${customerId}`,
+      {}, // 👈 body empty
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.log("INIT CHECKOUT ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message || "Checkout init failed",
+    };
+  }
+};
+
+const confirmCheckout = async (customerId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/bookings/checkout/${customerId}`,
+      {}, // 👈 empty body
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Checkout failed" };
+  } catch (error) {
+    console.log("CONFIRM CHECKOUT ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Checkout confirmation failed",
+    };
+  }
+};
+
   return (
     <CustomerContext.Provider
       value={{
@@ -427,7 +513,7 @@ const getSettlementByCustomerId = async (customerId) => {
          changeBedCustomer, 
          getCustomerDetails,
          moveToNoticePeriod,
-         bookCustomer,cancelCheckout,getSettlementByCustomerId
+         bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout
       }}
     >
       {children}

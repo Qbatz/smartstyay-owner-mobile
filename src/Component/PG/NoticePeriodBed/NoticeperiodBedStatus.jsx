@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,12 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder,BackHandler
+  PanResponder, BackHandler
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 export default function NoticePeriodBedSheet({
@@ -17,17 +20,46 @@ export default function NoticePeriodBedSheet({
   onClose,
   bed,
   room,
-  tenant,onClick,onFinalSheet,cancelNoticePeriod,handleEditBed,selectedBed
+  tenant, onClick, onFinalSheet, cancelNoticePeriod, handleEditBed, selectedBed, handleNoticeToCheckout
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getCustomersByHostel, loading } = useCustomer();
   const [menuVisible, setMenuVisible] = useState(false);
-  console.log("selectedBed",selectedBed)
-const handleEdit = () => {
-  if (!handleEditBed || !selectedBed) return;
-  handleEditBed(selectedBed);
-};
+  const [customers, setCustomers] = useState([]);
+  console.log("selectedBed", selectedBed)
+  const handleEdit = () => {
+    if (!handleEditBed || !selectedBed) return;
+    handleEditBed(selectedBed);
+  };
+  const handleCheckoutSheet = () => {
+    setMenuVisible(false);
+    handleNoticeToCheckout()
+    onClose();
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        fetchCustomers();
+      }
+    }, [activeHostelId])
+  );
 
 
+
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data || []);
+  };
+  console.log("customers123", customers)
+  const matchedCustomer = customers.find(
+    c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
+  );
+
+ 
+
+  // console.log("filteredTenants", filteredTenants);
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 500,
@@ -37,7 +69,7 @@ const handleEdit = () => {
 
     if (!visible) setMenuVisible(false);
   }, [visible]);
- 
+
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
     onPanResponderMove: (_, g) => {
@@ -53,28 +85,28 @@ const handleEdit = () => {
     },
   });
 
-  const handleNoticeToBooking =()=>{
+  const handleNoticeToBooking = () => {
     setMenuVisible(false)
     onClose()
     onClick()
   }
-const handleFinalSettledment = () => {
-  setMenuVisible(false);
-  onFinalSheet();      
-  onClose();
-};
-const handleCancelNoticePeriod = () => {
-  setMenuVisible(false);
-  cancelNoticePeriod();      
-  onClose();
-};
+  const handleFinalSettledment = () => {
+    setMenuVisible(false);
+    onFinalSheet();
+    onClose();
+  };
+  const handleCancelNoticePeriod = () => {
+    setMenuVisible(false);
+    cancelNoticePeriod();
+    onClose();
+  };
 
 
   if (!visible) return null;
 
   return (
     <>
-  
+
       <View style={styles.overlay}>
         <TouchableWithoutFeedback
           onPress={() => {
@@ -98,7 +130,7 @@ const handleCancelNoticePeriod = () => {
           <View style={styles.tagRow}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>
-               {selectedBed.floorName}
+                {selectedBed.floorName}
               </Text>
             </View>
 
@@ -117,8 +149,8 @@ const handleCancelNoticePeriod = () => {
             </TouchableOpacity>
           </View>
 
-         
-          {menuVisible && (
+
+          {/* {menuVisible && (
             <View style={styles.dropdown}>
                 
               <TouchableOpacity style={styles.menuItem}  onPress={handleNoticeToBooking}>
@@ -127,6 +159,13 @@ const handleCancelNoticePeriod = () => {
                   style={styles.menuIcon}
                 />
                 <Text style={styles.menuText}>New Booking</Text>
+              </TouchableOpacity>
+               <TouchableOpacity style={styles.menuItem}  >
+                <Image
+                  source={require("../../../Assets/Images/NewBook.png")}
+                  style={styles.menuIcon}
+                />
+                <Text style={styles.menuText}>Checkout</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuItem} onPress={handleCancelNoticePeriod}>
@@ -153,8 +192,72 @@ const handleCancelNoticePeriod = () => {
                 <Text style={styles.menuText}>Edit</Text>
               </TouchableOpacity>
             </View>
+          )} */}
+          {menuVisible && (
+            <View style={styles.dropdown}>
+
+
+              {matchedCustomer?.currentStatus === "Settlement Generated" ? (
+                <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
+                  <Image
+                    source={require("../../../Assets/Images/NewBook.png")}
+                    style={styles.menuIcon}
+                  />
+                  <Text style={styles.menuText}>Checkout</Text>
+                </TouchableOpacity>
+              ) : (
+                <>
+                  {/* Normal menu items */}
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleNoticeToBooking}
+                  >
+                    <Image
+                      source={require("../../../Assets/Images/NewBook.png")}
+                      style={styles.menuIcon}
+                    />
+                    <Text style={styles.menuText}>New Booking</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleCancelNoticePeriod}
+                  >
+                    <Image
+                      source={require("../../../Assets/Images/calendarremove.png")}
+                      style={styles.menuIcon}
+                    />
+                    <Text style={styles.menuText}>Cancel Notice period</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleFinalSettledment}
+                  >
+                    <Image
+                      source={require("../../../Assets/Images/receipttext.png")}
+                      style={styles.menuIcon}
+                    />
+                    <Text style={styles.menuText}>Generate FS</Text>
+                  </TouchableOpacity>
+
+
+                </>
+              )}
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleEdit}
+              >
+                <Image
+                  source={require("../../../Assets/Images/editIcon.png")}
+                  style={styles.menuIcon}
+                />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
           )}
- 
+
+
           <Text style={styles.label}>Occupied by</Text>
 
           <View style={styles.profileRow}>
@@ -166,8 +269,8 @@ const handleCancelNoticePeriod = () => {
           </View>
 
           <Text style={styles.label}>Rental Amount</Text>
-       
-            <View style={styles.dateRow}>
+
+          <View style={styles.dateRow}>
             <Image
               source={require("../../../Assets/Images/money.png")}
               style={styles.icon}
@@ -198,7 +301,7 @@ const handleCancelNoticePeriod = () => {
           </TouchableOpacity>
         </Animated.View>
       </View>
-    
+
     </>
   );
 }
@@ -255,14 +358,14 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   menuOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "transparent",
-  zIndex: 1,
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 1,
+  },
 
   dropdown: {
     position: "absolute",

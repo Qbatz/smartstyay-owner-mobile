@@ -31,7 +31,8 @@ import { CommonContexts } from "../../Context/CommonContext";
 export default function FinalSettlement({ navigation,route }) {
   const { selectedItem,selectedBed } = route.params || {};
    const { activeHostelId } = useContext(CommonContexts);
-    const { getCustomersByHostel, loading,getSettlementByCustomerId } = useCustomer();
+    const { getCustomersByHostel, loading,getSettlementByCustomerId,submitSettlement } = useCustomer();
+
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
 console.log("selectedItem",selectedItem)
@@ -227,6 +228,8 @@ useEffect(() => {
     if (Platform.OS === "android") setShowEBPicker(false);
   };
 
+
+
   const onCheckoutDatePick = (event, selected) => {
     if (Platform.OS === "android") setShowCheckoutPicker(false);
     if (selected) {
@@ -275,7 +278,45 @@ const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + s
         }
     }, [settlementDetails]);
     const isNegative = Number(ReturnAmount) < 0;
+  // const extraDeductionsPayload = extraCharges
+  // .filter(item => !item.isDefault && Number(item.amount) > 0)
+  // .map(item => ({
+  //   reason: item.type === "Others" ? item.title : item.type,
+  //   amount: Number(item.amount),
+  // }));
+  const extraDeductionsPayload = extraCharges
+  .filter(item => !item.isDefault && Number(item.amount) > 0)
+  .map(item => ({
+    item: item.type === "Others"
+      ? item.title?.trim()
+      : item.type,        // 👈 Maintenance / DueAmount
+    amount: Number(item.amount),
+  }));
 
+  console.log("extraDeductionsPayload",extraDeductionsPayload)
+
+const handleGenerate = async () => {
+  const customerId =
+    selectedItem?.customerId ||
+    selectedBed?.currentTenantInfo[0]?.tenetId;
+
+  // ❌ object wrap panna vendam
+  // const payload = { extraDeductions: extraDeductionsPayload };
+
+  // ✅ DIRECT ARRAY
+  const payload = extraDeductionsPayload;
+
+  console.log("FINAL PAYLOAD 👉", JSON.stringify(payload, null, 2));
+
+  const res = await submitSettlement(customerId, payload);
+
+  if (res.success) {
+    alert("Settlement completed successfully ✅");
+    navigation.goBack();
+  } else {
+    alert(res.message || "Settlement failed ❌");
+  }
+};
 
   const fmt = (v) =>
     typeof v === "number" ? `₹ ${v.toLocaleString("en-IN")}` : `₹ ${v}`;
@@ -658,8 +699,8 @@ const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + s
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.addBtn2}>
-            <Text style={styles.addBtnText}>Generate</Text>
+          <TouchableOpacity style={styles.addBtn2} onPress={handleGenerate}>
+            <Text style={styles.addBtnText} >Generate</Text>
           </TouchableOpacity>
         </View>
 
