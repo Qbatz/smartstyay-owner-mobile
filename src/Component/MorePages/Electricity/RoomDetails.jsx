@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useRef} from "react";
+import React, { useState,useEffect,useRef , useContext} from "react";
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   ScrollView,
   Animated,
     PanResponder,
-    TextInput
+    TextInput , BackHandler
 } from "react-native";
-
+import {ElectricityContext} from "../../../Context/ElectricityContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
@@ -19,22 +22,56 @@ import UserProfile from "../../../Assets/Images/profileElec.png";
 import calendarCheck from "../../../Assets/Images/calendarcheck.png";
 import Add from "../../../Assets/Images/ElectricityAdd.png";
 import Dots from "../../../Assets/Images/3dots.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
-export default function RoomDetails({ navigation }) {
+export default function RoomDetails({route, navigation }) {
+  const { activeHostelId } = useContext(CommonContexts);
+  const { EbRoomReading , 
+            EbTenantReading,
+            loading,
+            error, 
+            errorMsg,
+            GetEBRoomReading,
+            GetEBTenantReading , ParticularRoomReadingDetails , particular_EbRoomReading } = useContext(ElectricityContext);
+
+     console.log("particular_EbRoomReading", particular_EbRoomReading);
+     
+
   const [activeTab, setActiveTab] = useState("Previous Reading");
+  const [underlineWidth, setUnderlineWidth] = useState(0);
+    const { roomData } = route.params || {};
 
-  const readings = [
-    { month: "July 2025", units: "250 Units", price: "2,500", date: "01 – 30 June" },
-    { month: "June 2025", units: "270 Units", price: "2,700", date: "01 – 31 May" },
-    { month: "May 2025", units: "120 Units", price: "1,200", date: "18 – 30 April" },
-    { month: "May 2025", units: "160 Units", price: "1,600", date: "01 – 17 April" },
-  ];
+  console.log("roomData", roomData);
 
-  const occupants = [
-    { name: "Xavier Britto", bed: "03", units: "45 Units", price: "450", date: "16 – 30 Aug" },
-    { name: "Ramesh", bed: "03", units: "45 Units", price: "450", date: "01 – 14 Aug" },
-    { name: "Rajesh", bed: "02", units: "105 Units", price: "1,050", date: "01 – 30 Aug" },
-  ];
+    const [readings , setReadings] = useState([])
+    const [occupants , setOccupants] = useState([])
+
+  // const readings = [
+  //   { month: "July 2025", units: "250 Units", price: "2,500", date: "01 – 30 June" },
+  //   { month: "June 2025", units: "270 Units", price: "2,700", date: "01 – 31 May" },
+  //   { month: "May 2025", units: "120 Units", price: "1,200", date: "18 – 30 April" },
+  //   { month: "May 2025", units: "160 Units", price: "1,600", date: "01 – 17 April" },
+  // ];
+
+  // const occupants = [
+  //   { name: "Xavier Britto", bed: "03", units: "45 Units", price: "450", date: "16 – 30 Aug" },
+  //   { name: "Ramesh", bed: "03", units: "45 Units", price: "450", date: "01 – 14 Aug" },
+  //   { name: "Rajesh", bed: "02", units: "105 Units", price: "1,050", date: "01 – 30 Aug" },
+  // ];
+
+
+  useEffect(()=> {
+    if(particular_EbRoomReading?.readings?.length> 0){
+      setReadings(particular_EbRoomReading?.readings)
+    }
+  },[particular_EbRoomReading])
+
+    useEffect(()=> {
+    if(particular_EbRoomReading?.customers?.length> 0){
+      setOccupants(particular_EbRoomReading?.customers)
+    }
+  },[particular_EbRoomReading])
+
 
 
   // ⭐ Bottom Sheet State
@@ -79,6 +116,27 @@ const panResponder = useRef(
   })
 ).current;
 
+   useEffect(() => {
+              const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                  navigation.goBack();  
+                  return true;
+                }
+              );
+            
+              return () => backHandler.remove();
+            }, []);
+
+  console.log("activetab", activeTab);
+
+            const formatApiMonth = (date) => {
+   if (!date || date === "N/A") return "--";
+ 
+   return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY", "DD-MM-YYYY"])
+     .format("MMMM YYYY");
+ };
+  
 
   return (
     <>
@@ -100,8 +158,8 @@ const panResponder = useRef(
           </View>
 
           <View>
-            <Text style={styles.roomName}>Room 001</Text>
-            <Text style={styles.floorText}>Ground Floor</Text>
+            <Text style={styles.roomName}> {roomData?.roomName}</Text>
+            <Text style={styles.floorText}>{roomData?.floorName}</Text>
           </View>
 
       <TouchableOpacity style={styles.addBtn} onPress={openSheet}>
@@ -118,17 +176,17 @@ const panResponder = useRef(
         <View style={styles.detailsRow}>
           <View>
             <Text style={styles.label}>Previous</Text>
-            <Text style={styles.value}>100</Text>
+            <Text style={styles.value}>{roomData?.previousReading}</Text>
           </View>
 
           <View>
             <Text style={styles.label}>Current</Text>
-            <Text style={styles.value}>400</Text>
+            <Text style={styles.value}>{roomData?.currentReading}</Text>
           </View>
 
           <View>
             <Text style={styles.label}>Total Units</Text>
-            <Text style={styles.value}>300</Text>
+            <Text style={styles.value}>{roomData?.consumption}</Text>
           </View>
 
          
@@ -144,7 +202,7 @@ const panResponder = useRef(
     {/* People Count box */}
     <View style={styles.peopleBox}>
       <Image source={UserProfile} style={styles.peopleIcon} />
-      <Text style={styles.peopleText}>3</Text>
+      <Text style={styles.peopleText}>{roomData?.noOfTenants}</Text>
     </View>
 
     {/* Month Box */}
@@ -157,87 +215,129 @@ const panResponder = useRef(
 
  
   <View>
-    <Text style={styles.value}>300</Text>
+    <Text style={styles.value}>₹ {roomData?.totalPrice}</Text>
   </View>
 </View>
 
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabs}>
-        <TouchableOpacity onPress={() => setActiveTab("Previous Reading")}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "Previous Reading" && styles.activeTab,
-            ]}
-          >
-            Previous Reading
-          </Text>
-          {activeTab === "Previous Reading" && <View style={styles.underline} />}
-        </TouchableOpacity>
+     <View style={styles.tabsRow}>
+  {["Previous Reading", "Occupants"].map((tab) => (
+    <TouchableOpacity
+      key={tab}
+      style={styles.tabBtn}
+      onPress={() => setActiveTab(tab)}
+    >
+      <Text
+        style={[
+          styles.tabText,
+          activeTab === tab && styles.tabActive,
+        ]}
+        onLayout={(event) => {
+          if (activeTab === tab) {
+            setUnderlineWidth(event.nativeEvent.layout.width);
+          }
+        }}
+      >
+        {tab}
+      </Text>
 
-        <TouchableOpacity onPress={() => setActiveTab("Occupants")}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "Occupants" && styles.activeTab,
-            ]}
-          >
-            Occupants
-          </Text>
-          {activeTab === "Occupants" && <View style={styles.underline} />}
-        </TouchableOpacity>
-      </View>
+      {activeTab === tab && (
+        <View
+          style={[
+            styles.tabUnderline,
+            { width: underlineWidth },
+          ]}
+        />
+      )}
+    </TouchableOpacity>
+  ))}
+</View>
 
-      {/* Content */}
-      <ScrollView>
-        {activeTab === "Previous Reading" &&
-          readings.map((item, index) => (
-            <View key={index} style={styles.listRow}>
-              <View style={styles.arrowCircle}>
-                <Text style={{ color: "#3F6AFF" }}>➤</Text>
-              </View>
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.monthText}>{item.month}</Text>
-                <View style={styles.unitTag}>
-                  <Text style={styles.unitText}>{item.units}</Text>
-                </View>
-              </View>
+  <ScrollView>
 
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.price}>₹ {item.price}</Text>
-                <Text style={styles.date}>{item.date}</Text>
-              </View>
+  {/* ===== PREVIOUS READING TAB ===== */}
+{activeTab === "Previous Reading" && (
+  <>
+    {readings && readings.length > 0 ? (
+      readings.map((item, index) => (
+        <View key={index} style={styles.listRow}>
+          <View style={styles.arrowCircle}>
+            <Text style={{ color: "#3F6AFF" }}>➤</Text>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.monthText}>{formatApiMonth(item?.entryDate)}</Text>
+            <View style={styles.unitTag}>
+              <Text style={styles.unitText}>
+                {item?.consumption} Units
+              </Text>
             </View>
-          ))}
+          </View>
 
-        {activeTab === "Occupants" &&
-          occupants.map((item, index) => (
-            <View key={index} style={styles.listRow}>
-              <Image source={ProfileIcon} style={styles.avatar} />
-
-              <View style={{ flex: 1, paddingLeft: 10 }}>
-                <Text style={styles.name}>{item.name}</Text>
-
-                <View style={styles.occRow}>
-                  <Image source={RoomIcon} style={styles.smallIcon} />
-                  <Text style={styles.bedText}>{item.bed}</Text>
-
-                  <View style={styles.unitTag2}>
-                    <Text style={styles.unitText2}>{item.units}</Text>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.price}>
+              ₹ {item?.amount ?? 0}
+            </Text>
+            <Text style={styles.date}>{item?.entryDate}</Text>
+          </View>
+        </View>
+      ))
+    ) : (
+      activeTab === "Previous Reading" && activeTab !== "Occupants"  && (
+          <View style={styles.centerContainer}>
+                    <Image source={EmptyState} style={styles.image} />
+                    <Text style={styles.noFloorText}>  No Room Reading Found!</Text>
+                  
                   </View>
-                </View>
-              </View>
+   
+      )
+    )}
+  </>
+)}
 
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.price}>₹ {item.price}</Text>
-                <Text style={styles.date}>{item.date}</Text>
+
+  {/* ===== OCCUPANTS TAB ===== */}
+  {activeTab === "Occupants" && (
+    occupants && occupants.length > 0 ? (
+      occupants.map((item, index) => (
+        <View key={index} style={styles.listRow}>
+          <Image source={ProfileIcon} style={styles.avatar} />
+
+          <View style={{ flex: 1, paddingLeft: 10 }}>
+            <Text style={styles.monthText}>{item?.fullName}</Text>
+
+            <View style={styles.occRow}>
+              <Image source={RoomIcon} style={styles.smallIcon} />
+              <Text style={styles.bedText}>{item?.bedName}</Text>
+
+              <View style={styles.unitTag2}>
+                <Text style={styles.unitText}>{item?.totalUnits} Units</Text>
               </View>
             </View>
-          ))}
-      </ScrollView>
+          </View>
+
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.price}>₹ {item?.totalAmount}</Text>
+            <Text style={styles.date}>{item?.billingDate}</Text>
+          </View>
+        </View>
+      ))
+    ) : (
+      
+        <View style={styles.centerContainer}>
+                    <Image source={EmptyState} style={styles.image} />
+                    <Text style={styles.noFloorText}> No Occupants Found!</Text>
+            
+                    
+                  </View>
+    )
+  )}
+
+</ScrollView>
+
 
       {/* Floating Button */}
       <TouchableOpacity style={styles.fab}>
@@ -615,6 +715,60 @@ lastReadingText: {
   marginTop: 4,                // aligns exactly like Figma
 },
 
+emptyText: {
+  textAlign: "center",
+  marginTop: 40,
+  color: "#9CA3AF",
+  fontSize: 14,
+},
+tabsRow: {
+  flexDirection: "row",
+  justifyContent: "space-around",
+  marginTop: 10,
+  marginBottom: 15,
+},
+
+tabBtn: {
+  alignItems: "center",
+},
+
+tabText: {
+  fontSize: 16,
+  color: "#7A7A7A",
+  fontWeight: "600",
+},
+
+tabActive: {
+  color: "#1E45E1",
+},
+
+tabUnderline: {
+  marginTop: 6,
+  height: 3,
+  backgroundColor: "#1E45E1",
+  borderRadius: 10,
+},
+
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 80,
+  },
+
+  image: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+
+  noFloorText: {
+    fontSize: 16,
+    color: "#777",
+    marginTop: 10,
+  },
+  
 
 
 });

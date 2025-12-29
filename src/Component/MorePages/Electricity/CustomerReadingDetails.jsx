@@ -1,81 +1,68 @@
-import React from "react";
+import React, { useState,useEffect,useRef , useContext} from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   ScrollView,
-  TouchableOpacity,
+  TouchableOpacity,BackHandler
 } from "react-native";
-
+import {ElectricityContext} from "../../../Context/ElectricityContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import calendarCheck from "../../../Assets/Images/calendarcheck.png";
 import UserProfile from "../../../Assets/Images/profileElec.png";
+import DatePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
 
 export default function CustomerReading({ route, navigation }) {
-  const { tenant } = route.params;
 
-  const readings = [
-    {
-      month: "September 2025",
-      price: "330",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "01 – 31 July",
-    },
-    {
-      month: "August 2025",
-      price: "360",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "01 – 31 July",
-    },
-    {
-      month: "July 2025",
-      price: "378",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "01 – 30 June",
-    },
-    {
-      month: "June 2025",
-      price: "267",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "01 – 31 May",
-    },
-    {
-      month: "May 2025",
-      price: "120",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "18 – 30 April",
-    },
-    {
-      month: "May 2025",
-      price: "245",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "01 – 17 April",
-    },
-    {
-      month: "April 2025",
-      price: "320",
-      floor: tenant.floor,
-      room: tenant.room,
-      bed: tenant.bed,
-      date: "01 – 31 March",
-    },
-    
-  ];
+    const { activeHostelId } = useContext(CommonContexts);
+    const { EbRoomReading , 
+              EbTenantReading,
+              loading,
+              error, 
+              errorMsg,
+              GetEBRoomReading,
+              GetEBTenantReading , ParticularRoomReadingDetails , particular_EbRoomReading , particular_EbTenantReading } = useContext(ElectricityContext);
+  
+       console.log("particular_EbRoomReading", particular_EbTenantReading);
+
+  const { tenant } = route.params;
+  console.log("tenant", tenant);
+
+  const [readings , setReadings] = useState([])
+
+    useEffect(()=> {
+      if(particular_EbTenantReading?.electricityHistory?.length> 0){
+        setReadings(particular_EbTenantReading?.electricityHistory)
+      }
+    },[particular_EbTenantReading])
+  
+
+
+  
+
+     useEffect(() => {
+                const backHandler = BackHandler.addEventListener(
+                  "hardwareBackPress",
+                  () => {
+                    navigation.goBack();  
+                    return true;
+                  }
+                );
+              
+                return () => backHandler.remove();
+              }, []);
+
+             const formatApiMonth = (date) => {
+  if (!date || date === "N/A") return "--";
+
+  return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY", "DD-MM-YYYY"])
+    .format("MMMM YYYY");
+};
 
   return (
     <View style={styles.container}>
@@ -95,18 +82,18 @@ export default function CustomerReading({ route, navigation }) {
           <Image source={ProfileIcon} style={styles.avatar} />
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{tenant.name}</Text>
+            <Text style={styles.name}>{tenant?.fullName}</Text>
 
             <View style={styles.inline}>
               <View style={styles.tag}>
-                <Text style={styles.tagText}>{tenant.floor}</Text>
+                <Text style={styles.tagText}>{tenant?.floorName}</Text>
               </View>
 
               <Image source={RoomIcon} style={styles.icon} />
-              <Text style={styles.roomText}>{tenant.room}</Text>
+              <Text style={styles.roomText}>{tenant?.roomName}</Text>
 
               <Image source={RoomIcon} style={styles.icon} />
-              <Text style={styles.roomText}>{tenant.bed}</Text>
+              <Text style={styles.roomText}>{tenant?.bedName}</Text>
             </View>
           </View>
 
@@ -121,7 +108,7 @@ export default function CustomerReading({ route, navigation }) {
   <View style={{display:"flex",flexDirection:"row"}}>
   <View style={styles.unitBox}>
     <Image source={UserProfile} style={styles.unitIcon} />
-    <Text style={styles.unitLabel}>Units 33</Text>
+    <Text style={styles.unitLabel}>Units{tenant?.totalUnits} </Text>
    
   </View>
    <View style={styles.dateBox}>
@@ -131,7 +118,7 @@ export default function CustomerReading({ route, navigation }) {
   </View>
 
  
-  <Text style={styles.priceBig}>₹330</Text>
+  <Text style={styles.priceBig}>₹ {tenant?.totalAmount} </Text>
 
 </View>
 
@@ -147,24 +134,24 @@ export default function CustomerReading({ route, navigation }) {
             <View style={styles.greenDot} />
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.monthText}>{item.month}</Text>
+              <Text style={styles.monthText}> {formatApiMonth(item?.startDate)}</Text>
 
               <View style={styles.inline}>
                 <View style={styles.tagSmall}>
-                  <Text style={styles.tagSmallText}>{item.floor}</Text>
+                  <Text style={styles.tagSmallText}>{item?.floorName}</Text>
                 </View>
 
                 <Image source={RoomIcon} style={styles.icon} />
-                <Text style={styles.bedText}>{item.room}</Text>
+                <Text style={styles.bedText}>{item?.roomName}</Text>
 
                 <Image source={RoomIcon} style={styles.icon} />
-                <Text style={styles.bedText}>{item.bed}</Text>
+                <Text style={styles.bedText}>{item?.bedName}</Text>
               </View>
             </View>
 
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.amount}>₹{item.price}</Text>
-              <Text style={styles.dateSmall}>{item.date}</Text>
+              <Text style={styles.amount}>₹{item?.amount}</Text>
+              <Text style={styles.dateSmall}>{item?.startDate}</Text>
             </View>
 
           </View>
@@ -176,7 +163,7 @@ export default function CustomerReading({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop:30 },
 
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 18 },
