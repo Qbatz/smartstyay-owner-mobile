@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useRef , useContext} from "react";
+import React, { useState,useEffect,useRef , useContext , useCallback} from "react";
 import {
   View,
   Text,
@@ -8,12 +8,19 @@ import {
   ScrollView,
   Animated,
     PanResponder,
-    TextInput , BackHandler
+    TextInput , BackHandler , TouchableWithoutFeedback
 } from "react-native";
 import {ElectricityContext} from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+
+import { useFocusEffect } from "@react-navigation/native";
+import { Calendar } from "react-native-calendars";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import ProfileIcon from "../../../Assets/Images/profile.png";
@@ -32,7 +39,7 @@ export default function RoomDetails({route, navigation }) {
             error, 
             errorMsg,
             GetEBRoomReading,
-            GetEBTenantReading , ParticularRoomReadingDetails , particular_EbRoomReading } = useContext(ElectricityContext);
+            GetEBTenantReading , ParticularRoomReadingDetails , particular_EbRoomReading , AddRoomReading } = useContext(ElectricityContext);
 
      console.log("particular_EbRoomReading", particular_EbRoomReading);
      
@@ -41,24 +48,62 @@ export default function RoomDetails({route, navigation }) {
   const [underlineWidth, setUnderlineWidth] = useState(0);
     const { roomData } = route.params || {};
 
+     dayjs.extend(customParseFormat);
+
   console.log("roomData", roomData);
 
     const [readings , setReadings] = useState([])
     const [occupants , setOccupants] = useState([])
+    const [openReadingDatePic, setOpenReadingDatePic] = useState(false);
+    const [readingDate, setReadingDate] = useState(null);
+    const [readingDateError, setReadingDateError] = useState("");
+    const [modalType, setModalType] = useState("success");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
 
-  // const readings = [
-  //   { month: "July 2025", units: "250 Units", price: "2,500", date: "01 – 30 June" },
-  //   { month: "June 2025", units: "270 Units", price: "2,700", date: "01 – 31 May" },
-  //   { month: "May 2025", units: "120 Units", price: "1,200", date: "18 – 30 April" },
-  //   { month: "May 2025", units: "160 Units", price: "1,600", date: "01 – 17 April" },
-  // ];
+    const [currentReading, setCurrentReading] = useState("");
+    const [readingError, setReadingError] = useState("");
+    const [apiError, setApiError] = useState("");
 
-  // const occupants = [
-  //   { name: "Xavier Britto", bed: "03", units: "45 Units", price: "450", date: "16 – 30 Aug" },
-  //   { name: "Ramesh", bed: "03", units: "45 Units", price: "450", date: "01 – 14 Aug" },
-  //   { name: "Rajesh", bed: "02", units: "105 Units", price: "1,050", date: "01 – 30 Aug" },
-  // ];
 
+    const today = dayjs();
+
+    const isDisabledReadingDate = (d) => {
+  if (!d) return false;
+
+  // ❌ future dates disable
+  if (d.isAfter(today, "day")) return true;
+
+  return false; // ✅ past & today allowed
+};
+
+
+   const readingMarkedDates = {};
+
+for (let i = -180; i <= 180; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledReadingDate(d)) {
+    readingMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+
+ 
 
   useEffect(()=> {
     if(particular_EbRoomReading?.readings?.length> 0){
@@ -92,6 +137,13 @@ const openSheet = () => {
 
 // ⭐ Animate close
 const closeSheet = () => {
+
+   setReadingDate(null)
+   setCurrentReading("")
+   setReadingError("")
+   setApiError("")
+   setReadingDateError("")
+
   Animated.timing(translateY, {
     toValue: 500,
     duration: 200,
@@ -116,30 +168,141 @@ const panResponder = useRef(
   })
 ).current;
 
-   useEffect(() => {
-              const backHandler = BackHandler.addEventListener(
-                "hardwareBackPress",
-                () => {
-                  navigation.goBack();  
-                  return true;
-                }
-              );
-            
-              return () => backHandler.remove();
-            }, []);
+  useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+      if (openReadingDatePic) {
+        setOpenReadingDatePic(false);
+        return true;
+      }
 
-  console.log("activetab", activeTab);
+      if (showAddSheet) {
+        closeSheet();
+        return true;
+      }
 
-            const formatApiMonth = (date) => {
+      navigation.goBack();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [openReadingDatePic, showAddSheet])
+);
+
+
+
+   const formatApiMonth = (date) => {
    if (!date || date === "N/A") return "--";
  
    return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY", "DD-MM-YYYY"])
      .format("MMMM YYYY");
  };
+
+ const handleSubmit = async () => {
+  let hasError = false;
+
+  setReadingError("");
+  setReadingDateError("");
+  setApiError("");
+
+  if (!readingDate) {
+    setReadingDateError("Please Select Reading Date");
+    hasError = true;
+  }
+
+  if (!currentReading || Number(currentReading) <= 0) {
+    setReadingError("Please Enter Valid Current Reading");
+    hasError = true;
+  }
+
+  if (hasError) return;
+
+  const payload = {
+    hostelId: activeHostelId,
+    reading: Number(currentReading),
+    readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+    roomId: roomData?.roomId,
+    floorId: roomData?.floorId,
+  };
+
+  const res = await AddRoomReading(payload);
+
+  console.log("response", res);
+  
+
+  if (res.success) {
+    ParticularRoomReadingDetails(activeHostelId, roomData?.roomId);
+    setModalType("success");
+    setMessage(res.data || "Reading Added successfully");
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      closeSheet();
+      setCurrentReading("");
+      setReadingDate(null);
+    }, 800);
+  } else {
+
+    setApiError(res.message || "Something went wrong");
+  }
+};
+
+
+ //    const handleSubmit = async () => {
+//   let hasError = false;
+
+//   if (!currentReading) {
+//     setReadingError("Please enter reading");
+//     hasError = true;
+//   } else {
+//     setReadingError("");
+//   }
+
+//   if (!readingDate) {
+//     setDateError("Please select reading date");
+//     hasError = true;
+//   } else {
+//     setDateError("");
+//   }
+
+//   if (hasError) return;
+
+//   const payload = {
+//     hostelId: activeHostelId,
+//     reading: currentReading,
+//     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+//     roomId: selectedRowDetails?.roomId,
+//     floorId: selectedRowDetails?.floorId,
+//   };
+
+//   const res = await AddRoomReading(payload);
+
+//   if (res.success) {
+      // setModalType("success");
+      // setMessage(res.data || "Reading added successfully");
+      // setShowSuccess(true);
+
+      // setTimeout(() => {
+      //    setShowSuccess(false);
+      // }, 1000);
+//     setCurrentReading("");
+//     setReadingDate(null);
+//   } else {
+//     Alert.alert("Error", res.message || "Something went wrong");
+//   }
+// };
   
 
   return (
     <>
+
+     <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.container}>
 
       {/* Header */}
@@ -363,23 +526,91 @@ const panResponder = useRef(
       <View style={styles.sheetRoomRow}>
         <Image source={RoomIcon} style={styles.sheetRoomIcon} />
         <View>
-          <Text style={styles.sheetRoomName}>Room 001</Text>
-          <Text style={styles.sheetFloor}>Ground Floor</Text>
+          <Text style={styles.sheetRoomName}>{particular_EbRoomReading?.roomInfo?.roomName}</Text>
+          <Text style={styles.sheetFloor}>{particular_EbRoomReading?.roomInfo?.floorName}</Text>
         </View>
 
         <View style={{ marginLeft: "auto" }}>
           <Text style={styles.sheetDateLabel}>Date</Text>
-          <Text style={styles.sheetDateValue}>15/09/2025</Text>
+          <Text style={styles.sheetDateValue}>{dayjs().format("DD-MM-YYYY")}</Text>
         </View>
       </View>
 
-      {/* Current Reading */}
-    {/* Current Reading Label Row */}
-<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+  
+   
+ <Text style={styles.sheetLabel}>
+  Reading Date <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<View style={styles.dateInputWrapper}>
+  <TextInput
+    style={styles.dateInput}
+    placeholder="DD-MM-YYYY"
+    value={readingDate ? dayjs(readingDate).format("DD-MM-YYYY") : ""}
+    editable={false}
+    pointerEvents="none"
+  />
+
+  <TouchableOpacity
+    style={styles.calendarIconWrapper}
+    onPress={() => setOpenReadingDatePic(true)}
+  >
+    <Image
+      source={require("../../../Assets/Images/calendar.png")}
+      style={styles.calendarIcon}
+    />
+  </TouchableOpacity>
+</View>
+
+{readingDateError && (
+  <ErrorMessage message={readingDateError} type="error" />
+)}
+
+
+
+
+{openReadingDatePic && (
+  <View style={styles.dateOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenReadingDatePic(false)}>
+      <View style={styles.overlayBg} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={readingMarkedDates}
+        current={
+          readingDate
+            ? dayjs(readingDate).format("YYYY-MM-DD")
+            : dayjs().format("YYYY-MM-DD")
+        }
+        onDayPress={(day) => {
+          if (readingMarkedDates[day.dateString]?.disabled) return;
+
+          setReadingDate(day.dateString);
+          setOpenReadingDatePic(false);
+          setReadingDateError("");
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          selectedDayBackgroundColor: "#2563EB",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)}
+
+
+
+
+<View style={{ flexDirection: "row", justifyContent: "space-between", marginTop:10 }}>
   <Text style={styles.sheetLabel}>Current Reading</Text>
 
   <TouchableOpacity>
-    <Text style={styles.lastReading}>Last Reading : 400.27</Text>
+    <Text style={styles.lastReading}>Last Reading : {roomData?.currentReading} </Text>
   </TouchableOpacity>
 </View>
 
@@ -388,7 +619,21 @@ const panResponder = useRef(
   placeholder="0"
   style={styles.sheetInput}
   keyboardType="numeric"
+  value={currentReading}
+  onChangeText={(text) => {
+    setCurrentReading(text);
+    setReadingError("");
+    setApiError("");
+  }}
 />
+
+{readingError && (
+  <ErrorMessage message={readingError} type="error" />
+)}
+
+{apiError && (
+  <ErrorMessage message={apiError} type="error" />
+)}
 
 
 
@@ -398,7 +643,7 @@ const panResponder = useRef(
           <Text style={styles.sheetCancelTxt}>Cancel</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.sheetAdd}>
+        <TouchableOpacity style={styles.sheetAdd} onPress={handleSubmit}>
           <Text style={styles.sheetAddTxt}>Add</Text>
         </TouchableOpacity>
       </View>
@@ -769,6 +1014,66 @@ tabUnderline: {
     marginTop: 10,
   },
   
+datePickerBox: {
+    backgroundColor: "#fff",
+    width: "80%",
+    borderColor: "#DCDCDC",
+    borderRadius: 30,
+    padding: 5,
+    marginBottom: 100,
+    borderWidth: 0.5,
+  },
 
+  dateInputWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  height: 48,
+  paddingHorizontal: 12,
+  marginTop: 6,
+},
 
+dateInput: {
+  flex: 1,
+  fontSize: 14,
+  color: "#111827",
+},
+
+calendarIconWrapper: {
+  padding: 6,
+},
+
+calendarIcon: {
+  width: 20,
+  height: 20,
+  tintColor: "#6B7280",
+},
+
+/* Calendar modal */
+
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
 });
