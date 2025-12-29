@@ -1,5 +1,4 @@
-// CheckoutBottomSheet.js
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect,useState,useCallback,useContext } from "react";
 import {
   View,
   Text,
@@ -14,6 +13,10 @@ import {
 } from "react-native";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
+import { useFocusEffect } from "@react-navigation/native";
+import Profile from "../../../Assets/Images/profile.png"
 
 
 export default function CheckoutBottomSheet({
@@ -24,11 +27,17 @@ export default function CheckoutBottomSheet({
   setReason,
   checkoutDate = "22/10/2024",
   noticeDays = 30,
-  onCheckout,
+  onCheckout,selectedBed,selectedItem
 }) {
   const sheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+   const { activeHostelId } = useContext(CommonContexts);
+    const { getCustomersByHostel, loading,initializeCheckout,confirmCheckout } = useCustomer();
+   const [customers, setCustomers] = useState([]);
+   const [checkoutDateDettail,setCheckoutDateDettail] = useState("")
 
-  // open sheet
+
+ console.log("selectedBed",selectedBed)
+ console.log("selectedItem",selectedItem)
   useEffect(() => {
     if (visible) {
       Animated.timing(sheetY, {
@@ -67,14 +76,81 @@ export default function CheckoutBottomSheet({
     })
   ).current;
 
+
+ useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        fetchCustomers();
+      }
+    }, [activeHostelId])
+  );
+
+
+
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data || []);
+  };
+  console.log("customers123", customers)
+ const matchedCustomer = customers.find(
+  c =>
+    c.customerId === selectedBed?.currentTenantInfo?.[0]?.tenetId ||
+    c.customerId === selectedItem?.customerId
+);
+  
+  console.log("matchedCustomer",matchedCustomer)
+
+ useEffect(() => {
+  if (!activeHostelId) return;
+
+  const customerId =
+    selectedBed?.currentTenantInfo?.[0]?.tenetId ||
+    selectedItem?.customerId;
+
+  if (!customerId) return;
+
+  const handleCheckoutInit = async () => {
+    const res = await initializeCheckout(activeHostelId, customerId);
+
+    if (res.success) {
+     
+      setCheckoutDateDettail(res.data)
+    }
+  };
+
+  handleCheckoutInit();
+}, [selectedBed, selectedItem, activeHostelId]);
+
+const handleConfirmCheckout = async () => {
+  const customerId =
+    selectedBed?.currentTenantInfo?.[0]?.tenetId ||
+    selectedItem?.customerId;
+
+  if (!customerId) {
+    alert("Customer missing");
+    return;
+  }
+
+  const res = await confirmCheckout(customerId);
+
+  if (res.success) {
+    alert("Checkout completed");
+    onClose();          
+    
+  } else {
+    alert(res.message);
+  }
+};
+
+
   if (!visible) return null;
 
   return (
     <>
-      {/* Overlay */}
+     
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeSheet} />
 
-      {/* SLIDE BOTTOM SHEET */}
+     
       <Animated.View
         {...panResponder.panHandlers}
         style={[
@@ -94,19 +170,19 @@ export default function CheckoutBottomSheet({
           {/* CARD */}
           <View style={styles.card}>
             <View style={styles.row}>
-              <Image source={customer?.img} style={styles.avatar} />
+              <Image source={matchedCustomer?.profilePic ||Profile } style={styles.avatar} />
 
               <View style={{ marginLeft: 12 }}>
-                <Text style={styles.name}>{customer?.name}</Text>
+                <Text style={styles.name}>{matchedCustomer?.fullName}</Text>
 
                 <View style={styles.detailsRow}>
                   <View style={styles.badge}>
-                    <Text style={styles.badgeTxt}>{customer?.floor}</Text>
+                    <Text style={styles.badgeTxt}>{matchedCustomer?.floorName}</Text>
                   </View>
                   <Image source={require("../../../Assets/Images/profile.png")} style={styles.icon} />
-                  <Text style={styles.val}>{customer?.room}</Text>
+                  <Text style={styles.val}>{matchedCustomer?.roomName}</Text>
                   <Image source={require("../../../Assets/Images/bed.png")} style={styles.icon} />
-                  <Text style={styles.val}>{customer?.bed}</Text>
+                  <Text style={styles.val}>{matchedCustomer?.bedName}</Text>
                 </View>
               </View>
             </View>
@@ -116,7 +192,7 @@ export default function CheckoutBottomSheet({
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.label}>Checkout Date</Text>
-                <Text style={styles.labelVal}>{checkoutDate}</Text>
+                <Text style={styles.labelVal}>{checkoutDateDettail?.checkoutDate}</Text>
               </View>
 
               <View style={{ flex: 1 }}>
@@ -136,13 +212,12 @@ export default function CheckoutBottomSheet({
             onChangeText={setReason}
           />
 
-          {/* BUTTONS */}
           <View style={styles.btnRow}>
             <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
               <Text style={styles.cancelTxt}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.outBtn} onPress={onCheckout}>
+            <TouchableOpacity style={styles.outBtn} onPress={handleConfirmCheckout}>
               <Text style={styles.outTxt}>Check-Out</Text>
             </TouchableOpacity>
           </View>
@@ -166,7 +241,7 @@ overlay: {
   bottom: 0,
   left: 0,
   right: 0,
-  width: "100%",      // FULL WIDTH
+  width: "100%",     
   backgroundColor: "#fff",
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
@@ -232,7 +307,8 @@ overlay: {
   btnRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    paddingBottom: 60,
+    paddingTop:30
     
   },
 

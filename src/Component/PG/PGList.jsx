@@ -33,6 +33,7 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import Dots from "../../Assets/Images/3dots.png";
 import { useFocusEffect } from "@react-navigation/native";
+import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
 
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
@@ -89,6 +90,7 @@ export default function PGPageFull({ route }) {
   const [deleteFloorId, setDeleteFloorId] = useState(null);
   const [floordeletePopup, setFloorDeletePopup] = useState(false)
   const [bedUserDetails, setBedUserDetails] = useState("")
+   const [showCheckout, setShowCheckout] = useState(false);
 
 
   const [editBedData, setEditBedData] = useState(null);
@@ -557,6 +559,7 @@ export default function PGPageFull({ route }) {
     setShowNotice(true);
   };
 
+
   const handleReAssignBed = () => {
     if (!selectedOccupied) return;
 
@@ -577,6 +580,11 @@ export default function PGPageFull({ route }) {
     setShowNewBooking(true);
     setShowDoubleStatus(false)
   };
+    const handleNoticeToCheckout=()=>{
+    setShowCheckout(true)
+      setShowNoticePeriodSheet(false);
+      setShowDoubleStatus(false)
+  }
 
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
@@ -1100,6 +1108,7 @@ export default function PGPageFull({ route }) {
         cancelNoticePeriod={handleShowCancelNotice}
         handleEditBed={handleEditBed}
         selectedBed={selectedBed}
+        handleNoticeToCheckout={handleNoticeToCheckout}
       />
 
       <NewBookingSheet
@@ -1107,6 +1116,12 @@ export default function PGPageFull({ route }) {
         onClose={() => setShowNewBooking(false)}
         bed={selectedOccupied?.bed}
         room={selectedOccupied?.room}
+        selectedBed={selectedBed}
+        onBedAdded={handleBedAdded}
+      />
+      <CheckoutBottomSheet
+        visible={showCheckout}
+        onClose={() => setShowCheckout(false)}
         selectedBed={selectedBed}
         onBedAdded={handleBedAdded}
       />
