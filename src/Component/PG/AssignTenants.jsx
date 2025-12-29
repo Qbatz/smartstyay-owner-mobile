@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
+import { BankingContext } from "../../Context/BankingContext";
 import { useLayoutEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
@@ -25,10 +26,11 @@ import SuccessModal from "../../ToastFile/ToastPage";
 
 
 export default function AssignTenant({ navigation, route }) {
-  const { roomNo, bedId, selectedBed, onBedAdded } = route.params || {};
+  const { selectedBed, onBedAdded } = route.params || {};
 
-  const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer } = useCustomer();
+  const { getCustomersByHostel, checkInCustomer, bookCustomer } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
+  const { getBankListByHostel } = useContext(BankingContext);
 
   const [activeTab, setActiveTab] = useState("Booking");
   const [openDatePicker, setOpenDatePicker] = useState(false);
@@ -38,17 +40,11 @@ export default function AssignTenant({ navigation, route }) {
   const [joiningDate, setJoiningDate] = useState(null);
   const [openCheckJoinDatePic, setOpenCheckJoinDatePic] = useState("");
   const [checkJoiningDate, setcheckJoiningDate] = useState(dayjs());
-  const [tenant, setTenant] = useState("");
-  const [stayType, setStayType] = useState("");
   const [bookingAmount, setBookingAmount] = useState("");
   const [rentalAmount, setRentalAmount] = useState("");
   const [advanceAmount, setAdvanceAmount] = useState("");
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  const [disabledTypes, setDisabledTypes] = useState([]);
-  const BookingTenants = ["priya", "Allwin", "Mathu", "Arputha", "Hepzi"];
-  const [BookingTenantsOpen, setBookingTenantsopen] = useState(false);
-  const [BookingTenantsSelected, setBookTenantsSelected] = useState("Select Tenant");
   const [CheckinTenants, setCheckinTenants] = useState([])
   const [checkinTenantsOpen, setCheckinTenantsopen] = useState(false);
   const [CheckinTenantSelected, setCheckinTenantSelected] = useState(null);
@@ -64,6 +60,14 @@ export default function AssignTenant({ navigation, route }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [AccountsList, setAccountList] = useState([]);
+  const [accountOpen, setAccountopen] = useState(false);
+  const [accountSelected, setAccountSelected] = useState(null);
+  const [referenceNumber, setReferenceNumber] = useState("")
+  const [bookingDateError, setBookingDateError] = useState("");
+  const [joiningDateError, setJoiningDateError] = useState("");
+  const [bookingAmountError, setBookingAmountError] = useState("");
+  const [bankError, setBankError] = useState("");
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
 
@@ -106,7 +110,16 @@ export default function AssignTenant({ navigation, route }) {
     setOpenDropdownId(null);
   };
 
+  const fetchBankingList = async () => {
+    const data = await getBankListByHostel(activeHostelId);
+    setAccountList(data.data);
+  };
 
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchBankingList(activeHostelId);
+    }
+  }, [activeHostelId]);
 
 
 
@@ -121,6 +134,82 @@ export default function AssignTenant({ navigation, route }) {
       prev.map(i => (i.id === id ? { ...i, amount } : i))
     );
   };
+
+  const validateBooking = () => {
+    let valid = true;
+
+    setBookingDateError("");
+    setJoiningDateError("");
+    setBookingAmountError("");
+    setBankError("");
+
+
+    if (!CheckinTenantSelected) {
+      setTenantsError("Please select tenant");
+      valid = false;
+    }
+
+    if (!purchaseDate) {
+      setBookingDateError("Please select booking date");
+      valid = false;
+    }
+
+    if (!joiningDate) {
+      setJoiningDateError("Please select joining date");
+      valid = false;
+    }
+
+    if (!bookingAmount || Number(bookingAmount) <= 0) {
+      setBookingAmountError("Enter valid booking amount");
+      valid = false;
+    }
+
+    if (!accountSelected) {
+      setBankError("Please select bank account");
+      valid = false;
+    }
+
+    return valid;
+  };
+  const handleBookingSubmit = async () => {
+    if (!validateBooking()) return;
+
+    if (!selectedBed) {
+      alert("Bed data missing");
+      return;
+    }
+
+    const payload = {
+      customerId: CheckinTenantSelected?.customerId,
+      bookingDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+      joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+      bookingAmount: Number(bookingAmount),
+
+      floorId: selectedBed.floorId,
+      roomId: selectedBed.roomId,
+      bedId: selectedBed.bedId,
+
+      bankId: accountSelected.bankingId,
+      referenceNumber: referenceNumber || "",
+    };
+
+    const res = await bookCustomer(activeHostelId, payload);
+
+    if (res.success) {
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigation.goBack();
+      }, 800);
+    } else {
+      alert(res.message || "Booking failed");
+    }
+  };
+
+
   const handleCheckIn = async () => {
     const customerId = CheckinTenantSelected?.customerId;
 
@@ -308,6 +397,22 @@ export default function AssignTenant({ navigation, route }) {
       };
     }
   }
+  const clearAllErrors = () => {
+    // common
+    setTenantsError("");
+
+    // Booking errors
+    setBookingDateError("");
+    setJoiningDateError("");
+    setBookingAmountError("");
+    setBankError("");
+
+    // CheckIn errors
+    setRentalError("");
+    setAdvanceError("");
+    setCheckJoinDateError("");
+    setStayTypeError("");
+  };
 
 
   return (
@@ -320,13 +425,20 @@ export default function AssignTenant({ navigation, route }) {
           <Text style={styles.backArrow}>← Assign Tenant</Text>
         </TouchableOpacity>
 
-        <Text style={styles.roomText}>Room No {roomNo} | Bed {bedId}</Text>
+        <Text style={styles.roomText}>Room No :{selectedBed?.roomName} | Bed : {selectedBed?.bedName}</Text>
 
 
         <View style={styles.tabRow}>
           <TouchableOpacity
             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
-            onPress={() => setActiveTab("Booking")}
+            onPress={() => {
+              setActiveTab("Booking");
+              setCheckinTenantSelected(null);
+              setCheckinTenantsopen(false);
+              setTenantsError("")
+              clearAllErrors();
+            }}
+
           >
             <Text style={[styles.tabText, activeTab === "Booking" && styles.tabTextActive]}>
               Booking
@@ -335,7 +447,15 @@ export default function AssignTenant({ navigation, route }) {
 
           <TouchableOpacity
             style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
-            onPress={() => setActiveTab("CheckIn")}
+            // onPress={() => setActiveTab("CheckIn")}
+            onPress={() => {
+              setActiveTab("CheckIn");
+              setCheckinTenantSelected(null);
+              setCheckinTenantsopen(false);
+              setTenantsError("")
+              clearAllErrors();
+            }}
+
           >
             <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
               Check In
@@ -344,9 +464,14 @@ export default function AssignTenant({ navigation, route }) {
         </View>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <ScrollView style={{ marginTop: 10 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 100 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
 
 
 
@@ -355,37 +480,47 @@ export default function AssignTenant({ navigation, route }) {
 
             {activeTab === "Booking" && (
               <>
-                <Text style={styles.label}>Select Tenant</Text>
+                <Text style={styles.label}>Select Tenant <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
+
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() => setBookingTenantsopen(!BookingTenantsOpen)}
+                    onPress={() => setCheckinTenantsopen(!checkinTenantsOpen)}
                     activeOpacity={0.9}
                   >
-                    <Text style={styles.selectText}>{BookingTenantsSelected}</Text>
+                    <Text style={styles.selectText}>
+                      {CheckinTenantSelected?.fullName || "Select Tenant"}
+
+                    </Text>
                     <Image source={DownArrow} style={styles.arrow} />
                   </TouchableOpacity>
 
-                  {BookingTenantsOpen && (
+                  {tenentsError && (
+                    <ErrorMessage message={tenentsError} type="error" />
+                  )}
+
+                  {checkinTenantsOpen && (
                     <View style={styles.dropdownMenuone}>
                       <ScrollView style={{ maxHeight: 160 }}>
-                        {BookingTenants.map((v, index) => (
+                        {CheckinTenants && CheckinTenants?.map((v, index) => (
                           <TouchableOpacity
                             key={index}
                             style={styles.option}
                             onPress={() => {
-                              setBookTenantsSelected(v);
-                              setBookingTenantsopen(false);
+                              setCheckinTenantSelected(v);
+                              setCheckinTenantsopen(false);
+                              setTenantsError("")
                             }}
                           >
-                            <Text style={styles.optionText}>{v}</Text>
+                            <Text style={styles.optionText}>{v.fullName}</Text>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
                     </View>
                   )}
                 </View>
+
                 <Text style={styles.label}>Booking Date</Text>
                 <TouchableOpacity style={styles.dateBox} onPress={() => setOpenDatePicker(true)}>
                   <Text style={styles.placeholder}>
@@ -396,15 +531,24 @@ export default function AssignTenant({ navigation, route }) {
                     style={styles.icon}
                   />
                 </TouchableOpacity>
-
+                {bookingDateError && (
+                  <ErrorMessage message={bookingDateError} type="error" />
+                )}
                 <Text style={styles.label}>Booking Amount</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Enter Amount"
                   keyboardType="numeric"
                   value={bookingAmount}
-                  onChangeText={setBookingAmount}
+                  // onChangeText={setBookingAmount}
+                  onChangeText={(text) => {
+                    setBookingAmount(text);
+                    setBookingAmountError("");
+                  }}
                 />
+                {bookingAmountError && (
+                  <ErrorMessage message={bookingAmountError} type="error" />
+                )}
                 <Text style={styles.label}>Joining Date *</Text>
                 <TouchableOpacity style={styles.dateBox} onPress={() => setOpenJoinDatePic(true)}>
                   <Text style={styles.placeholder}>
@@ -415,64 +559,60 @@ export default function AssignTenant({ navigation, route }) {
                     style={styles.icon}
                   />
                 </TouchableOpacity>
-
-
-                {openDatePicker && (
-                  <View style={styles.sheetOverlay}>
-                    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
-                      <View style={{ flex: 1 }} />
-                    </TouchableWithoutFeedback>
-
-                    <View style={styles.datePickerBox}>
-                      <Calendar
-                        markingType="custom"
-                        markedDates={bookingMarkedDates}
-                        onDayPress={(day) => {
-                          if (bookingMarkedDates[day.dateString]?.disabled) return;
-
-                          setPurchaseDate(day.dateString);
-                          setJoiningDate(null);
-                          setOpenDatePicker(false);
-                        }}
-                        theme={{
-                          todayTextColor: "#2563EB",
-                          selectedDayBackgroundColor: "#2563EB",
-                          selectedDayTextColor: "#FFFFFF",
-                          textDisabledColor: "#9CA3AF",
-                        }}
-                      />
-
-                    </View>
-                  </View>
+                {joiningDateError && (
+                  <ErrorMessage message={joiningDateError} type="error" />
                 )}
+                <Text style={styles.label}>Transferred Account <Text style={{ color: "red" }}>*</Text></Text>
+                <View style={{ position: "relative" }}>
+                  <TouchableOpacity
+                    onPress={() => setAccountopen(!accountOpen)}
+                    style={styles.inputBox}
+                  >
 
-                {openJoinDatePic && (
-                  <View style={styles.sheetOverlay}>
-                    <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
-                      <View style={{ flex: 1 }} />
-                    </TouchableWithoutFeedback>
+                    <Text style={styles.selectText}>
+                      {accountSelected
+                        ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
+                        : "Select Bank"}
+                    </Text>
+                    <Image source={DownArrow} style={styles.arrow} />
+                  </TouchableOpacity>
+                  {bankError && (
+                    <ErrorMessage message={bankError} type="error" />
+                  )}
 
-                    <View style={styles.datePickerBox}>
-                      <Calendar
-                        markingType="custom"
-                        markedDates={joiningMarkedDates}
-                        onDayPress={(day) => {
-                          if (joiningMarkedDates[day.dateString]?.disabled) return;
 
-                          setJoiningDate(day.dateString);
-                          setOpenJoinDatePic(false);
-                        }}
-                        theme={{
-                          todayTextColor: "#2563EB",
-                          selectedDayBackgroundColor: "#2563EB",
-                          selectedDayTextColor: "#FFFFFF",
-                          textDisabledColor: "#9CA3AF",
-                        }}
-                      />
-
+                  {accountOpen && (
+                    <View style={styles.dropdownMenu}>
+                      <ScrollView style={{ maxHeight: 150 }}>
+                        {AccountsList.map((v, i) => (
+                          <TouchableOpacity
+                            key={i}
+                            style={styles.option}
+                            onPress={() => {
+                              setAccountSelected(v);
+                              setAccountopen(false);
+                              setBankError("")
+                            }}
+                          >
+                            <Text style={styles.optionText}>{v.accountHolderName}-{v.accountType}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
                     </View>
-                  </View>
-                )}
+                  )}
+                  <Text style={styles.label}>Transaction Id</Text>
+                  <TextInput
+                    placeholder="Enter Transaction Id"
+                    placeholderTextColor="#999"
+                    onChangeText={setReferenceNumber}
+                    value={referenceNumber}
+                    style={styles.inputBox}
+                  />
+                </View>
+
+
+
+
               </>
 
             )}
@@ -729,7 +869,11 @@ export default function AssignTenant({ navigation, route }) {
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.submitBtn} onPress={handleCheckIn}>
+              <TouchableOpacity style={styles.submitBtn}
+                //  onPress={handleCheckIn}
+                onPress={activeTab === "Booking" ? handleBookingSubmit : handleCheckIn}
+
+              >
                 <Text style={styles.submitText}>
                   {activeTab === "Booking" ? "Book" : "Check In"}
                 </Text>
@@ -757,6 +901,63 @@ export default function AssignTenant({ navigation, route }) {
           </View>
         </View>
       )} */}
+        {openJoinDatePic && (
+          <View style={styles.sheetOverlay}>
+            <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
+              <View style={{ flex: 1 }} />
+            </TouchableWithoutFeedback>
+
+            <View style={styles.datePickerBox}>
+              <Calendar
+                markingType="custom"
+                markedDates={joiningMarkedDates}
+                onDayPress={(day) => {
+                  if (joiningMarkedDates[day.dateString]?.disabled) return;
+
+                  setJoiningDate(day.dateString);
+                  setOpenJoinDatePic(false);
+                  setJoiningDateError("")
+                }}
+                theme={{
+                  todayTextColor: "#2563EB",
+                  selectedDayBackgroundColor: "#2563EB",
+                  selectedDayTextColor: "#FFFFFF",
+                  textDisabledColor: "#9CA3AF",
+                }}
+              />
+
+            </View>
+          </View>
+        )}
+        {openDatePicker && (
+          <View style={styles.sheetOverlay}>
+            <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+              <View style={{ flex: 1 }} />
+            </TouchableWithoutFeedback>
+
+            <View style={styles.datePickerBox1}>
+              <Calendar
+                markingType="custom"
+                markedDates={bookingMarkedDates}
+                onDayPress={(day) => {
+                  if (bookingMarkedDates[day.dateString]?.disabled) return;
+
+                  setPurchaseDate(day.dateString);
+                  setJoiningDate(null);
+                  setOpenDatePicker(false);
+                  setBookingDateError("")
+                }}
+                theme={{
+                  todayTextColor: "#2563EB",
+                  selectedDayBackgroundColor: "#2563EB",
+                  selectedDayTextColor: "#FFFFFF",
+                  textDisabledColor: "#9CA3AF",
+                }}
+              />
+
+            </View>
+          </View>
+        )}
         {openCheckJoinDatePic && (
 
           <View style={styles.sheetOverlay}>
@@ -915,12 +1116,16 @@ const styles = StyleSheet.create({
   arrow: { width: 18, height: 18, tintColor: "#444" },
 
   dropdownMenu: {
-    marginTop: 6,
+    position: "absolute",
+    top: 50,
+    left: 0,
+    right: 0,
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 999,
+    elevation: 10,
   },
 
   dropdownItem: {
@@ -975,11 +1180,19 @@ const styles = StyleSheet.create({
     borderColor: "#DCDCDC",
     borderRadius: 30,
     padding: 5,
-    marginBottom: 100,
+    marginBottom: 90,
     borderWidth: 0.5,
   },
 
-
+  datePickerBox1: {
+    backgroundColor: "#fff",
+    width: "80%",
+    borderColor: "#DCDCDC",
+    borderRadius: 30,
+    padding: 5,
+    marginBottom: 300,
+    borderWidth: 0.5,
+  },
 
   sheetOverlay: {
     position: "absolute",
@@ -1047,7 +1260,16 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     borderRadius: 20
-  }
+  },
+  inputBox: {
+    borderColor: "#e1e1e1",
+    padding: 14,
+    borderRadius: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1
+  },
 
 
 });

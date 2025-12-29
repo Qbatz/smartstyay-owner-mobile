@@ -43,10 +43,6 @@ import Loader from "../Loader/Loader";
 import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet"
 
 
-
-
-
-
 export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
@@ -59,7 +55,7 @@ export default function TenantsScreen({ route }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [reassignCustomer, setReassignCustomer] = useState(null);
-   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+  const [showInactiveSheet, setShowInactiveSheet] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -75,8 +71,11 @@ export default function TenantsScreen({ route }) {
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data || []);
   };
+  const handleCheckoutSuccess = async () => {
+    await fetchCustomers(); // 👈 updates customers state
+    setShowCheckout(false);
+  };
 
-  console.log("customer", customers)
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -108,7 +107,7 @@ export default function TenantsScreen({ route }) {
     }).start();
   }, [showFilter]);
 
-  console.log("customers", selectedCustomer)
+
   const filterPanResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
     onPanResponderMove: (_, g) => {
@@ -124,9 +123,10 @@ export default function TenantsScreen({ route }) {
       }
     },
   });
-   const handleMakeUsInActive = () => {
-   setShowDetailsMenu(false);
+  const handleMakeUsInActive = () => {
+    setShowDetailsMenu(false);
     setShowInactiveSheet(true)
+    setMenuVisible(false)
   }
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -136,9 +136,9 @@ export default function TenantsScreen({ route }) {
   const openMenu = (event, item) => {
     event.stopPropagation();
 
-    const { pageX, pageY } = event.nativeEvent; 
+    const { pageX, pageY } = event.nativeEvent;
 
-   
+
     if (menuVisible && selectedItem?.customerId === item.customerId) {
       setMenuVisible(false);
       setSelectedItem(null);
@@ -171,9 +171,7 @@ export default function TenantsScreen({ route }) {
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
-  useEffect(() => {
 
-  }, [])
 
 
   useLayoutEffect(() => {
@@ -239,10 +237,11 @@ export default function TenantsScreen({ route }) {
   }
 
   const handleShowFinalSettlement = () => {
-   navigation.navigate("FinalSettlement", {
-    selectedItem:selectedItem
-    // selectedBed?.currentTenantInfo?.[0]?.tenetId,
-});
+    setMenuVisible(false)
+    navigation.navigate("FinalSettlement", {
+      selectedItem: selectedItem
+      // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+    });
   }
 
   const handleShowTennantCheckin = () => {
@@ -252,11 +251,12 @@ export default function TenantsScreen({ route }) {
     navigation.navigate("AddBooking")
   }
 
-const handleShowCancelNotice = () => {
-  navigation.navigate("CancelNotice", {
-    selectedItem: selectedItem,
-  });
-};
+  const handleShowCancelNotice = () => {
+    setMenuVisible(false)
+    navigation.navigate("CancelNotice", {
+      selectedItem: selectedItem,
+    });
+  };
 
   const customerList = [
     {
@@ -612,10 +612,7 @@ const handleShowCancelNotice = () => {
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.popupRow}
-                        // onPress={() => {
-                        //   setShowMenu(false);
-                        //   setShowNotice(true);
-                        // }}
+
                         onPress={() => {
                           setSelectedCustomer(selectedItem);
                           setShowMenu(false);
@@ -632,34 +629,31 @@ const handleShowCancelNotice = () => {
                     </>
 
                   }
-                   {
+                  {
                     selectedItem && selectedItem.currentStatus === "Booked" &&
                     <>
-                   <TouchableOpacity
-                style={styles.popupRow}
-                // onPress={() => {
-                //   setShowDetailsMenu(false);
-                //   // setShowNotice(true);
-                // }}
-                onPress={handleMakeUsInActive}
-              >
-                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Make Us InActive</Text>
-              </TouchableOpacity>
- <TouchableOpacity
-                style={styles.popupRow}
-                onPress={() => {
-                  setShowDetailsMenu(false);
-                  // setShowNotice(true);
-                }}
-              >
-                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Checkin</Text>
-              </TouchableOpacity>
-</>
-}
+                      <TouchableOpacity
+                        style={styles.popupRow}
+
+                        onPress={handleMakeUsInActive}
+                      >
+                        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Make Us InActive</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.popupRow}
+                        onPress={() => {
+                          setShowDetailsMenu(false);
+                          // setShowNotice(true);
+                        }}
+                      >
+                        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Checkin</Text>
+                      </TouchableOpacity>
+                    </>
+                  }
                   {selectedItem &&
-                    !["Checked In", "Settlement Generated","Booked"].includes(selectedItem.currentStatus) && (
+                    !["Checked In", "Settlement Generated", "Booked"].includes(selectedItem.currentStatus) && (
 
                       <>
                         <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
@@ -680,12 +674,13 @@ const handleShowCancelNotice = () => {
                       </>
                     )}
                   {selectedItem &&
-                    !["Checked In", "Notice Period","Booked"].includes(selectedItem.currentStatus) && (
+                    !["Checked In", "Notice Period", "Booked"].includes(selectedItem.currentStatus) && (
                       <TouchableOpacity
                         style={styles.popupRow}
                         onPress={() => {
                           setShowMenu(false);
                           setShowCheckout(true);
+                          setMenuVisible(false)
                         }}
                       >
                         <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1008,7 +1003,7 @@ const handleShowCancelNotice = () => {
                   <TouchableOpacity
                     style={styles.deleteBtn}
                     onPress={() => {
-                      console.log("DELETE CONFIRMED");
+
                       setDeleteTenants(false);
                     }}
                   >
@@ -1028,7 +1023,8 @@ const handleShowCancelNotice = () => {
             visible={showNotice}
             onClose={() => setShowNotice(false)}
             customer={selectedCustomer}
-            onSuccess={fetchCustomers}
+            onSuccess={handleCheckoutSuccess}
+
 
 
 
@@ -1045,10 +1041,10 @@ const handleShowCancelNotice = () => {
         <ReassignBedModal visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
 
       }
-        <InactiveTenantSheet
-              visible={showInactiveSheet}
-              onClose={() => setShowInactiveSheet(false)}
-            />
+      <InactiveTenantSheet
+        visible={showInactiveSheet}
+        onClose={() => setShowInactiveSheet(false)}
+      />
       {
         showCheckout &&
         <CheckoutBottomSheet
@@ -1060,11 +1056,11 @@ const handleShowCancelNotice = () => {
           checkoutDate="22/10/2024"
           noticeDays={30}
           onCheckout={() => {
-            console.log("Checkout Done");
             setShowCheckout(false);
           }}
           setShowTabBar={setShowTabBar}
           selectedItem={selectedItem}
+          onSuccess={handleCheckoutSuccess}
 
         />
       }
