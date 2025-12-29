@@ -239,7 +239,10 @@ export default function TenantsScreen({ route }) {
   }
 
   const handleShowFinalSettlement = () => {
-    navigation.navigate("FinalSettlement")
+   navigation.navigate("FinalSettlement", {
+    selectedItem:selectedItem
+    // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+});
   }
 
   const handleShowTennantCheckin = () => {
@@ -249,9 +252,11 @@ export default function TenantsScreen({ route }) {
     navigation.navigate("AddBooking")
   }
 
-  const handleShowCancelNotice = () => {
-    navigation.navigate("CancelNotice")
-  }
+const handleShowCancelNotice = () => {
+  navigation.navigate("CancelNotice", {
+    selectedItem: selectedItem,
+  });
+};
 
   const customerList = [
     {

@@ -1,4 +1,4 @@
-import React, { useState,useCallback } from "react";
+import React, { useState,useCallback ,useContext,useEffect} from "react";
 import {
   View,
   Text,
@@ -17,12 +17,29 @@ import DatePicker from "react-native-ui-datepicker";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import dayjs from "dayjs";
 import { useFocusEffect } from '@react-navigation/native';
+import { useCustomer } from "../../../Context/CustomerContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
-export default function CancelNotice({ navigation }) {
+export default function CancelNotice({ navigation ,route }) {
+    const { selectedItem,selectedBed } = route.params || {};
+    const { activeHostelId } = useContext(CommonContexts);
+      const { getCustomersByHostel, loading, moveToNoticePeriod,cancelCheckout } = useCustomer();
   const [openDate, setOpenDate] = useState(false);
   const [checkInDate, setCheckInDate] = useState(new Date());
   const [reason, setReason] = useState("");
+  const bedData = selectedBed || selectedItem;
+const data = selectedItem || selectedBed;
 
+const bedId =
+  data?.bedId;
+
+const tenantId =
+  data?.customerId ||                 // from selectedItem
+  data?.currentTenantInfo?.[0]?.tenetId; // from selectedBed
+
+
+console.log("selectedItem",selectedItem)
+console.log("selectedBed",selectedBed)
    useFocusEffect(
        useCallback(() => {
          const onBackPress = () => {
@@ -44,6 +61,44 @@ export default function CancelNotice({ navigation }) {
          return () => subscription.remove();
        }, [ navigation])
      );
+const handleCancelNotice = async () => {
+  const data = selectedItem || selectedBed;
+
+  const bedId = data?.bedId;
+  const tenantId =
+    data?.customerId ||
+    data?.currentTenantInfo?.[0]?.tenetId;
+
+  if (!activeHostelId || !bedId || !tenantId) {
+    console.log("DEBUG 👉", { activeHostelId, bedId, tenantId });
+    alert("Invalid tenant or bed info");
+    return;
+  }
+
+  const payload = {
+    bedId: bedId,
+    reCheckInDate: dayjs(checkInDate).format("DD-MM-YYYY"),
+    reason: reason || "Cancelled from app",
+  };
+
+  console.log("CANCEL NOTICE PAYLOAD 👉", payload);
+
+  const res = await cancelCheckout(
+    activeHostelId,
+    tenantId,
+    payload
+  );
+
+  if (res?.success) {
+    alert("Notice cancelled successfully");
+    navigation.goBack();
+  } else {
+    alert(res?.message || "Cancel notice failed");
+  }
+};
+
+
+
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 30 }}>
@@ -137,7 +192,7 @@ export default function CancelNotice({ navigation }) {
          <Text style={styles.cancelText}>Cancel</Text>
        </TouchableOpacity>
      
-       <TouchableOpacity style={styles.addBtn2}>
+       <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
          <Text style={styles.addBtnText}>Checkin</Text>
        </TouchableOpacity>
      </View>

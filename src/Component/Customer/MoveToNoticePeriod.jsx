@@ -27,7 +27,7 @@ export default function MoveNoticeSheet({
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, moveToNoticePeriod } = useCustomer();
+  const { getCustomersByHostel, loading, moveToNoticePeriod,cancelCheckout } = useCustomer();
   const { getAllBedsByRoom } = useFloor();
 
   const [reason, setReason] = useState("");

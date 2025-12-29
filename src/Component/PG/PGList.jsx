@@ -223,6 +223,12 @@ export default function PGPageFull({ route }) {
       setShowOccupiedSheet(true);
       return;
     }
+     if (freshBed.isOccupied && freshBed.isBooked) {
+      setSelectedBed(freshBed);
+      setSelectedOccupied({ bed: freshBed, room });
+      setShowOccupiedSheet(true);
+      return;
+    }
 
 
     if (status === "reserved") {
@@ -574,13 +580,19 @@ export default function PGPageFull({ route }) {
 
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
-    navigation.navigate("FinalSettlement");
+    // navigation.navigate("FinalSettlement");
+     navigation.navigate("FinalSettlement", {
+    selectedBed:selectedBed
+    // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+});
     setShowDoubleStatus(false)
   };
 
   const handleShowCancelNotice = () => {
     setShowNoticePeriodSheet(false);
-    navigation.navigate("CancelNotice");
+   navigation.navigate("CancelNotice", {
+    selectedBed: selectedBed,
+  });
     setShowDoubleStatus(false)
   };
   const handleMakeUsInActive = () => {
@@ -1108,10 +1120,12 @@ export default function PGPageFull({ route }) {
         handleReAssignBed={handleShowCancelNotice}
         handleMakeUsInActive={handleMakeUsInActive}
         handleCheckIn={handleCheckIn}
+        selectedBed={selectedBed}
       />
       <InactiveTenantSheet
         visible={showInactiveSheet}
         onClose={() => setShowInactiveSheet(false)}
+        selectedBed={selectedBed}
       />
       <Modal
         transparent
