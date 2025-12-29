@@ -113,6 +113,42 @@ export default function ElectricityProvider({children}){
         }
     }
 
+  const AddRoomReading = async (payload) => {
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const res = await AxiosConfig.post(
+      `/v2/electricity/${payload.hostelId}`,
+      payload
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      await GetEBRoomReading(payload.hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return { success: false };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+      statusCode: error?.response?.status,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+  
+
     return(
         <ElectricityContext.Provider
         value={{
@@ -126,7 +162,8 @@ export default function ElectricityProvider({children}){
             GetEBRoomReading,
             GetEBTenantReading,
             ParticularRoomReadingDetails,
-            ParticularTenantReadingDetails
+            ParticularTenantReadingDetails,
+            AddRoomReading,
         }}
         >
             {children}

@@ -41,7 +41,7 @@ export default function Electricity({ navigation }) {
             error, 
             errorMsg,
             GetEBRoomReading,
-            GetEBTenantReading , ParticularRoomReadingDetails  } = useContext(ElectricityContext);
+            GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading } = useContext(ElectricityContext);
 
             console.log("EbRoomReading" , EbRoomReading);
             console.log("EbTenantReading" , EbTenantReading);
@@ -50,6 +50,11 @@ export default function Electricity({ navigation }) {
   const [underlineWidth, setUnderlineWidth] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [fromDate, setFromDate] = useState(dayjs());
+
+    const [readingError, setReadingError] = useState("");
+    const [dateError, setDateError] = useState("");
+    const [currentReading, setCurrentReading] = useState("");
+    const [readingDate, setReadingDate] = useState(null);
     const [toDate, setToDate] = useState(dayjs());
     const [openFrom, setOpenFrom] = useState(false);
     const [openTo, setOpenTo] = useState(false);
@@ -154,6 +159,44 @@ const formatApiMonth = (date) => {
     navigation.navigate("RoomDetails", { roomData: item })
     ParticularRoomReadingDetails(item.hostelId, item.roomId);
    }
+
+//    const handleSubmit = async () => {
+//   let hasError = false;
+
+//   if (!currentReading) {
+//     setReadingError("Please enter reading");
+//     hasError = true;
+//   } else {
+//     setReadingError("");
+//   }
+
+//   if (!readingDate) {
+//     setDateError("Please select reading date");
+//     hasError = true;
+//   } else {
+//     setDateError("");
+//   }
+
+//   if (hasError) return;
+
+//   const payload = {
+//     hostelId: activeHostelId,
+//     reading: currentReading,
+//     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+//     roomId: selectedRowDetails?.roomId,
+//     floorId: selectedRowDetails?.floorId,
+//   };
+
+//   const res = await AddRoomReading(payload);
+
+//   if (res.success) {
+//     Alert.alert("Success", res.data || "Reading added successfully");
+//     setCurrentReading("");
+//     setReadingDate(null);
+//   } else {
+//     Alert.alert("Error", res.message || "Something went wrong");
+//   }
+// };
 
 
   return (
