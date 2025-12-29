@@ -492,7 +492,7 @@ const confirmCheckout = async (customerId) => {
     return {
       success: false,
       message:
-        error?.response?.data?.message ||
+        error?.response?.data ||
         "Checkout confirmation failed",
     };
   }

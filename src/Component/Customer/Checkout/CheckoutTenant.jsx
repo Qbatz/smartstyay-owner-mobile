@@ -1,4 +1,4 @@
-import React, { useRef, useEffect,useState,useCallback,useContext } from "react";
+import React, { useRef, useEffect, useState, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -15,8 +15,10 @@ import {
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
-import { useFocusEffect } from "@react-navigation/native";
-import Profile from "../../../Assets/Images/profile.png"
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFloor } from "../../../Context/PayingGuestContext";
+import Profile from "../../../Assets/Images/profile.png";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 export default function CheckoutBottomSheet({
@@ -27,17 +29,21 @@ export default function CheckoutBottomSheet({
   setReason,
   checkoutDate = "22/10/2024",
   noticeDays = 30,
-  onCheckout,selectedBed,selectedItem
+  onCheckout, selectedBed, selectedItem, onSuccess
 }) {
   const sheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-   const { activeHostelId } = useContext(CommonContexts);
-    const { getCustomersByHostel, loading,initializeCheckout,confirmCheckout } = useCustomer();
-   const [customers, setCustomers] = useState([]);
-   const [checkoutDateDettail,setCheckoutDateDettail] = useState("")
+  const navigation = useNavigation();
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getCustomersByHostel, loading, initializeCheckout, confirmCheckout } = useCustomer();
+  const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
+  const [customers, setCustomers] = useState([]);
+  const [checkoutDateDettail, setCheckoutDateDettail] = useState("")
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
 
- console.log("selectedBed",selectedBed)
- console.log("selectedItem",selectedItem)
+
   useEffect(() => {
     if (visible) {
       Animated.timing(sheetY, {
@@ -77,7 +83,7 @@ export default function CheckoutBottomSheet({
   ).current;
 
 
- useFocusEffect(
+  useFocusEffect(
     useCallback(() => {
       if (activeHostelId) {
         fetchCustomers();
@@ -91,66 +97,86 @@ export default function CheckoutBottomSheet({
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data || []);
   };
-  console.log("customers123", customers)
- const matchedCustomer = customers.find(
-  c =>
-    c.customerId === selectedBed?.currentTenantInfo?.[0]?.tenetId ||
-    c.customerId === selectedItem?.customerId
-);
-  
-  console.log("matchedCustomer",matchedCustomer)
 
- useEffect(() => {
-  if (!activeHostelId) return;
+  const matchedCustomer = customers.find(
+    c =>
+      c.customerId === selectedBed?.currentTenantInfo?.[0]?.tenetId ||
+      c.customerId === selectedItem?.customerId
+  );
 
-  const customerId =
-    selectedBed?.currentTenantInfo?.[0]?.tenetId ||
-    selectedItem?.customerId;
 
-  if (!customerId) return;
 
-  const handleCheckoutInit = async () => {
-    const res = await initializeCheckout(activeHostelId, customerId);
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    const customerId =
+      selectedBed?.currentTenantInfo?.[0]?.tenetId ||
+      selectedItem?.customerId;
+
+    if (!customerId) return;
+
+    const handleCheckoutInit = async () => {
+      const res = await initializeCheckout(activeHostelId, customerId);
+
+      if (res.success) {
+
+        setCheckoutDateDettail(res.data)
+      }
+    };
+
+    handleCheckoutInit();
+  }, [selectedBed, selectedItem, activeHostelId]);
+
+  const handleConfirmCheckout = async () => {
+    const customerId =
+      selectedBed?.currentTenantInfo?.[0]?.tenetId ||
+      selectedItem?.customerId;
+
+    if (!customerId) {
+      alert("Customer missing");
+      return;
+    }
+
+    const res = await confirmCheckout(customerId);
 
     if (res.success) {
-     
-      setCheckoutDateDettail(res.data)
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+
+      await getCustomersByHostel(activeHostelId);
+      if (onSuccess) {
+        await onSuccess();
+      }
+      onClose();
+
+      setTimeout(() => {
+        setShowSuccess(false);
+
+      }, 800);
+
+    } else {
+
+      setModalType("error");
+      setMessage(res.message);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+
+      }, 800);
     }
   };
-
-  handleCheckoutInit();
-}, [selectedBed, selectedItem, activeHostelId]);
-
-const handleConfirmCheckout = async () => {
-  const customerId =
-    selectedBed?.currentTenantInfo?.[0]?.tenetId ||
-    selectedItem?.customerId;
-
-  if (!customerId) {
-    alert("Customer missing");
-    return;
-  }
-
-  const res = await confirmCheckout(customerId);
-
-  if (res.success) {
-    alert("Checkout completed");
-    onClose();          
-    
-  } else {
-    alert(res.message);
-  }
-};
 
 
   if (!visible) return null;
 
   return (
     <>
-     
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeSheet} />
 
-     
+
       <Animated.View
         {...panResponder.panHandlers}
         style={[
@@ -163,14 +189,14 @@ const handleConfirmCheckout = async () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Check-out Tenant</Text>
 
-          <Text style={styles.notice}>
+          {/* <Text style={styles.notice}>
             Notice Days : <Text style={{ color: "#2D6CDF" }}>{noticeDays}</Text>
-          </Text>
+          </Text> */}
 
           {/* CARD */}
           <View style={styles.card}>
             <View style={styles.row}>
-              <Image source={matchedCustomer?.profilePic ||Profile } style={styles.avatar} />
+              <Image source={matchedCustomer?.profilePic || Profile} style={styles.avatar} />
 
               <View style={{ marginLeft: 12 }}>
                 <Text style={styles.name}>{matchedCustomer?.fullName}</Text>
@@ -197,7 +223,7 @@ const handleConfirmCheckout = async () => {
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.label}>Status</Text>
-                <Text style={[styles.labelVal, { color: "green" }]}>Dues Cleared</Text>
+                <Text style={[styles.labelVal, { color: "green" }]}>Checkout</Text>
               </View>
             </View>
           </View>
@@ -228,26 +254,26 @@ const handleConfirmCheckout = async () => {
 }
 
 const styles = StyleSheet.create({
-overlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)"
-},
- sheet: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  width: "100%",     
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-  padding: 20,
-}
-,
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)"
+  },
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  }
+  ,
   handle: {
     width: 50,
     height: 5,
@@ -308,8 +334,8 @@ overlay: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingBottom: 60,
-    paddingTop:30
-    
+    paddingTop: 30
+
   },
 
   cancelBtn: {
