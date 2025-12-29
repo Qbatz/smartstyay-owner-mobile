@@ -102,7 +102,7 @@ import BillsProvider from "./src/Context/BillsContext"
 
 import { FloorProvider } from './src/Context/PayingGuestContext';
 import BankingProvider from "./src/Context/BankingContext";
-
+import ElectricityProvider from "./src/Context/ElectricityContext"
 
 
 
@@ -125,7 +125,9 @@ function App() {
                         <BillsProvider>
                           <FloorProvider>
                             <BankingProvider>
-                            <AppContent />
+                              <ElectricityProvider>
+                                   <AppContent />
+                              </ElectricityProvider>
                             </BankingProvider>
                           </FloorProvider>
                         </BillsProvider>

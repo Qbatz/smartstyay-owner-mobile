@@ -1,4 +1,4 @@
-import React, { useState,useRef,useEffect } from "react";
+import React, { useState,useRef,useEffect , useContext } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,14 @@ import {
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { useNavigation } from "@react-navigation/native";
+import { useLayoutEffect } from "react"; 
+import {ElectricityContext} from "../../../Context/ElectricityContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
@@ -20,9 +28,24 @@ import FilterIcon from "../../../Assets/Images/filter.png";
 import TenantsList from "./TenantsList";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
+
 
 
 export default function Electricity({ navigation }) {
+
+   const { activeHostelId } = useContext(CommonContexts);
+  const { EbRoomReading , 
+            EbTenantReading,
+            loading,
+            error, 
+            errorMsg,
+            GetEBRoomReading,
+            GetEBTenantReading , ParticularRoomReadingDetails  } = useContext(ElectricityContext);
+
+            console.log("EbRoomReading" , EbRoomReading);
+            console.log("EbTenantReading" , EbTenantReading);
+
   const [activeTab, setActiveTab] = useState("Room Reading");
   const [underlineWidth, setUnderlineWidth] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
@@ -36,6 +59,19 @@ export default function Electricity({ navigation }) {
        const toggleAmountDropdown = () => {
     setAmountDropdownVisible((v) => !v);
   };
+
+    useEffect(() => {
+  if (activeHostelId) {
+    GetEBRoomReading(activeHostelId);
+  }
+}, [activeHostelId]);
+
+   useEffect(() => {
+  if (activeHostelId) {
+    GetEBTenantReading(activeHostelId);
+  }
+}, [activeHostelId]);
+
  useEffect(() => {
   const onBackPress = () => {
     if (showFilter) {
@@ -106,7 +142,24 @@ export default function Electricity({ navigation }) {
     
   ];
 
+const formatApiMonth = (date) => {
+  if (!date || date === "N/A") return "--";
+
+  return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY"]).format("MMMM");
+};
+
+   const handleClickRoomDetails = (item) => {
+    console.log("item", item);
+    
+    navigation.navigate("RoomDetails", { roomData: item })
+    ParticularRoomReadingDetails(item.hostelId, item.roomId);
+   }
+
+
   return (
+
+    <>
+    { loading && <Loader />}
     <View style={styles.container}>
 
       {/* HEADER */}
@@ -156,49 +209,78 @@ export default function Electricity({ navigation }) {
 
      {activeTab === "Room Reading" &&
      <>
-     <ScrollView showsVerticalScrollIndicator={false}>
-        {dummy.map((item, index) => (
-          <View key={index} style={styles.row}>
+     <ScrollView    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+    flexGrow: 1,
+    justifyContent:
+      !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
+  }}>
+      { !loading && EbRoomReading && EbRoomReading.length > 0 && (
+  EbRoomReading.map((item, index) => (
+    <View key={index} style={styles.row}>
 
-            {/* ICON */}
-            <View style={styles.iconCircle}>
-              <Image source={RoomIcon} style={styles.iconImg} />
-            </View>
+      {/* ICON */}
+      <View style={styles.iconCircle}>
+        <Image source={RoomIcon} style={styles.iconImg} />
+      </View>
 
-            {/* MIDDLE */}
-            <View style={{ flex: 1 }}>
-              {/* <Text style={styles.roomName}>{item.room}</Text> */}
-              <TouchableOpacity onPress={() => navigation.navigate("RoomDetails", { roomData: item })}>
-  <Text style={styles.roomName}>{item.room}</Text>
-</TouchableOpacity>
+      {/* MIDDLE */}
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity
+          onPress={() =>handleClickRoomDetails(item)}
+        >
+          <Text style={styles.roomName}>{item.roomName}</Text>
+        </TouchableOpacity>
 
-
-              <View style={styles.subRow}>
-                <View style={styles.tag}>
-                  <Text style={styles.tagText}>{item.floor}</Text>
-                </View>
-
-                <View style={styles.people}>
-                  <Image source={ProfileIcon} style={styles.peopleIcon} />
-                  <Text style={styles.peopleText}>{item.users}</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* RIGHT */}
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.price}>₹ {item.amount}</Text>
-              <Text style={styles.month}>{item.month}</Text>
-            </View>
-
+        <View style={styles.subRow}>
+          <View style={styles.tag}>
+            <Text style={styles.tagText}>{item.floorName}</Text>
           </View>
-        ))}
+
+          <View style={styles.people}>
+            <Image source={ProfileIcon} style={styles.peopleIcon} />
+            <Text style={styles.peopleText}>
+              {item.noOfTenants ?? 0}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* RIGHT */}
+      <View style={{ alignItems: "flex-end" }}>
+        <Text style={styles.price}>₹ {item.totalPrice ?? 0}</Text>
+        <Text style={styles.month}>
+           {formatApiMonth(item?.startDate)}
+          {/* {dayjs(item.startDate).format("MMM")} */}
+        </Text>
+      </View>
+
+    </View>
+  )))
+}
+
+  {( 
+         !loading && EbRoomReading && EbRoomReading.length === 0 &&
+            <View style={styles.centerContainer}>
+              <Image source={EmptyState} style={styles.image} />
+              <Text style={styles.noFloorText}>No Room Readings are there!</Text>
+      
+              
+            </View>
+          )}
+
       </ScrollView>
 
       {/* Floating Filter Button */}
-      <TouchableOpacity style={styles.fab}  onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
+      {
+       !loading &&  EbRoomReading && EbRoomReading.length > 0 &&
+       (
+<TouchableOpacity style={styles.fab}  onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
+       )
+      }
+      
      </>
      }
       
@@ -357,6 +439,7 @@ export default function Electricity({ navigation }) {
         </View>
       )}
     </View>
+    </>
   );
 }
 
@@ -526,6 +609,26 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     paddingVertical: 8,
     height: 100
+  },
+
+     centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 80,
+  },
+
+  image: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+
+  noFloorText: {
+    fontSize: 16,
+    color: "#777",
+    marginTop: 10,
   },
   
 });
