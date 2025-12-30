@@ -24,6 +24,8 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
     const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+    const [bookedItems,setBookedItems] = useState("")
+    console.log("bookedItems",bookedItems)
     useEffect(() => {
         if (selectTap) {
             selectTap(!showInactiveSheet);
@@ -86,6 +88,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
             <InactiveTenantSheet
                 visible={showInactiveSheet}
                 onClose={() => setShowInactiveSheet(false)}
+                bookedItems={bookedItems}
             />
         );
     }
@@ -166,6 +169,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
           onPress={() => {
             setMenuOpen(null);
             onClose();
+            setBookedItems(item)
             setTimeout(() => setShowInactiveSheet(true), 250);
           }}
         >
@@ -237,6 +241,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
             <InactiveTenantSheet
                 visible={showInactiveSheet}
                 onClose={() => setShowInactiveSheet(false)}
+                bookedItems={bookedItems}
             />
 
         </>

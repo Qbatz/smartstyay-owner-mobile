@@ -44,6 +44,19 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
       else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
     },
   });
+  const handleConfirmDelete = async () => {
+  if (!selectedBed?.bedId) return;
+
+  const res = await deleteBed(selectedBed.bedId);
+
+  if (res?.success) {
+    setShowDeletePopup(false);
+    onClose();
+  } else {
+    alert(res?.message || "Delete failed");
+  }
+};
+
 
   if (!visible) return null;
 
@@ -120,12 +133,7 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
 
                   <TouchableOpacity
                     style={styles.deleteBtn}
-                  onPress={() => {
-  if (!selectedBed?.id) return;
-  onDeleteBed(selectedBed.id);
-  setShowDeletePopup(false);
-  onClose();
-}}
+               onPress={handleConfirmDelete}
 
                   >
                     <Text style={styles.deleteButton}>Delete</Text>

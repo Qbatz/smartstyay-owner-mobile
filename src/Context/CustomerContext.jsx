@@ -552,6 +552,67 @@ const bookedCheckInCustomer = async (customerId, payload) => {
     };
   }
 };
+const initializeCancelBooking = async (customerId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      `/v2/bookings/initialize/cancel/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Initialize cancel failed" };
+  } catch (error) {
+    console.log("INIT CANCEL ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Initialize cancel failed",
+    };
+  }
+};const cancelBooking = async (customerId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.put(
+      `/v2/bookings/cancel/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Cancel booking failed" };
+  } catch (error) {
+    console.log("CANCEL BOOKING ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Cancel booking failed",
+    };
+  }
+};
+
+
 
   return (
     <CustomerContext.Provider
@@ -568,7 +629,8 @@ const bookedCheckInCustomer = async (customerId, payload) => {
          changeBedCustomer, 
          getCustomerDetails,
          moveToNoticePeriod,
-         bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,initializeCheckIn,bookedCheckInCustomer
+         bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking
       }}
     >
       {children}

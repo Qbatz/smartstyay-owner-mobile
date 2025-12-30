@@ -1052,6 +1052,8 @@ export default function TenantsScreen({ route }) {
       <InactiveTenantSheet
         visible={showInactiveSheet}
         onClose={() => setShowInactiveSheet(false)}
+        selectedItem={selectedItem}
+        onSuccess={handleCheckoutSuccess}
       />
       {
         showCheckout &&

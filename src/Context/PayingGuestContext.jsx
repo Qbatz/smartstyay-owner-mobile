@@ -221,7 +221,7 @@ export const FloorProvider = ({ children }) => {
       };
     }
   };
-  const deleteBed = async (bedId) => {
+   const deleteBed = async (bedId) => {
     try {
       const token = await retriveData("token");
       console.log("DELETE BED TOKEN 👉", token); // 🔥 ADD THIS
@@ -241,6 +241,26 @@ export const FloorProvider = ({ children }) => {
       };
     }
   };
+  // const deleteBed = async (bedId) => {
+  //   try {
+  //     const token = await retriveData("token");
+  //     console.log("DELETE BED TOKEN 👉", token); // 🔥 ADD THIS
+
+  //     const res = await api.delete(`/v2/bed/${bedId}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+
+  //     return { success: true, data: res.data };
+  //   } catch (err) {
+  //     console.log("Delete Bed API error 👉", err?.response?.data);
+  //     return {
+  //       success: false,
+  //       message: err?.response?.data || "Bed delete failed",
+  //     };
+  //   }
+  // };
 
 
   const updateBed = async ({ bedId, bedName, amount }) => {
