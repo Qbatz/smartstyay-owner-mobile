@@ -1,5 +1,5 @@
 
-import React , {useState,useRef,useEffect} from "react";
+import React , {useState,useRef,useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -12,8 +12,14 @@ ScrollView,Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
+import { CommonContexts } from "../../Context/CommonContext";
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import { UseSetting } from "../../Context/SettingContext";
+import Loader from "../Loader/Loader"
+
 import Profile from "../../Assets/Images/Avatar.png";
 import FilterIcon from "../../Assets/Images/filter.png";
+import EmptyState from "../../Assets/Images/Empty_state.png"
 import AddComplaint from "../../Assets/Images/add-circle.png";
 import ComplaintDetails from "../Complaints/ViewCompliance";
 import AssignBottomSheet from "../Complaints/AssignCompliance";
@@ -21,9 +27,16 @@ import CommentBottomSheet from "../Complaints/CommentBox";
 import ChangeStatus from "../Complaints/ComplianceStatus";
 
 export default function Complaints({ route }) {
-  // const navigation = useNavigation();
 
-  // ---------- STATES ----------
+
+  const {loading,  complaintsList, complaintListOtherDetails,GetComplaintListDetails , 
+          complaintTypes , fetchComplaintTypes} = useContext(ComplaintContext);
+           const { activeHostelId } = useContext(CommonContexts);
+             const { getUsersByHostel, } = UseSetting();
+
+           console.log("complaintsList", complaintsList);
+           
+
   const [showSheet, setShowSheet] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
@@ -35,13 +48,38 @@ export default function Complaints({ route }) {
   const [showStatusSheet, setShowStatusSheet] = useState(false);
 
 
-  const { setShowTabBar } = route.params
+   const { setShowTabBar } = route.params
    const navigation = useNavigation();
    const [showFilter, setShowFilter] = useState(false);
    const [status, setStatus] = useState("All");
    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+   const [users, setUsers] = useState([])
+
+   useEffect(() => {
+    if(activeHostelId){
+  GetComplaintListDetails(activeHostelId);
+    }
+}, [activeHostelId]);
+
+
+ useEffect(() => {
+    if (!activeHostelId) return;
+
+    loadUsers();
+  }, [activeHostelId]);
+
+  const loadUsers = async () => {
+    const res = await getUsersByHostel(activeHostelId);
+
+
+    if (res.success) {
+      setUsers(res?.data);
+    }
+  };
+
+  console.log("users", users);
+  
    
-// FILTER ANIMATION
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 const filterTranslateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -92,93 +130,34 @@ useEffect(() => {
   }
 }, [showFilter]);
 
-  const complaintsData = [
-    {
-      id: "1",
-      title: "AC Problem",
-      user: "Rajeshkumar-204-A",
-      time: "02 Hours ago",
-      status: "+ Assign",
-      statusColor: "#1D5DFF",
-    },
-    {
-      id: "2",
-      title: "Water Leakage, Power Issue",
-      user: "Parthiban-203-C",
-      time: "Yesterday",
-      status: "+ Assign",
-      statusColor: "#1D5DFF",
-    },
-    {
-      id: "3",
-      title: "Washing machine Problem",
-      user: "Meeran-103-C",
-      time: "03 Jun 2025",
-      status: "+ Assign",
-      statusColor: "#1D5DFF",
-    },
-    {
-      id: "4",
-      title: "Washing machine Problem",
-      user: "Meeran-103-C",
-      time: "04 Jun 2025",
-      status: "Pending",
-      statusColor: "#D17800",
-    },
-    {
-      id: "5",
-      title: "Power Issue",
-      user: "Meeran-103-C",
-      time: "04 Jun 2025",
-      status: "Resolved",
-      statusColor: "#2BAE66",
-    },
+  const getStatusColor = (assigneeName) => {
+  switch (assigneeName) {
+    case "PENDING":
+      return "#D17800";
+    case "RESOLVED":
+      return "#2BAE66";
+    case "ASSIGNED":
+      return "#1D5DFF";
+    default:
+      return "#6B7280";
+  }
+};
 
-     {
-      id: "6",
-      title: "Washing machine Problem",
-      user: "Meeran-103-C",
-      time: "04 Jun 2025",
-      status: "Pending",
-      statusColor: "#D17800",
-    },
-    {
-      id: "7",
-      title: "AC Issue",
-      user: "Ruban-103-4",
-      time: "04 Jun 2025",
-      status: "Resolved",
-      statusColor: "#2BAE66",
-    },
-       {
-      id: "8",
-      title: "TV Issue",
-      user: "Clindon-103-C",
-      time: "04 Jun 2025",
-      status: "Resolved",
-      statusColor: "#2BAE66",
-    },
+const formatDate = (date) => {
+  if (!date) return "";
+  return date; 
+};
 
-       {
-      id: "9",
-      title: "Power Issue",
-      user: "Meeran-103-C",
-      time: "04 Jun 2025",
-      status: "Resolved",
-      statusColor: "#2BAE66",
-    },
-       {
-      id: "10",
-      title: "Power Issue",
-      user: "Meeran-103-C",
-      time: "04 Jun 2025",
-      status: "Resolved",
-      statusColor: "#2BAE66",
-    },
-  ]
 
  const handleReset = () => {
     setStatus("All")
+ }
+
+ const handleComplaintDetails = (item) => {
+  console.log("item", item);
+  
+     setSelectedComplaint(item)
+      setShowSheet(true);
  }
 
   const handleAddComplaint = () => {
@@ -239,39 +218,55 @@ useEffect(() => {
   
 
 
-  const renderItem = ({ item }) => (
+ const renderItem = ({ item }) => {
+  const userText = `${item.customerName}${item.roomName ? "-" + item.roomName : ""}${item.bedName ? "-" + item.bedName : ""}`;
+
+  return (
     <View style={styles.card}>
-      <TouchableOpacity style={{ flex: 1 }}  onPress={() => {
-              setSelectedComplaint(item);
-              setShowSheet(true);
-            }}>
-        <Text style={styles.title}>{item.title}</Text>
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        onPress={() => {handleComplaintDetails(item)}}
+      >
+        <Text style={styles.title}>
+          {item.complaintTypeName}
+        </Text>
 
         <View style={styles.row}>
-        
-            <Image source={Profile} style={styles.userIcon} />
-        
-
-          <Text style={styles.user}>{item.user}</Text>
+          <Image source={Profile} style={styles.userIcon} />
+          <Text style={styles.user}>{userText}</Text>
         </View>
       </TouchableOpacity>
 
       <View style={styles.rightSection}>
-        <Text style={styles.time}>{item.time}</Text>
+        <Text style={styles.time}>
+          {formatDate(item.complaintDate)}
+        </Text>
 
-        <TouchableOpacity onPress={() => {
-              setShowAssignSheet(true);
-              setShowSheet(false);
-            }}>
-          <Text style={[styles.status, { color: item.statusColor }]}>
-            {item.status}
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedComplaint(item);
+            setShowAssignSheet(true);
+            setShowSheet(false);
+          }}
+        >
+          <Text
+            style={[
+              styles.status,
+              { color: getStatusColor(item.assigneeName) },
+            ]}
+          >
+            {item?.assigneeName === "" ? "+ Assign" : item?.assigneeName}
           </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
+};
+
 
   return (
+    <>
+     { loading && <Loader />}
     <View style={styles.container}>
       
       {/* Search Box */}
@@ -291,13 +286,24 @@ useEffect(() => {
       </View>
 
       {/* Listing */}
-      <FlatList
-        data={complaintsData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+     <FlatList
+  data={complaintsList}
+  keyExtractor={(item) => item.complaintId.toString()}
+  renderItem={renderItem}
+  showsVerticalScrollIndicator={false}
+/>
 
+{ !loading && complaintsList &&  complaintsList?.length === 0 && (
+   <View style={styles.centerContainer}>
+               <Image source={EmptyState} style={styles.image} />
+               <Text style={styles.nodataText}>No Complaints are there!</Text>
+       
+               
+             </View>
+)}
+
+ {!loading &&  complaintsList && complaintsList?.length > 0 &&
+       <>
 
       <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
         <Image
@@ -307,14 +313,14 @@ useEffect(() => {
 
       </TouchableOpacity>
 
-      {/* ADD BTN */}
       <TouchableOpacity
         style={styles.addBtn}
         onPress={handleAddComplaint}
       >
         <Image source={AddComplaint} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
-
+      </>
+       }
 
      
 
@@ -327,13 +333,17 @@ useEffect(() => {
         complaint={selectedComplaint}
         onOpenAssignSheet={() => setShowAssignSheet(true)}
         onOpenCommentSheet={() => setShowCommentSheet(true)}
-        onOpenStatusSheet={() => setShowStatusSheet(true)}
+         onOpenStatusSheet={(complaint) => {
+         setSelectedComplaint(complaint);
+         setShowStatusSheet(true);
+  }}
       />
 
       {/* Assign Sheet */}
       <AssignBottomSheet
         visible={showAssignSheet}
         onClose={() => setShowAssignSheet(false)}
+        complaint={selectedComplaint}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         onAssignDone={() => {
@@ -355,9 +365,7 @@ useEffect(() => {
       <ChangeStatus
         visible={showStatusSheet}
         onClose={() => setShowStatusSheet(false)}
-        selectedStatus={selectedStatus}
-        setSelectedStatus={setSelectedStatus}
-        onStatusUpdate={() => setShowStatusSheet(false)}
+        complaint={selectedComplaint}
       />
 
          {showFilter && (
@@ -441,6 +449,7 @@ useEffect(() => {
 
 
     </View>
+    </>
   );
 }
 
@@ -671,6 +680,26 @@ dropdownItemText: {
   fontSize: 14,
   color: "#111",
 },
+     centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 80,
+  },
+
+  image: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+
+  nodataText: {
+    fontSize: 16,
+    color: "#777",
+    marginTop: 10,
+  },
+  
 
 
 });

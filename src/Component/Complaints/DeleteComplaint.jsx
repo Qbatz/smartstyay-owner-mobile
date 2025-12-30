@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState , useCallback , useContext } from "react";
 import {
   View,
   Text,
@@ -8,22 +8,27 @@ import {
   BackHandler,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import { CommonContexts } from "../../Context/CommonContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
+
+export default function DeleteComplaintModal({visible, onClose,complaintId, onSuccess,}) {
 
 
-export default function DeleteComplaintModal({
-  visible,
-  onClose,
+        const { deleteComplaint } = useContext(ComplaintContext);
+        const { activeHostelId } = useContext(CommonContexts);
 
-}) {
+        console.log("complaintId", complaintId);
 
+        const [showSuccessModal, setShowSuccessModal] = useState(false);
+        const [modalMessage, setModalMessage] = useState("");
+        const [modalType, setModalType] = useState("success");
+        const [complaint_error, setComplaintError] = useState("")
 
-
-
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-
-        console.log("Back Pressed - Modal Visible:", visible);
+    useFocusEffect(
+       useCallback(() => {
+        const onBackPress = () => {
 
         if (visible) {
           onClose();
@@ -42,17 +47,37 @@ export default function DeleteComplaintModal({
     }, [visible])
   );
 
+  
+  const handleDelete = async () => {
+    const res = await deleteComplaint(complaintId, activeHostelId);
+
+    if (res.success) {
+      setModalType("success");
+      setModalMessage(res.data || "Complaint Deleted successfully");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+         onClose();
+      }, 800);
+     
+    } else {
+      setComplaintError("Something went wrong")
+    }
+  };
+
 
 
   return (
+
     <>
-
-     
-
+          <SuccessModal
+           visible={showSuccessModal}
+           onClose={() => setShowSuccessModal(false)}
+           message={modalMessage}
+           type={modalType}
+          />
     
-     
-
-
   <Modal
     transparent
     animationType="fade"
@@ -66,6 +91,8 @@ export default function DeleteComplaintModal({
         <Text style={styles.deleteSub}>
           Are you sure you want to delete this Complaint ?
         </Text>
+
+        {complaint_error && <ErrorMessage message={complaint_error} type="error" />}
  
         <View style={styles.deleteBtnRow}>
           <TouchableOpacity
@@ -77,7 +104,7 @@ export default function DeleteComplaintModal({
  
           <TouchableOpacity
             style={styles.deleteBtn}
-            onPress={onClose}
+            onPress={handleDelete}
           >
             <Text style={styles.deleteBtnText}>Delete</Text>
           </TouchableOpacity>
@@ -86,10 +113,7 @@ export default function DeleteComplaintModal({
       </View>
     </View>
   </Modal>
-
-
-      
-
+  
     </>
   );
 }

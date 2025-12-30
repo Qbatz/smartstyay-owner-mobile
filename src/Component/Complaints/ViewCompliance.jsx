@@ -38,7 +38,9 @@ export default function ComplaintDetails({
    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
+ 
+  console.log("complaint", complaint);
+  
   
   const panResponder = useRef(
     PanResponder.create({
@@ -130,15 +132,15 @@ export default function ComplaintDetails({
         {/* Header */}
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.title}>{complaint.title}</Text>
-            <Text style={styles.time}>{complaint.time}</Text>
+            <Text style={styles.title}>{complaint?.complaintTypeName}</Text>
+            <Text style={styles.time}>{complaint?.complaintDate}</Text>
           </View>
 
           <View style={styles.iconRow}>
             <TouchableOpacity  onPress={() => navigation.navigate("AddComplaint", {
-    mode: "edit",
-   
-  })}>
+  mode: "edit",
+  data: complaint,   
+})}>
               <Image source={Edit} style={styles.icon} />
             </TouchableOpacity>
 
@@ -159,20 +161,20 @@ export default function ComplaintDetails({
 
           <View>
             <Text style={styles.userName}>
-              {complaint.user.split("-")[0]}
+              {complaint?.customerName}
             </Text>
 
             <View style={styles.infoRow}>
-              <Text style={styles.floorTag}>Ground Floor</Text>
+              <Text style={styles.floorTag}>{complaint?.floorName}</Text>
 
               <Image source={room} style={styles.roomIcon} />
               <Text style={styles.roomValue}>
-                {complaint.user.split("-")[1]}
+                {complaint?.roomName}
               </Text>
 
               <Image source={Bed} style={styles.bedIcon} />
               <Text style={styles.bedValue}>
-                {complaint.user.split("-")[2]}
+                  {complaint?.bedName}
               </Text>
             </View>
           </View>
@@ -182,27 +184,27 @@ export default function ComplaintDetails({
         <View style={styles.rowBetween}>
           <View>
             <Text style={styles.labelSmall}>Request ID</Text>
-            <Text style={styles.boldText}>C00371</Text>
+            <Text style={styles.boldText}>{complaint?.complaintId} </Text>
           </View>
 
           <View>
             <Text style={styles.labelSmall}>Assigned to</Text>
-            <Text style={styles.boldText}>----</Text>
+            <Text style={styles.boldText}>{complaint?.assigneeName || "N/A"}</Text>
           </View>
         </View>
 
         {/* Status */}
         <Text style={styles.sectionTitle}>Status</Text>
-        <Text style={styles.value}>Yet to assign</Text>
+        <Text style={styles.value}>{complaint?.status === null ? "Open" : complaint?.status}</Text>
 
         {/* Type */}
         <Text style={styles.sectionTitle}>Complaint type</Text>
-        <Text style={styles.value}>{complaint.title}</Text>
+        <Text style={styles.value}> {complaint?.complaintTypeName}</Text>
 
         {/* Description */}
         <Text style={styles.sectionTitle}>Description</Text>
         <Text style={styles.value}>
-          AC was not working properly till morning
+          {complaint?.description}
         </Text>
 
         {/* Comment */}
@@ -240,10 +242,10 @@ export default function ComplaintDetails({
 
           <TouchableOpacity
             style={styles.statusBtn}
-            onPress={() => {
+             onPress={() => {
               handleCloseSheet();
-              setTimeout(onOpenStatusSheet, 200);
-            }}
+              setTimeout(() => onOpenStatusSheet(complaint), 200)
+                }}
           >
             <Image source={Exchange} style={styles.assignIcon} />
             <Text style={styles.statusText}>Change Status</Text>
@@ -255,7 +257,13 @@ export default function ComplaintDetails({
       {deleteshow && (
         <DeleteComplaint
           visible={deleteshow}
-          onClose={() => setDeleteShow(false)}
+           complaintId={complaint.complaintId}
+    onClose={() => setDeleteShow(false)}
+    onSuccess={(msg) => {
+      setDeleteShow(false);
+      handleCloseSheet(); 
+      alert(msg);
+    }}
         />
       )}
     </>
