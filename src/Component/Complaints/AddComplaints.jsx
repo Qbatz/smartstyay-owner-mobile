@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useContext , useRef  , useCallback} from "react";
 import {
   View,
   Text,
@@ -9,55 +9,194 @@ import {
   Image,
   BackHandler,Modal , TouchableWithoutFeedback
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute , useFocusEffect } from "@react-navigation/native";
+import { CommonContexts } from "../../Context/CommonContext";
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import { CustomerContext } from "../../Context/CustomerContext";
+
+import Loader from "../Loader/Loader"
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
+import { Calendar } from "react-native-calendars";
+
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
+import DownArrow from "../../Assets/Images/direction-down.png";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
 export default function AddComplaint() {
+
+  const { AddComplaint , loading , fetchComplaintTypes ,complaintTypes , EditComplaint} = useContext(ComplaintContext);
+
+   const { activeHostelId } = useContext(CommonContexts);
+
+   const { getCustomersByHostel} = useContext(CustomerContext)
+
+   console.log("complainttype", complaintTypes);
+
+
   const navigation = useNavigation();
   const route = useRoute();
   const { mode, data } = route.params || {};
 
-  // ---------- STATIC ROOM DATA ----------
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
+
+      const [selectedCustomer, setSelectedCustomer] = useState(null);
+      
+    const [CustomerOptions , setCustomerOptions] = useState([])
+    
+
   const [floor] = useState("Ground");
   const [room] = useState("10-A");
   const [bed] = useState("A1");
 
-  // ---------- DATE ----------
   const [date, setDate] = useState(new Date());
   const [showDate, setShowDate] = useState(false);
   const [openDate, setOpenDate] = useState(false);
-const [complaintDate, setComplaintDate] = useState(new Date());
+const [complaintDate, setComplaintDate] = useState(null);
 
+    const [openComplaintDatePic, setComplaintDatePic] = useState(false);
+    const [userErrmsg, setUserErrmsg] = useState("");
+const [complaintTypeErrmsg, setComplaintTypeErrmsg] = useState("");
+const [dateErrmsg, setDateErrmsg] = useState("");
+const [totalErrmsg, setTotalErrmsg] = useState("");
 
-  // ---------- DROPDOWN STATES ----------
+const [ctypeOpen, setCtypeOpen] = useState(false);
+const [selectedComplaintType, setSelectedComplaintType] = useState(null);
+const [initialEditState, setInitialEditState] = useState(null);
+
   const [customerOpen, setCustomerOpen] = useState(false);
   const [customer, setCustomer] = useState(null);
-  const customerList = ["Suresh", "Ravi"];
 
-  const [ctypeOpen, setCtypeOpen] = useState(false);
   const [complaintType, setComplaintType] = useState(null);
-  const complaintTypes = ["EB", "AC", "Gym", "Washing Machine"];
 
-  // ---------- OTHER ----------
   const [description, setDescription] = useState("");
+
+    const blockedStatus = [
+  "Vacated",
+  "Booked",
+  "Inactive",
+  "Settlement Generated",
+];
 
   const closeAll = () => {
     setCustomerOpen(false);
     setCtypeOpen(false);
   };
 
-  useEffect(() => {
-    if (mode === "edit" && data) {
-      setCustomer(data.customer);
-      setComplaintType(data.complaintType);
-      setDescription(data.description);
-      setDate(new Date(data.date));
+  // useEffect(() => {
+  //   if (mode === "edit" && data) {
+  //     setCustomer(data.customer);
+  //     setComplaintType(data.complaintType);
+  //     setDescription(data.description);
+  //     setDate(new Date(data.date));
+  //   }
+  // }, [mode, data]);
+
+
+ useEffect(() => {
+  if (mode === "edit" && data) {
+
+    const formattedDate = data.complaintDate
+      ? dayjs(data.complaintDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+      : null;
+
+    // CUSTOMER
+    setSelectedCustomer({
+      customerId: data.customerId,
+      fullName: data.customerName,
+      floorId: data.floorId,
+      floorName: data.floorName,
+      roomId: data.roomId,
+      roomName: data.roomName,
+      bedId: data.bedId,
+      bedName: data.bedName,
+      actualJoining: data.complaintDate,
+    });
+
+    // COMPLAINT TYPE
+    const matchedType = complaintTypes?.find(
+      (t) => t.raw.complaintTypeId === data.complaintTypeId
+    );
+    setSelectedComplaintType(matchedType || null);
+
+    // DATE + DESC
+    setComplaintDate(formattedDate);
+    setDescription(data.description || "");
+
+    // ✅ INITIAL STATE (VERY IMPORTANT)
+    setInitialEditState({
+      complaintDate: formattedDate,
+      description: data.description || "",
+    });
+  }
+}, [mode, data, complaintTypes]);
+
+
+const hasEditChanges = () => {
+  if (!initialEditState) return false;
+
+  const currentDate = complaintDate || "";
+  const currentDesc = description?.trim() || "";
+
+  const initialDate = initialEditState.complaintDate || "";
+  const initialDesc = initialEditState.description?.trim() || "";
+
+  return currentDate !== initialDate || currentDesc !== initialDesc;
+};
+
+
+const handleDateChange = (dateString) => {
+  setComplaintDate(dateString);
+  setDateErrmsg("");
+
+  if (totalErrmsg) setTotalErrmsg("");
+};
+
+
+const handleDescriptionChange = (text) => {
+  setDescription(text);
+
+  if (totalErrmsg) setTotalErrmsg("");
+};
+
+
+
+   useFocusEffect(
+      useCallback(() => {
+        if (activeHostelId) {
+          fetchCustomers();
+        }
+      }, [activeHostelId])
+    );
+  
+
+const fetchCustomers = async () => {
+  const data = await getCustomersByHostel(activeHostelId);
+
+  const filtered = Array.isArray(data)
+    ? data.filter(
+        (u) =>
+          u.floorId &&
+          u.roomId &&
+          !blockedStatus.includes(u.currentStatus)
+      )
+    : [];
+
+  setCustomerOptions(filtered);
+};
+
+    useEffect(()=> {
+    if(activeHostelId){
+      fetchComplaintTypes(activeHostelId)
     }
-  }, [mode, data]);
+  },[activeHostelId])
+
+     console.log("CustomerOptions", CustomerOptions);
 
   useEffect(() => {
     const back = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -67,12 +206,204 @@ const [complaintDate, setComplaintDate] = useState(new Date());
     return () => back.remove();
   }, []);
 
+
+
+
+
   const handleSubmit = () => {
     console.log("Submitted");
     navigation.goBack();
   };
 
-  // ------------------- REUSABLE DROPDOWN FIELD -------------------
+    const today = dayjs();
+  
+      const isDisabledReadingDate = (d) => {
+    if (!d) return false;
+  
+    if (d.isAfter(today, "day")) return true;
+  
+    return false;
+  };
+  
+  
+     const readingMarkedDates = {};
+  
+  for (let i = -180; i <= 180; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
+  
+    if (isDisabledReadingDate(d)) {
+      readingMarkedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
+        },
+      };
+    }
+  }
+
+ const isDateDisabled = (dateString) => {
+  const current = dayjs(dateString, "YYYY-MM-DD");
+
+  if (!selectedCustomer) return true;
+
+  if (current.isAfter(dayjs(), "day")) return true;
+
+  if (selectedCustomer.actualJoining) {
+    const joining = dayjs(
+      selectedCustomer.actualJoining,
+      "DD/MM/YYYY"
+    );
+    if (current.isBefore(joining, "day")) return true;
+  }
+
+  return false;
+};
+
+
+const markedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDateDisabled(key)) {
+    markedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+
+  const onSelectCustomer = (item) => {
+  setCustomer(item.customerName);
+  setSelectedCustomer(item); 
+  setUserErrmsg("");
+};
+
+
+
+
+  
+
+
+const handleSubmitComplaint = async () => {
+
+  setUserErrmsg("");
+  setComplaintTypeErrmsg("");
+  setDateErrmsg("");
+  setTotalErrmsg("");
+
+  // ---------------- EDIT MODE ----------------
+  if (mode === "edit") {
+
+    // ❌ NO CHANGES
+    if (!hasEditChanges()) {
+      setTotalErrmsg("No changes detected");
+      return;
+    }
+
+    // ❌ DATE REQUIRED
+    if (!complaintDate) {
+      setDateErrmsg("Please select complaint date");
+      return;
+    }
+
+    const updatePayload = {
+      complaintId: data.complaintId,
+      complaintDate: dayjs(complaintDate).format("DD/MM/YYYY"),
+      description: description || "",
+      hostelId: activeHostelId,
+    };
+
+    const res = await EditComplaint(updatePayload);
+
+    if (res.success) {
+      setModalType("success");
+      setModalMessage(res.message || "Complaint updated successfully");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        navigation.goBack();
+      }, 800);
+    } else {
+      setTotalErrmsg(res.message || "Something went wrong");
+    }
+
+    return;
+  }
+
+  // ---------------- ADD MODE ----------------
+  let isValid = true;
+
+  if (!selectedCustomer) {
+    setUserErrmsg("Please select customer");
+    isValid = false;
+  }
+
+  if (!selectedComplaintType) {
+    setComplaintTypeErrmsg("Please select complaint type");
+    isValid = false;
+  }
+
+  if (!complaintDate) {
+    setDateErrmsg("Please select complaint date");
+    isValid = false;
+  }
+
+  if (!isValid) return;
+
+  const payload = {
+    customerId: selectedCustomer.customerId,
+    complaintTypeId: selectedComplaintType.raw.complaintTypeId,
+    floorId: selectedCustomer.floorId,
+    roomId: selectedCustomer.roomId,
+    bedId: selectedCustomer.bedId,
+    complaintDate: dayjs(complaintDate).format("DD/MM/YYYY"),
+    description: description || "",
+    hostelId: activeHostelId,
+  };
+
+  const res = await AddComplaint(payload);
+
+  if (res.success) {
+    setModalType("success");
+    setModalMessage(res.message || "Complaint added successfully");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      navigation.goBack();
+    }, 800);
+  } else {
+    setTotalErrmsg(res.message);
+  }
+};
+
+
+
+
+
   const renderDropdown = (label, selected, open, setOpen, list, onSelect) => (
     <>
       <View style={{ flexDirection: "row", marginTop: 18 }}>
@@ -128,8 +459,18 @@ const [complaintDate, setComplaintDate] = useState(new Date());
   );
 
   return (
+
+    <>
+        <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
+   
+   
+
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={ArrowLeft} style={styles.backIcon} />
@@ -139,61 +480,237 @@ const [complaintDate, setComplaintDate] = useState(new Date());
         </Text>
       </View>
 
-      {/* MAIN CONTENT */}
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
-        scrollEnabled={!customerOpen && !ctypeOpen} // 🔥 prevents page shaking
+        scrollEnabled={!customerOpen && !ctypeOpen} 
       >
-        {/* CUSTOMER */}
-        {renderDropdown(
-          "Customer",
-          customer,
-          customerOpen,
-          setCustomerOpen,
-          customerList,
-          setCustomer
-        )}
+   
 
-        {/* COMPLAINT TYPE */}
-        {renderDropdown(
-          "Complaint Type",
-          complaintType,
-          ctypeOpen,
-          setCtypeOpen,
-          complaintTypes,
-          setComplaintType
-        )}
-
-        {/* FLOOR */}
-        <Text style={styles.label}>Floor *</Text>
-        <TextInput style={styles.inputBox} value={floor} editable={false} />
-
-        {/* ROOM */}
-        <Text style={styles.label}>Room *</Text>
-        <TextInput style={styles.inputBox} value={room} editable={false} />
-
-        {/* BED */}
-        <Text style={styles.label}>Bed *</Text>
-        <TextInput style={styles.inputBox} value={bed} editable={false} />
-
-        {/* DATE */}
-      <Text style={styles.label}>Complaint Date *</Text>
+         <Text style={styles.label}>
+  Customer <Text style={{ color: "red" }}>*</Text>
+</Text>
 
 <TouchableOpacity
-  style={styles.dateBox}
-  onPress={() => setOpenDate(true)}
+  style={styles.selectBox}
+  disabled={mode === "edit"}
+  onPress={() => {
+    setCustomerOpen(!customerOpen);
+    setCtypeOpen(false);
+  }}
 >
-  <Text style={styles.inputText}>
-    {dayjs(complaintDate).format("DD-MM-YYYY")}
+  <Text style={styles.selectedText}>
+    {selectedCustomer?.fullName || "Select Customer"}
   </Text>
-  <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+  <Text style={styles.arrow}>⌄</Text>
+</TouchableOpacity>
+
+{customerOpen && (
+  <View style={styles.dropdownMenu}>
+    <ScrollView nestedScrollEnabled>
+     {CustomerOptions.map((item) => {
+  const isSelected =
+    selectedCustomer?.customerId === item.customerId;
+
+  return (
+    <TouchableOpacity
+      key={item.customerId}
+      style={[
+        styles.dropdownOption,
+        isSelected && styles.dropdownOptionSelected,
+      ]}
+      onPress={() => {
+        setSelectedCustomer(item);
+        setCustomerOpen(false);
+        setUserErrmsg("");
+      }}
+    >
+      <Text
+        style={[
+          styles.optionText,
+          isSelected && styles.optionTextSelected,
+        ]}
+      >
+        {item.fullName}
+      </Text>
+    </TouchableOpacity>
+  );
+})}
+
+    </ScrollView>
+  </View>
+)}
+
+{userErrmsg && <ErrorMessage message={userErrmsg} type="error" />}
+
+
+      
+      <Text style={styles.label}>
+  Complaint Type <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  style={styles.selectBox}
+  disabled={mode === "edit"}
+  onPress={() => {
+    setCtypeOpen(!ctypeOpen);
+    setCustomerOpen(false);
+  }}
+>
+  <Text style={styles.selectedText}>
+    {selectedComplaintType?.raw?.complaintTypeName || "Select Complaint Type"}
+  </Text>
+  <Text style={styles.arrow}>⌄</Text>
+</TouchableOpacity>
+
+{ctypeOpen && (
+  <View style={styles.dropdownMenu}>
+    <ScrollView nestedScrollEnabled>
+     {complaintTypes.map((item) => {
+  const isSelected =
+    selectedComplaintType?.raw?.complaintTypeId ===
+    item.raw.complaintTypeId;
+
+  return (
+    <TouchableOpacity
+      key={item.raw.complaintTypeId}
+      style={[
+        styles.dropdownOption,
+        isSelected && styles.dropdownOptionSelected,
+      ]}
+      onPress={() => {
+        setSelectedComplaintType(item);
+        setCtypeOpen(false);
+        setComplaintTypeErrmsg("");
+      }}
+    >
+      <Text
+        style={[
+          styles.optionText,
+          isSelected && styles.optionTextSelected,
+        ]}
+      >
+        {item.raw.complaintTypeName}
+      </Text>
+    </TouchableOpacity>
+  );
+})}
+
+    </ScrollView>
+  </View>
+)}
+
+{complaintTypeErrmsg && (
+  <ErrorMessage message={complaintTypeErrmsg} type="error" />
+)}
+
+
+<Text style={styles.label}>Floor </Text>
+<TextInput
+  style={styles.inputBox}
+  value={selectedCustomer?.floorName || ""}
+  editable={false}
+  placeholder="Select Floor"
+/>
+
+<Text style={styles.label}>Room </Text>
+<TextInput
+  style={styles.inputBox}
+  value={selectedCustomer?.roomName || ""}
+  editable={false}
+  placeholder="Select Room"
+/>
+
+<Text style={styles.label}>Bed </Text>
+<TextInput
+  style={styles.inputBox}
+  value={selectedCustomer?.bedName || ""}
+  editable={false}
+  placeholder="Select Bed"
+/>
+
+
+ <Text style={styles.sheetLabel}>
+ Complaint Date  <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => setComplaintDatePic(true)}
+>
+  <View style={styles.dateInputWrapper}>
+    <TextInput
+      style={styles.dateInput}
+      placeholder="DD-MM-YYYY"
+      value={
+        complaintDate
+          ? dayjs(complaintDate).format("DD-MM-YYYY")
+          : ""
+      }
+      editable={false}
+      pointerEvents="none"
+    />
+
+    <Image
+      source={CalendarIcon}
+      style={{ width: 20, height: 20 }}
+    />
+  </View>
 </TouchableOpacity>
 
 
-        {/* DESCRIPTION */}
+
+{dateErrmsg && <ErrorMessage message={dateErrmsg} type="error" />}
+
+
+ {openComplaintDatePic && (
+  <View style={styles.dateOverlay}>
+    <TouchableWithoutFeedback onPress={() => setComplaintDatePic(false)}>
+      <View style={styles.overlayBg} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={markedDates}
+        current={
+          complaintDate
+            ? dayjs(complaintDate).format("YYYY-MM-DD")
+            : dayjs().format("YYYY-MM-DD")
+        }
+        
+        // onDayPress={(day) => {
+        //   if (isDateDisabled(day.dateString)) return;
+
+        //   setComplaintDate(day.dateString);
+        //   setComplaintDatePic(false);
+        //   setDateErrmsg("");
+        // }}
+
+        onDayPress={(day) => {
+  if (isDateDisabled(day.dateString)) return;
+
+  handleDateChange(day.dateString);
+  setComplaintDatePic(false);
+}}
+        theme={{
+          todayTextColor: "#2563EB",
+          selectedDayBackgroundColor: "#2563EB",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)}
+ 
+  {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
+
+
+
         <Text style={styles.label}>Description</Text>
         <TextInput
           style={styles.descriptionBox}
@@ -201,15 +718,14 @@ const [complaintDate, setComplaintDate] = useState(new Date());
           placeholderTextColor="#C3C3C3"
           multiline
           value={description}
-          onChangeText={setDescription}
+           onChangeText={handleDescriptionChange}
         />
 
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* BUTTON */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmitComplaint }>
           <Text style={styles.submitText}>
             {mode === "edit" ? "Update Complaint" : "Add Complaint"}
           </Text>
@@ -246,10 +762,10 @@ const [complaintDate, setComplaintDate] = useState(new Date());
 </Modal>
 
     </View>
+     </>
   );
 }
 
-/* ---------------------- STYLES ----------------------- */
 
 const styles = StyleSheet.create({
   container: {
@@ -269,22 +785,43 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  /* Select Box */
+   selectWrapper: { position: "relative", width: "100%", marginBottom: 18 },
+
   selectBox: {
-    height: 52,
+    height: 50,
     borderWidth: 1,
-    borderColor: "#D4D4D4",
+    borderColor: "#E0E0E0",
     borderRadius: 12,
     paddingHorizontal: 14,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
   },
 
-  selectedText: { fontSize: 15, color: "#000" },
+  selectedText: { color: "#000", fontSize: 15 },
+
+  downArrow: { width: 18, height: 18, tintColor: "#5E5E5E" },
+
+  dropdownMenu: {
+    position: "absolute",
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    zIndex: 999,
+  },
+
+  option: { padding: 14 },
+  optionText: { fontSize: 15, color: "#000" },
+
+
+
+
   arrow: { fontSize: 18, color: "#666" },
 
-  /* Dropdown Menu */
   dropdownMenu: {
     position: "absolute",
     top: 54,
@@ -388,5 +925,95 @@ datePickerBox: {
   elevation: 10,
   zIndex: 999,
 },
+
+
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
+
+
+  dateInputWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  height: 48,
+  paddingHorizontal: 12,
+  marginTop: 6,
+},
+
+dateInput: {
+  flex: 1,
+  fontSize: 14,
+  color: "#111827",
+},
+
+calendarIconWrapper: {
+  padding: 6,
+},
+
+calendarIcon: {
+  width: 20,
+  height: 20,
+  tintColor: "#6B7280",
+},
+
+newDropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 10,
+  overflow: "hidden",  
+  maxHeight: 180,      
+  zIndex: 9999,
+  elevation: 10,
+},
+
+
+newOption: {
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+},
+
+newOptionSelected: {
+  backgroundColor: "#1D5BEE",  
+},
+
+newOptionText: {
+  fontSize: 15,
+  color: "#111",
+},
+
+newOptionTextSelected: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
+
 
 });

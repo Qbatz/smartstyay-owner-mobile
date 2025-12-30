@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState , useContext } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,10 @@ import {
   Dimensions,
   BackHandler,
 } from "react-native";
-
+import { CommonContexts } from "../../Context/CommonContext";
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import { UseSetting } from "../../Context/SettingContext";
+import Loader from "../Loader/Loader"
 import DownArrow from "../../Assets/Images/direction-down.png";
 import CloseIcon from "../../Assets/Images/remove.png";
 
@@ -23,12 +26,44 @@ export default function AssignBottomSheet({
   selectedUser,
   setSelectedUser,
   onAssignDone,
+  complaint
 }) {
+
+               const { activeHostelId } = useContext(CommonContexts);
+               const { getUsersByHostel, } = UseSetting();
+               const { assignComplaint , GetComplaintListDetails } = useContext(ComplaintContext);
+
   const [dropdownVisible, setDropdownVisible] = useState(false);
+   const [users, setUsers] = useState([])
+  //  const [selectedUser, setSelectedUser] = useState(null);
+
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
+
+   useEffect(() => {
+      if (!activeHostelId) return;
+  
+      loadUsers();
+    }, [activeHostelId]);
+  
+const loadUsers = async () => {
+  const res = await getUsersByHostel(activeHostelId);
+
+  if (res.success) {
+    const mappedUsers = res.data.map((u) => ({
+      label: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+      value: u.userId,
+      raw: u, 
+    }));
+
+    setUsers(mappedUsers);
+  }
+};
+
+  
+    console.log("users", users);
 
   /** PAN HANDLER */
   const panResponder = useRef(
@@ -80,9 +115,34 @@ export default function AssignBottomSheet({
 
   if (!visible) return null;
 
+  console.log("complaint" , complaint);
+  
+
+ const handleAssign = async (userId) => {
+  if (!complaint || !userId) {
+    alert("Please select user");
+    return;
+  }
+
+  const res = await assignComplaint({
+    complaintId: complaint.complaintId,
+    userId: userId,
+  });
+
+  if (res.success) {
+    await GetComplaintListDetails(activeHostelId); 
+    alert(res.message || "Assigned Successfully");
+    onClose(); 
+  } else {
+    alert(res.message);
+  }
+};
+;
+
+
+
   return (
     <>
-      {/* Overlay */}
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={1}
@@ -110,7 +170,7 @@ export default function AssignBottomSheet({
         {/* SELECT USER DROPDOWN */}
         <View style={styles.selectWrapper}>
           <TouchableOpacity style={styles.selectBox} onPress={toggleDropdown}>
-            <Text style={styles.selectedText}>{selectedUser}</Text>
+            <Text style={styles.selectedText}> {selectedUser?.label || "Select User"}</Text>
             <Image source={DownArrow} style={styles.downArrow} />
           </TouchableOpacity>
 
@@ -121,20 +181,19 @@ export default function AssignBottomSheet({
                 nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
               >
-                {["Raja", "Kannan", "Arun", "Vijay", "Sarath", "Pravin"].map(
-                  (item) => (
-                    <TouchableOpacity
-                      key={item}
-                      style={styles.option}
-                      onPress={() => {
-                        setSelectedUser(item);
-                        setDropdownVisible(false);
-                      }}
-                    >
-                      <Text style={styles.optionText}>{item}</Text>
-                    </TouchableOpacity>
-                  )
-                )}
+               {users.map((item) => (
+  <TouchableOpacity
+    key={item.value}
+    style={styles.option}
+    onPress={() => {
+      setSelectedUser(item);
+      setDropdownVisible(false);
+    }}
+  >
+    <Text style={styles.optionText}>{item.label}</Text>
+  </TouchableOpacity>
+))}
+
               </ScrollView>
             </View>
           )}
@@ -143,10 +202,11 @@ export default function AssignBottomSheet({
         {/* SUBMIT */}
         <TouchableOpacity
           style={styles.submitBtn}
-          onPress={() => {
-            onAssignDone();
-            handleClose();
-          }}
+          // onPress={() => {
+          //   onAssignDone();
+          //   handleClose();
+          // }}
+       onPress={() => handleAssign(selectedUser?.value)}
         >
           <Text style={styles.submitText}>Assign complaint</Text>
         </TouchableOpacity>

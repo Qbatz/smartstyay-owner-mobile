@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState , useContext } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,10 @@ import {
   Dimensions,
   BackHandler,
 } from "react-native";
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import { CommonContexts } from "../../Context/CommonContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 
 import DownArrow from "../../Assets/Images/direction-down.png";
 import CloseIcon from "../../Assets/Images/remove.png";
@@ -20,11 +24,110 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function ChangeStatus({
   visible,
   onClose,
-  selectedStatus,
-  setSelectedStatus,
+  complaint,
   onStatusUpdate,
 }) {
   const [dropdownVisible, setDropdownVisible] = useState(false);
+
+
+  const { changeComplaintStatus } = useContext(ComplaintContext);
+  const { activeHostelId } = useContext(CommonContexts);
+
+   const [showSuccessModal, setShowSuccessModal] = useState(false);
+   const [modalMessage, setModalMessage] = useState("");
+   const [modalType, setModalType] = useState("success");
+
+ const STATUS_OPTIONS = [
+  { label: "Pending", value: "PENDING" },
+  { label: "Assigned", value: "ASSIGNED" },
+  { label: "Resolved", value: "RESOLVED" },
+];
+
+
+
+const [selectedStatus, setSelectedStatus] = useState(null);
+const [statusError, setStatusError] = useState("");
+
+const normalizeStatus = (status) => {
+  if (!status) return null;
+
+  return status.toString().toUpperCase();
+};
+
+
+useEffect(() => {
+  if (!visible || !complaint) return;
+
+  const normalized = normalizeStatus(complaint.status);
+
+  const match = STATUS_OPTIONS.find(
+    (s) => s.value === normalized
+  );
+
+  console.log("RAW STATUS:", complaint.status);
+  console.log("NORMALIZED:", normalized);
+  console.log("MATCHED:", match);
+
+  setSelectedStatus(match || null);
+  setStatusError("");
+}, [visible, complaint?.status]);
+
+
+
+
+
+const handleStatusUpdate = async () => {
+  const prevStatus = complaint?.status;
+
+  if (!selectedStatus) {
+    setStatusError("Please Select Status");
+    return;
+  }
+
+  if (selectedStatus.value === prevStatus) {
+    setStatusError("No Changes Detected");
+    return;
+  }
+
+  setStatusError("");
+
+  const res = await changeComplaintStatus({
+    complaintId: complaint.complaintId,
+    status: selectedStatus.value,
+    hostelId: activeHostelId,
+  });
+
+  if (res.success) {
+      setModalType("success");
+      setModalMessage(res.data || "Status Updated successfully");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+         onClose();
+      }, 800);
+  } else {
+    setStatusError(res?.message || "something went wrong");
+  }
+};
+
+
+// const handleStatusUpdate = async () => {
+//   if (!selectedStatus) return;
+
+//   const res = await updateComplaintStatus({
+//     complaintId: complaint.complaintId,
+//     status: selectedStatus.value,
+//     hostelId: activeHostelId,
+//   });
+
+//   if (res.success) {
+//     alert(res.message); 
+//   } else {
+//     alert(res.message);
+//   }
+// };
+
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -80,6 +183,13 @@ export default function ChangeStatus({
 
   return (
     <>
+ <SuccessModal
+           visible={showSuccessModal}
+           onClose={() => setShowSuccessModal(false)}
+           message={modalMessage}
+           type={modalType}
+          />
+
       {/* OVERLAY */}
       <TouchableOpacity
         style={styles.overlay}
@@ -102,15 +212,19 @@ export default function ChangeStatus({
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>Change</Text>
-
+      <Text style={styles.selectedText}>
+    Change Status <Text style={{ color: "red" }}>*</Text>
+  </Text>
         {/* SELECT BOX */}
         <View style={{ zIndex: 50 }}>
           <TouchableOpacity
             style={styles.selectBox}
             onPress={() => setDropdownVisible(!dropdownVisible)}
           >
-            <Text style={styles.selectedText}>{selectedStatus}</Text>
+           <Text style={styles.selectedText}>
+  {selectedStatus?.label || "Select Status"}
+</Text>
+
             <Image source={DownArrow} style={styles.downArrow} />
           </TouchableOpacity>
 
@@ -120,38 +234,42 @@ export default function ChangeStatus({
                 nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
               >
-                {["Pending", "In Progress", "Resolved"].map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.option}
-                    onPress={() => {
-                      setSelectedStatus(item);
-                      setDropdownVisible(false);
-                    }}
-                  >
-                    <Text style={styles.optionText}>{item}</Text>
-                  </TouchableOpacity>
-                ))}
+       {STATUS_OPTIONS.map((item) => (
+  <TouchableOpacity
+    key={item.value}
+    style={styles.option}
+    onPress={() => {
+      setSelectedStatus(item);
+      setDropdownVisible(false);
+      setStatusError(""); 
+    }}
+  >
+    <Text style={styles.optionText}>{item.label}</Text>
+  </TouchableOpacity>
+))}
+
+
               </ScrollView>
             </View>
           )}
         </View>
 
+{statusError ? (
+  <ErrorMessage message={statusError} type="error" />
+) : null}
         {/* BUTTONS */}
         <View style={styles.footerBtnRow}>
           <TouchableOpacity
             style={[styles.btn, styles.cancelBtn]}
-            onPress={handleClose}
+            
+              onPress={handleClose}
           >
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.btn, styles.updateBtn]}
-            onPress={() => {
-              onStatusUpdate();
-              handleClose();
-            }}
+            onPress={handleStatusUpdate}
           >
             <Text style={styles.updateText}>Change Status</Text>
           </TouchableOpacity>
