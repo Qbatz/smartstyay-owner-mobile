@@ -36,6 +36,7 @@ import VerifyAccountScreen from './src/Component/CreateAccount/VerifyOtp';
 import MyTabs from "./src/Component/Tabs/BottomTabs";
 import AddTenant from "./src/Component/Customer/AddTenants";
 import TenantCheckin from "./src/Component/Customer/TenantCheckIn";
+import BookingCheckIn from "./src/Component/Customer/BookingToCheckin"
 import AddBooking from "./src/Component/Customer/AddBooking";
 import AddWalkin from "./src/Component/Customer/AddWalkin";
 import FinalSettlement from "./src/Component/Customer/FinalSettlement";
@@ -221,6 +222,7 @@ function AppContent() {
           <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
           <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
           <Navigation.Screen name="Agreement" component={Agreement} />
+            <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
            <Navigation.Screen name="PG" component={PGPageFull} />
 
 

@@ -1,4 +1,4 @@
-import React, { useState,useCallback } from "react";
+import React, { useState,useCallback,useEffect,useContext } from "react";
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView ,BackHandler} from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -6,13 +6,18 @@ import Calendar from "../../../Assets/Images/calendar.png";
 import Delete from "../../../Assets/Images/remove.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { useFocusEffect } from '@react-navigation/native';
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
 
 export default function ReserveToCheckin({ route, navigation }) {
 
-  const { bed, room } = route.params || {};
+  const {selectedBed } = route.params || {};
   
-
+console.log("selectedBed",selectedBed)
   const [openJoinPicker, setOpenJoinPicker] = useState(false);
+  const { activeHostelId } = useContext(CommonContexts);
+     
+      const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, initializeCheckIn,bookedCheckInCustomer } = useCustomer();
   const [joinDate, setJoinDate] = useState(dayjs());
    const [extraCharges, setExtraCharges] = useState([]);
    const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -20,8 +25,32 @@ export default function ReserveToCheckin({ route, navigation }) {
      const [StayTypeOpen, setStayTypeOpen] = useState(false);
      const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
     const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
+     const [bookingDetails, setBookingDetails] = useState("")
+       const [advanceAmount, setAdvanceAmount] = useState("");
+         const [rentalAmount, setRentalAmount] = useState("");
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
+
+const tenantId =
+  selectedBed?.newTenantInfo?.[0]?.tenetId;
+
+   useEffect(() => {
+    if (!activeHostelId || !tenantId) return;
+  
+    const initCheckIn = async () => {
+      const res = await initializeCheckIn(activeHostelId,tenantId);
+  
+      console.log("🔥 initCheckIn FULL RESPONSE 👉", res);
+      console.log("📦 res.data 👉", res?.data);
+  
+      if (res.success) {
+        setBookingDetails(res.data); 
+      }
+    };
+  
+    initCheckIn();
+  }, [activeHostelId,tenantId]);
+  console.log("bookkk",bookingDetails)
  useFocusEffect(
    useCallback(() => {
      const onBackPress = () => {
@@ -92,10 +121,44 @@ const convertToDeductions = (extraCharges) => {
     showInput: item.type === "Others"
   }));
 };
-const onSave = () => {
-  const deductions = convertToDeductions(extraCharges);
-  console.log("Final Deductions:", deductions);
+// const onSave = () => {
+//   const deductions = convertToDeductions(extraCharges);
+//   console.log("Final Deductions:", deductions);
+// };
+const onSave = async () => {
+  if (!bookingDetails?.bookingId) {
+    alert("Booking details missing");
+    return;
+  }
+
+  const payload = {
+    bookingId: bookingDetails?.bookingId,
+    joiningDate: dayjs(joinDate).format("DD-MM-YYYY"),
+    advanceAmount: Number(advanceAmount || 0),
+    rentalAmount: Number(rentalAmount),
+    stayType: "LONG", 
+    deductions: extraCharges.map(item => ({
+      type:
+        item.type === "Others"
+          ? item.title.trim().toLowerCase()
+          : "maintenance",
+      amount: Number(item.amount)
+    })),
+    isAdvanceIncludedInBooking: true
+  };
+
+   console.log("payload",payload)
+
+  const res = await bookedCheckInCustomer(tenantId, payload);
+
+  if (res.success) {
+    alert("Check-in completed successfully ✅");
+    navigation.goBack();
+  } else {
+    alert(res.message || "Check-in failed ❌");
+  }
 };
+
 
   return (
     <View style={styles.container}>
@@ -106,12 +169,12 @@ const onSave = () => {
           <Text style={styles.backArrow}>← Check-In Tenant</Text>
         </TouchableOpacity>
 
-        <Text style={styles.roomInfo}>Room No {room?.room_no} | {bed?.label}</Text>
+        <Text style={styles.roomInfo}>Room No  |</Text>
 
         {/* Tenant Name */}
         <Text style={styles.label}>Tenant</Text>
         <View style={styles.box}>
-          <Text>Daniel Jebaraj</Text>
+          <Text>{selectedBed.newTenantInfo[0]?.tenantFullName}</Text>
         </View>
 
         {/* Booking Date */}
@@ -123,7 +186,7 @@ const onSave = () => {
         {/* Booking Amount */}
         <Text style={styles.label}>Booking Amount</Text>
         <View style={styles.box}>
-          <Text>₹500</Text>
+          <Text>₹{selectedBed.newTenantInfo[0]?.bookingAmount}</Text>
         </View>
 
         <Text style={styles.label}>Stay Type</Text>
@@ -160,11 +223,11 @@ const onSave = () => {
 
         {/* Rental Amount */}
         <Text style={styles.label}>Rental Amount</Text>
-        <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" />
+        <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={rentalAmount} onChangeText={setRentalAmount}/>
 
         {/* Advance Amount */}
         <Text style={styles.label}>Advance Amount</Text>
-        <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" />
+        <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={advanceAmount} onChangeText={setAdvanceAmount}/>
 
         {/* Joining Date */}
         <Text style={styles.label}>Joining Date *</Text>
