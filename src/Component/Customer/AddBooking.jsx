@@ -394,7 +394,11 @@ export default function AddBookingScreen({ navigation, route }) {
 
             {bedOpen && filteredBeds.length > 0 && (
               <View style={styles.dropdownMenu}>
-                <ScrollView style={{ maxHeight: 160 }}>
+                <ScrollView
+      style={{ maxHeight: 100 }}
+      nestedScrollEnabled={true}
+      keyboardShouldPersistTaps="handled"
+    >
                   {filteredBeds.map((b) => (
                     <TouchableOpacity
                       key={b.bedId}
@@ -649,18 +653,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  dropdownMenu: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 999,
-    elevation: 10,
-  },
+dropdownMenu: {
+  position: "absolute",
+  top: 50,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 9999,
+  elevation: 20,
+  overflow: "hidden",
+},
 
   option: {
     paddingVertical: 12,

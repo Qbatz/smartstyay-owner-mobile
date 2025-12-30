@@ -459,7 +459,11 @@ export default function TenantCheckIn({ navigation, route }) {
                     keyboardType="numeric"
                     value={advanceAmount}
                     placeholder='Enter AdvanceAmount'
-                    onChangeText={setAdvanceAmount}
+                  onChangeText={(text) => {
+  setAdvanceAmount(text);
+  setAdvanceError("");
+}}
+
                   />
                 </View>
                 {advanceError && (
@@ -478,7 +482,10 @@ export default function TenantCheckIn({ navigation, route }) {
                         : "Enter Rental Amount"
                     }
                     placeholderTextColor="#9CA3AF"
-                    onChangeText={setRentalAmount}
+                       onChangeText={(text) => {
+  setRentalAmount(text);
+  setRentError("");
+}}
                   />
 
                 </View>

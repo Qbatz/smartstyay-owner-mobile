@@ -95,7 +95,9 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
     }
     const handleCheckIn = () => {
         setMenuOpen(false)
-        navigation.navigate("ReserveToCheckin")
+      navigation.navigate("ReserveToCheckin", {
+     selectedBed: selectedBed,
+  });
     }
 
     return (

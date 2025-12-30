@@ -497,6 +497,61 @@ const confirmCheckout = async (customerId) => {
     };
   }
 };
+const initializeCheckIn = async (hostelId, customerId) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      `/v2/bookings/initialize-check-in/${hostelId}/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.log("INIT CHECK-IN ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message || "Initialize check-in failed",
+    };
+  }
+};
+
+const bookedCheckInCustomer = async (customerId, payload) => {
+  try {
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.post(
+      `/v2/customers/booked/check-in/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Booked check-in failed" };
+  } catch (error) {
+    console.log("BOOKED CHECK-IN ERROR 👉", error.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Booked check-in failed",
+    };
+  }
+};
 
   return (
     <CustomerContext.Provider
@@ -513,7 +568,7 @@ const confirmCheckout = async (customerId) => {
          changeBedCustomer, 
          getCustomerDetails,
          moveToNoticePeriod,
-         bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout
+         bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,initializeCheckIn,bookedCheckInCustomer
       }}
     >
       {children}

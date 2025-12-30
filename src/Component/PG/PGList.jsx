@@ -233,7 +233,7 @@ export default function PGPageFull({ route }) {
     }
 
 
-    if (status === "reserved") {
+    if ( freshBed.isBooked) {
       setSelectedBed(freshBed);
       setSelectedReserved({ bed: freshBed, room });
       setShowReservedSheet(true);
@@ -610,7 +610,11 @@ export default function PGPageFull({ route }) {
 
   const handleCheckIn = () => {
     setShowDoubleStatus(false)
-    navigation.navigate("ReserveToCheckin")
+    // navigation.navigate("ReserveToCheckin")
+    // selectedBed:selectedBed
+     navigation.navigate("ReserveToCheckin", {
+     selectedBed: selectedBed,
+  });
   }
   const handleAddBed = (roomId) => {
     setSelectedBedRoomId(roomId);

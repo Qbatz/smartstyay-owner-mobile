@@ -128,7 +128,7 @@ export default function TenantsScreen({ route }) {
     setShowInactiveSheet(true)
     setMenuVisible(false)
   }
-
+    
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
   const dotsRef = useRef(null);
@@ -244,9 +244,16 @@ export default function TenantsScreen({ route }) {
     });
   }
 
-  const handleShowTennantCheckin = () => {
-    navigation.navigate("TenantCheckin")
+   const handleShowTennantCheckin = () => {
+    // navigation.navigate("TenantCheckin")
+    navigation.navigate("BookingCheckIn", {
+      customerId: selectedItem.customerId,
+      customer: selectedItem, 
+    });
+
+    setMenuVisible(false)
   }
+ 
   const handleShowAddBooking = () => {
     navigation.navigate("AddBooking")
   }
@@ -642,10 +649,11 @@ export default function TenantsScreen({ route }) {
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.popupRow}
-                        onPress={() => {
-                          setShowDetailsMenu(false);
-                          // setShowNotice(true);
-                        }}
+                        onPress={handleShowTennantCheckin}
+                        // onPress={() => {
+                        //   setShowDetailsMenu(false);
+                        //   // setShowNotice(true);
+                        // }}
                       >
                         <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Checkin</Text>
