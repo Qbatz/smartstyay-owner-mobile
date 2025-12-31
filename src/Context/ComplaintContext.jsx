@@ -14,6 +14,8 @@ export default function ComplaintProvider({ children }) {
 });
   const [assignError, setAssignError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+const [commentsLoading, setCommentsLoading] = useState(false);
 
 
 
@@ -26,35 +28,7 @@ export default function ComplaintProvider({ children }) {
 };
 
 
-//   const fetchComplaintTypes = async (hostelId) => {
-//     try {
-//       setLoading(true);
 
-//       const res = await AxiosConfig.get(
-//         `/v2/ComplaintType/all-complaintTypes/${hostelId}`,
-//         { headers: { "Content-Type": "application/json" } }
-//       );
-
-//       if (res?.status === 200) {
-//         const list = Array.isArray(res.data) ? res.data : [];
-//           console.log("list",res,  list);
-          
-//         const formatted = list.map((item) => ({
-//           id: item.complaintTypeId,
-//           title: item.complaintTypeName,
-//           raw: item, //
-//         }));
-//         console.log("formatted",formatted );
-        
-
-//         setComplaintTypes(formatted);
-//       }
-//     } catch (err) {
-//       console.log("Complaint Type Fetch Error:", err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
 
 
 const fetchComplaintTypes = async (hostelId) => {
@@ -273,7 +247,6 @@ const deleteComplaint = async (complaintId, hostelId) => {
   }
 };
 
-// ComplaintContext.js
 const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   setLoading(true);
 
@@ -333,6 +306,52 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
     }
   };
 
+  const getParticularComplaint = async (complaintId) => {
+  setLoading(true);
+  try {
+    const res = await AxiosConfig.get(`/v2/complaint/${complaintId}`);
+    console.log("resposne", res);
+    
+    if (res.status === 200) {
+      setSelectedComplaint(res?.data); 
+      return { success: true, data: res.data };
+    }
+
+    return { success: false };
+  } catch (err) {
+    return { success: false, message: getErrorMessage(err) };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const addComplaintComment = async ({ complaintId, message }) => {
+  setCommentsLoading(true);
+
+  try {
+    const res = await AxiosConfig.post(
+      `/v2/complaint/add-comment/${complaintId}`,
+      { message },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (res.status === 201 || res.status === 200) {
+      await getParticularComplaint(complaintId);
+
+      return {
+        success: true,
+        message: res.data || "Comment added successfully",
+      };
+    }
+
+    return { success: false, message: "Failed to add comment" };
+  } catch (err) {
+    return { success: false, message: getErrorMessage(err) };
+  } finally {
+    setCommentsLoading(false);
+  }
+};
+
 
 
   return (
@@ -342,6 +361,7 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
         loading,
         complaintsList,
         complaintListOtherDetails,
+        selectedComplaint,
         fetchComplaintTypes,
         addComplaintType,
         editComplaintType,
@@ -351,7 +371,9 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
         EditComplaint,
         deleteComplaint,
         changeComplaintStatus,
-        assignComplaint
+        assignComplaint,
+        getParticularComplaint,  
+        addComplaintComment,  
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef , useState , useContext} from "react";
 import {
   View,
   Text,
@@ -12,7 +12,10 @@ import {
   Dimensions,
   BackHandler,
 } from "react-native";
-
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import Loader from "../Loader/Loader"
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 import Profile from "../../Assets/Images/Avatar.png";
 import Comments from "../../Assets/Images/send.png";
 
@@ -21,7 +24,18 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function CommentBottomSheet({ visible, onClose }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
-  /** SWIPE HANDLER */
+
+  const { selectedComplaint, addComplaintComment, commentsLoading } =
+  useContext(ComplaintContext);
+
+      const [commentText, setCommentText] = useState("");
+      const [commentError, setCommentError] = useState("");
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
+
+console.log("selectedComplaint", selectedComplaint);
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
@@ -35,7 +49,6 @@ export default function CommentBottomSheet({ visible, onClose }) {
     })
   ).current;
 
-  /** OPEN ANIMATION */
   const openSheet = () => {
     Animated.spring(translateY, {
       toValue: 0,
@@ -43,7 +56,6 @@ export default function CommentBottomSheet({ visible, onClose }) {
     }).start();
   };
 
-  /** CLOSE ANIMATION */
   const closeSheet = () => {
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
@@ -52,7 +64,6 @@ export default function CommentBottomSheet({ visible, onClose }) {
     }).start(onClose);
   };
 
-  /** OPEN when visible changes */
   useEffect(() => {
     if (visible) {
       openSheet();
@@ -71,16 +82,54 @@ export default function CommentBottomSheet({ visible, onClose }) {
 
   if (!visible) return null;
 
+
+const handleSendComment = async () => {
+  setCommentError("");
+
+  if (!commentText.trim()) {
+    setCommentError("Please Enter a Comment");
+    return;
+  }
+
+  if (!selectedComplaint?.complaintId) return;
+
+  const res = await addComplaintComment({
+    complaintId: selectedComplaint.complaintId,
+    message: commentText.trim(),
+  });
+
+  if (res.success) {
+    setModalType("success");
+    setModalMessage(res?.message || "Comment added successfully");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 800);
+
+    setCommentText("")
+    setCommentError("")
+  } else {
+    setCommentError(res.message || "Something went wrong");
+  }
+};
+
+
+
   return (
     <>
-      {/* DARK BACKDROP */}
+           <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={1}
         onPress={closeSheet}
       />
 
-      {/* SWIPEABLE BOTTOM SHEET */}
       <Animated.View
         {...panResponder.panHandlers}
         style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -90,80 +139,63 @@ export default function CommentBottomSheet({ visible, onClose }) {
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.commentsTitle}>Comments</Text>
 
-          {/* MAIN USER */}
           <View style={styles.mainUserRow}>
             <Image source={Profile} style={styles.mainUserImg} />
             <View>
-              <Text style={styles.mainUserName}>Parthiban M</Text>
-              <Text style={styles.mainUserDate}>20 Mar 2025</Text>
+             <Text style={styles.mainUserName}>{selectedComplaint?.customerName}</Text>
+             <Text style={styles.mainUserDate}>{selectedComplaint?.complaintDate}</Text>
+
             </View>
           </View>
 
           <View style={styles.separator} />
+{selectedComplaint?.comments?.map((item) => (
+  <View key={item.commentId} style={styles.msgRow}>
+    <Image
+      source={item.profilePic ? { uri: item.profilePic } : Profile}
+      style={styles.msgUserImg}
+    />
 
-          {/* MESSAGE 1 */}
-          <View style={styles.msgRow}>
-            <Image source={Profile} style={styles.msgUserImg} />
+    <View style={{ flex: 1 }}>
+      <View style={styles.msgHeader}>
+        <Text style={styles.msgUserName}>{item.commentedBy}</Text>
+        <Text style={styles.msgTime}>{item.commentedAt}</Text>
+      </View>
 
-            <View style={{ flex: 1 }}>
-              <View style={styles.msgHeader}>
-                <Text style={styles.msgUserName}>Parthiban</Text>
-                <Text style={styles.msgTime}>
-                  20 Mar 2025 – 12:45 PM
-                </Text>
-              </View>
+      <Text style={styles.msgText}>{item.commentText}</Text>
+    </View>
+  </View>
+))}
 
-              <Text style={styles.msgText}>
-                When will the complaint be solved?
-              </Text>
-            </View>
-          </View>
+{selectedComplaint?.comments?.length === 0 && (
+  <Text style={{ textAlign: "center", color: "#999" }}>
+    No comments yet
+  </Text>
+)}
 
-          {/* MESSAGE 2 */}
-          <View style={styles.msgRow}>
-            <Image source={Profile} style={styles.msgUserImg} />
 
-            <View style={{ flex: 1 }}>
-              <View style={styles.msgHeader}>
-                <Text style={styles.msgUserName}>Priya</Text>
-                <Text style={styles.msgTime}>
-                  20 Mar 2025 – 02:26 PM
-                </Text>
-              </View>
 
-              <Text style={styles.msgText}>
-                Complaint Assigned and will be rectify in Few Hours
-              </Text>
-            </View>
-          </View>
-
-          {/* MESSAGE 3 */}
-          <View style={styles.msgRow}>
-            <Image source={Profile} style={styles.msgUserImg} />
-
-            <View style={{ flex: 1 }}>
-              <View style={styles.msgHeader}>
-                <Text style={styles.msgUserName}>Parthiban</Text>
-                <Text style={styles.msgTime}>
-                  20 Mar 2025 – 04:05 PM
-                </Text>
-              </View>
-
-              <Text style={styles.msgText}>Thank you!</Text>
-            </View>
-          </View>
-
-          {/* REPLY INPUT */}
           <View style={styles.replyBox}>
-            <TextInput
-              placeholder="Post your Reply Here"
-              placeholderTextColor="#8A8A8A"
-              style={styles.input}
-            />
-            <TouchableOpacity style={styles.sendBtn}>
+  <TextInput
+  value={commentText}
+  onChangeText={(text) => {
+    setCommentText(text);
+    if (commentError) setCommentError("");
+  }}
+  placeholder="Post your Reply Here"
+  style={styles.input}
+/>
+
+
+
+            <TouchableOpacity style={styles.sendBtn} onPress={handleSendComment}>
               <Image source={Comments} style={styles.sendIcon} />
             </TouchableOpacity>
+            
           </View>
+          {commentError ? (
+  <ErrorMessage message={commentError} type="error" />
+) : null} 
         </ScrollView>
       </Animated.View>
     </>
