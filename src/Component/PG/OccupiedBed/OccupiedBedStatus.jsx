@@ -20,8 +20,9 @@ import Dots from "../../../Assets/Images/3dots.png";
 
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
+import { ScrollView } from "react-native-gesture-handler";
 
-export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed,onBedAdded }) {
+export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed,onBedAdded,handleMakeUsInActive,handleCheckIn }) {
     const translateY = useRef(new Animated.Value(300)).current;
     console.log("selectedBed",selectedBed)
     // const [showNotice, setShowNotice] = useState(false);
@@ -35,10 +36,18 @@ const handleMoveClick = () => {
   onClose();          // close occupied sheet
   onMoveToNotice();   // tell parent to open notice period
 };
+const handleMakeUsIn=()=>{
+  handleMakeUsInActive()
+}
+const handleBookToCheckin=()=>{
+  handleCheckIn()
+}
 const handleEdit = () => {
   if (!handleEditBed || !selectedBed) return;
   handleEditBed(selectedBed);
 };
+ const [showOccupiedMenu, setShowOccupiedMenu] = useState(false);
+  const [showReservedMenu, setShowReservedMenu] = useState(null);
 
 const handleReAssignBed=()=>{
       setMenuOpen(false);
@@ -79,7 +88,16 @@ const handleReAssignBed=()=>{
             </TouchableWithoutFeedback>
 
          
-            <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]} {...panResponder.panHandlers}>
+          <Animated.View
+           style={[
+             styles.sheet,
+             {
+               transform: [{ translateY }],
+               maxHeight: "70%",   
+             },
+           ]}
+           {...panResponder.panHandlers}  
+         >
 
                 <View style={styles.handle} />
 
@@ -87,13 +105,58 @@ const handleReAssignBed=()=>{
                 <View style={styles.headerRow}>
                     <Text style={styles.title}>Bed Status</Text>
 
-                    <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
-                        <Image source={Dots} style={styles.dots} />
-                    </TouchableOpacity>
+                  
                 </View>
 
               
-                {menuOpen && (
+               
+
+              
+                <View style={styles.tagRow}>
+                    <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
+                        <Text style={styles.tagText}>{selectedBed.floorName}</Text>
+                    </View>
+                    <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
+                        <Text style={styles.tagText}>{selectedBed.roomName} - {selectedBed.bedName}</Text>
+                    </View>
+                </View>
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              indicatorStyle="white"   
+            >
+                <Text style={styles.sub}>Occupied by</Text>
+
+                {/* <View style={styles.userRow}>
+                    <Image source={Profile} style={styles.userImg} />
+                    <View>
+                        <Text style={styles.userName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                        <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
+                    </View>
+                </View> */}
+                <View style={styles.headerRow}>
+                            <View style={styles.personRow}>
+                              <Image
+                                source={Profile}
+                                style={styles.avatar}
+                              />
+                              <View>
+                                <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                                <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
+                              </View>
+                            </View>
+                
+                            
+                            <TouchableOpacity
+                  style={styles.dotsButton}
+                  onPress={() => setMenuOpen(!menuOpen)}
+                >
+                  <Image source={Dots} style={styles.dots} />
+                </TouchableOpacity>
+                
+                          </View>
+                           {menuOpen && (
                     <View style={styles.menuWrapper} pointerEvents="box-none">
 
                         <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
@@ -118,27 +181,6 @@ const handleReAssignBed=()=>{
                     </View>
                 )}
 
-                {/* FLOOR + BED TAG */}
-                <View style={styles.tagRow}>
-                    <View style={[styles.tag, { backgroundColor: "#FDEBC8" }]}>
-                        <Text style={styles.tagText}>{selectedBed.floorName}</Text>
-                    </View>
-                    <View style={[styles.tag, { backgroundColor: "#FFD6D6" }]}>
-                        <Text style={styles.tagText}>{selectedBed.roomName} - {selectedBed.bedName}</Text>
-                    </View>
-                </View>
-
-                {/* Occupied By */}
-                <Text style={styles.sub}>Occupied by</Text>
-
-                <View style={styles.userRow}>
-                    <Image source={Profile} style={styles.userImg} />
-                    <View>
-                        <Text style={styles.userName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
-                        <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
-                    </View>
-                </View>
-
                 {/* RENTAL AMOUNT */}
                 <Text style={styles.label}>Rental Amount</Text>
                 <View style={styles.rowInfo}>
@@ -160,9 +202,101 @@ const handleReAssignBed=()=>{
                     <Text style={styles.value}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
                 </View>
 
+
+
+                 <View style={[styles.section, { borderBottomWidth: 0 }]}>
+                          <Text style={styles.sectionTitle}>Reserved by</Text>
+                
+                          {
+                            selectedBed.newTenantInfo.map((item,index)=>{
+                              return(
+                
+                              
+                <View style={{ position: "relative" }}  key={index}>
+                 <View style={styles.headerRow}>
+                            <View style={styles.personRow}>
+                              <Image
+                                source={require("../../../Assets/Images/profile.png")}
+                                style={styles.avatar}
+                              />
+                              <View>
+                                <Text style={styles.name}>{item.tenantFullName}</Text>
+                                <Text style={styles.phone}>+91 {item.mobile}</Text>
+                              </View>
+                            </View>
+                
+                           
+                            <TouchableOpacity
+                  style={styles.dotsButton}
+                  onPress={() => {
+                    setShowReservedMenu(
+                      showReservedMenu === index ? null : index
+                    );
+                    setShowOccupiedMenu(false);
+                  }}
+                >
+                  <Image source={Dots} style={styles.dots} />
+                </TouchableOpacity>
+                
+                          </View>
+                
+                          <View style={styles.infoRow}>
+                            <Text style={styles.label}>Booking Amount</Text>
+                            <Text style={styles.value}>₹  {item.bookingAmount}</Text>
+                          </View>
+                
+                          <View style={styles.infoRow}>
+                            <Text style={styles.label}>Check-In Date</Text>
+                            <Text style={styles.value}> {item.joiningDate}</Text>
+                          </View>
+                
+                          <View style={styles.infoRow}>
+                            <Text style={styles.label}>Last Invoice</Text>
+                            <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
+                </Text>
+                          </View>
+                           {showReservedMenu === index && (
+                    <View style={styles.inlineMenu}>
+                      <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={handleBookToCheckin}
+                      >
+                        <Image
+                          style={styles.menuIconAdd}
+                          source={require("../../../Assets/Images/add-circle.png")}
+                        />
+                        <Text style={styles.menuText}>Check-in</Text>
+                      </TouchableOpacity>
+                
+                      <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={handleMakeUsIn}
+                      >
+                        <Image
+                          style={styles.menuIcon}
+                          source={require("../../../Assets/Images/Logout.png")}
+                        />
+                        <Text style={styles.menuText}>Make as Inactive</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                          
+                </View>
+                              )
+                            })
+                          }
+                
+                         
+                
+                         
+                        </View>
+                    </ScrollView>    
+
                 <TouchableOpacity style={styles.statusBtn}>
                     <Text style={styles.statusText}>Occupied</Text>
                 </TouchableOpacity>
+
+
 
             </Animated.View>
         </View>
@@ -281,5 +415,56 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontWeight: "600",
         color: "#24A148",
-    }
+    },
+    inlineMenu: {
+  position: "absolute",
+  top: 48,     // instead of 40
+  right: 0,
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#E6E9F0",
+  elevation: 6,
+  paddingVertical: 6,
+  zIndex: 999,
+},
+ menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+
+  menuIcon: {
+    width: 20,
+    height: 20,
+   
+    marginRight: 10,
+  },
+  menuIconAdd:{
+ width: 20,
+    height: 20,
+   tintColor:"#1E45E1",
+    marginRight: 10,
+  },
+
+  menuText: { fontSize: 14, fontWeight: "500" },
+   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+     personRow: { flexDirection: "row", alignItems: "center", flex: 1 },
+     name: { fontSize: 15, fontWeight: "600" },
+
+  phone: { fontSize: 12, color: "#666" },
+
+  dotsButton: { paddingHorizontal: 8 },
+  section: {
+    marginTop: 10,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderColor: "#EEE",
+  },
+
+  sectionTitle: { fontSize: 13, fontWeight: "600", marginBottom: 8, color: "#555" },
+
+ 
+
 });

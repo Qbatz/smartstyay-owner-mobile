@@ -96,11 +96,8 @@ export default function BookingCheckIn({ navigation, route }) {
         const initCheckIn = async () => {
             const res = await initializeCheckIn(activeHostelId, customerId);
 
-            console.log("🔥 initCheckIn FULL RESPONSE 👉", res);
-            console.log("📦 res.data 👉", res?.data);
-
             if (res.success) {
-                setBookingDetails(res.data); // temporary
+                setBookingDetails(res.data);
             }
         };
 
@@ -268,8 +265,6 @@ export default function BookingCheckIn({ navigation, route }) {
     };
     const validateLongStay = () => {
         let valid = true;
-
-        // reset errors
         setFloorError("");
         setRoomError("");
         setBedError("");
