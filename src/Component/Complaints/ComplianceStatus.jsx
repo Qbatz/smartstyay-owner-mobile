@@ -112,26 +112,11 @@ const handleStatusUpdate = async () => {
 };
 
 
-// const handleStatusUpdate = async () => {
-//   if (!selectedStatus) return;
 
-//   const res = await updateComplaintStatus({
-//     complaintId: complaint.complaintId,
-//     status: selectedStatus.value,
-//     hostelId: activeHostelId,
-//   });
-
-//   if (res.success) {
-//     alert(res.message); 
-//   } else {
-//     alert(res.message);
-//   }
-// };
 
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
-  /** PAN HANDLER */
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
@@ -145,7 +130,6 @@ const handleStatusUpdate = async () => {
     })
   ).current;
 
-  /** animate open */
   const openSheet = () => {
     Animated.spring(translateY, {
       toValue: 0,
@@ -153,7 +137,6 @@ const handleStatusUpdate = async () => {
     }).start();
   };
 
-  /** animate close */
   const handleClose = () => {
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
@@ -162,7 +145,6 @@ const handleStatusUpdate = async () => {
     }).start(() => onClose());
   };
 
-  /** On visible change */
   useEffect(() => {
     if (visible) {
       openSheet();
@@ -183,21 +165,19 @@ const handleStatusUpdate = async () => {
 
   return (
     <>
- <SuccessModal
+           <SuccessModal
            visible={showSuccessModal}
            onClose={() => setShowSuccessModal(false)}
            message={modalMessage}
            type={modalType}
           />
 
-      {/* OVERLAY */}
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={1}
         onPress={handleClose}
       />
 
-      {/* BOTTOM SHEET */}
       <Animated.View
         {...panResponder.panHandlers}
         style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -257,7 +237,6 @@ const handleStatusUpdate = async () => {
 {statusError ? (
   <ErrorMessage message={statusError} type="error" />
 ) : null}
-        {/* BUTTONS */}
         <View style={styles.footerBtnRow}>
           <TouchableOpacity
             style={[styles.btn, styles.cancelBtn]}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef , useContext} from "react";
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
   BackHandler,Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
+import { ComplaintContext } from "../../Context/ComplaintContext";
+import { CommonContexts } from "../../Context/CommonContext";
 import DeleteComplaint from "./DeleteComplaint";
 import Profile from "../../Assets/Images/Avatar.png";
 import Edit from "../../Assets/Images/editIcon.png";
@@ -41,6 +42,7 @@ export default function ComplaintDetails({
  
   console.log("complaint", complaint);
   
+    const { getParticularComplaint , selectedComplaint } = useContext(ComplaintContext);
   
   const panResponder = useRef(
     PanResponder.create({
@@ -107,6 +109,18 @@ export default function ComplaintDetails({
   }, [visible]);
 
   if (!visible || !complaint) return null;
+
+
+
+const openComments = async () => {
+  await getParticularComplaint(complaint?.complaintId);
+  handleCloseSheet();
+  setTimeout(onOpenCommentSheet, 200);
+};
+
+console.log("comments", complaint);
+
+
 
   return (
     <>
@@ -208,24 +222,32 @@ export default function ComplaintDetails({
         </Text>
 
         {/* Comment */}
-        <View style={styles.commentBox}>
-          <TextInput
-            placeholder="Add your Comment"
-            placeholderTextColor="#A0A0A0"
-            style={styles.commentInput}
-          />
+       <View style={styles.commentBox}>
+  {/* FAKE INPUT – ONLY FOR DISPLAY */}
+  <TouchableOpacity
+    style={{ flex: 1 }}
+    activeOpacity={0.8}
+    onPress={openComments}
+  >
+    <View pointerEvents="none">
+      <TextInput
+        placeholder="Add your Comment"
+        placeholderTextColor="#A0A0A0"
+        style={styles.commentInput}
+        editable={false}   
+      />
+    </View>
+  </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => {
-              handleCloseSheet();
-              setTimeout(onOpenCommentSheet, 200);
-            }}
-          >
-            <Image source={CommentIcon} style={styles.commentIcon} />
-          </TouchableOpacity>
+  <TouchableOpacity onPress={openComments}>
+    <Image source={CommentIcon} style={styles.commentIcon} />
+  </TouchableOpacity>
 
-          <Text style={styles.commentCount}>3</Text>
-        </View>
+  <Text style={styles.commentCount}>
+    {selectedComplaint?.comments?.length || 0}
+  </Text>
+</View>
+
 
         {/* Buttons */}
         <View style={styles.buttonRow}>

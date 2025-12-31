@@ -15,6 +15,7 @@ import { useLayoutEffect } from "react";
 import { CommonContexts } from "../../Context/CommonContext";
 import { ComplaintContext } from "../../Context/ComplaintContext";
 import { UseSetting } from "../../Context/SettingContext";
+import SuccessModal from "../../ToastFile/ToastPage";
 import Loader from "../Loader/Loader"
 
 import Profile from "../../Assets/Images/Avatar.png";
@@ -30,7 +31,7 @@ export default function Complaints({ route }) {
 
 
   const {loading,  complaintsList, complaintListOtherDetails,GetComplaintListDetails , 
-          complaintTypes , fetchComplaintTypes} = useContext(ComplaintContext);
+          complaintTypes , fetchComplaintTypes , getParticularComplaint} = useContext(ComplaintContext);
            const { activeHostelId } = useContext(CommonContexts);
              const { getUsersByHostel, } = UseSetting();
 
@@ -55,9 +56,19 @@ export default function Complaints({ route }) {
    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
    const [users, setUsers] = useState([])
 
+   const [showSuccessModal, setShowSuccessModal] = useState(false);
+   const [modalMessage, setModalMessage] = useState("");
+   const [modalType, setModalType] = useState("success");
+
    useEffect(() => {
     if(activeHostelId){
   GetComplaintListDetails(activeHostelId);
+    }
+}, [activeHostelId]);
+
+   useEffect(() => {
+    if(activeHostelId){
+  fetchComplaintTypes(activeHostelId);
     }
 }, [activeHostelId]);
 
@@ -99,7 +110,6 @@ const closeFilterSheet = () => {
   }).start(() => setShowFilter(false));
 };
 
-// SWIPE HANDLER
 const filterPan = useRef(
   PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
@@ -153,15 +163,33 @@ const formatDate = (date) => {
     setStatus("All")
  }
 
- const handleComplaintDetails = (item) => {
-  console.log("item", item);
-  
-     setSelectedComplaint(item)
-      setShowSheet(true);
- }
+ const handleComplaintDetails = async (item) => {
+  setSelectedComplaint(item);
+
+  await getParticularComplaint(item?.complaintId);
+
+  setShowSheet(true);
+};
+
 
   const handleAddComplaint = () => {
-    navigation.navigate("AddComplaint", {mode: "add"})}
+      if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a hostel first");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+  if(complaintTypes && complaintTypes?.length === 0){
+    setModalType("warning");
+    setModalMessage("Please Create Complaint Type in Settings-Complaint");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+    navigation.navigate("AddComplaint", {mode: "add"})
+  }
 
   useLayoutEffect(() => {
   setShowTabBar( !showFilter && !showSheet && !showAssignSheet && !showStatusSheet && !showCommentSheet);
@@ -219,7 +247,7 @@ const formatDate = (date) => {
 
 
  const renderItem = ({ item }) => {
-  const userText = `${item.customerName}${item.roomName ? "-" + item.roomName : ""}${item.bedName ? "-" + item.bedName : ""}`;
+  const userText = `${item?.customerName}${item?.roomName ? "-" + item?.roomName : ""}${item?.bedName ? "-" + item?.bedName : ""}`;
 
   return (
     <View style={styles.card}>
@@ -228,7 +256,7 @@ const formatDate = (date) => {
         onPress={() => {handleComplaintDetails(item)}}
       >
         <Text style={styles.title}>
-          {item.complaintTypeName}
+          {item?.complaintTypeName}
         </Text>
 
         <View style={styles.row}>
@@ -239,7 +267,7 @@ const formatDate = (date) => {
 
       <View style={styles.rightSection}>
         <Text style={styles.time}>
-          {formatDate(item.complaintDate)}
+          {formatDate(item?.complaintDate)}
         </Text>
 
         <TouchableOpacity
@@ -252,7 +280,7 @@ const formatDate = (date) => {
           <Text
             style={[
               styles.status,
-              { color: getStatusColor(item.assigneeName) },
+              { color: getStatusColor(item?.assigneeName) },
             ]}
           >
             {item?.assigneeName === "" ? "+ Assign" : item?.assigneeName}
@@ -266,6 +294,12 @@ const formatDate = (date) => {
 
   return (
     <>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
      { loading && <Loader />}
     <View style={styles.container}>
       
@@ -297,8 +331,11 @@ const formatDate = (date) => {
    <View style={styles.centerContainer}>
                <Image source={EmptyState} style={styles.image} />
                <Text style={styles.nodataText}>No Complaints are there!</Text>
-       
-               
+           <TouchableOpacity style={styles.addcomplaintBtn}     onPress={handleAddComplaint}>
+                    <Text style={styles.addComplaintText}>+ Add Complaint</Text>
+                  </TouchableOpacity>
+
+        
              </View>
 )}
 
@@ -680,11 +717,11 @@ dropdownItemText: {
   fontSize: 14,
   color: "#111",
 },
-     centerContainer: {
+  centerContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: 80,
+    paddingBottom: 250,
   },
 
   image: {
@@ -698,6 +735,20 @@ dropdownItemText: {
     fontSize: 16,
     color: "#777",
     marginTop: 10,
+  },
+
+    addcomplaintBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+
+  addComplaintText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
   },
   
 

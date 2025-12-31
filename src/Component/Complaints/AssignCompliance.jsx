@@ -14,6 +14,8 @@ import {
 import { CommonContexts } from "../../Context/CommonContext";
 import { ComplaintContext } from "../../Context/ComplaintContext";
 import { UseSetting } from "../../Context/SettingContext";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../ToastFile/ToastPage";
 import Loader from "../Loader/Loader"
 import DownArrow from "../../Assets/Images/direction-down.png";
 import CloseIcon from "../../Assets/Images/remove.png";
@@ -33,8 +35,15 @@ export default function AssignBottomSheet({
                const { getUsersByHostel, } = UseSetting();
                const { assignComplaint , GetComplaintListDetails } = useContext(ComplaintContext);
 
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-   const [users, setUsers] = useState([])
+           const [dropdownVisible, setDropdownVisible] = useState(false);
+           const [users, setUsers] = useState([])
+           const [userError , setUserError] = useState("")
+           const [initialAssigneeId, setInitialAssigneeId] = useState(null);
+
+
+         const [showSuccessModal, setShowSuccessModal] = useState(false);
+         const [modalMessage, setModalMessage] = useState("");
+         const [modalType, setModalType] = useState("success");
   //  const [selectedUser, setSelectedUser] = useState(null);
 
 
@@ -47,25 +56,53 @@ export default function AssignBottomSheet({
   
       loadUsers();
     }, [activeHostelId]);
+
+
   
 const loadUsers = async () => {
   const res = await getUsersByHostel(activeHostelId);
 
-  if (res.success) {
+  console.log("getUsersByHostel res:", res);
+
+  if (res?.success && Array.isArray(res?.data)) {
     const mappedUsers = res.data.map((u) => ({
-      label: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
-      value: u.userId,
-      raw: u, 
+      label: `${u?.firstName || ""} ${u?.lastName || ""}`.trim(),
+      value: u?.userId,
+      raw: u,
     }));
 
     setUsers(mappedUsers);
+  } else {
+    setUsers([]); 
   }
 };
+
+useEffect(() => {
+  if (visible && complaint) {
+    if (complaint?.assigneeId) {
+      const existingUser = users.find(
+        (u) => u.value === complaint.assigneeId
+      );
+
+      if (existingUser) {
+        setSelectedUser(existingUser);
+      }
+
+      setInitialAssigneeId(complaint.assigneeId);
+    } else {
+      setSelectedUser(null);
+      setInitialAssigneeId(null);
+    }
+
+    setUserError("");
+  }
+}, [visible, complaint, users]);
+
+
 
   
     console.log("users", users);
 
-  /** PAN HANDLER */
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 6,
@@ -79,7 +116,6 @@ const loadUsers = async () => {
     })
   ).current;
 
-  /** OPEN SHEET */
   const openSheet = () => {
     Animated.spring(translateY, {
       toValue: 0,
@@ -87,7 +123,6 @@ const loadUsers = async () => {
     }).start();
   };
 
-  /** CLOSE SHEET */
   const handleClose = () => {
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
@@ -96,7 +131,6 @@ const loadUsers = async () => {
     }).start(() => onClose());
   };
 
-  /** On visible change */
   useEffect(() => {
     if (visible) {
       openSheet();
@@ -117,46 +151,78 @@ const loadUsers = async () => {
 
   console.log("complaint" , complaint);
   
+const handleAssign = async (userId) => {
+  setUserError("");
 
- const handleAssign = async (userId) => {
-  if (!complaint || !userId) {
-    alert("Please select user");
+  if (!userId) {
+    setUserError("Please select user");
+    return;
+  }
+
+  if (initialAssigneeId && userId === initialAssigneeId) {
+    setModalType("warning");
+    setModalMessage("No changes detected");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 800);
+
     return;
   }
 
   const res = await assignComplaint({
     complaintId: complaint.complaintId,
-    userId: userId,
+    userId,
   });
 
   if (res.success) {
-    await GetComplaintListDetails(activeHostelId); 
-    alert(res.message || "Assigned Successfully");
-    onClose(); 
+    await GetComplaintListDetails(activeHostelId);
+
+    setModalType("success");
+    setModalMessage(res?.message || "Assigned Successfully");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      onClose();
+    }, 800);
   } else {
-    alert(res.message);
+    setModalType("warning");
+    setModalMessage(res?.message || "Something went wrong");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 800);
   }
 };
-;
+
 
 
 
   return (
     <>
+
+            <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
+
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={1}
         onPress={handleClose}
       />
 
-      {/* SHEET */}
       <Animated.View
         {...panResponder.panHandlers}
         style={[styles.sheet, { transform: [{ translateY }] }]}
       >
         <View style={styles.headerLine} />
 
-        {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.title}>Assign complaint</Text>
 
@@ -167,7 +233,6 @@ const loadUsers = async () => {
 
         <Text style={styles.label}>Assign</Text>
 
-        {/* SELECT USER DROPDOWN */}
         <View style={styles.selectWrapper}>
           <TouchableOpacity style={styles.selectBox} onPress={toggleDropdown}>
             <Text style={styles.selectedText}> {selectedUser?.label || "Select User"}</Text>
@@ -181,31 +246,28 @@ const loadUsers = async () => {
                 nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
               >
-               {users.map((item) => (
+  {Array.isArray(users) && users?.map((item) => (
   <TouchableOpacity
-    key={item.value}
+    key={item?.value}
     style={styles.option}
     onPress={() => {
       setSelectedUser(item);
       setDropdownVisible(false);
+      setUserError("")
     }}
   >
-    <Text style={styles.optionText}>{item.label}</Text>
+    <Text style={styles.optionText}>{item?.label}</Text>
   </TouchableOpacity>
 ))}
+
 
               </ScrollView>
             </View>
           )}
         </View>
-
-        {/* SUBMIT */}
+{userError && <ErrorMessage message={userError} type="error" />}
         <TouchableOpacity
           style={styles.submitBtn}
-          // onPress={() => {
-          //   onAssignDone();
-          //   handleClose();
-          // }}
        onPress={() => handleAssign(selectedUser?.value)}
         >
           <Text style={styles.submitText}>Assign complaint</Text>
