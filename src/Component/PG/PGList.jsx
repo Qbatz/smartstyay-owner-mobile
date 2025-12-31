@@ -34,6 +34,7 @@ import { CommonContexts } from "../../Context/CommonContext";
 import Dots from "../../Assets/Images/3dots.png";
 import { useFocusEffect } from "@react-navigation/native";
 import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
+import OccupiedAndReservedBedSheet from "../PG/OccupiedAndReservedStatus";
 
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
@@ -60,6 +61,8 @@ export default function PGPageFull({ route }) {
   const [showReservedSheet, setShowReservedSheet] = useState(false);
   const [selectedReserved, setSelectedReserved] = useState(null);
   const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
+
+   const [showOccupiedReservedSheet, setShowOccupiedReservedSheet] = useState(false);
   const [selectedOccupied, setSelectedOccupied] = useState(null);
   const [showNotice, setShowNotice] = useState(false);
   const [reqDate, setReqDate] = useState("31/07/2025");
@@ -206,7 +209,8 @@ export default function PGPageFull({ route }) {
       return;
     }
      if (freshBed.isOccupied && freshBed.isBooked) {
-      setSelectedBed(freshBed);
+     setSelectedBed(freshBed);
+      setSelectedBedRoomId(room.id);
       setSelectedOccupied({ bed: freshBed, room });
       setShowOccupiedSheet(true);
       return;
@@ -1060,7 +1064,23 @@ export default function PGPageFull({ route }) {
         onReAssign={handleReAssignBed}
         handleEditBed={handleEditBed}
         selectedBed={selectedBed}
+          handleMakeUsInActive={handleMakeUsInActive}
+        handleCheckIn={handleCheckIn}
+       
 
+      />
+      <OccupiedAndReservedBedSheet
+       visible={showOccupiedReservedSheet}
+        onClose={() => {
+          setShowOccupiedReservedSheet(false);
+          setSelectedOccupied(null);
+        }}
+        bed={selectedOccupied?.bed}
+        room={selectedOccupied?.room}
+        onMoveToNotice={handleOpenNoticeSheet}
+        onReAssign={handleReAssignBed}
+        handleEditBed={handleEditBed}
+        selectedBed={selectedBed}
       />
 
       {showNotice && (

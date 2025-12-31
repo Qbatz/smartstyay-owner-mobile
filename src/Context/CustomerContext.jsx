@@ -335,7 +335,7 @@ const moveToNoticePeriod = async (hostelId, payload) => {
 
     return { success: false, message: "Booking failed" };
   } catch (error) {
-    console.log("BOOKING ERROR 👉", error.response?.data);
+    console.log("error", error.response?.data);
     return {
       success: false,
       message:
@@ -367,7 +367,7 @@ const cancelCheckout = async (hostelId, customerId, payload) => {
 
     return { success: false, message: "Cancel checkout failed" };
   } catch (error) {
-    console.log("CANCEL CHECKOUT ERROR 👉", error.response?.data);
+    console.log("error", error.response?.data);
     return {
       success: false,
       message:
@@ -401,7 +401,7 @@ const getSettlementByCustomerId = async (customerId) => {
 
     return { success: false, message: "Failed to fetch settlement" };
   } catch (error) {
-    console.log("SETTLEMENT API ERROR 👉", error.response?.data);
+    console.log("error", error.response?.data);
     return {
       success: false,
       message:
@@ -433,7 +433,7 @@ const submitSettlement = async (customerId, payload) => {
 
     return { success: false, message: "Settlement failed" };
   } catch (error) {
-    console.log("SETTLEMENT SUBMIT ERROR 👉", error.response?.data);
+    console.log("error", error.response?.data);
     return {
       success: false,
       message:
@@ -459,7 +459,7 @@ const initializeCheckout = async (hostelId, customerId) => {
 
     return { success: true, data: res.data };
   } catch (error) {
-    console.log("INIT CHECKOUT ERROR 👉", error.response?.data);
+    console.log("error", error.response?.data);
     return {
       success: false,
       message:
