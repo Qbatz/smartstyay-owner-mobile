@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState,useContext } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -7,42 +7,75 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Image,
-  StyleSheet,PanResponder
+  StyleSheet, PanResponder
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useCustomer } from "../../../Context/CustomerContext";
-import Calendar from "../../../Assets/Images/calendar.png"; 
+import CalendarImage from "../../../Assets/Images/calendar.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 
-export default function InactiveTenantSheet({ visible, onClose,selectedBed }) {
+export default function InactiveTenantSheet({ visible, onClose, selectedBed,selectedItem,onSuccess,bookedItems }) {
   const translateY = useRef(new Animated.Value(400)).current;
   const [joiningDate, setJoiningDate] = useState(dayjs());
+  const [bookingDetails, setBookingDetails] = useState("")
   const [comments, setComments] = useState("");
   const { activeHostelId } = useContext(CommonContexts);
-const { cancelCheckout } = useCustomer();
-   const [openJoinDatePic, setOpenJoinDatePic] = useState("");
-  
-console.log("selectedBed",selectedBed)
+  const { cancelCheckout, initializeCheckIn,initializeCancelBooking,cancelBooking } = useCustomer();
+  const [openJoinDatePic, setOpenJoinDatePic] = useState("");
+  const [bankdetails,setBankDetails] = useState("")
 
-useEffect(() => {
-  Animated.timing(translateY, {
-    toValue: visible ? 0 : 400,
-    duration: 250,
-    useNativeDriver: true,
-  }).start();
-}, [visible]);
+const customerId =
+  selectedItem?.customerId || bookedItems?.tenetId;
 
-const panResponder = PanResponder.create({
-  onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
-  onPanResponderMove: (_, g) => {
-    if (g.dy > 0) translateY.setValue(g.dy);
-  },
-  onPanResponderRelease: (_, g) => {
-    if (g.dy > 120) onClose();
-    else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
-  },
-});
+  useEffect(() => {
+    if (!activeHostelId || !customerId) return;
+
+    const initCheckIn = async () => {
+      const res = await initializeCheckIn(activeHostelId, customerId);
+
+      if (res.success) {
+        setBookingDetails(res.data);
+      }
+    };
+
+    initCheckIn();
+  }, [activeHostelId, customerId]);
+
+  useEffect(() => {
+  if (!customerId) return;
+
+  const loadCancelInit = async () => {
+    const res = await initializeCancelBooking(customerId);
+    if (res.success) {    
+      setBankDetails(res.data)    
+    }
+  };
+
+  loadCancelInit();
+}, [customerId]);
+
+
+  console.log("selectedBed", selectedBed)
+  console.log("selectedItempr", selectedItem)
+  useEffect(() => {
+    Animated.timing(translateY, {
+      toValue: visible ? 0 : 400,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [visible]);
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) translateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) onClose();
+      else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+    },
+  });
 
 
   useEffect(() => {
@@ -54,104 +87,139 @@ const panResponder = PanResponder.create({
   }, [visible]);
 
   if (!visible) return null;
-
-  const handleConfirm = async () => {
-  if (!joiningDate || !comments) {
-    alert("Joining date & reason required");
+  const handleConfirmCancel = async () => {
+  if (!comments) {
+    alert("Please enter reason");
     return;
   }
 
+ 
+
   const payload = {
-    bedId: bedId,
-    reCheckInDate: dayjs(joiningDate).format("DD-MM-YYYY"),
     reason: comments,
+    cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+    bankId: bankdetails?.listBanks?.[0]?.bankId,
+    
   };
 
-  const res = await cancelCheckout(activeHostelId, customerId, payload);
+  console.log("CANCEL PAYLOAD 👉", payload);
+
+  const res = await cancelBooking(
+    customerId,
+    payload
+  );
 
   if (res.success) {
-    alert("Tenant moved to inactive successfully");
+    alert("Booking cancelled successfully");
+       onSuccess && onSuccess();
     onClose();
   } else {
-    alert(res.message || "Failed");
+    alert(res.message);
   }
 };
 
 
+// const handleConfirmCancel = async () => {
+//   if (!comments) {
+//     alert("Please enter reason");
+//     return;
+//   }
+
+//   const payload = {
+//     reason: comments,
+//     cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+//     bankId:bankdetails?.listBanks[0]?.bankId,
+   
+//   };
+
+
+
+//   const res = await cancelBooking(selectedItem.selectedItem?.customerId, payload);
+
+//   if (res.success) {
+//     alert("Booking cancelled successfully");
+//     onClose();
+//   } else {
+//     alert(res.message);
+//   }
+// };
+
+
+
   return (
     <>
-    <View style={styles.overlay}>
-  <TouchableWithoutFeedback onPress={onClose}>
-    <View style={{ flex: 1 }} />
-  </TouchableWithoutFeedback>
+      <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
 
-  <Animated.View
-    style={[styles.sheet, { transform: [{ translateY }] }]}
-    {...panResponder.panHandlers}
-  >
-        
-        <Text style={styles.title}>Tenant Inactive ?</Text>
-        <Text style={styles.subTitle}>
-          Are you sure you want to inactive this tenant?
-        </Text>
-
-        {/* Joining Date */}
-        <Text style={styles.label}>Joining Date *</Text>
-
-        <TouchableOpacity
-          style={styles.dateBox}
-        onPress={() => setOpenJoinDatePic(true)}
+        <Animated.View
+          style={[styles.sheet, { transform: [{ translateY }] }]}
+          {...panResponder.panHandlers}
         >
-         <Text style={styles.placeholder}>
-                          {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                        </Text>
-          <Image source={Calendar} style={{ width: 22, height: 22 }} />
-        </TouchableOpacity>
 
-      
+          <Text style={styles.title}>Tenant Inactive ?</Text>
+          <Text style={styles.subTitle}>
+            Are you sure you want to inactive this tenant?
+          </Text>
 
-        {/* Comments */}
-        <Text style={[styles.label, { marginTop: 12 }]}>Reason (Comments)</Text>
+          {/* Joining Date */}
+          <Text style={styles.label}>Joining Date *</Text>
 
-        <TextInput
-          style={styles.textArea}
-          multiline
-          placeholder="Enter comments..."
-          value={comments}
-          onChangeText={setComments}
-        />
-
-        {/* Buttons */}
-        <View style={styles.btnRow}>
-          <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
+          <TouchableOpacity
+            style={styles.dateBox}
+            onPress={() => setOpenJoinDatePic(true)}
+          >
+            <Text style={styles.placeholder}>
+              {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+            </Text>
+            <Image source={CalendarImage} style={{ width: 22, height: 22 }} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm}>
-            <Text style={styles.confirmText}>Confirm</Text>
-          </TouchableOpacity>
+
+
+          {/* Comments */}
+          <Text style={[styles.label, { marginTop: 12 }]}>Reason (Comments)</Text>
+
+          <TextInput
+            style={styles.textArea}
+            multiline
+            placeholder="Enter comments..."
+            value={comments}
+            onChangeText={setComments}
+          />
+
+          {/* Buttons */}
+          <View style={styles.btnRow}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmCancel}>
+              <Text style={styles.confirmText}>Confirm</Text>
+            </TouchableOpacity>
+          </View>
+
+        </Animated.View>
+      </View>
+      {openJoinDatePic && (
+        <View style={styles.sheetOverlay}>
+          <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.datePickerBox}>
+            <DatePicker
+              mode="single"
+              date={joiningDate}
+              onChange={(p) => {
+                setJoiningDate(p.date || dayjs());
+                setOpenJoinDatePic(false);
+              }}
+            />
+          </View>
         </View>
-
-      </Animated.View>
-    </View>
-     {openJoinDatePic && (
-                <View style={styles.sheetOverlay}>
-                  <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
-                    <View style={{ flex: 1 }} />
-                  </TouchableWithoutFeedback>
-
-                  <View style={styles.datePickerBox}>
-                    <DatePicker
-                      mode="single"
-                      date={joiningDate}
-                      onChange={(p) => {
-                        setJoiningDate(p.date || dayjs());
-                        setOpenJoinDatePic(false);
-                      }}
-                    />
-                  </View>
-                </View>
-              )}
+      )}
     </>
   );
 }
@@ -162,7 +230,7 @@ const styles = StyleSheet.create({
     left: 0, right: 0, top: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-    marginBottom:25
+    marginBottom: 25
   },
 
   sheet: {
@@ -243,14 +311,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
-   sheetOverlay: {
+  sheetOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
     justifyContent: "flex-end",
-     backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.4)",
 
   },
-    datePickerBox: {
+  datePickerBox: {
     backgroundColor: "#fff",
     width: "80%",
     borderColor: "#DCDCDC",

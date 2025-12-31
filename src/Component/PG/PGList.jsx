@@ -165,27 +165,7 @@ export default function PGPageFull({ route }) {
     }
   };
 
-  const handleDeleteBed = async (bedId) => {
-    const res = await deleteBed(bedId);
-
-    if (res?.success) {
-
-      setModalType("success");
-      setMessage("Bed Deleted Successfully");
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        setShowSuccess(false);
-        handleBedAdded(selectedBedRoomId);
-      }, 500);
-
-    } else {
-      setModalType("warning");
-      setMessage(res?.message || "Bed delete failed");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 800);
-    }
-  };
+ 
   const handleBedPress = async (bed, room) => {
     const res = await getBedById(bed.id);
 
@@ -1054,7 +1034,7 @@ export default function PGPageFull({ route }) {
         selectedBed={selectedBed}
         onClose={() => setShowManageBed(false)}
         handleEditBed={handleEditBed}
-        onDeleteBed={handleDeleteBed}
+       
         onBedAdded={handleBedAdded}
       />
 
