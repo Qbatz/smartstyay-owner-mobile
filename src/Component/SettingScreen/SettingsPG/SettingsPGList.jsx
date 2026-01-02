@@ -123,16 +123,33 @@ export default function SettingsPG({ navigation }) {
 
 const hasFetched = useRef(false);
 
+// useEffect(() => {
+//   if (!login.getToken || !activeHostelId || hasFetched.current) return;
+
+//   hasFetched.current = true;
+
+//   getHostels(login.getToken).then((res) => {
+//     const reordered = reorderHostels(res.data, activeHostelId);
+//     updateHostelList(reordered);
+//   });
+// }, [login.getToken, activeHostelId]);
+
+console.log("activhostelid" , activeHostelId);
+
+
 useEffect(() => {
-  if (!login.getToken || !activeHostelId || hasFetched.current) return;
+  if (!activeHostelId || hasFetched.current) return;
 
   hasFetched.current = true;
 
-  getHostels(login.getToken).then((res) => {
-    const reordered = reorderHostels(res.data, activeHostelId);
-    updateHostelList(reordered);
+  getHostels().then((res) => {
+    if (res?.data) {
+      const reordered = reorderHostels(res.data, activeHostelId);
+      updateHostelList(reordered);
+    }
   });
-}, [login.getToken, activeHostelId]);
+}, [activeHostelId]);
+
 
 // useEffect(() => {
 //   if (!login.getToken) return;
