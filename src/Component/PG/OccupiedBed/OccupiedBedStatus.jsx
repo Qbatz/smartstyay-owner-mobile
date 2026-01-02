@@ -21,6 +21,7 @@ import Dots from "../../../Assets/Images/3dots.png";
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 import { ScrollView } from "react-native-gesture-handler";
+import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 
 export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed,onBedAdded,handleMakeUsInActive,handleCheckIn }) {
     const translateY = useRef(new Animated.Value(300)).current;
@@ -30,14 +31,18 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveT
 // const [reqDate, setReqDate] = useState("31/07/2025");
 // const [outDate, setOutDate] = useState("30/08/2025");
 // const [reason, setReason] = useState("");
+    const [bookedItems,setBookedItems] = useState("")
+     const [showInactiveSheet, setShowInactiveSheet] = useState(false)
 
 const handleMoveClick = () => {
   setMenuOpen(false);
   onClose();          // close occupied sheet
   onMoveToNotice();   // tell parent to open notice period
 };
-const handleMakeUsIn=()=>{
-  handleMakeUsInActive()
+const handleMakeUsIn=(item)=>{
+    setShowInactiveSheet(true)
+//   handleMakeUsInActive()
+  setBookedItems(item)
 }
 const handleBookToCheckin=()=>{
   handleCheckIn()
@@ -270,7 +275,10 @@ const handleReAssignBed=()=>{
                 
                       <TouchableOpacity
                         style={styles.menuItem}
-                        onPress={handleMakeUsIn}
+                      
+                        onPress={() => handleMakeUsIn(item)}
+                        
+                        
                       >
                         <Image
                           style={styles.menuIcon}
@@ -302,7 +310,11 @@ const handleReAssignBed=()=>{
         </View>
      
 
-  
+   <InactiveTenantSheet
+                  visible={showInactiveSheet}
+                  onClose={() => setShowInactiveSheet(false)}
+                  bookedItems={bookedItems}
+              />
          
       
         </>

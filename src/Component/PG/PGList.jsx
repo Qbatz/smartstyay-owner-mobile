@@ -37,6 +37,7 @@ import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
 import OccupiedAndReservedBedSheet from "../PG/OccupiedAndReservedStatus";
 
 
+
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
@@ -94,6 +95,7 @@ export default function PGPageFull({ route }) {
   const [floordeletePopup, setFloorDeletePopup] = useState(false)
   const [bedUserDetails, setBedUserDetails] = useState("")
    const [showCheckout, setShowCheckout] = useState(false);
+   const [inactiveTenant, setInactiveTenant] = useState(null);
 
 
   const [editBedData, setEditBedData] = useState(null);
@@ -587,10 +589,15 @@ export default function PGPageFull({ route }) {
   });
     setShowDoubleStatus(false)
   };
-  const handleMakeUsInActive = () => {
-    setShowDoubleStatus(false)
-    setShowInactiveSheet(true)
-  }
+  // const handleMakeUsInActive = () => {
+  //   setShowDoubleStatus(false)
+  //   setShowInactiveSheet(true)
+  // }
+  const handleMakeUsInActive = (item) => {
+  setInactiveTenant(item);    
+  setShowDoubleStatus(false);
+  setShowInactiveSheet(true);
+};
 
   const handleCheckIn = () => {
     setShowDoubleStatus(false)
@@ -1145,6 +1152,8 @@ export default function PGPageFull({ route }) {
         visible={showInactiveSheet}
         onClose={() => setShowInactiveSheet(false)}
         selectedBed={selectedBed}
+       bookedItems={inactiveTenant}  
+
       />
       <Modal
         transparent

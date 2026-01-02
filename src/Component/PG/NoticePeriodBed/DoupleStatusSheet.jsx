@@ -65,9 +65,13 @@ export default function DoubleStatusSheet({
 const handleCancelNotice=()=>{
     handleReAssignBed()
 }
-const handleMakeUsIn=()=>{
-  handleMakeUsInActive()
-}
+// const handleMakeUsIn=()=>{
+//   handleMakeUsInActive()
+// }
+const handleMakeUsIn = (item) => {
+  setShowReservedMenu(null);
+  handleMakeUsInActive(item);   // ⭐ item direct-ah parent-ku
+};
 const handleBookToCheckin=()=>{
   handleCheckIn()
 }
@@ -296,7 +300,8 @@ const handleBookToCheckin=()=>{
 
       <TouchableOpacity
         style={styles.menuItem}
-        onPress={handleMakeUsIn}
+        // onPress={handleMakeUsIn}
+        onPress={() => handleMakeUsIn(item)}  
       >
         <Image
           style={styles.menuIcon}

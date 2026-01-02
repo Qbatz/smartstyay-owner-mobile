@@ -24,7 +24,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed,sele
   const { cancelCheckout, initializeCheckIn,initializeCancelBooking,cancelBooking } = useCustomer();
   const [openJoinDatePic, setOpenJoinDatePic] = useState("");
   const [bankdetails,setBankDetails] = useState("")
-
+console.log("bookedItems",bookedItems)
 const customerId =
   selectedItem?.customerId || bookedItems?.tenetId;
 
