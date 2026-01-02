@@ -104,7 +104,9 @@ import BillsProvider from "./src/Context/BillsContext"
 import { FloorProvider } from './src/Context/PayingGuestContext';
 import BankingProvider from "./src/Context/BankingContext";
 import ElectricityProvider from "./src/Context/ElectricityContext"
-
+import CreateMpin from "./src/Component/CreateAccount/CreatePin"
+import EnterMPin from "./src/Component/CreateAccount/EnterPin"
+import ConfirmMPin from "./src/Component/CreateAccount/ConfirmPin"
 
 
 function App() {
@@ -112,7 +114,7 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={'light-content'} backgroundColor={'#1A73E8F0'} />
       <LoginContext>
         <CommonContext>
           <GeneralProvider>
@@ -225,6 +227,9 @@ function AppContent() {
             <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
            <Navigation.Screen name="PG" component={PGPageFull} />
 
+              <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+            <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+             <Navigation.Screen name="EnterMPin" component={EnterMPin} />
 
         </Navigation.Navigator>
       </NavigationContainer>
