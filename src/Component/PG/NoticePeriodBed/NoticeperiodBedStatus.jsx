@@ -48,10 +48,10 @@ export default function NoticePeriodBedSheet({
 
 
 
-  const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data || []);
-  };
+ const fetchCustomers = async () => {
+  const data = await getCustomersByHostel(activeHostelId);
+  setCustomers(data?.listCustomers || []);
+};
   console.log("customers123", customers)
   const matchedCustomer = customers.find(
     c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId

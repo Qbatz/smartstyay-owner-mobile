@@ -56,7 +56,7 @@ export default function TenantsScreen({ route }) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [reassignCustomer, setReassignCustomer] = useState(null);
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
-
+console.log("customers",customers)
   useFocusEffect(
     useCallback(() => {
       if (activeHostelId) {
@@ -364,7 +364,7 @@ export default function TenantsScreen({ route }) {
         </View>
           })
         } */}
-              {customers.map((item) => (
+              {customers?.listCustomers?.map((item) => (
                 <View key={item.customerId} style={styles.tenantRow}>
 
                   <TouchableOpacity onPress={() => openCustomerDetails(item)}>

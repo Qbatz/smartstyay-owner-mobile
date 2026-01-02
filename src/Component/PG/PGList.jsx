@@ -50,7 +50,7 @@ const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 
 export default function PGPageFull({ route }) {
   const navigation = useNavigation();
-  const { activeHostelId } = useContext(CommonContexts);
+  const { activeHostelId,hostelList } = useContext(CommonContexts);
   const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed, deleteFloor, getBedById } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
@@ -100,7 +100,7 @@ export default function PGPageFull({ route }) {
 
   const [editBedData, setEditBedData] = useState(null);
 
- 
+ console.log("hostelList", hostelList)
   const handleEditBed = (bed) => {
     setEditBedData(bed);
     setShowAddBed(true);
@@ -109,6 +109,11 @@ export default function PGPageFull({ route }) {
     setShowOccupiedSheet(false)
     setShowReservedSheet(false)
   };
+const activeHostelName = hostelList?.find(
+  (item) => item.hostelId === activeHostelId
+)?.name;
+
+console.log("Active Hostel Name:", activeHostelName);
 
   const handleDelete = (roomId) => {
     setDeletePopup(true)
@@ -180,7 +185,7 @@ export default function PGPageFull({ route }) {
     const status = getBedStatus(freshBed);
 
     const statuses = splitStatus(status);
-    console.log("freshBed", freshBed)
+    
     console.log("status", status)
 
     if (
@@ -268,7 +273,7 @@ export default function PGPageFull({ route }) {
     if (res.success) {
       setFloors(res.data);
       setActiveFloorIndex(0);
-      setSelectedFloorId(res.data[0].id);
+      setSelectedFloorId(res.data[0]?.id);
 
     }
   };
@@ -633,7 +638,7 @@ export default function PGPageFull({ route }) {
             >
               <Image source={HostelImg} style={styles.HostelImg} />
             </TouchableOpacity>
-            <Text style={styles.title}>Royal Grand Hostel</Text>
+            <Text style={styles.title}>{activeHostelName}</Text>
           </View>
 
           <TouchableOpacity

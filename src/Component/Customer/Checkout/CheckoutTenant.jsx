@@ -93,10 +93,14 @@ export default function CheckoutBottomSheet({
 
 
 
-  const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data || []);
-  };
+  // const fetchCustomers = async () => {
+  //   const data = await getCustomersByHostel(activeHostelId);
+  //   setCustomers(data || []);
+  // };
+   const fetchCustomers = async () => {
+  const data = await getCustomersByHostel(activeHostelId);
+  setCustomers(data?.listCustomers || []);
+};
 
   const matchedCustomer = customers.find(
     c =>

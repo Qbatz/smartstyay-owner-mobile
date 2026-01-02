@@ -30,7 +30,7 @@ export default function ReassignBedScreen({ route, navigation }) {
   const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id);
 const [rooms, setRooms] = useState([]);
 const [bedDetails,setBedDetails] = useState([])
-
+console.log("selectedBed",selectedBed)
 useEffect(() => {
   if (!selectedFloorId) return;
 
@@ -104,9 +104,9 @@ const selectedFloorRooms = rooms.filter(
       <View style={styles.profileRow}>
         <Image source={Profile} style={styles.profileImg} />
         <View>
-          <Text style={styles.profileName}>Rajkumar M</Text>
+          <Text style={styles.profileName}>{selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
           <Text style={styles.profileSub}>
-            Ground Floor • {tenant.room?.room_no} • {tenant.bed?.label}
+          {selectedBed.floorName} - {selectedBed.roomName} - {selectedBed.bedName}
           </Text>
         </View>
       </View>
