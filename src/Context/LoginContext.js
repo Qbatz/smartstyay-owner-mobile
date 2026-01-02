@@ -28,7 +28,7 @@
 import React, { createContext, useState } from "react";
 import AxiosConfig from "../Config/AxiosConfig";
 import { storeData } from "../Utils/Storage";
-import { LOGGEDIN } from "../Utils/Constant";
+import {ACCESS_TOKEN, LOGGEDIN } from "../Utils/Constant";
 
 export const LoginContexts = createContext();
 
@@ -76,20 +76,27 @@ const LoginContext = ({ children }) => {
 
 
   const verifyMpin = async (pin) => {
-    try {
-      const res = await AxiosConfig.post(
-        `/v2/mobile/verify/${userId}`,
-        { pin }
-      );
+  try {
+    const res = await AxiosConfig.post(
+      `/v2/mobile/verify/${userId}`,
+      { pin }
+    );
 
-      await storeData(LOGGEDIN, "true");
-      setLoggedIn(true);
+    const token = res.data;
+    console.log("token", token);
+    
+    await storeData("token", token);
+    await storeData(LOGGEDIN, "true");
+    setLoggedIn(true);
 
-      return { success: true };
-    } catch {
-      return { success: false };
-    }
-  };
+    return { success: true };
+  } catch (error) {
+    console.log("verify mpin error", error);
+    return { success: false };
+  }
+};
+
+  
 
   return (
     <LoginContexts.Provider

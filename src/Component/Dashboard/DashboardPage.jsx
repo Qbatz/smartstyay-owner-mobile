@@ -55,6 +55,9 @@ import {
   XAxis
 } from "react-native-svg-charts";
 import { getHostels } from "../../Action/HostelAction";
+import { retriveData } from "../../Utils/Storage";
+
+
 
 
 
@@ -66,6 +69,10 @@ export default function DashboardScreen() {
   
  const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
   const login = useContext(LoginContexts);
+
+  useEffect(() => {
+  retriveData("token").then(t => console.log("TOKEN:", t));
+}, [])
 
   console.log("Hostels:", hostelList);
 
@@ -82,14 +89,25 @@ const activeHostel =
   const navigation = useNavigation();
 
 
-   useEffect(() => {
-    if (!login.getToken) return;
+  //  useEffect(() => {
+  //   if (!login.getToken) return;
     
 
-    getHostels(login.getToken).then((res) => {
+  //   getHostels(login.getToken).then((res) => {
+  //     updateHostelList(res.data);
+  //   });
+  // }, [login.getToken]);
+
+  useEffect(() => {
+  getHostels().then((res) => {
+    console.log("res", res);
+    
+    if (res?.data) {
       updateHostelList(res.data);
-    });
-  }, [login.getToken]);
+    }
+  });
+}, []);
+
 
     useEffect(()=> {
     if(activeHostel){
@@ -163,16 +181,29 @@ const activeHostel =
   return selected ? [selected, ...others] : list;
 };
 
-  useEffect(() => {
-  if (!login.getToken) return;
-  if(activeHostelId){
- getHostels(login.getToken).then((res) => {
-    const reordered = reorderHostels(res.data, activeHostelId);
-    updateHostelList(reordered);
+useEffect(() => {
+  if (!activeHostelId) return;
+
+  getHostels().then((res) => {
+      console.log("res", res);
+    if (res?.data) {
+      const reordered = reorderHostels(res.data, activeHostelId);
+      updateHostelList(reordered);
+    }
   });
-  }
+}, [activeHostelId]);
+
+
+//   useEffect(() => {
+//   if (!login.getToken) return;
+//   if(activeHostelId){
+//  getHostels(login.getToken).then((res) => {
+//     const reordered = reorderHostels(res.data, activeHostelId);
+//     updateHostelList(reordered);
+//   });
+//   }
  
-}, [login.getToken, activeHostelId]);
+// }, [login.getToken, activeHostelId]);
 
 
 

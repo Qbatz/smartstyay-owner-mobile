@@ -230,7 +230,7 @@ setErrors({});
 
     const res = await editPG(finalPayload);
     if (res?.status === 200 || res?.status === 201) {
-        const fresh = await getHostels(login.getToken);
+        const fresh = await getHostels();
          console.log("updateddata", fresh);
      const reordered = reorderHostels(fresh.data, activeHostelId);
      updateHostelList(reordered);
@@ -245,7 +245,7 @@ setErrors({});
 const res = await addPG(finalPayload)
 
 if (res?.status === 201) {
-  const fresh = await getHostels(login.getToken)
+  const fresh = await getHostels()
   const data = fresh.data
 
   if (!hostelList || hostelList.length === 0) {
