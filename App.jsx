@@ -114,7 +114,7 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={'light-content'} backgroundColor={'#1A73E8F0'} />
       <LoginContext>
         <CommonContext>
           <GeneralProvider>
