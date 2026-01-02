@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler, } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
@@ -8,6 +8,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 
 
 
@@ -21,6 +22,13 @@ export default function AddTenant() {
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
+    const [nameError, setNameError] = useState("")
+    const [mobileError, setMobileError] = useState("")
+    const [emailError, setEmailError] = useState("")
+    const [pincodeError, setPincodeError] = useState("");
+    const [stateSearch, setStateSearch] = useState("");
+
+
 
 
 
@@ -82,6 +90,8 @@ export default function AddTenant() {
         city: "",
         state: "",
     });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 
     const isBasicValid =
         basicDetails.firstName.trim().length > 0 &&
@@ -90,15 +100,26 @@ export default function AddTenant() {
 
 
     const isAddressValid =
-        addressDetails.flat.trim().length > 0 &&
-        addressDetails.area.trim().length > 0 &&        // ✅ ADD THIS
-        addressDetails.landmark.trim().length > 0 &&
-        addressDetails.city.trim().length > 0 &&
-        addressDetails.pincode.trim().length === 6 &&   // ✅ proper pincode
+
+        addressDetails.flat.trim() ||
+        addressDetails.area.trim() ||
+        addressDetails.landmark.trim() ||
+        addressDetails.city.trim() ||
+        addressDetails.pincode.trim().length === 6 ||
         selectedState !== "Select State";
 
 
-    const [selectedState, setSelectedState] = useState("Select State");
+    const hasAnyAddress =
+        addressDetails.flat.trim().length > 0 ||
+        addressDetails.area.trim().length > 0 ||
+        addressDetails.landmark.trim().length > 0 ||
+        addressDetails.city.trim().length > 0 ||
+        addressDetails.pincode.trim().length > 0 ||
+        selectedState !== "Select State";
+
+   const [selectedState, setSelectedState] = useState(""); // final value
+const [stateQuery, setStateQuery] = useState("");       // typing value
+
 
 
     const [stateOpen, setStateOpen] = useState(false);
@@ -132,7 +153,34 @@ export default function AddTenant() {
         { label: "Uttarakhand", value: "Uttarakhand" },
         { label: "West Bengal", value: "West Bengal" },
     ];
+const filteredStateList = stateList
+  .filter((s) =>
+    s.label.toLowerCase().includes(stateQuery.toLowerCase())
+  )
+  .sort((a, b) => {
+    const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+    const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+    return bStart - aStart;
+  });
+
+
+
     const handleCreateTenant = async () => {
+        if (basicDetails.email && emailError) {
+            setStep(1);
+            return;
+        }
+        if (
+            addressDetails.pincode &&
+            (addressDetails.pincode.length !== 6 || addressDetails.pincode.startsWith("0"))
+        ) {
+            setPincodeError(
+                addressDetails.pincode.startsWith("0")
+                    ? "Pincode should not start with 0"
+                    : "Pincode must be 6 digits"
+            );
+            return;
+        }
         const payloads = {
 
             customerInfo: {
@@ -144,16 +192,7 @@ export default function AddTenant() {
                 emailId: basicDetails.email || "",
             },
         };
-
-
-        if (
-            addressDetails.flat ||
-            addressDetails.area ||
-            addressDetails.landmark ||
-            addressDetails.city ||
-            addressDetails.pincode ||
-            selectedState !== "Select State"
-        ) {
+        if (hasAnyAddress) {
             payloads.customerInfo.address = {
                 ...(addressDetails.flat && { houseNo: addressDetails.flat }),
                 ...(addressDetails.area && { street: addressDetails.area }),
@@ -165,6 +204,8 @@ export default function AddTenant() {
                 ...(selectedState !== "Select State" && { state: selectedState }),
             };
         }
+
+
 
         console.log("FINAL PAYLOAD 👉", payloads);
 
@@ -179,20 +220,22 @@ export default function AddTenant() {
                 setShowSuccess(false);
 
             }, 800);
+        }
 
-        } else {
-            alert("Customer add failed ❌");
+        else {
+            const mobileMsg = res?.message?.mobileStatus || "";
+            const emailMsg = res?.message?.emailStatus || "";
+
+            setMobileError(mobileMsg);
+            setEmailError(emailMsg);
+
+            // 🔥 IMPORTANT: Go back to step 1 if basic error
+            if (mobileMsg || emailMsg) {
+                setStep(1);
+            }
         }
     };
-    console.log({
-        flat: addressDetails.flat,
-        area: addressDetails.area,
-        landmark: addressDetails.landmark,
-        city: addressDetails.city,
-        pincode: addressDetails.pincode,
-        selectedState,
-        isAddressValid,
-    });
+
 
 
 
@@ -312,15 +355,16 @@ export default function AddTenant() {
 
 
                             <View style={styles.form}>
-                                <Text style={styles.label}>First Name *</Text>
+                                <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Enter First Name"
                                     placeholderTextColor="#A1A1A1"
                                     value={basicDetails.firstName}
-                                    onChangeText={(t) =>
-                                        setBasicDetails({ ...basicDetails, firstName: t })
-                                    }
+                                    onChangeText={(t) => {
+                                        const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                        setBasicDetails({ ...basicDetails, firstName: onlyLetters });
+                                    }}
                                 />
 
                                 <Text style={styles.label}>Last Name</Text>
@@ -329,12 +373,13 @@ export default function AddTenant() {
                                     placeholder="Enter Last Name"
                                     placeholderTextColor="#A1A1A1"
                                     value={basicDetails.lastName}
-                                    onChangeText={(t) =>
-                                        setBasicDetails({ ...basicDetails, lastName: t })
-                                    }
+                                    onChangeText={(t) => {
+                                        const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                        setBasicDetails({ ...basicDetails, lastName: onlyLetters });
+                                    }}
                                 />
 
-                                <Text style={styles.label}>Mobile Number *</Text>
+                                <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
                                 <View style={styles.mobileWrapper}>
                                     <Text style={styles.countryCode}>+91</Text>
                                     <TextInput
@@ -344,15 +389,19 @@ export default function AddTenant() {
                                         placeholderTextColor="#A1A1A1"
                                         maxLength={10}
                                         value={basicDetails.mobile}
-                                        onChangeText={(t) =>
+                                        onChangeText={(t) => {
                                             setBasicDetails({
                                                 ...basicDetails,
                                                 mobile: t.replace(/[^0-9]/g, ""),
-                                            })
-                                        }
+                                            });
+                                            setMobileError("");
+                                        }}
+
                                     />
 
                                 </View>
+                                {mobileError && <ErrorMessage message={mobileError} type="error" />}
+
 
                                 <Text style={styles.label}>Email ID</Text>
                                 <TextInput
@@ -360,10 +409,21 @@ export default function AddTenant() {
                                     placeholder="Enter Email ID"
                                     placeholderTextColor="#A1A1A1"
                                     value={basicDetails.email}
-                                    onChangeText={(t) =>
-                                        setBasicDetails({ ...basicDetails, email: t })
-                                    }
+                                    onChangeText={(t) => {
+                                        setBasicDetails({ ...basicDetails, email: t });
+
+                                        if (!t) {
+                                            setEmailError("");
+                                        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t)) {
+                                            setEmailError("Enter a valid email address");
+                                        } else {
+                                            setEmailError("");
+                                        }
+                                    }}
+
+
                                 />
+                                {emailError && <ErrorMessage message={emailError} type="error" />}
                             </View>
 
 
@@ -416,7 +476,7 @@ export default function AddTenant() {
                                 <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
 
                                     <View style={styles.form}>
-                                        <Text style={styles.label}>Flat, House no., Building *</Text>
+                                        <Text style={styles.label}>Flat, House no., Building </Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter Flat, House no., Building..."
@@ -426,7 +486,7 @@ export default function AddTenant() {
                                                 setAddressDetails({ ...addressDetails, flat: t })
                                             }
                                         />
-                                        <Text style={styles.label}>Area , Street , Sector , Village *</Text>
+                                        <Text style={styles.label}>Area , Street , Sector , Village</Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter Area"
@@ -436,7 +496,54 @@ export default function AddTenant() {
                                                 setAddressDetails({ ...addressDetails, area: t })
                                             }
                                         />
-                                        <Text style={styles.label}>Landmark *</Text>
+                                        
+                                        <Text style={styles.label}>State</Text>
+
+<View style={{ position: "relative" }}>
+ <TextInput
+  style={styles.select}
+  placeholder="Select state"
+  placeholderTextColor="#9CA3AF"
+  value={stateQuery || selectedState}
+  onFocus={() => {
+    setStateOpen(true);
+    setStateQuery("");   // 🔥 cursor focus panna fresh search
+  }}
+  onChangeText={(t) => {
+    setStateQuery(t);    // 🔥 typing always search
+    setStateOpen(true);
+  }}
+/>
+
+
+  <Image source={DownArrow} style={styles.arrowIcon} />
+
+  {stateOpen && (
+    <View style={styles.dropdownMenu}>
+      <ScrollView keyboardShouldPersistTaps="handled">
+        {filteredStateList.length > 0 ? (
+          filteredStateList.map((v, index) => (
+           <TouchableOpacity
+  key={index}
+  style={styles.option}
+  onPress={() => {
+    setSelectedState(v.label); // final value
+    setStateQuery("");        // clear search
+    setStateOpen(false);
+  }}
+>
+  <Text style={styles.optionText}>{v.label}</Text>
+</TouchableOpacity>
+
+          ))
+        ) : (
+          <Text style={styles.noResult}>No state found</Text>
+        )}
+      </ScrollView>
+    </View>
+  )}
+</View>
+                                        <Text style={styles.label}>Landmark</Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Ex : Near SBI Bank"
@@ -447,7 +554,7 @@ export default function AddTenant() {
                                             }
                                         />
 
-                                        <Text style={styles.label}>Pincode *</Text>
+                                        <Text style={styles.label}>Pincode</Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="123456"
@@ -455,15 +562,30 @@ export default function AddTenant() {
                                             keyboardType="number-pad"
                                             maxLength={6}
                                             value={addressDetails.pincode}
-                                            onChangeText={(t) =>
+                                            onChangeText={(t) => {
+                                                const value = t.replace(/[^0-9]/g, "");
+
                                                 setAddressDetails({
                                                     ...addressDetails,
-                                                    pincode: t.replace(/[^0-9]/g, ""),
-                                                })
-                                            }
-                                        />
+                                                    pincode: value,
+                                                });
 
-                                        <Text style={styles.label}>City *</Text>
+
+                                                if (!value) {
+                                                    setPincodeError("");
+                                                } else if (value.startsWith("0")) {
+                                                    setPincodeError("Pincode should not start with 0");
+                                                } else if (value.length < 6) {
+                                                    setPincodeError("Pincode must be 6 digits");
+                                                } else {
+                                                    setPincodeError("");
+                                                }
+                                            }}
+
+                                        />
+                                        {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
+
+                                        <Text style={styles.label}>City</Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter Your City Name"
@@ -479,40 +601,7 @@ export default function AddTenant() {
 
 
 
-                                        <Text style={styles.label}>State</Text>
 
-                                        <View style={{ position: "relative" }}>
-                                            <TouchableOpacity
-                                                style={styles.select}
-                                                onPress={() => setStateOpen(!stateOpen)}
-                                                activeOpacity={0.9}
-                                            >
-                                                <Text style={styles.selectText}>{selectedState}</Text>
-                                                <Image source={DownArrow} style={styles.arrow} />
-                                            </TouchableOpacity>
-
-                                            {stateOpen && (
-                                                <View style={styles.dropdownMenu}>
-                                                    <ScrollView
-                                                        nestedScrollEnabled={true}
-                                                        keyboardShouldPersistTaps="handled"
-                                                    >
-                                                        {stateList.map((v, index) => (
-                                                            <TouchableOpacity
-                                                                key={index}
-                                                                style={styles.option}
-                                                                onPress={() => {
-                                                                    setSelectedState(v.label);
-                                                                    setStateOpen(false);
-                                                                }}
-                                                            >
-                                                                <Text style={styles.optionText}>{v.label}</Text>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
 
 
 
@@ -533,9 +622,9 @@ export default function AddTenant() {
                                                 !isAddressValid && styles.primaryBtnDisabled
                                             ]}
                                             disabled={!isAddressValid}
-                                            // onPress={() => navigation.goBack()}
                                             onPress={handleCreateTenant}
                                         >
+
                                             <Text
                                                 style={[styles.primaryText,]}
                                             >
@@ -920,6 +1009,30 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "600"
     },
+    searchInput: {
+  height: 45,
+  borderBottomWidth: 1,
+  borderColor: "#E5E7EB",
+  paddingHorizontal: 12,
+  fontSize: 14,
+  color: "#111827",
+},
+
+arrowIcon: {
+  position: "absolute",
+  right: 12,
+  top: 14,
+  width: 18,
+  height: 18,
+  tintColor: "#777",
+},
+
+noResult: {
+  padding: 12,
+  textAlign: "center",
+  color: "#6B7280",
+},
+
 
 
 });

@@ -150,7 +150,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
       "",
       "Inactive"
     );
-    setWalkinCustomers(data);
+    setWalkinCustomers(data?.listCustomers || []);
   };
 
   console.log("setWalkinCustomers", walkinCustomers)

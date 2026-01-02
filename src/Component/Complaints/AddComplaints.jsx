@@ -178,7 +178,7 @@ const handleDescriptionChange = (text) => {
 const fetchCustomers = async () => {
   const data = await getCustomersByHostel(activeHostelId);
 
-  const filtered = Array.isArray(data)
+  const filtered = Array.isArray(data?.listCustomers)
     ? data.filter(
         (u) =>
           u.floorId &&

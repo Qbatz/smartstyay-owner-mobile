@@ -99,7 +99,7 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data || []);
+    setCustomers(data?.listCustomers || []);
   };
 
   const fetchCustomersDetails = async () => {

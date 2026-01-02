@@ -95,7 +95,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
       "",
       "Inactive"
     );
-    setBookingTenants(data);
+    setBookingTenants(data?.listCustomers || []);
   };
 
 

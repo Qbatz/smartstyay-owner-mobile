@@ -95,7 +95,7 @@ export default function AssignTenant({ navigation, route }) {
       "",
       "Inactive"
     );
-    setCheckinTenants(data);
+    setCheckinTenants(data?.listCustomers || []);
   };
 
   const selectType = (id, type) => {
