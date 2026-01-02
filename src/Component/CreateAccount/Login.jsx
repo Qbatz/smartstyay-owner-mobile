@@ -16,13 +16,11 @@ import EyeIcon from "../../Assets/Images/EyeIcon.png";
 import WaveImage from "../../Assets/Images/login_Rectangle.png";
 
 import { useNavigation } from "@react-navigation/native";
-import { setLogin } from "../../Action/LoginAction";
-import { storeData } from "../../Utils/Storage";
-import { ACCESS_TOKEN } from "../../Utils/Constant";
 import { LoginContexts } from "../../Context/LoginContext";
 
 export default function LoginDesign() {
-  const context = useContext(LoginContexts);
+
+  const { login } = useContext(LoginContexts);
   const navigation = useNavigation();
 
   const [email, setEmail] = useState("");
@@ -73,7 +71,67 @@ export default function LoginDesign() {
   return valid;
 };
 
-const loginClick = async () => {
+// const loginClick = async () => {
+//   if (!validate()) return;
+
+//   const data = {
+//     emailId: email,
+//     password: password,
+//   };
+
+//   try {
+//     const response = await setLogin(data);
+//      console.log("res", response);
+//     if (response?.status === 200 && response?.data) {
+//       context.updateToken(response?.data);
+//       await storeData(ACCESS_TOKEN, response?.data);
+
+//       console.log("Loginresponse", response);
+      
+//       navigation.navigate("VerifyAccountScreen", {
+//         email: email,
+//       });
+//         setModalType("success");
+//         setModalMessage("Login Successfully");
+//         setShowSuccessModal(true);
+//         setTimeout(() => setShowSuccessModal(false), 2500);
+//     } 
+//    else if (response?.status === 400) {
+//   setModalType("error");
+//   setModalMessage(
+//     response?.data?.message || response?.message || "Bad Request"
+//   );
+//   setShowSuccessModal(true);
+//     setTimeout(() => setShowSuccessModal(false), 1500);
+// }
+// else if (response?.status === 403) {
+//   setModalType("error");
+//   setModalMessage("Invalid Email or Password");
+//   setShowSuccessModal(true);
+//     setTimeout(() => setShowSuccessModal(false), 1500);
+// }
+//     else {
+//     setModalType("error");
+//     setModalMessage(response?.message || "Something went wrong");
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => setShowSuccessModal(false), 1500);
+//     return;
+
+//     }
+
+//   } catch (error) {
+//        setModalType("error");
+//     setModalMessage(error?.response?.data?.message);
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => setShowSuccessModal(false), 1500);
+   
+//   }
+// };
+
+
+ const loginClick = async () => {
   if (!validate()) return;
 
   const data = {
@@ -81,22 +139,22 @@ const loginClick = async () => {
     password: password,
   };
 
-  try {
-    const response = await setLogin(data);
-     console.log("res", response);
-    if (response?.status === 200 && response?.data) {
-      context.updateToken(response?.data);
-      await storeData(ACCESS_TOKEN, response?.data);
-      // navigation.navigate("VerifyAccountScreen");
-      navigation.navigate("VerifyAccountScreen", {
-        email: email,
-      });
-        setModalType("success");
-        setModalMessage("Login Successfully");
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 2500);
-    } 
-   else if (response?.status === 400) {
+  const response = await login(data);
+  console.log("response", response);
+  
+
+  if (response?.success) {
+    const { pinSetup } = response.data;
+
+
+    if (pinSetup === false) {
+      navigation.navigate("CreateMpin");
+    } else {
+      //old user 
+      navigation.navigate("EnterMPin");
+    }
+  } 
+    else if (response?.status === 400) {
   setModalType("error");
   setModalMessage(
     response?.data?.message || response?.message || "Bad Request"
@@ -104,34 +162,14 @@ const loginClick = async () => {
   setShowSuccessModal(true);
     setTimeout(() => setShowSuccessModal(false), 1500);
 }
-else if (response?.status === 403) {
-  setModalType("error");
-  setModalMessage("Invalid Email or Password");
-  setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-}
-    else {
+  else if (response?.status === 403) {
     setModalType("error");
-    setModalMessage(response?.message || "Something went wrong");
+    setModalMessage("Invalid Email or Password");
     setShowSuccessModal(true);
-
     setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-
-    }
-
-  } catch (error) {
-       setModalType("error");
-    setModalMessage(error?.response?.data?.message);
-    setShowSuccessModal(true);
-
-    setTimeout(() => setShowSuccessModal(false), 1500);
-   
   }
 };
 
-
- 
 
 
   return (
