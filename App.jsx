@@ -12,7 +12,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import {
@@ -107,6 +107,9 @@ import ElectricityProvider from "./src/Context/ElectricityContext"
 import CreateMpin from "./src/Component/CreateAccount/CreatePin"
 import EnterMPin from "./src/Component/CreateAccount/EnterPin"
 import ConfirmMPin from "./src/Component/CreateAccount/ConfirmPin"
+import { retriveData } from './src/Utils/Storage';
+import { LOGGEDIN } from './src/Utils/Constant';
+import SuccessFlow from './src/SuccessFlow'
 
 
 function App() {
@@ -129,7 +132,7 @@ function App() {
                           <FloorProvider>
                             <BankingProvider>
                               <ElectricityProvider>
-                                   <AppContent />
+                                <AppContent />
                               </ElectricityProvider>
                             </BankingProvider>
                           </FloorProvider>
@@ -151,12 +154,36 @@ function App() {
 function AppContent() {
 
   const Navigation = createStackNavigator();
+  const [isLoggedIn,setIsLoggedIn]=useState()
+
+  console.log(isLoggedIn)
+
+  useEffect(()=>{
+    retriveData(LOGGEDIN).then(r=>{
+        setIsLoggedIn(r)
+        console.log(r)
+    })
+  },[])
 
   return (
 
     <View style={styles.container}>
 
+
+      {isLoggedIn === "true" ? <SuccessFlow/>: 
       <NavigationContainer>
+        <Navigation.Navigator screenOptions={{headerShown:false}}>
+          <Navigation.Screen name="SplashText" component={SplashText} />
+          <Navigation.Screen name="SplashScreen" component={SplashScreen} />
+          <Navigation.Screen name="LandingScreen" component={LandingScreen} />
+          <Navigation.Screen name="CreateAccount" component={CreateAccount} />
+          <Navigation.Screen name="LoginDesign" component={LoginDesign} />
+          <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+          <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+        </Navigation.Navigator>
+        </NavigationContainer>}
+
+      {/* <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
           initialRouteName="SplashText"
@@ -224,15 +251,15 @@ function AppContent() {
           <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
           <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
           <Navigation.Screen name="Agreement" component={Agreement} />
-            <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
-           <Navigation.Screen name="PG" component={PGPageFull} />
+          <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
+          <Navigation.Screen name="PG" component={PGPageFull} />
 
-              <Navigation.Screen name="CreateMpin" component={CreateMpin} />
-            <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
-             <Navigation.Screen name="EnterMPin" component={EnterMPin} />
+          <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+          <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+          <Navigation.Screen name="EnterMPin" component={EnterMPin} />
 
         </Navigation.Navigator>
-      </NavigationContainer>
+      </NavigationContainer> */}
 
     </View>
   );

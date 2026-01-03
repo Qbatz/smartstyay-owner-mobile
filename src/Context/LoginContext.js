@@ -36,6 +36,7 @@ const LoginContext = ({ children }) => {
   const [userId, setUserId] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loggedIN,setLoggedIN]=useState()
 
   // ------------------------
   // LOGIN (EMAIL + PASSWORD)
@@ -86,7 +87,7 @@ const LoginContext = ({ children }) => {
     console.log("token", token);
     
     await storeData("token", token);
-    await storeData(LOGGEDIN, "true");
+    // await storeData(LOGGEDIN, "true");
     setLoggedIn(true);
 
     return { success: true };
@@ -95,7 +96,9 @@ const LoginContext = ({ children }) => {
     return { success: false };
   }
 };
-
+  const loggedinFn=(value)=>{
+    setLoggedIN(value)
+  }
   
 
   return (
@@ -107,6 +110,8 @@ const LoginContext = ({ children }) => {
         userId,
         loggedIn,
         loading,
+
+        loggedin:loggedinFn, LoggedIN:loggedIN
       }}
     >
       {children}

@@ -11,6 +11,7 @@ import WaveIcon from "../../Assets/Images/login_Rectangle.png";
 
 
 const EnterMPin = (props) => {
+    console.log(props)
 
     const {verifyMpin} = useContext(LoginContexts)
     const navigation = useNavigation()
@@ -71,7 +72,7 @@ const EnterMPin = (props) => {
       }),
     ]).start(() => {
       setShowPopup(false);
-      navigation.replace("MyTabs");
+    //   navigation.replace("MyTabs");
     });
   }, 2000);
 };
@@ -137,6 +138,7 @@ const EnterMPin = (props) => {
 
       setTimeout(() => {
         setShowModal(false);
+        props.callBackMpin();
       }, 1500);
     } else {
       setType("error");

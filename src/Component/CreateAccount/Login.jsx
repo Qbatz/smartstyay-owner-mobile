@@ -17,10 +17,13 @@ import WaveImage from "../../Assets/Images/login_Rectangle.png";
 
 import { useNavigation } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
+import { storeData } from "../../Utils/Storage";
+import { LOGGEDIN } from "../../Utils/Constant";
 
 export default function LoginDesign() {
 
-  const { login } = useContext(LoginContexts);
+  const  {login}  = useContext(LoginContexts);
+  const loginContext=useContext(LoginContexts)
   const navigation = useNavigation();
 
   const [email, setEmail] = useState("");
@@ -148,10 +151,13 @@ export default function LoginDesign() {
 
 
     if (pinSetup === false) {
+
       navigation.navigate("CreateMpin");
     } else {
       //old user 
-      navigation.navigate("EnterMPin");
+      storeData(LOGGEDIN, 'true')
+      loginContext.loggedin('true')
+      // navigation.navigate("EnterMPin");
     }
   } 
     else if (response?.status === 400) {
