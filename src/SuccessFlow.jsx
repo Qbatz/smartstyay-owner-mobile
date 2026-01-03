@@ -1,6 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { View } from "react-native";
 
 import MyTabs from '../src/Component/Tabs/BottomTabs'
@@ -60,12 +60,14 @@ import BookingCheckIn from "../src/Component/Customer/BookingToCheckin";
 import PGPageFull from "../src/Component/PG/PGList";
 import AddBookingScreen from "../src/Component/Customer/AddBooking";
 import EnterMPin from "../src/Component/CreateAccount/EnterPin";
+import { LoginContexts } from "./Context/LoginContext";
 
 
 const SuccessFlow = (props) => {
 
-    const Navigation = createStackNavigator;
+    const Navigation = createStackNavigator();
     const [isMpinVerified, setMpinVerified] = useState(false);
+    const loginContext = useContext(LoginContexts)
 
     const verifiedMpin = () => {
         setMpinVerified(true)
@@ -75,10 +77,10 @@ const SuccessFlow = (props) => {
 
        
 
-        {isMpinVerified ?
+        {loginContext.pinVerifid ?
 
             <NavigationContainer>
-                <Navigation.Navigator >
+                <Navigation.Navigator screenOptions={{headerShown:false}}>
 
                     <Navigation.Screen name="MyTabs" component={MyTabs} />
                     <Navigation.Screen name="AddTenant" component={AddTenant} />
@@ -146,7 +148,7 @@ const SuccessFlow = (props) => {
              :
 
             <NavigationContainer>
-                <Navigation.Navigator>
+                <Navigation.Navigator screenOptions={{headerShown:false}}>
                     <Navigation.Screen name="EnterMpin" >
                         {(props) => 
                         <EnterMPin {...props} callBackMpin={verifiedMpin} />}
