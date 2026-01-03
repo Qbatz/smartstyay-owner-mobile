@@ -72,7 +72,7 @@ console.log("customers",customers)
     setCustomers(data || []);
   };
   const handleCheckoutSuccess = async () => {
-    await fetchCustomers(); // 👈 updates customers state
+    await fetchCustomers();
     setShowCheckout(false);
   };
 
@@ -91,7 +91,7 @@ console.log("customers",customers)
   const [showDetailsMenu, setShowDetailsMenu] = useState(false);
   const [deleteTenants, setDeleteTenants] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null);
-
+console.log("selectedCustomer",selectedCustomer)
   const handleWalkinFilter = () => {
     setShowFilter(true);
   };
@@ -127,6 +127,8 @@ console.log("customers",customers)
     setShowDetailsMenu(false);
     setShowInactiveSheet(true)
     setMenuVisible(false)
+    setShowDetailModal(false)
+
   }
     
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -237,13 +239,24 @@ console.log("customers",customers)
   }
 
   const handleShowFinalSettlement = () => {
+     setShowDetailModal(false)
+   setShowDetailsMenu(false)
     setMenuVisible(false)
     navigation.navigate("FinalSettlement", {
       selectedItem: selectedItem
       // selectedBed?.currentTenantInfo?.[0]?.tenetId,
     });
   }
-
+const handleShowFinalSettlementNotice = (item)=>{
+  setSelectedItem(item)
+   setMenuVisible(false)
+   setShowDetailModal(false)
+   setShowDetailsMenu(false)
+    navigation.navigate("FinalSettlement", {
+      selectedItem: selectedItem
+     
+    });
+}
    const handleShowTennantCheckin = () => {
     // navigation.navigate("TenantCheckin")
     navigation.navigate("BookingCheckIn", {
@@ -506,7 +519,7 @@ console.log("customers",customers)
                     style={{ width: 15, height: 15, marginRight: 5 }}
                     resizeMode="contain"
                   />
-                  <Text style={styles.infoValue}>{selectedCustomer?.emailId}</Text>
+                  <Text style={styles.infoValue}>{selectedCustomer?.emailId || "N/A"}</Text>
                 </View>
 
 
@@ -526,10 +539,19 @@ console.log("customers",customers)
                     style={{ width: 15, height: 15, marginRight: 5 }}
                     resizeMode="contain"
                   />
-                  <Text style={styles.infoValue}>{selectedCustomer?.actualJoining}</Text>
+                  <Text style={styles.infoValue}>{selectedCustomer?.expectedJoiningDate}</Text>
                 </View>
                 <TouchableOpacity style={styles.unassignBtn}>
-                  <Text style={styles.unassignText}>Un Assigned</Text>
+                  {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
+     <Text style={styles.unassignText}>
+  {selectedCustomer?.currentStatus === "Booked"
+    ? "Reserved"
+    : selectedCustomer?.currentStatus === "Checked In"
+    ? "Occupied"
+    : "Un Assigned"}
+</Text>
+
+
                 </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
@@ -555,6 +577,8 @@ console.log("customers",customers)
                 },
               ]}
             >
+              {selectedCustomer?.currentStatus === "Checked In" &&
+              <>
               <TouchableOpacity
                 style={styles.popupRow}
                 onPress={() => {
@@ -576,6 +600,64 @@ console.log("customers",customers)
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Move to Notice Period</Text>
               </TouchableOpacity>
+              </>
+}
+{
+  selectedCustomer?.currentStatus === "Settlement Generated" &&
+   <TouchableOpacity
+                style={styles.popupRow}
+                onPress={() => {
+                          setShowMenu(false);
+                          setShowCheckout(true);
+                          setMenuVisible(false)
+                          setShowDetailModal(false)
+                        }}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Checkout</Text>
+              </TouchableOpacity>
+}
+
+              {selectedCustomer?.currentStatus === "Booked" &&
+              <>
+               <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleShowTennantCheckin}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Checked_In</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleMakeUsInActive}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Make Us InActive</Text>
+              </TouchableOpacity>
+              </>
+
+}
+{
+  selectedCustomer?.currentStatus === "Notice Period" &&
+  <>
+               <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleShowFinalSettlement}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Final Settlement</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleShowCancelNotice}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Cancel Notice Period</Text>
+              </TouchableOpacity>
+              </>
+}
 
 
 
@@ -623,6 +705,7 @@ console.log("customers",customers)
                         onPress={() => {
                           setSelectedCustomer(selectedItem);
                           setShowMenu(false);
+                          setMenuVisible(false)
                           setShowNotice(true);
                         }}
 

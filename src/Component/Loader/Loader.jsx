@@ -1,21 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import LottieView from "lottie-react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 
 export default function Loader() {
   return (
     <View style={styles.overlay}>
-      <View style={styles.content}>
-        <LottieView
-          source={require("../../Assets/animations/loader.json")}
-          autoPlay
-          loop
-          style={{ width: 100, height: 100 }}
-        />
-
-        {/* 👇 Loading text */}
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
+      <ActivityIndicator size="large" color="#2D6CDF" />
     </View>
   );
 }
@@ -31,17 +20,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 9999,
-  },
-
-  content: {
-    alignItems: "center",
-  },
-
-  loadingText: {
-    marginTop: 2,
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#ffffff",
-    letterSpacing: 0.5,
   },
 });

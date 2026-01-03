@@ -44,9 +44,8 @@ const [initialAmount, setInitialAmount] = useState("");
 
     setBedName(name);
     setAmount(amt);
-    setBedId(editBedData.id);
+    setBedId(editBedData?.bedId);
 
-    // 🔥 STORE INITIAL VALUES
     setInitialBedName(name.trim());
     setInitialAmount(amt.trim());
   }
@@ -168,10 +167,11 @@ const [initialAmount, setInitialAmount] = useState("");
 
     setTimeout(() => {
       setShowSuccess(false);
-      onBedAdded(selectedRoomId); // 🔥 refresh beds
+      onBedAdded(selectedRoomId); 
       onClose();
     }, 800);
   } else {
+    console.log("resbed",res)
     setBedNameError(res.message);
   }
 };
@@ -293,7 +293,7 @@ const [initialAmount, setInitialAmount] = useState("");
   >
     <View style={styles.handle} />
 
-    <Text style={styles.title}>Add Bed</Text>
+    <Text style={styles.title}> {isEdit ? "Edit Bed" : "Add Bed"}</Text>
 
     <Text style={styles.label}>Bed Name or No *</Text>
    <TextInput
@@ -346,7 +346,7 @@ const [initialAmount, setInitialAmount] = useState("");
       disabled={isDisabled}
       onPress={handleSaveBed}
     >
-      <Text style={styles.addButtonText}>Add Bed</Text>
+      <Text style={styles.addButtonText}> {isEdit ? "Update Bed" : "Add Bed"}</Text>
     </TouchableOpacity>
   </ScrollView>
 </Animated.View>

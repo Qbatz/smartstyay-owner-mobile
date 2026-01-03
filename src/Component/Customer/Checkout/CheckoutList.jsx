@@ -18,6 +18,8 @@ import EmailIcon from "../../../Assets/Images/email.png";
 import PhoneIcon from "../../../Assets/Images/profile.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import AmountIcon from "../../../Assets/Images/profile.png";
+import Loader from "../../Loader/Loader";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -48,19 +50,18 @@ export default function CheckoutList() {
   };
 
   return (
+    <>
+      {loading && <Loader />}
     <TouchableWithoutFeedback onPress={() => setMenuVisibleId(null)}>
       <View style={{ flex: 1 }}>
 
-        {loading && (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            Loading...
-          </Text>
-        )}
+      
 
         {!loading && checkoutCustomer.length === 0 && (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No Checkout Customers
-          </Text>
+         <View style={styles.emptyContainer}>
+                          <Image source={EmptyState} style={styles.emptyImage} />
+                          <Text style={styles.emptyText}>No Data Found</Text>
+                        </View>
         )}
 
         <ScrollView>
@@ -193,6 +194,7 @@ export default function CheckoutList() {
         </Modal>
       </View>
     </TouchableWithoutFeedback>
+    </>
   );
 }
 
@@ -352,7 +354,27 @@ const styles = StyleSheet.create({
         bottom: 0,
         backgroundColor: "transparent",
         zIndex: 50,
-    }
+    },
+     emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 150,
+  },
+
+  emptyImage: {
+    width: 180,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.8
+  },
+
+  emptyText: {
+    marginTop: 14,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#777",
+  },
+
 
 
 });

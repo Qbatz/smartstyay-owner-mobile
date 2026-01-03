@@ -14,6 +14,8 @@ import dayjs from "dayjs";
 import { useCustomer } from "../../../Context/CustomerContext";
 import CalendarImage from "../../../Assets/Images/calendar.png";
 import { CommonContexts } from "../../../Context/CommonContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function InactiveTenantSheet({ visible, onClose, selectedBed,selectedItem,onSuccess,bookedItems }) {
   const translateY = useRef(new Animated.Value(400)).current;
@@ -24,6 +26,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed,sele
   const { cancelCheckout, initializeCheckIn,initializeCancelBooking,cancelBooking } = useCustomer();
   const [openJoinDatePic, setOpenJoinDatePic] = useState("");
   const [bankdetails,setBankDetails] = useState("")
+  const [commentError,setCommentError] = useState("")
 console.log("bookedItems",bookedItems)
 const customerId =
   selectedItem?.customerId || bookedItems?.tenetId;
@@ -164,7 +167,7 @@ const customerId =
           </Text>
 
           {/* Joining Date */}
-          <Text style={styles.label}>Joining Date *</Text>
+          <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
 
           <TouchableOpacity
             style={styles.dateBox}
@@ -179,7 +182,7 @@ const customerId =
 
 
           {/* Comments */}
-          <Text style={[styles.label, { marginTop: 12 }]}>Reason (Comments)</Text>
+          <Text style={[styles.label, { marginTop: 12 }]}>Reason (Comments) <Text style={{color:"red"}}>*</Text></Text>
 
           <TextInput
             style={styles.textArea}
