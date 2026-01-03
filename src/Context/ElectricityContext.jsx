@@ -149,6 +149,64 @@ export default function ElectricityProvider({children}){
 };
   
 
+const UpdateRoomReading = async (payload) => {
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const res = await AxiosConfig.put(
+      `/v2/electricity/${payload.hostelId}/${payload.readingId}`,
+      null,
+      {
+        params: {
+          reading: payload.reading,
+          entryDate: payload.readingDate,
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return { success: false };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const DeleteRoomReading = async ({ hostelId, readingId }) => {
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const res = await AxiosConfig.delete(
+      `/v2/electricity/${hostelId}/${readingId}`
+    );
+
+    if (res.status === 200 || res.status === 204) {
+      return { success: true };
+    }
+
+    return { success: false };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
     return(
         <ElectricityContext.Provider
         value={{
@@ -164,6 +222,8 @@ export default function ElectricityProvider({children}){
             ParticularRoomReadingDetails,
             ParticularTenantReadingDetails,
             AddRoomReading,
+            UpdateRoomReading,     
+            DeleteRoomReading,
         }}
         >
             {children}
