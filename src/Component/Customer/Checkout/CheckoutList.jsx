@@ -1,288 +1,201 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
-    View,
-    Text,
-    StyleSheet,
-    SectionList,
-    TouchableOpacity,
-    Image,
-    TouchableWithoutFeedback,
-    Modal,BackHandler
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  TouchableWithoutFeedback,
+  Modal,
+  ScrollView,
 } from "react-native";
 
 import Profile from "../../../Assets/Images/profile.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import RoomIcon from "../../../Assets/Images/room.png";
 import BedIcon from "../../../Assets/Images/bed.png";
-
 import EmailIcon from "../../../Assets/Images/email.png";
 import PhoneIcon from "../../../Assets/Images/profile.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import AmountIcon from "../../../Assets/Images/profile.png";
 
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
+
 export default function CheckoutList() {
-    const [menuVisibleId, setMenuVisibleId] = useState(null);
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getCheckoutCustomersByHostel, loading } = useCustomer();
 
+  const [checkoutCustomer, setCheckoutCustomer] = useState([]);
+  const [menuVisibleId, setMenuVisibleId] = useState(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
-    const [showCustomerModal, setShowCustomerModal] = useState(false);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [detailMenuVisible, setDetailMenuVisible] = useState(false);
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchCheckoutCustomers();
+    }
+  }, [activeHostelId]);
 
+  const fetchCheckoutCustomers = async () => {
+    const data = await getCheckoutCustomersByHostel(activeHostelId);
+    setCheckoutCustomer(data?.checkoutCustomers || []);
+  };
 
-    const customers = [
-        {
-            id: 1,
-            month: "This Month",
-            name: "Daniel Jebakumar",
-            floor: "Ground Floor",
-            room: "203",
-            bed: "03",
-            date: "01/06",
-            img: Profile,
-            email: "jebakumar001@gmail.com",
-            phone: "+91 98765 43210",
-            joinDate: "10 July 2025",
-            bookingDate: "10 July 2025",
-            amount: "500",
-        },
-    ];
+  const openCustomerDetails = (item) => {
+    setSelectedCustomer(item);
+    setShowCustomerModal(true);
+  };
 
-    const sections = useMemo(() => {
-        const map = {};
-        customers.forEach((c) => {
-            if (!map[c.month]) map[c.month] = [];
-            map[c.month].push(c);
-        });
-        return Object.keys(map).map((month) => ({
-            title: month,
-            data: map[month],
-        }));
-    }, [customers]);
+  return (
+    <TouchableWithoutFeedback onPress={() => setMenuVisibleId(null)}>
+      <View style={{ flex: 1 }}>
 
-    const openCustomerDetails = (item) => {
-        setSelectedCustomer(item);
-        setShowCustomerModal(true);
-    };
+        {loading && (
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            Loading...
+          </Text>
+        )}
 
-    const renderItem = ({ item }) => {
-        const isMenuVisible = menuVisibleId === item.id;
+        {!loading && checkoutCustomer.length === 0 && (
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No Checkout Customers
+          </Text>
+        )}
 
-        return (
-            <View style={styles.card}>
+        <ScrollView>
+          {checkoutCustomer.map((item) => {
+            const isMenuVisible = menuVisibleId === item.customerId;
+
+            return (
+              <View key={item.customerId} style={styles.card}>
                 <View style={styles.leftRow}>
-                    <TouchableOpacity onPress={() => openCustomerDetails(item)}>
-                        <Image source={item.img} style={styles.avatar} />
-                    </TouchableOpacity>
+                  <TouchableOpacity onPress={() => openCustomerDetails(item)}>
+                    <Image source={Profile} style={styles.avatar} />
+                  </TouchableOpacity>
 
-                    <View style={styles.info}>
-                        <Text style={styles.name}>{item.name}</Text>
+                  <View style={styles.info}>
+                    <Text style={styles.name}>{item.firstName}</Text>
 
-                        <View style={styles.row}>
-                            <View style={styles.floorBadge}>
-                                <Text style={styles.floorText}>{item.floor}</Text>
-                            </View>
+                    <View style={styles.row}>
+                      <View style={styles.floorBadge}>
+                        <Text style={styles.floorText}>
+                          {item.floorName}
+                        </Text>
+                      </View>
 
-                            <View style={styles.iconRow}>
-                                <Image source={RoomIcon} style={styles.icon} />
-                                <Text style={styles.detailText}>{item.room}</Text>
-                            </View>
+                      <View style={styles.iconRow}>
+                        <Image source={RoomIcon} style={styles.icon} />
+                        <Text style={styles.detailText}>
+                          {item.roomName}
+                        </Text>
+                      </View>
 
-                            <View style={styles.iconRow}>
-                                <Image source={BedIcon} style={styles.icon} />
-                                <Text style={styles.detailText}>{item.bed}</Text>
-                            </View>
-                        </View>
+                      <View style={styles.iconRow}>
+                        <Image source={BedIcon} style={styles.icon} />
+                        <Text style={styles.detailText}>
+                          {item.bedName}
+                        </Text>
+                      </View>
                     </View>
+                  </View>
                 </View>
 
                 <View style={styles.rightCol}>
-                    <TouchableOpacity
-                        onPress={() =>
-                            setMenuVisibleId(menuVisibleId === item.id ? null : item.id)
-                        }
-                    >
-                        <Image
-                            source={Dots}
-                            style={{ width: 28, height: 28, transform: [{ rotate: "90deg" }] }}
-                        />
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() =>
+                      setMenuVisibleId(
+                        isMenuVisible ? null : item.customerId
+                      )
+                    }
+                  >
+                    <Image
+                      source={Dots}
+                      style={{
+                        width: 26,
+                        height: 26,
+                        transform: [{ rotate: "90deg" }],
+                      }}
+                    />
+                  </TouchableOpacity>
 
+                  <Text style={styles.date}>
+                    {item.checkoutDate}
+                  </Text>
 
-                    <Text style={styles.date}>{item.date}</Text>
+                  {isMenuVisible && (
+                    <View style={styles.popup}>
+                      <TouchableOpacity style={styles.popupItem}>
+                        <Text style={styles.popupText}>
+                          Re-Assign Bed
+                        </Text>
+                      </TouchableOpacity>
 
-                    {isMenuVisible && (
-                        <View style={styles.popup}>
-                            <TouchableOpacity
-                                style={styles.popupItem}
-                                onPress={() => setMenuVisibleId(null)}
-                            >
-                                <Text style={styles.popupText}>Re-Assign Bed</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={styles.popupItem}
-                                onPress={() => setMenuVisibleId(null)}
-                            >
-                                <Text style={styles.popupText}>Move to Notice Period</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-
-
+                      <TouchableOpacity style={styles.popupItem}>
+                        <Text style={styles.popupText}>
+                          Move to Notice Period
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
-            </View>
-        );
-    };
+              </View>
+            );
+          })}
+        </ScrollView>
 
-    return (
-        <TouchableWithoutFeedback onPress={() => setMenuVisibleId(null)}>
-            <View style={{ flex: 1 }}>
-                <SectionList
-                    sections={sections}
-                    renderItem={renderItem}
-                    keyExtractor={(i) => i.id}
-                    renderSectionHeader={({ section }) => (
-                        <Text style={styles.monthText}>{section.title}</Text>
-                    )}
-                />
-                <Modal
-                    visible={showCustomerModal}
-                    transparent
-                    animationType="slide"
-                >
-                    <TouchableOpacity
-                        style={styles.overlay}
-                        activeOpacity={1}
-                        onPress={() => setShowCustomerModal(false)}
-                    >
-                        <TouchableWithoutFeedback>
-                            <View style={styles.sheet}>
-                                <View style={styles.handle} />
+        {/* CUSTOMER DETAILS MODAL */}
+        <Modal visible={showCustomerModal} transparent animationType="slide">
+          <TouchableOpacity
+            style={styles.overlay}
+            activeOpacity={1}
+            onPress={() => setShowCustomerModal(false)}
+          >
+            <TouchableWithoutFeedback>
+              <View style={styles.sheet}>
+                <View style={styles.handle} />
 
-                                <View style={styles.headerRow}>
-                                    <Text style={styles.title}>Customer Details</Text>
+                <Text style={styles.title}>Customer Details</Text>
 
-                                    <TouchableOpacity style={styles.checkInBtn}>
-                                        <Text style={styles.checkInText}>Check In</Text>
+                <View style={styles.profileRow}>
+                  <Image source={Profile} style={styles.profileImg} />
+                  <Text style={styles.profileName}>
+                    {selectedCustomer?.customerName}
+                  </Text>
+                </View>
 
-                                    </TouchableOpacity>
-                                    {/* <TouchableOpacity
-  onPress={() => setDetailMenuVisible(!detailMenuVisible)}
->
-  <Image
-    source={Dots}
-    style={{ width: 24, height: 24, transform: [{ rotate: "90deg" }] }}
-  />
-</TouchableOpacity> */}
+                <Text style={styles.label}>Email</Text>
+                <View style={styles.infoRow}>
+                  <Image source={EmailIcon} style={styles.infoIcon} />
+                  <Text>{selectedCustomer?.email}</Text>
+                </View>
 
-                                    {detailMenuVisible && (
-                                        <TouchableWithoutFeedback onPress={() => setDetailMenuVisible(false)}>
-                                            <View style={styles.outsideArea}>
-                                                <TouchableWithoutFeedback>
-                                                    <View style={styles.detailPopup}>
-                                                        <TouchableOpacity style={styles.popupItem}>
-                                                            <Text style={styles.popupText}>Cancel Notice</Text>
-                                                        </TouchableOpacity>
+                <Text style={styles.label}>Mobile</Text>
+                <View style={styles.infoRow}>
+                  <Image source={PhoneIcon} style={styles.infoIcon} />
+                  <Text>{selectedCustomer?.mobile}</Text>
+                </View>
 
-                                                        <TouchableOpacity style={styles.popupItem}>
-                                                            <Text style={styles.popupText}>Generate FI</Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                </TouchableWithoutFeedback>
-                                            </View>
-                                        </TouchableWithoutFeedback>
-                                    )}
+                <Text style={styles.label}>Checkout Date</Text>
+                <View style={styles.infoRow}>
+                  <Image source={CalendarIcon} style={styles.infoIcon} />
+                  <Text>{selectedCustomer?.checkoutDate}</Text>
+                </View>
 
-
-
-
-                                </View>
-
-                                {/* Profile */}
-                                <View style={styles.profileRow}>
-                                    <Image
-                                        source={selectedCustomer?.img}
-                                        style={styles.profileImg}
-                                    />
-
-                                    <View style={{ marginLeft: 12 }}>
-                                        <Text style={styles.profileName}>
-                                            {selectedCustomer?.name}
-                                        </Text>
-
-                                        <View style={styles.badgeRow}>
-                                            <View style={styles.badge}>
-                                                <Text style={styles.badgeText}>
-                                                    {selectedCustomer?.floor}
-                                                </Text>
-                                            </View>
-
-                                            <View style={styles.iconInline}>
-                                                <Image source={RoomIcon} style={styles.inlineIcon} />
-                                                <Text>{selectedCustomer?.room}</Text>
-                                            </View>
-
-                                            <View style={styles.iconInline}>
-                                                <Image source={BedIcon} style={styles.inlineIcon} />
-                                                <Text>{selectedCustomer?.bed}</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-
-                                <Text style={styles.label}>Email ID</Text>
-                                <View style={styles.infoRow}>
-                                    <Image source={EmailIcon} style={styles.infoIcon} />
-                                    <Text style={styles.value}>{selectedCustomer?.email}</Text>
-                                </View>
-
-                                <Text style={styles.label}>Contact Number</Text>
-                                <View style={styles.infoRow}>
-                                    <Image source={PhoneIcon} style={styles.infoIcon} />
-                                    <Text style={styles.value}>{selectedCustomer?.phone}</Text>
-                                </View>
-
-                                <View style={styles.divider} />
-
-                                <View style={styles.rowBetween}>
-                                    <View>
-                                        <Text style={styles.label}>Joining Date (Tentative)</Text>
-                                        <View style={styles.infoRow}>
-                                            <Image source={CalendarIcon} style={styles.infoIcon} />
-                                            <Text style={styles.value}>
-                                                {selectedCustomer?.joinDate}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View>
-                                        <Text style={styles.label}>Booking Date</Text>
-                                        <View style={styles.infoRow}>
-                                            <Image source={CalendarIcon} style={styles.infoIcon} />
-                                            <Text style={styles.value}>
-                                                {selectedCustomer?.bookingDate}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                </View>
-
-
-                                <Text style={styles.label}>Booking Amount</Text>
-                                <View style={styles.infoRow}>
-                                    <Image source={AmountIcon} style={styles.infoIcon} />
-                                    <Text style={styles.value}>₹ {selectedCustomer?.amount}</Text>
-                                </View>
-
-
-                                <Text style={styles.statusBtn}>In Active</Text>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </TouchableOpacity>
-                </Modal>
-            </View>
-        </TouchableWithoutFeedback>
-    );
+                <Text style={styles.label}>Amount</Text>
+                <View style={styles.infoRow}>
+                  <Image source={AmountIcon} style={styles.infoIcon} />
+                  <Text>₹ {selectedCustomer?.amount}</Text>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </TouchableOpacity>
+        </Modal>
+      </View>
+    </TouchableWithoutFeedback>
+  );
 }
+
 
 const styles = StyleSheet.create({
     monthText: { marginLeft: 6, color: "#9CA3AF", marginVertical: 10 },
