@@ -171,7 +171,7 @@ const handleReAssignBed=()=>{
                         <View style={styles.popupMenu}>
                             <TouchableOpacity style={styles.popupItem} onPress={handleReAssignBed}>
                                 <Image source={ReassignIcon} style={styles.menuIcon} />
-                                <Text style={styles.popupText}>Re-Assign Bed</Text>
+                                <Text style={styles.popupText}>Change Bed</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.popupItem} onPress={handleMoveClick}>

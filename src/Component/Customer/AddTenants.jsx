@@ -166,10 +166,33 @@ const filteredStateList = stateList
 
 
     const handleCreateTenant = async () => {
-        if (basicDetails.email && emailError) {
-            setStep(1);
-            return;
-        }
+     let valid = true;
+
+  setNameError("");
+  setMobileError("");
+  setEmailError("");
+  setPincodeError("");
+
+  // 🔹 BASIC VALIDATION
+  if (!basicDetails.firstName) {
+    setNameError("Please enter first name");
+    valid = false;
+  }
+
+  if (!basicDetails.mobile) {
+    setMobileError("Please enter mobile number");
+    valid = false;
+  }
+
+  
+  if (!valid) return;
+
+  // 🔹 EMAIL VALIDATION
+  if (basicDetails.email && emailError) {
+    setStep(1);
+    return;
+  }
+
         if (
             addressDetails.pincode &&
             (addressDetails.pincode.length !== 6 || addressDetails.pincode.startsWith("0"))
@@ -180,7 +203,9 @@ const filteredStateList = stateList
                     : "Pincode must be 6 digits"
             );
             return;
+            
         }
+        
         const payloads = {
 
             customerInfo: {
@@ -364,9 +389,10 @@ const filteredStateList = stateList
                                     onChangeText={(t) => {
                                         const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                         setBasicDetails({ ...basicDetails, firstName: onlyLetters });
+                                        setNameError("")
                                     }}
                                 />
-
+  {nameError && <ErrorMessage message={nameError} type="error" />}
                                 <Text style={styles.label}>Last Name</Text>
                                 <TextInput
                                     style={styles.input}
@@ -431,14 +457,14 @@ const filteredStateList = stateList
                                 <TouchableOpacity
                                     style={[
                                         styles.secondaryBtn,
-                                        !isBasicValid && styles.secondaryBtnDisabled
+                                        
                                     ]}
-                                    disabled={!isBasicValid}
+                                   
                                     onPress={handleCreateTenant}  >
                                     <Text
                                         style={[
-                                            styles.secondaryText,
-                                            !isBasicValid && styles.secondaryTextDisabled
+                                            styles.secondaryText
+                                           
                                         ]}
                                     >
                                         Save Info
