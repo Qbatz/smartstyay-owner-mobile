@@ -612,6 +612,36 @@ const initializeCancelBooking = async (customerId) => {
   }
 };
 
+const getCheckoutCustomersByHostel = async (hostelId, name = "") => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+
+    const res = await AxiosConfig.get(
+      `/v2/customers/checkout/${hostelId}`,
+      {
+        params: {
+          ...(name && { name }),
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data;
+  } catch (error) {
+    console.log("CHECKOUT CUSTOMERS ERROR 👉", error?.response?.data);
+    setErrorMsg(
+      error?.response?.data?.message || "Checkout customers fetch failed"
+    );
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -630,7 +660,7 @@ const initializeCancelBooking = async (customerId) => {
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel
       }}
     >
       {children}
