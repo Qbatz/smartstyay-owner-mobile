@@ -1,4 +1,4 @@
-import React, { useState,useCallback ,useEffect,useContext} from "react";
+import React, { useState, useCallback, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  Platform, LayoutAnimation,BackHandler
+  Platform, LayoutAnimation, BackHandler
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
@@ -27,61 +27,59 @@ import DownArrow from "../../Assets/Images/direction-down.png";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
+import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function FinalSettlement({ navigation,route }) {
-  const { selectedItem,selectedBed } = route.params || {};
-   const { activeHostelId } = useContext(CommonContexts);
-    const { getCustomersByHostel, loading,getSettlementByCustomerId,submitSettlement } = useCustomer();
+export default function FinalSettlement({ navigation, route }) {
+  const { selectedItem, selectedBed } = route.params || {};
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getCustomersByHostel, loading, getSettlementByCustomerId, submitSettlement } = useCustomer();
 
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
-console.log("selectedItem",selectedItem)
-console.log("selectedBed",selectedBed)
+
   const [open, setOpen] = useState(false);
   const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
-  const [settlementDetails,setSettlementDetails] = useState("")
+  const [settlementDetails, setSettlementDetails] = useState("")
   const [ReturnAmount, setReturnAmount] = useState('')
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
-useEffect(() => {
-  if (!selectedItem && !selectedBed) return;
+  useEffect(() => {
+    if (!selectedItem && !selectedBed) return;
 
-  const fetchSettlement = async () => {
-  
+    const fetchSettlement = async () => {
 
-    const res = await getSettlementByCustomerId(selectedItem?.customerId || selectedBed?.currentTenantInfo[0]?.tenetId);
 
-    if (res.success) {
-      setSettlementDetails(res.data);
-    } else {
-      alert(res.message || "Failed to load settlement");
-    }
+      const res = await getSettlementByCustomerId(selectedItem?.customerId || selectedBed?.currentTenantInfo[0]?.tenetId);
 
-  
-  };
+      if (res.success) {
+        setSettlementDetails(res.data);
+      } else {
+        alert(res.message || "Failed to load settlement");
+      }
 
-  fetchSettlement();
-}, [selectedItem,selectedBed]);
-console.log("settlement.....?",settlementDetails)
 
-  // const addCharge = () => {
-  //   setExtraCharges(prev => [
-  //     ...prev,
-  //     { id: Date.now(), type: "", title: "", amount: "" }
-  //   ]);
-  // };
+    };
+
+    fetchSettlement();
+  }, [selectedItem, selectedBed]);
+
+
+
   const addCharge = () => {
-  setExtraCharges(prev => [
-    ...prev,
-    {
-      id: Date.now(),
-      type: "",
-      title: "",
-      amount: "",
-      isDefault: false, // 🔥
-    }
-  ]);
-};
+    setExtraCharges(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        type: "",
+        title: "",
+        amount: "",
+        isDefault: false, // 🔥
+      }
+    ]);
+  };
 
 
   const removeCharge = (id) => {
@@ -103,23 +101,23 @@ console.log("settlement.....?",settlementDetails)
 
     setOpenDropdownId(null);
   };
-useEffect(() => {
-  if (!settlementDetails?.customerInfo?.listDeductions?.length) return;
+  useEffect(() => {
+    if (!settlementDetails?.customerInfo?.listDeductions?.length) return;
 
-  const mappedCharges = settlementDetails.customerInfo.listDeductions.map(item => {
-    const isMaintenance = item.type?.toLowerCase() === "maintenance";
+    const mappedCharges = settlementDetails.customerInfo.listDeductions.map(item => {
+      const isMaintenance = item.type?.toLowerCase() === "maintenance";
 
-    return {
-      id: Date.now() + Math.random(),
-      type: isMaintenance ? "Maintenance" : "Others",
-      title: isMaintenance ? "" : item.type,
-      amount: String(item.amount),
-      isDefault: true,   // 🔥 IMPORTANT
-    };
-  });
+      return {
+        id: Date.now() + Math.random(),
+        type: isMaintenance ? "Maintenance" : "Others",
+        title: isMaintenance ? "" : item.type,
+        amount: String(item.amount),
+        isDefault: true,   // 🔥 IMPORTANT
+      };
+    });
 
-  setExtraCharges(mappedCharges);
-}, [settlementDetails]);
+    setExtraCharges(mappedCharges);
+  }, [settlementDetails]);
 
 
 
@@ -138,26 +136,26 @@ useEffect(() => {
     );
   };
   useFocusEffect(
-     useCallback(() => {
-       const onBackPress = () => {
-       
-   
-         if (navigation.canGoBack()) {
-           navigation.goBack();
-           return true;
-         }
-   
-         return false;
-       };
-   
-       const subscription = BackHandler.addEventListener(
-         "hardwareBackPress",
-         onBackPress
-       );
-   
-       return () => subscription.remove();
-     }, [ navigation])
-   );
+    useCallback(() => {
+      const onBackPress = () => {
+
+
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [navigation])
+  );
 
 
   const mockData = {
@@ -242,340 +240,344 @@ useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setOpen(!open);
   };
- const userEnteredDeductionsTotal = extraCharges
-  .filter(item => !item.isDefault) 
-  .reduce((sum, item) => {
-    const amt = Number(item.amount);
-    return sum + (isNaN(amt) ? 0 : amt);
-  }, 0);
+  const userEnteredDeductionsTotal = extraCharges
+    .filter(item => !item.isDefault)
+    .reduce((sum, item) => {
+      const amt = Number(item.amount);
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
 
-const apiDeductions =
-  Number(settlementDetails?.settlementInfo?.totalDeductions) || 0;
-const finalTotalDeductions = apiDeductions + userEnteredDeductionsTotal;
-const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + settlementDetails?.currentMonthRentInfo?.currentPayableRent
+  const apiDeductions =
+    Number(settlementDetails?.settlementInfo?.totalDeductions) || 0;
+  const finalTotalDeductions = apiDeductions + userEnteredDeductionsTotal;
+  const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + settlementDetails?.currentMonthRentInfo?.currentPayableRent
 
-   useEffect(() => {
-        if (settlementDetails?.settlementInfo) {
-            const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
-
-          
-
-           
+  useEffect(() => {
+    if (settlementDetails?.settlementInfo) {
+      const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
 
 
-            let finalAmount = 0;
-            if (amountTobePaid < 0) {
-                finalAmount = isRefundable
-                    ? amountTobePaid + userEnteredDeductionsTotal
-                    : amountTobePaid - userEnteredDeductionsTotal;
-            } else {
-                finalAmount = isRefundable
-                    ? amountTobePaid - userEnteredDeductionsTotal
-                    : amountTobePaid + userEnteredDeductionsTotal;
-            }
 
-            setReturnAmount(finalAmount);
-        }
-    }, [settlementDetails]);
-    const isNegative = Number(ReturnAmount) < 0;
-  // const extraDeductionsPayload = extraCharges
-  // .filter(item => !item.isDefault && Number(item.amount) > 0)
-  // .map(item => ({
-  //   reason: item.type === "Others" ? item.title : item.type,
-  //   amount: Number(item.amount),
-  // }));
+
+
+
+      let finalAmount = 0;
+      if (amountTobePaid < 0) {
+        finalAmount = isRefundable
+          ? amountTobePaid + userEnteredDeductionsTotal
+          : amountTobePaid - userEnteredDeductionsTotal;
+      } else {
+        finalAmount = isRefundable
+          ? amountTobePaid - userEnteredDeductionsTotal
+          : amountTobePaid + userEnteredDeductionsTotal;
+      }
+
+      setReturnAmount(finalAmount);
+    }
+  }, [settlementDetails]);
+  const isNegative = Number(ReturnAmount) < 0;
+
   const extraDeductionsPayload = extraCharges
-  .filter(item => !item.isDefault && Number(item.amount) > 0)
-  .map(item => ({
-    item: item.type === "Others"
-      ? item.title?.trim()
-      : item.type,        // 👈 Maintenance / DueAmount
-    amount: Number(item.amount),
-  }));
+    .filter(item => !item.isDefault && Number(item.amount) > 0)
+    .map(item => ({
+      item: item.type === "Others"
+        ? item.title?.trim()
+        : item.type,        // 👈 Maintenance / DueAmount
+      amount: Number(item.amount),
+    }));
 
-  console.log("extraDeductionsPayload",extraDeductionsPayload)
 
-const handleGenerate = async () => {
-  const customerId =
-    selectedItem?.customerId ||
-    selectedBed?.currentTenantInfo[0]?.tenetId;
 
-  // ❌ object wrap panna vendam
-  // const payload = { extraDeductions: extraDeductionsPayload };
+  const handleGenerate = async () => {
+    const customerId =
+      selectedItem?.customerId ||
+      selectedBed?.currentTenantInfo[0]?.tenetId;
 
-  // ✅ DIRECT ARRAY
-  const payload = extraDeductionsPayload;
 
-  console.log("FINAL PAYLOAD 👉", JSON.stringify(payload, null, 2));
+    const payload = extraDeductionsPayload;
 
-  const res = await submitSettlement(customerId, payload);
 
-  if (res.success) {
-    alert("Settlement completed successfully ✅");
-    navigation.goBack();
-  } else {
-    alert(res.message || "Settlement failed ❌");
-  }
-};
+
+    const res = await submitSettlement(customerId, payload);
+
+    if (res.success) {
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      navigation.goBack();
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
+
+    } else {
+
+      setModalType("warning");
+      setMessage(res.message);
+      setShowSuccess(true);
+    }
+  };
 
   const fmt = (v) =>
     typeof v === "number" ? `₹ ${v.toLocaleString("en-IN")}` : `₹ ${v}`;
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.topHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={ArrowLeft} style={styles.backIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Final Settlement</Text>
-      </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40, marginTop: 20 }}>
-
-
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <Image source={Profile} style={styles.profileImg} />
-            <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={styles.name}>{settlementDetails?.customerInfo?.fullName}</Text>
-{
-  settlementDetails?.currentMonthRentInfo?.rentLists?.map((item,index)=>{
-    return(
-    
-      <View style={styles.smallRow} key={item.bedName || index}>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{item.floorName}</Text>
-                </View>
-
-                <Image source={RoomIcon} style={styles.smallIcon} />
-                <Text style={styles.badgeLabel}>{item.roomName}</Text>
-
-                <Image source={BedIcon} style={styles.smallIcon} />
-                <Text style={styles.badgeLabel}>{item.bedName}</Text>
-              </View>
-      
-    )
-
-  })
-}
-             
-            </View>
-          </View>
-          <View style={styles.grid}>
-
-            <View style={styles.gridPair}>
-              <View style={styles.gridCol}>
-                <Text style={styles.gridLabel}>Joined Date</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.joiningDate}</Text>
-              </View>
-
-              <View style={[styles.gridCol, { marginLeft: 30 }]}>
-                <Text style={styles.gridLabel}>Req Checkout Date</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.stayInfo?.noticeDate}</Text>
-              </View>
-            </View>
-
-            <View style={styles.gridPair}>
-              <View style={styles.gridCol}>
-                <Text style={styles.gridLabel}>Advance Amount</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.advanceAmount}</Text>
-              </View>
-
-              <View style={[styles.gridCol, { marginLeft: 30 }]}>
-                <Text style={styles.gridLabel}>Monthly Rent</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.rentAmount}</Text>
-              </View>
-            </View>
-
-            <View style={styles.gridPair}>
-              <View style={styles.gridCol}>
-                <Text style={styles.gridLabel}>Booking Amount</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.bookingAmount}</Text>
-              </View>
-
-              <View style={[styles.gridCol, { marginLeft: 30 }]}>
-                <Text style={styles.gridLabel}>Advance Paid</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.advancePaidAmount}</Text>
-              </View>
-            </View>
-
-            <View style={styles.gridPair}>
-              <View style={styles.gridCol}>
-                <Text style={styles.gridLabel}>Actual Checkout Date</Text>
-                <Text style={styles.gridValue}>{settlementDetails?.stayInfo?.checkoutDate}</Text>
-              </View>
-
-              <View style={[styles.gridCol, { marginLeft: 30 }]}>
-                <Text style={styles.gridLabel}>Status</Text>
-                <Text
-                  style={[
-                    styles.gridValue,
-                    { color: data.status === "Pending" ? "#E11D48" : "#16A34A" },
-                  ]}
-                >
-                  {data.status}
-                </Text>
-              </View>
-            </View>
-
-          </View>
-
+    <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.topHeader}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Final Settlement</Text>
         </View>
-
-        <View style={styles.ebHeaderRow}>
-          <Text style={styles.ebTitle}>
-            Current EB Reading <Text style={{ color: "red" }}>*</Text>
-          </Text>
-
-          <Text style={styles.lastReadingText}>
-            Last Reading : 230
-          </Text>
-        </View>
+        <ScrollView contentContainerStyle={{ paddingBottom: 40, marginTop: 20 }}>
 
 
-        <View style={styles.inputWrap}>
-          <TextInput
-            style={styles.ebInput}
-            value={currentEB}
-            onChangeText={setCurrentEB}
-            keyboardType="numeric"
-            placeholder="Enter reading"
-          />
-
-        </View>
-
-        <View style={styles.nonRefund}>
-          <View style={styles.extraHeader}>
-            <Text style={styles.label}>Non Refundable Amount</Text>
-
-            <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-              <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
-            </TouchableOpacity>
-          </View>
-
-          {extraCharges.map((item) => (
-            <View key={item.id} style={styles.figmaRowWrapper}>
-
-              {/* CLOSE BTN */}
-            {!item.isDefault && (
-  <TouchableOpacity
-    onPress={() => removeCharge(item.id)}
-    style={styles.figmaCloseBtn}
-  >
-    <Image source={Delete} style={styles.figmaCloseText} />
-  </TouchableOpacity>
-)}
-
-
-              <View style={styles.figmaRow}>
-
-
-                {item.type === "" ? (
-                   <TouchableOpacity
-    disabled={item.isDefault}
-    style={[
-      styles.figmaLeftBox,
-      item.isDefault && { opacity: 0.6 }
-    ]}
-    onPress={() =>
-      setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-    }
-  >
-                    <Text style={{ color: "#777" }}>Select...</Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
-                ) : item.type === "Others" ? (
-                  <TextInput
-                    style={styles.figmaLeftBox}
-                    placeholder="Enter reason"
-                    value={item.title}
-                    onChangeText={(t) => updateTitle(item.id, t)}
-                  />
-                ) : (
-                  <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                    <Text>Maintenance</Text>
-                  </View>
-                )}
-
-                {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                {item.type === "" ? (
-                  <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                    <Text style={{ color: "#999" }}>Enter amount</Text>
-                  </View>
-                ) : (
-                  // <TextInput
-                  //   style={styles.figmaRightBox}
-                  //   placeholder="Enter amount"
-                  //   keyboardType="numeric"
-                  //   value={item.amount}
-                  //   onChangeText={(t) => updateAmount(item.id, t)}
-                  // />
-                  <TextInput
-  editable={!item.isDefault}
-  style={[
-    styles.figmaRightBox,
-    item.isDefault && { backgroundColor: "#F1F1F1" }
-  ]}
-  value={item.amount}
-  placeholder="Enter Amount"
-  keyboardType="numeric"
-  onChangeText={(t) => updateAmount(item.id, t)}
-/>
-                )}
-
-              </View>
-
-
-              {openDropdownId === item.id && item.type === "" && (
-                <View style={styles.dropdownMenu}>
-                  {TYPE_OPTIONS.map((t) => {
-
-                    const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <Image source={Profile} style={styles.profileImg} />
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={styles.name}>{settlementDetails?.customerInfo?.fullName}</Text>
+                {
+                  settlementDetails?.currentMonthRentInfo?.rentLists?.map((item, index) => {
                     return (
-                      <TouchableOpacity
-                        key={t}
-                        disabled={disabled}
-                        onPress={() => !disabled && selectType(item.id, t)}
-                        style={{ opacity: disabled ? 0.3 : 1 }}
-                      >
-                        <Text style={styles.dropdownItem}>{t}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
 
+                      <View style={styles.smallRow} key={item.bedName || index}>
+                        <View style={styles.badge}>
+                          <Text style={styles.badgeText}>{item.floorName}</Text>
+                        </View>
+
+                        <Image source={RoomIcon} style={styles.smallIcon} />
+                        <Text style={styles.badgeLabel}>{item.roomName}</Text>
+
+                        <Image source={BedIcon} style={styles.smallIcon} />
+                        <Text style={styles.badgeLabel}>{item.bedName}</Text>
+                      </View>
+
+                    )
+
+                  })
+                }
+
+              </View>
             </View>
-          ))}
+            <View style={styles.grid}>
 
+              <View style={styles.gridPair}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>Joined Date</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.joiningDate}</Text>
+                </View>
 
-
-
-
-        </View>
-
-        {
-                                        settlementDetails?.unpaidInvoices?.length > 0 &&
-          <>
-            <Text style={{ marginLeft: 15, fontWeight: 600, marginTop: 10 }}>Invoices Pending</Text>
-            <View style={styles.table}>
-              <View style={[styles.tableRow, styles.tableHeader]}>
-                <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>INVOICE.NO</Text>
-                <Text style={[styles.tableCellCenter, styles.tableHeaderText]}>TYPE</Text>
-                <Text style={[styles.tableCellRight, styles.tableHeaderText]}>INVOICE AMOUNT</Text>
+                <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                  <Text style={styles.gridLabel}>Req Checkout Date</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.stayInfo?.noticeDate}</Text>
+                </View>
               </View>
 
-             {Array.isArray(settlementDetails?.unpaidInvoices) && settlementDetails?.unpaidInvoices.map((user,i) => (
-                <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableStrip : null]}>
-                  <Text style={[styles.tableCellLeft, styles.invoiceLink]}>{user.invoiceNumber}</Text>
-                  <Text style={styles.tableCellCenter}> {user.type}</Text>
-                  <Text style={styles.tableCellRight}>{user.payableAmount}</Text>
+              <View style={styles.gridPair}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>Advance Amount</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.advanceAmount}</Text>
                 </View>
-              ))}
+
+                <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                  <Text style={styles.gridLabel}>Monthly Rent</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.rentAmount}</Text>
+                </View>
+              </View>
+
+              <View style={styles.gridPair}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>Booking Amount</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.bookingAmount}</Text>
+                </View>
+
+                <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                  <Text style={styles.gridLabel}>Advance Paid</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.customerInfo?.advancePaidAmount}</Text>
+                </View>
+              </View>
+
+              <View style={styles.gridPair}>
+                <View style={styles.gridCol}>
+                  <Text style={styles.gridLabel}>Actual Checkout Date</Text>
+                  <Text style={styles.gridValue}>{settlementDetails?.stayInfo?.checkoutDate}</Text>
+                </View>
+
+                <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                  <Text style={styles.gridLabel}>Status</Text>
+                  <Text
+                    style={[
+                      styles.gridValue,
+                      { color: data.status === "Pending" ? "#E11D48" : "#16A34A" },
+                    ]}
+                  >
+                    {data.status}
+                  </Text>
+                </View>
+              </View>
+
             </View>
-          </>
+
+          </View>
+
+          <View style={styles.ebHeaderRow}>
+            <Text style={styles.ebTitle}>
+              Current EB Reading <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <Text style={styles.lastReadingText}>
+              Last Reading : 230
+            </Text>
+          </View>
+
+
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={styles.ebInput}
+              value={currentEB}
+              onChangeText={setCurrentEB}
+              keyboardType="numeric"
+              placeholder="Enter reading"
+            />
+
+          </View>
+
+          <View style={styles.nonRefund}>
+            <View style={styles.extraHeader}>
+              <Text style={styles.label}>Non Refundable Amount</Text>
+
+              <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            {extraCharges.map((item) => (
+              <View key={item.id} style={styles.figmaRowWrapper}>
+
+                {/* CLOSE BTN */}
+                {!item.isDefault && (
+                  <TouchableOpacity
+                    onPress={() => removeCharge(item.id)}
+                    style={styles.figmaCloseBtn}
+                  >
+                    <Image source={Delete} style={styles.figmaCloseText} />
+                  </TouchableOpacity>
+                )}
+
+
+                <View style={styles.figmaRow}>
+
+
+                  {item.type === "" ? (
+                    <TouchableOpacity
+                      disabled={item.isDefault}
+                      style={[
+                        styles.figmaLeftBox,
+                        item.isDefault && { opacity: 0.6 }
+                      ]}
+                      onPress={() =>
+                        setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                      }
+                    >
+                      <Text style={{ color: "#777" }}>Select...</Text>
+                      <Image source={DownArrow} style={styles.arrow} />
+                    </TouchableOpacity>
+                  ) : item.type === "Others" ? (
+                    <TextInput
+                      style={styles.figmaLeftBox}
+                      placeholder="Enter reason"
+                      value={item.title}
+                      onChangeText={(t) => updateTitle(item.id, t)}
+                    />
+                  ) : (
+                    <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                      <Text>Maintenance</Text>
+                    </View>
+                  )}
+
+                  {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                  {item.type === "" ? (
+                    <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                      <Text style={{ color: "#999" }}>Enter amount</Text>
+                    </View>
+                  ) : (
+                    // <TextInput
+                    //   style={styles.figmaRightBox}
+                    //   placeholder="Enter amount"
+                    //   keyboardType="numeric"
+                    //   value={item.amount}
+                    //   onChangeText={(t) => updateAmount(item.id, t)}
+                    // />
+                    <TextInput
+                      editable={!item.isDefault}
+                      style={[
+                        styles.figmaRightBox,
+                        item.isDefault && { backgroundColor: "#F1F1F1" }
+                      ]}
+                      value={item.amount}
+                      placeholder="Enter Amount"
+                      keyboardType="numeric"
+                      onChangeText={(t) => updateAmount(item.id, t)}
+                    />
+                  )}
+
+                </View>
+
+
+                {openDropdownId === item.id && item.type === "" && (
+                  <View style={styles.dropdownMenu}>
+                    {TYPE_OPTIONS.map((t) => {
+
+                      const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                      return (
+                        <TouchableOpacity
+                          key={t}
+                          disabled={disabled}
+                          onPress={() => !disabled && selectType(item.id, t)}
+                          style={{ opacity: disabled ? 0.3 : 1 }}
+                        >
+                          <Text style={styles.dropdownItem}>{t}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+
+              </View>
+            ))}
+
+
+
+
+
+          </View>
+
+          {
+            settlementDetails?.unpaidInvoices?.length > 0 &&
+            <>
+              <Text style={{ marginLeft: 15, fontWeight: 600, marginTop: 10 }}>Invoices Pending</Text>
+              <View style={styles.table}>
+                <View style={[styles.tableRow, styles.tableHeader]}>
+                  <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>INVOICE.NO</Text>
+                  <Text style={[styles.tableCellCenter, styles.tableHeaderText]}>TYPE</Text>
+                  <Text style={[styles.tableCellRight, styles.tableHeaderText]}>INVOICE AMOUNT</Text>
+                </View>
+
+                {Array.isArray(settlementDetails?.unpaidInvoices) && settlementDetails?.unpaidInvoices.map((user, i) => (
+                  <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableStrip : null]}>
+                    <Text style={[styles.tableCellLeft, styles.invoiceLink]}>{user.invoiceNumber}</Text>
+                    <Text style={styles.tableCellCenter}> {user.type}</Text>
+                    <Text style={styles.tableCellRight}>{user.payableAmount}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
           }
-     
+
           {/* // <>
           //   <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Check out Date *</Text>
           //   <TouchableOpacity style={styles.inputBoxSingle} onPress={() => setShowCheckoutPicker(true)}>
@@ -583,115 +585,115 @@ const handleGenerate = async () => {
           //     <Image source={CalendarIcon} style={styles.iconImage} />
           //   </TouchableOpacity>
           // </> */}
-      
-
-       <Text style={{ marginLeft: 15, fontWeight: 600, marginTop: 10 }}>
-  Refundable Rent
-</Text>
-
-<View style={styles.table}>
-  <View style={[styles.tableRow, styles.tableHeader]}>
-    <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>
-      DESCRIPTION
-    </Text>
-    <Text style={[styles.tableCellRight, styles.tableHeaderText]}>
-      INVOICE AMOUNT
-    </Text>
-  </View>
-
-  <View style={styles.tableRow}>
-    <Text style={styles.tabledescription}>
-    Last Rent (30 days)
-    </Text>
-
-   <Text style={styles.tableCellRight}>
-  ₹ {Number(
-    (settlementDetails?.currentMonthRentInfo?.currentMonthRent) || 0
-  ).toLocaleString("en-IN")}
-</Text>
-
-  </View>
-   <View style={styles.tableRow}>
-    <Text style={styles.tabledescription}>
-    Acctual days (
-      {settlementDetails?.currentMonthRentInfo?.stayDays} days)
-    </Text>
-
-   <Text style={styles.tableCellRight}>
-  ₹ {Number(
-    (settlementDetails?.currentMonthRentInfo?.currentPayableRent) || 0
-  ).toLocaleString("en-IN")}
-</Text>
-
-  </View>
-</View>
 
 
-        <View style={{ paddingHorizontal: 25, paddingTop: 10 }}>
-          <TouchableOpacity style={styles.header} onPress={toggle}>
-            <Text style={styles.totalRefund}>Total Refund</Text>
+          <Text style={{ marginLeft: 15, fontWeight: 600, marginTop: 10 }}>
+            Refundable Rent
+          </Text>
 
-            <Image
-              source={DirectionDownIcon}
-              style={{ height: 30, width: 30, transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </TouchableOpacity>
-        </View>
-        {open && (
-        <View style={styles.card}>
-  <View style={styles.content}>
+          <View style={styles.table}>
+            <View style={[styles.tableRow, styles.tableHeader]}>
+              <Text style={[styles.tableCellLeft, styles.tableHeaderText]}>
+                DESCRIPTION
+              </Text>
+              <Text style={[styles.tableCellRight, styles.tableHeaderText]}>
+                INVOICE AMOUNT
+              </Text>
+            </View>
 
-    {/* <Row
+            <View style={styles.tableRow}>
+              <Text style={styles.tabledescription}>
+                Last Rent (30 days)
+              </Text>
+
+              <Text style={styles.tableCellRight}>
+                ₹ {Number(
+                  (settlementDetails?.currentMonthRentInfo?.currentMonthRent) || 0
+                ).toLocaleString("en-IN")}
+              </Text>
+
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={styles.tabledescription}>
+                Acctual days (
+                {settlementDetails?.currentMonthRentInfo?.stayDays} days)
+              </Text>
+
+              <Text style={styles.tableCellRight}>
+                ₹ {Number(
+                  (settlementDetails?.currentMonthRentInfo?.currentPayableRent) || 0
+                ).toLocaleString("en-IN")}
+              </Text>
+
+            </View>
+          </View>
+
+
+          <View style={{ paddingHorizontal: 25, paddingTop: 10 }}>
+            <TouchableOpacity style={styles.header} onPress={toggle}>
+              <Text style={styles.totalRefund}>Total Refund</Text>
+
+              <Image
+                source={DirectionDownIcon}
+                style={{ height: 30, width: 30, transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+              />
+            </TouchableOpacity>
+          </View>
+          {open && (
+            <View style={styles.card}>
+              <View style={styles.content}>
+
+                {/* <Row
       label="Final Settlement"
      
     /> */}
-    <Text style={{  fontWeight: 600, marginTop: 10 }}>
-  Final Settlement
-</Text>
+                <Text style={{ fontWeight: 600, marginTop: 10 }}>
+                  Final Settlement
+                </Text>
 
-    <Row
-      label="Refundable Advance"
-      value={`₹ ${(
-        settlementDetails?.settlementInfo?.refundableAdvance || 0
-      ).toLocaleString("en-IN")}`}
-    />
+                <Row
+                  label="Refundable Advance"
+                  value={`₹ ${(
+                    settlementDetails?.settlementInfo?.refundableAdvance || 0
+                  ).toLocaleString("en-IN")}`}
+                />
 
-    <Row
-      label="Refundable Rent"
-      value={`₹ ${(
-        settlementDetails?.settlementInfo?.refundableRent || 0
-      ).toLocaleString("en-IN")}`}
-    />
+                <Row
+                  label="Refundable Rent"
+                  value={`₹ ${(
+                    settlementDetails?.settlementInfo?.refundableRent || 0
+                  ).toLocaleString("en-IN")}`}
+                />
 
-   <Row
-  label="Total Deductions"
-  value={`-₹ ${finalTotalDeductions.toLocaleString("en-IN")}`}
-  red
-/>
+                <Row
+                  label="Total Deductions"
+                  value={`-₹ ${finalTotalDeductions.toLocaleString("en-IN")}`}
+                  red
+                />
 
-  <View style={styles.resultBox}>
-  <Text
-    style={[
-      styles.finalAmount,
-      { color: isNegative ? "#D70000" : "#16A34A" } // 🔴 red : 🟢 green
-    ]}
-  >
-    {isNegative ? "-" : ""}₹{" "}
-    {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
-  </Text>
-</View>
+                <View style={styles.resultBox}>
+                  <Text
+                    style={[
+                      styles.finalAmount,
+                      { color: isNegative ? "#D70000" : "#16A34A" } // 🔴 red : 🟢 green
+                    ]}
+                  >
+                    {isNegative ? "-" : ""}₹{" "}
+                    {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
+                  </Text>
+                </View>
 
-  </View>
-</View>
+              </View>
+            </View>
 
-        )}
-
-
-       
+          )}
 
 
-      </ScrollView>
-       <View style={styles.btnRow}>
+
+
+
+        </ScrollView>
+        <View style={styles.btnRow}>
           <TouchableOpacity
             style={styles.cancelBtn}
             onPress={() => navigation.goBack()}
@@ -704,38 +706,39 @@ const handleGenerate = async () => {
           </TouchableOpacity>
         </View>
 
-      <Modal visible={showEBPicker} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={{ fontWeight: "700", marginBottom: 10 }}>Enter EB Reading</Text>
-            <TextInput
-              placeholder="Reading"
-              value={currentEB}
-              onChangeText={setCurrentEB}
-              keyboardType="numeric"
-              style={[styles.inputBox, { marginBottom: 10 }]}
-            />
-            <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
-              <TouchableOpacity style={{ marginRight: 12 }} onPress={() => setShowEBPicker(false)}>
-                <Text style={{ color: "#6B7280" }}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowEBPicker(false)}>
-                <Text style={{ color: "#2B6CF6", fontWeight: "700" }}>Save</Text>
-              </TouchableOpacity>
+        <Modal visible={showEBPicker} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <Text style={{ fontWeight: "700", marginBottom: 10 }}>Enter EB Reading</Text>
+              <TextInput
+                placeholder="Reading"
+                value={currentEB}
+                onChangeText={setCurrentEB}
+                keyboardType="numeric"
+                style={[styles.inputBox, { marginBottom: 10 }]}
+              />
+              <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+                <TouchableOpacity style={{ marginRight: 12 }} onPress={() => setShowEBPicker(false)}>
+                  <Text style={{ color: "#6B7280" }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowEBPicker(false)}>
+                  <Text style={{ color: "#2B6CF6", fontWeight: "700" }}>Save</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {showCheckoutPicker && (
-        <DateTimePicker
-          value={new Date()}
-          mode="date"
-          display="default"
-          onChange={onCheckoutDatePick}
-        />
-      )}
-    </SafeAreaView>
+        {showCheckoutPicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="date"
+            display="default"
+            onChange={onCheckoutDatePick}
+          />
+        )}
+      </SafeAreaView>
+    </>
   );
 }
 
@@ -754,7 +757,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 18,
     paddingBottom: 6,
-  
+
   },
 
   topHeader: {
@@ -1002,7 +1005,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     //   alignItems: "flex-end",
     justifyContent: "flex-end",
-    marginBottom:60,
+    marginBottom: 60,
     paddingHorizontal: 12,
   },
 

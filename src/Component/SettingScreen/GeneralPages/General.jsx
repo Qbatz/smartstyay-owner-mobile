@@ -218,13 +218,13 @@ onPress={() => {
 
           <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
           
-            {getData.length === 0 ? (
+            {getData?.length === 0 ? (
   <View style={styles.emptyContainer}>
     <Image source={EmptyState} style={styles.emptyImage} />
     <Text style={styles.emptyText}>No Data Found</Text>
   </View>
 ) : (
-  getData.map((u, index) => renderUserCard(u, index))
+  getData?.map((u, index) => renderUserCard(u, index))
 )}
 
             <View style={{ height: 40 }} />

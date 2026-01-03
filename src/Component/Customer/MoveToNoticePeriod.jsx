@@ -144,6 +144,8 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
       setMessage(res.data);
       setShowSuccess(true);
       onBedAdded && onBedAdded(roomId || customer.roomId);
+     onSuccess && onSuccess()
+      
 
       setTimeout(() => {
         setShowSuccess(false);

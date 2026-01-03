@@ -431,9 +431,9 @@ console.log("customers",customers)
             </TouchableOpacity>
 
 
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddTenant")}>
+            {/* <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddTenant")}>
               <Image source={TenAntAdd} style={{ width: 60, height: 60 }} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         )}
 
@@ -1032,6 +1032,7 @@ console.log("customers",customers)
             onClose={() => setShowNotice(false)}
             customer={selectedCustomer}
             onSuccess={handleCheckoutSuccess}
+            
 
 
 
