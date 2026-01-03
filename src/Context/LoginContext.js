@@ -93,7 +93,7 @@ const LoginContext = ({ children }) => {
     // await storeData(LOGGEDIN, "true");
     setLoggedIn(true);
 
-    return { success: true };
+    return res;
   } catch (error) {
     console.log("verify mpin error", error);
     return { success: false };

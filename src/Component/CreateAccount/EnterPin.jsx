@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Animated } from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Animated, NativeModules, Platform } from "react-native";
 import Sm_logo from "../../Assets/Images/Sm_Icon.png";
 import { useNavigation } from "@react-navigation/native";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
 
 import WaveIcon from "../../Assets/Images/login_Rectangle.png";
+import { updateFcmToken } from "../../Action/LoginAction";
 
 
 const EnterMPin = (props) => {
@@ -16,7 +17,9 @@ const EnterMPin = (props) => {
     const navigation = useNavigation()
     const [createMpin, setCreateMpin] = useState(["", "", "", ""])
     const [mPinNumber, setmPinNumber] = useState(null)
-    const inputs = useRef([])
+    const inputs = useRef([])   
+
+    const{NotificationModule}=NativeModules;
     
 
     const [hostelList, setHostelList] = useState([]);
@@ -30,6 +33,7 @@ const EnterMPin = (props) => {
     const opacity = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(80)).current;
     const BOTTOM_IMAGE_HEIGHT = 200;
+     const [fcmToken,setFcmToken]=useState();
 
     const showSuccessPopup = () => {
         setShowPopup(true);
@@ -77,6 +81,19 @@ const EnterMPin = (props) => {
             });
         }, 2000);
     };
+
+     const fetchFcmTokenAsync=()=>{
+    NotificationModule.fetchFcmToken().then(r=>{
+      console.log(r)
+      setFcmToken(r)
+    })
+  }
+
+  useEffect(()=>{
+    if(Platform.OS ==="android"){
+      fetchFcmTokenAsync();
+    }
+  },[])
 
 
 
@@ -130,8 +147,10 @@ const EnterMPin = (props) => {
 
     const enterPinClick = async () => {
         const res = await verifyMpin(Number(mPinNumber));
+        console.log(res)
 
-        if (res.success) {
+        if (res.status == 200) {
+            fetchFcmToken(res.data)
             setType("success");
             setMessage("Login Successfully");
             setShowModal(true);
@@ -150,6 +169,13 @@ const EnterMPin = (props) => {
             }, 1500);
         }
     };
+
+    const fetchFcmToken=async(authToken)=>{
+        if(fcmToken != null){
+            await updateFcmToken(fcmToken,authToken);
+        }
+    
+  }
 
 
 

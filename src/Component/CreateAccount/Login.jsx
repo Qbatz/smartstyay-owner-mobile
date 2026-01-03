@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  NativeModules,
 } from "react-native";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -25,6 +26,7 @@ export default function LoginDesign() {
   const { login } = useContext(LoginContexts);
   const loginContext = useContext(LoginContexts)
   const navigation = useNavigation();
+  const {NotificationModule}=NativeModules;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +36,7 @@ export default function LoginDesign() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+ 
 
 
 
@@ -104,6 +107,8 @@ export default function LoginDesign() {
       setTimeout(() => setShowSuccessModal(false), 1500);
     }
   };
+
+  
 
 
 
