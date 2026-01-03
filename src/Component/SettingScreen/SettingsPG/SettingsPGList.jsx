@@ -389,9 +389,10 @@ const handleDeletePG = async () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {mainHostel?.images.map((img, i) => (
-            <Image key={i} source={img} style={styles.roomImg} />
-          ))}
+          {mainHostel?.images?.map((i) => {
+              return <Image key={i?.uri?.id} source={i?.uri?.image} style={styles.roomImg} />
+          }
+          )}
         </ScrollView>
 
         <Text style={styles.infoTitle}>Email ID</Text>
