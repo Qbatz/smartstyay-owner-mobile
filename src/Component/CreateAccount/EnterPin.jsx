@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Animated } from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Animated, NativeModules, Platform } from "react-native";
 import Sm_logo from "../../Assets/Images/Sm_Icon.png";
 import { useNavigation } from "@react-navigation/native";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -8,75 +8,94 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
 
 import WaveIcon from "../../Assets/Images/login_Rectangle.png";
+import { updateFcmToken } from "../../Action/LoginAction";
 
 
 const EnterMPin = (props) => {
 
-    const {verifyMpin} = useContext(LoginContexts)
+    const { verifyMpin, updatePinSetupStatus } = useContext(LoginContexts)
     const navigation = useNavigation()
     const [createMpin, setCreateMpin] = useState(["", "", "", ""])
     const [mPinNumber, setmPinNumber] = useState(null)
-    const inputs = useRef([])
+    const inputs = useRef([])   
+
+    const{NotificationModule}=NativeModules;
+    
 
     const [hostelList, setHostelList] = useState([]);
-      const [showModal, setShowModal] = useState(false);
-      const [message, setMessage] = useState("");
-      const [type, setType] = useState("success");
+    const [showModal, setShowModal] = useState(false);
+    const [message, setMessage] = useState("");
+    const [type, setType] = useState("success");
 
-       const insets = useSafeAreaInsets();
-          const [showPopup, setShowPopup] = useState(false);
-          const scale = useRef(new Animated.Value(0.6)).current;
-          const opacity = useRef(new Animated.Value(0)).current;
-          const translateY = useRef(new Animated.Value(80)).current;
-      const BOTTOM_IMAGE_HEIGHT = 200;
-      
-        const showSuccessPopup = () => {
-  setShowPopup(true);
+    const insets = useSafeAreaInsets();
+    const [showPopup, setShowPopup] = useState(false);
+    const scale = useRef(new Animated.Value(0.6)).current;
+    const opacity = useRef(new Animated.Value(0)).current;
+    const translateY = useRef(new Animated.Value(80)).current;
+    const BOTTOM_IMAGE_HEIGHT = 200;
+     const [fcmToken,setFcmToken]=useState();
 
-  Animated.parallel([
-    Animated.spring(scale, {
-      toValue: 1,
-      friction: 6,
-      tension: 80,
-      useNativeDriver: true,
-    }),
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }),
-    Animated.timing(translateY, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }),
-  ]).start();
+    const showSuccessPopup = () => {
+        setShowPopup(true);
 
-  setTimeout(() => {
-    Animated.parallel([
-      Animated.timing(scale, {
-        toValue: 0.6,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, {
-        toValue: 80,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setShowPopup(false);
-      navigation.replace("MyTabs");
-    });
-  }, 2000);
-};
+        Animated.parallel([
+            Animated.spring(scale, {
+                toValue: 1,
+                friction: 6,
+                tension: 80,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+            Animated.timing(translateY, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+        ]).start();
 
-      
+        setTimeout(() => {
+            Animated.parallel([
+                Animated.timing(scale, {
+                    toValue: 0.6,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(opacity, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(translateY, {
+                    toValue: 80,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+            ]).start(() => {
+                setShowPopup(false);
+                updatePinSetupStatus(true)
+                //   navigation.replace("MyTabs");
+            });
+        }, 2000);
+    };
+
+     const fetchFcmTokenAsync=()=>{
+    NotificationModule.fetchFcmToken().then(r=>{
+      console.log(r)
+      setFcmToken(r)
+    })
+  }
+
+  useEffect(()=>{
+    if(Platform.OS ==="android"){
+      fetchFcmTokenAsync();
+    }
+  },[])
+
+
 
     const rotation = useRef(new Animated.Value(0)).current;
 
@@ -126,30 +145,40 @@ const EnterMPin = (props) => {
         }
     };
 
-     const enterPinClick = async () => {
-    const res = await verifyMpin(Number(mPinNumber));
+    const enterPinClick = async () => {
+        const res = await verifyMpin(Number(mPinNumber));
+        console.log(res)
 
-    if (res.success) {
-      setType("success");
-      setMessage("Login Successfully");
-      setShowModal(true);
-      showSuccessPopup()
+        if (res.status == 200) {
+            fetchFcmToken(res.data)
+            setType("success");
+            setMessage("Login Successfully");
+            setShowModal(true);
+            showSuccessPopup()
 
-      setTimeout(() => {
-        setShowModal(false);
-      }, 1500);
-    } else {
-      setType("error");
-      setMessage("Incorrect MPIN");
-      setShowModal(true);
-        setTimeout(() => {
-        setShowModal(false);
-      }, 1500);
-    }
-  };
+            setTimeout(() => {
+                setShowModal(false);
+                
+            }, 500);
+        } else {
+            setType("error");
+            setMessage("Incorrect MPIN");
+            setShowModal(true);
+            setTimeout(() => {
+                setShowModal(false);
+            }, 1500);
+        }
+    };
+
+    const fetchFcmToken=async(authToken)=>{
+        if(fcmToken != null){
+            await updateFcmToken(fcmToken,authToken);
+        }
+    
+  }
 
 
-  
+
 
 
 
@@ -158,9 +187,9 @@ const EnterMPin = (props) => {
     }
 
     return <View style={{ paddingHorizontal: 20, flex: 1 }}>
-             <SuccessModal visible={showModal} message={message} type={type} />
+        <SuccessModal visible={showModal} message={message} type={type} />
         <View style={{ paddingTop: 70 }} >
-              <Image source={Sm_logo} style={style.logo} />
+            <Image source={Sm_logo} style={style.logo} />
 
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 15 }}>
                 <Text style={style.title}>Welcome Back</Text>
@@ -199,9 +228,9 @@ const EnterMPin = (props) => {
                     />
                 ))}
             </View>
-            <View  style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}> 
+            <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
                 <TouchableOpacity onPress={forgotMpinClick}
-                   >
+                >
                     <Text style={{ color: '#1E45E1', fontSize: 14, fontWeight: 400, textDecorationLine: 'underline', }}>
                         Forgot Mpin</Text>
                 </TouchableOpacity>
@@ -218,29 +247,29 @@ const EnterMPin = (props) => {
             </TouchableOpacity>
         </View>
 
-         {showPopup && (
-                        <View style={style.popupContainer}>
-                            <Animated.View
-                                style={[
-                                    style.popupBox,
-                                    {
-                                        transform: [{ translateY }, { scale }],
-                                        opacity: opacity,
-                                    },
-                                ]}
-                            >
-                                <LottieView
-                                    source={require("../../Assets/animations/success.json")}
-                                    autoPlay
-                                    loop={false}
-                                    style={{ width: 250, height: 150 }}
-                                />
-        
-                                <Text style={style.popupText}>You're all set!</Text>
-                                <Text style={style.popupSubText}>Viewing latest data now</Text>
-                            </Animated.View>
-                        </View>
-                    )}
+        {showPopup && (
+            <View style={style.popupContainer}>
+                <Animated.View
+                    style={[
+                        style.popupBox,
+                        {
+                            transform: [{ translateY }, { scale }],
+                            opacity: opacity,
+                        },
+                    ]}
+                >
+                    <LottieView
+                        source={require("../../Assets/animations/success.json")}
+                        autoPlay
+                        loop={false}
+                        style={{ width: 250, height: 150 }}
+                    />
+
+                    <Text style={style.popupText}>You're all set!</Text>
+                    <Text style={style.popupSubText}>Viewing latest data now</Text>
+                </Animated.View>
+            </View>
+        )}
 
 
 
@@ -265,7 +294,7 @@ const style = StyleSheet.create({
         marginTop: 10,
     },
 
-     popupContainer: {
+    popupContainer: {
         position: "absolute",
         top: 0,
         left: 0,
@@ -292,7 +321,7 @@ const style = StyleSheet.create({
         color: "#333",
         marginTop: 5,
     },
-      popupSubText: {
+    popupSubText: {
         fontSize: 14,
         color: "#777",
         marginTop: 6,

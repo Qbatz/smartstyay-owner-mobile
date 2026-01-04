@@ -36,6 +36,8 @@ const LoginContext = ({ children }) => {
   const [userId, setUserId] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loggedIN,setLoggedIN]=useState()
+  const [pinVerifid, setPinVerified] = useState(false)
 
   // ------------------------
   // LOGIN (EMAIL + PASSWORD)
@@ -76,6 +78,8 @@ const LoginContext = ({ children }) => {
 
 
   const verifyMpin = async (pin) => {
+
+    console.log("user id", userId)
   try {
     const res = await AxiosConfig.post(
       `/v2/mobile/verify/${userId}`,
@@ -83,20 +87,30 @@ const LoginContext = ({ children }) => {
     );
 
     const token = res.data;
-    console.log("token", token);
     
+    console.log("token", token);
     await storeData("token", token);
-    await storeData(LOGGEDIN, "true");
+    // await storeData(LOGGEDIN, "true");
     setLoggedIn(true);
 
-    return { success: true };
+    return res;
   } catch (error) {
     console.log("verify mpin error", error);
     return { success: false };
   }
 };
+  const loggedinFn=(value)=>{
+    setLoggedIN(value)
+  }
 
+  const updatePinSetupStatus = (status) => {
+      setPinVerified(status)
+  }
   
+  const updateUserId = (userId) => {
+    console.log("updating userId", userId)
+    setUserId(userId);
+  }
 
   return (
     <LoginContexts.Provider
@@ -107,6 +121,12 @@ const LoginContext = ({ children }) => {
         userId,
         loggedIn,
         loading,
+
+        loggedin:loggedinFn, LoggedIN:loggedIN,
+        pinVerifid,
+        updatePinSetupStatus,
+        updateUserId
+
       }}
     >
       {children}

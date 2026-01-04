@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  NativeModules,
 } from "react-native";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -17,158 +18,97 @@ import WaveImage from "../../Assets/Images/login_Rectangle.png";
 
 import { useNavigation } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
+import { storeData } from "../../Utils/Storage";
+import { LOGGEDIN, USER_ID } from "../../Utils/Constant";
 
 export default function LoginDesign() {
 
   const { login } = useContext(LoginContexts);
+  const loginContext = useContext(LoginContexts)
   const navigation = useNavigation();
+  const {NotificationModule}=NativeModules;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [modalMessage, setModalMessage] = useState("");
-    const [modalType, setModalType] = useState("success");
-  
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+ 
 
 
-  // const loginClick = () => {
-  //   const data = {
-  //     emailId: email,
-  //     password: password,
-  //   };
-
-  //   setLogin(data).then((r) => {
-  //     if (r?.status === 200 && r?.data) {
-  //       context.updateToken(r.data);
-  //       storeData(ACCESS_TOKEN, r.data);
-  //       navigation.navigate("VerifyAccountScreen");
-  //     }
-  //   });
-  // };
 
   const validate = () => {
-  let valid = true;
+    let valid = true;
 
-  setEmailError("");
-  setPasswordError("");
+    setEmailError("");
+    setPasswordError("");
 
-  if (!email.trim()) {
-    setEmailError("Please Enter Email");
-    valid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    setEmailError("Please Enter Valid Email");
-    valid = false;
-  }
+    if (!email.trim()) {
+      setEmailError("Please Enter Email");
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError("Please Enter Valid Email");
+      valid = false;
+    }
 
-  if (!password.trim()) {
-    setPasswordError("Please Enter Password");
-    valid = false;
-  }
+    if (!password.trim()) {
+      setPasswordError("Please Enter Password");
+      valid = false;
+    }
 
-  return valid;
-};
-
-// const loginClick = async () => {
-//   if (!validate()) return;
-
-//   const data = {
-//     emailId: email,
-//     password: password,
-//   };
-
-//   try {
-//     const response = await setLogin(data);
-//      console.log("res", response);
-//     if (response?.status === 200 && response?.data) {
-//       context.updateToken(response?.data);
-//       await storeData(ACCESS_TOKEN, response?.data);
-
-//       console.log("Loginresponse", response);
-      
-//       navigation.navigate("VerifyAccountScreen", {
-//         email: email,
-//       });
-//         setModalType("success");
-//         setModalMessage("Login Successfully");
-//         setShowSuccessModal(true);
-//         setTimeout(() => setShowSuccessModal(false), 2500);
-//     } 
-//    else if (response?.status === 400) {
-//   setModalType("error");
-//   setModalMessage(
-//     response?.data?.message || response?.message || "Bad Request"
-//   );
-//   setShowSuccessModal(true);
-//     setTimeout(() => setShowSuccessModal(false), 1500);
-// }
-// else if (response?.status === 403) {
-//   setModalType("error");
-//   setModalMessage("Invalid Email or Password");
-//   setShowSuccessModal(true);
-//     setTimeout(() => setShowSuccessModal(false), 1500);
-// }
-//     else {
-//     setModalType("error");
-//     setModalMessage(response?.message || "Something went wrong");
-//     setShowSuccessModal(true);
-
-//     setTimeout(() => setShowSuccessModal(false), 1500);
-//     return;
-
-//     }
-
-//   } catch (error) {
-//        setModalType("error");
-//     setModalMessage(error?.response?.data?.message);
-//     setShowSuccessModal(true);
-
-//     setTimeout(() => setShowSuccessModal(false), 1500);
-   
-//   }
-// };
-
-
- const loginClick = async () => {
-  if (!validate()) return;
-
-  const data = {
-    emailId: email,
-    password: password,
+    return valid;
   };
 
-  const response = await login(data);
-  console.log("response", response);
-  
 
-  if (response?.success) {
-    const { pinSetup } = response.data;
+  const loginClick = async () => {
+    if (!validate()) return;
+
+    const data = {
+      emailId: email,
+      password: password,
+    };
+
+    const response = await login(data);
+    console.log("response", response);
 
 
-    if (pinSetup === false) {
-      navigation.navigate("CreateMpin");
-    } else {
-      //old user 
-      navigation.navigate("EnterMPin");
+    if (response?.success) {
+      const { pinSetup } = response.data;
+
+
+      if (pinSetup === false) {
+        loginContext.updatePinSetupStatus(true)
+        navigation.navigate("CreateMpin");
+      } else {
+        //old user 
+        loginContext?.updateUserId(response.data.userId)
+        storeData(LOGGEDIN, 'true')
+        storeData(USER_ID, response.data.userId)
+        loginContext.updatePinSetupStatus(false)
+        loginContext.loggedin('true')
+        // navigation.navigate("EnterMPin");
+      }
     }
-  } 
     else if (response?.status === 400) {
-  setModalType("error");
-  setModalMessage(
-    response?.data?.message || response?.message || "Bad Request"
-  );
-  setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-}
-  else if (response?.status === 403) {
-    setModalType("error");
-    setModalMessage("Invalid Email or Password");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-  }
-};
+      setModalType("error");
+      setModalMessage(
+        response?.data?.message || response?.message || "Bad Request"
+      );
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    }
+    else if (response?.status === 403) {
+      setModalType("error");
+      setModalMessage("Invalid Email or Password");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    }
+  };
+
+  
 
 
 
@@ -176,102 +116,102 @@ export default function LoginDesign() {
 
     <>
       <SuccessModal
-  visible={showSuccessModal}
-  onClose={() => setShowSuccessModal(false)}
-  message={modalMessage}
-  type={modalType}
-/>
-   
-    <View style={styles.container}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={styles.content}>
-          <Image source={SmartstayIcon} style={styles.logo} />
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
 
-          <Text style={styles.welcome}>Welcome Back Admin 👋</Text>
-          <Text style={styles.subtitle}>Login here</Text>
+      <View style={styles.container}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.content}>
+            <Image source={SmartstayIcon} style={styles.logo} />
 
-          <Text style={styles.label}>Username / Email</Text>
-          <View style={styles.inputBox}>
-            <TextInput
-              placeholder="Please Enter Email"
-              placeholderTextColor="#A1A1A1"
-              style={styles.input}
-              value={email}
-             onChangeText={(text) => {
-    setEmail(text.toLowerCase());
-    setEmailError("");
-  }}
-              autoCapitalize="none"
-            />
- 
+            <Text style={styles.welcome}>Welcome Back Admin 👋</Text>
+            <Text style={styles.subtitle}>Login here</Text>
 
-          </View>
+            <Text style={styles.label}>Username / Email</Text>
+            <View style={styles.inputBox}>
+              <TextInput
+                placeholder="Please Enter Email"
+                placeholderTextColor="#A1A1A1"
+                style={styles.input}
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text.toLowerCase());
+                  setEmailError("");
+                }}
+                autoCapitalize="none"
+              />
 
 
- {emailError && (
-                    <ErrorMessage message={emailError} type="error" />
-                                )}
+            </View>
 
 
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.inputBox}>
-          
-            <TextInput
-  placeholder="Please Enter Password"
-  secureTextEntry={!showPassword}
-  style={styles.input}
-  placeholderTextColor="#A1A1A1"
-  value={password}
-  onChangeText={(text) => {
-    setPassword(text);
-    setPasswordError("");
-  }}
-/>
+            {emailError && (
+              <ErrorMessage message={emailError} type="error" />
+            )}
+
+
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputBox}>
+
+              <TextInput
+                placeholder="Please Enter Password"
+                secureTextEntry={!showPassword}
+                style={styles.input}
+                placeholderTextColor="#A1A1A1"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setPasswordError("");
+                }}
+              />
+
+
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <Image source={EyeIcon} style={{ width: 22, height: 22 }} />
+              </TouchableOpacity>
+            </View>
+
+            {passwordError && (
+              <ErrorMessage message={passwordError} type="error" />
+            )}
+
+
 
 
             <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
+              onPress={() => navigation.replace("ForgotPassword")}
             >
-              <Image source={EyeIcon} style={{ width: 22, height: 22 }} />
+              <Text style={styles.forgot}>Forgot Password?</Text>
             </TouchableOpacity>
-          </View>
- 
-                    {passwordError && (
-                    <ErrorMessage message={passwordError} type="error" />
-                                )}
-                  
 
+            <TouchableOpacity style={styles.loginButton} onPress={loginClick}>
+              <Text style={styles.loginText}>Log in</Text>
+            </TouchableOpacity>
 
-
-          <TouchableOpacity
-            onPress={() => navigation.replace("ForgotPassword")}
-          >
-            <Text style={styles.forgot}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.loginButton} onPress={loginClick}>
-            <Text style={styles.loginText}>Log in</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.registerText}>
-            Not Registered yet?{" "}
-            <Text
-              style={styles.registerLink}
-              onPress={() => navigation.replace("CreateAccount")}
-            >
-              Create Account
+            <Text style={styles.registerText}>
+              Not Registered yet?{" "}
+              <Text
+                style={styles.registerLink}
+                onPress={() => navigation.replace("CreateAccount")}
+              >
+                Create Account
+              </Text>
             </Text>
-          </Text>
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
 
-      <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover" />
-    </View>
-     </>
+        <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover" />
+      </View>
+    </>
   );
 }
 
@@ -282,7 +222,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: 160, 
+    paddingBottom: 160,
   },
 
   content: {
@@ -375,19 +315,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
- bottomWave: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  width: "100%",
-  height: 120,
-},
-errorText: {
-  color: "red",
-  fontSize: 12,
-  marginTop: 4,
-},
+  bottomWave: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    height: 120,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
+  },
 
 
 

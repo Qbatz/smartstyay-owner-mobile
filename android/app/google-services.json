@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "251194789789",
+    "project_id": "smart-stay-7da3c",
+    "storage_bucket": "smart-stay-7da3c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251194789789:android:792a8cf0e35f2dfe272974",
+        "android_client_info": {
+          "package_name": "com.qbatz.smartstay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmD4-Q8wyEFDE4NCZ0LwiQwCgM7ZKYT3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251194789789:android:1f60a927549fbb4e272974",
+        "android_client_info": {
+          "package_name": "com.qbatz.smartstay.tenant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmD4-Q8wyEFDE4NCZ0LwiQwCgM7ZKYT3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -12,7 +12,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import {
@@ -24,7 +24,7 @@ import { GeneralProvider } from './src/Context/GeneralContext';
 
 // import LoginDesign from "./src/Component/Login.jsx"
 // import CreateAccount from "./src/Component/CreateAccount.jsx"
-
+import { LoginContexts } from './src/Context/LoginContext';
 import SplashScreen from './src/Component/WelcomScreen/SplashScreen';
 import LandingScreen from './src/Component/WelcomScreen/LandingScreen'
 import { NavigationContainer } from '@react-navigation/native';
@@ -107,10 +107,22 @@ import ElectricityProvider from "./src/Context/ElectricityContext"
 import CreateMpin from "./src/Component/CreateAccount/CreatePin"
 import EnterMPin from "./src/Component/CreateAccount/EnterPin"
 import ConfirmMPin from "./src/Component/CreateAccount/ConfirmPin"
+import { retriveData } from './src/Utils/Storage';
+import { LOGGEDIN, USER_ID } from './src/Utils/Constant';
+import SuccessFlow from './src/SuccessFlow'
 
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+
+  const [userId, setUserId] = useState();
+
+  useEffect(() => {
+     retriveData(USER_ID).then(result => {
+      console.log("app userId", result)
+     setUserId(result)
+    })
+  }, [])
 
   return (
     <SafeAreaProvider>
@@ -129,7 +141,7 @@ function App() {
                           <FloorProvider>
                             <BankingProvider>
                               <ElectricityProvider>
-                                   <AppContent />
+                                <AppContent userId={userId}/>
                               </ElectricityProvider>
                             </BankingProvider>
                           </FloorProvider>
@@ -148,15 +160,70 @@ function App() {
   );
 }
 
-function AppContent() {
+function AppContent(props) {
+  const loginContext = useContext(LoginContexts);
 
   const Navigation = createStackNavigator();
+  const [isLoggedIn,setIsLoggedIn]=useState()
+  const [pinVerify, setPinVerify] = useState()
+
+  console.log(isLoggedIn)
+
+  useEffect(()=>{
+    retriveData(LOGGEDIN).then(r=>{
+        setIsLoggedIn(r)
+        console.log(r)
+    })
+
+   
+  },[])
+
+  useEffect(() => {
+     if (props.userId) {
+  console.log("props userId", props.userId)
+  console.log("login context", loginContext)
+      loginContext?.updateUserId(props.userId)
+    }
+  }, [props.userId, loginContext])
+
+
+  console.log(loginContext)
+
+  useEffect(() => {
+    if (loginContext?.LoggedIN) {
+      setIsLoggedIn('true')
+
+    }
+  }, [loginContext?.LoggedIN]) 
+
+  useEffect(() => {
+    if (!loginContext?.requiredPinSetup) {
+        setPinVerify(true)
+    }
+    setPinVerify(false)
+  }, [loginContext?.requiredPinSetup])
+
+
 
   return (
 
     <View style={styles.container}>
 
+
+      {isLoggedIn === "true" ?  <SuccessFlow/>: 
       <NavigationContainer>
+        <Navigation.Navigator screenOptions={{headerShown:false}}>
+          <Navigation.Screen name="SplashText" component={SplashText} />
+          <Navigation.Screen name="SplashScreen" component={SplashScreen} />
+          <Navigation.Screen name="LandingScreen" component={LandingScreen} />
+          <Navigation.Screen name="CreateAccount" component={CreateAccount} />
+          <Navigation.Screen name="LoginDesign" component={LoginDesign} />
+          <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+          
+        </Navigation.Navigator>
+        </NavigationContainer>}
+
+      {/* <NavigationContainer>
         <Navigation.Navigator
           screenOptions={{ headerShown: false }}
           initialRouteName="SplashText"
@@ -224,15 +291,15 @@ function AppContent() {
           <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
           <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
           <Navigation.Screen name="Agreement" component={Agreement} />
-            <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
-           <Navigation.Screen name="PG" component={PGPageFull} />
+          <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
+          <Navigation.Screen name="PG" component={PGPageFull} />
 
-              <Navigation.Screen name="CreateMpin" component={CreateMpin} />
-            <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
-             <Navigation.Screen name="EnterMPin" component={EnterMPin} />
+          <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+          <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+          <Navigation.Screen name="EnterMPin" component={EnterMPin} />
 
         </Navigation.Navigator>
-      </NavigationContainer>
+      </NavigationContainer> */}
 
     </View>
   );
