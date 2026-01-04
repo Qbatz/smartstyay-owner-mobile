@@ -284,7 +284,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
           <Text style={styles.title}>Tenant Booking</Text>
           <Text style={styles.subTitle}>
-            Room No {room?.room_no} | {bed?.label}
+            Room No :{selectedBed?.roomName} | {selectedBed?.bedName}
           </Text>
 
 

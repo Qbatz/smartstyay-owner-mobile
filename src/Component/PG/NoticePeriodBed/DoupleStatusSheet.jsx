@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState,useContext } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Easing,ScrollView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -23,15 +25,23 @@ export default function DoubleStatusSheet({
   onPressNotice,
   handleShowFinalSettlement,
   handleNoticeToBookin,
-  handleReAssignBed,handleMakeUsInActive,handleCheckIn,selectedBed
+  handleReAssignBed,handleMakeUsInActive,handleCheckIn,selectedBed,handleNoticeToCheckout
 }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const { activeHostelId } = useContext(CommonContexts);
+    const { getCustomersByHostel, loading } = useCustomer();
    const navigation = useNavigation();
 
   const [showOccupiedMenu, setShowOccupiedMenu] = useState(false);
   const [showReservedMenu, setShowReservedMenu] = useState(null);
-
+    const [customers, setCustomers] = useState([]);
+  
+  const handleCheckoutSheet = () => {
+    setShowOccupiedMenu(false);
+    handleNoticeToCheckout()
+    onClose();
+  }
   const roomChip = room?.room_no ? `${room.room_no} - ${bed?.label || ""}` : "Room";
 
  console.log("selectedBed",selectedBed)
@@ -92,6 +102,26 @@ const handleBookToCheckin=()=>{
       }),
     ]).start(() => onClose());
   };
+
+   
+      useEffect(() => {
+        if (activeHostelId) {
+          fetchCustomers();
+        }
+      }, [activeHostelId])
+  
+  
+  
+  
+   const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data?.listCustomers || []);
+  };
+    console.log("customers123", customers)
+    const matchedCustomer = customers.find(
+      c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
+    );
+  console.log("matchedCustomer",matchedCustomer)
 
   useEffect(() => {
     if (visible) openSheet();
@@ -207,6 +237,17 @@ const handleBookToCheckin=()=>{
 
           {showOccupiedMenu && (
             <View style={styles.menuCard}>
+
+               {matchedCustomer?.currentStatus === "Settlement Generated" ? (
+                              <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
+                                <Image
+                                  source={require("../../../Assets/Images/NewBook.png")}
+                                  style={styles.menuIcon}
+                                />
+                                <Text style={styles.menuText}>Checkout</Text>
+                              </TouchableOpacity>
+                            ) : (
+            <>
               <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
                 <Text style={styles.menuText}>New Booking</Text>
@@ -221,11 +262,21 @@ const handleBookToCheckin=()=>{
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
                 <Text style={styles.menuText}>Generate FS</Text>
               </TouchableOpacity>
+            </>
+                            )}
+ {/* {matchedCustomer?.currentStatus === "Settlement Generated" &&
+  <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
+                <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
+                <Text style={styles.menuText}>Checkout</Text>
+              </TouchableOpacity>
+} */}
+
             </View>
           )}
         </View>
 
         {/* RESERVED SECTION */}
+       {selectedBed?.newTenantInfo?.length > 0 && (
         <View style={[styles.section, { borderBottomWidth: 0 }]}>
           <Text style={styles.sectionTitle}>Reserved by</Text>
 
@@ -290,6 +341,7 @@ const handleBookToCheckin=()=>{
       <TouchableOpacity
         style={styles.menuItem}
         onPress={handleBookToCheckin}
+        disabled
       >
         <Image
           style={styles.menuIconAdd}
@@ -321,6 +373,8 @@ const handleBookToCheckin=()=>{
 
          
         </View>
+       )}
+        
         </ScrollView>
 
         {/* FOOTER */}
@@ -328,10 +382,11 @@ const handleBookToCheckin=()=>{
           <TouchableOpacity style={styles.noticeBtn}>
             <Text style={styles.noticeText}>Notice Period</Text>
           </TouchableOpacity>
-
+ {selectedBed?.newTenantInfo?.length > 0 && (
           <TouchableOpacity style={styles.reservedBtn}>
             <Text style={styles.reservedText}>Reserved</Text>
           </TouchableOpacity>
+ )}
         </View>
       </Animated.View>
     </View>
@@ -388,7 +443,7 @@ const styles = StyleSheet.create({
 
   section: {
     marginTop: 10,
-    paddingBottom: 14,
+    paddingBottom: 54,
     borderBottomWidth: 1,
     borderColor: "#EEE",
   },

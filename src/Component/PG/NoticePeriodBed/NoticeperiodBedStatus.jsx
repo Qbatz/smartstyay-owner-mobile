@@ -56,7 +56,7 @@ export default function NoticePeriodBedSheet({
   const matchedCustomer = customers.find(
     c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
   );
-
+console.log("matchedCustomer",matchedCustomer)
  
 
   // console.log("filteredTenants", filteredTenants);

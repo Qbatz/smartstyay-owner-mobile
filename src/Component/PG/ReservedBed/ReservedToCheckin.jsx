@@ -8,6 +8,8 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 
 export default function ReserveToCheckin({ route, navigation }) {
 
@@ -169,12 +171,12 @@ const onSave = async () => {
           <Text style={styles.backArrow}>← Check-In Tenant</Text>
         </TouchableOpacity>
 
-        <Text style={styles.roomInfo}>Room No  |</Text>
+        <Text style={styles.roomInfo}>Room No {selectedBed?.roomName} | {selectedBed?.bedName}</Text>
 
         {/* Tenant Name */}
         <Text style={styles.label}>Tenant</Text>
         <View style={styles.box}>
-          <Text>{selectedBed.newTenantInfo[0]?.tenantFullName}</Text>
+          <Text>{selectedBed?.newTenantInfo[0]?.tenantFullName}</Text>
         </View>
 
         {/* Booking Date */}
@@ -186,7 +188,7 @@ const onSave = async () => {
         {/* Booking Amount */}
         <Text style={styles.label}>Booking Amount</Text>
         <View style={styles.box}>
-          <Text>₹{selectedBed.newTenantInfo[0]?.bookingAmount}</Text>
+          <Text>₹{selectedBed?.newTenantInfo[0]?.bookingAmount}</Text>
         </View>
 
         <Text style={styles.label}>Stay Type</Text>
