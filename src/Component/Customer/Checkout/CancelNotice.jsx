@@ -122,18 +122,18 @@ const handleCancelNotice = async () => {
           <Image source={SampleAvatar} style={styles.avatar} />
 
           <View style={{ marginLeft: 14 }}>
-            <Text style={styles.tenantName}>Daniel Balaji M</Text>
+            <Text style={styles.tenantName}>{selectedItem?.fullName || selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
 
               <View style={styles.smallRow}>
                            <View style={styles.badge}>
-                             <Text style={styles.badgeText}>Ground Floor</Text>
+                             <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed?.floorName}</Text>
                            </View>
            
                            <Image source={RoomIcon} style={styles.smallIcon} />
-                           <Text style={styles.badgeLabel}>101</Text>
+                           <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed?.roomName}</Text>
            
                            <Image source={BedIcon} style={styles.smallIcon} />
-                           <Text style={styles.badgeLabel}>4</Text>
+                           <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed?.bedName}</Text>
                          </View>
           </View>
         </View>

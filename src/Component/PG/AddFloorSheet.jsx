@@ -205,7 +205,7 @@ const sheetContent = (
     <View style={styles.handle} />
 
     <Text style={styles.title}>
-      {isEdit ? "Update Floor" : "Add Floor"}
+      {isEdit ? "Edit Floor" : "Add Floor"}
     </Text>
 
     <Text style={styles.label}>
