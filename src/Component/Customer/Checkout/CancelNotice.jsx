@@ -122,18 +122,18 @@ const handleCancelNotice = async () => {
           <Image source={SampleAvatar} style={styles.avatar} />
 
           <View style={{ marginLeft: 14 }}>
-            <Text style={styles.tenantName}>{selectedItem?.fullName || selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+            <Text style={styles.tenantName}>Daniel Balaji M</Text>
 
               <View style={styles.smallRow}>
                            <View style={styles.badge}>
-                             <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed?.floorName}</Text>
+                             <Text style={styles.badgeText}>Ground Floor</Text>
                            </View>
            
                            <Image source={RoomIcon} style={styles.smallIcon} />
-                           <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed?.roomName}</Text>
+                           <Text style={styles.badgeLabel}>101</Text>
            
                            <Image source={BedIcon} style={styles.smallIcon} />
-                           <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed?.bedName}</Text>
+                           <Text style={styles.badgeLabel}>4</Text>
                          </View>
           </View>
         </View>
@@ -159,18 +159,7 @@ const handleCancelNotice = async () => {
           <Image source={CalendarIcon} style={styles.calendarIcon} />
         </TouchableOpacity>
 
-        {openDate && (
-          <View style={styles.dropdownBox}>
-            <DatePicker
-              mode="single"
-              date={checkInDate}
-              onChange={(v) => {
-                setCheckInDate(v.date || new Date());
-                setOpenDate(false);
-              }}
-            />
-          </View>
-        )}
+        
 
         {/* Reason */}
         <Text style={styles.label}>Reason (Comments)</Text>
@@ -182,6 +171,18 @@ const handleCancelNotice = async () => {
           onChangeText={setReason}
         />
       </ScrollView>
+      {openDate && (
+          <View style={styles.dropdownBox}>
+            <DatePicker
+              mode="single"
+              date={checkInDate}
+              onChange={(v) => {
+                setCheckInDate(v.date || new Date());
+                setOpenDate(false);
+              }}
+            />
+          </View>
+        )}
 
       {/* Bottom Buttons */}
      <View style={styles.btnRow}>
@@ -255,13 +256,13 @@ const styles = StyleSheet.create({
   calendarIcon: { width: 22, height: 22, tintColor: "#676767" },
 
   dropdownBox: {
-    marginTop: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E6E6E6",
     backgroundColor: "#fff",
-    overflow: "hidden",
-    elevation: 2,
+    width: "90%",
+    borderRadius: 16,
+    padding: 10,
+    alignSelf: "center",
+    elevation: 6,
+    marginBottom: 120
   },
 
   textarea: {

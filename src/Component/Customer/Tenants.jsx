@@ -1701,7 +1701,7 @@ const styles = StyleSheet.create({
 
   menuBox: {
     position: "absolute",
-    width: 180,
+    width: 190,
     backgroundColor: "#fff",
     borderRadius: 14,
     paddingVertical: 6,

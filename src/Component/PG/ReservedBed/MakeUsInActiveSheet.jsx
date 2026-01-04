@@ -10,6 +10,7 @@ import {
   StyleSheet, PanResponder
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
+import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import { useCustomer } from "../../../Context/CustomerContext";
 import CalendarImage from "../../../Assets/Images/calendar.png";
@@ -17,19 +18,28 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
-export default function InactiveTenantSheet({ visible, onClose, selectedBed,selectedItem,onSuccess,bookedItems }) {
+export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems }) {
   const translateY = useRef(new Animated.Value(400)).current;
-  const [joiningDate, setJoiningDate] = useState(dayjs());
+  const [joiningDate, setJoiningDate] = useState(null);
   const [bookingDetails, setBookingDetails] = useState("")
   const [comments, setComments] = useState("");
   const { activeHostelId } = useContext(CommonContexts);
-  const { cancelCheckout, initializeCheckIn,initializeCancelBooking,cancelBooking } = useCustomer();
+  const { cancelCheckout, initializeCheckIn, initializeCancelBooking, cancelBooking } = useCustomer();
   const [openJoinDatePic, setOpenJoinDatePic] = useState("");
-  const [bankdetails,setBankDetails] = useState("")
-  const [commentError,setCommentError] = useState("")
-console.log("bookedItems",bookedItems)
-const customerId =
-  selectedItem?.customerId || bookedItems?.tenetId;
+  const [bankdetails, setBankDetails] = useState("")
+  const [commentError, setCommentError] = useState("")
+  const [joiningDateError, setJoiningDateError] = useState("")
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  console.log("bookedItems", bookedItems)
+  const today = dayjs().format("YYYY-MM-DD");
+
+  const minDate = bookingDetails?.bookedDate
+    ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
+    : today;
+  const customerId =
+    selectedItem?.customerId || bookedItems?.tenetId;
 
   useEffect(() => {
     if (!activeHostelId || !customerId) return;
@@ -44,20 +54,36 @@ const customerId =
 
     initCheckIn();
   }, [activeHostelId, customerId]);
+  console.log("setBookingDetails", bookingDetails)
 
   useEffect(() => {
-  if (!customerId) return;
+    if (!customerId) return;
 
-  const loadCancelInit = async () => {
-    const res = await initializeCancelBooking(customerId);
-    if (res.success) {    
-      setBankDetails(res.data)    
+    const loadCancelInit = async () => {
+      const res = await initializeCancelBooking(customerId);
+      if (res.success) {
+        setBankDetails(res.data)
+      }
+    };
+
+    loadCancelInit();
+  }, [customerId]);
+
+  useEffect(() => {
+    if (!visible) {
+      setComments("");
+      setCommentError("");
+      setJoiningDate(null);
+      setOpenJoinDatePic(false);
     }
+  }, [visible]);
+  const handleClose = () => {
+    setComments("");
+    setCommentError("");
+    setJoiningDate(null);
+    setOpenJoinDatePic(false);
+    onClose();
   };
-
-  loadCancelInit();
-}, [customerId]);
-
 
   console.log("selectedBed", selectedBed)
   console.log("selectedItempr", selectedItem)
@@ -75,7 +101,7 @@ const customerId =
       if (g.dy > 0) translateY.setValue(g.dy);
     },
     onPanResponderRelease: (_, g) => {
-      if (g.dy > 120) onClose();
+      if (g.dy > 120) handleClose();
       else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
     },
   });
@@ -91,68 +117,91 @@ const customerId =
 
   if (!visible) return null;
   const handleConfirmCancel = async () => {
-  if (!comments) {
-    alert("Please enter reason");
-    return;
-  }
+    let valid = true;
+    if (!joiningDate) {
+      setJoiningDateError("Please select joining date");
+      valid = false;
+    }
+    if (!comments) {
+      setCommentError("Please enter reason");
+      valid = false;
+    }
 
- 
+    if (!valid) return;
 
-  const payload = {
-    reason: comments,
-    cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-    bankId: bankdetails?.listBanks?.[0]?.bankId,
-    
+    const payload = {
+      reason: comments,
+      cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+      bankId: bankdetails?.listBanks?.[0]?.bankId,
+
+    };
+
+    console.log("CANCEL PAYLOAD 👉", payload);
+
+    const res = await cancelBooking(
+      customerId,
+      payload
+    );
+
+    if (res.success) {
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      onSuccess && onSuccess();
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        handleClose();
+      }, 800);
+
+
+
+    } else {
+      setModalType("warning");
+      setMessage(res.message);
+      setShowSuccess(true);
+
+
+      setTimeout(() => {
+        setShowSuccess(false);
+
+      }, 800);
+    }
   };
 
-  console.log("CANCEL PAYLOAD 👉", payload);
 
-  const res = await cancelBooking(
-    customerId,
-    payload
-  );
+  // const handleConfirmCancel = async () => {
+  //   if (!comments) {
+  //     alert("Please enter reason");
+  //     return;
+  //   }
 
-  if (res.success) {
-    alert("Booking cancelled successfully");
-       onSuccess && onSuccess();
-    onClose();
-  } else {
-    alert(res.message);
-  }
-};
+  //   const payload = {
+  //     reason: comments,
+  //     cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+  //     bankId:bankdetails?.listBanks[0]?.bankId,
 
-
-// const handleConfirmCancel = async () => {
-//   if (!comments) {
-//     alert("Please enter reason");
-//     return;
-//   }
-
-//   const payload = {
-//     reason: comments,
-//     cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-//     bankId:bankdetails?.listBanks[0]?.bankId,
-   
-//   };
+  //   };
 
 
 
-//   const res = await cancelBooking(selectedItem.selectedItem?.customerId, payload);
+  //   const res = await cancelBooking(selectedItem.selectedItem?.customerId, payload);
 
-//   if (res.success) {
-//     alert("Booking cancelled successfully");
-//     onClose();
-//   } else {
-//     alert(res.message);
-//   }
-// };
+  //   if (res.success) {
+  //     alert("Booking cancelled successfully");
+  //     onClose();
+  //   } else {
+  //     alert(res.message);
+  //   }
+  // };
 
 
 
   return (
     <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={onClose}>
+        <TouchableWithoutFeedback onPress={handleClose}>
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
@@ -167,34 +216,41 @@ const customerId =
           </Text>
 
           {/* Joining Date */}
-          <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
+          <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
           <TouchableOpacity
             style={styles.dateBox}
             onPress={() => setOpenJoinDatePic(true)}
           >
             <Text style={styles.placeholder}>
-              {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+              {joiningDate
+                ? dayjs(joiningDate).format("DD-MM-YYYY")
+                : "DD-MM-YYYY"}
             </Text>
+
             <Image source={CalendarImage} style={{ width: 22, height: 22 }} />
           </TouchableOpacity>
+          {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
 
 
 
-          {/* Comments */}
-          <Text style={[styles.label, { marginTop: 12 }]}>Reason (Comments) <Text style={{color:"red"}}>*</Text></Text>
+          <Text style={[styles.label, { marginTop: 12 }]}>Reason (Comments) <Text style={{ color: "red" }}>*</Text></Text>
 
           <TextInput
             style={styles.textArea}
             multiline
             placeholder="Enter comments..."
             value={comments}
-            onChangeText={setComments}
-          />
+            onChangeText={(text) => {
+              setComments(text);
+              setCommentError("");
+            }}
 
+          />
+          {commentError && <ErrorMessage message={commentError} type="error" />}
           {/* Buttons */}
           <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleClose}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
@@ -212,14 +268,26 @@ const customerId =
           </TouchableWithoutFeedback>
 
           <View style={styles.datePickerBox}>
-            <DatePicker
-              mode="single"
-              date={joiningDate}
-              onChange={(p) => {
-                setJoiningDate(p.date || dayjs());
+            <Calendar
+              minDate={minDate}
+              maxDate={today}
+              markedDates={
+                joiningDate
+                  ? {
+                    [dayjs(joiningDate).format("YYYY-MM-DD")]: {
+                      selected: true,
+                      selectedColor: "#1E45E1",
+                    },
+                  }
+                  : {}
+              }
+              onDayPress={(day) => {
+                setJoiningDate(day.dateString);
                 setOpenJoinDatePic(false);
+                setJoiningDateError("")
               }}
             />
+
           </View>
         </View>
       )}
@@ -319,15 +387,28 @@ const styles = StyleSheet.create({
     top: 0, left: 0, right: 0, bottom: 0,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.4)",
+    sheetOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.4)",
+      justifyContent: "flex-end",   // 👈 bottom
+      alignItems: "center",         // 👈 horizontal center
+    },
+
 
   },
   datePickerBox: {
     backgroundColor: "#fff",
-    width: "80%",
-    borderColor: "#DCDCDC",
-    borderRadius: 30,
-    padding: 5,
-    marginBottom: 120,
-    borderWidth: 0.5,
+    width: "90%",
+    borderRadius: 16,
+    padding: 10,
+    alignSelf: "center",
+    elevation: 6,
+    marginBottom: 120
   },
+
+
 });

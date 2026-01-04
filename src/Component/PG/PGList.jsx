@@ -50,7 +50,7 @@ const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 
 export default function PGPageFull({ route }) {
   const navigation = useNavigation();
-  const { activeHostelId,hostelList } = useContext(CommonContexts);
+  const { activeHostelId, hostelList } = useContext(CommonContexts);
   const { getAllFloorsByHostel, loading, getAllRoomsByFloor, getAllBedsByRoom, deleteRoom, deleteBed, deleteFloor, getBedById } = useFloor();
   const [activeFloorIndex, setActiveFloorIndex] = useState(0);
   const [showAddFloor, setShowAddFloor] = useState(false);
@@ -63,7 +63,7 @@ export default function PGPageFull({ route }) {
   const [selectedReserved, setSelectedReserved] = useState(null);
   const [showOccupiedSheet, setShowOccupiedSheet] = useState(false);
 
-   const [showOccupiedReservedSheet, setShowOccupiedReservedSheet] = useState(false);
+  const [showOccupiedReservedSheet, setShowOccupiedReservedSheet] = useState(false);
   const [selectedOccupied, setSelectedOccupied] = useState(null);
   const [showNotice, setShowNotice] = useState(false);
   const [reqDate, setReqDate] = useState("31/07/2025");
@@ -94,13 +94,13 @@ export default function PGPageFull({ route }) {
   const [deleteFloorId, setDeleteFloorId] = useState(null);
   const [floordeletePopup, setFloorDeletePopup] = useState(false)
   const [bedUserDetails, setBedUserDetails] = useState("")
-   const [showCheckout, setShowCheckout] = useState(false);
-   const [inactiveTenant, setInactiveTenant] = useState(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [inactiveTenant, setInactiveTenant] = useState(null);
 
 
   const [editBedData, setEditBedData] = useState(null);
 
- console.log("hostelList", hostelList)
+  console.log("hostelList", hostelList)
   const handleEditBed = (bed) => {
     setEditBedData(bed);
     setShowAddBed(true);
@@ -109,11 +109,11 @@ export default function PGPageFull({ route }) {
     setShowOccupiedSheet(false)
     setShowReservedSheet(false)
   };
-const activeHostelName = hostelList?.find(
-  (item) => item.hostelId === activeHostelId
-)?.name;
+  const activeHostelName = hostelList?.find(
+    (item) => item.hostelId === activeHostelId
+  )?.name;
 
-console.log("Active Hostel Name:", activeHostelName);
+  console.log("Active Hostel Name:", activeHostelName);
 
   const handleDelete = (roomId) => {
     setDeletePopup(true)
@@ -175,7 +175,7 @@ console.log("Active Hostel Name:", activeHostelName);
     }
   };
 
- 
+
   const handleBedPress = async (bed, room) => {
     const res = await getBedById(bed.id);
 
@@ -185,7 +185,7 @@ console.log("Active Hostel Name:", activeHostelName);
     const status = getBedStatus(freshBed);
 
     const statuses = splitStatus(status);
-    
+
     console.log("status", status)
 
     if (
@@ -215,8 +215,8 @@ console.log("Active Hostel Name:", activeHostelName);
       setShowOccupiedSheet(true);
       return;
     }
-     if (freshBed.isOccupied && freshBed.isBooked) {
-     setSelectedBed(freshBed);
+    if (freshBed.isOccupied && freshBed.isBooked) {
+      setSelectedBed(freshBed);
       setSelectedBedRoomId(room.id);
       setSelectedOccupied({ bed: freshBed, room });
       setShowOccupiedSheet(true);
@@ -224,7 +224,7 @@ console.log("Active Hostel Name:", activeHostelName);
     }
 
 
-    if ( freshBed.isBooked) {
+    if (freshBed.isBooked) {
       setSelectedBed(freshBed);
       setSelectedReserved({ bed: freshBed, room });
       setShowReservedSheet(true);
@@ -277,7 +277,7 @@ console.log("Active Hostel Name:", activeHostelName);
 
     }
   };
-
+  console.log("Floors", floors)
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -375,7 +375,7 @@ console.log("Active Hostel Name:", activeHostelName);
     if (!status) return "";
     const statuses = splitStatus(status);
 
-    if (statuses.includes("noticeperiod")) return "noticeperiod"; // 🔥 highest
+    if (statuses.includes("noticeperiod")) return "noticeperiod";
     if (statuses.includes("overdue")) return "overdue";
     if (statuses.includes("reserved")) return "reserved";
     if (statuses.includes("occupied")) return "occupied";
@@ -571,27 +571,27 @@ console.log("Active Hostel Name:", activeHostelName);
     setShowNewBooking(true);
     setShowDoubleStatus(false)
   };
-    const handleNoticeToCheckout=()=>{
+  const handleNoticeToCheckout = () => {
     setShowCheckout(true)
-      setShowNoticePeriodSheet(false);
-      setShowDoubleStatus(false)
+    setShowNoticePeriodSheet(false);
+    setShowDoubleStatus(false)
   }
 
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
     // navigation.navigate("FinalSettlement");
-     navigation.navigate("FinalSettlement", {
-    selectedBed:selectedBed
-    // selectedBed?.currentTenantInfo?.[0]?.tenetId,
-});
+    navigation.navigate("FinalSettlement", {
+      selectedBed: selectedBed
+      // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+    });
     setShowDoubleStatus(false)
   };
 
   const handleShowCancelNotice = () => {
     setShowNoticePeriodSheet(false);
-   navigation.navigate("CancelNotice", {
-    selectedBed: selectedBed,
-  });
+    navigation.navigate("CancelNotice", {
+      selectedBed: selectedBed,
+    });
     setShowDoubleStatus(false)
   };
   // const handleMakeUsInActive = () => {
@@ -599,18 +599,18 @@ console.log("Active Hostel Name:", activeHostelName);
   //   setShowInactiveSheet(true)
   // }
   const handleMakeUsInActive = (item) => {
-  setInactiveTenant(item);    
-  setShowDoubleStatus(false);
-  setShowInactiveSheet(true);
-};
+    setInactiveTenant(item);
+    setShowDoubleStatus(false);
+    setShowInactiveSheet(true);
+  };
 
   const handleCheckIn = () => {
     setShowDoubleStatus(false)
     // navigation.navigate("ReserveToCheckin")
     // selectedBed:selectedBed
-     navigation.navigate("ReserveToCheckin", {
-     selectedBed: selectedBed,
-  });
+    navigation.navigate("ReserveToCheckin", {
+      selectedBed: selectedBed,
+    });
   }
   const handleAddBed = (roomId) => {
     setSelectedBedRoomId(roomId);
@@ -619,6 +619,17 @@ console.log("Active Hostel Name:", activeHostelName);
   };
   const activeFloor = floors[activeFloorIndex];
 
+  const getFloorLabel = (name = "") => {
+    const trimmed = name.trim();
+
+    // if name starts with number → return full number part
+    if (/^\d+/.test(trimmed)) {
+      return trimmed.match(/^\d+/)[0]; // "11" → "11"
+    }
+
+    // else return first letter
+    return trimmed.charAt(0).toUpperCase();
+  };
 
 
   return (
@@ -765,7 +776,7 @@ console.log("Active Hostel Name:", activeHostelName);
                         activeFloorIndex === i && styles.circleTextActive,
                       ]}
                     >
-                      F
+                      {getFloorLabel(f.name)}
                     </Text>
                   </View>
 
@@ -904,7 +915,7 @@ console.log("Active Hostel Name:", activeHostelName);
                         </View>
                       )} */}
 
-                      {!(b.onNotice && b.isBooked) &&
+                      {!(b.isOnNotice && b.isBooked) &&
                         overlayIcons[getPrimaryStatus(status)] && (
                           <Image
                             source={overlayIcons[getPrimaryStatus(status)]}
@@ -914,7 +925,7 @@ console.log("Active Hostel Name:", activeHostelName);
                       }
 
                       {/* Multi status badge */}
-                      {b.onNotice && b.isBooked && (
+                      {b.isOnNotice && b.isBooked && (
                         <View style={styles.multiBadge}>
                           <Text style={styles.multiBadgeText}>2</Text>
                         </View>
@@ -1050,7 +1061,7 @@ console.log("Active Hostel Name:", activeHostelName);
         selectedBed={selectedBed}
         onClose={() => setShowManageBed(false)}
         handleEditBed={handleEditBed}
-       
+
         onBedAdded={handleBedAdded}
       />
 
@@ -1076,13 +1087,13 @@ console.log("Active Hostel Name:", activeHostelName);
         onReAssign={handleReAssignBed}
         handleEditBed={handleEditBed}
         selectedBed={selectedBed}
-          handleMakeUsInActive={handleMakeUsInActive}
+        handleMakeUsInActive={handleMakeUsInActive}
         handleCheckIn={handleCheckIn}
-       
+
 
       />
       <OccupiedAndReservedBedSheet
-       visible={showOccupiedReservedSheet}
+        visible={showOccupiedReservedSheet}
         onClose={() => {
           setShowOccupiedReservedSheet(false);
           setSelectedOccupied(null);
@@ -1152,12 +1163,13 @@ console.log("Active Hostel Name:", activeHostelName);
         handleMakeUsInActive={handleMakeUsInActive}
         handleCheckIn={handleCheckIn}
         selectedBed={selectedBed}
+        handleNoticeToCheckout={handleNoticeToCheckout}
       />
       <InactiveTenantSheet
         visible={showInactiveSheet}
         onClose={() => setShowInactiveSheet(false)}
         selectedBed={selectedBed}
-       bookedItems={inactiveTenant}  
+        bookedItems={inactiveTenant}
 
       />
       <Modal
