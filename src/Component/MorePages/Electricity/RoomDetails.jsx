@@ -45,8 +45,19 @@ export default function RoomDetails({route, navigation }) {
      console.log("particular_EbRoomReading", particular_EbRoomReading);
      
 
-     const currentReadingData =
-  particular_EbRoomReading?.readings?.[0] ?? null;
+  //    const currentReadingData =
+  // particular_EbRoomReading?.readings?.[0] ?? null;
+
+  const currentReadingData =
+  particular_EbRoomReading?.readings?.length > 0
+    ? particular_EbRoomReading.readings[
+        particular_EbRoomReading.readings.length - 1
+      ]
+    : null;
+
+    console.log("currentreading", currentReadingData );
+    
+
 
     const [activeTab, setActiveTab] = useState("Previous Reading");
     const [underlineWidth, setUnderlineWidth] = useState(0);
@@ -208,8 +219,33 @@ const panResponder = useRef(
 
 
 
+// const handleEditRoomReading = (data) => {
+//   if (!data) return;
+
+//   setIsEditMode(true);
+//   setEditReadingData(data);
+
+//   setInitialValues({
+//     reading: data.reading,
+//     date: data.entryDate,
+//   });
+
+//   setCurrentReading(String(data.reading));
+
+//   setReadingDate(
+//     dayjs(data.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
+//   );
+
+//   openSheet();
+// };
+
+
+
 const handleEditRoomReading = (data) => {
-  if (!data) return;
+  if (!data?.ebId) {
+    console.log("Edit failed  invalid reading", data);
+    return;
+  }
 
   setIsEditMode(true);
   setEditReadingData(data);
@@ -227,6 +263,7 @@ const handleEditRoomReading = (data) => {
 
   openSheet();
 };
+
 
 
 
@@ -293,12 +330,15 @@ const handleEditRoomReading = (data) => {
     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
     roomId: roomData?.roomId,
     floorId: roomData?.floorId,
-    readingId: editReadingData?.readingId, // ⭐ edit case
+    readingId: editReadingData?.ebId,
   };
 
   const res = isEditMode
-    ? await UpdateRoomReading(payload)   // 🔥 API
+    ? await UpdateRoomReading(payload)   
     : await AddRoomReading(payload);
+
+    console.log("res", res);
+    
 
   if (res.success) {
      GetEBRoomReading(activeHostelId);
@@ -321,8 +361,22 @@ const handleEditRoomReading = (data) => {
   }
 };
 
+// const handleDeleteRoomReading = (data) => {
+//   if (!data?.readingId) return;
+
+//   setDeleteData(data);
+//   setShowDeleteModal(true);
+//   setShowActionMenu(false);
+// };
+
 const handleDeleteRoomReading = (data) => {
-  if (!data?.readingId) return;
+
+  console.log("data", data);
+  
+  if (!data || !data.ebId) {
+    console.log("Invalid delete data", data);
+    return;
+  }
 
   setDeleteData(data);
   setShowDeleteModal(true);
@@ -330,10 +384,11 @@ const handleDeleteRoomReading = (data) => {
 };
 
 
+
 const handleConfirmReadingDelete = async () => {
     const res = await DeleteRoomReading({
       hostelId: activeHostelId,
-      readingId: deleteData?.readingId,
+      readingId: deleteData?.ebId,
     });
 
     if (res.success) {
@@ -489,15 +544,28 @@ const handleConfirmReadingDelete = async () => {
 <TouchableOpacity
   ref={(ref) => (dotsRefs.current["room"] = ref)}
   disabled={!hasReading}
+  // onPress={() => {
+  //   dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
+  //     setPopupPosition({
+  //       x: x + width,
+  //       y: y + height,
+  //     });
+  //     setShowActionMenu(true);
+  //   });
+  // }}
+
   onPress={() => {
-    dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
-      setPopupPosition({
-        x: x + width,
-        y: y + height,
-      });
-      setShowActionMenu(true);
+  if (!hasReading || !currentReadingData) return;
+
+  dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
+    setPopupPosition({
+      x: x + width,
+      y: y + height,
     });
-  }}
+    setShowActionMenu(true);
+  });
+}}
+
   activeOpacity={hasReading ? 0.6 : 1}
 >
   <Image
@@ -890,6 +958,7 @@ const handleConfirmReadingDelete = async () => {
           setReadingDate(day.dateString);
           setOpenReadingDatePic(false);
           setReadingDateError("");
+          setApiError("");
         }}
         theme={{
           todayTextColor: "#2563EB",

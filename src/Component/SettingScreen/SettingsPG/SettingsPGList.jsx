@@ -17,6 +17,8 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { PGContext } from "../../../Context/PGContext";
 import { LoginContexts } from "../../../Context/LoginContext";
 import { getHostels } from "../../../Action/HostelAction";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 import HostelImg from "../../../Assets/Images/PgImg.png";
 import PgRooms from "../../../Assets/Images/pgrooms.png";
 import call from "../../../Assets/Images/call.png";
@@ -45,6 +47,10 @@ export default function SettingsPG({ navigation }) {
   const [isSwitchVisible, setIsSwitchVisible] = useState(false);
   const [switchHostel, setSwitchHostel] = useState(null);
   const sheetY = useRef(new Animated.Value(300)).current;
+
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+        const [modalMessage, setModalMessage] = useState("");
+        const [modalType, setModalType] = useState("success");
 
   const [deletePGShow, setDeletePG] = useState(false);
 
@@ -240,15 +246,24 @@ const handleDeletePG = async () => {
     const res = await deletePG(deletedId)
 
     if (res?.status === 400) {
-      const message = res?.data || "This hostel cannot be deleted because rooms or beds already exist.";
-      console.log("response", res?.data)
-   
-      alert(message)
-      return;
+    setModalMessage("This hostel cannot be deleted because rooms or beds already exist.");
+    setModalType("warning");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500)
+      return
     }
  
     if (res?.status !== 200) {
-      alert("Unable to delete PG. Please try again.");
+    setModalMessage("This hostel cannot be deleted because rooms or beds already exist.");
+    setModalType("warning");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500)
       return
     }
 
@@ -265,6 +280,13 @@ const handleDeletePG = async () => {
         setActiveHostelId(null);
       }
     }
+     setModalMessage(res?.message || "Deleted successfully");
+     setModalType("success");
+     setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 1500);
 
     console.log("PG Deleted Successfully!");
 
@@ -277,7 +299,7 @@ const handleDeletePG = async () => {
   }
 };
 
-
+console.log("hostelimage",mainHostel?.images?.map(i => i?.uri?.id));
 
 
 
@@ -344,6 +366,15 @@ const handleDeletePG = async () => {
 
 
   return (
+
+    <>
+     <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+   
     
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.header}>
@@ -365,14 +396,25 @@ const handleDeletePG = async () => {
             </View>
           </View>
 <TouchableOpacity
-  onLayout={(e) => {
-    const { x, y, height } = e.nativeEvent.layout;
-    dotRefs.current[mainHostel.id] = { x, y, height };
+  ref={(ref) => {
+    if (ref) dotRefs.current[mainHostel?.id] = ref;
   }}
-  onPress={() => openPopup(mainHostel.id)}
+  onPress={() => {
+    const ref = dotRefs.current[mainHostel?.id];
+    if (!ref) return;
+
+    ref.measureInWindow((x, y, width, height) => {
+      setPopupPos({
+        x: x - 130,
+        y: y + height + 5,
+      });
+      setVisiblePopup(mainHostel?.id);
+    });
+  }}
 >
   <Image source={Dots} style={styles.dotsIcon} />
 </TouchableOpacity>
+
 
         </View>
 
@@ -389,8 +431,8 @@ const handleDeletePG = async () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {mainHostel?.images?.map((i) => {
-              return <Image key={i?.uri?.id} source={i?.uri?.image} style={styles.roomImg} />
+          {mainHostel?.images?.map((i , index) => {
+              return <Image  key={`${i?.uri?.id || "img"}-${index}`} source={i?.uri?.image} style={styles.roomImg} />
           }
           )}
         </ScrollView>
@@ -562,6 +604,7 @@ const handleDeletePG = async () => {
         </Modal>
       )}
     </View>
+     </>
   );
 }
 
