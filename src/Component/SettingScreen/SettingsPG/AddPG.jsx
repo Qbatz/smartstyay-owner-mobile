@@ -36,6 +36,10 @@ export default function AddPG({ navigation, route }) {
   const { hostelList , updateHostelList , setActiveHostelId , activeHostelId  } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
+
   const prepareImage = (img) => {
     if (!img?.uri) return null;
     return {
@@ -234,7 +238,10 @@ setErrors({});
          console.log("updateddata", fresh);
      const reordered = reorderHostels(fresh.data, activeHostelId);
      updateHostelList(reordered);
-      alert("PG Updated Successfully");
+      setModalType("success");
+      setModalMessage("PG Updated Successfully");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
       navigation.goBack();
     } else {
       alert("Update Failed");
@@ -245,6 +252,10 @@ setErrors({});
 const res = await addPG(finalPayload)
 
 if (res?.status === 201) {
+     setModalType("success");
+      setModalMessage("PG Added Successfully");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
   const fresh = await getHostels()
   const data = fresh.data
 
@@ -270,6 +281,15 @@ if (res?.status === 201) {
 
 
   return (
+
+    <>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+   
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.fixedHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -479,6 +499,7 @@ if (res?.status === 201) {
         </ScrollView>
       </TouchableWithoutFeedback>
     </View>
+     </>
   );
 }
 
