@@ -295,7 +295,7 @@ const [initialAmount, setInitialAmount] = useState("");
 
     <Text style={styles.title}> {isEdit ? "Edit Bed" : "Add Bed"}</Text>
 
-    <Text style={styles.label}>Bed Name or No *</Text>
+    <Text style={styles.label}>Bed Name or No <Text  style={{color:"red"}}>*</Text></Text>
    <TextInput
   style={styles.input}
   placeholder="Enter Bed Name or No"
@@ -309,28 +309,19 @@ const [initialAmount, setInitialAmount] = useState("");
 />
     {bedNameError && <ErrorMessage message={bedNameError} type="error" />}
 
-    <Text style={styles.label}>Amount *</Text>
-    {/* <TextInput
-      style={styles.input}
-      placeholder="Enter Amount"
-      keyboardType="numeric"
-      value={amount}
-      onChangeText={(t) => {
-        setAmount(t);
-        setAmountError("");
-      }}
-    /> */}
+    <Text style={styles.label}>Amount <Text style={{color:"red"}}>*</Text></Text>
+    
     <TextInput
      ref={amountRef}  
   style={styles.input}
   placeholder="Enter Amount"
   value={amount}
   keyboardType="numeric"
-  returnKeyType="done"     // ✅ shows ✔ / Done
+  returnKeyType="done"     
   blurOnSubmit={false}
   onSubmitEditing={() => {
     if (!isDisabled) {
-      handleSaveBed();     // ✅ SAVE triggered
+      handleSaveBed();     
     }
   }}
   onChangeText={(text) => {
@@ -342,8 +333,8 @@ const [initialAmount, setInitialAmount] = useState("");
     {amountError && <ErrorMessage message={amountError} type="error" />}
 
     <TouchableOpacity
-      style={[styles.addButton, isDisabled && styles.addButtonDisabled]}
-      disabled={isDisabled}
+      style={styles.addButton}
+      // disabled={isDisabled}
       onPress={handleSaveBed}
     >
       <Text style={styles.addButtonText}> {isEdit ? "Update Bed" : "Add Bed"}</Text>

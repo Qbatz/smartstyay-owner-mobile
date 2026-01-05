@@ -206,9 +206,9 @@ const handleBedPress = async (bed, room) => {
 
  
   if (
-    matchedBed.onNotice &&
-    matchedBed.isBooked &&
-    matchedBed.isOccupied
+    freshBed.isOnNotice &&
+    freshBed.isBooked &&
+    freshBed.isOccupied
   ) {
     setSelectedDouble({ bed: freshBed, room });
     setShowDoubleStatus(true);
@@ -415,6 +415,16 @@ const handleBedPress = async (bed, room) => {
     }, [rooms])
   );
 
+useFocusEffect(
+  useCallback(() => {
+    // PG page open aagumbodhu TAB BAR ON
+    route?.params?.setShowTabBar?.(true);
+
+    return () => {
+      // PG page leave pannumbodhu nothing
+    };
+  }, [])
+);
 
 
   // const getBedStatus = (bed) => {
