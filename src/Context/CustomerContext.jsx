@@ -511,12 +511,13 @@ const initializeCheckIn = async (hostelId, customerId) => {
     );
 
     return { success: true, data: res.data };
+   
   } catch (error) {
     console.log("INIT CHECK-IN ERROR 👉", error.response?.data);
     return {
       success: false,
       message:
-        error?.response?.data?.message || "Initialize check-in failed",
+        error?.response?.data || "Initialize check-in failed",
     };
   }
 };
