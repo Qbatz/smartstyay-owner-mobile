@@ -1,8 +1,10 @@
 import React,{useState} from "react";
-import { View, Image } from "react-native";
+import { View, Image, } from "react-native";
 import { useLinkBuilder, useTheme } from "@react-navigation/native";
 import { Text, PlatformPressable } from "@react-navigation/elements";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 import HomeScreen from "../Dashboard/DashboardPage";
 import Tenant from "../Customer/Tenants";
@@ -32,58 +34,66 @@ const icons = {
 };
 
 function MyTabBar({ state, descriptors, navigation }) {
-  const { colors } = useTheme();
   const { buildHref } = useLinkBuilder();
-  
 
   return (
-   <View
-  style={{
-    flexDirection: "row",
-    paddingVertical: 12,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderColor: "#fff",
-    elevation: 8,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    <SafeAreaView
+      edges={["bottom"]}
+      style={{
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        elevation: 10,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          paddingVertical: 10,
+        }}
+      >
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
 
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-  }}
->
+          return (
+            <PlatformPressable
+              key={route.key}
+              href={buildHref(route.name, route.params)}
+              onPress={() => navigation.navigate(route.name)}
+              android_ripple={{ color: "#EAF0FF" }}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                source={
+                  isFocused
+                    ? icons[route.name].active
+                    : icons[route.name].inactive
+                }
+                style={{ width: 26, height: 26 }}
+              />
 
-      {state.routes.map((route, index) => {
-        const isFocused = state.index === index;
-
-        return (
-          <PlatformPressable
-            key={route.key}
-            href={buildHref(route.name, route.params)}
-            onPress={() => navigation.navigate(route.name)}
-            style={{
-              flex: 1,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Image
-              source={isFocused ? icons[route.name].active : icons[route.name].inactive}
-              style={{ width: 26, height: 26 }}
-            />
-
-            <Text style={{ marginTop: 4, fontSize: 12, color: isFocused ? "#1E45E1" : "#999" }}>
-              {route.name}
-            </Text>
-          </PlatformPressable>
-        );
-      })}
-    </View>
+              <Text
+                style={{
+                  marginTop: 4,
+                  fontSize: 12,
+                  color: isFocused ? "#1E45E1" : "#999",
+                  fontWeight: isFocused ? "600" : "400",
+                }}
+              >
+                {route.name}
+              </Text>
+            </PlatformPressable>
+          );
+        })}
+      </View>
+    </SafeAreaView>
   );
 }
+
 
 export default function MyTabs() {
     const [showTabBar, setShowTabBar] = useState(true);
