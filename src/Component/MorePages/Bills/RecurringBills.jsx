@@ -230,12 +230,17 @@ const handleToggleRecurring = async (item) => {
 
   if (res.success) {
      setModalType("success");
-  setModalMessage(res.data);
+  setModalMessage(res?.data);
   setShowSuccessModal(true);
 
   setTimeout(() => setShowSuccessModal(false), 1500);
   } else {
-    alert(res.message || "Failed to update status");
+         setModalType("success");
+  setModalMessage(res?.message || "Failed to update status");
+  setShowSuccessModal(true);
+
+  setTimeout(() => setShowSuccessModal(false), 1500);
+    // alert(res.message || "Failed to update status");
   }
 };
 ;
