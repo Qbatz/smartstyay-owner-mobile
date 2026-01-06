@@ -35,7 +35,7 @@ import ChangeHostelScreen from "../src/Component/Dashboard/ChangeHostel";
 import ProfileDrawer from "../src/Component/Dashboard/ProfileClickScreen";
 import ProfileScreen from "../src/Component/Dashboard/ChangeProfile";
 import CreateBill from "./Component/MorePages/Bills/CreateBill";
-import BillsPdfDesign from "./Component/SettingScreen/BillTemplate/BillsPdfPreview";
+import BillsPdfDesign from "./Component/MorePages/Bills/BillsPdf";
 import AssignTenant from "../src/Component/PG/AssignTenants";
 import ReceiptPdfViewer from "../src/Component/MorePages/Bills/ReceiptPdf";
 import SettingsPG from "../src/Component/SettingScreen/SettingsPG/SettingsPGList";
