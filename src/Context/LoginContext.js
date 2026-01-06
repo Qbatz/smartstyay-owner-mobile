@@ -38,6 +38,7 @@ const LoginContext = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [loggedIN,setLoggedIN]=useState()
   const [pinVerifid, setPinVerified] = useState(false)
+   const [route,setRoute]=useState()
 
   // ------------------------
   // LOGIN (EMAIL + PASSWORD)
@@ -66,13 +67,15 @@ const LoginContext = ({ children }) => {
         `/v2/mobile/pin/${userId}`,
         { pin }
       );
+       console.log(res)
 
       await storeData(LOGGEDIN, "true");
       setLoggedIn(true);
+     
 
-      return { success: true };
-    } catch (e) {
-      return { success: false };
+      return res;
+    } catch (error) {
+      return { status: error.response.status, message: error.response.data };
     }
   };
 
@@ -96,7 +99,7 @@ const LoginContext = ({ children }) => {
     return res;
   } catch (error) {
     console.log("verify mpin error", error);
-    return { success: false };
+    return { status: error.response.status, message: error.response.data };
   }
 };
   const loggedinFn=(value)=>{
@@ -112,6 +115,10 @@ const LoginContext = ({ children }) => {
     setUserId(userId);
   }
 
+  const routeNamefn=(value)=>{
+      setRoute(value)
+  }
+
   return (
     <LoginContexts.Provider
       value={{
@@ -125,7 +132,9 @@ const LoginContext = ({ children }) => {
         loggedin:loggedinFn, LoggedIN:loggedIN,
         pinVerifid,
         updatePinSetupStatus,
-        updateUserId
+        updateUserId,
+
+        updateRoute:routeNamefn, getRoute:route
 
       }}
     >

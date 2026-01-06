@@ -71,6 +71,7 @@ export default function CreateAccount() {
   }
 
   postNewAccount(data).then(r=>{
+    console.log(r)
     if(r.status === 201){
       setShowSuccessModal(true);
       setToastMessage('Created Successfully');

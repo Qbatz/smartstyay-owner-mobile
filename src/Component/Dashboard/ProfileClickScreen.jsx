@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useRef,useCallback } from "react";
+import React, { useEffect, useState, useRef,useCallback, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler } from "react-native";
 import Setting from '../../Assets/Images/setting.png';
 import Remove from '../../Assets/Images/remove.png';
 import { useNavigation,useFocusEffect } from "@react-navigation/native";
+import { LoginContexts } from "../../Context/LoginContext";
+import { storeData } from "../../Utils/Storage";
+import { LOGGEDIN } from "../../Utils/Constant";
 
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -18,6 +21,8 @@ export default function ProfileDrawer({ visible, onClose }) {
   const [showEditPopup, setShowEditPopup] = useState(false);
   const arrowRef = useRef(null);
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
+
+  const loginContext=useContext(LoginContexts)
 
   useFocusEffect(
   useCallback(() => {
@@ -57,6 +62,12 @@ export default function ProfileDrawer({ visible, onClose }) {
       useNativeDriver: true,
     }).start();
   }, [visible]);
+
+  const handleLogout=(value)=>{
+    console.log(value)
+      loginContext.loggedin('false')
+      storeData(LOGGEDIN, "false")
+  }
 
   if (!visible) return null;
 
@@ -150,7 +161,7 @@ export default function ProfileDrawer({ visible, onClose }) {
             <Text style={styles.menuText}>Help & Information</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.logoutRow}>
+          <TouchableOpacity onPress={()=>handleLogout('remot')} style={styles.logoutRow}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
         </View>
