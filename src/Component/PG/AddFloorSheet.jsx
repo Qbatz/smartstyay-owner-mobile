@@ -80,15 +80,15 @@ useEffect(() => {
   }, [visible]);
 
  
-  useEffect(() => {
-    if (!visible) return;
+  // useEffect(() => {
+  //   if (!visible) return;
 
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 350); 
+  //   const timer = setTimeout(() => {
+  //     inputRef.current?.focus();
+  //   }, 350); 
 
-    return () => clearTimeout(timer);
-  }, [visible]);
+  //   return () => clearTimeout(timer);
+  // }, [visible]);
 
  
  
@@ -225,9 +225,11 @@ const sheetContent = (
       }}
     />
 
-    {floorNameError && (
+  <View style={{padding:10}}>
+      {floorNameError && (
       <ErrorMessage message={floorNameError} type="error" />
     )}
+  </View>
 
     {/* 🔥 BUTTON ALWAYS JUST BELOW INPUT */}
     <TouchableOpacity style={styles.addBtn} onPress={handleAddFloor}>
@@ -273,6 +275,7 @@ const styles = StyleSheet.create({
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "flex-end",
+    paddingBottom:20
   },
 
 sheet: {

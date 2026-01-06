@@ -12,7 +12,7 @@ import {
   BackHandler,
   Animated,
   PanResponder,
-  Modal, TouchableWithoutFeedback
+  Modal, TouchableWithoutFeedback,Keyboard
 } from "react-native";
 import SuccessModal from "../../ToastFile/ToastPage";
 import AddFloorSheet from "./AddFloorSheet";
@@ -35,6 +35,7 @@ import Dots from "../../Assets/Images/3dots.png";
 import { useFocusEffect } from "@react-navigation/native";
 import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
 import OccupiedAndReservedBedSheet from "../PG/OccupiedAndReservedStatus";
+import Loader from "../Loader/Loader";
 
 
 
@@ -98,6 +99,35 @@ export default function PGPageFull({ route }) {
   const [inactiveTenant, setInactiveTenant] = useState(null);
   // const [matchedBed, setMatchedBed] = useState(null);
 
+
+const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", () => {
+    setIsKeyboardOpen(true);
+  });
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setIsKeyboardOpen(false);
+  });
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+
+const isAnySheetOpen  =
+  isKeyboardOpen ||
+  showAddFloor ||
+  showAddRoom ||
+  showAddBed ||
+  showManageBed ||
+  showReservedSheet ||
+  showOccupiedSheet ||
+  showNoticePeriodSheet ||
+  showNewBooking ||
+  showDoubleStatus ||
+  showInactiveSheet ||
+  showActionSheet;
 
   const [editBedData, setEditBedData] = useState(null);
 
@@ -734,13 +764,14 @@ useFocusEffect(
 
   return (
     <>
+     {loading && <Loader />}
       <SuccessModal
         visible={showSuccess}
         message={message}
         type={modalType}
 
       />
-      <View style={styles.container}>
+      <View style={styles.container} pointerEvents={isAnySheetOpen ? "none" : "auto"}>
 
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -766,6 +797,7 @@ useFocusEffect(
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filterScroll}
+            
           >
             <View style={styles.filterItem}>
               <View style={styles.availableDot} />
@@ -895,7 +927,7 @@ useFocusEffect(
         </View>
 
 
-        {floors.length === 0 && (
+      {!loading && floors.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No floors are there!</Text>
@@ -910,7 +942,7 @@ useFocusEffect(
         )}
 
 
-        {floors.length > 0 && rooms.length === 0 && (
+       {!loading && floors.length > 0 && rooms.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No Rooms are there!</Text>

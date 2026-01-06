@@ -117,8 +117,8 @@ export default function AddTenant() {
         addressDetails.pincode.trim().length > 0 ||
         selectedState !== "Select State";
 
-   const [selectedState, setSelectedState] = useState(""); // final value
-const [stateQuery, setStateQuery] = useState("");       // typing value
+    const [selectedState, setSelectedState] = useState(""); // final value
+    const [stateQuery, setStateQuery] = useState("");       // typing value
 
 
 
@@ -153,45 +153,54 @@ const [stateQuery, setStateQuery] = useState("");       // typing value
         { label: "Uttarakhand", value: "Uttarakhand" },
         { label: "West Bengal", value: "West Bengal" },
     ];
-const filteredStateList = stateList
-  .filter((s) =>
-    s.label.toLowerCase().includes(stateQuery.toLowerCase())
-  )
-  .sort((a, b) => {
-    const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
-    const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
-    return bStart - aStart;
-  });
+    const filteredStateList = stateList
+        .filter((s) =>
+            s.label.toLowerCase().includes(stateQuery.toLowerCase())
+        )
+        .sort((a, b) => {
+            const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+            const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+            return bStart - aStart;
+        });
 
+    const isEmailValid =
+        !basicDetails.email ||
+        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(basicDetails.email);
 
 
     const handleCreateTenant = async () => {
-     let valid = true;
+        let valid = true;
 
-  setNameError("");
-  setMobileError("");
-  setEmailError("");
-  setPincodeError("");
+        setNameError("");
+        setMobileError("");
+        setEmailError("");
+        setPincodeError("");
 
-  // 🔹 BASIC VALIDATION
-  if (!basicDetails.firstName) {
-    setNameError("Please enter first name");
-    valid = false;
-  }
+        // 🔹 BASIC VALIDATION
+        if (!basicDetails.firstName) {
+            setNameError("Please enter first name");
+            valid = false;
+        }
 
-  if (!basicDetails.mobile) {
-    setMobileError("Please enter mobile number");
-    valid = false;
-  }
 
-  
-  if (!valid) return;
+        if (!basicDetails.mobile) {
+            setMobileError("Please enter mobile number");
+            valid = false;
+        }
 
- 
-  if (basicDetails.email && emailError) {
-    setStep(1);
-    return;
-  }
+
+        if (!valid) return;
+
+
+        if (basicDetails.email && emailError) {
+            setStep(1);
+            return;
+        }
+        if (!isEmailValid) {
+            setEmailError("Enter a valid email address");
+            setStep(1);
+            return;
+        }
 
         if (
             addressDetails.pincode &&
@@ -203,9 +212,9 @@ const filteredStateList = stateList
                     : "Pincode must be 6 digits"
             );
             return;
-            
+
         }
-        
+
         const payloads = {
 
             customerInfo: {
@@ -392,7 +401,7 @@ const filteredStateList = stateList
                                         setNameError("")
                                     }}
                                 />
-  {nameError && <ErrorMessage message={nameError} type="error" />}
+                                {nameError && <ErrorMessage message={nameError} type="error" />}
                                 <Text style={styles.label}>Last Name</Text>
                                 <TextInput
                                     style={styles.input}
@@ -457,14 +466,14 @@ const filteredStateList = stateList
                                 <TouchableOpacity
                                     style={[
                                         styles.secondaryBtn,
-                                        
+
                                     ]}
-                                   
+
                                     onPress={handleCreateTenant}  >
                                     <Text
                                         style={[
                                             styles.secondaryText
-                                           
+
                                         ]}
                                     >
                                         Save Info
@@ -522,53 +531,53 @@ const filteredStateList = stateList
                                                 setAddressDetails({ ...addressDetails, area: t })
                                             }
                                         />
-                                        
+
                                         <Text style={styles.label}>State</Text>
 
-<View style={{ position: "relative" }}>
- <TextInput
-  style={styles.select}
-  placeholder="Select state"
-  placeholderTextColor="#9CA3AF"
-  value={stateQuery || selectedState}
-  onFocus={() => {
-    setStateOpen(true);
-    setStateQuery("");   // 🔥 cursor focus panna fresh search
-  }}
-  onChangeText={(t) => {
-    setStateQuery(t);    // 🔥 typing always search
-    setStateOpen(true);
-  }}
-/>
+                                        <View style={{ position: "relative" }}>
+                                            <TextInput
+                                                style={styles.select}
+                                                placeholder="Select state"
+                                                placeholderTextColor="#9CA3AF"
+                                                value={stateQuery || selectedState}
+                                                onFocus={() => {
+                                                    setStateOpen(true);
+                                                    setStateQuery("");   // 🔥 cursor focus panna fresh search
+                                                }}
+                                                onChangeText={(t) => {
+                                                    setStateQuery(t);    // 🔥 typing always search
+                                                    setStateOpen(true);
+                                                }}
+                                            />
 
 
-  <Image source={DownArrow} style={styles.arrowIcon} />
+                                            <Image source={DownArrow} style={styles.arrowIcon} />
 
-  {stateOpen && (
-    <View style={styles.dropdownMenu}>
-      <ScrollView keyboardShouldPersistTaps="handled">
-        {filteredStateList.length > 0 ? (
-          filteredStateList.map((v, index) => (
-           <TouchableOpacity
-  key={index}
-  style={styles.option}
-  onPress={() => {
-    setSelectedState(v.label); // final value
-    setStateQuery("");        // clear search
-    setStateOpen(false);
-  }}
->
-  <Text style={styles.optionText}>{v.label}</Text>
-</TouchableOpacity>
+                                            {stateOpen && (
+                                                <View style={styles.dropdownMenu}>
+                                                    <ScrollView keyboardShouldPersistTaps="handled">
+                                                        {filteredStateList.length > 0 ? (
+                                                            filteredStateList.map((v, index) => (
+                                                                <TouchableOpacity
+                                                                    key={index}
+                                                                    style={styles.option}
+                                                                    onPress={() => {
+                                                                        setSelectedState(v.label); // final value
+                                                                        setStateQuery("");        // clear search
+                                                                        setStateOpen(false);
+                                                                    }}
+                                                                >
+                                                                    <Text style={styles.optionText}>{v.label}</Text>
+                                                                </TouchableOpacity>
 
-          ))
-        ) : (
-          <Text style={styles.noResult}>No state found</Text>
-        )}
-      </ScrollView>
-    </View>
-  )}
-</View>
+                                                            ))
+                                                        ) : (
+                                                            <Text style={styles.noResult}>No state found</Text>
+                                                        )}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
                                         <Text style={styles.label}>Landmark</Text>
                                         <TextInput
                                             style={styles.input}
@@ -1036,28 +1045,28 @@ const styles = StyleSheet.create({
         fontWeight: "600"
     },
     searchInput: {
-  height: 45,
-  borderBottomWidth: 1,
-  borderColor: "#E5E7EB",
-  paddingHorizontal: 12,
-  fontSize: 14,
-  color: "#111827",
-},
+        height: 45,
+        borderBottomWidth: 1,
+        borderColor: "#E5E7EB",
+        paddingHorizontal: 12,
+        fontSize: 14,
+        color: "#111827",
+    },
 
-arrowIcon: {
-  position: "absolute",
-  right: 12,
-  top: 14,
-  width: 18,
-  height: 18,
-  tintColor: "#777",
-},
+    arrowIcon: {
+        position: "absolute",
+        right: 12,
+        top: 14,
+        width: 18,
+        height: 18,
+        tintColor: "#777",
+    },
 
-noResult: {
-  padding: 12,
-  textAlign: "center",
-  color: "#6B7280",
-},
+    noResult: {
+        padding: 12,
+        textAlign: "center",
+        color: "#6B7280",
+    },
 
 
 
