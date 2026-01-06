@@ -142,7 +142,7 @@ export default function AddRoomSheet({
   >
     <View style={styles.handle} />
 
-    <Text style={styles.title}>Add Room</Text>
+    <Text style={styles.title}>{isEdit ? "Edit Room" : "Add Room"}</Text>
 
     <Text style={styles.label}>
       Room Name / No <Text style={{ color: "red" }}>*</Text>
@@ -166,7 +166,7 @@ export default function AddRoomSheet({
   {/* 🔥 STICKY BUTTON */}
   <View style={styles.footer}>
     <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
-      <Text style={styles.addBtnText}>Add Room</Text>
+      <Text style={styles.addBtnText}>{isEdit ? "Edit Room" : "Add Room"}</Text>
     </TouchableOpacity>
   </View>
 
