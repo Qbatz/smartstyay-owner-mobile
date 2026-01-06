@@ -15,6 +15,9 @@ const ReceiptPdfViewer = () => {
   const { ReceiptPdfdetails } = useContext(BillContext);
   const navigation = useNavigation();
 
+  console.log("receiptpdfdetails", ReceiptPdfdetails);
+  
+
    useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -63,6 +66,8 @@ const ReceiptPdfViewer = () => {
 
   const isRefund = Number(invoiceAmount) < 0;
   const amountValue = Math.abs(receiptInfo?.paidAmount || 0);
+
+  
 
   return (
     <ScrollView style={styles.container}>
@@ -155,7 +160,7 @@ const ReceiptPdfViewer = () => {
   <View style={styles.rightRow}>
     <Text style={styles.rightLabel}>Transaction ID</Text>
     <Text style={styles.colon}> :</Text>
-    <Text style={styles.rightValue}>—</Text>
+    <Text style={styles.rightValue}>{receiptInfo?.transactionId}</Text>
   </View>
 </View>
 
