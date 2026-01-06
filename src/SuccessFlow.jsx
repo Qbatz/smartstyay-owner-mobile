@@ -61,6 +61,8 @@ import PGPageFull from "../src/Component/PG/PGList";
 import AddBookingScreen from "../src/Component/Customer/AddBooking";
 import EnterMPin from "../src/Component/CreateAccount/EnterPin";
 import { LoginContexts } from "./Context/LoginContext";
+import CreateMpin from "../src/Component/CreateAccount/CreatePin";
+import ConfirmMPin from "../src/Component/CreateAccount/ConfirmPin";
 
 
 const SuccessFlow = (props) => {
@@ -75,9 +77,13 @@ const SuccessFlow = (props) => {
 
     return <View style={{ flex: 1 }}>
 
+        
+        {console.log(loginContext.pinVerifid,loginContext.getRoute)}
+        
+
        
 
-        {loginContext.pinVerifid ?
+        {loginContext.getRoute === "ConfirmMpin" || loginContext.pinVerifid ?
 
             <NavigationContainer>
                 <Navigation.Navigator screenOptions={{headerShown:false}}>
@@ -149,10 +155,9 @@ const SuccessFlow = (props) => {
 
             <NavigationContainer>
                 <Navigation.Navigator screenOptions={{headerShown:false}}>
-                    <Navigation.Screen name="EnterMpin" >
-                        {(props) => 
-                        <EnterMPin {...props} callBackMpin={verifiedMpin} />}
-                    </Navigation.Screen>
+                    <Navigation.Screen name="EnterMpin" component={EnterMPin}/>
+                      <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+           <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
                 </Navigation.Navigator>
             </NavigationContainer>}
 

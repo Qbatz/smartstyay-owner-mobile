@@ -219,7 +219,8 @@ function AppContent(props) {
           <Navigation.Screen name="CreateAccount" component={CreateAccount} />
           <Navigation.Screen name="LoginDesign" component={LoginDesign} />
           <Navigation.Screen name="CreateMpin" component={CreateMpin} />
-         
+           <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+          
         </Navigation.Navigator>
         </NavigationContainer>}
 

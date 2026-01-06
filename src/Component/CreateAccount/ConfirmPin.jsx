@@ -4,10 +4,13 @@ import Sm_logo from "../../Assets/Images/Sm_Icon.png";
 import { useNavigation } from "@react-navigation/native";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { LoginContexts } from "../../Context/LoginContext";
+import { storeData } from "../../Utils/Storage";
+import { LOGGEDIN } from "../../Utils/Constant";
 
 const ConfirmMPin = ({ route }) => {
   const navigation = useNavigation();
-  const { CreateMpin } = useContext(LoginContexts);
+  const { CreateMpin, } = useContext(LoginContexts);
+  const loginContext=useContext(LoginContexts)
 
   const [pinArr, setPinArr] = useState(["", "", "", ""]);
   const [pin, setPin] = useState("");
@@ -47,19 +50,30 @@ const ConfirmMPin = ({ route }) => {
     console.log("response", res);
     
 
-    if (res.success) {
+    if (res.status == 200) {
+      //  loginContext.updatePinSetupStatus(false)
+      loginContext.updateRoute("ConfirmMpin")
+      storeData(LOGGEDIN, "true")
+      loginContext.loggedin('true')
       setType("success");
       setMessage("MPIN Created Successfully");
       setShowModal(true);
 
       setTimeout(() => {
         setShowModal(false);
-        navigation.replace("EnterMPin");
+       
+        // navigation.replace("EnterMPin");
       }, 1500);
     } else {
-      setType("error");
-      setMessage("MPIN creation failed");
-      setShowModal(true);
+      // loginContext.updatePinSetupStatus(true)
+      setTimeout(() => {
+        
+        setType("error");
+        setMessage("MPIN creation failed");
+        setShowModal(true);
+        
+      }, 1500);
+      
     }
   };
 
