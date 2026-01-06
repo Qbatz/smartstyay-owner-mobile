@@ -42,7 +42,8 @@ import EmptyState from "../../Assets/Images/Empty_state.png";
 import Loader from "../Loader/Loader";
 import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet"
 
-
+ const SCREEN_HEIGHT = Dimensions.get("window").height;
+ const SHEET_HEIGHT = SCREEN_HEIGHT * 0.55;
 export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
@@ -56,6 +57,73 @@ export default function TenantsScreen({ route }) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [reassignCustomer, setReassignCustomer] = useState(null);
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+   const [showDetailModal, setShowDetailModal] = useState(false);
+
+
+const sheetTranslateY = useRef(
+  new Animated.Value(SHEET_HEIGHT)
+).current;
+
+
+useEffect(() => {
+  if (showDetailModal) {
+    sheetTranslateY.setValue(SHEET_HEIGHT);
+
+    Animated.timing(sheetTranslateY, {
+      toValue: 0,
+      duration: 260,
+      useNativeDriver: true,
+    }).start();
+  }
+}, [showDetailModal]);
+
+
+const detailPanResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) =>
+      Math.abs(g.dy) > Math.abs(g.dx) && g.dy > 5,
+
+    // 👉 ONLY MOVE SHEET WITH FINGER
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) {
+        sheetTranslateY.setValue(g.dy);
+      }
+    },
+
+    // 👉 DECISION HERE
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120 || g.vy > 1.2) {
+        Animated.timing(sheetTranslateY, {
+          toValue: SHEET_HEIGHT,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+           closeDetailSheet();
+        });
+      } else {
+        Animated.spring(sheetTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
+
+
+const closeDetailSheet = () => {
+  Animated.timing(sheetTranslateY, {
+    toValue: SHEET_HEIGHT,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => {
+    sheetTranslateY.setValue(SHEET_HEIGHT); // 🔥 RESET
+    setShowDetailModal(false);
+  });
+};
+
+
+
 console.log("customers",customers)
   useFocusEffect(
     useCallback(() => {
@@ -78,7 +146,7 @@ console.log("customers",customers)
 
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
-  const [showDetailModal, setShowDetailModal] = useState(false);
+ 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showReAssignbed, setShowReAssignBed] = useState(false)
   const [showNotice, setShowNotice] = useState(false);
@@ -177,8 +245,8 @@ console.log("selectedCustomer",selectedCustomer)
 
 
   useLayoutEffect(() => {
-    setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice);
-  }, [showDetailModal, showFilter, showCheckout, showNotice]);
+    setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice && !showInactiveSheet);
+  }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
 
 
@@ -187,6 +255,10 @@ console.log("selectedCustomer",selectedCustomer)
       if (showDetailModal) {
         setShowDetailModal(false);
         return true;
+      }
+      if(showInactiveSheet){
+setShowInactiveSheet(false)
+return true;
       }
 
       if (showFilter) {
@@ -213,7 +285,7 @@ console.log("selectedCustomer",selectedCustomer)
     );
 
     return () => handler.remove();
-  }, [showDetailModal, showFilter, showCheckout, showNotice]);
+  }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
 
 
@@ -378,54 +450,111 @@ const handleShowFinalSettlementNotice = (item)=>{
           })
         } */}
               {customers?.listCustomers?.map((item) => (
-                <View key={item.customerId} style={styles.tenantRow}>
+                // <View key={item.customerId} style={styles.tenantRow}>
 
-                  <TouchableOpacity onPress={() => openCustomerDetails(item)}>
-                    <Image source={Profile} style={styles.profileImg} />
-                  </TouchableOpacity>
+                //   <TouchableOpacity onPress={() => openCustomerDetails(item)}>
+                //     <Image source={Profile} style={styles.profileImg} />
+                //   </TouchableOpacity>
 
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.name}>
-                      {item.fullName}
-                    </Text>
+                //   <View style={{ flex: 1 }}>
+                //     <Text style={styles.name}>
+                //       {item.fullName}
+                //     </Text>
 
-                    <View style={styles.detailRow}>
-                      {item.floorName && (
-                        <View style={styles.floorBadge}>
-                          <Text style={styles.floorText}>{item.floorName}</Text>
-                        </View>
-                      )}
+                //     <View style={styles.detailRow}>
+                //       {item.floorName && (
+                //         <View style={styles.floorBadge}>
+                //           <Text style={styles.floorText}>{item.floorName}</Text>
+                //         </View>
+                //       )}
 
-                      {item.roomName && (
-                        <>
-                          <Image source={room} style={styles.iconSmall} />
-                          <Text style={styles.detailText}>{item.roomName}</Text>
-                        </>
-                      )}
+                //       {item.roomName && (
+                //         <>
+                //           <Image source={room} style={styles.iconSmall} />
+                //           <Text style={styles.detailText}>{item.roomName}</Text>
+                //         </>
+                //       )}
 
-                      {item.bedName && (
-                        <>
-                          <Image source={Bed} style={styles.iconSmall} />
-                          <Text style={styles.detailText}>{item.bedName}</Text>
-                        </>
-                      )}
-                    </View>
-                  </View>
+                //       {item.bedName && (
+                //         <>
+                //           <Image source={Bed} style={styles.iconSmall} />
+                //           <Text style={styles.detailText}>{item.bedName}</Text>
+                //         </>
+                //       )}
+                //     </View>
+                //   </View>
 
-                  <View style={styles.rightSection}>
-                    <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
-                      <Image
-                        source={Dots}
-                        style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                      />
-                    </TouchableOpacity>
+                //   <View style={styles.rightSection}>
+                //     <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
+                //       <Image
+                //         source={Dots}
+                //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+                //       />
+                //     </TouchableOpacity>
 
-                    <Text style={styles.dateText}>
-                      {item.bookedAt || "--"}
-                    </Text>
-                  </View>
+                //     <Text style={styles.dateText}>
+                //       {item.bookedAt || "--"}
+                //     </Text>
+                //   </View>
 
-                </View>
+                // </View>
+                <TouchableOpacity
+  key={item.customerId}
+  style={styles.tenantRow}
+  activeOpacity={0.7}
+  onPress={() => openCustomerDetails(item)}   
+>
+  {/* Profile */}
+  <Image source={Profile} style={styles.profileImg} />
+
+  {/* Middle content */}
+  <View style={{ flex: 1 }}>
+    <Text style={styles.name}>{item.fullName}</Text>
+
+    <View style={styles.detailRow}>
+      {item.floorName && (
+        <View style={styles.floorBadge}>
+          <Text style={styles.floorText}>{item.floorName}</Text>
+        </View>
+      )}
+
+      {item.roomName && (
+        <>
+          <Image source={room} style={styles.iconSmall} />
+          <Text style={styles.detailText}>{item.roomName}</Text>
+        </>
+      )}
+
+      {item.bedName && (
+        <>
+          <Image source={Bed} style={styles.iconSmall} />
+          <Text style={styles.detailText}>{item.bedName}</Text>
+        </>
+      )}
+    </View>
+  </View>
+
+  {/* Right section */}
+  <View style={styles.rightSection}>
+    <TouchableOpacity
+      onPress={(e) => {
+        e.stopPropagation();        // 🔥 IMPORTANT
+        openMenu(e, item);          // dots menu only
+      }}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <Image
+        source={Dots}
+        style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+      />
+    </TouchableOpacity>
+
+    <Text style={styles.dateText}>
+      {item.bookedAt || "--"}
+    </Text>
+  </View>
+</TouchableOpacity>
+
               ))}
 
               {!loading && customers.length === 0 &&
@@ -459,14 +588,24 @@ const handleShowFinalSettlementNotice = (item)=>{
         )}
 
         {showDetailModal && (
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowDetailModal(false)}
-          >
-            <TouchableWithoutFeedback>
-              <View style={styles.bottomSheet}>
-                <View style={styles.modalHandle} />
+         <View style={styles.modalOverlay}>
+
+    {/* outside close */}
+    <TouchableOpacity
+      style={StyleSheet.absoluteFill}
+      activeOpacity={1}
+      onPress={closeDetailSheet}
+    />
+
+  <Animated.View
+  style={[
+    styles.bottomSheet,
+    { transform: [{ translateY: sheetTranslateY }] },
+  ]}
+  {...detailPanResponder.panHandlers}
+>
+
+  <View style={styles.modalHandle} />
 
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Customer Details</Text>
@@ -553,9 +692,9 @@ const handleShowFinalSettlementNotice = (item)=>{
 
 
                 </TouchableOpacity>
-              </View>
-            </TouchableWithoutFeedback>
-          </TouchableOpacity>
+              </Animated.View>
+           
+          </View>
         )}
 
         {showDetailModal && showDetailsMenu && (
@@ -1393,7 +1532,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: "55%",
+    height: SHEET_HEIGHT,  
   },
 
   modalHandle: {

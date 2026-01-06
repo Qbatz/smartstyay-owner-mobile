@@ -166,10 +166,10 @@ export default function ConfirmReassignSheet({
         >
           <View style={styles.handle} />
 
-          <Text style={styles.title}>Confirm Reassign Bed</Text>
+          <Text style={styles.title}>Confirm Change Bed</Text>
 
 
-          <Text style={styles.sectionLabel}>Current Bed</Text>
+          <Text style={styles.sectionLabel1}>Current Bed</Text>
           <View style={styles.row}>
             <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
               <Image source={FloorIcon} style={styles.icon} />
@@ -185,13 +185,13 @@ export default function ConfirmReassignSheet({
             </View>
           </View>
 
-          <View style={{ alignItems: "center", marginVertical: 10 }}>
+          <View style={styles.swapWrapper}>
             <Image source={SwapIcon} style={styles.swapIcon} />
           </View>
 
 
-          <Text style={styles.sectionLabel}>New Bed</Text>
-          <View style={styles.row}>
+          <Text style={styles.sectionLabel1}>New Bed</Text>
+          <View style={styles.row1}>
             <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
               <Image source={FloorIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedNewBed.bed.floorName}</Text>
@@ -206,7 +206,7 @@ export default function ConfirmReassignSheet({
           </View>
 
 
-          <Text style={styles.sectionLabel}>Date</Text>
+          <Text style={styles.sectionLabel}>Date <Text style={{color:"red"}}>*</Text></Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
             style={styles.inputBoxDate}
@@ -225,7 +225,7 @@ export default function ConfirmReassignSheet({
 
 
           <View style={styles.rentHeaderRow}>
-            <Text style={styles.sectionLabel}>New Rent Amount</Text>
+            <Text style={styles.sectionLabel}>New Rent Amount  <Text style={{color:"red"}}>*</Text></Text>
 
             <TouchableOpacity
               style={styles.checkboxRow}
@@ -381,6 +381,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#555",
   },
+  sectionLabel1: {
+    marginTop: 14,
+    marginBottom: 16,
+    fontSize: 14,
+    color: "#555",
+  },
 
   row: {
     flexDirection: "row",
@@ -389,6 +395,15 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 12,
     marginBottom: 10,
+  },
+   row1: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    flex: 1,
+    gap: 12,
+    marginBottom:20,
+    
   },
 
   icon: {
@@ -405,10 +420,16 @@ const styles = StyleSheet.create({
   },
 
   swapIcon: {
-    width: 30,
-    height: 30,
+    width: 35,
+    height: 35,
 
   },
+ swapWrapper: {
+  alignItems: "center",    
+  justifyContent: "center", 
+  paddingTop:30
+},
+
   inputField: {
     fontSize: 15,
     color: "#000",

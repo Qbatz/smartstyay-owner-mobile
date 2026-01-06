@@ -91,11 +91,11 @@ export default function AddTenant() {
         state: "",
     });
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
+const mobileRegex = /^[6-9][0-9]{9}$/;
 
     const isBasicValid =
-        basicDetails.firstName.trim().length > 0 &&
-        basicDetails.mobile.trim().length === 10;
+  basicDetails.firstName.trim().length > 0 &&
+  mobileRegex.test(basicDetails.mobile);
 
 
 
@@ -183,10 +183,14 @@ export default function AddTenant() {
         }
 
 
-        if (!basicDetails.mobile) {
-            setMobileError("Please enter mobile number");
-            valid = false;
-        }
+     if (!basicDetails.mobile) {
+  setMobileError("Please enter mobile number");
+  valid = false;
+} else if (!mobileRegex.test(basicDetails.mobile)) {
+  setMobileError("Enter a valid 10 digit mobile number");
+  valid = false;
+}
+
 
 
         if (!valid) return;

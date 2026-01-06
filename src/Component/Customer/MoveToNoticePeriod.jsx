@@ -313,7 +313,7 @@ for (let i = -90; i <= 90; i++) {
 
           <ScrollView showsVerticalScrollIndicator={false}>
 
-            <Text style={styles.label}>Request Date</Text>
+            <Text style={styles.label}>Request Date <Text style={{color:"red"}}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBox}
               onPress={() => setOpenRequestPicker(true)}
@@ -328,7 +328,7 @@ for (let i = -90; i <= 90; i++) {
             )}
 
 
-            <Text style={styles.label}>Checkout Date</Text>
+            <Text style={styles.label}>Checkout Date <Text style={{color:"red"}}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBox}
               onPress={() => setOpenCheckoutPicker(true)}

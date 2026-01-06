@@ -447,14 +447,10 @@ const handleBedPress = async (bed, room) => {
 
 useFocusEffect(
   useCallback(() => {
-    // PG page open aagumbodhu TAB BAR ON
-    route?.params?.setShowTabBar?.(true);
-
-    return () => {
-      // PG page leave pannumbodhu nothing
-    };
-  }, [])
+    route?.params?.setShowTabBar?.(!isAnySheetOpen);
+  }, [isAnySheetOpen])
 );
+
 
 
   // const getBedStatus = (bed) => {
@@ -582,7 +578,8 @@ useFocusEffect(
         !showNoticePeriodSheet &&
         !showNewBooking &&
         !showDoubleStatus &&
-        !showInactiveSheet
+        !showInactiveSheet &&
+        !showNotice
       );
     }
   }, [
@@ -595,7 +592,7 @@ useFocusEffect(
     showOccupiedSheet,
     showNoticePeriodSheet,
     showNewBooking, showDoubleStatus,
-    route, showInactiveSheet
+    route, showInactiveSheet,showNotice
   ]);
 
 
@@ -645,6 +642,11 @@ useFocusEffect(
         setShowInactiveSheet(false)
         return true;
       }
+      if(showNotice){
+        setShowNotice(false)
+        return true;
+
+      }
       return false;
     };
 
@@ -659,7 +661,7 @@ useFocusEffect(
     showReservedSheet,
     showOccupiedSheet,
     showNoticePeriodSheet,
-    showNewBooking, showDoubleStatus, showInactiveSheet
+    showNewBooking, showDoubleStatus, showInactiveSheet,showNotice
   ]);
 
   const handleAddFloor = (floorName) => {
