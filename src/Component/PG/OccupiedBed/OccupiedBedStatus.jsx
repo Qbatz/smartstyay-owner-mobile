@@ -265,6 +265,7 @@ const handleReAssignBed=()=>{
                       <TouchableOpacity
                         style={styles.menuItem}
                         onPress={handleBookToCheckin}
+                     
                       >
                         <Image
                           style={styles.menuIconAdd}

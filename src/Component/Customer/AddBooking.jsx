@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, { useState, useEffect, useContext, useCallback,useRef } from "react";
 import {
   View,
   Text,
@@ -65,8 +65,11 @@ export default function AddBookingScreen({ navigation, route }) {
   const [joiningDateError, setJoiningDateError] = useState("")
   const [BookingAmountError, setBookingAmountError] = useState("")
 
+const bookingDateRef = useRef(null);
+const joiningDateRef = useRef(null);
 
-
+const [datePickerPos, setDatePickerPos] = useState({ top: 0 });
+const [datePickerTop, setDatePickerTop] = useState(0);
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -246,14 +249,25 @@ export default function AddBookingScreen({ navigation, route }) {
         <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}>
 
           <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
 
             onPress={() => {
 
               setShowDatePicker(true);
             }}
             style={styles.inputBox}
-          >
+          > */}
+        <TouchableOpacity
+  ref={bookingDateRef}
+  onPress={() => {
+    bookingDateRef.current.measureInWindow((x, y, width, height) => {
+      setDatePickerTop(y + height + 8);   // ✅ CORRECT
+      setShowDatePicker(true);
+    });
+  }}
+  style={styles.inputBox}
+>
+
 
             <Text style={{ color: bookingDate ? "#000" : "#999" }}>
               {bookingDate ? bookingDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
@@ -266,9 +280,9 @@ export default function AddBookingScreen({ navigation, route }) {
           {bookingDateError && <ErrorMessage message={bookingDateError} type="error" />}
 
           <Text style={styles.label}>Booking Amount <Text style={styles.star}>*</Text></Text>
-          <View style={styles.inputBox}>
+         
             <TextInput
-              style={{ flex: 1, fontSize: 15 }}
+               style={styles.inputBox}
               placeholder="₹500"
               placeholderTextColor="#999"
               keyboardType="numeric"
@@ -280,14 +294,26 @@ export default function AddBookingScreen({ navigation, route }) {
 
               }}
             />
-          </View>
+         
           {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
 
           <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => setShowJoinDatePicker(true)}
             style={styles.inputBox}
-          >
+          > */}
+       <TouchableOpacity
+  ref={joiningDateRef}
+  onPress={() => {
+    joiningDateRef.current.measureInWindow((x, y, width, height) => {
+      setDatePickerTop(y + height + 8);   // ✅ CORRECT
+      setShowJoinDatePicker(true);
+    });
+  }}
+  style={styles.inputBox}
+>
+
+
 
             <Text style={{ color: joiningDate ? "#000" : "#999" }}>
               {joiningDate ? joiningDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
@@ -299,7 +325,7 @@ export default function AddBookingScreen({ navigation, route }) {
             />
           </TouchableOpacity>
           {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
-          <Text style={styles.label}>Floor</Text>
+          <Text style={styles.label}>Floor <Text style={styles.star}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -340,7 +366,7 @@ export default function AddBookingScreen({ navigation, route }) {
           </View>
           {floorError && <ErrorMessage message={floorError} type="error" />}
 
-          <Text style={styles.label}>Room</Text>
+          <Text style={styles.label}>Room <Text style={styles.star}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -376,7 +402,7 @@ export default function AddBookingScreen({ navigation, route }) {
             )}
           </View>
           {roomError && <ErrorMessage message={roomError} type="error" />}
-          <Text style={styles.label}>Bed</Text>
+          <Text style={styles.label}>Bed <Text style={styles.star}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -475,85 +501,85 @@ export default function AddBookingScreen({ navigation, route }) {
           </View>
         </ScrollView>
       </View>
-      {showDatePicker && (
-        <View style={styles.datePickerOverlay}>
-          <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
+     {showDatePicker && (
+  <View style={styles.datePickerOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
+    <View
+      style={[
+        styles.datePickerBox,
+        { top: datePickerTop }
+      ]}
+    >
+      <Calendar
+        maxDate={dayjs().format("YYYY-MM-DD")}
+        onDayPress={(day) => {
+          const selected = dayjs(day.dateString);
+          setBookingDate(selected);
+          setBookingDateError("");
+          setShowDatePicker(false);
 
-            <Calendar
-              maxDate={dayjs().format("YYYY-MM-DD")}
-              onDayPress={(day) => {
-                const selected = dayjs(day.dateString);
-                setBookingDate(selected);
-                setBookingDateError("");
-                setShowDatePicker(false);
-
-
-                if (joiningDate && joiningDate.isBefore(selected)) {
-                  setJoiningDate(selected);
-                }
-              }}
-              markedDates={
-                bookingDate
-                  ? {
-                    [bookingDate.format("YYYY-MM-DD")]: {
-                      selected: true,
-                      selectedColor: "#1D5DFF",
-                    },
-                  }
-                  : {}
+          if (joiningDate && joiningDate.isBefore(selected)) {
+            setJoiningDate(selected);
+          }
+        }}
+        markedDates={
+          bookingDate
+            ? {
+                [bookingDate.format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#1D5DFF",
+                },
               }
-            />
-          </View>
-        </View>
-      )}
+            : {}
+        }
+      />
+    </View>
+  </View>
+)}
+
 
       {showJoinDatePicker && (
-        <View style={styles.datePickerOverlay}>
-          <TouchableWithoutFeedback
-            onPress={() => setShowJoinDatePicker(false)}
-          >
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
+  <View style={styles.datePickerOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowJoinDatePicker(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
-
-            <Calendar
-              minDate={
-                bookingDate
-                  ? bookingDate.format("YYYY-MM-DD")
-                  : "2100-01-01"
+    <View
+      style={[
+        styles.datePickerBox,
+        { top: datePickerTop }
+      ]}
+    >
+      <Calendar
+        minDate={
+          bookingDate
+            ? bookingDate.format("YYYY-MM-DD")
+            : "2100-01-01"
+        }
+        onDayPress={(day) => {
+          if (!bookingDate) return;
+          setJoiningDate(dayjs(day.dateString));
+          setJoiningDateError("");
+          setShowJoinDatePicker(false);
+        }}
+        markedDates={
+          joiningDate
+            ? {
+                [joiningDate.format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#1D5DFF",
+                },
               }
-              maxDate={
-                bookingDate
-                  ? undefined
-                  : "1900-01-01"
-              }
-              onDayPress={(day) => {
-                if (!bookingDate) return;
+            : {}
+        }
+      />
+    </View>
+  </View>
+)}
 
-                setJoiningDate(dayjs(day.dateString));
-                setJoiningDateError("");
-                setShowJoinDatePicker(false);
-              }}
-              markedDates={
-                joiningDate
-                  ? {
-                    [joiningDate.format("YYYY-MM-DD")]: {
-                      selected: true,
-                      selectedColor: "#1D5DFF",
-                    },
-                  }
-                  : {}
-              }
-            />
-
-          </View>
-        </View>
-      )}
     </>
   );
 }
@@ -696,19 +722,33 @@ dropdownMenu: {
     padding: 10,
     width: "100%",
   },
-  sheetOverlay: {
-    position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  datePickerBox: {
-    backgroundColor: "#fff",
-    width: "80%",
+ datePickerOverlay: {
+  position: "absolute",
+  top: 40,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.2)",
+},
 
-    borderRadius: 20,
-    padding: 10,
-    marginBottom: 190
-  },
+datePickerBox: {
+  position: "absolute",
+  left: "10%",
+  width: "80%",
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  elevation: 10,
+  
+},
+
+     datePickerBox1: {
+        backgroundColor: "#fff",
+        width: "80%",
+
+        borderRadius: 20,
+        padding: 10,
+        marginBottom: 350
+    },
 
 });

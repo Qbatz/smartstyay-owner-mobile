@@ -521,7 +521,7 @@ export default function AssignTenant({ navigation, route }) {
                   )}
                 </View>
 
-                <Text style={styles.label}>Booking Date</Text>
+                <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
                 <TouchableOpacity style={styles.dateBox} onPress={() => setOpenDatePicker(true)}>
                   <Text style={styles.placeholder}>
                     {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -534,7 +534,7 @@ export default function AssignTenant({ navigation, route }) {
                 {bookingDateError && (
                   <ErrorMessage message={bookingDateError} type="error" />
                 )}
-                <Text style={styles.label}>Booking Amount</Text>
+                <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Enter Amount"
@@ -549,7 +549,7 @@ export default function AssignTenant({ navigation, route }) {
                 {bookingAmountError && (
                   <ErrorMessage message={bookingAmountError} type="error" />
                 )}
-                <Text style={styles.label}>Joining Date *</Text>
+                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
                 <TouchableOpacity style={styles.dateBox} onPress={() => setOpenJoinDatePic(true)}>
                   <Text style={styles.placeholder}>
                     {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}

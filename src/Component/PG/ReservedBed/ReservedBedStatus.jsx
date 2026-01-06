@@ -25,6 +25,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
     const [menuOpen, setMenuOpen] = useState(false);
     const [showInactiveSheet, setShowInactiveSheet] = useState(false)
     const [bookedItems,setBookedItems] = useState("")
+    const [bookDetails,setBookDetails] = useState("")
     console.log("bookedItems",bookedItems)
     useEffect(() => {
         if (selectTap) {
@@ -96,10 +97,13 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
         onClose()
         setMenuOpen(false)
     }
-    const handleCheckIn = () => {
+    const handleCheckIn = (details) => {
         setMenuOpen(false)
+        setBookDetails(details)
       navigation.navigate("ReserveToCheckin", {
-     selectedBed: selectedBed,
+     selectedBedReserv: details,
+     selectedBed:selectedBed
+
   });
     }
 
@@ -159,7 +163,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
     {menuOpen === index && (
       <View style={styles.dotMenu}>
-        <TouchableOpacity onPress={handleCheckIn} style={styles.menuItem}>
+        <TouchableOpacity onPress={()=>handleCheckIn(item)} style={styles.menuItem}>
           <Image source={Checkin} style={styles.menuIcon} />
           <Text style={styles.menuText}>Check-In</Text>
         </TouchableOpacity>
