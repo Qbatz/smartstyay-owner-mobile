@@ -96,11 +96,12 @@ export default function PGPageFull({ route }) {
   const [bedUserDetails, setBedUserDetails] = useState("")
   const [showCheckout, setShowCheckout] = useState(false);
   const [inactiveTenant, setInactiveTenant] = useState(null);
+  // const [matchedBed, setMatchedBed] = useState(null);
 
 
   const [editBedData, setEditBedData] = useState(null);
 
-  console.log("hostelList", hostelList)
+  console.log("bedsByRoom", bedsByRoom)
   const handleEditBed = (bed) => {
     setEditBedData(bed);
     setShowAddBed(true);
@@ -174,78 +175,167 @@ export default function PGPageFull({ route }) {
       }, 800);
     }
   };
+const matchedBed = bedsByRoom[selectedBed?.roomId]
+  ?.find(bed => bed.id === selectedBed?.bedId);
+
+console.log("Matched Bed 👉", matchedBed);
+
+const getBedStatus = (bed) => {
+  const statuses = [];
+
+  if (bed.isBooked) statuses.push("reserved");
+  if (bed.onNotice) statuses.push("noticeperiod");
+  if (bed.overDue) statuses.push("overdue");
+  if (bed.isOccupied) statuses.push("occupied");
+
+  return statuses.length ? statuses.join(",") : "available";
+};
+
+const handleBedPress = async (bed, room) => {
+  const res = await getBedById(bed.id);
+  if (!res.success) return;
+
+  const freshBed = res.data;
+
+  const matchedBed =
+    bedsByRoom[room.id]?.find(b => b.id === bed.id);
+
+  if (!matchedBed) return;
+
+  const status = getBedStatus(matchedBed);
+
+ 
+  if (
+    freshBed.isOnNotice &&
+    freshBed.isBooked &&
+    freshBed.isOccupied
+  ) {
+    setSelectedDouble({ bed: freshBed, room });
+    setShowDoubleStatus(true);
+    setSelectedBed(freshBed);
+    return;
+  }
+
+  // 🔔 Notice + Occupied
+  if (matchedBed.onNotice && matchedBed.isOccupied) {
+    setNoticeData({ bed: freshBed, room });
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setShowNoticePeriodSheet(true);
+    return;
+  }
+
+ 
+  if (matchedBed.overDue && matchedBed.isOccupied) {
+    setSelectedBed(freshBed);
+    setSelectedOccupied({ bed: freshBed, room });
+    setShowOccupiedSheet(true);
+    return;
+  }
+
+  if (matchedBed.isOccupied && matchedBed.isBooked) {
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setSelectedOccupied({ bed: freshBed, room });
+    setShowOccupiedSheet(true);
+    return;
+  }
+
+  
+  if (matchedBed.isBooked) {
+    setSelectedBed(freshBed);
+    setSelectedReserved({ bed: freshBed, room });
+    setShowReservedSheet(true);
+    return;
+  }
+
+  // 🟩 Occupied
+  if (status === "occupied") {
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setSelectedOccupied({ bed: freshBed, room });
+    setShowOccupiedSheet(true);
+    return;
+  }
+
+  // ⚪ Available
+  if (status === "available") {
+    setSelectedBed(freshBed);
+    setSelectedBedRoomId(room.id);
+    setShowManageBed(true);
+  }
+};
+
+  // const handleBedPress = async (bed, room) => {
+  //   const res = await getBedById(bed.id);
+
+  //   if (!res.success) return;
+
+  //   const freshBed = res.data;
+  //   const status = getBedStatus(freshBed);
+
+  //   const statuses = splitStatus(status);
+
+  //   console.log("status", status)
+
+  //   if (
+  //     matchedBed.isOnNotice &&
+  //     matchedBed.isBooked &&
+  //     matchedBed.isOccupied
+  //   ) {
+  //     setSelectedDouble({ bed: freshBed, room });
+  //     setShowDoubleStatus(true);
+  //     setSelectedBed(freshBed);
+  //     return;
+  //   }
 
 
-  const handleBedPress = async (bed, room) => {
-    const res = await getBedById(bed.id);
-
-    if (!res.success) return;
-
-    const freshBed = res.data;
-    const status = getBedStatus(freshBed);
-
-    const statuses = splitStatus(status);
-
-    console.log("status", status)
-
-    if (
-      freshBed.isOnNotice &&
-      freshBed.isBooked &&
-      freshBed.isOccupied
-    ) {
-      setSelectedDouble({ bed: freshBed, room });
-      setShowDoubleStatus(true);
-      setSelectedBed(freshBed);
-      return;
-    }
+  //   if (freshBed.isOnNotice && freshBed.isOccupied) {
+  //     setNoticeData({ bed: freshBed, room });
+  //     setSelectedBed(freshBed);
+  //     setSelectedBedRoomId(room.id);
+  //     setShowNoticePeriodSheet(true);
+  //     return;
+  //   }
 
 
-    if (freshBed.isOnNotice && freshBed.isOccupied) {
-      setNoticeData({ bed: freshBed, room });
-      setSelectedBed(freshBed);
-      setSelectedBedRoomId(room.id);
-      setShowNoticePeriodSheet(true);
-      return;
-    }
+  //   if (freshBed.overDue && freshBed.isOccupied) {
+  //     setSelectedBed(freshBed);
+  //     setSelectedOccupied({ bed: freshBed, room });
+  //     setShowOccupiedSheet(true);
+  //     return;
+  //   }
+  //   if (freshBed.isOccupied && freshBed.isBooked) {
+  //     setSelectedBed(freshBed);
+  //     setSelectedBedRoomId(room.id);
+  //     setSelectedOccupied({ bed: freshBed, room });
+  //     setShowOccupiedSheet(true);
+  //     return;
+  //   }
 
 
-    if (freshBed.overDue && freshBed.isOccupied) {
-      setSelectedBed(freshBed);
-      setSelectedOccupied({ bed: freshBed, room });
-      setShowOccupiedSheet(true);
-      return;
-    }
-    if (freshBed.isOccupied && freshBed.isBooked) {
-      setSelectedBed(freshBed);
-      setSelectedBedRoomId(room.id);
-      setSelectedOccupied({ bed: freshBed, room });
-      setShowOccupiedSheet(true);
-      return;
-    }
+  //   if (freshBed.isBooked) {
+  //     setSelectedBed(freshBed);
+  //     setSelectedReserved({ bed: freshBed, room });
+  //     setShowReservedSheet(true);
+  //     return;
+  //   }
 
 
-    if (freshBed.isBooked) {
-      setSelectedBed(freshBed);
-      setSelectedReserved({ bed: freshBed, room });
-      setShowReservedSheet(true);
-      return;
-    }
+  //   if (status === "occupied") {
+  //     setSelectedBed(freshBed);
+  //     setSelectedBedRoomId(room.id);
+  //     setSelectedOccupied({ bed: freshBed, room });
+  //     setShowOccupiedSheet(true);
+  //     return;
+  //   }
 
-
-    if (status === "occupied") {
-      setSelectedBed(freshBed);
-      setSelectedBedRoomId(room.id);
-      setSelectedOccupied({ bed: freshBed, room });
-      setShowOccupiedSheet(true);
-      return;
-    }
-
-    if (status === "available") {
-      setSelectedBed(freshBed);
-      setSelectedBedRoomId(room.id);
-      setShowManageBed(true);
-    }
-  };
+  //   if (status === "available") {
+  //     setSelectedBed(freshBed);
+  //     setSelectedBedRoomId(room.id);
+  //     setShowManageBed(true);
+  //   }
+  // };
 
 
 
@@ -325,18 +415,28 @@ export default function PGPageFull({ route }) {
     }, [rooms])
   );
 
+useFocusEffect(
+  useCallback(() => {
+    // PG page open aagumbodhu TAB BAR ON
+    route?.params?.setShowTabBar?.(true);
+
+    return () => {
+      // PG page leave pannumbodhu nothing
+    };
+  }, [])
+);
 
 
-  const getBedStatus = (bed) => {
-    const statuses = [];
+  // const getBedStatus = (bed) => {
+  //   const statuses = [];
 
-    if (bed.isBooked) statuses.push("reserved");
-    if (bed.onNotice) statuses.push("noticeperiod");
-    if (bed.overDue) statuses.push("overdue");
-    if (bed.isOccupied) statuses.push("occupied");
+  //   if (bed.isBooked) statuses.push("reserved");
+  //   if (bed.onNotice) statuses.push("noticeperiod");
+  //   if (bed.overDue) statuses.push("overdue");
+  //   if (bed.isOccupied) statuses.push("occupied");
 
-    return statuses.length ? statuses.join(",") : "available";
-  };
+  //   return statuses.length ? statuses.join(",") : "available";
+  // };
   // useEffect(() => {
   //   if (!rooms.length) return;
 
@@ -890,7 +990,7 @@ export default function PGPageFull({ route }) {
 
                 {bedsByRoom[item.id]?.map((b) => {
                   const status = getBedStatus(b);
-
+                   console.log("bedsByRoom..b",b)
 
                   return (
                     <TouchableOpacity

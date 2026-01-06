@@ -62,6 +62,7 @@ export default function BookingCheckIn({ navigation, route }) {
     const [openDropdownId, setOpenDropdownId] = useState(null);
     const [extraCharges, setExtraCharges] = useState([]);
     const [bookingDetails, setBookingDetails] = useState("")
+     const [bookingDetailsError, setBookingDetailsError] = useState("")
 
     console.log("bookingDetails", bookingDetails)
 
@@ -95,9 +96,12 @@ export default function BookingCheckIn({ navigation, route }) {
 
         const initCheckIn = async () => {
             const res = await initializeCheckIn(activeHostelId, customerId);
-
+console.log("initCheckIn",res)
             if (res.success) {
                 setBookingDetails(res.data);
+            }
+            else{
+                setBookingDetailsError(res.message)
             }
         };
 
@@ -105,6 +109,7 @@ export default function BookingCheckIn({ navigation, route }) {
     }, [activeHostelId, customerId]);
 
 
+const isAssignDisabled = !!bookingDetailsError;
 
 
 
@@ -707,7 +712,11 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
                                 </View>
-
+<View  style={styles.centerError}>
+      {bookingDetailsError && (
+                                    <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }}/>
+                                )}
+</View>
 
                                 <View style={styles.BtnRow}>
                                     <TouchableOpacity style={styles.CancelBtn}>
@@ -716,9 +725,20 @@ export default function BookingCheckIn({ navigation, route }) {
                                         </Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
+                                    {/* <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
                                         <Text style={styles.submitText}>Assign Bed</Text>
-                                    </TouchableOpacity>
+                                    </TouchableOpacity> */}
+                                    <TouchableOpacity
+  style={[
+    styles.submitBtn,
+    isAssignDisabled && { backgroundColor: "#9CA3AF" } 
+  ]}
+  disabled={isAssignDisabled}
+  onPress={submitLongStay}
+>
+  <Text style={styles.submitText}>Assign Bed</Text>
+</TouchableOpacity>
+
                                 </View>
                             </View>
                         )}
@@ -1074,5 +1094,13 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "#eee",
     },
+    centerError: {
+
+  alignItems: "center",
+  justifyContent: "center",
+  marginVertical: 10,
+  marginHorizontal:120
+},
+
 
 });

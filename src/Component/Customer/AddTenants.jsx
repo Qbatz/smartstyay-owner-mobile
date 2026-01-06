@@ -187,7 +187,7 @@ const filteredStateList = stateList
   
   if (!valid) return;
 
-  // 🔹 EMAIL VALIDATION
+ 
   if (basicDetails.email && emailError) {
     setStep(1);
     return;

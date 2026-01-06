@@ -20,9 +20,8 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
-import SuccessModal from "../../../ToastFile/ToastPage";
 import MultiSelectDropdown from "./MultiSelectDropdown"
-
+import SuccessModal from "../../../ToastFile/ToastPage";
 import Profile from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";  
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
@@ -72,8 +71,6 @@ import { Dimensions } from "react-native";
 
 
 export default function BillsDesign({ route }) {
-  // const { setShowTabBar } = route.params;
-  // const screenWidth = Dimensions.get("window").width;
 
   const detailDotsRef = useRef(null);
 
@@ -82,6 +79,10 @@ export default function BillsDesign({ route }) {
      , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
+
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
 
 
   const filterOptions = BillDetails?.filterOptions;
@@ -148,7 +149,6 @@ const [writeOffReason, setWriteOffReason] = useState("");
  
 
 
-//record payement
 
 const [showRecordPayment, setShowRecordPayment] = useState(false);
 
@@ -189,7 +189,6 @@ const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
 const refundModes = ["UPI", "Cash", "Bank Transfer"];
 
 
-// filter 
 const [billStatus, setBillStatus] = useState([]);
 const [type, setType] = useState([]);
 const [mode, setMode] = useState([]);
@@ -230,7 +229,6 @@ const dotsRef = useRef(null);
      const receiptdetailsSheetY = useRef(new Animated.Value(0)).current;
 
     const handleRefundRecord = () => {
-  // Basic validation
   if (!refundAmount) {
     alert("Enter refund amount");
     return;
@@ -244,7 +242,6 @@ const dotsRef = useRef(null);
     return;
   }
 
-  // Example payload (you can send this to API)
   const payload = {
     customer: "Jobin",
     refundAmount,
@@ -254,9 +251,8 @@ const dotsRef = useRef(null);
     transactionId,
   };
 
-  console.log("REFUND DATA 👉", payload);
+  console.log("REFUND DATA", payload);
 
-  // Close popup
   setShowRefundPayment(false);
 };
 
@@ -304,7 +300,6 @@ const CloseDelete = () =>{
     const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
 
-    // const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
     const formatDate = (d) => {
   if (!d) return "Select Date";
   return dayjs(d).format("DD-MM-YYYY");
@@ -321,7 +316,41 @@ console.log("datepayload", payload);
     const [showBillDetails, setShowBillDetails] = useState(false);
     const [selectedBill, setSelectedBill] = useState(null);
 
+    const getStatusStyle = (status) => {
+  switch (status) {
+    case "Paid":
+      return {
+        bg: "#038C3D",
+        text: "#1E8E5A",
+        dot: "#1E8E5A",
+      };
 
+    case "Partially Paid":
+      return {
+        bg: "#FFF7E7",
+        text: "black",
+        dot: "#F39F18",
+      };
+
+    case "Pending":
+      return {
+        bg: "#FFF2F2",
+        text: "black",
+        dot: "#FF0000",
+      };
+
+    default:
+      return {
+        bg: "#038C3D",
+        text: "#fff",
+        dot: "#6B7280",
+      };
+  }
+};
+
+
+const statusStyle = getStatusStyle(selectedBill?.paymentStatus);
+console.log("statusstyle",statusStyle)
 
 
     const amountOptions = [
@@ -386,12 +415,6 @@ const refundPan = useRef(
   })
 ).current;
 
-
-
-
-// useLayoutEffect(() => {
-//   setShowTabBar(!showDetailModal && !showFilter);
-// }, [showDetailModal, showFilter]);
 
 
 
@@ -679,7 +702,6 @@ const handlePaidAmountChange = (value) => {
 
   if (isNaN(num)) num = 0;
 
-  // ❗ paid amount > due amount block
   if (num > (selectedBill?.dueAmount || 0)) {
     num = selectedBill?.dueAmount || 0;
   }
@@ -705,7 +727,6 @@ const formatDateForPayload = (date) => {
 const handleSaveRecordPayment = async () => {
   const formattedPaidDate = formatDateForPayload(paidDate);
 
-  // ---------- VALIDATION ----------
   if (!paidAmount || Number(paidAmount) <= 0) {
     setAmountError("Please Enter Amount");
     return;
@@ -716,7 +737,6 @@ const handleSaveRecordPayment = async () => {
     return;
   }
 
-  // Paid date < invoice date block
   const billDate = dayjs(selectedBill?.invoiceDate, "DD/MM/YYYY");
   const paid = dayjs(formattedPaidDate, "DD-MM-YYYY");
 
@@ -730,7 +750,6 @@ const handleSaveRecordPayment = async () => {
     return;
   }
 
-  // ---------- API CALL ----------
   try {
     setRecordLoading(true);
 
@@ -746,28 +765,38 @@ const handleSaveRecordPayment = async () => {
     });
 
     if (res.success) {
-      // refresh bills
       await GetAllBillDetails(activeHostelId);
 
       setShowRecordPayment(false);
 
-      // reset
+    setModalType("success");
+    setModalMessage("Payment recorded successfully");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+
       setPaidAmount("");
       setBalanceAmount(0);
       setSelectedMode("");
       setTransactionId("");
 
-      alert("Payment recorded successfully");
     } 
     else if (res.payableAmount) {
-      // backend validation (same as web PAYABLE_AMOUNT)
-      alert(res.payableAmount);
+    setModalType("warning");
+    setModalMessage(res?.payableAmount);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
     } 
     else {
-      alert(res.message || "Payment failed");
+    setModalType("warning");
+    setModalMessage("Payment failed");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
     }
   } catch (err) {
-    alert("Something went wrong");
+    setModalType("warning");
+    setModalMessage("Something went wrong");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
   } finally {
     setRecordLoading(false);
   }
@@ -847,13 +876,11 @@ console.log("refunddetails" , refundInitDetails , selectedBill?.invoiceDate);
 
 
 const handleApplyFilter = async () => {
-  // 🔹 Validation 1: End date without start date
   if (!fromDate && toDate) {
     setFilterError("Please select Start Date");
     return;
   }
 
-  // 🔹 Build filters object
   const filters = {
     startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
     endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
@@ -863,7 +890,6 @@ const handleApplyFilter = async () => {
     createdBy: createdBy,
   };
 
-  // 🔹 Validation 2: At least one filter selected
   const hasAnyFilter =
     filters.startDate ||
     filters.endDate ||
@@ -877,10 +903,8 @@ const handleApplyFilter = async () => {
     return;
   }
 
-  // 🔹 API call
   await GetAllBillDetails(activeHostelId, filters);
 
-  // 🔹 Save applied filters for chips
   setAppliedFilters(filters);
 
   setShowFilter(false);
@@ -899,7 +923,6 @@ const handleResetFilters = async () => {
   setAppliedFilters(null);
   setFilterError("")
 
-  // 3️⃣ Normal GET bills API
   await GetAllBillDetails(activeHostelId);
 };
 
@@ -933,17 +956,14 @@ const invoiceDate = selectedBill?.invoiceDate
   const normalizeDate = (value) => {
   if (!value) return null;
 
-  // Date object
   if (value instanceof Date) {
     return dayjs(value).startOf("day");
   }
 
-  // dayjs object
   if (dayjs.isDayjs(value)) {
     return value.startOf("day");
   }
 
-  // string (DD/MM/YYYY)
   if (typeof value === "string") {
     const d = dayjs(value, "DD/MM/YYYY");
     return d.isValid() ? d.startOf("day") : null;
@@ -956,22 +976,18 @@ const invoiceDate = selectedBill?.invoiceDate
 const parseInvoiceDate = (date) => {
   if (!date) return null;
 
-  // If already Date
   if (date instanceof Date) {
     return dayjs(date).startOf("day");
   }
 
   if (typeof date === "string") {
-    // 🔥 CLEAN invisible chars + trim
     const cleaned = date
-      .replace(/\u00A0/g, " ") // non-breaking space
+      .replace(/\u00A0/g, " ")
       .trim();
 
-    // Try DD/MM/YYYY
     const dmy = dayjs(cleaned, "DD/MM/YYYY");
     if (dmy.isValid()) return dmy.startOf("day");
 
-    // Fallback (ISO etc)
     const fallback = dayjs(cleaned);
     return fallback.isValid() ? fallback.startOf("day") : null;
   }
@@ -1039,7 +1055,10 @@ console.log("payload", payload);
   });
  
   if (res.success) {
-    alert("Refund successfully");
+    setModalType("success");
+    setModalMessage("Refund successfully");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
     GetAllBillDetails(activeHostelId);
     setShowRefundPayment(false);
     setRefundAmount("");
@@ -1047,9 +1066,15 @@ console.log("payload", payload);
     setRefundFrom("");
     setTransactionId("");
   } else if (res.refundableError) {
-    alert(res.refundableError);
+    setModalType("warning");
+    setModalMessage(res?.refundableError);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
   } else {
-    alert(res.message);
+    setModalType("warning");
+    setModalMessage(res?.message);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
   }
 };
 
@@ -1097,10 +1122,15 @@ navigation.navigate("CancelNotice")
   return (
 
     <>
+      <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/>
      { loading && <Loader />}
   
     <SafeAreaView style={styles.container}>
-      {/* 🔍 Search Bar */}
 
 
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -1311,7 +1341,7 @@ navigation.navigate("CancelNotice")
 
     <View style={{display:'flex', flexDirection:'row'}}>
     <View style={styles.statusBadge}>
-      <Text style={styles.statusText}>Paid</Text>
+      <Text style={styles.statusText}>{selectedBill?.paymentStatus}</Text>
     </View>
 
     <TouchableOpacity>
@@ -1431,20 +1461,48 @@ navigation.navigate("CancelNotice")
           <View style={styles.billHeaderRow}>
             <Text style={styles.billHeaderText}>Bill Details</Text>
         
-        
-            <View style={{display:'flex', flexDirection:'row'}}>
-            <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>Paid</Text>
-              </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+<View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  }}
+>
+  <View
+    style={[
+      styles.statusBadge,
+      { backgroundColor: statusStyle.bg },
+    ]}
+  >
+    <View
+      style={[
+        styles.statusDot,
+        { backgroundColor: statusStyle.dot },
+      ]}
+    />
 
-        
-            <TouchableOpacity>
-              <Image
-                source={Dots}
-                style={{ width: 28, height: 28,  }}
-              />
-            </TouchableOpacity>
-            </View>
+    <Text
+      style={[
+        styles.statusText,
+        { color: statusStyle.text },
+      ]}
+    >
+      {selectedBill?.paymentStatus}
+    </Text>
+  </View>
+
+  <TouchableOpacity>
+    <Image source={Dots} style={{ width: 28, height: 28 }} />
+  </TouchableOpacity>
+</View>
+
+
+  <TouchableOpacity style={{ marginLeft: 8 }}>
+    <Image source={Dots} style={{ width: 28, height: 28 }} />
+  </TouchableOpacity>
+</View>
+
           </View>
         
           <View style={styles.userRow}>
@@ -1954,7 +2012,7 @@ navigation.navigate("CancelNotice")
 />
 
         {/* PAID AMOUNT */}
-        <Text style={styles.label}>Paid Amount</Text>
+        <Text style={styles.label}>Paid Amount <Text style={{ color: "red" }}>*</Text></Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
@@ -3458,17 +3516,31 @@ billHeaderText: {
 },
 
 statusBadge: {
-  backgroundColor: "#D7FFD7",
-  paddingHorizontal: 14,
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 12,
   paddingVertical: 6,
   borderRadius: 20,
+  minHeight: 26,          
+  alignSelf: "flex-start",
+  elevation: 1,          
 },
 
-statusText: {
-  color: "#2E8B2E",
-  fontWeight: "700",
-  fontSize: 13,
+
+
+statusDot: {
+  width: 6,
+  height: 6,
+  borderRadius: 3,
+  marginRight: 6,
 },
+
+
+statusText: {
+  fontSize: 12,
+  fontWeight: "700",
+},
+
 
 userRow: {
   flexDirection: "row",

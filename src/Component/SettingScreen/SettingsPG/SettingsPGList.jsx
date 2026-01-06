@@ -71,7 +71,10 @@ export default function SettingsPG({ navigation }) {
   totalRooms: h.noOfRooms,
   availableBeds: h.noOfAvailableBeds,
   profilePhoto: h.mainImage ? { uri: h.mainImage } : HostelImg,
-  images: h.images?.length ? h.images.map((i) => ({ uri: i })) : [PgRooms],
+ images: h.images?.length
+  ? h.images.map((i) => ({ uri: i }))
+  : [],
+
 }));
 
 
@@ -79,6 +82,9 @@ export default function SettingsPG({ navigation }) {
   const mainHostel = formatHostels?.[0];
   const otherHostels =
     formatHostels?.length > 1 ? formatHostels.slice(1) : [];
+
+    console.log("mainHostel", mainHostel);
+    
 
 
   const openPopup = (id) => {
@@ -182,7 +188,7 @@ const activeHostel =
   hostelList?.[0] ??
   null;
 
-  console.log(hostelList , activeHostel)
+  console.log("activehostel",hostelList , activeHostel)
 
 
 
@@ -289,7 +295,6 @@ const handleDeletePG = async () => {
   }, 1500);
 
     console.log("PG Deleted Successfully!");
-
   } catch (err) {
     console.log("DELETE ERROR:", err);
     alert("Something went wrong while deleting PG.");
@@ -329,6 +334,33 @@ console.log("hostelimage",mainHostel?.images?.map(i => i?.uri?.id));
   //       <Text>No PG Data Found</Text>
   //     </View>
   //   );
+
+
+ const formatAddressLines = (hostel) => {
+  if (!hostel) return { line1: "", line2: "" };
+
+  const line1 = [
+    hostel?.houseNo,
+    hostel?.street,
+    hostel?.landmark,
+  ]
+    .filter(v => v && String(v).trim() !== "")
+    .join(", ");
+
+  const line2 = [
+    hostel?.city,
+    hostel?.state,
+    hostel?.pincode,
+  ]
+    .filter(v => v && String(v).trim() !== "")
+    .join(", ");
+
+  return { line1, line2 };
+};
+
+const { line1, line2 } = formatAddressLines(activeHostel);
+
+
 
   if (!hostelList || hostelList?.length === 0) {
   return (
@@ -430,12 +462,25 @@ console.log("hostelimage",mainHostel?.images?.map(i => i?.uri?.id));
           </View>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {mainHostel?.images?.map((i , index) => {
               return <Image  key={`${i?.uri?.id || "img"}-${index}`} source={i?.uri?.image} style={styles.roomImg} />
           }
           )}
-        </ScrollView>
+        </ScrollView> */}
+
+        {mainHostel?.images?.length > 0 && (
+  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+    {mainHostel.images.map((i, index) => (
+      <Image
+        key={`${i?.uri}-${index}`}
+        source={{ uri: i.uri }}
+        style={styles.roomImg}
+      />
+    ))}
+  </ScrollView>
+)}
+
 
         <Text style={styles.infoTitle}>Email ID</Text>
         <View style={styles.infoRow}>
@@ -449,11 +494,28 @@ console.log("hostelimage",mainHostel?.images?.map(i => i?.uri?.id));
           <Text style={styles.infoText}>{mainHostel?.phone}</Text>
         </View>
 
-        <Text style={styles.infoTitle}>Address</Text>
-        <View style={styles.infoRow}>
-          <Image source={Building} style={styles.infoIcon} />
-          <Text style={styles.infoText}>{mainHostel?.address}</Text>
-        </View>
+       <Text style={styles.infoTitle}>Address</Text>
+
+<View style={styles.infoRow}>
+  <Image source={Building} style={styles.infoIcon} />
+
+  <View style={{ flex: 1 }}>
+    {line1 !== "" && (
+      <Text style={styles.infoText}>{line1}</Text>
+    )}
+
+    {line2 !== "" && (
+      <Text
+        style={[
+          styles.infoText,
+          line1 !== "" && { marginTop: 2 } 
+        ]}
+      >
+        {line2}
+      </Text>
+    )}
+  </View>
+</View>
       </View>
 
      <Text style={styles.sectionTitle}>Other Hostels</Text>

@@ -18,27 +18,26 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { getHostels } from "../../../Action/HostelAction";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
-
 import AddImageIcon from "../../../Assets/Images/blue_circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
-import EmptyProfileImage from "../../../Assets/Images/empty_pgprofile.png";
+import EmptyProfileImage from "../../../Assets/Images/userAdd.png";
+import EmptyProfilePlusImage from "../../../Assets/Images/plusIcon.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import DeleteIcon from "../../../Assets/Images/trash.png";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 
 export default function AddPG({ navigation, route }) {
 
   const isEdit = route?.params?.mode === "edit";
   const editData = route?.params?.data || null;
 
-
-
   const { addPG, editPG } = useContext(PGContext);
   const { hostelList , updateHostelList , setActiveHostelId , activeHostelId  } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
-      const [modalMessage, setModalMessage] = useState("");
-      const [modalType, setModalType] = useState("success");
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
 
   const prepareImage = (img) => {
     if (!img?.uri) return null;
@@ -74,26 +73,58 @@ export default function AddPG({ navigation, route }) {
   const [landmark, setLandmark] = useState(editData?.landmark || "");
   const [pincode, setPincode] = useState(editData?.pincode?.toString() || "");
   const [city, setCity] = useState(editData?.city || "");
-  const [state, setState] = useState(editData?.state || "Select State");
   const [topWarning, setTopWarning] = useState("");
 
+     const [selectedState, setSelectedState] = useState("")
+     const [state, setState] = useState(editData?.state || "");
+     const [stateQuery, setStateQuery] = useState("")
+     const [stateOpen, setStateOpen] = useState(false)
+  
+  
+      const stateList = [
+          { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+          { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+          { label: "Assam", value: "Assam" },
+          { label: "Bihar", value: "Bihar" },
+          { label: "Chhattisgarh", value: "Chhattisgarh" },
+          { label: "Goa", value: "Goa" },
+          { label: "Gujarat", value: "Gujarat" },
+          { label: "Haryana", value: "Haryana" },
+          { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+          { label: "Jharkhand", value: "Jharkhand" },
+          { label: "Karnataka", value: "Karnataka" },
+          { label: "Kerala", value: "Kerala" },
+          { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+          { label: "Maharashtra", value: "Maharashtra" },
+          { label: "Manipur", value: "Manipur" },
+          { label: "Meghalaya", value: "Meghalaya" },
+          { label: "Mizoram", value: "Mizoram" },
+          { label: "Nagaland", value: "Nagaland" },
+          { label: "Odisha", value: "Odisha" },
+          { label: "Punjab", value: "Punjab" },
+          { label: "Rajasthan", value: "Rajasthan" },
+          { label: "Sikkim", value: "Sikkim" },
+          { label: "Tamil Nadu", value: "Tamil Nadu" },
+          { label: "Telangana", value: "Telangana" },
+          { label: "Tripura", value: "Tripura" },
+          { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+          { label: "Uttarakhand", value: "Uttarakhand" },
+          { label: "West Bengal", value: "West Bengal" },
+      ];
+  const filteredStateList = stateList
+    .filter((s) =>
+      s.label.toLowerCase().includes(stateQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+      const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+      return bStart - aStart;
+    });
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
-  const stateList = [
-    "Select State",
-    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
-    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-    "Uttar Pradesh", "Uttarakhand", "West Bengal",
-    "Andaman and Nicobar Islands", "Chandigarh", "Daman and Diu",
-    "Delhi", "Jammu & Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
-  ];
 
-  const [stateOpen, setStateOpen] = useState(false);
   const [errors, setErrors] = useState({});
 
 
@@ -149,6 +180,34 @@ export default function AddPG({ navigation, route }) {
   );
 };
 
+
+const validatePincode = (value) => {
+  if (!value) return "Please Enter Pincode";
+
+  if (!/^\d+$/.test(value)) {
+    return "Pincode must contain only numbers";
+  }
+
+  if (value.length !== 6) {
+    return "Pin Code must be exactly 6 digits";
+  }
+
+  if (value === "000000") {
+    return "Pin Code cannot be all zeros";
+  }
+
+  if (value[0] === "0") {
+    return "Pin Code cannot start with 0";
+  }
+
+  if (value.slice(-3) === "000") {
+    return "Last 3 digits cannot be 000";
+  }
+
+  return ""; 
+};
+
+
   
      const handleSubmit = async () => {
           let errors = {};
@@ -168,18 +227,19 @@ if (email && !emailRegex.test(email)) {
 }
 
 
-if (!pincode.trim()) {
-  errors.pincode = "Please Enter Pincode";
-} else if (pincode.length !== 6) {
-  errors.pincode = "Pincode must be 6 digits";
+const pincodeError = validatePincode(pincode);
+if (pincodeError) {
+  errors.pincode = pincodeError;
 }
+
 
 if (!city.trim())
   errors.city = "Please Enter City";
 
-// 🏳 State
-if (state === "Select State")
+if (!state || !state.trim()) {
   errors.state = "Please Select State";
+}
+
 
 if (Object.keys(errors).length > 0) {
   setErrors(errors);
@@ -197,7 +257,7 @@ setErrors({});
     street,
     landmark,
     pincode: Number(pincode),
-    city,
+    city, 
     state,
   };
 
@@ -313,11 +373,17 @@ if (res?.status === 201) {
                   <Image source={EmptyProfileImage} style={styles.profileImg} />
                 )}
 
-                {photo?.uri && (
+                {photo?.uri ? (
                   <View style={styles.editIcon}>
                     <Image source={EditIcon} style={{ width: 20, height: 20 }} />
                   </View>
-                )}
+                ) : (
+                    <View style={styles.editIcon}>
+                    <Image source={EmptyProfilePlusImage} style={{ width: 20, height: 20 }} />
+                  </View>
+                  
+                )
+              }
               </TouchableOpacity>
 
               <View style={{ marginTop: 30, marginLeft: 20 }}>
@@ -429,20 +495,21 @@ if (res?.status === 201) {
   label="Pincode *"
   value={pincode}
   keyboardType="numeric"
-  onChangeText={(t) => {
-    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 6);
-    setTopWarning("");
+  onChangeText={(text) => {
+    const cleaned = text.replace(/[^0-9]/g, "").slice(0, 6);
     setPincode(cleaned);
-    setErrors({ ...errors, pincode: "" });
+
+    const errorMsg = validatePincode(cleaned);
+    setErrors({ ...errors, pincode: errorMsg });
+    setTopWarning("");
   }}
   placeholder="Enter Pincode"
 />
 
-
-
 {errors.pincode && (
-                                    <ErrorMessage message={errors.pincode} type="error" />
-                                )}
+  <ErrorMessage message={errors.pincode} type="error" />
+)}
+
 
    <InputField
   label="Town/City *"
@@ -459,20 +526,57 @@ if (res?.status === 201) {
                {errors.city && (
                                     <ErrorMessage message={errors.city} type="error" />
                                 )}
-        
-{renderSelect(
-  "State *",
-  state,
-  stateOpen,
-  setStateOpen,
-  stateList,
-  (value) => {
-    setState(value);
-    setTopWarning("");
-    setErrors({ ...errors, state: "" }); 
-  },
-  errors.state 
-)}
+
+
+                                                                      
+                               <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text> 
+                             <View style={{ position: "relative", marginBottom: 6 }}>
+  <TextInput
+    style={styles.select}
+    placeholder="Select State"
+    placeholderTextColor="#9CA3AF"
+    value={stateOpen ? stateQuery : state}
+    onFocus={() => {
+      setStateOpen(true);
+      setStateQuery("");
+    }}
+    onChangeText={(t) => {
+      setStateQuery(t);
+      setStateOpen(true);
+    }}
+  />
+
+  <Image source={DownArrow} style={styles.arrowIcon} />
+
+  {stateOpen && (
+    <View style={styles.dropdownMenu}>
+      <ScrollView keyboardShouldPersistTaps="handled">
+        {filteredStateList.length > 0 ? (
+          filteredStateList.map((v, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.option}
+              onPress={() => {
+                setState(v.label);       // ✅ payload value
+                setStateQuery("");
+                setStateOpen(false);     // ✅ close dropdown
+                setErrors({ ...errors, state: "" });
+                setTopWarning("");
+              }}
+            >
+              <Text style={styles.optionText}>{v.label}</Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noResult}>No state found</Text>
+        )}
+      </ScrollView>
+    </View>
+  )}
+</View>
+
+{errors.state && <ErrorMessage message={errors.state} type="error" />}
+
 
 
             <View style={{ flexDirection: "row", marginTop: 12 }}>
@@ -482,12 +586,18 @@ if (res?.status === 201) {
               {renderImageBox(img4, setImg4)}
             </View>
 
-            {topWarning !== "" && (
-  <ErrorMessage
-    message={topWarning}
-    type="error"
-  />
+    {topWarning !== "" && (
+  <View style={styles.absoluteCenter}>
+     <ErrorMessage
+      message={topWarning}
+      type="error"
+    />
+  </View>
 )}
+
+
+ 
+   
 
 
          
@@ -676,8 +786,8 @@ const styles = StyleSheet.create({
   editIcon: {
     position: "absolute",
     bottom: 0,
-    right: 0,
-    backgroundColor: "#fff",
+    right: -6,
+    // backgroundColor: "#fff",
     borderRadius: 12,
     padding: 3,
   },
@@ -695,31 +805,86 @@ const styles = StyleSheet.create({
   },
 
   select: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#E6E9F0",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    // height: 48,
+    // borderWidth: 1,
+    // borderColor: "#E6E9F0",
+    // borderRadius: 12,
+    // paddingHorizontal: 12,
+    // backgroundColor: "#fff",
+    // flexDirection: "row",
+    // justifyContent: "space-between",
+    // alignItems: "center",
+
+            height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
   },
+  
+    selectedOption: {
+        backgroundColor: "#1E45E1",
+    },
+    selectedOptionText: {
+        color: "#fff",
+        fontWeight: "600"
+    },
+    searchInput: {
+  height: 45,
+  borderBottomWidth: 1,
+  borderColor: "#E5E7EB",
+  paddingHorizontal: 12,
+  fontSize: 14,
+  color: "#111827",
+},
+
+arrowIcon: {
+  position: "absolute",
+  right: 12,
+  top: 14,
+  width: 18,
+  height: 18,
+  tintColor: "#777",
+},
+
+noResult: {
+  padding: 12,
+  textAlign: "center",
+  color: "#6B7280",
+},
+
   selectText: { fontSize: 14 },
 
   caret: { fontSize: 18, color: "#666" },
 
-  dropdownMenu: {
-    position: "absolute",
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    zIndex: 999,
-  },
+  // dropdownMenu: {
+  //   position: "absolute",
+  //   top: 52,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 12,
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   zIndex: 999,
+  // },
+
+    dropdownMenu: {
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 9999,      
+        elevation: 20,    
+        maxHeight: 200,    
+    },
 
   option: { padding: 12 },
   optionText: { fontSize: 15 },
@@ -804,6 +969,15 @@ cancelText: {
   color: "#000",
   fontWeight: "600",
 },
+
+absoluteCenter: {
+  // textAlign:'center',
+ marginLeft:90,
+  marginTop: 10,   
+
+},
+
+
 
 });
 

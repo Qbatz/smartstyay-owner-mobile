@@ -154,6 +154,8 @@ const handleBookToCheckin=()=>{
       },
     })
   ).current;
+  const isDisabled = true; // or your condition
+
 
   if (!visible) return null;
 
@@ -339,15 +341,25 @@ const handleBookToCheckin=()=>{
            {showReservedMenu === index && (
     <View style={styles.inlineMenu}>
       <TouchableOpacity
-        style={styles.menuItem}
+      
         onPress={handleBookToCheckin}
-        disabled
+        disabled={isDisabled}   // boolean
+  style={[
+    styles.menuItem,
+    isDisabled && styles.menuItemDisabled
+  ]}
       >
         <Image
-          style={styles.menuIconAdd}
+        style={[
+      styles.menuIcon,
+      isDisabled && { opacity: 0.5 }
+    ]}
           source={require("../../../Assets/Images/add-circle.png")}
         />
-        <Text style={styles.menuText}>Check-in</Text>
+        <Text style={[
+      styles.menuText,
+      isDisabled && styles.menuTextDisabled
+    ]}>Check-in</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -481,27 +493,32 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
 
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
+ menuItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 12,
+  backgroundColor: "#FFFFFF",
 
-  menuIcon: {
-    width: 20,
-    height: 20,
-   
-    marginRight: 10,
-  },
-  menuIconAdd:{
- width: 20,
-    height: 20,
-   tintColor:"#1E45E1",
-    marginRight: 10,
-  },
+},
+menuIcon:{
+width:20,
+height:20
+},
 
-  menuText: { fontSize: 14, fontWeight: "500" },
+menuItemDisabled: {
+  backgroundColor: "#F3F4F6",
+},
+
+menuText: {
+  fontSize: 14,
+  color: "#111",
+  marginLeft: 8,
+},
+
+menuTextDisabled: {
+  color: "#9CA3AF",
+},
+
 
   footer: {
     flexDirection: "row",

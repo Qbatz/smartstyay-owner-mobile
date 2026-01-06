@@ -1,79 +1,98 @@
-import React, { useState,useCallback,useEffect,useContext } from "react";
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView ,BackHandler} from "react-native";
+import React, { useState, useCallback, useEffect, useContext } from "react";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView, BackHandler, KeyboardAvoidingView, Platform } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-import Calendar from "../../../Assets/Images/calendar.png";
+import Calendarimg from "../../../Assets/Images/calendar.png";
 import Delete from "../../../Assets/Images/remove.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import { Calendar } from "react-native-calendars";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 
 export default function ReserveToCheckin({ route, navigation }) {
 
-  const {selectedBed } = route.params || {};
-  
-console.log("selectedBed",selectedBed)
+  const { selectedBed,selectedBedReserv } = route.params || {};
+
+  console.log("selectedBedReserv", selectedBedReserv)
   const [openJoinPicker, setOpenJoinPicker] = useState(false);
   const { activeHostelId } = useContext(CommonContexts);
-     
-      const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, initializeCheckIn,bookedCheckInCustomer } = useCustomer();
+
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, initializeCheckIn, bookedCheckInCustomer } = useCustomer();
   const [joinDate, setJoinDate] = useState(dayjs());
-   const [extraCharges, setExtraCharges] = useState([]);
-   const [openDropdownId, setOpenDropdownId] = useState(null);
-    const StayType = ["LongStay"];
-     const [StayTypeOpen, setStayTypeOpen] = useState(false);
-     const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
-    const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
-     const [bookingDetails, setBookingDetails] = useState("")
-       const [advanceAmount, setAdvanceAmount] = useState("");
-         const [rentalAmount, setRentalAmount] = useState("");
+  const [extraCharges, setExtraCharges] = useState([]);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const StayType = ["LongStay"];
+  const [StayTypeOpen, setStayTypeOpen] = useState(false);
+  const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
+  const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
+  const [bookingDetails, setBookingDetails] = useState("")
+  const [advanceAmount, setAdvanceAmount] = useState("");
+  const [rentalAmount, setRentalAmount] = useState("");
+  const [bookingDetailsError, setBookingDetailsError] = useState("")
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  const [stayTypeError,setStayTypeError] = useState("")
+  const [rentalError,setRentalError] = useState("")
+  const [advanceError,setAdvanceError] = useState("")
+  const [joiningDateError,setJoiningDateError] = useState("")
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
-
-const tenantId =
+  const tenantId =
+  selectedBedReserv?.tenetId ??
   selectedBed?.newTenantInfo?.[0]?.tenetId;
 
-   useEffect(() => {
+
+  // const tenantId =
+  //   selectedBed?.newTenantInfo?.[0]?.tenetId || selectedBedReserv?.tenetId;
+
+  useEffect(() => {
     if (!activeHostelId || !tenantId) return;
-  
+
     const initCheckIn = async () => {
-      const res = await initializeCheckIn(activeHostelId,tenantId);
-  
+      const res = await initializeCheckIn(activeHostelId, tenantId);
+
       console.log("🔥 initCheckIn FULL RESPONSE 👉", res);
       console.log("📦 res.data 👉", res?.data);
-  
+
       if (res.success) {
-        setBookingDetails(res.data); 
+        setBookingDetails(res.data);
+      }
+      else {
+        setBookingDetailsError(res.message)
       }
     };
-  
+
     initCheckIn();
-  }, [activeHostelId,tenantId]);
-  console.log("bookkk",bookingDetails)
- useFocusEffect(
-   useCallback(() => {
-     const onBackPress = () => {
-       
- 
-       if (navigation.canGoBack()) {
-         navigation.goBack();
-         return true;
-       }
- 
-       return false;
-     };
- 
-     const subscription = BackHandler.addEventListener(
-       "hardwareBackPress",
-       onBackPress
-     );
- 
-     return () => subscription.remove();
-   }, [navigation])
- );
+  }, [activeHostelId, tenantId]);
+  const isAssignDisabled = !!bookingDetailsError;
+  console.log("bookkk", bookingDetails)
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+
+
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [navigation])
+  );
 
   const addCharge = () => {
     setExtraCharges(prev => [
@@ -85,7 +104,7 @@ const tenantId =
   const removeCharge = (id) => {
     setExtraCharges(prev => prev.filter(i => i.id !== id));
 
-  
+
   };
 
   const selectType = (id, type) => {
@@ -116,269 +135,411 @@ const tenantId =
     );
   };
 
-const convertToDeductions = (extraCharges) => {
-  return extraCharges.map(item => ({
-    type: item.type === "Others" ? item.title.toLowerCase() : "maintenance",
-    amount: item.amount,
-    showInput: item.type === "Others"
-  }));
-};
-// const onSave = () => {
-//   const deductions = convertToDeductions(extraCharges);
-//   console.log("Final Deductions:", deductions);
-// };
-const onSave = async () => {
-  if (!bookingDetails?.bookingId) {
-    alert("Booking details missing");
-    return;
+  const convertToDeductions = (extraCharges) => {
+    return extraCharges.map(item => ({
+      type: item.type === "Others" ? item.title.toLowerCase() : "maintenance",
+      amount: item.amount,
+      showInput: item.type === "Others"
+    }));
+  };
+  // const onSave = () => {
+  //   const deductions = convertToDeductions(extraCharges);
+  //   console.log("Final Deductions:", deductions);
+  // };
+  const onSave = async () => {
+
+ let valid = true;
+
+  // reset errors
+  setStayTypeError("");
+  setRentalError("");
+  setAdvanceError("");
+  setJoiningDateError("");
+
+
+  if (!StayTypeSelected || StayTypeSelected === "Stay Type") {
+    setStayTypeError("Please select stay type");
+    valid = false;
   }
 
-  const payload = {
-    bookingId: bookingDetails?.bookingId,
-    joiningDate: dayjs(joinDate).format("DD-MM-YYYY"),
-    advanceAmount: Number(advanceAmount || 0),
-    rentalAmount: Number(rentalAmount),
-    stayType: "LONG", 
-    deductions: extraCharges.map(item => ({
-      type:
-        item.type === "Others"
-          ? item.title.trim().toLowerCase()
-          : "maintenance",
-      amount: Number(item.amount)
-    })),
-    isAdvanceIncludedInBooking: true
+ 
+  if (!rentalAmount || Number(rentalAmount) <= 0) {
+    setRentalError("Enter valid rental amount");
+    valid = false;
+  }
+
+ 
+  if (!advanceAmount || Number(advanceAmount) < 0) {
+    setAdvanceError("Enter valid advance amount");
+    valid = false;
+  }
+
+ 
+  if (!joinDate) {
+    setJoiningDateError("Please select joining date");
+    valid = false;
+  }
+
+  if (bookingDetailsError) {
+    valid = false;
+  }
+
+  if (!valid) return;
+
+
+    const payload = {
+      bookingId: bookingDetails?.bookingId,
+      joiningDate: dayjs(joinDate).format("DD-MM-YYYY"),
+      advanceAmount: Number(advanceAmount || 0),
+      rentalAmount: Number(rentalAmount),
+      stayType: "LONG",
+      deductions: extraCharges.map(item => ({
+        type:
+          item.type === "Others"
+            ? item.title.trim().toLowerCase()
+            : "maintenance",
+        amount: Number(item.amount)
+      })),
+      isAdvanceIncludedInBooking: true
+    };
+
+    console.log("payload", payload)
+
+    const res = await bookedCheckInCustomer(tenantId, payload);
+
+    if (res.success) {
+    
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      navigation.goBack();
+
+      setTimeout(() => {
+        setShowSuccess(false);
+
+      }, 800);
+    }
+    else {
+      alert(res.message || "Check-in failed ❌");
+    }
   };
 
-   console.log("payload",payload)
-
-  const res = await bookedCheckInCustomer(tenantId, payload);
-
-  if (res.success) {
-    alert("Check-in completed successfully ✅");
-    navigation.goBack();
-  } else {
-    alert(res.message || "Check-in failed ❌");
-  }
-};
-
+const bookingDateObj = bookingDetails?.bookedDate
+  ? dayjs(bookingDetails?.bookedDate, "DD-MM-YYYY")
+  : null;
 
   return (
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+
+      />
     <View style={styles.container}>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backArrow}>← Check-In Tenant</Text>
         </TouchableOpacity>
 
-        <Text style={styles.roomInfo}>Room No {selectedBed?.roomName} | {selectedBed?.bedName}</Text>
-
-        {/* Tenant Name */}
-        <Text style={styles.label}>Tenant</Text>
-        <View style={styles.box}>
-          <Text>{selectedBed?.newTenantInfo[0]?.tenantFullName}</Text>
-        </View>
-
-        {/* Booking Date */}
-        <Text style={styles.label}>Booking Date</Text>
-        <View style={styles.box}>
-          <Text>{dayjs().format("DD/MM/YYYY")}</Text>
-        </View>
-
-        {/* Booking Amount */}
-        <Text style={styles.label}>Booking Amount</Text>
-        <View style={styles.box}>
-          <Text>₹{selectedBed?.newTenantInfo[0]?.bookingAmount}</Text>
-        </View>
-
-        <Text style={styles.label}>Stay Type</Text>
-       
-                     <View style={{ position: "relative" }}>
-                       <TouchableOpacity
-                         style={styles.select}
-                         onPress={() => setStayTypeOpen(!StayTypeOpen)}
-                         activeOpacity={0.9}
-                       >
-                         <Text style={styles.selectText}>{StayTypeSelected}</Text>
-                         <Image source={DownArrow} style={styles.arrow} />
-                       </TouchableOpacity>
-       
-                       {StayTypeOpen && (
-                         <View style={styles.dropdownMenuone}>
-                           <ScrollView style={{ maxHeight: 160 }}>
-                             {StayType.map((v, index) => (
-                               <TouchableOpacity
-                                 key={index}
-                                 style={styles.option}
-                                 onPress={() => {
-                                   setStayTypeSelected(v);
-                                   setStayTypeOpen(false);
-                                 }}
-                               >
-                                 <Text style={styles.optionText}>{v}</Text>
-                               </TouchableOpacity>
-                             ))}
-                           </ScrollView>
-                         </View>
-                       )}
-                     </View>
-
-        {/* Rental Amount */}
-        <Text style={styles.label}>Rental Amount</Text>
-        <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={rentalAmount} onChangeText={setRentalAmount}/>
-
-        {/* Advance Amount */}
-        <Text style={styles.label}>Advance Amount</Text>
-        <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={advanceAmount} onChangeText={setAdvanceAmount}/>
-
-        {/* Joining Date */}
-        <Text style={styles.label}>Joining Date *</Text>
-
-        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenJoinPicker(true)}>
-       <Text>
-  {joinDate ? dayjs(joinDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+       <Text style={styles.roomInfo}>
+  Room No {selectedBed?.roomName} |{" "}
+  {selectedBed?.bedName}
 </Text>
 
-          <Image source={Calendar} style={{ width: 22, height: 22 }} />
+      </View>
+      {/* <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backArrow}>← Check-In Tenant</Text>
         </TouchableOpacity>
+                <Text style={styles.roomInfo}>Room No {selectedBed?.roomName} | {selectedBed?.bedName}</Text> */}
 
-        {/* Non Refundable Amount Title */}
-        {/* <View style={styles.row}>
-          <Text style={styles.label}>Non Refundable Amount</Text>
-          <TouchableOpacity style={styles.addBtn}>
-            <Text style={styles.addText}>+ Add</Text>
-          </TouchableOpacity>
-        </View> */}
-         <View style={styles.nonRefund}>
-                      <View style={styles.extraHeader}>
-                        <Text style={styles.label}>Non Refundable Amount</Text>
-        
-                        <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                          <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
-                        </TouchableOpacity>
-                      </View>
-        
-                      {extraCharges.map((item) => (
-                        <View key={item.id} style={styles.figmaRowWrapper}>
-        
-                          {/* CLOSE BTN */}
-                          <TouchableOpacity
-                            onPress={() => removeCharge(item.id, item.type)}
-                            style={styles.figmaCloseBtn}
-                          >
-        
-                            <Image
-                              source={Delete}
-                              style={styles.figmaCloseText}
-                            />
-                          </TouchableOpacity>
-        
-        
-                          <View style={styles.figmaRow}>
-        
-        
-                            {item.type === "" ? (
-                              <TouchableOpacity
-                                style={styles.figmaLeftBox}
-                                onPress={() =>
-                                  setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                                }
-                              >
-                                <Text style={{ color: "#777" }}>Select...</Text>
-                                <Image source={DownArrow} style={styles.arrow} />
-                              </TouchableOpacity>
-                            ) : item.type === "Others" ? (
-                              <TextInput
-                                style={styles.figmaLeftBox}
-                                placeholder="Enter reason"
-                                value={item.title}
-                                onChangeText={(t) => updateTitle(item.id, t)}
-                              />
-                            ) : (
-                              <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                                <Text>Maintenance</Text>
-                              </View>
-                            )}
-        
-                            {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                            {item.type === "" ? (
-                              <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                                <Text style={{ color: "#999" }}>Enter amount</Text>
-                              </View>
-                            ) : (
-                              <TextInput
-                                style={styles.figmaRightBox}
-                                placeholder="Enter amount"
-                                keyboardType="numeric"
-                                value={item.amount}
-                                onChangeText={(t) => updateAmount(item.id, t)}
-                              />
-                            )}
-        
-                          </View>
-        
-        
-                          {openDropdownId === item.id && item.type === "" && (
-                            <View style={styles.dropdownMenu}>
-                              {TYPE_OPTIONS.map((t) => {
-        
-                                const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-        
-                                return (
-                                  <TouchableOpacity
-                                    key={t}
-                                    disabled={disabled}
-                                    onPress={() => !disabled && selectType(item.id, t)}
-                                    style={{ opacity: disabled ? 0.3 : 1 }}
-                                  >
-                                    <Text style={styles.dropdownItem}>{t}</Text>
-                                  </TouchableOpacity>
-                                );
-                              })}
-                            </View>
-                          )}
-        
-                        </View>
-                      ))}
-        
-        
-        
-        
-        
+      {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          <Text style={styles.label}>Tenant</Text>
+          <View style={styles.box}>
+            <Text>{selectedBed?.newTenantInfo[0]?.tenantFullName || selectedBedReserv?.tenantFullName}</Text>
+          </View>
+
+          {/* Booking Date */}
+          <Text style={styles.label}>Booking Date</Text>
+          {/* <View style={styles.box}>
+            <Text>{dayjs().format("DD/MM/YYYY")}</Text>
+          </View> */}
+           <TouchableOpacity
+                                              // style={styles.dateBox}
+                                              style={[
+                                                  styles.dateBox,
+                                                  bookingDetails?.bookedDate && { backgroundColor: "#EEF2FF" }
+                                              ]}
+                                              disabled={!!bookingDetails?.bookedDate}
+                                          >
+                                              <Text style={styles.placeholder}>
+                                                  {bookingDetails?.bookedDate}
+                                              </Text>
+                                              <Image source={Calendarimg} style={styles.calendarIcon} />
+                                          </TouchableOpacity>
+
+          {/* Booking Amount */}
+          <Text style={styles.label}>Booking Amount</Text>
+          <View style={styles.box}>
+            <Text>₹{selectedBed?.newTenantInfo[0]?.bookingAmount || selectedBedReserv?.bookingAmount}</Text>
+          </View>
+
+          <Text style={styles.label}>Stay Type <Text style={{color:"red"}}>*</Text></Text>
+
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              style={styles.select}
+              onPress={() => setStayTypeOpen(!StayTypeOpen)}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.selectText}>{StayTypeSelected}</Text>
+              <Image source={DownArrow} style={styles.arrow} />
+            </TouchableOpacity>
+  {stayTypeError && <ErrorMessage message={stayTypeError} type="error" />}
+            {StayTypeOpen && (
+              <View style={styles.dropdownMenuone}>
+                <ScrollView style={{ maxHeight: 160 }}>
+                  {StayType.map((v, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.option}
+                      onPress={() => {
+                        setStayTypeSelected(v);
+                        setStayTypeOpen(false);
+                        setStayTypeError("")
+                      }}
+                    >
+                      <Text style={styles.optionText}>{v}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+
+          {/* Rental Amount */}
+          <Text style={styles.label}>Rental Amount <Text style={{color:"red"}}>*</Text></Text>
+          <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={rentalAmount} 
+          onChangeText={(text) => {
+  setRentalAmount(text);
+  setRentalError("");
+}}
+/>
+{rentalError && <ErrorMessage message={rentalError} type="error" />}
+          {/* Advance Amount */}
+          <Text style={styles.label}>Advance Amount <Text style={{color:"red"}}>*</Text></Text>
+          <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={advanceAmount} 
+          // onChangeText={setAdvanceAmount}
+                  onChangeText={(text) => {
+  setAdvanceAmount(text);
+  setAdvanceError("");
+}}
+          />
+          {advanceError && <ErrorMessage message={advanceError} type="error" />}
+
+          {/* Joining Date */}
+          <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
+
+         <TouchableOpacity
+  style={styles.dateBoxJoi}
+  onPress={() => setOpenJoinPicker(true)}
+>
+  <Text>
+    {joinDate ? dayjs(joinDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+  </Text>
+  <Image source={Calendarimg} style={{ width: 22, height: 22 }} />
+</TouchableOpacity>
+
+ {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
+         
+          <View style={styles.nonRefund}>
+            <View style={styles.extraHeader}>
+              <Text style={styles.label}>Non Refundable Amount</Text>
+
+              <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            {extraCharges.map((item) => (
+              <View key={item.id} style={styles.figmaRowWrapper}>
+
+                {/* CLOSE BTN */}
+                <TouchableOpacity
+                  onPress={() => removeCharge(item.id, item.type)}
+                  style={styles.figmaCloseBtn}
+                >
+
+                  <Image
+                    source={Delete}
+                    style={styles.figmaCloseText}
+                  />
+                </TouchableOpacity>
+
+
+                <View style={styles.figmaRow}>
+
+
+                  {item.type === "" ? (
+                    <TouchableOpacity
+                      style={styles.figmaLeftBox}
+                      onPress={() =>
+                        setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                      }
+                    >
+                      <Text style={{ color: "#777" }}>Select...</Text>
+                      <Image source={DownArrow} style={styles.arrow} />
+                    </TouchableOpacity>
+                  ) : item.type === "Others" ? (
+                    <TextInput
+                      style={styles.figmaLeftBox}
+                      placeholder="Enter reason"
+                      value={item.title}
+                      onChangeText={(t) => updateTitle(item.id, t)}
+                    />
+                  ) : (
+                    <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                      <Text>Maintenance</Text>
                     </View>
+                  )}
 
-        {/* Buttons */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
+                  {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                  {item.type === "" ? (
+                    <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                      <Text style={{ color: "#999" }}>Enter amount</Text>
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={styles.figmaRightBox}
+                      placeholder="Enter amount"
+                      keyboardType="numeric"
+                      value={item.amount}
+                      onChangeText={(t) => updateAmount(item.id, t)}
+                    />
+                  )}
 
-          <TouchableOpacity style={styles.checkBtn} onPress={onSave}>
-            <Text style={styles.checkText}>Check In</Text>
-          </TouchableOpacity>
-        </View>
+                </View>
 
-      </ScrollView>
+
+                {openDropdownId === item.id && item.type === "" && (
+                  <View style={styles.dropdownMenu}>
+                    {TYPE_OPTIONS.map((t) => {
+
+                      const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                      return (
+                        <TouchableOpacity
+                          key={t}
+                          disabled={disabled}
+                          onPress={() => !disabled && selectType(item.id, t)}
+                          style={{ opacity: disabled ? 0.3 : 1 }}
+                        >
+                          <Text style={styles.dropdownItem}>{t}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+
+              </View>
+            ))}
+
+
+
+
+
+          </View>
+
+          {/* Buttons */}
+          <View style={styles.centerError}>
+            {bookingDetailsError && (
+              <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />
+            )}
+          </View>
+
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => navigation.goBack()}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              //  style={styles.checkBtn}
+              style={[
+                styles.checkBtn,
+                isAssignDisabled && { backgroundColor: "#9CA3AF" }
+              ]}
+              onPress={onSave} disabled={isAssignDisabled}>
+              <Text style={styles.checkText}>Check In</Text>
+            </TouchableOpacity>
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Date Picker Popup */}
-      {openJoinPicker && (
-        <View style={styles.overlay}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => setOpenJoinPicker(false)} />
+     {openJoinPicker && (
+  <View style={styles.overlay}>
+    <TouchableOpacity
+      style={{ flex: 1 }}
+      onPress={() => setOpenJoinPicker(false)}
+    />
 
-          <View style={styles.datePickerBox}>
-            <DatePicker
-              mode="single"
-              date={joinDate}
-              onChange={(v) => {
-                setJoinDate(v.date);
-                setOpenJoinPicker(false);
-              }}
-            />
-          </View>
-        </View>
-      )}
+    <View style={styles.datePickerBox}>
+      <Calendar
+        minDate={
+          bookingDateObj
+            ? bookingDateObj.format("YYYY-MM-DD")
+            : undefined
+        }
+        maxDate={dayjs().format("YYYY-MM-DD")}   // 🚫 future blocked
+        onDayPress={(day) => {
+          const selected = dayjs(day.dateString);
+
+          // extra safety check
+          if (
+            bookingDateObj &&
+            selected.isBefore(bookingDateObj, "day")
+          ) {
+            return;
+          }
+
+          setJoinDate(selected);
+          setJoiningDateError("");
+          setOpenJoinPicker(false);
+        }}
+        markedDates={
+          joinDate
+            ? {
+                [dayjs(joinDate).format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#1D5DFF",
+                },
+              }
+            : {}
+        }
+      />
+    </View>
+  </View>
+)}
+
 
     </View>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -386,6 +547,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
     padding: 20,
+    paddingTop: 40
   },
 
   backArrow: {
@@ -428,6 +590,7 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 15,
   },
+  calendarIcon: { width: 20, height: 20, tintColor: "#444" },
 
   dateBox: {
     backgroundColor: "#EEF2FF",
@@ -436,6 +599,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+    dateBoxJoi: {
+   
+    padding: 14,
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderColor: "#DCDCDC",
+    borderWidth:1
   },
 
   row: {
@@ -460,21 +633,21 @@ const styles = StyleSheet.create({
   },
 
   buttonRow: {
-     flexDirection: "row",
+    flexDirection: "row",
     justifyContent: "flex-end",
     gap: 15,
     marginTop: 25,
   },
-  
 
-//   cancelBtn: {
-//     width: "48%",
-//     borderWidth: 1,
-//     borderColor: "#DCDCDC",
-//     paddingVertical: 14,
-//     borderRadius: 10,
-//   },
- cancelBtn: {
+
+  //   cancelBtn: {
+  //     width: "48%",
+  //     borderWidth: 1,
+  //     borderColor: "#DCDCDC",
+  //     paddingVertical: 14,
+  //     borderRadius: 10,
+  //   },
+  cancelBtn: {
     paddingVertical: 14,
     paddingHorizontal: 25,
     borderRadius: 10,
@@ -521,7 +694,7 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
 
-   figmaRowWrapper: {
+  figmaRowWrapper: {
     marginTop: 20,
     position: "relative",
   },
@@ -535,7 +708,7 @@ const styles = StyleSheet.create({
   figmaLeftBox: {
     width: "48%",
     height: 50,
-backgroundColor:"#FFFFFF",
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingHorizontal: 15,
     borderWidth: 1,
@@ -548,7 +721,7 @@ backgroundColor:"#FFFFFF",
   figmaRightBox: {
     width: "45%",
     height: 50,
-backgroundColor:"#FFFFFF",
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingHorizontal: 15,
     borderWidth: 1,
@@ -579,7 +752,7 @@ backgroundColor:"#FFFFFF",
     marginTop: 10,
     borderRadius: 20
   },
-    extraHeader: {
+  extraHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 18,
@@ -591,7 +764,7 @@ backgroundColor:"#FFFFFF",
     paddingVertical: 8,
     borderRadius: 8,
   },
-    arrow: { width: 18, height: 18, tintColor: "#444" },
+  arrow: { width: 18, height: 18, tintColor: "#444" },
 
   dropdownMenu: {
     marginTop: 6,
@@ -629,7 +802,7 @@ backgroundColor:"#FFFFFF",
   },
 
   selectText: { color: "#555" },
- 
+
   placeholder: { color: "#555" },
 
 
@@ -637,9 +810,9 @@ backgroundColor:"#FFFFFF",
     fontSize: 15,
     color: "#000",
   },
-selectText: { color: "#555" },
- 
-   select: {
+  selectText: { color: "#555" },
+
+  select: {
     height: 48,
     borderWidth: 1,
     borderColor: "#e1e1e1",
@@ -648,5 +821,12 @@ selectText: { color: "#555" },
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  centerError: {
+
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
+    marginHorizontal: 120
   },
 });
