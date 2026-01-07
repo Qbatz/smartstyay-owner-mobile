@@ -187,7 +187,7 @@ const [datePickerTop, setDatePickerTop] = useState(0);
     }
 
     if (!accountSelected) {
-      setBankIdError("Please select bank account");
+      setBankIdError("Please Select Mode Of Transaction");
       valid = false;
     }
 
@@ -446,7 +446,7 @@ const [datePickerTop, setDatePickerTop] = useState(0);
             )}
           </View>
           {bedError && <ErrorMessage message={bedError} type="error" />}
-          <Text style={styles.label}>Transferred Account <Text style={{ color: "red" }}>*</Text></Text>
+          <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
           <View style={{ position: "relative" }}>
             <TouchableOpacity
               onPress={() => setAccountopen(!accountOpen)}

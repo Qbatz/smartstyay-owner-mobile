@@ -265,10 +265,10 @@ export default function TenantCheckIn({ navigation, route }) {
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <SafeAreaView style={styles.safe}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+                   <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
           <View style={styles.header}>
             <TouchableOpacity
               onPress={() => navigation?.goBack?.()}
@@ -309,7 +309,14 @@ export default function TenantCheckIn({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.container}>
+            <ScrollView
+            style={styles.container}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 60,  
+            }}
+          >
 
 
 
@@ -536,7 +543,11 @@ export default function TenantCheckIn({ navigation, route }) {
                             style={styles.figmaLeftBox}
                             placeholder="Enter reason"
                             value={item.title}
-                            onChangeText={(t) => updateTitle(item.id, t)}
+                            // onChangeText={(t) => updateTitle(item.id, t)}
+                                               onChangeText={(t) => {
+    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+    updateTitle(item.id, onlyLetters);
+  }}
                           />
                         ) : (
                           <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
