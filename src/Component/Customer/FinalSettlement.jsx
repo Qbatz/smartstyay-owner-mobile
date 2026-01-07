@@ -528,7 +528,7 @@ export default function FinalSettlement({ navigation, route }) {
 
 
                 {openDropdownId === item.id && item.type === "" && (
-                  <View style={styles.dropdownMenu}>
+                  <View style={styles.nonRefundDropdown}>
                     {TYPE_OPTIONS.map((t) => {
 
                       const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
@@ -1124,7 +1124,18 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
 
-
+ nonRefundDropdown: {
+        position: "absolute",
+        top: 55,
+        left: 0,
+        width: "48%",
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#E3E3E3",
+        borderRadius: 12,
+        zIndex: 20,
+        elevation: 10,
+    },
 
 
 });
