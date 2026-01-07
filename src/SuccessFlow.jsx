@@ -63,6 +63,7 @@ import EnterMPin from "../src/Component/CreateAccount/EnterPin";
 import { LoginContexts } from "./Context/LoginContext";
 import CreateMpin from "../src/Component/CreateAccount/CreatePin";
 import ConfirmMPin from "../src/Component/CreateAccount/ConfirmPin";
+import CustomerOverviewScreen from "../src/Component/Customer/CustomerOverview/CustomerOverviewSheet"
 
 
 const SuccessFlow = (props) => {
@@ -147,6 +148,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="Agreement" component={AgreementPolicy} />
                     <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
                     <Navigation.Screen name="PG" component={PGPageFull} />
+                     <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
 
                 </Navigation.Navigator>
             </NavigationContainer>

@@ -767,6 +767,12 @@ useFocusEffect(
   return (
     <>
      {loading && <Loader />}
+       {isAnySheetOpen && (
+      <View
+        style={StyleSheet.absoluteFill}
+        pointerEvents="auto"
+      />
+    )}
       <SuccessModal
         visible={showSuccess}
         message={message}
@@ -963,6 +969,9 @@ useFocusEffect(
         <FlatList
           contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
           data={rooms}
+         scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
+  keyboardShouldPersistTaps="always"
+  keyboardDismissMode="none"
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
 

@@ -12,6 +12,9 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editBedData;
   console.log("editBedData",editBedData)
+ 
+
+
 
 const amountRef = useRef(null);
 
@@ -21,6 +24,7 @@ const amountRef = useRef(null);
 
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const safeKeyboardHeight = keyboardHeight > 0 ? 240 : 0;
   const [bedName, setBedName] = useState("");
   const [amount, setAmount] = useState("");
   const [bedNameError, setBedNameError] = useState("")
@@ -31,6 +35,8 @@ const amountRef = useRef(null);
   const [bedId,setBedId] = useState("")
   const [initialBedName, setInitialBedName] = useState("");
 const [initialAmount, setInitialAmount] = useState("");
+
+
 
   const isDisabled =
   !bedName?.trim() || !String(amount)?.trim();
@@ -176,97 +182,7 @@ const [initialAmount, setInitialAmount] = useState("");
   }
 };
 
-//   const handleSaveBed = async () => {
-//   let valid = true;
 
-//   // 🔥 TRIM ONLY HERE
-//   const trimmedBedName = bedName.trim();
-//   const trimmedAmount = amount.trim();
-
-//   if (!trimmedBedName) {
-//     setBedNameError("Bed name is required");
-//     valid = false;
-//   } else {
-//     setBedNameError("");
-//   }
-
-//   if (!trimmedAmount) {
-//     setAmountError("Amount is required");
-//     valid = false;
-//   } else {
-//     setAmountError("");
-//   }
-
-//   if (!valid) return;
-
-//   const res = await addBed({
-//     bedName: trimmedBedName, 
-//     roomId: selectedRoomId,
-//     hostelId: activeHostelId,
-//     amount: trimmedAmount,
-//   });
-
-//   if (res.success) {
-//     setModalType("success");
-//     setMessage(res.data);
-//     setShowSuccess(true);
-
-//     setTimeout(() => {
-//       setShowSuccess(false);
-//       onBedAdded(selectedRoomId);
-//       onClose();
-//     }, 800);
-//   } else {
-//     setBedNameError(res.message);
-//   }
-// };
-
-  // const handleSaveBed = async () => {
-  //   let valid = true;
-
-
-  //   if (!bedName.trim()) {
-  //     setBedNameError("Bed name is required");
-  //     valid = false;
-  //   } else {
-  //     setBedNameError("");
-  //   }
-
-
-  //   if (!amount.trim()) {
-  //     setAmountError("Amount is required");
-  //     valid = false;
-  //   } else {
-  //     setAmountError("");
-  //   }
-
-  //   if (!valid) return;
-  //   const res = await addBed({
-  //     bedName: bedName,
-  //     roomId: selectedRoomId,
-  //     hostelId: activeHostelId,
-  //     amount: amount,
-  //   });
-
-  //   if (res.success) {
-  //     // onClose();
-  //     //  onBedAdded(selectedRoomId);
-  //     setModalType("success");
-  //     setMessage(res.data);
-  //     setShowSuccess(true);
-
-  //     setTimeout(() => {
-  //       setShowSuccess(false);
-  //       onBedAdded(selectedRoomId);
-  //       onClose();
-  //     }, 800);
-  //   }
-  //   else {
-  //     setBedNameError(res.message)
-  //     console.log("res.message", res.message)
-
-  //   }
-  // };
   return (
     <>
       <SuccessModal
@@ -278,19 +194,30 @@ const [initialAmount, setInitialAmount] = useState("");
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
 <Animated.View
+  {...panResponder.panHandlers}
   style={[
     styles.sheet,
-    { transform: [{ translateY }] },
+    {
+      transform: [
+        {
+          translateY: Animated.subtract(
+            translateY,
+            new Animated.Value(safeKeyboardHeight)
+          ),
+        },
+      ],
+    },
   ]}
-  {...panResponder.panHandlers}
 >
-  <ScrollView
-    keyboardShouldPersistTaps="handled"
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-      paddingBottom: keyboardHeight > 0 ? 80 : 30,
-    }}
-  >
+
+<ScrollView
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: 30,
+  }}
+>
+
     <View style={styles.handle} />
 
     <Text style={styles.title}> {isEdit ? "Edit Bed" : "Add Bed"}</Text>

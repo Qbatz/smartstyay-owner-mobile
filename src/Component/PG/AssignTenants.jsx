@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback, useEffect ,useRef} from "react";
+import React, { useState, useContext, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
-  ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal,Dimensions 
+  ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard
 } from "react-native";
 import Delete from "../../Assets/Images/remove.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
@@ -21,8 +21,6 @@ import { Calendar } from "react-native-calendars";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../ToastFile/ToastPage";
-
-
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -68,28 +66,75 @@ export default function AssignTenant({ navigation, route }) {
   const [joiningDateError, setJoiningDateError] = useState("");
   const [bookingAmountError, setBookingAmountError] = useState("");
   const [bankError, setBankError] = useState("");
- const [showCalendar, setShowCalendar] = useState(false);
-const [activeDateField, setActiveDateField] = useState(null);
-const CALENDAR_HEIGHT = 340;
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-// "booking" | "joining" | "checkin"
-const getSafeCalendarTop = (y, h) => {
-  const belowSpace = SCREEN_HEIGHT - (y + h);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [activeDateField, setActiveDateField] = useState(null);
+  const CALENDAR_HEIGHT = 340;
+  const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+  const scrollRef = useRef(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  // கீழ space போதுமானா → கீழ open
-  if (belowSpace > CALENDAR_HEIGHT + 20) {
-    return y + h + 8;
-  }
+ useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
 
-  // இல்லனா → மேல open
-  return Math.max(80, y - CALENDAR_HEIGHT - 8);
-};
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
 
-const [datePickerTop, setDatePickerTop] = useState(0);
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
 
-const bookingDateRef = useRef(null);
-const joiningDateRef = useRef(null);
-const checkinDateRef = useRef(null);
+
+
+  const scrollToY = (y = 300) => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y,
+        animated: true,
+      });
+    }, 120);
+  };
+ 
+  const scrollInputIntoView = (ref) => {
+    if (!ref?.current) return;
+
+    setTimeout(() => {
+      ref.current.measureInWindow((x, y, w, h) => {
+        const visibleArea = SCREEN_HEIGHT - keyboardHeight;
+        const inputBottom = y + h;
+
+        if (inputBottom > visibleArea - 20) {
+          scrollRef.current?.scrollTo({
+            y: inputBottom - visibleArea + 40,
+            animated: true,
+          });
+        }
+      });
+    }, 80);
+  };
+
+  const inputRefs = useRef({});
+  const getSafeCalendarTop = (y, h) => {
+    const belowSpace = SCREEN_HEIGHT - (y + h);
+
+
+    if (belowSpace > CALENDAR_HEIGHT + 20) {
+      return y + h + 8;
+    }
+
+    // இல்லனா → மேல open
+    return Math.max(80, y - CALENDAR_HEIGHT - 8);
+  };
+
+  const [datePickerTop, setDatePickerTop] = useState(0);
+
+  const bookingDateRef = useRef(null);
+  const joiningDateRef = useRef(null);
+  const checkinDateRef = useRef(null);
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
 
@@ -118,19 +163,19 @@ const checkinDateRef = useRef(null);
       "Inactive"
     );
     // setCheckinTenants(data?.listCustomers || []);
-const list = data?.listCustomers || [];
-  setCheckinTenants(list);
-     if (list?.length === 0) {
-    setModalType("error");
-    setMessage("Please Create a New Tenant");
-    setShowSuccess(true);
+    const list = data?.listCustomers || [];
+    setCheckinTenants(list);
+    if (list?.length === 0) {
+      setModalType("error");
+      setMessage("Please Create a New Tenant");
+      setShowSuccess(true);
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 2000);
-  };
-}
-console.log("setCheckinTenants",CheckinTenants)
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 2000);
+    };
+  }
+  console.log("setCheckinTenants", CheckinTenants)
   const selectType = (id, type) => {
 
 
@@ -446,30 +491,30 @@ console.log("setCheckinTenants",CheckinTenants)
     setCheckJoinDateError("");
     setStayTypeError("");
   };
-const resetBookingState = () => {
-  setPurchaseDate(null);
-  setJoiningDate(null);
-  setBookingAmount("");
-  setAccountSelected(null);
-  setReferenceNumber("");
+  const resetBookingState = () => {
+    setPurchaseDate(null);
+    setJoiningDate(null);
+    setBookingAmount("");
+    setAccountSelected(null);
+    setReferenceNumber("");
 
-  setCheckinTenantSelected(null);
-  setCheckinTenantsopen(false);
+    setCheckinTenantSelected(null);
+    setCheckinTenantsopen(false);
 
-  setOpenDropdownId(null);
-};
-const resetCheckInState = () => {
-  setRentalAmount("");
-  setAdvanceAmount("");
-  setStayTypeSelected("Stay Type");
-  setExtraCharges([]);
+    setOpenDropdownId(null);
+  };
+  const resetCheckInState = () => {
+    setRentalAmount("");
+    setAdvanceAmount("");
+    setStayTypeSelected("Stay Type");
+    setExtraCharges([]);
 
-  setCheckinTenantSelected(null);
-  setCheckinTenantsopen(false);
+    setCheckinTenantSelected(null);
+    setCheckinTenantsopen(false);
 
-  setcheckJoiningDate(dayjs()); // today reset
-  setOpenDropdownId(null);
-};
+    setcheckJoiningDate(dayjs()); // today reset
+    setOpenDropdownId(null);
+  };
 
 
   return (
@@ -486,7 +531,7 @@ const resetCheckInState = () => {
 
 
         <View style={styles.tabRow}>
-      
+
 
           <TouchableOpacity
             style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
@@ -496,8 +541,8 @@ const resetCheckInState = () => {
               setCheckinTenantsopen(false);
               setTenantsError("")
               clearAllErrors();
-              resetBookingState();  
-    clearAllErrors();    
+              resetBookingState();
+              clearAllErrors();
             }}
 
           >
@@ -505,7 +550,7 @@ const resetCheckInState = () => {
               Check-In
             </Text>
           </TouchableOpacity>
-              <TouchableOpacity
+          <TouchableOpacity
             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
             onPress={() => {
               setActiveTab("Booking");
@@ -513,8 +558,8 @@ const resetCheckInState = () => {
               setCheckinTenantsopen(false);
               setTenantsError("")
               clearAllErrors();
-               resetCheckInState();  
-    clearAllErrors(); 
+              resetCheckInState();
+              clearAllErrors();
             }}
 
           >
@@ -528,16 +573,14 @@ const resetCheckInState = () => {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <ScrollView
-            contentContainerStyle={{ paddingBottom: 100 }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-
-
-
-
-
+        <ScrollView
+  ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight + 80,
+  }}
+>
 
             {activeTab === "Booking" && (
               <>
@@ -583,23 +626,23 @@ const resetCheckInState = () => {
                 </View>
 
                 <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
-              <View ref={bookingDateRef} collapsable={false}>
-  <TouchableOpacity
-    style={styles.dateBox}
-    onPress={() => {
-      bookingDateRef.current.measureInWindow((x, y, w, h) => {
-     setDatePickerTop(getSafeCalendarTop(y, h));
-        setActiveDateField("booking");
-        setShowCalendar(true);
-      });
-    }}
-  >
-    <Text style={styles.placeholder}>
-      {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-    </Text>
-    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-  </TouchableOpacity>
-</View>
+                <View ref={bookingDateRef} collapsable={false}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => {
+                      bookingDateRef.current.measureInWindow((x, y, w, h) => {
+                        setDatePickerTop(getSafeCalendarTop(y, h));
+                        setActiveDateField("booking");
+                        setShowCalendar(true);
+                      });
+                    }}
+                  >
+                    <Text style={styles.placeholder}>
+                      {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                    </Text>
+                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+                  </TouchableOpacity>
+                </View>
 
                 {bookingDateError && (
                   <ErrorMessage message={bookingDateError} type="error" />
@@ -620,23 +663,23 @@ const resetCheckInState = () => {
                   <ErrorMessage message={bookingAmountError} type="error" />
                 )}
                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-             <View ref={joiningDateRef} collapsable={false}>
-  <TouchableOpacity
-    style={styles.dateBox}
-    onPress={() => {
-      joiningDateRef.current.measureInWindow((x, y, w, h) => {
-        setDatePickerTop(getSafeCalendarTop(y, h));
-        setActiveDateField("joining");
-        setShowCalendar(true);
-      });
-    }}
-  >
-    <Text style={styles.placeholder}>
-      {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-    </Text>
-    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-  </TouchableOpacity>
-</View>
+                <View ref={joiningDateRef} collapsable={false}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => {
+                      joiningDateRef.current.measureInWindow((x, y, w, h) => {
+                        setDatePickerTop(getSafeCalendarTop(y, h));
+                        setActiveDateField("joining");
+                        setShowCalendar(true);
+                      });
+                    }}
+                  >
+                    <Text style={styles.placeholder}>
+                      {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                    </Text>
+                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+                  </TouchableOpacity>
+                </View>
 
                 {joiningDateError && (
                   <ErrorMessage message={joiningDateError} type="error" />
@@ -820,25 +863,25 @@ const resetCheckInState = () => {
                 )}
                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
-             <View ref={checkinDateRef} collapsable={false}>
-  <TouchableOpacity
-    style={styles.dateBox}
-    onPress={() => {
-      checkinDateRef.current.measureInWindow((x, y, w, h) => {
-        setDatePickerTop(getSafeCalendarTop(y, h));
-        setActiveDateField("checkin");
-        setShowCalendar(true);
-      });
-    }}
-  >
-    <Text style={styles.placeholder}>
-      {checkJoiningDate
-        ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
-        : "DD-MM-YYYY"}
-    </Text>
-    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-  </TouchableOpacity>
-</View>
+                <View ref={checkinDateRef} collapsable={false}>
+                  <TouchableOpacity
+                    style={styles.dateBox}
+                    onPress={() => {
+                      checkinDateRef.current.measureInWindow((x, y, w, h) => {
+                        setDatePickerTop(getSafeCalendarTop(y, h));
+                        setActiveDateField("checkin");
+                        setShowCalendar(true);
+                      });
+                    }}
+                  >
+                    <Text style={styles.placeholder}>
+                      {checkJoiningDate
+                        ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
+                        : "DD-MM-YYYY"}
+                    </Text>
+                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+                  </TouchableOpacity>
+                </View>
 
                 {checkJoinDateError && (
                   <ErrorMessage message={checkJoinDateError} type="error" />
@@ -888,15 +931,23 @@ const resetCheckInState = () => {
                         </TouchableOpacity>
                       ) : item.type === "Others" ? (
                         <TextInput
+                          ref={(r) => {
+    inputRefs.current[`reason-${item.id}`] = r;
+  }}
                           style={styles.figmaLeftBox}
                           placeholder="Enter reason"
-                          
+
                           value={item.title}
-                          // onChangeText={(t) => updateTitle(item.id, t)}
-                            onChangeText={(t) => {
-    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-    updateTitle(item.id, onlyLetters);
+                          onFocus={() => {
+    setOpenDropdownId(null);
+    scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
   }}
+
+                          // onChangeText={(t) => updateTitle(item.id, t)}
+                          onChangeText={(t) => {
+                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                            updateTitle(item.id, onlyLetters);
+                          }}
                         />
                       ) : (
                         <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
@@ -911,10 +962,17 @@ const resetCheckInState = () => {
                         </View>
                       ) : (
                         <TextInput
+                         ref={(r) => {
+    inputRefs.current[`amount-${item.id}`] = r;
+  }}
                           style={styles.figmaRightBox}
                           placeholder="Enter amount"
                           keyboardType="numeric"
                           value={item.amount}
+                          onFocus={() => {
+    setOpenDropdownId(null);
+    scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+  }}
                           onChangeText={(t) => updateAmount(item.id, t)}
                         />
                       )}
@@ -990,57 +1048,57 @@ const resetCheckInState = () => {
           </View>
         </View>
       )} */}
-      {showCalendar && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={() => setShowCalendar(false)}>
-      <View style={{ flex: 1 }} />
-    </TouchableWithoutFeedback>
+        {showCalendar && (
+          <View style={styles.sheetOverlay}>
+            <TouchableWithoutFeedback onPress={() => setShowCalendar(false)}>
+              <View style={{ flex: 1 }} />
+            </TouchableWithoutFeedback>
 
-    <View style={[styles.datePickerBox, { top: datePickerTop }]}>
-     <Calendar
-  minDate={
-    activeDateField === "joining" && purchaseDate
-      ? dayjs(purchaseDate).format("YYYY-MM-DD")
-      : undefined
-  }
-  maxDate={
-    activeDateField === "booking" || activeDateField === "checkin"
-      ? dayjs().format("YYYY-MM-DD")  
-      : undefined
-  }
-  onDayPress={(day) => {
-    const selected = dayjs(day.dateString);
+            <View style={[styles.datePickerBox, { top: datePickerTop }]}>
+              <Calendar
+                minDate={
+                  activeDateField === "joining" && purchaseDate
+                    ? dayjs(purchaseDate).format("YYYY-MM-DD")
+                    : undefined
+                }
+                maxDate={
+                  activeDateField === "booking" || activeDateField === "checkin"
+                    ? dayjs().format("YYYY-MM-DD")
+                    : undefined
+                }
+                onDayPress={(day) => {
+                  const selected = dayjs(day.dateString);
 
-    if (activeDateField === "booking") {
-      setPurchaseDate(day.dateString);
-      setJoiningDate(null);
-      setBookingDateError("");
-    }
+                  if (activeDateField === "booking") {
+                    setPurchaseDate(day.dateString);
+                    setJoiningDate(null);
+                    setBookingDateError("");
+                  }
 
-    if (activeDateField === "joining") {
-      setJoiningDate(day.dateString);
-      setJoiningDateError("");
-    }
+                  if (activeDateField === "joining") {
+                    setJoiningDate(day.dateString);
+                    setJoiningDateError("");
+                  }
 
-    if (activeDateField === "checkin") {
-      setcheckJoiningDate(day.dateString);
-      setCheckJoinDateError("");
-    }
+                  if (activeDateField === "checkin") {
+                    setcheckJoiningDate(day.dateString);
+                    setCheckJoinDateError("");
+                  }
 
-    setShowCalendar(false);
-    setActiveDateField(null);
-  }}
-  theme={{
-    todayTextColor: "#2563EB",
-    selectedDayBackgroundColor: "#2563EB",
-    selectedDayTextColor: "#FFFFFF",
-    textDisabledColor: "#9CA3AF",
-  }}
-/>
+                  setShowCalendar(false);
+                  setActiveDateField(null);
+                }}
+                theme={{
+                  todayTextColor: "#2563EB",
+                  selectedDayBackgroundColor: "#2563EB",
+                  selectedDayTextColor: "#FFFFFF",
+                  textDisabledColor: "#9CA3AF",
+                }}
+              />
 
-    </View>
-  </View>
-)}
+            </View>
+          </View>
+        )}
 
         {openJoinDatePic && (
           <View style={styles.sheetOverlay}>
@@ -1172,17 +1230,17 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   nonRefundDropdown: {
-  position: "absolute",
-  top: 55,
-  left: 0,
-  width: "48%",          
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E3E3E3",
-  borderRadius: 12,
-  zIndex: 20,
-  elevation: 10,
-},
+    position: "absolute",
+    top: 55,
+    left: 0,
+    width: "48%",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E3E3E3",
+    borderRadius: 12,
+    zIndex: 20,
+    elevation: 10,
+  },
 
   tabTextActive: {
     color: "#fff",
@@ -1328,16 +1386,16 @@ const styles = StyleSheet.create({
   },
 
 
- datePickerBox: {
-  position: "absolute",
-  left: "10%",
-  width: "80%",
-  backgroundColor: "#fff",
-  borderRadius: 20,
-  padding: 10,
-  elevation: 10,
-  
-},
+  datePickerBox: {
+    position: "absolute",
+    left: "10%",
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 10,
+
+  },
 
   datePickerBox1: {
     backgroundColor: "#fff",
@@ -1348,24 +1406,24 @@ const styles = StyleSheet.create({
     marginBottom: 300,
     borderWidth: 0.5,
   },
-sheetOverlay: {
-  position: "absolute",
-  top: 0, 
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.2)",
-},
+  sheetOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
 
-//   sheetOverlay: {
-//  position: "absolute",
-//   top: 40,
-//   left: 0,
-//   right: 0,
-//   bottom: 0,
-//   backgroundColor: "rgba(0,0,0,0.2)",
+  //   sheetOverlay: {
+  //  position: "absolute",
+  //   top: 40,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   backgroundColor: "rgba(0,0,0,0.2)",
 
-//   },
+  //   },
 
 
 
