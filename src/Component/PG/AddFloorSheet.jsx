@@ -19,6 +19,27 @@ export default function AddFloorSheet({ visible, onClose,onSuccess,editFloorData
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editFloorData;
   console.log("editFloorData",editFloorData)
+const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+const safeKeyboardHeight =
+  keyboardHeight > 0
+    ? Math.min(keyboardHeight * 0.85, 300)
+    : 0;
+
 
 
   const [floorName, setFloorName] = useState("");
@@ -192,16 +213,16 @@ const trimmedName = floorName.trim();
 // };
 
 const sheetContent = (
-  <Animated.View
-    style={[
-      styles.sheet,
-      {
-        transform: [{ translateY }],
-        paddingBottom: 20,   // 🔥 FIXED value
-      },
-    ]}
-    {...panResponder.panHandlers}
-  >
+<Animated.View
+  {...panResponder.panHandlers}
+  style={[
+    styles.sheet,
+    {
+      transform: [{ translateY }],
+      marginBottom: safeKeyboardHeight, // 🔥 FIX
+    },
+  ]}
+>
     <View style={styles.handle} />
 
     <Text style={styles.title}>
@@ -250,16 +271,9 @@ const sheetContent = (
         <View style={{ flex: 1 }} />
       </TouchableWithoutFeedback>
 
-      {Platform.OS === "ios" ? (
-        <KeyboardAvoidingView
-          behavior="padding"
-          keyboardVerticalOffset={20}
-        >
+      
           {sheetContent}
-        </KeyboardAvoidingView>
-      ) : (
-        sheetContent  
-      )}
+    
     </View>
   </>
 );

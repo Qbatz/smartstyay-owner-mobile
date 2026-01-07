@@ -8,7 +8,7 @@ import {
   Animated,
   PanResponder,
   TouchableWithoutFeedback,
-  ScrollView,
+  ScrollView, Keyboard, Platform
 } from "react-native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
@@ -33,8 +33,29 @@ export default function AddRoomSheet({
 
   const { addRoom, updateRoom } = useFloor();
   const { activeHostelId } = useContext(CommonContexts);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+const safeKeyboardHeight =
+  keyboardHeight > 0 ? 150 : 0;
 
-  /* ---------------- OPEN / CLOSE ---------------- */
+
+
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+
+
   useEffect(() => {
     if (visible) {
       if (editRoomData) setRoomName(editRoomData.name);
@@ -54,8 +75,9 @@ export default function AddRoomSheet({
       });
     }
   }, [visible]);
+  
 
-  /* ---------------- PAN CLOSE ---------------- */
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
@@ -70,6 +92,10 @@ export default function AddRoomSheet({
       },
     })
   ).current;
+  const finalTranslateY = Animated.add(
+  translateY,
+  new Animated.Value(-safeKeyboardHeight)
+);
 
   if (!visible) return null;
 
@@ -132,14 +158,26 @@ export default function AddRoomSheet({
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
+<Animated.View
+  {...panResponder.panHandlers}
+  style={[
+    styles.sheet,
+    {
+      transform: [{ translateY }],
+      marginBottom: safeKeyboardHeight, // ✅ ONLY THIS
+    },
+  ]}
+>
 
-       <Animated.View style={styles.sheet} {...panResponder.panHandlers}>
 
  
-  <ScrollView
-    keyboardShouldPersistTaps="handled"
-    showsVerticalScrollIndicator={false}
-  >
+<ScrollView
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: safeKeyboardHeight + 0,
+  }}
+>
     <View style={styles.handle} />
 
     <Text style={styles.title}>{isEdit ? "Edit Room" : "Add Room"}</Text>

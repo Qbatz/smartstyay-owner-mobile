@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
-  Image, TouchableWithoutFeedback
+  Image, TouchableWithoutFeedback, Keyboard
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -30,7 +30,7 @@ export default function TenantCheckIn({ navigation, route }) {
   const { customerId, customer } = route.params || {};
   const [tab, setTab] = useState("long");
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllFloorsByHostel, getAllRoomsByFloor,getAllBedsByRoom } = useFloor();
+  const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel } = useCustomer();
 
   const [floors, setFloors] = useState([]);
@@ -59,7 +59,35 @@ export default function TenantCheckIn({ navigation, route }) {
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [extraCharges, setExtraCharges] = useState([]);
 
-  console.log("selectedBed",customer)
+  const scrollRef = React.useRef(null);
+  const scrollToInput = (y = 200) => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y,
+        animated: true,
+      });
+    }, 150); // keyboard animation wait
+  };
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", e => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+
+  console.log("selectedBed", customer)
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -209,7 +237,7 @@ export default function TenantCheckIn({ navigation, route }) {
     }
 
     if (!rentalAmount || Number(rentalAmount) <= 0) {
-      setRentError("Please enter rental amount");
+      setRentError("Please Enter Rental amount");
       valid = false;
     }
 
@@ -244,8 +272,8 @@ export default function TenantCheckIn({ navigation, route }) {
       setModalType("success");
       setMessage(res.data);
       setShowSuccess(true);
-     
-    await getAllBedsByRoom(selectedRoom.id);
+
+      await getAllBedsByRoom(selectedRoom.id);
       navigation.goBack();
       setTimeout(() => {
         setShowSuccess(false);
@@ -265,10 +293,10 @@ export default function TenantCheckIn({ navigation, route }) {
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <SafeAreaView style={styles.safe}>
-                   <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View style={styles.header}>
             <TouchableOpacity
               onPress={() => navigation?.goBack?.()}
@@ -309,12 +337,13 @@ export default function TenantCheckIn({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-            <ScrollView
-            style={styles.container}
-            keyboardShouldPersistTaps="handled"
+          <ScrollView
+            ref={scrollRef}
+            keyboardShouldPersistTaps="always"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              paddingBottom: 60,  
+              paddingBottom: keyboardHeight > 0 ? keyboardHeight + 60 : 130,
+              padding: 15
             }}
           >
 
@@ -466,10 +495,10 @@ export default function TenantCheckIn({ navigation, route }) {
                     keyboardType="numeric"
                     value={advanceAmount}
                     placeholder='Enter AdvanceAmount'
-                  onChangeText={(text) => {
-  setAdvanceAmount(text);
-  setAdvanceError("");
-}}
+                    onChangeText={(text) => {
+                      setAdvanceAmount(text);
+                      setAdvanceError("");
+                    }}
 
                   />
                 </View>
@@ -489,10 +518,10 @@ export default function TenantCheckIn({ navigation, route }) {
                         : "Enter Rental Amount"
                     }
                     placeholderTextColor="#9CA3AF"
-                       onChangeText={(text) => {
-  setRentalAmount(text);
-  setRentError("");
-}}
+                    onChangeText={(text) => {
+                      setRentalAmount(text);
+                      setRentError("");
+                    }}
                   />
 
                 </View>
@@ -544,10 +573,14 @@ export default function TenantCheckIn({ navigation, route }) {
                             placeholder="Enter reason"
                             value={item.title}
                             // onChangeText={(t) => updateTitle(item.id, t)}
-                                               onChangeText={(t) => {
-    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-    updateTitle(item.id, onlyLetters);
-  }}
+                            onFocus={() => {
+                              setOpenDropdownId(null);
+                              scrollToInput(420);
+                            }}
+                            onChangeText={(t) => {
+                              const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                              updateTitle(item.id, onlyLetters);
+                            }}
                           />
                         ) : (
                           <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
@@ -625,8 +658,8 @@ export default function TenantCheckIn({ navigation, route }) {
         </KeyboardAvoidingView>
       </SafeAreaView>
       {openDatePicker && (
-        <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+        <View style={styles.sheetOverlay} pointerEvents="box-none">
+          <TouchableWithoutFeedback onPress={close} >
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
 
@@ -965,18 +998,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-    nonRefundDropdown: {
-  position: "absolute",
-  top: 55,
-  left: 0,
-  width: "48%",          
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E3E3E3",
-  borderRadius: 12,
-  zIndex: 20,
-  elevation: 10,
-},
+  nonRefundDropdown: {
+    position: "absolute",
+    top: 55,
+    left: 0,
+    width: "48%",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E3E3E3",
+    borderRadius: 12,
+    zIndex: 20,
+    elevation: 10,
+  },
 
 
 });
