@@ -177,14 +177,13 @@ const format = (n) =>
   <Text style={styles.bold}>11:56:24 AM</Text>
 </Text> */}
    
-   {configurations?.invoiceType === "Rent" && (
-            <Text style={styles.invSty}>
+   {/* {configurations?.invoiceType === "Rent" && (
               Rental Period :{" "}
               <Text style={styles.bold}>
                 {invoiceInfo?.invoicePeriod}
               </Text>
-            </Text>
-          )}
+            </Text> 
+          )} */}
   </View>
 </View>
 
