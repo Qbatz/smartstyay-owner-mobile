@@ -736,7 +736,7 @@ const isAssignDisabled = !!bookingDetailsError;
   disabled={isAssignDisabled}
   onPress={submitLongStay}
 >
-  <Text style={styles.submitText}>Assign Bed</Text>
+  <Text style={styles.submitText}>Check-In</Text>
 </TouchableOpacity>
 
                                 </View>

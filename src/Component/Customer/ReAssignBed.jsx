@@ -439,7 +439,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
 
 
-          <Text style={styles.label}>Floor <Text style={{ color: "red" }}>*</Text></Text>
+          <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -490,7 +490,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
           {floorError && (
             <ErrorMessage message={floorError} type="error" />
           )}
-          <Text style={styles.label}>Room <Text style={{ color: "red" }}>*</Text></Text>
+          <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -542,7 +542,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
           {roomError && (
             <ErrorMessage message={roomError} type="error" />
           )}
-          <Text style={styles.label}>Bed <Text style={{ color: "red" }}>*</Text></Text>
+          <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity

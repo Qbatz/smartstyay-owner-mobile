@@ -27,14 +27,15 @@ export const updateFcmToken=async(fcmToken,authToken)=>{
     try{
         const response=await AxiosConfig.put('/v2/profile/fcm', data, {
             headers: {
-                Authorization: 'Bearer' + authToken
+                Authorization: 'Bearer ' + authToken
             }
         })
         console.log(response);
         return response;
     }catch (error){
         console.log(error)
-        return { status: error.response.status, message: error.response.data }
+        return {  status: error?.response?.status ?? 500,
+      message: error?.response?.data ?? 'Not available', }
     }
 
 }

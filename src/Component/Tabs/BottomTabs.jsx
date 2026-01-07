@@ -27,7 +27,7 @@ const Tab = createBottomTabNavigator();
 
 const icons = {
   Home: { active: HomeActive, inactive: HomeInActive },
-  customer: { active: TenantActive, inactive: TenantInActive },
+  Tenant: { active: TenantActive, inactive: TenantInActive },
   PG: { active: PGActive, inactive: PGInActive },
   Complaints: { active: ComplaintActive, inactive: ComplaintInActive },
   More: { active: MoreActive, inactive: MoreInActive },
@@ -111,7 +111,7 @@ export default function MyTabs() {
         initialParams={{ setShowTabBar }}
       />
       <Tab.Screen 
-        name="customer" 
+        name="Tenant" 
         component={Tenant} 
         initialParams={{ setShowTabBar }}
       />
