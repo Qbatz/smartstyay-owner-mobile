@@ -17,10 +17,10 @@ const EnterMPin = (props) => {
     const navigation = useNavigation()
     const [createMpin, setCreateMpin] = useState(["", "", "", ""])
     const [mPinNumber, setmPinNumber] = useState(null)
-    const inputs = useRef([])   
+    const inputs = useRef([])
 
-    const{NotificationModule}=NativeModules;
-    
+    const { NotificationModule } = NativeModules;
+
 
     const [hostelList, setHostelList] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -33,7 +33,7 @@ const EnterMPin = (props) => {
     const opacity = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(80)).current;
     const BOTTOM_IMAGE_HEIGHT = 200;
-     const [fcmToken,setFcmToken]=useState();
+    const [fcmToken, setFcmToken] = useState();
 
     const showSuccessPopup = () => {
         setShowPopup(true);
@@ -82,18 +82,22 @@ const EnterMPin = (props) => {
         }, 2000);
     };
 
-     const fetchFcmTokenAsync=()=>{
-    NotificationModule.fetchFcmToken().then(r=>{
-      console.log(r)
-      setFcmToken(r)
-    })
-  }
-
-  useEffect(()=>{
-    if(Platform.OS ==="android"){
-      fetchFcmTokenAsync();
+    const fetchFcmTokenAsync = () => {
+        NotificationModule.fetchFcmToken().then(r => {
+            console.log(r)
+            setFcmToken(r)
+        })
+        .catch(error => {
+            console.log(error)
+            setFcmToken(null)
+        })
     }
-  },[])
+
+    useEffect(() => {
+        if (Platform.OS === "android") {
+            fetchFcmTokenAsync();
+        }
+    }, [])
 
 
 
@@ -150,7 +154,7 @@ const EnterMPin = (props) => {
         console.log(res)
 
         if (res.status == 200) {
-            fetchFcmToken(res.data)
+            // fetchFcmToken(res.data)
             setType("success");
             setMessage("Login Successfully");
             setShowModal(true);
@@ -158,7 +162,7 @@ const EnterMPin = (props) => {
 
             setTimeout(() => {
                 setShowModal(false);
-                
+
             }, 500);
         } else {
             setType("error");
@@ -170,12 +174,15 @@ const EnterMPin = (props) => {
         }
     };
 
-    const fetchFcmToken=async(authToken)=>{
-        if(fcmToken != null){
-            await updateFcmToken(fcmToken,authToken);
+    const fetchFcmToken = async (authToken) => {
+        try {
+            if (fcmToken) {
+                await updateFcmToken(fcmToken, authToken);
+            }
+        } catch (e) {
+            console.log('fetchFcmToken failed:', e);
         }
-    
-  }
+    };
 
 
 

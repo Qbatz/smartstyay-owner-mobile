@@ -204,7 +204,7 @@ const closeSheet = () => {
                 </View>
 
                 {/* JOINED DATE */}
-                <Text style={styles.label}>Joined Date</Text>
+                <Text style={styles.label}>Check-in-date</Text>
                 <View style={styles.rowInfo}>
                     <Image source={Calendar} style={styles.icon} />
                     <Text style={styles.value}>{selectedBed.currentTenantInfo[0]?.joiningDate}</Text>

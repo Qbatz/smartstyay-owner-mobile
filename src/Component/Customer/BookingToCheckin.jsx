@@ -729,15 +729,15 @@ export default function BookingCheckIn({ navigation, route }) {
                                         <Text style={styles.submitText}>Assign Bed</Text>
                                     </TouchableOpacity> */}
                                     <TouchableOpacity
-                                        style={[
-                                            styles.submitBtn,
-                                            isAssignDisabled && { backgroundColor: "#9CA3AF" }
-                                        ]}
-                                        disabled={isAssignDisabled}
-                                        onPress={submitLongStay}
-                                    >
-                                        <Text style={styles.submitText}>Assign Bed</Text>
-                                    </TouchableOpacity>
+  style={[
+    styles.submitBtn,
+    isAssignDisabled && { backgroundColor: "#9CA3AF" } 
+  ]}
+  disabled={isAssignDisabled}
+  onPress={submitLongStay}
+>
+  <Text style={styles.submitText}>Check-In</Text>
+</TouchableOpacity>
 
                                 </View>
                             </View>
