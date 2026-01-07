@@ -236,9 +236,9 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
                    
 
-                    {/* <TouchableOpacity style={styles.reservedBtn}>
+                    <TouchableOpacity style={styles.reservedBtn}>
                         <Text style={styles.resText}>Reserved</Text>
-                    </TouchableOpacity> */}
+                    </TouchableOpacity>
       
                 </Animated.View>
             </View>

@@ -158,8 +158,13 @@ const format = (n) =>
 </Text>
    
      <Text style={styles.invSty}>
-  Date : {' '}
+ Invoice Date : {' '}
   <Text style={styles.bold}>{invoiceDate}</Text>
+</Text>
+
+   <Text style={styles.invSty}>
+ Due Date : {' '}
+  <Text style={styles.bold}>{dueDate}</Text>
 </Text>
    
       <Text style={styles.invSty}>

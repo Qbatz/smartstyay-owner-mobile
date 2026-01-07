@@ -62,7 +62,7 @@ export default function BookingCheckIn({ navigation, route }) {
     const [openDropdownId, setOpenDropdownId] = useState(null);
     const [extraCharges, setExtraCharges] = useState([]);
     const [bookingDetails, setBookingDetails] = useState("")
-     const [bookingDetailsError, setBookingDetailsError] = useState("")
+    const [bookingDetailsError, setBookingDetailsError] = useState("")
 
     console.log("bookingDetails", bookingDetails)
 
@@ -96,11 +96,11 @@ export default function BookingCheckIn({ navigation, route }) {
 
         const initCheckIn = async () => {
             const res = await initializeCheckIn(activeHostelId, customerId);
-console.log("initCheckIn",res)
+            console.log("initCheckIn", res)
             if (res.success) {
                 setBookingDetails(res.data);
             }
-            else{
+            else {
                 setBookingDetailsError(res.message)
             }
         };
@@ -109,7 +109,7 @@ console.log("initCheckIn",res)
     }, [activeHostelId, customerId]);
 
 
-const isAssignDisabled = !!bookingDetailsError;
+    const isAssignDisabled = !!bookingDetailsError;
 
 
 
@@ -559,7 +559,7 @@ const isAssignDisabled = !!bookingDetailsError;
                                 </TouchableOpacity>
 
 
-                                <Text style={styles.label}>Joining Date</Text>
+                                <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
 
                                 <TouchableOpacity
                                     style={styles.dateBox}
@@ -572,7 +572,7 @@ const isAssignDisabled = !!bookingDetailsError;
                                 </TouchableOpacity>
 
                                 <View style={styles.field}>
-                                    <Text style={styles.label}>Advance Amount *</Text>
+                                    <Text style={styles.label}>Advance Amount <Text style={{color:"red"}}>*</Text></Text>
                                     <TextInput
                                         style={styles.input}
                                         keyboardType="numeric"
@@ -591,7 +591,7 @@ const isAssignDisabled = !!bookingDetailsError;
                                 )}
 
                                 <View style={styles.field}>
-                                    <Text style={styles.label}>Rental Amount *</Text>
+                                    <Text style={styles.label}>Rental Amount <Text style={{color:"red"}}>*</Text></Text>
                                     <TextInput
                                         style={styles.input}
                                         keyboardType="numeric"
@@ -685,7 +685,7 @@ const isAssignDisabled = !!bookingDetailsError;
 
 
                                             {openDropdownId === item.id && item.type === "" && (
-                                                <View style={styles.dropdownMenuone}>
+                                                <View style={styles.nonRefundDropdown}>
                                                     {TYPE_OPTIONS.map((t) => {
 
                                                         const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
@@ -712,11 +712,11 @@ const isAssignDisabled = !!bookingDetailsError;
 
 
                                 </View>
-<View  style={styles.centerError}>
-      {bookingDetailsError && (
-                                    <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }}/>
-                                )}
-</View>
+                                <View style={styles.centerError}>
+                                    {bookingDetailsError && (
+                                        <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />
+                                    )}
+                                </View>
 
                                 <View style={styles.BtnRow}>
                                     <TouchableOpacity style={styles.CancelBtn}>
@@ -1096,11 +1096,23 @@ const styles = StyleSheet.create({
     },
     centerError: {
 
-  alignItems: "center",
-  justifyContent: "center",
-  marginVertical: 10,
-  marginHorizontal:120
-},
+        alignItems: "center",
+        justifyContent: "center",
+        marginVertical: 10,
+        marginHorizontal: 120
+    },
+    nonRefundDropdown: {
+        position: "absolute",
+        top: 55,
+        left: 0,
+        width: "48%",
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#E3E3E3",
+        borderRadius: 12,
+        zIndex: 20,
+        elevation: 10,
+    },
 
 
 });

@@ -59,7 +59,17 @@ const handleReAssignBed=()=>{
   onClose(); 
   onReAssign()
 }
-
+useEffect(() => {
+  if (!visible) {
+    setMenuOpen(false);
+    setShowReservedMenu(null);
+  }
+}, [visible]);
+const closeSheet = () => {
+  setMenuOpen(false);
+  setShowReservedMenu(null);
+  onClose();
+};
 
   
     useEffect(() => {
@@ -77,7 +87,7 @@ const handleReAssignBed=()=>{
             if (g.dy > 0) translateY.setValue(g.dy);
         },
         onPanResponderRelease: (_, g) => {
-            if (g.dy > 120) onClose();
+            if (g.dy > 120) closeSheet();
             else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
         }
     });
@@ -88,7 +98,7 @@ const handleReAssignBed=()=>{
         <>
         <View style={styles.overlay}>
         
-            <TouchableWithoutFeedback onPress={onClose}>
+            <TouchableWithoutFeedback onPress={closeSheet}>
                 <View style={{ flex: 1 }} />
             </TouchableWithoutFeedback>
 

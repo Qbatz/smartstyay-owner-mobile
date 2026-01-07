@@ -321,8 +321,8 @@ console.log("datepayload", payload);
     case "Paid":
       return {
         bg: "#038C3D",
-        text: "#1E8E5A",
-        dot: "#1E8E5A",
+        text: "#fff",
+        dot: "#fff",
       };
 
     case "Partially Paid":
@@ -341,15 +341,15 @@ console.log("datepayload", payload);
 
     default:
       return {
-        bg: "#038C3D",
-        text: "#fff",
-        dot: "#6B7280",
+        bg: "#FFF2F2",
+        text: "black",
+        dot: "black",
       };
   }
 };
 
-
-const statusStyle = getStatusStyle(selectedBill?.paymentStatus);
+const BillsStatusStyle = getStatusStyle(selectedBill?.paymentStatus);
+const statusStyle = getStatusStyle(selectedReceipt?.paymentStatus);
 console.log("statusstyle",statusStyle)
 
 
@@ -366,7 +366,7 @@ console.log("statusstyle",statusStyle)
 
       const recordSheetY = useRef(new Animated.Value(0)).current;
 
-const recordPan = useRef(
+const recordPan = useRef( 
   PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
     onPanResponderMove: (_, g) => {
@@ -664,10 +664,26 @@ const handleShowWriteOff = () => {
   setShowWriteOff(true);
 }
 
-const handleShowRecordPayment  = () => {
+const resetRecordPaymentForm = () => {
+  setPaidAmount("");
+  setBalanceAmount(0);
+  setPaidDate(null);
+  setSelectedMode("");
+  setTransactionId("");
+  setAmountError("");
+  setDateError("");
+  setModeError("");
+};
+
+const handleShowRecordPayment = () => {
   setShowMenu(false);
+  resetRecordPaymentForm();
   setShowRecordPayment(true);
-}
+};
+// const handleShowRecordPayment  = () => {
+//   setShowMenu(false);
+//   setShowRecordPayment(true);
+// }
 
 const handleCreateBill = () => {
 navigation.navigate("CreateBills" , {mode: "add"})
@@ -723,32 +739,39 @@ const formatDateForPayload = (date) => {
   return `${day}-${month}-${year}`;
 };
 
-
 const handleSaveRecordPayment = async () => {
+  let isValid = true;
+
+  setAmountError("");
+  setDateError("");
+  setModeError("");
+
   const formattedPaidDate = formatDateForPayload(paidDate);
 
   if (!paidAmount || Number(paidAmount) <= 0) {
     setAmountError("Please Enter Amount");
-    return;
+    isValid = false;
   }
 
   if (!formattedPaidDate) {
     setDateError("Please Select Date");
-    return;
-  }
+    isValid = false;
+  } else {
+    const billDate = dayjs(selectedBill?.invoiceDate, "DD/MM/YYYY");
+    const paid = dayjs(formattedPaidDate, "DD-MM-YYYY");
 
-  const billDate = dayjs(selectedBill?.invoiceDate, "DD/MM/YYYY");
-  const paid = dayjs(formattedPaidDate, "DD-MM-YYYY");
-
-  if (paid.isBefore(billDate, "day")) {
-    setDateError("Paid date should not be before Bill date");
-    return;
+    if (paid.isBefore(billDate, "day")) {
+      setDateError("Paid date should not be before Bill date");
+      isValid = false;
+    }
   }
 
   if (!selectedMode) {
     setModeError("Please Select Transaction Type");
-    return;
+    isValid = false;
   }
+
+  if (!isValid) return;
 
   try {
     setRecordLoading(true);
@@ -769,30 +792,19 @@ const handleSaveRecordPayment = async () => {
 
       setShowRecordPayment(false);
 
-    setModalType("success");
-    setModalMessage("Payment recorded successfully");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-
-      setPaidAmount("");
-      setBalanceAmount(0);
-      setSelectedMode("");
-      setTransactionId("");
-
-    } 
-    else if (res.payableAmount) {
-    setModalType("warning");
-    setModalMessage(res?.payableAmount);
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    } 
-    else {
-    setModalType("warning");
-    setModalMessage("Payment failed");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
+      setModalType("success");
+      setModalMessage("Payment recorded successfully");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    } else if (res.payableAmount) {
+      setModalType("warning");
+      setModalMessage(res.payableAmount);
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    } else {
+      throw new Error();
     }
-  } catch (err) {
+  } catch {
     setModalType("warning");
     setModalMessage("Something went wrong");
     setShowSuccessModal(true);
@@ -801,6 +813,12 @@ const handleSaveRecordPayment = async () => {
     setRecordLoading(false);
   }
 };
+
+
+
+
+
+
 
 
 
@@ -1340,8 +1358,28 @@ navigation.navigate("CancelNotice")
 
 
     <View style={{display:'flex', flexDirection:'row'}}>
-    <View style={styles.statusBadge}>
-      <Text style={styles.statusText}>{selectedBill?.paymentStatus}</Text>
+
+
+      <View
+      style={[
+        styles.statusBadge,
+        { backgroundColor: BillsStatusStyle.bg },
+      ]}
+    >
+      <View
+        style={[
+          styles.statusDot,
+          { backgroundColor: BillsStatusStyle.dot },
+        ]}
+      />
+      <Text
+        style={[
+          styles.statusText,
+          { color: BillsStatusStyle.text },
+        ]}
+      >
+        {selectedBill?.paymentStatus}
+      </Text>
     </View>
 
     <TouchableOpacity>
@@ -1458,52 +1496,45 @@ navigation.navigate("CancelNotice")
         
               <ScrollView showsVerticalScrollIndicator={false}>
         
-          <View style={styles.billHeaderRow}>
-            <Text style={styles.billHeaderText}>Bill Details</Text>
-        
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-<View
-  style={{
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  }}
->
+         <View style={styles.billHeaderRow}>
+  <Text style={styles.billHeaderText}>Bill Details</Text>
+
   <View
-    style={[
-      styles.statusBadge,
-      { backgroundColor: statusStyle.bg },
-    ]}
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    }}
   >
+    {/* STATUS BADGE */}
     <View
       style={[
-        styles.statusDot,
-        { backgroundColor: statusStyle.dot },
-      ]}
-    />
-
-    <Text
-      style={[
-        styles.statusText,
-        { color: statusStyle.text },
+        styles.statusBadge,
+        { backgroundColor: statusStyle.bg },
       ]}
     >
-      {selectedBill?.paymentStatus}
-    </Text>
+      <View
+        style={[
+          styles.statusDot,
+          { backgroundColor: statusStyle.dot },
+        ]}
+      />
+      <Text
+        style={[
+          styles.statusText,
+          { color: statusStyle.text },
+        ]}
+      >
+        {selectedReceipt?.paymentStatus}
+      </Text>
+    </View>
+
+    <TouchableOpacity>
+      <Image source={Dots} style={{ width: 28, height: 28 }} />
+    </TouchableOpacity>
   </View>
-
-  <TouchableOpacity>
-    <Image source={Dots} style={{ width: 28, height: 28 }} />
-  </TouchableOpacity>
 </View>
 
-
-  <TouchableOpacity style={{ marginLeft: 8 }}>
-    <Image source={Dots} style={{ width: 28, height: 28 }} />
-  </TouchableOpacity>
-</View>
-
-          </View>
         
           <View style={styles.userRow}>
             <Image source={ProfileImage} style={styles.userImg} />
@@ -1954,7 +1985,7 @@ navigation.navigate("CancelNotice")
     <Animated.View
       style={[
         styles.transactionSheet,
-        { height: "75%", transform: [{ translateY: recordSheetY }] }
+        { height: "80%", transform: [{ translateY: recordSheetY }] }
       ]}
       {...recordPan.panHandlers}
     >
@@ -2161,6 +2192,7 @@ navigation.navigate("CancelNotice")
               onPress={() => {
                 setSelectedMode(opt.value);
                 setShowPaymentMode(false);
+                setModeError("");
               }}
             >
               <Text

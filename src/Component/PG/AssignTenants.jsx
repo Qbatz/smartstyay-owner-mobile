@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback, useEffect } from "react";
+import React, { useState, useContext, useCallback, useEffect ,useRef} from "react";
 import {
   View,
   Text,
@@ -68,6 +68,15 @@ export default function AssignTenant({ navigation, route }) {
   const [joiningDateError, setJoiningDateError] = useState("");
   const [bookingAmountError, setBookingAmountError] = useState("");
   const [bankError, setBankError] = useState("");
+ const [showCalendar, setShowCalendar] = useState(false);
+const [activeDateField, setActiveDateField] = useState(null);
+// "booking" | "joining" | "checkin"
+
+const [datePickerTop, setDatePickerTop] = useState(0);
+
+const bookingDateRef = useRef(null);
+const joiningDateRef = useRef(null);
+const checkinDateRef = useRef(null);
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
 
@@ -413,6 +422,30 @@ export default function AssignTenant({ navigation, route }) {
     setCheckJoinDateError("");
     setStayTypeError("");
   };
+const resetBookingState = () => {
+  setPurchaseDate(null);
+  setJoiningDate(null);
+  setBookingAmount("");
+  setAccountSelected(null);
+  setReferenceNumber("");
+
+  setCheckinTenantSelected(null);
+  setCheckinTenantsopen(false);
+
+  setOpenDropdownId(null);
+};
+const resetCheckInState = () => {
+  setRentalAmount("");
+  setAdvanceAmount("");
+  setStayTypeSelected("Stay Type");
+  setExtraCharges([]);
+
+  setCheckinTenantSelected(null);
+  setCheckinTenantsopen(false);
+
+  setcheckJoiningDate(dayjs()); // today reset
+  setOpenDropdownId(null);
+};
 
 
   return (
@@ -437,6 +470,8 @@ export default function AssignTenant({ navigation, route }) {
               setCheckinTenantsopen(false);
               setTenantsError("")
               clearAllErrors();
+               resetCheckInState();   // 🔥 reset other tab
+    clearAllErrors(); 
             }}
 
           >
@@ -447,18 +482,19 @@ export default function AssignTenant({ navigation, route }) {
 
           <TouchableOpacity
             style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
-            // onPress={() => setActiveTab("CheckIn")}
             onPress={() => {
               setActiveTab("CheckIn");
               setCheckinTenantSelected(null);
               setCheckinTenantsopen(false);
               setTenantsError("")
               clearAllErrors();
+              resetBookingState();  
+    clearAllErrors();    
             }}
 
           >
             <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
-              Check In
+              Check-In
             </Text>
           </TouchableOpacity>
         </View>
@@ -522,15 +558,24 @@ export default function AssignTenant({ navigation, route }) {
                 </View>
 
                 <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
-                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenDatePicker(true)}>
-                  <Text style={styles.placeholder}>
-                    {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                  </Text>
-                  <Image
-                    source={require("../../Assets/Images/calendar.png")}
-                    style={styles.icon}
-                  />
-                </TouchableOpacity>
+              <View ref={bookingDateRef} collapsable={false}>
+  <TouchableOpacity
+    style={styles.dateBox}
+    onPress={() => {
+      bookingDateRef.current.measureInWindow((x, y, w, h) => {
+        setDatePickerTop(y + h + 8);
+        setActiveDateField("booking");
+        setShowCalendar(true);
+      });
+    }}
+  >
+    <Text style={styles.placeholder}>
+      {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+    </Text>
+    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+  </TouchableOpacity>
+</View>
+
                 {bookingDateError && (
                   <ErrorMessage message={bookingDateError} type="error" />
                 )}
@@ -550,15 +595,24 @@ export default function AssignTenant({ navigation, route }) {
                   <ErrorMessage message={bookingAmountError} type="error" />
                 )}
                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenJoinDatePic(true)}>
-                  <Text style={styles.placeholder}>
-                    {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                  </Text>
-                  <Image
-                    source={require("../../Assets/Images/calendar.png")}
-                    style={styles.icon}
-                  />
-                </TouchableOpacity>
+             <View ref={joiningDateRef} collapsable={false}>
+  <TouchableOpacity
+    style={styles.dateBox}
+    onPress={() => {
+      joiningDateRef.current.measureInWindow((x, y, w, h) => {
+        setDatePickerTop(y + h + 8);
+        setActiveDateField("joining");
+        setShowCalendar(true);
+      });
+    }}
+  >
+    <Text style={styles.placeholder}>
+      {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+    </Text>
+    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+  </TouchableOpacity>
+</View>
+
                 {joiningDateError && (
                   <ErrorMessage message={joiningDateError} type="error" />
                 )}
@@ -741,21 +795,26 @@ export default function AssignTenant({ navigation, route }) {
                 )}
                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setOpenCheckJoinDatePic(true)}
-                >
-                  <Text style={styles.placeholder}>
-                    {checkJoiningDate
-                      ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
-                      : "DD-MM-YYYY"}
-                  </Text>
+             <View ref={checkinDateRef} collapsable={false}>
+  <TouchableOpacity
+    style={styles.dateBox}
+    onPress={() => {
+      checkinDateRef.current.measureInWindow((x, y, w, h) => {
+        setDatePickerTop(y + h + 8);
+        setActiveDateField("checkin");
+        setShowCalendar(true);
+      });
+    }}
+  >
+    <Text style={styles.placeholder}>
+      {checkJoiningDate
+        ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
+        : "DD-MM-YYYY"}
+    </Text>
+    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+  </TouchableOpacity>
+</View>
 
-                  <Image
-                    source={require("../../Assets/Images/calendar.png")}
-                    style={styles.icon}
-                  />
-                </TouchableOpacity>
                 {checkJoinDateError && (
                   <ErrorMessage message={checkJoinDateError} type="error" />
                 )}
@@ -834,7 +893,7 @@ export default function AssignTenant({ navigation, route }) {
 
 
                     {openDropdownId === item.id && item.type === "" && (
-                      <View style={styles.dropdownMenu}>
+                      <View style={styles.nonRefundDropdown}>
                         {TYPE_OPTIONS.map((t) => {
 
                           const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
@@ -901,6 +960,58 @@ export default function AssignTenant({ navigation, route }) {
           </View>
         </View>
       )} */}
+      {showCalendar && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowCalendar(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <View style={[styles.datePickerBox, { top: datePickerTop }]}>
+     <Calendar
+  minDate={
+    activeDateField === "joining" && purchaseDate
+      ? dayjs(purchaseDate).format("YYYY-MM-DD")
+      : undefined
+  }
+  maxDate={
+    activeDateField === "booking" || activeDateField === "checkin"
+      ? dayjs().format("YYYY-MM-DD")  
+      : undefined
+  }
+  onDayPress={(day) => {
+    const selected = dayjs(day.dateString);
+
+    if (activeDateField === "booking") {
+      setPurchaseDate(day.dateString);
+      setJoiningDate(null);
+      setBookingDateError("");
+    }
+
+    if (activeDateField === "joining") {
+      setJoiningDate(day.dateString);
+      setJoiningDateError("");
+    }
+
+    if (activeDateField === "checkin") {
+      setcheckJoiningDate(day.dateString);
+      setCheckJoinDateError("");
+    }
+
+    setShowCalendar(false);
+    setActiveDateField(null);
+  }}
+  theme={{
+    todayTextColor: "#2563EB",
+    selectedDayBackgroundColor: "#2563EB",
+    selectedDayTextColor: "#FFFFFF",
+    textDisabledColor: "#9CA3AF",
+  }}
+/>
+
+    </View>
+  </View>
+)}
+
         {openJoinDatePic && (
           <View style={styles.sheetOverlay}>
             <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
@@ -935,7 +1046,7 @@ export default function AssignTenant({ navigation, route }) {
               <View style={{ flex: 1 }} />
             </TouchableWithoutFeedback>
 
-            <View style={styles.datePickerBox1}>
+            <View style={styles.datePickerBox}>
               <Calendar
                 markingType="custom"
                 markedDates={bookingMarkedDates}
@@ -1030,6 +1141,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#000000",
   },
+  nonRefundDropdown: {
+  position: "absolute",
+  top: 55,
+  left: 0,
+  width: "48%",          
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#E3E3E3",
+  borderRadius: 12,
+  zIndex: 20,
+  elevation: 10,
+},
+
   tabTextActive: {
     color: "#fff",
     fontWeight: "700",
@@ -1174,15 +1298,16 @@ const styles = StyleSheet.create({
   },
 
 
-  datePickerBox: {
-    backgroundColor: "#fff",
-    width: "80%",
-    borderColor: "#DCDCDC",
-    borderRadius: 30,
-    padding: 5,
-    marginBottom: 90,
-    borderWidth: 0.5,
-  },
+ datePickerBox: {
+  position: "absolute",
+  left: "10%",
+  width: "80%",
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  elevation: 10,
+  
+},
 
   datePickerBox1: {
     backgroundColor: "#fff",
@@ -1195,9 +1320,12 @@ const styles = StyleSheet.create({
   },
 
   sheetOverlay: {
-    position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: "flex-end",
+ position: "absolute",
+  top: 40,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.2)",
 
   },
 
