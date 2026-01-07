@@ -87,6 +87,10 @@ const EnterMPin = (props) => {
             console.log(r)
             setFcmToken(r)
         })
+        .catch(error => {
+            console.log(error)
+            setFcmToken(null)
+        })
     }
 
     useEffect(() => {
