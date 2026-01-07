@@ -171,12 +171,7 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
     const handleCreateTenant = async () => {
         let valid = true;
 
-        setNameError("");
-        setMobileError("");
-        setEmailError("");
-        setPincodeError("");
 
-        // 🔹 BASIC VALIDATION
         if (!basicDetails.firstName) {
             setNameError("Please enter first name");
             valid = false;

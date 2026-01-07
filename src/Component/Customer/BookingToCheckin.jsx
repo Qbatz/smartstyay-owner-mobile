@@ -358,10 +358,10 @@ export default function BookingCheckIn({ navigation, route }) {
         <>
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.safe}>
-                <KeyboardAvoidingView
-                    style={{ flex: 1 }}
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                >
+              <KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : undefined}
+>
                     <View style={styles.header}>
                         <TouchableOpacity
                             onPress={() => navigation?.goBack?.()}
@@ -402,7 +402,14 @@ export default function BookingCheckIn({ navigation, route }) {
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={styles.container}>
+                 <ScrollView
+  style={styles.container}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: 60,  
+  }}
+>
 
 
 
@@ -658,7 +665,11 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         style={styles.figmaLeftBox}
                                                         placeholder="Enter reason"
                                                         value={item.title}
-                                                        onChangeText={(t) => updateTitle(item.id, t)}
+                                                        // onChangeText={(t) => updateTitle(item.id, t)}
+                                                                           onChangeText={(t) => {
+    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+    updateTitle(item.id, onlyLetters);
+  }}
                                                     />
                                                 ) : (
                                                     <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
@@ -718,7 +729,16 @@ export default function BookingCheckIn({ navigation, route }) {
                                     )}
                                 </View>
 
-                                <View style={styles.BtnRow}>
+                               
+                            </View>
+                        )}
+
+                        {tab === "short" && (
+
+                            <View><Text>Comming Soon</Text></View>
+                        )}
+                    </ScrollView>
+                     <View style={styles.BtnRow}>
                                     <TouchableOpacity style={styles.CancelBtn}>
                                         <Text style={{ color: "grey", fontWeight: "600" }}>
                                             Cancel
@@ -740,14 +760,6 @@ export default function BookingCheckIn({ navigation, route }) {
 </TouchableOpacity>
 
                                 </View>
-                            </View>
-                        )}
-
-                        {tab === "short" && (
-
-                            <View><Text>Comming Soon</Text></View>
-                        )}
-                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
             {openDatePicker && (
@@ -822,7 +834,7 @@ const styles = StyleSheet.create({
 
     segmentTextActive: { color: "#fff", fontWeight: "600" },
 
-    container: { paddingHorizontal: 16 },
+    container: { paddingHorizontal: 16,},
 
     field: { marginBottom: 12 },
 
@@ -914,11 +926,16 @@ const styles = StyleSheet.create({
     addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
     BtnRow: {
-        flexDirection: "row",
-        width: "99%",
-        marginTop: 18,
-        gap: 10,
-    },
+        // flexDirection: "row",
+        // width: "99%",
+        // marginTop: 18,
+        // gap: 10,
+         flexDirection: "row",
+  gap: 10,
+  padding: 16,
+  backgroundColor: "#fff",
+}
+    ,
 
     CancelBtn: {
         flex: 1,

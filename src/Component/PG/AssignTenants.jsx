@@ -6,7 +6,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
-  ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal
+  ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal,Dimensions 
 } from "react-native";
 import Delete from "../../Assets/Images/remove.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
@@ -32,7 +32,7 @@ export default function AssignTenant({ navigation, route }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { getBankListByHostel } = useContext(BankingContext);
 
-  const [activeTab, setActiveTab] = useState("Booking");
+  const [activeTab, setActiveTab] = useState("CheckIn");
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [purchaseDate, setPurchaseDate] = useState(null);
   dayjs.extend(customParseFormat);
@@ -70,7 +70,20 @@ export default function AssignTenant({ navigation, route }) {
   const [bankError, setBankError] = useState("");
  const [showCalendar, setShowCalendar] = useState(false);
 const [activeDateField, setActiveDateField] = useState(null);
+const CALENDAR_HEIGHT = 340;
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 // "booking" | "joining" | "checkin"
+const getSafeCalendarTop = (y, h) => {
+  const belowSpace = SCREEN_HEIGHT - (y + h);
+
+  // கீழ space போதுமானா → கீழ open
+  if (belowSpace > CALENDAR_HEIGHT + 20) {
+    return y + h + 8;
+  }
+
+  // இல்லனா → மேல open
+  return Math.max(80, y - CALENDAR_HEIGHT - 8);
+};
 
 const [datePickerTop, setDatePickerTop] = useState(0);
 
@@ -104,9 +117,20 @@ const checkinDateRef = useRef(null);
       "",
       "Inactive"
     );
-    setCheckinTenants(data?.listCustomers || []);
-  };
+    // setCheckinTenants(data?.listCustomers || []);
+const list = data?.listCustomers || [];
+  setCheckinTenants(list);
+     if (list?.length === 0) {
+    setModalType("error");
+    setMessage("Please Create a New Tenant");
+    setShowSuccess(true);
 
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 2000);
+  };
+}
+console.log("setCheckinTenants",CheckinTenants)
   const selectType = (id, type) => {
 
 
@@ -154,27 +178,27 @@ const checkinDateRef = useRef(null);
 
 
     if (!CheckinTenantSelected) {
-      setTenantsError("Please select tenant");
+      setTenantsError("Please Select Tenant");
       valid = false;
     }
 
     if (!purchaseDate) {
-      setBookingDateError("Please select booking date");
+      setBookingDateError("Please Select Booking Date");
       valid = false;
     }
 
     if (!joiningDate) {
-      setJoiningDateError("Please select joining date");
+      setJoiningDateError("Please Select Joining Date");
       valid = false;
     }
 
     if (!bookingAmount || Number(bookingAmount) <= 0) {
-      setBookingAmountError("Enter valid booking amount");
+      setBookingAmountError("Enter Valid Booking Amount");
       valid = false;
     }
 
     if (!accountSelected) {
-      setBankError("Please select bank account");
+      setBankError("Please Select Mode Of Transaction");
       valid = false;
     }
 
@@ -234,28 +258,28 @@ const checkinDateRef = useRef(null);
 
 
     if (!CheckinTenantSelected) {
-      setTenantsError("Please select tenant");
+      setTenantsError("Please Select Tenant");
       hasError = true;
     }
 
 
     if (!rentalAmount || Number(rentalAmount) <= 0) {
-      setRentalError("Enter valid rental amount");
+      setRentalError("Enter Valid Rental Amount");
       hasError = true;
     }
     if (!StayTypeSelected || StayTypeSelected === "Stay Type") {
-      setStayTypeError("Please select stay type");
+      setStayTypeError("Please Select Stay Type");
       hasError = true;
     }
 
     if (!advanceAmount || Number(advanceAmount) < 0) {
-      setAdvanceError("Enter valid advance amount");
+      setAdvanceError("Enter Valid Advance Amount");
       hasError = true;
     }
 
 
     if (!checkJoiningDate) {
-      setCheckJoinDateError("Please select joining date");
+      setCheckJoinDateError("Please Select Joining Date");
       hasError = true;
     }
 
@@ -462,23 +486,7 @@ const resetCheckInState = () => {
 
 
         <View style={styles.tabRow}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
-            onPress={() => {
-              setActiveTab("Booking");
-              setCheckinTenantSelected(null);
-              setCheckinTenantsopen(false);
-              setTenantsError("")
-              clearAllErrors();
-               resetCheckInState();   // 🔥 reset other tab
-    clearAllErrors(); 
-            }}
-
-          >
-            <Text style={[styles.tabText, activeTab === "Booking" && styles.tabTextActive]}>
-              Booking
-            </Text>
-          </TouchableOpacity>
+      
 
           <TouchableOpacity
             style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
@@ -495,6 +503,23 @@ const resetCheckInState = () => {
           >
             <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
               Check-In
+            </Text>
+          </TouchableOpacity>
+              <TouchableOpacity
+            style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
+            onPress={() => {
+              setActiveTab("Booking");
+              setCheckinTenantSelected(null);
+              setCheckinTenantsopen(false);
+              setTenantsError("")
+              clearAllErrors();
+               resetCheckInState();  
+    clearAllErrors(); 
+            }}
+
+          >
+            <Text style={[styles.tabText, activeTab === "Booking" && styles.tabTextActive]}>
+              Booking
             </Text>
           </TouchableOpacity>
         </View>
@@ -563,7 +588,7 @@ const resetCheckInState = () => {
     style={styles.dateBox}
     onPress={() => {
       bookingDateRef.current.measureInWindow((x, y, w, h) => {
-        setDatePickerTop(y + h + 8);
+     setDatePickerTop(getSafeCalendarTop(y, h));
         setActiveDateField("booking");
         setShowCalendar(true);
       });
@@ -600,7 +625,7 @@ const resetCheckInState = () => {
     style={styles.dateBox}
     onPress={() => {
       joiningDateRef.current.measureInWindow((x, y, w, h) => {
-        setDatePickerTop(y + h + 8);
+        setDatePickerTop(getSafeCalendarTop(y, h));
         setActiveDateField("joining");
         setShowCalendar(true);
       });
@@ -616,7 +641,7 @@ const resetCheckInState = () => {
                 {joiningDateError && (
                   <ErrorMessage message={joiningDateError} type="error" />
                 )}
-                <Text style={styles.label}>Transferred Account <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     onPress={() => setAccountopen(!accountOpen)}
@@ -800,7 +825,7 @@ const resetCheckInState = () => {
     style={styles.dateBox}
     onPress={() => {
       checkinDateRef.current.measureInWindow((x, y, w, h) => {
-        setDatePickerTop(y + h + 8);
+        setDatePickerTop(getSafeCalendarTop(y, h));
         setActiveDateField("checkin");
         setShowCalendar(true);
       });
@@ -865,8 +890,13 @@ const resetCheckInState = () => {
                         <TextInput
                           style={styles.figmaLeftBox}
                           placeholder="Enter reason"
+                          
                           value={item.title}
-                          onChangeText={(t) => updateTitle(item.id, t)}
+                          // onChangeText={(t) => updateTitle(item.id, t)}
+                            onChangeText={(t) => {
+    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+    updateTitle(item.id, onlyLetters);
+  }}
                         />
                       ) : (
                         <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
@@ -934,7 +964,7 @@ const resetCheckInState = () => {
 
               >
                 <Text style={styles.submitText}>
-                  {activeTab === "Booking" ? "Book" : "Check In"}
+                  {activeTab === "Booking" ? "Book" : "Check-In"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1318,16 +1348,24 @@ const styles = StyleSheet.create({
     marginBottom: 300,
     borderWidth: 0.5,
   },
-
-  sheetOverlay: {
- position: "absolute",
-  top: 40,
+sheetOverlay: {
+  position: "absolute",
+  top: 0, 
   left: 0,
   right: 0,
   bottom: 0,
   backgroundColor: "rgba(0,0,0,0.2)",
+},
 
-  },
+//   sheetOverlay: {
+//  position: "absolute",
+//   top: 40,
+//   left: 0,
+//   right: 0,
+//   bottom: 0,
+//   backgroundColor: "rgba(0,0,0,0.2)",
+
+//   },
 
 
 

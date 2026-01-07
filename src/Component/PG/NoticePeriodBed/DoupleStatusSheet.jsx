@@ -229,8 +229,9 @@ const handleBookToCheckin=()=>{
             <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Checkout Date</Text>
-            <Text style={styles.value}> {selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
+            <Text style={styles.label}>Check-In Date</Text>
+            <Text style={styles.value}> {selectedBed.currentTenantInfo[0]?.joiningDate
+}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Last Invoice</Text>
@@ -257,7 +258,7 @@ const handleBookToCheckin=()=>{
 
               <TouchableOpacity style={styles.menuItem} onPress={handleCancelNotice}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/calendarremove.png")} />
-                <Text style={styles.menuText}>Cancel Notice period</Text>
+                <Text style={styles.menuText}>Cancel Check-out</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
@@ -475,7 +476,7 @@ const styles = StyleSheet.create({
   dotsButton: { paddingHorizontal: 8 },
   dots: { fontSize: 20, color: "#777" },
 
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 4 },
+  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7 },
 
   label: { fontSize: 12, color: "#555" },
   value: { fontSize: 13, fontWeight: "600" },

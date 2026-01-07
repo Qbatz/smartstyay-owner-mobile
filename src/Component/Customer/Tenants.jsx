@@ -678,7 +678,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                     style={{ width: 15, height: 15, marginRight: 5 }}
                     resizeMode="contain"
                   />
-                  <Text style={styles.infoValue}>{selectedCustomer?.expectedJoiningDate}</Text>
+                  <Text style={styles.infoValue}>{selectedCustomer?.expectedJoiningDate || selectedCustomer?.actualJoining}</Text>
                 </View>
                 <TouchableOpacity style={styles.unassignBtn}>
                   {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
@@ -687,7 +687,7 @@ const handleShowFinalSettlementNotice = (item)=>{
     ? "Reserved"
     : selectedCustomer?.currentStatus === "Checked In"
     ? "Occupied"
-    : "Un Assigned"}
+    : "Notice Period"}
 </Text>
 
 
@@ -793,7 +793,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                 onPress={handleShowCancelNotice}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Cancel Notice Period</Text>
+                <Text style={styles.popupText}>Cancel Check-out</Text>
               </TouchableOpacity>
               </>
 }
@@ -899,7 +899,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
                           />
-                          <Text style={styles.popupText}>Cancel Notice Period</Text>
+                          <Text style={styles.popupText}>Cancel Check-out</Text>
                         </TouchableOpacity>
                       </>
                     )}

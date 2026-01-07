@@ -407,7 +407,11 @@ const bookingDateObj = bookingDetails?.bookedDate
                       style={styles.figmaLeftBox}
                       placeholder="Enter reason"
                       value={item.title}
-                      onChangeText={(t) => updateTitle(item.id, t)}
+                      // onChangeText={(t) => updateTitle(item.id, t)}
+                        onChangeText={(t) => {
+    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+    updateTitle(item.id, onlyLetters);
+  }}
                     />
                   ) : (
                     <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>

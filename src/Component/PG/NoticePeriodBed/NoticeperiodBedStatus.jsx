@@ -227,7 +227,7 @@ console.log("matchedCustomer",matchedCustomer)
                       source={require("../../../Assets/Images/calendarremove.png")}
                       style={styles.menuIcon}
                     />
-                    <Text style={styles.menuText}>Cancel Notice period</Text>
+                    <Text style={styles.menuText}>Cancel Check-out</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -278,22 +278,22 @@ console.log("matchedCustomer",matchedCustomer)
             <Text style={styles.dateText}> ₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
           </View>
 
-          <Text style={styles.label}>Checkout Date</Text>
-          <View style={styles.dateRow}>
-            <Image
-              source={require("../../../Assets/Images/calendar_blue.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
-          </View>
-
-          <Text style={styles.label}>Request Date</Text>
+          <Text style={styles.label}>Check-In Date</Text>
           <View style={styles.dateRow}>
             <Image
               source={require("../../../Assets/Images/calendar_blue.png")}
               style={styles.icon}
             />
             <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.joiningDate}</Text>
+          </View>
+
+          <Text style={styles.label}>Last Invoice</Text>
+          <View style={styles.dateRow}>
+            <Image
+              source={require("../../../Assets/Images/calendar_blue.png")}
+              style={styles.icon}
+            />
+            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
           </View>
 
           <TouchableOpacity style={styles.noticeBtn}>
