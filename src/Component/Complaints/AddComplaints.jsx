@@ -179,7 +179,7 @@ const fetchCustomers = async () => {
   const data = await getCustomersByHostel(activeHostelId);
 
   const filtered = Array.isArray(data?.listCustomers)
-    ? data.filter(
+    ? data?.filter(
         (u) =>
           u.floorId &&
           u.roomId &&

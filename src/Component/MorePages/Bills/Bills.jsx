@@ -2172,11 +2172,19 @@ navigation.navigate("CancelNotice")
 
 
 {showPaymentMode && (
-  <View style={styles.transactiondropdown}>
+  <View
+    style={[
+      styles.transactiondropdown,
+      transactionOptions.length <= 1 && {
+        minHeight: undefined,
+        maxHeight: undefined,
+      },
+    ]}
+  >
     <ScrollView
       nestedScrollEnabled
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.dropdownContent} 
+      scrollEnabled={transactionOptions.length > 2} 
     >
       {transactionOptions.length > 0 ? (
         transactionOptions.map((opt) => {
@@ -2215,6 +2223,7 @@ navigation.navigate("CancelNotice")
     </ScrollView>
   </View>
 )}
+
 
  {modeError && (
                     <ErrorMessage message={modeError} type="error" />
@@ -3223,14 +3232,17 @@ dropdownText: {
   fontSize: 15,
 },
 transactiondropdown: {
-  minHeight: 130,       
-  maxHeight: 130,        
   borderRadius: 12,
   borderWidth: 1,
   borderColor: "#E6E6E6",
   backgroundColor: "#fff",
-  marginTop: 5,
+  marginTop: 2,
   overflow: "hidden",
+
+  // default → multiple items ku
+  // minHeight: 130,
+  maxHeight: 130,
+
   ...Platform.select({
     ios: {
       shadowColor: "#000",
@@ -3242,8 +3254,10 @@ transactiondropdown: {
   }),
 },
 
+
 dropdownContent: {
-  minHeight: 130,   
+  // minHeight: 130,   
+  height:'auto',
   maxHeight:130
 },
 
