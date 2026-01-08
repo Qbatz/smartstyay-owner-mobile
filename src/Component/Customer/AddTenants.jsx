@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler,KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler,KeyboardAvoidingView, Platform ,TouchableWithoutFeedback} from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
@@ -453,16 +453,17 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
                                     placeholderTextColor="#A1A1A1"
                                     value={basicDetails.email}
                                     onChangeText={(t) => {
-                                        setBasicDetails({ ...basicDetails, email: t });
+    const lowerEmail = t.toLowerCase();   
+    setBasicDetails({ ...basicDetails, email: lowerEmail });
 
-                                        if (!t) {
-                                            setEmailError("");
-                                        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t)) {
-                                            setEmailError("Enter a valid email address");
-                                        } else {
-                                            setEmailError("");
-                                        }
-                                    }}
+    if (!lowerEmail) {
+      setEmailError("");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lowerEmail)) {
+      setEmailError("Enter a valid email address");
+    } else {
+      setEmailError("");
+    }
+  }}
 
 
                                 />
@@ -540,52 +541,7 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
                                             }
                                         />
 
-                                        <Text style={styles.label}>State</Text>
-
-                                        <View style={{ position: "relative" }}>
-                                            <TextInput
-                                                style={styles.select}
-                                                placeholder="Select state"
-                                                placeholderTextColor="#9CA3AF"
-                                                value={stateQuery || selectedState}
-                                                onFocus={() => {
-                                                    setStateOpen(true);
-                                                    setStateQuery("");   // 🔥 cursor focus panna fresh search
-                                                }}
-                                                onChangeText={(t) => {
-                                                    setStateQuery(t);    // 🔥 typing always search
-                                                    setStateOpen(true);
-                                                }}
-                                            />
-
-
-                                            <Image source={DownArrow} style={styles.arrowIcon} />
-
-                                            {stateOpen && (
-                                                <View style={styles.dropdownMenu}>
-                                                    <ScrollView keyboardShouldPersistTaps="handled">
-                                                        {filteredStateList.length > 0 ? (
-                                                            filteredStateList.map((v, index) => (
-                                                                <TouchableOpacity
-                                                                    key={index}
-                                                                    style={styles.option}
-                                                                    onPress={() => {
-                                                                        setSelectedState(v.label); // final value
-                                                                        setStateQuery("");        // clear search
-                                                                        setStateOpen(false);
-                                                                    }}
-                                                                >
-                                                                    <Text style={styles.optionText}>{v.label}</Text>
-                                                                </TouchableOpacity>
-
-                                                            ))
-                                                        ) : (
-                                                            <Text style={styles.noResult}>No state found</Text>
-                                                        )}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
+                                        
                                         <Text style={styles.label}>Landmark</Text>
                                         <TextInput
                                             style={styles.input}
@@ -639,7 +595,84 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
                                             }
                                         />
 
+<Text style={styles.label}>State</Text>
 
+                                        <View style={{ position: "relative" }}>
+                                            <TextInput
+                                                style={styles.select}
+                                                placeholder="Select state"
+                                                placeholderTextColor="#9CA3AF"
+                                               value={stateOpen ? stateQuery : selectedState}
+
+                                                onFocus={() => {
+                                                    setStateOpen(true);
+                                                    setStateQuery("");   // 🔥 cursor focus panna fresh search
+                                                }}
+                                                onChangeText={(t) => {
+                                                    setStateQuery(t);    // 🔥 typing always search
+                                                    setStateOpen(true);
+                                                }}
+                                            />
+
+
+                                            <Image source={DownArrow} style={styles.arrowIcon} />
+
+                                          {stateOpen && (
+                                           <>
+                                           <TouchableWithoutFeedback
+      onPress={() => {
+        setStateOpen(false);
+        setStateQuery("");
+      }}
+    >
+      <View style={styles.dropdownOverlay} />
+    </TouchableWithoutFeedback>
+
+  <View style={styles.dropdownMenu}>
+    <ScrollView
+      keyboardShouldPersistTaps="always"
+      nestedScrollEnabled={true}
+      showsVerticalScrollIndicator={true}
+    >
+      {filteredStateList.length > 0 ? (
+        filteredStateList.map((v, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.option}
+            onPress={() => {
+              setSelectedState(v.label);
+              setStateQuery("");
+              setStateOpen(false);
+            }}
+          >
+            <Text style={styles.optionText}>{v.label}</Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={styles.noResult}>No state found</Text>
+      )}
+
+      {/* 🔴 CLEAR OPTION */}
+      {selectedState && (
+        <TouchableOpacity
+          style={{ padding: 12, alignItems: "center" }}
+          onPress={() => {
+            setSelectedState("");
+            setStateQuery("");
+            setStateOpen(false);
+          }}
+        >
+          <Text style={{ color: "red", fontWeight: "600" }}>
+            Clear selection
+          </Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
+  </View>
+  </>
+)}
+
+                                        </View>
 
 
 
@@ -695,7 +728,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         paddingHorizontal: 16,
         paddingTop: 50,
-        paddingBottom: 30
+        paddingBottom: 10
     },
     container1: {
         flex: 1,
@@ -993,19 +1026,20 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
     },
-    dropdownMenu: {
-        position: "absolute",
-        top: 50,
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 12,
-        zIndex: 9999,      // 🔥 important
-        elevation: 20,     // 🔥 Android
-        maxHeight: 200,    // 🔥 enable scrolling
-    },
+   dropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 1000,
+  
+  maxHeight: 100,        // 🔥 increase
+},
+
 
     // dropdownMenu: {
     //     position: "absolute",

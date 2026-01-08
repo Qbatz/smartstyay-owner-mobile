@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect,useContext,useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useCustomer } from "../../../Context/CustomerContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 import OverviewTab from "./OverviewTab";
 import EBReadingTab from "./EBReadingTab";
@@ -19,22 +21,43 @@ import Dots from "../../../Assets/Images/3dots.png";
 import RoomIcon from "../../../Assets/Images/profile.png";
 import BedIcon from "../../../Assets/Images/profile.png";
 
-export default function CustomerOverviewScreen() {
-  const navigation = useNavigation();
+export default function CustomerOverviewScreen({ route, navigation }) {
+  const { customer } = route.params || {};
+const { activeHostelId } = useContext(CommonContexts);
+ const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
+  console.log("customer",customer)
   const [activeTab, setActiveTab] = useState("Overview");
+  const [customerDetails,setCustomerDetails] = useState("")
+ useEffect(() => {
+    if (customer?.customerId) {
+      fetchCustomerDetails();
+    }
+  }, [customer]);
 
+  const fetchCustomerDetails = async () => {
+    const res = await getCustomerDetails(customer.customerId);
+    console.log("fetchCustomerDetails", res)
+    if (res.success) {
+     setCustomerDetails(res.data)
+
+    } else {
+      alert(res.message);
+    }
+  };
+  console.log("customre",customerDetails)
   const renderTab = () => {
     switch (activeTab) {
       case "EB Reading":
-        return <EBReadingTab />;
+        return <EBReadingTab  customerDetails={customerDetails}/>;
       case "Bill":
-        return <BillTab />;
+        return <BillTab customerDetails={customerDetails}/>;
       case "Complaints":
-        return <ComplaintsTab />;
+        return <ComplaintsTab customerDetails={customerDetails}/>;
       default:
-        return <OverviewTab />;
+        return <OverviewTab customerDetails={customerDetails}/>;
     }
   };
+const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
   return (
     <View style={styles.container}>
@@ -98,12 +121,9 @@ export default function CustomerOverviewScreen() {
       </View>
 
       {/* CONTENT */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
-      >
-        {renderTab()}
-      </ScrollView>
+      <View style={{ flex: 1,}}>
+  {renderTab()}
+</View>
     </View>
   );
 }
@@ -176,6 +196,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#E5E7EB",
     marginBottom: 10,
+    gap:10
   },
 
   tabBtn: {
