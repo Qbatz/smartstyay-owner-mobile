@@ -154,7 +154,7 @@ const EnterMPin = (props) => {
         console.log(res)
 
         if (res.status == 200) {
-            // fetchFcmToken(res.data)
+            fetchFcmToken(res.data)
             setType("success");
             setMessage("Login Successfully");
             setShowModal(true);

@@ -27,7 +27,7 @@
 
 import React, { createContext, useState } from "react";
 import AxiosConfig from "../Config/AxiosConfig";
-import { storeData } from "../Utils/Storage";
+import { storeData , removeData  } from "../Utils/Storage";
 import {ACCESS_TOKEN, LOGGEDIN } from "../Utils/Constant";
 
 export const LoginContexts = createContext();
@@ -38,15 +38,20 @@ const LoginContext = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [loggedIN,setLoggedIN]=useState()
   const [pinVerifid, setPinVerified] = useState(false)
-   const [route,setRoute]=useState()
+  const [route,setRoute]=useState()
 
-  // ------------------------
-  // LOGIN (EMAIL + PASSWORD)
-  // ------------------------
+
+  console.log("pinverfied", pinVerifid);
+   console.log("loggedIn", loggedIn);
+ console.log("loggedIn", loggedIN);
+  console.log("userId", userId);
+
   const login = async (payload) => {
     try {
       setLoading(true);
       const res = await AxiosConfig.post("/v2/mobile/login", payload);
+      console.log("res", res);
+      
       setUserId(res.data.userId);
       return { success: true, data: res.data };
     } catch (e) {
@@ -58,7 +63,44 @@ const LoginContext = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+ 
+
+const logout = async () => {
+  try {
+    setLoading(true);
+
+    const res = await AxiosConfig.post("/v2/profile/logout", {
+      source: "MOBILE",
+    });
+
+    if (res?.status === 200) {
+          await removeData(ACCESS_TOKEN);
+    await removeData(LOGGEDIN);
+
+    setUserId(null);
+    setLoggedIn(false);
+    setPinVerified(false);
+    setRoute(null);
+      return { success: true };
+      
+    }
+
+    return { success: false };
+
+  } catch (error) {
+    console.log("logout error", error?.response?.data);
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Logout failed",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
  
   const CreateMpin = async (pin) => {
@@ -123,13 +165,15 @@ const LoginContext = ({ children }) => {
     <LoginContexts.Provider
       value={{
         login,
+        logout,
         CreateMpin,
         verifyMpin,
         userId,
         loggedIn,
         loading,
 
-        loggedin:loggedinFn, LoggedIN:loggedIN,
+        loggedin:loggedinFn,
+         LoggedIN:loggedIN,
         pinVerifid,
         updatePinSetupStatus,
         updateUserId,

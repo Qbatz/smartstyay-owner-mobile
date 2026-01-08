@@ -1,22 +1,34 @@
 import React, { useEffect, useState, useRef,useCallback, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler } from "react-native";
-import Setting from '../../Assets/Images/setting.png';
-import Remove from '../../Assets/Images/remove.png';
 import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
+import SuccessModal from "../../ToastFile/ToastPage";
 import { storeData } from "../../Utils/Storage";
 import { LOGGEDIN } from "../../Utils/Constant";
+import Setting from '../../Assets/Images/setting.png';
+import Remove from '../../Assets/Images/remove.png';
+
+
 
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width
 
 export default function ProfileDrawer({ visible, onClose }) {
+
+
+  const { logout } = useContext(LoginContexts)
+
   const navigation = useNavigation();
   const slideX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
 
   const BOTTOM_TAB_HEIGHT = global.BOTTOM_TAB_HEIGHT || 70;
   const [tabHeight, setTabHeight] = useState(BOTTOM_TAB_HEIGHT);
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+const [modalMessage, setModalMessage] = useState("");
+const [modalType, setModalType] = useState("success");
+
 
   const [showEditPopup, setShowEditPopup] = useState(false);
   const arrowRef = useRef(null);
@@ -63,15 +75,55 @@ export default function ProfileDrawer({ visible, onClose }) {
     }).start();
   }, [visible]);
 
-  const handleLogout=(value)=>{
-    console.log(value)
-      loginContext.loggedin('false')
-      storeData(LOGGEDIN, "false")
+  // const handleLogout=(value)=>{
+  //   console.log(value)
+  //     loginContext.loggedin('false')
+  //     storeData(LOGGEDIN, "false")
+  // }
+
+const handleLogout = async () => {
+  const res = await logout();
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage("Logout successfully");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+
+      // navigation.reset({
+      //   index: 0,
+      //   routes: [{ name: "LoginDesign" }],
+      // });
+    }, 1500);
+
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Logout failed");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 2000);
   }
+};
+
 
   if (!visible) return null;
 
   return (
+
+ <>
+ 
+ <SuccessModal
+  visible={showSuccessModal}
+  message={modalMessage}
+  type={modalType}
+  onClose={() => setShowSuccessModal(false)}
+/>
+
+
     <View style={styles.overlay}>
 
 
@@ -161,7 +213,10 @@ export default function ProfileDrawer({ visible, onClose }) {
             <Text style={styles.menuText}>Help & Information</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={()=>handleLogout('remot')} style={styles.logoutRow}>
+          <TouchableOpacity
+          //  onPress={()=>handleLogout('remot')} 
+           onPress={handleLogout}
+           style={styles.logoutRow}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
         </View>
@@ -193,6 +248,7 @@ export default function ProfileDrawer({ visible, onClose }) {
 
 
     </View>
+    </>
   );
 }
 
