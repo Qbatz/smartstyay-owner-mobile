@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler,KeyboardAvoidingView, Platform } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Avatar.png";
@@ -171,12 +171,7 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
     const handleCreateTenant = async () => {
         let valid = true;
 
-        setNameError("");
-        setMobileError("");
-        setEmailError("");
-        setPincodeError("");
 
-        // 🔹 BASIC VALIDATION
         if (!basicDetails.firstName) {
             setNameError("Please enter first name");
             valid = false;
@@ -280,10 +275,8 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
     return (
         <>
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
-            <SafeAreaView style={styles.container}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-
-                    <View style={styles.header}>
+           <SafeAreaView style={styles.container}>
+             <View style={styles.header}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <Image source={ArrowLeft} style={styles.backIcon} />
                         </TouchableOpacity>
@@ -349,6 +342,17 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
                             </Text>
                         </View>
                     </View>
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "android" ? 0 : 0}
+  >
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+
+                   
 
                     {step === 1 && (
                         <>
@@ -676,6 +680,7 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
                         </>
                     )}
                 </ScrollView>
+                </KeyboardAvoidingView>
             </SafeAreaView>
         </>
     );

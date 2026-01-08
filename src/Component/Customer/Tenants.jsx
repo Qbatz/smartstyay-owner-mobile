@@ -40,7 +40,8 @@ import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from "../../Context/CustomerContext";
 import EmptyState from "../../Assets/Images/Empty_state.png";
 import Loader from "../Loader/Loader";
-import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet"
+import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet";
+import CustomerOverviewScreen from "./CustomerOverview/CustomerOverviewSheet"
 
  const SCREEN_HEIGHT = Dimensions.get("window").height;
  const SHEET_HEIGHT = SCREEN_HEIGHT * 0.55;
@@ -58,13 +59,19 @@ export default function TenantsScreen({ route }) {
   const [reassignCustomer, setReassignCustomer] = useState(null);
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
    const [showDetailModal, setShowDetailModal] = useState(false);
+   const [overviewScreen,setOverviewScreen] = useState(false)
 
 
 const sheetTranslateY = useRef(
   new Animated.Value(SHEET_HEIGHT)
 ).current;
 
-
+const handleOverViewScrren=(item)=>{
+  setOverviewScreen(true)
+  navigation.navigate("CustomerOverviewScreen", {
+  customer: item,
+});
+}
 useEffect(() => {
   if (showDetailModal) {
     sheetTranslateY.setValue(SHEET_HEIGHT);
@@ -498,17 +505,78 @@ const handleShowFinalSettlementNotice = (item)=>{
                 //   </View>
 
                 // </View>
-                <TouchableOpacity
-  key={item.customerId}
-  style={styles.tenantRow}
-  activeOpacity={0.7}
-  onPress={() => openCustomerDetails(item)}   
->
-  {/* Profile */}
-  <Image source={Profile} style={styles.profileImg} />
+//                 <TouchableOpacity
+//   key={item.customerId}
+//   style={styles.tenantRow}
+//   activeOpacity={0.7}
+//   onPress={() => openCustomerDetails(item)}   
+// >
 
-  {/* Middle content */}
-  <View style={{ flex: 1 }}>
+//   <Image source={Profile} style={styles.profileImg} />
+
+  
+//   <View style={{ flex: 1 }}>
+//     <Text style={styles.name}>{item.fullName}</Text>
+
+//     <View style={styles.detailRow}>
+//       {item.floorName && (
+//         <View style={styles.floorBadge}>
+//           <Text style={styles.floorText}>{item.floorName}</Text>
+//         </View>
+//       )}
+
+//       {item.roomName && (
+//         <>
+//           <Image source={room} style={styles.iconSmall} />
+//           <Text style={styles.detailText}>{item.roomName}</Text>
+//         </>
+//       )}
+
+//       {item.bedName && (
+//         <>
+//           <Image source={Bed} style={styles.iconSmall} />
+//           <Text style={styles.detailText}>{item.bedName}</Text>
+//         </>
+//       )}
+//     </View>
+//   </View>
+
+ 
+//   <View style={styles.rightSection}>
+//     <TouchableOpacity
+//       onPress={(e) => {
+//         e.stopPropagation();        
+//         openMenu(e, item);          
+//       }}
+//       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+//     >
+//       <Image
+//         source={Dots}
+//         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+//       />
+//     </TouchableOpacity>
+
+//     <Text style={styles.dateText}>
+//       {item.bookedAt || "--"}
+//     </Text>
+//   </View>
+// </TouchableOpacity>
+<View key={item.customerId} style={styles.tenantRow}>
+
+  {/* 1️⃣ PROFILE CLICK */}
+  <TouchableOpacity
+    activeOpacity={0.7}
+    onPress={() => openCustomerDetails(item)}
+  >
+    <Image source={Profile} style={styles.profileImg} />
+  </TouchableOpacity>
+
+  {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
+  <TouchableOpacity
+    style={{ flex: 1 }}
+    activeOpacity={0.7}
+    onPress={()=>handleOverViewScrren(item)}
+  >
     <Text style={styles.name}>{item.fullName}</Text>
 
     <View style={styles.detailRow}>
@@ -532,14 +600,14 @@ const handleShowFinalSettlementNotice = (item)=>{
         </>
       )}
     </View>
-  </View>
+  </TouchableOpacity>
 
-  {/* Right section */}
+  {/* 3️⃣ DOT MENU ONLY */}
   <View style={styles.rightSection}>
     <TouchableOpacity
       onPress={(e) => {
-        e.stopPropagation();        // 🔥 IMPORTANT
-        openMenu(e, item);          // dots menu only
+        e.stopPropagation();   // 🔥 prevents other clicks
+        openMenu(e, item);
       }}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
@@ -553,7 +621,8 @@ const handleShowFinalSettlementNotice = (item)=>{
       {item.bookedAt || "--"}
     </Text>
   </View>
-</TouchableOpacity>
+</View>
+
 
               ))}
 
@@ -678,7 +747,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                     style={{ width: 15, height: 15, marginRight: 5 }}
                     resizeMode="contain"
                   />
-                  <Text style={styles.infoValue}>{selectedCustomer?.expectedJoiningDate}</Text>
+                  <Text style={styles.infoValue}>{selectedCustomer?.expectedJoiningDate || selectedCustomer?.actualJoining}</Text>
                 </View>
                 <TouchableOpacity style={styles.unassignBtn}>
                   {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
@@ -687,7 +756,7 @@ const handleShowFinalSettlementNotice = (item)=>{
     ? "Reserved"
     : selectedCustomer?.currentStatus === "Checked In"
     ? "Occupied"
-    : "Un Assigned"}
+    : "Notice Period"}
 </Text>
 
 
@@ -793,7 +862,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                 onPress={handleShowCancelNotice}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Cancel Notice Period</Text>
+                <Text style={styles.popupText}>Cancel Check-out</Text>
               </TouchableOpacity>
               </>
 }
@@ -899,7 +968,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
                           />
-                          <Text style={styles.popupText}>Cancel Notice Period</Text>
+                          <Text style={styles.popupText}>Cancel Check-out</Text>
                         </TouchableOpacity>
                       </>
                     )}
@@ -1297,6 +1366,13 @@ const handleShowFinalSettlementNotice = (item)=>{
 
         />
       }
+      {/* {overviewScreen && (
+  <CustomerOverviewScreen
+    visible={overviewScreen}
+    customer={selectedCustomer}
+    onClose={() => setOverviewScreen(false)}
+  />
+)} */}
     </>
   );
 }
