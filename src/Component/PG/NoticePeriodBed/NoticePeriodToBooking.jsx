@@ -205,7 +205,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
     }
 
     if (!accountSelected) {
-      setBankIdError("Please select bank account");
+      setBankIdError("Please Select Mode Of Transaction");
       valid = false;
     }
 
@@ -378,7 +378,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
           {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
 
           {/* ACCOUNT SELECT */}
-          <Text style={styles.label}>Transferred Account <Text style={{ color: "red" }}>*</Text></Text>
+          <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
           <View style={{ position: "relative" }}>
             <TouchableOpacity
               onPress={() => setAccountopen(!accountOpen)}
