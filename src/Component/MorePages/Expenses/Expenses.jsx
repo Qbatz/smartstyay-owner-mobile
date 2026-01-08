@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useEffect, useState , useRef,useCallback } from "react";
+import React, {useLayoutEffect, useEffect, useState , useRef,useCallback , useContext } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,10 @@ import {
   PanResponder, Animated , ScrollView , Modal
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
+import Loader from "../../../Component/Loader/Loader"
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
@@ -34,73 +38,25 @@ import { useFocusEffect } from '@react-navigation/native';
 export default function ExpensesScreen() {
   const navigation = useNavigation();
    const [showFilter, setShowFilter] = useState(false);
+
+   const { expensesList, GetExpenseList, loading } = useContext(ExpensesContext);
+   const { activeHostelId } = useContext(CommonContexts);
+
+   console.log("expenselist", expensesList);
    
 
-const expensesData = [
-  {
-    id: "1",
-    title: "Chicken",
-    category: "Non Veg",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "2",
-    title: "Vegetables",
-    category: "Food",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "3",
-    title: "Chicken",
-    category: "Food",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "4",
-    title: "Asset Purchase",
-    category: "Asset",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "5",
-    title: "Electricity Bill",
-    category: "Maintenance",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "6",
-    title: "Vegetables",
-    category: "Food",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "7",
-    title: "Electricity Bill",
-    category: "Maintenance",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-  {
-    id: "8",
-    title: "Asset Purchase",
-    category: "Asset",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  },
-    {
-    id: "9",
-    title: "Asset Purchase",
-    category: "Asset",
-    amount: "₹ 2,000.00",
-    date: "14 JUN 2025",
-  }
-];
+
+   useFocusEffect(
+  useCallback(() => {
+    if (activeHostelId) {
+      GetExpenseList(activeHostelId);
+    }
+  }, [activeHostelId])
+);
+
+   
+
+
 
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
@@ -133,7 +89,7 @@ const expensesData = [
 
 
 
-  const renderExpensesItem = ({ item }) => (
+  const renderExpensesItem = ({item }) => (
   <TouchableOpacity onPress={() => openDetails(item)}>
     <View style={styles.card}>
       <View style={styles.iconCircle}>
@@ -141,16 +97,19 @@ const expensesData = [
       </View>
 
       <View style={{ flex: 1, marginLeft: 10 }}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.title}>{item?.categoryName}</Text>
 
-        <View style={styles.tagBox}>
-          <Text style={styles.tagText}>{item.category}</Text>
-        </View>
+      {item?.subCategoryName && (
+  <View style={styles.tagBox}>
+    <Text style={styles.tagText}>{item.subCategoryName}</Text>
+  </View>
+)}
+
       </View>
 
       <View style={{ alignItems: "flex-end" }}>
-        <Text style={styles.date}>{item.date}</Text>
-        <Text style={styles.amount}>{item.amount}</Text>
+        <Text style={styles.date}>{item?.transactionDate}</Text>
+        <Text style={styles.amount}>₹ {item?.totalAmount}</Text>
       </View>
     </View>
   </TouchableOpacity>
@@ -282,21 +241,7 @@ const closeTagAsset = () => {
     }, [navigation]);
   
   
-    // useEffect(() => {
-    //   const onBackPress = () => {
-       
-    //     if (showFilter) {
-    //       setShowFilter(false);
-    //       return true;
-    //     }
-        
-        
-    //     return false;
-    //   };
-  
-    //   const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-    //   return () => sub.remove();
-    // }, [showFilter]);
+ 
 
 
    useFocusEffect(
@@ -304,31 +249,26 @@ const closeTagAsset = () => {
 
     const onBackPress = () => {
 
-      // 1️⃣ Expense Details Open → Close it
       if (selectedExpense) {
         setSelectedExpense(null);
         return true;
       }
 
-      // 2️⃣ Filter Sheet Open → Close it
       if (showFilter) {
         setShowFilter(false);
         return true;
       }
 
-      // 3️⃣ Tag Asset Sheet Open → Close it
       if (showTagAsset) {
         setShowTagAsset(false);
         return true;
       }
 
-      // 4️⃣ If can go back → goBack()
       if (navigation.canGoBack()) {
         navigation.goBack();
         return true;
       }
 
-      // 5️⃣ Otherwise allow default behaviour
       return false;
     };
 
@@ -347,39 +287,6 @@ const closeTagAsset = () => {
 );
 
 
-//    useEffect(() => {
-//   const onBackPress = () => {
-
-    
-//     if (selectedExpense) {
-//       closeDetails();
-//       return true;
-//     }
-
-  
-//     if (showFilter) {
-//       setShowFilter(false);
-//       return true;
-//     }
-
-    
-//     if (showTagAsset) {
-//       setShowTagAsset(false);
-//       return true;
-//     }
-
-   
-//     navigation.navigate("MyTabs");
-//     return true;
-//   };
-
-//   const sub = BackHandler.addEventListener(
-//     "hardwareBackPress",
-//     onBackPress
-//   );
-
-//   return () => sub.remove();
-// }, [selectedExpense, showFilter, showTagAsset,navigation]);
 
 
   
@@ -429,7 +336,6 @@ const handleOpenTagAsset = () => {
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.iconCircle}>
-        {/* <Text style={{ color: "#4D6BFE", fontSize: 18 }}>↗</Text> */}
         <Image source={ExpensesIcon} style={{height:24 , width:24}}/>
       </View>
 
@@ -450,8 +356,9 @@ const handleOpenTagAsset = () => {
 
   return (
     <>
+      { loading && <Loader />}
+
     <View style={styles.container}>
-      {/* Top Header */}
       
 
        <View style={styles.topHeader}>
@@ -461,7 +368,6 @@ const handleOpenTagAsset = () => {
                 <Text style={styles.headerTitle}>Expenses</Text>
               </View>
 
-      {/* Search Bar */}
        <View style={styles.searchBox}>
               <Image source={SearchIcon} style={styles.searchIcon} />
               <TextInput
@@ -471,19 +377,50 @@ const handleOpenTagAsset = () => {
               />
             </View>
 
-      {/* List */}
+    
+
+{!loading && (
+  <>
+    {expensesList && expensesList.length > 0 ? (
       <FlatList
-        data={expensesData}
-        keyExtractor={(item) => item.id}
+        data={expensesList}
+        keyExtractor={(item, index) =>
+          item?.expenseId ? item.expenseId : index.toString()
+        }
         renderItem={renderExpensesItem}
         showsVerticalScrollIndicator={false}
-        onPress={() => openDetails(item)}
       />
+    ) : (
+      <View style={styles.centerContainer}>
+        <Image source={EmptyState} style={styles.image} />
+        <Text style={styles.noexpensesText}>
+          No Expenses are there!
+        </Text>
+      </View>
+    )}
+  </>
+)}
 
 
-         <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)}  accessibilityLabel="Open filters">
+   
+ 
+
+
+         {/* <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)}  accessibilityLabel="Open filters">
                 <Image source={FilterIcon} style={styles.fabIcon} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
+              <TouchableOpacity
+  style={[
+    styles.Filterfab,
+    loading && { opacity: 0.4 }   
+  ]}
+  disabled             
+  // onPress={() => setShowFilter(true)}
+  accessibilityLabel="Open filters"
+>
+  <Image source={FilterIcon} style={styles.fabIcon} />
+</TouchableOpacity>
+
        <TouchableOpacity
              style={styles.fab} onPress={handleShowAddExpense}
            >
@@ -585,9 +522,9 @@ const handleOpenTagAsset = () => {
 
       <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
         <View>
-      <Text style={styles.detailsTitle}>{selectedExpense.title}</Text>
-      <Text style={styles.detailsDate}>{selectedExpense.date}</Text>
-      <Text style={styles.detailsCategory}>{selectedExpense.category}</Text>
+      <Text style={styles.detailsTitle}>{selectedExpense?.categoryName}</Text>
+      <Text style={styles.detailsDate}>{selectedExpense?.transactionDate}</Text>
+      <Text style={styles.detailsCategory}>{selectedExpense?.subCategoryName}</Text>
       </View>
 
       <View style={styles.iconRow}>
@@ -603,24 +540,24 @@ const handleOpenTagAsset = () => {
       <View style={styles.row}>
         <View>
           <Text style={styles.label}>Unit Count</Text>
-          <Text style={styles.value}>100</Text>
+          <Text style={styles.value}>{selectedExpense?.itemsCount}</Text>
         </View>
 
         <View>
           <Text style={styles.label}>Per Unit Price</Text>
-          <Text style={styles.value}>₹ 120</Text>
+          <Text style={styles.value}>₹ {selectedExpense?.unitPrice}</Text>
         </View>
 
         <View>
           <Text style={styles.label}>Amount</Text>
-          <Text style={styles.value}>{selectedExpense.amount}</Text>
+          <Text style={styles.value}>₹ {selectedExpense?.totalAmount}</Text>
         </View>
       </View>
 
       <View style={{marginTop:10}}>
       <Text style={styles.label}>Description</Text>
       <Text style={styles.descText}>
-        Lorem ipsum dollar Lorem ipsum dollarLorem ipsum dollarLorem ipsum dollarLorem ipsum dollarLorem ipsum dollar
+        {selectedExpense?.description}
       </Text>
       </View>
 
@@ -862,7 +799,7 @@ card: {
   shadowColor: "#000",
   shadowOpacity: 0.1,
   shadowRadius: 5,
-  shadowOffset: { width: 0, height: 2 }, // iOS shadow
+  shadowOffset: { width: 0, height: 2 }, 
 },
     sheetOverlay: {
     position: "absolute",
@@ -903,7 +840,7 @@ card: {
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: "55%",             // ⭐ increase height here
+    height: "55%",            
   }, filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   filterTitle: { fontSize: 20, fontWeight: "700" },
   resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
@@ -978,7 +915,7 @@ tagAssetSheet: {
   padding: 20,
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
-  height: "33%",     // small height
+  height: "33%",    
 },
 
 tagAssetHeader: {
@@ -1108,5 +1045,25 @@ deleteBtnText: {
   fontWeight: "600",
   color: "#fff",
 },
+
+ centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 80,
+  },
+
+  image: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+
+  noexpensesText: {
+    fontSize: 16,
+    color: "#777",
+    marginTop: 10,
+  },
 
 });
