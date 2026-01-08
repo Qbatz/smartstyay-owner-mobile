@@ -208,7 +208,7 @@ export default function CancelNotice({ navigation, route }) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
-          <Text style={styles.addBtnText}>Checkin</Text>
+          <Text style={styles.addBtnText}>Check-In</Text>
         </TouchableOpacity>
       </View>
     </View>
