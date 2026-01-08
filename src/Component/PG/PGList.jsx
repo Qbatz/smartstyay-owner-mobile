@@ -445,6 +445,7 @@ const handleBedPress = async (bed, room) => {
     }, [rooms])
   );
 
+
 useFocusEffect(
   useCallback(() => {
     route?.params?.setShowTabBar?.(!isAnySheetOpen);
@@ -973,9 +974,10 @@ useFocusEffect(
   keyboardShouldPersistTaps="always"
   keyboardDismissMode="none"
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-
-            <View style={styles.roomCard}>
+          renderItem={({ item }) => {
+            const bedCount = bedsByRoom[item.id]?.length || 0;
+            return(
+ <View style={styles.roomCard}>
               <TouchableOpacity
                 style={styles.roomHeader}
                 activeOpacity={0.8}
@@ -986,7 +988,7 @@ useFocusEffect(
               >
                 <View>
                   <Text style={styles.roomTitle}>Room No {item.name}</Text>
-                  <Text style={styles.roomSubtitle}>{item.sharing}</Text>
+                  <Text style={styles.roomSubtitle}>{bedCount} Sharing</Text>
                 </View>
 
                 <TouchableOpacity
@@ -1096,7 +1098,10 @@ useFocusEffect(
 
               </View>
             </View>
-          )}
+            )
+
+           
+          }}
         />
       </View>
 
