@@ -1,12 +1,140 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet,ScrollView } from "react-native";
 
-const EBReadingTab = () => {
+const EB_DATA = [
+  {
+    month: "September 2025",
+    amount: "₹330",
+    floor: "Ground Floor",
+    room: "003",
+    bed: "03",
+    range: "01 - 31 July",
+    active: true,
+  },
+  {
+    month: "August 2025",
+    amount: "₹360",
+    floor: "Ground Floor",
+    room: "003",
+    bed: "03",
+    range: "01 - 31 July",
+  },
+  {
+    month: "July 2025",
+    amount: "₹378",
+    floor: "Ground Floor",
+    room: "003",
+    bed: "03",
+    range: "01 - 30 June",
+  },
+  {
+    month: "June 2025",
+    amount: "₹267",
+    floor: "Ground Floor",
+    room: "003",
+    bed: "03",
+    range: "01 - 31 May",
+  },
+];
+
+export default function EBReadingTab() {
   return (
-    <View style={{ padding: 20 }}>
-      <Text>EB Reading Screen</Text>
-    </View>
-  );
-};
+       <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}
+    >
+   
+      {EB_DATA.map((item, index) => (
+        <View key={index} style={styles.rowBox}>
+          {/* LEFT */}
+          <View style={{ flex: 1 }}>
+            <View style={styles.monthRow}>
+              {item.active && <View style={styles.activeDot} />}
+              <Text style={styles.monthText}>{item.month}</Text>
+            </View>
 
-export default EBReadingTab;
+            <View style={styles.metaRow}>
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorText}>{item.floor}</Text>
+              </View>
+
+              <Text style={styles.iconText}>🏠 {item.room}</Text>
+              <Text style={styles.iconText}>🛏 {item.bed}</Text>
+            </View>
+          </View>
+
+          {/* RIGHT */}
+          <View style={styles.rightBox}>
+            <Text style={styles.amount}>{item.amount}</Text>
+            <Text style={styles.range}>{item.range}</Text>
+          </View>
+        </View>
+      ))}
+   
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: 30,
+  },
+  rowBox: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  monthRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  activeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#16A34A",
+    marginRight: 8,
+  },
+  monthText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+  floorBadge: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  floorText: {
+    fontSize: 11,
+    color: "#92400E",
+  },
+  iconText: {
+    fontSize: 12,
+    color: "#2563EB",
+    marginRight: 10,
+  },
+  rightBox: {
+    alignItems: "flex-end",
+  },
+  amount: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  range: {
+    fontSize: 11,
+    color: "#6B7280",
+    marginTop: 6,
+  },
+});
