@@ -122,7 +122,7 @@ export default function CancelNotice({ navigation, route }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={ArrowLeft} style={styles.backIcon} />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Cancel Notice Period</Text>
+        <Text style={styles.headerText}>Cancel Check-out</Text>
       </View>
 
       {/* Content */}
