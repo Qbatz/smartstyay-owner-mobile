@@ -44,7 +44,10 @@ export default function FinalSettlement({ navigation, route }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [showDetails, setShowDetails] = useState(false);
 
+console.log("settlementDetails",settlementDetails)
+console.log("selectedBed",selectedBed)
   const TYPE_OPTIONS = ["Maintenance", "Others"];
   useEffect(() => {
     if (!selectedItem && !selectedBed) return;
@@ -608,16 +611,36 @@ export default function FinalSettlement({ navigation, route }) {
 
               <Text style={styles.tableCellRight}>
                 ₹ {Number(
-                  (settlementDetails?.currentMonthRentInfo?.currentMonthRent) || 0
+                  (settlementDetails?.currentMonthRentInfo?.currentRentPaid) || 0
                 ).toLocaleString("en-IN")}
               </Text>
 
             </View>
-            <View style={styles.tableRow}>
+            {/* <View style={styles.tableRow}>
               <Text style={styles.tabledescription}>
                 Acctual days (
                 {settlementDetails?.currentMonthRentInfo?.stayDays} days)
               </Text>
+              <Image source={DownArrow} style={styles.arrow}/>
+              {showDetails &&
+  settlementDetails?.currentMonthRentInfo?.rentLists?.map(
+    (item, index) => (
+      <View key={index} style={styles.detailRow}>
+        <View>
+          <Text style={styles.linkText}>
+            {item.floorName}
+          </Text>
+          <Text style={styles.linkText}>
+            {item.roomName} - {item.bedName}
+          </Text>
+        </View>
+
+        <Text style={styles.rightText}>
+          ({item.noOfDays} day = {item.rent})
+        </Text>
+      </View>
+    )
+  )}
 
               <Text style={styles.tableCellRight}>
                 ₹ {Number(
@@ -625,7 +648,54 @@ export default function FinalSettlement({ navigation, route }) {
                 ).toLocaleString("en-IN")}
               </Text>
 
-            </View>
+            </View> */}
+
+            <TouchableOpacity
+  style={styles.tableRow}
+  onPress={() => setShowDetails(!showDetails)}
+  activeOpacity={0.7}
+>
+  {/* LEFT SIDE */}
+  <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <Text style={styles.tabledescription}>
+      Actual days ({settlementDetails?.currentMonthRentInfo?.stayDays} days)
+    </Text>
+
+    <Image
+      source={DownArrow}
+      style={[
+        styles.arrow,
+        showDetails && { transform: [{ rotate: "180deg" }] }
+      ]}
+    />
+  </View>
+
+  {/* RIGHT SIDE */}
+  <Text style={styles.tableCellRight}>
+    ₹{" "}
+    {Number(
+      settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
+    ).toLocaleString("en-IN")}
+  </Text>
+</TouchableOpacity>
+{showDetails &&
+  settlementDetails?.currentMonthRentInfo?.rentLists?.map(
+    (item, index) => (
+      <View key={index} style={styles.detailRow}>
+        <View>
+          <Text style={styles.linkText}>{item.floorName}</Text>
+          <Text style={styles.linkText}>
+            {item.roomName} - {item.bedName} -  ({item.noOfDays} day = {item.rent})
+          </Text>
+        </View>
+
+        {/* <Text style={styles.rightText}>
+        
+        </Text> */}
+      </View>
+    )
+  )}
+
           </View>
 
 
@@ -1136,6 +1206,19 @@ const styles = StyleSheet.create({
         zIndex: 20,
         elevation: 10,
     },
+     detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    paddingLeft: 10,
+  },
+    linkText: {
+    color: "#2563EB",
+    fontSize: 13,
+  },
+   rightText: {
+    fontSize: 13,
+  },
 
 
 });

@@ -7,7 +7,6 @@ import {
   Image,
 } from "react-native";
 
-// 👉 icons (nee use panra icons-ah replace pannikko)
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
 import Home from "../../../Assets/Images/home-link.png";
