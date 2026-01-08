@@ -294,7 +294,6 @@ if (res?.status === 201) {
   value={lastName}
   onChangeText={(text) => {
     if (!/^[A-Za-z\s]*$/.test(text)) return; 
-
     setLastName(text);
   }}
 />

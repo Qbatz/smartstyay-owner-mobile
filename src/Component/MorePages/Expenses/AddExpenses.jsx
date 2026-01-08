@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -9,41 +9,117 @@ import {
   Image,
   SafeAreaView,
   Platform,
-  BackHandler
+  BackHandler ,Modal , TouchableWithoutFeedback
 } from "react-native";
-
+import { CommonContexts } from "../../../Context/CommonContext";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 
 export default function AddExpenses({ navigation, route }) {
+
+
+     const {fetchExpenses ,IntializeexpensesList, GetInitializeExpense, expenses, expensesList, GetExpenseList, loading , AddExpense } = useContext(ExpensesContext);
+     const { activeHostelId } = useContext(CommonContexts);
+
   const editData = route?.params?.editData || null;
 
+  console.log("IntializeexpensesList", IntializeexpensesList);
+  
+
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+
   // STATES
-  const [openDatePicker, setOpenDatePicker] = useState(false);
+  // const [openDatePicker, setOpenDatePicker] = useState(false);
+const [openPurchaseDate, setOpenPurchaseDate] = useState(false);
+const [purchaseDate, setPurchaseDate] = useState(null);
 
-  const [category, setCategory] = useState(editData?.category || "Kitchen");
-  const [unitCount, setUnitCount] = useState(editData?.unitCount || "120");
-  const [modePayment, setModePayment] = useState(editData?.paymentMode || "Cash");
 
-  const [perUnit, setPerUnit] = useState(editData?.perUnit || "100");
-  const [purchaseAmount, setPurchaseAmount] = useState(editData?.amount || "12000");
+  const [category, setCategory] = useState(editData?.category || "");
+  const [unitCount, setUnitCount] = useState(editData?.unitCount || "");
+
+  const [perUnit, setPerUnit] = useState(editData?.perUnit || "");
+  const [purchaseAmount, setPurchaseAmount] = useState(editData?.amount || "");
   const [description, setDescription] = useState(editData?.description || "");
 
-  const [purchaseDate, setPurchaseDate] = useState(
-    editData?.date ? new Date(editData.date) : new Date()
-  );
+ 
 
   // Dropdown states
-  const [categoryOpen, setCategoryOpen] = useState(false);
   const [unitCountOpen, setUnitCountOpen] = useState(false);
-  const [modePaymentOpen, setModePaymentOpen] = useState(false);
+  // CATEGORY
+const [categoryOpen, setCategoryOpen] = useState(false);
+const [selectedCategory, setSelectedCategory] = useState(null);
+
+// SUB CATEGORY
+const [subCategoryOpen, setSubCategoryOpen] = useState(false);
+const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+const [selectedMode, setSelectedMode] = useState(null)
+// const [subCategoryList, setSubCategoryList] = useState([]);
+
+// PAYMENT
+const [modePaymentOpen, setModePaymentOpen] = useState(false);
+const [modePayment, setModePayment] = useState(null);
+
+const categoryList = IntializeexpensesList?.listExpenses || [];
+
+
+const subCategoryList = selectedCategory?.subCategories || [];
+
+
 
   // OPTIONS
-  const categoryOptions = ["Kitchen", "Food", "Veg", "Non Veg"];
-  const unitCountOptions = ["10", "50", "120", "200"];
-  const paymentOptions = ["Cash", "UPI", "Card", "Online"];
+  const categoryOptions = [];
+  const unitCountOptions = [];
+
+  const [categoryErr, setCategoryErr] = useState("");
+const [subCategoryErr, setSubCategoryErr] = useState("");
+const [dateErr, setDateErr] = useState("");
+const [amountErr, setAmountErr] = useState("");
+const [modeErr, setModeErr] = useState("");
+
+const paymentOptions =
+  IntializeexpensesList?.banks?.map((b) => ({
+    id: b?.bankId,
+    name: `${b?.holderName} - ${b?.bankName}`,
+  })) || [];
+
+
+
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchExpenses(activeHostelId);
+    }
+   
+  }, [activeHostelId]);
+
+    useEffect(() => { 
+    if (activeHostelId) {
+      GetInitializeExpense(activeHostelId)
+    }
+   
+  }, [activeHostelId]);
+
+  useEffect(() => {
+  const amount = Number(purchaseAmount);
+  const units = Number(unitCount);
+
+  if (amount > 0 && units > 0) {
+    const per = amount / units;
+    setPerUnit(per.toString());
+  } else {
+    setPerUnit("");
+  }
+}, [purchaseAmount, unitCount]);
+
+
 
   // BACK HANDLER
   useEffect(() => {
@@ -117,7 +193,90 @@ export default function AddExpenses({ navigation, route }) {
     </View>
   );
 
+  const handleSaveExpense = async () => {
+  let hasError = false;
+
+  setCategoryErr("");
+  setSubCategoryErr("");
+  setDateErr("");
+  setAmountErr("");
+  setModeErr("");
+
+  if (!selectedCategory) {
+  setCategoryErr("Please Select Category")
+  hasError = true;
+}
+
+if (subCategoryList.length > 0 && !selectedSubCategory) {
+  setSubCategoryErr("Please select sub category");
+  hasError = true;
+}
+
+if (!purchaseDate) {
+  setDateErr("Please Select Purchase Date");
+  hasError = true;
+}
+
+if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+  setAmountErr("Enter Valid Amount");
+  hasError = true;
+}
+
+if (!selectedMode) {
+  setModeErr("Please Select Mode of Transaction");
+  hasError = true;
+}
+
+
+  if (hasError) return
+
+const payload = {
+  categoryId: selectedCategory.categoryId,
+  subCategory: selectedSubCategory
+    ? selectedSubCategory.subCategoryId
+    : null,
+  purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+  count: Number(unitCount) || 1,
+  totalAmount: Number(purchaseAmount),
+  description,
+  bankId: selectedMode.id,
+  hostelId: activeHostelId,
+}
+
+  const res = await AddExpense(payload);
+
+  if (res.success) {
+    await GetExpenseList(activeHostelId);
+
+    setModalType("success");
+    setModalMessage("Expense Added successfully");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      navigation.goBack();
+    }, 1500);
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Something went wrong");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 2000);
+  }
+};
+
+
+
   return (
+
+     <>
+       <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}/>
+    
+
     <SafeAreaView style={styles.safe}>
       {/* HEADER */}
       <View style={styles.topHeader}>
@@ -133,85 +292,287 @@ export default function AddExpenses({ navigation, route }) {
         contentContainerStyle={{ paddingBottom: 40 }}
       >
 
-        {/* Category */}
-        {renderSelectField(
-          "Category *",
-          category,
-          categoryOpen,
-          setCategoryOpen,
-          categoryOptions,
-          setCategory
-        )}
+     <Text style={styles.label}>
+  Category <Text style={{ color: "red" }}>*</Text>
+</Text>
 
-        {/* Purchase Date */}
-        <Text style={styles.label}>Purchase Date *</Text>
-        <TouchableOpacity
+<TouchableOpacity
+  style={styles.expensesDropdownBox}
+  onPress={() => {
+    setCategoryOpen(!categoryOpen)
+    setSubCategoryOpen(false);
+    setModePaymentOpen(false);
+  }}
+>
+  <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
+   {selectedCategory?.categoryName || "Select Category"}
+  </Text>
+  <Image source={DownArrow} style={styles.expensesArrowIcon} />
+</TouchableOpacity>
+
+{categoryOpen && (
+  <View style={styles.expensesDropdownMenu}>
+    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+      {categoryList.length === 0 ? (
+        <Text style={styles.expensesNoDataText}>
+          No category found
+        </Text>
+      ) : (
+    categoryList.map((item) => {
+  const isSelected =
+    selectedCategory?.categoryId === item.categoryId;
+
+  return (
+    <TouchableOpacity
+      key={item.categoryId}
+      style={[
+        styles.expensesOption,
+        isSelected && styles.expensesOptionSelected,
+      ]}
+      onPress={() => {
+        setSelectedCategory(item);
+        setSelectedSubCategory(null);
+        setCategoryErr("");
+        setCategoryOpen(false);
+      }}
+      
+    >
+      <Text
+        style={[
+          styles.expensesOptionText,
+          isSelected && styles.expensesOptionTextSelected,
+        ]}
+      >
+        {item.categoryName}
+      </Text>
+    </TouchableOpacity>
+  )
+})
+
+
+      )}
+    </ScrollView>
+  </View>
+)}
+
+{categoryErr ? (
+  <ErrorMessage message={categoryErr} type="error" />
+) : null}
+
+
+
+
+ <Text style={styles.label}>
+  Sub Category
+  {subCategoryList.length > 0 && (
+    <Text style={{ color: "red" }}> *</Text>
+  )}
+</Text>
+
+<TouchableOpacity
+  style={[
+    styles.expensesDropdownBox,
+    subCategoryList.length === 0 && { backgroundColor: "#F3F4F6" },
+  ]}
+  disabled={subCategoryList.length === 0}
+  onPress={() => {
+    setSubCategoryOpen(!subCategoryOpen);
+    setCategoryOpen(false);
+    setModePaymentOpen(false);
+  }}
+
+>
+  <Text style={{ color: selectedSubCategory ? "#000" : "#9CA3AF" }}>
+   {selectedSubCategory?.subCategoryName || "Select Sub Category"}
+
+  </Text>
+  <Image source={DownArrow} style={styles.expensesArrowIcon} />
+</TouchableOpacity>
+
+{subCategoryOpen && (
+  <View style={styles.expensesDropdownMenu}>
+    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+      {subCategoryList.length === 0 ? (
+        <Text style={styles.expensesNoDataText}>
+          No sub category found
+        </Text>
+      ) : (
+ subCategoryList.map((item) => {
+  const isSelected =
+    selectedSubCategory?.subCategoryId === item.subCategoryId;
+
+  return (
+    <TouchableOpacity
+      key={item.subCategoryId}
+      style={[
+        styles.expensesOption,
+        isSelected && styles.expensesOptionSelected,
+      ]}
+      onPress={() => {
+        setSelectedSubCategory(item);
+        setSubCategoryErr("");
+        setSubCategoryOpen(false);
+      }}
+
+    >
+      <Text
+        style={[
+          styles.expensesOptionText,
+          isSelected && styles.expensesOptionTextSelected,
+        ]}
+      >
+        {item.subCategoryName}
+      </Text>
+    </TouchableOpacity>
+  )
+})
+
+
+      )}
+    </ScrollView>
+  </View>
+)}
+
+{subCategoryErr ? (
+  <ErrorMessage message={subCategoryErr} type="error" />
+) : null}
+
+
+<Text style={styles.label}>
+  Purchase Date <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => setOpenPurchaseDate(true)}
+>
+  <View style={styles.dateInputWrapper}>
+    <TextInput
+      style={styles.dateInput}
+      placeholder="DD-MM-YYYY"
+      value={
+        purchaseDate
+          ? dayjs(purchaseDate).format("DD-MM-YYYY")
+          : ""          // 👈 empty until user selects
+      }
+      editable={false}
+      pointerEvents="none"
+    />
+
+    <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+  </View>
+</TouchableOpacity>
+
+{dateErr && <ErrorMessage message={dateErr} type="error" />}
+
+
+        <Text style={styles.label}>Total amount <Text style={{ color: "red" }}>*</Text></Text>
+         <TextInput
           style={styles.inputBox}
-          onPress={() => {
-            closeAll();
-            setOpenDatePicker(!openDatePicker);
-          }}
-        >
-          <Text style={styles.inputText}>{dayjs(purchaseDate).format("DD/MM/YYYY")}</Text>
-          <Image source={CalendarIcon} style={styles.calendarIcon} />
-        </TouchableOpacity>
-
-        {openDatePicker && (
-          <View style={[styles.dropdownBox, { maxHeight: 350 }]}>
-            <ScrollView nestedScrollEnabled>
-              <DatePicker
-                mode="single"
-                date={purchaseDate}
-                onChange={(v) => {
-                  setPurchaseDate(v.date || new Date());
-                  setOpenDatePicker(false);
-                }}
-              />
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Unit Count */}
-        {renderSelectField(
-          "Unit Count *",
-          unitCount,
-          unitCountOpen,
-          setUnitCountOpen,
-          unitCountOptions,
-          setUnitCount
-        )}
-
-        {/* Per Unit */}
-        <Text style={styles.label}>Per Unit amount *</Text>
-        <TextInput
-          style={styles.inputBox}
-          value={perUnit}
-          keyboardType="numeric"
-          onChangeText={setPerUnit}
-          placeholder="0"
-          placeholderTextColor="#999"
-        />
-
-        {/* Purchase Amount */}
-        <Text style={styles.label}>Purchase amount *</Text>
-        <TextInput
-          style={styles.inputBox}
+          placeholder="Enter Amount"
           value={purchaseAmount}
           keyboardType="numeric"
-          onChangeText={setPurchaseAmount}
-          placeholder="0"
-          placeholderTextColor="#999"
+          onChangeText={(v) => {
+          setPurchaseAmount(v);
+          setAmountErr("");
+          }}
         />
+        
+{amountErr ? <ErrorMessage message={amountErr} type="error" /> : null}
 
-        {/* Mode of Transaction */}
-        {renderSelectField(
-          "Mode of Transaction *",
-          modePayment,
-          modePaymentOpen,
-          setModePaymentOpen,
-          paymentOptions,
-          setModePayment
-        )}
+
+      <Text style={styles.label}>Unit Count</Text>
+<TextInput
+  style={styles.inputBox}
+  keyboardType="numeric"
+  value={unitCount}
+  onChangeText={(v) => setUnitCount(v)}
+  placeholder="Enter unit count"
+/>
+
+
+        
+
+        {/* Per Unit */}
+        <Text style={styles.label}>Per Unit Amount</Text>
+<TextInput
+  style={[
+    styles.inputBox,
+    { backgroundColor: "#EAF2FF" } 
+  ]}
+  value={perUnit}
+  editable={false}
+  placeholder="0"
+/>
+
+
+ 
+<Text style={styles.label}>
+  Mode of Transaction <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  style={styles.expensesDropdownBox}
+  onPress={() => {
+    setModePaymentOpen(!modePaymentOpen);
+    setCategoryOpen(false);
+    setSubCategoryOpen(false);
+  }}
+>
+  <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
+    {selectedMode?.name || "Select Mode"}
+  </Text>
+  <Image source={DownArrow} style={styles.expensesArrowIcon} />
+</TouchableOpacity>
+
+{modePaymentOpen  && (
+  <View style={styles.expensesDropdownMenu}>
+    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+      {paymentOptions.length === 0 ? (
+        <Text style={styles.expensesNoDataText}>
+          No mode found
+        </Text>
+      ) : (
+        paymentOptions.map((item) => {
+          const isSelected =
+            selectedMode?.id === item.id;
+
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.expensesOption,
+                isSelected && styles.expensesOptionSelected,
+              ]}
+              onPress={() => {
+                setSelectedMode(item)
+                setModeErr("")
+                setModePaymentOpen(false)
+              }}
+            >
+              <Text
+                style={[
+                  styles.expensesOptionText,
+                  isSelected &&
+                    styles.expensesOptionTextSelected,
+                ]}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })
+      )}
+    </ScrollView>
+  </View>
+)}
+
+{modeErr ? (
+  <ErrorMessage message={modeErr} type="error" />
+) : null}
+
+
+
 
         {/* Description */}
         <Text style={styles.label}>Description</Text>
@@ -232,17 +593,57 @@ export default function AddExpenses({ navigation, route }) {
 
           <TouchableOpacity
             style={styles.saveBtn}
-            onPress={() => navigation.goBack()}
+            onPress={handleSaveExpense}
           >
             <Text style={styles.saveText}>{editData ? "Update" : "Save"}</Text>
           </TouchableOpacity>
         </View>
+
+ <Modal
+  transparent
+  visible={openPurchaseDate}
+  animationType="fade"
+  onRequestClose={() => setOpenPurchaseDate(false)}
+>
+  <View style={styles.datePickerOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenPurchaseDate(false)}
+    />
+
+    <View style={styles.datePickerBox}>
+      <TouchableWithoutFeedback>
+        <View>
+        
+          <DatePicker
+  mode="single"
+  date={purchaseDate ?? new Date()}   
+  maxDate={new Date()}                
+  onChange={(d) => {
+    setPurchaseDate(d.date);
+    setDateErr("");
+    setOpenPurchaseDate(false);
+  }}
+
+/>
+
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </View>
+</Modal>
+
       </ScrollView>
     </SafeAreaView>
+     </>
   );
 }
 
 /* ============================= STYLES ============================= */
+
+
+
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff", paddingTop: 30 },
@@ -370,4 +771,97 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
+
+  expensesDropdownBox: {
+  borderWidth: 1,
+  borderColor: "#D4D4D4",
+  borderRadius: 10,
+  padding: 14,
+  marginTop: 6,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  backgroundColor: "#fff",
+},
+
+expensesArrowIcon: {
+  width: 18,
+  height: 18,
+  tintColor: "#6A6A6A",
+},
+
+expensesDropdownMenu: {
+  marginTop: 4,
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 10,
+  backgroundColor: "#fff",
+  overflow: "hidden",
+  elevation: 6,
+  zIndex: 999,
+},
+
+expensesOption: {
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+},
+
+expensesOptionSelected: {
+  backgroundColor: "#1D5BEE",
+},
+
+expensesOptionText: {
+  fontSize: 15,
+  color: "#111",
+},
+
+expensesOptionTextSelected: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
+expensesNoDataText: {
+  paddingVertical: 14,
+  textAlign: "center",
+  color: "#9CA3AF",
+  fontSize: 14,
+},
+
+ datePickerOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+outsideTouch: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+datePickerBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  elevation: 10,
+  zIndex: 999,
+},
+dateInputWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  height: 48,
+  paddingHorizontal: 12,
+  marginTop: 6,
+},
+
+dateInput: {
+  flex: 1,
+  fontSize: 14,
+  color: "#111827",
+},
 });

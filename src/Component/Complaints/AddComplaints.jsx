@@ -731,7 +731,12 @@ const handleSubmitComplaint = async () => {
           </Text>
         </TouchableOpacity>
       </View>
-      <Modal
+
+ 
+
+    </View>
+
+         <Modal
   transparent
   visible={openDate}
   animationType="fade"
@@ -760,8 +765,6 @@ const handleSubmitComplaint = async () => {
     </View>
   </View>
 </Modal>
-
-    </View>
      </>
   );
 }

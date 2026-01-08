@@ -5,10 +5,12 @@ export const ExpensesContext = createContext();
 
 export default function ExpensesProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
+  const [expensesList, setExpensesList] = useState([])
+  const [IntializeexpensesList, setIntializeExpensesList] = useState(null)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /* ---------------- GET ---------------- */
+   
   const fetchExpenses = async (hostelId) => {
     if (!hostelId) {
       setExpenses([]);
@@ -53,7 +55,6 @@ export default function ExpensesProvider({ children }) {
     }
   };
 
-  /* ---------------- ADD CATEGORY ---------------- */
   const addExpenseCategory = async ({ hostelId, categoryName }) => {
     try {
       setLoading(true);
@@ -80,7 +81,6 @@ export default function ExpensesProvider({ children }) {
     }
   };
 
-  /* ---------------- ADD SUB CATEGORY ---------------- */
   const addSubCategory = async ({
     hostelId,
     categoryId,
@@ -111,16 +111,111 @@ export default function ExpensesProvider({ children }) {
     }
   };
 
+const GetExpenseList = async (hostelId) => {
+  if (!hostelId) {
+    setExpensesList([]);
+    return { success: true, empty: true };
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    const res = await AxiosConfig.get(`/v2/expense/${hostelId}`);
+
+    const data = Array.isArray(res?.data) ? res?.data : [];
+
+    if (data.length === 0) {
+      setExpensesList([]);
+      return { success: true, empty: true };
+    }
+
+    setExpensesList(data);
+    return { success: true };
+  } catch (err) {
+    setError("Failed to load expenses");
+    setExpensesList([]);
+    return { success: false };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const AddExpense = async (payload) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const res = await AxiosConfig.post(
+      `/v2/expense/${payload.hostelId}`,
+      payload
+    );
+
+    if (res?.status === 201) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Something went wrong" };
+  } catch (err) {
+    if (err?.response?.status === 400 || err?.response?.status === 403) {
+      return {
+        success: false,
+        message: err.response.data || "Insufficient fund",
+      };
+    }
+    return { success: false, message: "Network error" };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const GetInitializeExpense = async (hostelId) => {
+  if (!hostelId) {
+    setIntializeExpensesList(null);
+    return { success: true, empty: true };
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    const res = await AxiosConfig.get(
+      `/v2/expense/initialize/${hostelId}`
+    );
+
+    if (res?.status === 200) {
+      setIntializeExpensesList(res?.data);
+
+      return { success: true };
+    }
+
+    return { success: false };
+  } catch (err) {
+    setError("Failed to load expenses");
+    setIntializeExpensesList(null);
+    return { success: false };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
     <ExpensesContext.Provider
       value={{
         expenses,
+        expensesList,
+        IntializeexpensesList,
         loading,
         error,
         fetchExpenses,
         addExpenseCategory,
         addSubCategory,
-        setExpenses, // local edits
+        setExpenses, 
+        GetExpenseList,
+        AddExpense,
+        GetInitializeExpense
       }}
     >
       {children}
