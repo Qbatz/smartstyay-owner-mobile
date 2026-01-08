@@ -14,6 +14,7 @@ const ConfirmMPin = ({ route }) => {
 
   const [pinArr, setPinArr] = useState(["", "", "", ""]);
   const [pin, setPin] = useState("");
+   const [mPinNo,setmPinNo]=useState(null);
   const inputs = useRef([]);
 
   const [showModal, setShowModal] = useState(false);
@@ -31,6 +32,12 @@ const ConfirmMPin = ({ route }) => {
       setPin(newArr.join(""));
     }
   };
+
+  const handleKeyPress=(e,index)=>{
+    if(e.nativeEvent.key === "Backspace" && pinArr[index] === "" && index > 0){
+      inputs.current[index - 1].focus();
+    }
+  }
 
     console.log("mpin", route.params.mPinNumber , pin);
 
@@ -66,12 +73,11 @@ const ConfirmMPin = ({ route }) => {
       }, 1500);
     } else {
       // loginContext.updatePinSetupStatus(true)
-      setTimeout(() => {
-        
         setType("error");
         setMessage("MPIN creation failed");
         setShowModal(true);
-        
+      setTimeout(() => {
+        setShowModal(false)     
       }, 1500);
       
     }
@@ -93,6 +99,7 @@ const ConfirmMPin = ({ route }) => {
             keyboardType="number-pad"
             maxLength={1}
             onChangeText={(t) => handleChange(t, i)}
+            onKeyPress={(e)=>handleKeyPress(e,i)}
           />
         ))}
       </View>
