@@ -44,6 +44,7 @@ export default function MoreDesign({ navigation }) {
     { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
     { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
     { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
+    { title: "Settings", icon: SettingsImage, bg: "#1E45E1", screen: "SettingsScreen" },
   ];
 
   return (
@@ -55,9 +56,9 @@ export default function MoreDesign({ navigation }) {
           <Text style={styles.headerTitle}>More</Text>
         </View>
 
-        <TouchableOpacity onPress={() => navigation.replace("SettingsScreen")}>
+        {/* <TouchableOpacity onPress={() => navigation.replace("SettingsScreen")}>
           <Image source={SettingsImage} style={styles.settingsIcon} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>

@@ -18,7 +18,8 @@ import { PGContext } from "../../../Context/PGContext";
 import { LoginContexts } from "../../../Context/LoginContext";
 import { getHostels } from "../../../Action/HostelAction";
 import SuccessModal from "../../../ToastFile/ToastPage";
-
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+  import { UIContext } from "../../Tabs/UIContext";
 import HostelImg from "../../../Assets/Images/PgImg.png";
 import PgRooms from "../../../Assets/Images/pgrooms.png";
 import call from "../../../Assets/Images/call.png";
@@ -38,6 +39,9 @@ export default function SettingsPG({ navigation }) {
   const { deletePG } = useContext(PGContext);
    const login = useContext(LoginContexts);
 
+ 
+
+const { tabBarHeight } = useContext(UIContext);
 
 
   const dotRefs = useRef({});
@@ -380,7 +384,7 @@ const { line1, line2 } = formatAddressLines(activeHostel);
 
       <Text style={{ fontSize: 18, fontFamily: "Gilroy-Bold",   fontWeight: undefined , marginBottom: 8 }}>No PG Available</Text>
     
-      <View style={{  width: "70%", alignItems: "center", marginTop:10 }}>
+      {/* <View style={{  width: "70%", alignItems: "center", marginTop:10 }}>
         <TouchableOpacity
           style={styles.figAddBtn}
           onPress={() => navigation.navigate("AddPG")}
@@ -389,6 +393,21 @@ const { line1, line2 } = formatAddressLines(activeHostel);
           <Text style={styles.figAddText}>Add New PG</Text>
         </TouchableOpacity>
       </View>
+       */}
+      <View
+  style={[
+    styles.fixedAddBtnWrapper,
+  ]}
+>
+  <TouchableOpacity
+    style={styles.figAddBtn}
+    onPress={() => navigation.navigate("AddPG")}
+  >
+    <Image source={PlusIcon} style={styles.figAddIcon} />
+    <Text style={styles.figAddText}>Add New PG</Text>
+  </TouchableOpacity>
+</View>
+
 
     </View>
      </>
@@ -545,9 +564,13 @@ const { line1, line2 } = formatAddressLines(activeHostel);
     
     {hostelList && hostelList?.length > 0 &&
     (
-       <View style={styles.fixedAddBtnWrapper}>
+       <View style={[
+    styles.fixedAddBtnWrapper,
+    { bottom: tabBarHeight -30 }
+  ]}>
         <TouchableOpacity
           style={styles.figAddBtn}
+          
           onPress={() => navigation.navigate("AddPG")}
         >
           <Image
@@ -764,7 +787,7 @@ const styles = StyleSheet.create({
 
   fixedAddBtnWrapper: {
     position: "absolute",
-    bottom: 20,
+    // bottom: 20,
     width: "100%",
     alignItems: "center",
     backgroundColor:"#fff"
