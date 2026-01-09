@@ -1,10 +1,10 @@
-import React,{useState} from "react";
+import React,{useState , useContext} from "react";
 import { View, Image, } from "react-native";
 import { useLinkBuilder, useTheme } from "@react-navigation/native";
 import { Text, PlatformPressable } from "@react-navigation/elements";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { UIContext } from "./UIContext";
 
 import HomeScreen from "../Dashboard/DashboardPage";
 import Tenant from "../Customer/Tenants";
@@ -35,10 +35,13 @@ const icons = {
 
 function MyTabBar({ state, descriptors, navigation }) {
   const { buildHref } = useLinkBuilder();
-
+  const { setTabBarHeight } = useContext(UIContext);
   return (
     <SafeAreaView
       edges={["bottom"]}
+      onLayout={(e) => {
+        setTabBarHeight(e.nativeEvent.layout.height);
+      }}
       style={{
         backgroundColor: "#fff",
         borderTopLeftRadius: 30,
