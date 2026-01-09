@@ -944,16 +944,42 @@ const handleResetFilters = async () => {
   await GetAllBillDetails(activeHostelId);
 };
 
+const resetRefundForm = () => {
+  setRefundAmount("");
+  setRefundBalance("");
+  setRefundDate(null);
+  setRefundFrom("");
+  setTransactionId("");
+
+  setRefundAmountError("");
+  setRefundDateError("");
+  setRefundFromError("");
+
+  setRefundInitDetails(null); 
+};
+
 
 
 
 const handleShowRefundPayment = () => {
-  setShowRefundPayment(true)
+
+  resetRefundForm();         
   setShowMenu(false);
-  if (selectedBill?.invoiceId && activeHostelId) {
-    fetchRefundInitialize();
-  }
+  setShowRefundPayment(true);
+
+
 }
+
+useEffect(() => {
+  if (
+    showRefundPayment &&
+    selectedBill?.invoiceId &&
+    activeHostelId
+  ) {
+    fetchRefundInitialize()
+  }
+}, [showRefundPayment, selectedBill?.invoiceId, activeHostelId]);
+
 
 useEffect(() => {
   if (refundInitDetails?.refundableAmount != null) {

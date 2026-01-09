@@ -1,4 +1,4 @@
-import React, { useState,useRef,useCallback } from "react";
+import React, { useState, useRef, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,14 @@ import {
   TextInput,
   FlatList,
   Platform,
-  Modal,PanResponder,Animated,TouchableWithoutFeedback,Dimensions,ScrollView,BackHandler
+  Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
-
+import { CommonContexts } from "../../../Context/CommonContext";
+import { VendorContext } from "../../../Context/VendorContext";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
 import AvatarPlaceholder from "../../../Assets/Images/Avatar.png";
 import DotsIcon from "../../../Assets/Images/3dots.png";
@@ -25,232 +29,289 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 
 export default function VendorsList({ navigation }) {
+
+  const {
+    vendorList,
+    loading,
+    getVendorList,
+    addVendor,
+    updateVendor,
+    deleteVendor,
+  } = useContext(VendorContext);
+  const { activeHostelId } = useContext(CommonContexts)
+
+  console.log("vendorList", vendorList);
+
+
+
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [editVendor, setEditVendor] = useState(null);
+  const [deleteVendordata, setDeleteVendorData] = useState(null);
   const [deletePopup, setDeletePopup] = useState(false)
-   const [showFilter, setShowFilter] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
 
-    const [fromDate, setFromDate] = useState(dayjs());
-      const [toDate, setToDate] = useState(dayjs());
-      const [openFrom, setOpenFrom] = useState(false);
-      const [openTo, setOpenTo] = useState(false);
-      const [openUpward, setOpenUpward] = useState(false);
-       const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
-        const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
-         const toggleAmountDropdown = () => {
-      setAmountDropdownVisible((v) => !v);
-    };
+  const [fromDate, setFromDate] = useState(dayjs());
+  const [toDate, setToDate] = useState(dayjs());
+  const [openFrom, setOpenFrom] = useState(false);
+  const [openTo, setOpenTo] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+  const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+  const toggleAmountDropdown = () => {
+    setAmountDropdownVisible((v) => !v);
+  };
 
 
-    useFocusEffect(
-       useCallback(() => {
-         const onBackPress = () => {
-           if (showFilter) {
-             setShowFilter(false)
-             return true;
-           }
-     
-           if (navigation.canGoBack()) {
-             navigation.goBack();
-             return true;
-           }
-     
-           return false;
-         };
-     
-         const subscription = BackHandler.addEventListener(
-           "hardwareBackPress",
-           onBackPress
-         );
-     
-         return () => subscription.remove();
-       }, [navigation,showFilter])
-     );
-     const amountOptions = [
-        "Low to High (Lowest First)",
-        "High to Low (Highest First)",
-        "Newest First",
-        "Oldest First",
-      ];
-          const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
-       const translateY = useRef(new Animated.Value(0)).current;
-       const panResponder = useRef(
-           PanResponder.create({
-             onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
-             onPanResponderMove: (_, gesture) => {
-               if (gesture.dy > 0) translateY.setValue(gesture.dy);
-             },
-             onPanResponderRelease: (_, gesture) => {
-               if (gesture.dy > 120) {
-                 Animated.timing(translateY, {
-                   toValue: 700,
-                   duration: 200,
-                   useNativeDriver: true,
-                 }).start(() => {
-                   setShowFilter(false);
-                   translateY.setValue(0);
-                 });
-               } else {
-                 Animated.spring(translateY, {
-                   toValue: 0,
-                   useNativeDriver: true,
-                 }).start();
-               }
-             },
-           })
-         ).current;
-  
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        getVendorList(activeHostelId);
+      }
+    }, [activeHostelId])
+  );
+
+
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (showFilter) {
+          setShowFilter(false)
+          return true;
+        }
+
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [navigation, showFilter])
+  );
+  const amountOptions = [
+    "Low to High (Lowest First)",
+    "High to Low (Highest First)",
+    "Newest First",
+    "Oldest First",
+  ];
+  const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
+  const translateY = useRef(new Animated.Value(0)).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) translateY.setValue(gesture.dy);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) {
+          Animated.timing(translateY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowFilter(false);
+            translateY.setValue(0);
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
   const handleEdit = (vendor) => {
     setEditVendor(vendor);
     setShowAddVendor(true);
     setActiveMenu(null)
-  };
-  const handleDelete = () => {
-    setDeletePopup(true)
-    setActiveMenu(null)
+  }
+
+  const handleDelete = async () => {
+    const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
+    setDeletePopup(false)
+    if (res?.success) {
+      setModalType("success");
+      setModalMessage(res.message);
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setDeletePopup(false)
+      }, 1500)
+    }
+
+
+    else {
+      setModalType("error");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 2000);
+    }
+
   }
 
 
 
 
 
-  const vendors = [
-    {
-      id: "1",
-      name: "Ram Kumar M",
-      company: "S3 Remotica Technologies",
-      email: "ramkumar@gmail.com",
-      contact: "+91 98732 16540",
-      address: "No 17, Church Street, Bangalore, Karnataka, India. 568974",
-      avatar: AvatarPlaceholder,
-    },
-    {
-      id: "2",
-      name: "Priya Raghuraman",
-      company: "ABC Technologies",
-      email: "priyaraghu@gmail.com",
-      contact: "+91 98732 16540",
-      address: "No 17, Church Street, Bangalore, Karnataka, India. 568974",
-      avatar: AvatarPlaceholder,
-    },
 
-  ];
+  const renderVendor = ({ item }) => {
+    const fullName =
+      `${item.firstName || ""} ${item.lastName || ""}`.trim();
 
-  const renderVendor = ({ item }) => (
-    <>
-      <View style={styles.card}>
-        <View style={styles.cardTop}>
-          <View style={styles.leftRow}>
-            <Image source={item.avatar} style={styles.avatar} />
-            <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={styles.vendorName}>{item.name}</Text>
-              <View style={styles.companyBadge}>
-                <Text style={styles.companyText}>{item.company}</Text>
+    const address = [
+      item.area,
+      item.city,
+      item.landMark,
+      item.state,
+      item.country,
+      item.pinCode,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    return (
+      <>
+
+
+
+        <View style={styles.card}>
+          <View style={styles.cardTop}>
+            <View style={styles.leftRow}>
+              <Image
+                source={
+                  item.profilePic
+                    ? { uri: item.profilePic }
+                    : AvatarPlaceholder
+                }
+                style={styles.avatar}
+              />
+
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={styles.vendorName}>
+                  {fullName || "--"}
+                </Text>
+
+                {item.businessName ? (
+                  <View style={styles.companyBadge}>
+                    <Text style={styles.companyText}>
+                      {item.businessName}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
             </View>
+
+            <TouchableOpacity
+              style={styles.dotsTouchable}
+              onPress={() =>
+                setActiveMenu(
+                  activeMenu === item.id ? null : item.id
+                )
+              }
+            >
+              <Image source={DotsIcon} style={styles.dotsIcon} />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.dotsTouchable}
-            onPress={() =>
-              setActiveMenu(activeMenu === item.id ? null : item.id)
-            }
-          >
-            <Image source={DotsIcon} style={styles.dotsIcon} />
-          </TouchableOpacity>
-
-        </View>
-
-        <View style={styles.infoRow}>
-          <View style={styles.infoCol}>
-            <Text style={styles.infoLabel}>Mail ID</Text>
-            <Text style={styles.infoValue}>{item.email}</Text>
-          </View>
-          <View style={[styles.infoCol, { alignItems: "flex-end" }]}>
-            <Text style={styles.infoLabel}>Contact</Text>
-            <Text style={styles.infoValue}>{item.contact}</Text>
-          </View>
-        </View>
-
-        <View style={[styles.infoRow, { marginTop: 10 }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.infoLabel}>Address</Text>
-            <Text style={[styles.infoValue, { marginTop: 6 }]} numberOfLines={2}>
-              {item.address}
-            </Text>
-          </View>
-        </View>
-      </View>
-      {activeMenu === item.id && (
-        <View style={styles.menuBox}>
-          <TouchableOpacity style={styles.menuRow} onPress={() => handleEdit(item)}>
-            <Image
-              source={require("../../../Assets/Images/editIcon.png")}
-              style={styles.menuIcon}
-            />
-            <Text style={styles.menuText}>Edit </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuRow} onPress={handleDelete}>
-            <Image
-              source={require("../../../Assets/Images/trash.png")}
-              style={styles.menuIcon}
-            />
-            <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-
-      <Modal
-        transparent
-        animationType="fade"
-        visible={deletePopup}
-        onRequestClose={() => setDeletePopup(false)}
-      >
-        <View style={styles.deleteOverlay}>
-          <View style={styles.deleteBox}>
-
-            <Text style={styles.deleteTitle}>Delete Vendor?</Text>
-            <Text style={styles.deleteSub}>
-              Are you sure you want to delete this Vendor?
-            </Text>
-
-            <View style={styles.deleteBtnRow}>
-
-
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setDeletePopup(false)}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-
-              {/* Delete Button */}
-              <TouchableOpacity
-                style={styles.deleteBtn}
-                onPress={() => {
-                  console.log("DELETE CONFIRMED");
-                  setDeletePopup(false);
-                }}
-              >
-                <Text style={styles.deleteBtnText}>Delete</Text>
-              </TouchableOpacity>
-
+          <View style={styles.infoRow}>
+            <View style={styles.infoCol}>
+              <Text style={styles.infoLabel}>Mail ID</Text>
+              <Text style={styles.infoValue}>
+                {item.emailId || "N/A"}
+              </Text>
             </View>
 
+            <View style={[styles.infoCol, { alignItems: "flex-end" }]}>
+              <Text style={styles.infoLabel}>Contact</Text>
+              <Text style={styles.infoValue}>
+                +{item.mobile || "--"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.infoRow, { marginTop: 10 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.infoLabel}>Address</Text>
+              <Text
+                style={[styles.infoValue, { marginTop: 6 }]}
+                numberOfLines={2}
+              >
+                {address || "N?A"}
+              </Text>
+            </View>
           </View>
         </View>
-      </Modal>
- 
 
-    </>
-  );
-  
+        {activeMenu === item.id && (
+          <>
+            <TouchableWithoutFeedback onPress={() => setActiveMenu(null)}>
+              <View style={styles.menuOverlay} />
+            </TouchableWithoutFeedback>
+
+            <View style={styles.menuBox}>
+              <TouchableOpacity
+                style={styles.menuRow}
+                onPress={() => handleEdit(item)}
+              >
+                <Image
+                  source={require("../../../Assets/Images/editIcon.png")}
+                  style={styles.menuIcon}
+                />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuRow}
+                onPress={() => {
+                  setDeleteVendorData(item);
+                  setDeletePopup(true);
+                  setActiveMenu(null);
+                }}
+              >
+                <Image
+                  source={require("../../../Assets/Images/trash.png")}
+                  style={styles.menuIcon}
+                />
+                <Text style={[styles.menuText, { color: "red" }]}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+      </>
+    );
+  };
+
+
 
   return (
     <>
+      {loading && <Loader />}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType} />
+
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack?.()}>
@@ -268,14 +329,30 @@ export default function VendorsList({ navigation }) {
           />
         </View>
 
-        <FlatList
-          data={vendors}
-          keyExtractor={(i) => i.id}
-          renderItem={renderVendor}
-          contentContainerStyle={{ paddingVertical: 16, paddingHorizontal: 16 }}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          showsVerticalScrollIndicator={false}
-        />
+        {!loading && vendorList?.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Image
+              source={EmptyState}
+              style={styles.emptyImage}
+            />
+            <Text style={styles.emptyText}>
+              No vendors found
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={vendorList}
+            keyExtractor={(item) => item?.id.toString()}
+            renderItem={renderVendor}
+            contentContainerStyle={{
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+            }}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+
 
 
         <TouchableOpacity style={styles.filterFab} onPress={() => setShowFilter(true)}>
@@ -289,7 +366,7 @@ export default function VendorsList({ navigation }) {
           <Image source={AddIcon} style={styles.addIcon} />
         </TouchableOpacity>
       </View>
-{showFilter && (
+      {showFilter && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
             <View style={{ flex: 1 }} />
@@ -452,6 +529,42 @@ export default function VendorsList({ navigation }) {
         />
       )}
 
+      <Modal
+        transparent
+        animationType="fade"
+        visible={deletePopup}
+        onRequestClose={() => setDeletePopup(false)}
+      >
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteBox}>
+            <Text style={styles.deleteTitle}>
+              Delete Vendor?
+            </Text>
+
+            <Text style={styles.deleteSub}>
+              Are you sure you want to delete this vendor?
+            </Text>
+
+            <View style={styles.deleteBtnRow}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setDeletePopup(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={handleDelete}
+              >
+                <Text style={styles.deleteBtnText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
     </>
   );
 
@@ -468,6 +581,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
   },
+  menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998,
+  },
+
   backBtn: {
     width: 36,
     height: 36,
@@ -530,23 +652,22 @@ const styles = StyleSheet.create({
   infoLabel: { color: "#9CA3AF", fontSize: 12 },
   infoValue: { color: "#111", fontSize: 14, marginTop: 6 },
 
-  // FABs
- filterFab: {
-  position: "absolute",
-  bottom: 120,
-  right: 25,
-  width: 50,
-  height: 50,
-  backgroundColor: "#fff",
-  borderRadius: 55,
-  justifyContent: "center",
-  alignItems: "center",
-  elevation: 6, 
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowRadius: 5,
-  shadowOffset: { width: 0, height: 2 }, // iOS shadow
-},
+  filterFab: {
+    position: "absolute",
+    bottom: 120,
+    right: 25,
+    width: 50,
+    height: 50,
+    backgroundColor: "#fff",
+    borderRadius: 55,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
 
   filterIcon: { width: 30, height: 30 },
@@ -671,37 +792,37 @@ const styles = StyleSheet.create({
 
 
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
-   datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
- filterSheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 28,
-  borderTopRightRadius: 28,
-  width: "100%",
-  minHeight: "42%",   // first screenshot height
-  maxHeight: "75%",
-  elevation: 30,
-},
-sheetHandle: {
-  width: 60,
-  height: 5,
-  backgroundColor: "#D7D7D7",
-  borderRadius: 20,
-  alignSelf: "center",
-  marginBottom: 14,
-  marginTop: 6
-},
-filterHeaderRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 14
-},
+  datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
+  filterSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    width: "100%",
+    minHeight: "42%",
+    maxHeight: "75%",
+    elevation: 30,
+  },
+  sheetHandle: {
+    width: 60,
+    height: 5,
+    backgroundColor: "#D7D7D7",
+    borderRadius: 20,
+    alignSelf: "center",
+    marginBottom: 14,
+    marginTop: 6
+  },
+  filterHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14
+  },
 
-filterTitle: {
-  fontSize: 20,
-  fontWeight: "700",
-  marginLeft: 10
-},
+  filterTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginLeft: 10
+  },
 
   resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
   option: { paddingVertical: 12, paddingHorizontal: 14 },
@@ -712,9 +833,9 @@ filterTitle: {
   quickText: { color: "#111", fontWeight: "600" },
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" },applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
+  resetBtnText: { color: "#1E45E1", fontWeight: "700" }, applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
   applyBtnText: { color: "#fff", fontWeight: "700" },
-   dropdownMenu: {
+  dropdownMenu: {
     position: "absolute",
     left: 0,
     right: 0,
@@ -727,20 +848,20 @@ filterTitle: {
     paddingVertical: 8,
     height: 100
   },
- sheetOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-  zIndex: 9999
-},
+  sheetOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+    zIndex: 9999
+  },
 
   dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
-   selectWrapper: { position: "relative", width: "100%", marginTop: 8 },
+  selectWrapper: { position: "relative", width: "100%", marginTop: 8 },
   selectBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -751,12 +872,45 @@ filterTitle: {
     paddingHorizontal: 12,
     borderRadius: 12,
   },
-   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
+  downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
 
-  
+
   dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
+  },
+  emptyImage: {
+    width: 220,
+    height: 160,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  deleteBox: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+  },
+
 
 });
