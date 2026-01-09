@@ -7,7 +7,7 @@ import {
   Dimensions,
   TouchableOpacity,
   TextInput,
-  ScrollView,Image,TouchableWithoutFeedback,Keyboard
+  ScrollView,Image,TouchableWithoutFeedback,Keyboard,PanResponder
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DownArrow from "../../../Assets/Images/direction-down.png";
@@ -100,6 +100,30 @@ useEffect(() => {
     hideSub.remove();
   };
 }, [visible]);
+const panResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gesture) =>
+      Math.abs(gesture.dy) > 5,
+
+    onPanResponderMove: (_, gesture) => {
+      if (gesture.dy > 0) {
+        translateY.setValue(gesture.dy);
+      }
+    },
+
+    onPanResponderRelease: (_, gesture) => {
+      if (gesture.dy > 120) {
+        closeSheet(); // swipe down → close
+      } else {
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
+
 
  useEffect(() => {
   if (visible && customerDetails?.address && !initialized) {
@@ -162,7 +186,8 @@ useEffect(() => {
     <View style={styles.overlay}>
       <TouchableOpacity style={{ flex: 1 }} onPress={closeSheet} />
 
-     <Animated.View
+   <Animated.View
+  {...panResponder.panHandlers}
   style={[
     styles.sheet,
     {
@@ -177,6 +202,7 @@ useEffect(() => {
     },
   ]}
 >
+
 
         <View style={styles.handle} />
         <Text style={styles.title}>Edit Manual Address</Text>
