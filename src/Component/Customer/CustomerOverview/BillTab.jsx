@@ -1,57 +1,26 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
-const BILL_DATA = [
-  {
-    id: "IMADV-005",
-    type: "Advance",
-    amount: "₹2,200",
-    status: "Overdue",
-    date: "05/11/2025",
-  },
-  {
-    id: "IMINV-985",
-    type: "Rent",
-    amount: "₹7,200",
-    status: "Overdue",
-    date: "05/11/2025",
-  },
-  {
-    id: "IMINV-985",
-    type: "Rent",
-    amount: "₹7,200",
-    status: "Paid",
-    date: "05/11/2025",
-  },
-  {
-    id: "SSADV-8764",
-    type: "Advance",
-    amount: "₹3,100",
-    status: "Paid",
-    date: "05/09/2025",
-  },
-];
+export default function BillTab({ customerDetails }) {
+  const invoiceList = customerDetails?.invoiceResponseList || [];
 
-export default function BillTab() {
+  console.log("customerDetailsBillTab", invoiceList);
+
   return (
-    <FlatList
-      data={BILL_DATA}
-      keyExtractor={(item, index) => index.toString()}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 30 }}
-      renderItem={({ item }) => (
-        <View style={styles.row}>
+    <View style={{ paddingBottom: 30 }}>
+      {invoiceList.map((item, index) => (
+        <View key={index} style={styles.row}>
           {/* LEFT */}
           <View>
-            <Text style={styles.billId}>{item.id}</Text>
+            <Text style={styles.billId}>{item.invoiceNumber}</Text>
 
             <View style={styles.subRow}>
-              <Text style={styles.billType}>{item.type}</Text>
+              <Text style={styles.billType}>{item.invoiceType}</Text>
 
               <View
                 style={[
                   styles.statusBadge,
-                  item.status === "Paid"
+                  item.paymentStatus === "Paid"
                     ? styles.paidBadge
                     : styles.overdueBadge,
                 ]}
@@ -59,12 +28,12 @@ export default function BillTab() {
                 <Text
                   style={[
                     styles.statusText,
-                    item.status === "Paid"
+                    item.paymentStatus === "Paid"
                       ? styles.paidText
                       : styles.overdueText,
                   ]}
                 >
-                  {item.status}
+                  {item.paymentStatus}
                 </Text>
               </View>
             </View>
@@ -72,14 +41,15 @@ export default function BillTab() {
 
           {/* RIGHT */}
           <View style={styles.rightBox}>
-            <Text style={styles.amount}>{item.amount}</Text>
-            <Text style={styles.date}>on {item.date}</Text>
+            <Text style={styles.amount}>₹{item.totalAmount}</Text>
+            <Text style={styles.date}>on {item.dueDate}</Text>
           </View>
         </View>
-      )}
-    />
+      ))}
+    </View>
   );
 }
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",

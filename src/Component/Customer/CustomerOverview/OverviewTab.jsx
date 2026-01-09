@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -17,34 +17,37 @@ import FloorIcon from "../../../Assets/Images/profile.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import EditIcon from "../../../Assets/Images/edit.png";
 
-export default function OverviewTab({ customerDetails }) {
-const [addressTab, setAddressTab] = useState("KYC");
 
+
+export default function OverviewTab({ customerDetails,handleEditBasicDetails,handleEditAdressDetails }) {
+const [addressTab, setAddressTab] = useState("KYC");
+const handleEdit = ()=>{
+  handleEditBasicDetails()
+}
+const handleAdressEdit=()=>{
+  handleEditAdressDetails()
+}
 console.log("customerDetails1234",customerDetails)
 
   const [docTab, setDocTab] = useState("KYC");
-const TabRow = ({ tabs, active, onChange }) => (
-  <View style={styles.tabRow}>
-    {tabs.map((t) => (
-      <TouchableOpacity key={t.key} onPress={() => onChange(t.key)}>
-        <Text
-          style={[
-            styles.tabText,
-            active === t.key && styles.activeTab,
-          ]}
-        >
-          {t.label}
-        </Text>
-      </TouchableOpacity>
-    ))}
-  </View>
-);
+  const [flat,setFlat] = useState("")
+  const [area,setArea] = useState("")
+  const [landmark,setLandmark] = useState("")
+  const [city,setCity] = useState("")
+  const [pincode,setPincode] = useState("")
+  const [stateList,setStateList] = useState("")
+ 
+ 
+useEffect(()=>{
+  if(customerDetails){
+setFlat(customerDetails?.address?.houseNo)
+  }
 
-
+},[customerDetails])
 
 
   return (
-
+<>
 
       <ScrollView
       showsVerticalScrollIndicator={false}
@@ -57,13 +60,16 @@ const TabRow = ({ tabs, active, onChange }) => (
  
   <View style={styles.sectionHeaderRow}>
     <Text style={styles.sectionTitle}>Basic Details</Text>
-    <Image source={EditIcon} style={styles.editIcon} />
+    {/* <Image source={EditIcon} style={styles.editIcon} /> */}
+   <TouchableOpacity onPress={handleEdit}>
+          <Image source={EditIcon} style={styles.editIcon} />
+        </TouchableOpacity>
   </View>
   {/* First Name */}
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>First Name</Text>
     <Text style={styles.detailValue}>
-      {customerDetails?.firstName || "--"}
+      {customerDetails?.firstName || "N/A"}
     </Text>
   </View>
 
@@ -71,7 +77,7 @@ const TabRow = ({ tabs, active, onChange }) => (
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>Last Name</Text>
     <Text style={styles.detailValue}>
-      {customerDetails?.lastName || "--"}
+      {customerDetails?.lastName || "N/A"}
     </Text>
   </View>
 
@@ -81,7 +87,7 @@ const TabRow = ({ tabs, active, onChange }) => (
     <View style={styles.valueWithIcon}>
       <Image source={Mail} style={styles.detailIcon} />
       <Text style={styles.detailValue}>
-        {customerDetails?.emailId || "--"}
+        {customerDetails?.emailId || "N/A"}
       </Text>
     </View>
   </View>
@@ -92,7 +98,7 @@ const TabRow = ({ tabs, active, onChange }) => (
     <View style={styles.valueWithIcon}>
       <Image source={Phone} style={styles.detailIcon} />
       <Text style={styles.detailValue}>
-        {customerDetails?.mobileNo || "--"}
+      +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"}
       </Text>
     </View>
   </View>
@@ -128,99 +134,142 @@ const TabRow = ({ tabs, active, onChange }) => (
 
    
     {addressTab === "MANUAL" && (
-      <Image source={EditIcon} style={styles.editIcon} />
+     <TouchableOpacity onPress={handleAdressEdit}>
+    <Image source={EditIcon} style={styles.editIcon} />
+  </TouchableOpacity>
     )}
   </View>
 
    {
     addressTab === "KYC" && (
       <View style={{paddingTop:18}}>
-       <View style={styles.detailBlock}>
+     <View style={styles.row}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>House No / Apartment</Text>
     <View style={styles.valueRow}>
       <Image source={Home} style={styles.icon} />
-      <Text style={styles.value}>24, Prestige Heights</Text>
+      <Text style={styles.value}>
+        {/* {customerDetails?.address?.houseNo || "N/A"} */}
+      </Text>
     </View>
   </View>
 
-  <View style={styles.detailBlock}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>Street / Area</Text>
     <View style={styles.valueRow}>
       <Image source={Location} style={styles.icon} />
-      <Text style={styles.value}>Gandhi Street</Text>
+      <Text style={styles.value}>
+        {/* {customerDetails?.address?.streetName || "N/A"} */}
+      </Text>
     </View>
   </View>
+</View>
 
-  <View style={styles.detailBlock}>
+
+ <View style={styles.row}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>Landmark</Text>
     <View style={styles.valueRow}>
       <Image source={Location} style={styles.icon} />
-      <Text style={styles.value}>Near Apollo Hospital</Text>
+      <Text style={styles.value}>
+        {/* {customerDetails?.address?.landmark || "N/A"} */}
+      </Text>
     </View>
   </View>
 
-  <View style={styles.detailBlock}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>Pincode</Text>
-    <Text style={styles.value}>600045</Text>
-  </View>
-
-  <View style={styles.detailBlock}>
-    <Text style={styles.label}>City</Text>
-    <Text style={styles.value}>Chennai</Text>
-  </View>
-
-  <View style={styles.detailBlock}>
-    <Text style={styles.label}>State</Text>
     <Text style={styles.value}>
-     TamilNadu
+      {/* {customerDetails?.address?.pincode || "N/A"} */}
     </Text>
   </View>
+</View>
+
+
+ <View style={styles.row}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
+    <Text style={styles.label}>City</Text>
+    <Text style={styles.value}>
+      {/* {customerDetails?.address?.city || "N/A"} */}
+    </Text>
+  </View>
+
+  <View style={[styles.detailBlock, styles.halfBlock]}>
+    <Text style={styles.label}>State</Text>
+    <Text style={styles.value}>
+      {/* {customerDetails?.address?.state || "N/A"} */}
+    </Text>
+  </View>
+</View>
+
+ 
       </View>
   )}
 
   {
     addressTab === "MANUAL" && (
+    
       <View>
-       <View style={styles.detailBlock}>
+     <View style={styles.row}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>House No / Apartment</Text>
     <View style={styles.valueRow}>
       <Image source={Home} style={styles.icon} />
-      <Text style={styles.value}>24, Prestige Heights</Text>
+      <Text style={styles.value}>
+        {customerDetails?.address?.houseNo || "N/A"}
+      </Text>
     </View>
   </View>
 
-  <View style={styles.detailBlock}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>Street / Area</Text>
     <View style={styles.valueRow}>
       <Image source={Location} style={styles.icon} />
-      <Text style={styles.value}>Gandhi Street</Text>
+      <Text style={styles.value}>
+        {customerDetails?.address?.streetName || "N/A"}
+      </Text>
     </View>
   </View>
+</View>
 
-  <View style={styles.detailBlock}>
+
+ <View style={styles.row}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>Landmark</Text>
     <View style={styles.valueRow}>
       <Image source={Location} style={styles.icon} />
-      <Text style={styles.value}>Near Apollo Hospital</Text>
+      <Text style={styles.value}>
+        {customerDetails?.address?.landmark || "N/A"}
+      </Text>
     </View>
   </View>
 
-  <View style={styles.detailBlock}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>Pincode</Text>
-    <Text style={styles.value}>600045</Text>
-  </View>
-
-  <View style={styles.detailBlock}>
-    <Text style={styles.label}>City</Text>
-    <Text style={styles.value}>Chennai</Text>
-  </View>
-
-  <View style={styles.detailBlock}>
-    <Text style={styles.label}>State</Text>
     <Text style={styles.value}>
-     TamilNadu
+      {customerDetails?.address?.pincode || "N/A"}
     </Text>
   </View>
+</View>
+
+
+ <View style={styles.row}>
+  <View style={[styles.detailBlock, styles.halfBlock]}>
+    <Text style={styles.label}>City</Text>
+    <Text style={styles.value}>
+      {customerDetails?.address?.city || "N/A"}
+    </Text>
+  </View>
+
+  <View style={[styles.detailBlock, styles.halfBlock]}>
+    <Text style={styles.label}>State</Text>
+    <Text style={styles.value}>
+      {customerDetails?.address?.state || "N/A"}
+    </Text>
+  </View>
+</View>
+
+ 
       </View>
   )}
  
@@ -530,6 +579,8 @@ const TabRow = ({ tabs, active, onChange }) => (
      
     </View>
     </ScrollView>
+     
+    </>
   );
 }
 
@@ -826,6 +877,15 @@ amenityItem: {
   borderRadius: 12,
   padding: 12,
   marginBottom: 10,
+},
+row: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginBottom: 12,
+},
+
+halfBlock: {
+  width: "48%",
 },
 
 

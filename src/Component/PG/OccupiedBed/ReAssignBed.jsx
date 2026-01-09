@@ -97,7 +97,7 @@ const selectedFloorRooms = rooms.filter(
 
       {/* HEADER */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBack}>
-        <Text style={styles.headerText}>← Re Assign Bed</Text>
+        <Text style={styles.headerText}>← Change Bed</Text>
       </TouchableOpacity>
 
       {/* PROFILE */}
