@@ -34,15 +34,16 @@ export const LoginContexts = createContext();
 
 const LoginContext = ({ children }) => {
   const [userId, setUserId] = useState(null);
-  const [loggedIn, setLoggedIn] = useState(false);
+  // const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loggedIN,setLoggedIN]=useState()
   const [pinVerifid, setPinVerified] = useState(false)
   const [route,setRoute]=useState()
+  console.log(userId)
 
 
   console.log("pinverfied", pinVerifid);
-   console.log("loggedIn", loggedIn);
+  //  console.log("loggedIn", loggedIn);
  console.log("loggedIn", loggedIN);
   console.log("userId", userId);
 
@@ -52,7 +53,7 @@ const LoginContext = ({ children }) => {
       const res = await AxiosConfig.post("/v2/mobile/login", payload);
       console.log("res", res);
       
-      setUserId(res.data.userId);
+      // setUserId(res.data.userId);
       return { success: true, data: res.data };
     } catch (e) {
       return {
@@ -68,36 +69,50 @@ const LoginContext = ({ children }) => {
  
 
 const logout = async () => {
-  try {
-    setLoading(true);
+
+  try{
+
+      setLoading(true);
 
     const res = await AxiosConfig.post("/v2/profile/logout", {
       source: "MOBILE",
     });
+    console.log(res)
+    return res;
 
-    if (res?.status === 200) {
-          await removeData(ACCESS_TOKEN);
-    await removeData(LOGGEDIN);
-
-    setUserId(null);
-    setLoggedIn(false);
-    setPinVerified(false);
-    setRoute(null);
-      return { success: true };
-      
-    }
-
-    return { success: false };
-
-  } catch (error) {
-    console.log("logout error", error?.response?.data);
-    return {
-      success: false,
-      message: error?.response?.data?.message || "Logout failed",
-    };
-  } finally {
-    setLoading(false);
+  } catch (error){
+      return { status: error.response.status, message: error.response.data };
   }
+  // try {
+  //   setLoading(true);
+
+  //   const res = await AxiosConfig.post("/v2/profile/logout", {
+  //     source: "MOBILE",
+  //   });
+
+  //   if (res?.status === 200) {
+  //         await removeData(ACCESS_TOKEN);
+  //   await removeData(LOGGEDIN);
+
+  //   setUserId(null);
+  //   setLoggedIn(false);
+  //   setPinVerified(false);
+  //   setRoute(null);
+  //     return { success: true };
+      
+  //   }
+
+  //   return { success: false };
+
+  // } catch (error) {
+  //   console.log("logout error", error?.response?.data);
+  //   return {
+  //     success: false,
+  //     message: error?.response?.data?.message || "Logout failed",
+  //   };
+  // } finally {
+  //   setLoading(false);
+  // }
 };
 
 
@@ -111,8 +126,8 @@ const logout = async () => {
       );
        console.log(res)
 
-      await storeData(LOGGEDIN, "true");
-      setLoggedIn(true);
+      // await storeData(LOGGEDIN, "true");
+      // setLoggedIn(true);
      
 
       return res;
@@ -135,8 +150,8 @@ const logout = async () => {
     
     console.log("token", token);
     await storeData("token", token);
-    // await storeData(LOGGEDIN, "true");
-    setLoggedIn(true);
+    await storeData(LOGGEDIN, "true");
+    // setLoggedIn(true);
 
     return res;
   } catch (error) {
@@ -161,6 +176,12 @@ const logout = async () => {
       setRoute(value)
   }
 
+  const logoutfn=(value)=>{
+    console.log(value)
+        // setLoggedIn(value)
+        setLoggedIN(value )
+    }
+
   return (
     <LoginContexts.Provider
       value={{
@@ -169,7 +190,6 @@ const logout = async () => {
         CreateMpin,
         verifyMpin,
         userId,
-        loggedIn,
         loading,
 
         loggedin:loggedinFn,
@@ -177,6 +197,7 @@ const logout = async () => {
         pinVerifid,
         updatePinSetupStatus,
         updateUserId,
+        logoutf:logoutfn,
 
         updateRoute:routeNamefn, getRoute:route
 

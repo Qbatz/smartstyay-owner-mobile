@@ -196,7 +196,7 @@ function AppContent(props) {
 
   useEffect(() => {
     if (loginContext?.LoggedIN) {
-      setIsLoggedIn('true')
+      setIsLoggedIn(loginContext?.LoggedIN)
 
     }
   }, [loginContext?.LoggedIN]) 
@@ -214,7 +214,7 @@ function AppContent(props) {
 
     <View style={styles.container}>
 
-
+ {console.log(isLoggedIn)}
       {isLoggedIn === "true" ?  <SuccessFlow/>: 
       <NavigationContainer>
         <Navigation.Navigator screenOptions={{headerShown:false}}>

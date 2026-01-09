@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,B
 import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
 import SuccessModal from "../../ToastFile/ToastPage";
-import { storeData } from "../../Utils/Storage";
-import { LOGGEDIN } from "../../Utils/Constant";
+import { removeData, storeData } from "../../Utils/Storage";
+import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../Utils/Constant";
 import Setting from '../../Assets/Images/setting.png';
 import Remove from '../../Assets/Images/remove.png';
 
@@ -83,12 +83,25 @@ const [modalType, setModalType] = useState("success");
 
 const handleLogout = async () => {
   const res = await logout();
+  console.log(res)
 
-  if (res?.success) {
+  if (res?.status == 200) {
+    await Promise.all([
+        removeData(ACCESS_TOKEN),
+    storeData(LOGGEDIN, "false"),
+     removeData(USER_ID)
+    ])
+
+   
+    loginContext.logoutf("false")
+   
+    loginContext.updateUserId("")
+
     setModalType("success");
     setModalMessage("Logout successfully");
     setShowSuccessModal(true);
 
+   
     setTimeout(() => {
       setShowSuccessModal(false);
 
