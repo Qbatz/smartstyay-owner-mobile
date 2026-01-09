@@ -77,6 +77,7 @@ export default function LoginDesign() {
 
     if (response?.success) {
       const { pinSetup } = response.data;
+      console.log(pinSetup)
 
 
       if (pinSetup === false) {
@@ -87,6 +88,7 @@ export default function LoginDesign() {
         loginContext?.updateUserId(response.data.userId)
         storeData(LOGGEDIN, 'true')
         storeData(USER_ID, response.data.userId)
+        loginContext.updateUserId(response?.data.userId)
         loginContext.updatePinSetupStatus(false)
         loginContext.loggedin('true')
         // navigation.navigate("EnterMPin");
