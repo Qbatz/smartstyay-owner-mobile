@@ -10,6 +10,8 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import EditBasicDetailsSheet from "./EditBasicDetails";
+import EditManualAddressSheet from "./EditAdressDetails"
 
 import OverviewTab from "./OverviewTab";
 import EBReadingTab from "./EBReadingTab";
@@ -28,11 +30,19 @@ const { activeHostelId } = useContext(CommonContexts);
   console.log("customer",customer)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails,setCustomerDetails] = useState("")
+   const [showEdit, setShowEdit] = useState(false);
+    const [showEditSheet,setShowEditSheet] = useState(false)
  useEffect(() => {
     if (customer?.customerId) {
       fetchCustomerDetails();
     }
   }, [customer]);
+  const handleEditBasicDetails = ()=>{
+    setShowEdit(true)
+  }
+   const handleEditAdressDetails = ()=>{
+    setShowEditSheet(true)
+  }
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId);
@@ -54,7 +64,7 @@ const { activeHostelId } = useContext(CommonContexts);
       case "Complaints":
         return <ComplaintsTab customerDetails={customerDetails}/>;
       default:
-        return <OverviewTab customerDetails={customerDetails}/>;
+        return <OverviewTab customerDetails={customerDetails} handleEditBasicDetails = {handleEditBasicDetails} handleEditAdressDetails={handleEditAdressDetails}/>;
     }
   };
 const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
@@ -76,20 +86,20 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
         <View style={{ flex: 1 }}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>Daniel Balaji M</Text>
+            <Text style={styles.name}>{customerDetails?.fullName}</Text>
             <Text style={styles.verified}>✔</Text>
           </View>
 
           <View style={styles.metaRow}>
             <View style={styles.floorBadge}>
-              <Text style={styles.floorText}>Ground Floor</Text>
+              <Text style={styles.floorText}>{customerDetails?.hostelInfo?.floorName}</Text>
             </View>
 
             <Image source={RoomIcon} style={styles.icon} />
-            <Text style={styles.metaText}>203</Text>
+            <Text style={styles.metaText}>{customerDetails?.hostelInfo?.roomName}</Text>
 
             <Image source={BedIcon} style={styles.icon} />
-            <Text style={styles.metaText}>03</Text>
+            <Text style={styles.metaText}>{customerDetails?.hostelInfo?.bedName}</Text>
           </View>
         </View>
 
@@ -124,6 +134,19 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
       <View style={{ flex: 1,}}>
   {renderTab()}
 </View>
+
+<EditBasicDetailsSheet
+      visible={showEdit}
+      onClose={() => setShowEdit(false)}
+      customerDetails={customerDetails}
+       onSuccess={fetchCustomerDetails} 
+    />
+    <EditManualAddressSheet
+      visible={showEditSheet}
+      onClose={() => setShowEditSheet(false)}
+      customerDetails={customerDetails}
+       onSuccess={fetchCustomerDetails} 
+    />
     </View>
   );
 }

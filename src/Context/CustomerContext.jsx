@@ -581,7 +581,8 @@ const initializeCancelBooking = async (customerId) => {
         "Initialize cancel failed",
     };
   }
-};const cancelBooking = async (customerId, payload) => {
+};
+const cancelBooking = async (customerId, payload) => {
   try {
     const token = await retriveData("token");
 
@@ -643,6 +644,60 @@ const getCheckoutCustomersByHostel = async (hostelId, name = "") => {
     setLoading(false);
   }
 };
+const editBasicDetails = async (customerId, payloads, profilePic = null) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+
+    const formData = new FormData();
+
+    // ✅ payload JSON
+    formData.append("payloads", {
+      string: JSON.stringify(payloads),
+      type: "application/json",
+    });
+
+    // ✅ optional profile pic
+    if (profilePic?.uri) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        type: profilePic.type || "image/jpeg",
+        name: profilePic.fileName || "profile.jpg",
+      });
+    }
+
+    const res = await AxiosConfig.put(
+      `/v2/customers/update/${customerId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Update failed" };
+  } catch (error) {
+    console.log("EDIT BASIC DETAILS ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   return (
@@ -661,7 +716,7 @@ const getCheckoutCustomersByHostel = async (hostelId, name = "") => {
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails
       }}
     >
       {children}

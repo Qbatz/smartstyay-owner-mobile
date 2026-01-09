@@ -1,5 +1,7 @@
-import React from "react";
+import React,{useState,useEffect,useCallback,useRef,useContext} from "react";
 import { View, Text, StyleSheet,ScrollView } from "react-native";
+import { ElectricityContext } from "../../../Context/ElectricityContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 const EB_DATA = [
   {
@@ -37,41 +39,88 @@ const EB_DATA = [
   },
 ];
 
-export default function EBReadingTab() {
-  return (
-       <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }}
-    >
+export default function EBReadingTab(customerDetails) {
+     const { activeHostelId } = useContext(CommonContexts);
+      const {ParticularTenantReadingDetails ,particular_EbTenantReading} = useContext(ElectricityContext);
+      const [ebTenantsList,setEbTenantsList] = useState([])
+console.log("customerDetails",customerDetails)
+const customerId = customerDetails.customerDetails?.customerId
+
+        
+      useEffect(() => {
+  if (activeHostelId && customerId) {
+    ParticularTenantReadingDetails(activeHostelId, customerId);
    
-      {EB_DATA.map((item, index) => (
-        <View key={index} style={styles.rowBox}>
-          {/* LEFT */}
-          <View style={{ flex: 1 }}>
-            <View style={styles.monthRow}>
-              {item.active && <View style={styles.activeDot} />}
-              <Text style={styles.monthText}>{item.month}</Text>
-            </View>
+  }
+}, [activeHostelId, customerId]);
 
-            <View style={styles.metaRow}>
-              <View style={styles.floorBadge}>
-                <Text style={styles.floorText}>{item.floor}</Text>
-              </View>
+     const ebList = particular_EbTenantReading || [];   
+     const historyList = ebList?.electricityHistory || [];
+     console.log("ebList",ebList)  
+        
+  return (
+      <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 16 }}
+>
+  {historyList.length === 0 ? (
+    <Text style={{ textAlign: "center", marginTop: 20, color: "#6B7280" }}>
+      No EB readings found
+    </Text>
+  ) : (
+    historyList.map((item, index) => {
+      const getMonthYear = (dateStr) => {
+  if (!dateStr) return "";
 
-              <Text style={styles.iconText}>🏠 {item.room}</Text>
-              <Text style={styles.iconText}>🛏 {item.bed}</Text>
-            </View>
+  const [day, month, year] = dateStr.split("/");
+
+  const date = new Date(year, month - 1, day);
+
+  return date.toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+};
+
+      return(
+
+      
+      <View key={item.id || index} style={styles.rowBox}>
+        {/* LEFT */}
+        <View style={{ flex: 1 }}>
+          <View style={styles.monthRow}>
+            <Text style={styles.monthText}>
+              <Text style={styles.monthText}>
+  {getMonthYear(item.startDate)}
+</Text>
+            </Text>
           </View>
 
-          {/* RIGHT */}
-          <View style={styles.rightBox}>
-            <Text style={styles.amount}>{item.amount}</Text>
-            <Text style={styles.range}>{item.range}</Text>
+          <View style={styles.metaRow}>
+            <View style={styles.floorBadge}>
+              <Text style={styles.floorText}>
+                {item.floorName}
+              </Text>
+            </View>
+
+            <Text style={styles.iconText}>🏠 {item.roomName}</Text>
+            <Text style={styles.iconText}>🛏 {item.bedName}</Text>
           </View>
         </View>
-      ))}
-   
-    </ScrollView>
+
+        {/* RIGHT */}
+        <View style={styles.rightBox}>
+          <Text style={styles.amount}>EB</Text>
+          <Text style={styles.range}>
+            {item.startDate} → {item.endDate}
+          </Text>
+        </View>
+      </View>
+      )
+})
+  )}
+</ScrollView>
+
   );
 }
 

@@ -658,7 +658,7 @@ console.log("selectedBed",selectedBed)
   {/* LEFT SIDE */}
   <View style={{ flexDirection: "row", alignItems: "center" }}>
     <Text style={styles.tabledescription}>
-      Actual days ({settlementDetails?.currentMonthRentInfo?.stayDays} days)
+      Actual day ({settlementDetails?.currentMonthRentInfo?.stayDays} days)
     </Text>
 
     <Image
@@ -1015,7 +1015,7 @@ const styles = StyleSheet.create({
   tableCellLeft: { width: "33%", color: "#1E5BFF", fontSize: 11 },
   tableCellCenter: { width: "33%", textAlign: "center", fontSize: 11 },
   tableCellRight: { width: "33%", textAlign: "right", fontSize: 11 },
-  tabledescription: { width: "45%", color: "#1E5BFF", fontSize: 11 },
+  tabledescription: { width: "55%", color: "#1E5BFF", fontSize: 11 },
   tableStrip: { backgroundColor: "#FCFCFD" },
   invoiceLink: { color: "#1E5BFF", textDecorationLine: "underline" },
 

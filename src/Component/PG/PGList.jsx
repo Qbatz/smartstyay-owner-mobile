@@ -987,7 +987,7 @@ useFocusEffect(
                 }}
               >
                 <View>
-                  <Text style={styles.roomTitle}>Room No {item.name}</Text>
+                  <Text style={styles.roomTitle}>{item.name}</Text>
                   <Text style={styles.roomSubtitle}>{bedCount} Sharing</Text>
                 </View>
 

@@ -178,12 +178,20 @@ const mobileRegex = /^[6-9][0-9]{9}$/;
         }
 
 
-     if (!basicDetails.mobile) {
+   if (!basicDetails.mobile) {
   setMobileError("Please enter mobile number");
   valid = false;
-} else if (!mobileRegex.test(basicDetails.mobile)) {
+} 
+else if (basicDetails.mobile === "0000000000") {
+  setMobileError("All digits cannot be zero");
+  valid = false;
+}
+else if (!mobileRegex.test(basicDetails.mobile)) {
   setMobileError("Enter a valid 10 digit mobile number");
   valid = false;
+}
+else {
+  setMobileError("");
 }
 
 
