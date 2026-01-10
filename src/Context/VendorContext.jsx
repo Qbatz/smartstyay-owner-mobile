@@ -52,13 +52,19 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
       });
     }
 
-    formData.append("payLoads", JSON.stringify(payLoads));
-
-    const res = await AxiosConfig.post(
-      "/v2/vendors",
-      formData
-      // ❌ DO NOT set Content-Type
+    // ✅ MUST be Blob (same as website)
+    formData.append(
+      "payLoads",
+      new Blob([JSON.stringify(payLoads)], {
+        type: "application/json",
+      })
     );
+
+    const res = await AxiosConfig.post("/v2/vendors", formData);
+    // ❌ DO NOT pass headers manually
+
+    console.log("res", res);
+    
 
     if (res.status === 201 || res.status === 200) {
       await getVendorList(hostelId);
@@ -67,12 +73,13 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
 
     return { success: false };
   } catch (err) {
-    console.log("ADD VENDOR ERROR", err.response?.data);
+    console.log("ADD VENDOR ERROR 👉", err.response?.data);
     return { success: false, message: getErrorMessage(err) };
   } finally {
     setLoading(false);
   }
 };
+
 
 
 
@@ -84,6 +91,10 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
   setLoading(true);
   try {
     const formData = new FormData();
+        const token = await retriveData("token");
+
+        console.log("token", token);
+        
 
     if (profilePic) {
       formData.append("profilePic", {
@@ -93,16 +104,25 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
       });
     }
 
-    formData.append("updateVendor", JSON.stringify(updateVendor));
+    // ✅ MUST be Blob (NOT string)
+    formData.append(
+      "updateVendor",
+      new Blob([JSON.stringify(updateVendor)], {
+        type: "application/json",
+      })
+    );
 
     const res = await AxiosConfig.put(
       `/v2/vendors/${updateVendor.vendorId}`,
-      formData
-      // ❌ DO NOT pass headers here
-    );
-
-    console.log("res", res);
-    
+      formData ,
+       {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+    )
+    // ❌ DO NOT set Content-Type
 
     if (res.status === 200) {
       await getVendorList(hostelId);
@@ -117,6 +137,7 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
     setLoading(false);
   }
 };
+
 
 
 

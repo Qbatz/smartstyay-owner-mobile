@@ -12,7 +12,7 @@ import {
   PanResponder,
   Dimensions, BackHandler
 } from "react-native";
-
+import { CustomerContext } from "../../../Context/CustomerContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
@@ -24,8 +24,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function AddVendorSheet({ onClose, vendorData }) {
 
 
-
-  const { addVendor, updateVendor } = useContext(VendorContext);
+  // const {  addVendor } = useContext(CustomerContext);
+  const {addVendor,   updateVendor } = useContext(VendorContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const translateY = useRef(new Animated.Value(0)).current;
@@ -441,6 +441,9 @@ const payload = {
   placeholder="Enter Mobile No"
 />
 
+          {errors.mobile && (
+  <ErrorMessage message={errors.mobile} type="error" />
+)}
 
           <Text style={styles.label}>Email ID</Text>
         <TextInput
