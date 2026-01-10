@@ -382,11 +382,7 @@ const handleBedPress = async (bed, room) => {
 
 
 
-  useEffect(() => {
-    if (!activeHostelId) return;
-
-    loadFloors();
-  }, [activeHostelId]);
+ 
 
   const loadFloors = async () => {
     const res = await getAllFloorsByHostel(activeHostelId);
@@ -397,6 +393,7 @@ const handleBedPress = async (bed, room) => {
 
     }
   };
+
   console.log("Floors", floors)
 
   useEffect(() => {
@@ -420,6 +417,20 @@ const handleBedPress = async (bed, room) => {
     }
   };
 
+useEffect(() => {
+  if (!activeHostelId) return;
+
+  // 🔥 RESET OLD HOSTEL DATA
+  setFloors([]);
+  setRooms([]);
+  setBedsByRoom({});
+  setSelectedFloorId(null);
+  setActiveFloorIndex(0);
+
+  // 🔥 LOAD NEW HOSTEL DATA
+  loadFloors();
+
+}, [activeHostelId]);
 
   const handleBedAdded = async (roomId) => {
     const res = await getAllBedsByRoom(roomId);
