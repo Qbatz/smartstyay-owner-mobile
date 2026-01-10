@@ -1,5 +1,7 @@
 import React, { createContext, useState } from "react";
 import AxiosConfig from "../Config/AxiosConfig";
+import { retriveData } from "../Utils/Storage";
+
 
 export const VendorContext = createContext();
 
@@ -37,86 +39,109 @@ export default function VendorProvider({ children }) {
   };
 
  
-  const addVendor = async ({ profilePic, payLoads, hostelId }) => {
-    setLoading(true);
+const addVendor = async ({ profilePic, payLoads, hostelId }) => {
+  setLoading(true);
+  try {
+    const formData = new FormData();
 
-    try {
-      const formData = new FormData();
-
-      if (profilePic) {
-        formData.append("profilePic", profilePic);
-      }
-
-      if (payLoads) {
-        formData.append(
-          "payLoads",
-          new Blob([JSON.stringify(payLoads)], {
-            type: "application/json",
-          })
-        );
-      }
-
-      const res = await AxiosConfig.post("/v2/vendors", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+    if (profilePic) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        name: "vendor.jpg",
+        type: "image/jpeg",
       });
-
-      if (res.status === 201 || res.status === 200) {
-        await getVendorList(hostelId);
-        return {
-          success: true,
-          message: res.data || "Vendor added successfully",
-        };
-      }
-
-      return { success: false, message: "Failed to add vendor" };
-    } catch (err) {
-      return { success: false, message: getErrorMessage(err) };
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // ✅ MUST be Blob (same as website)
+    formData.append(
+      "payLoads",
+      new Blob([JSON.stringify(payLoads)], {
+        type: "application/json",
+      })
+    );
+
+    const res = await AxiosConfig.post("/v2/vendors", formData);
+    // ❌ DO NOT pass headers manually
+
+    console.log("res", res);
+    
+
+    if (res.status === 201 || res.status === 200) {
+      await getVendorList(hostelId);
+      return { success: true, message: res.data };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log("ADD VENDOR ERROR 👉", err.response?.data);
+    return { success: false, message: getErrorMessage(err) };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
 
  
-  const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
-    setLoading(true);
+ 
 
-    try {
-      const formData = new FormData();
+const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
+  setLoading(true);
+  try {
+    const formData = new FormData();
+        const token = await retriveData("token");
 
-      if (profilePic) {
-        formData.append("profilePic", profilePic);
-      }
+        console.log("token", token);
+        
 
-      if (updateVendor) {
-        formData.append(
-          "updateVendor",
-          new Blob([JSON.stringify(updateVendor)], {
-            type: "application/json",
-          })
-        );
-      }
-
-      const res = await AxiosConfig.put(
-        `/v2/vendors/${updateVendor.vendorId}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      if (res.status === 200) {
-        await getVendorList(hostelId);
-        return {
-          success: true,
-          message: res.data || "Vendor updated successfully",
-        };
-      }
-
-      return { success: false, message: "Failed to update vendor" };
-    } catch (err) {
-      return { success: false, message: getErrorMessage(err) };
-    } finally {
-      setLoading(false);
+    if (profilePic) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        name: "vendor.jpg",
+        type: "image/jpeg",
+      });
     }
-  };
+
+    // ✅ MUST be Blob (NOT string)
+    formData.append(
+      "updateVendor",
+      new Blob([JSON.stringify(updateVendor)], {
+        type: "application/json",
+      })
+    );
+
+    const res = await AxiosConfig.put(
+      `/v2/vendors/${updateVendor.vendorId}`,
+      formData ,
+       {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+    )
+    // ❌ DO NOT set Content-Type
+
+    if (res.status === 200) {
+      await getVendorList(hostelId);
+      return { success: true, message: res.data };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log("UPDATE ERROR 👉", err.response?.data);
+    return { success: false, message: getErrorMessage(err) };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
 
 
   const deleteVendor = async (vendorId, hostelId) => {

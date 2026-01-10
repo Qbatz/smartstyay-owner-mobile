@@ -93,6 +93,8 @@ export const CustomerProvider = ({ children }) => {
     setParticularCustomerDetails(null);
   };
 
+  
+
 
   const addCustomer = async (hostelId, payloads, image) => {
     try {
@@ -699,6 +701,61 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
 };
 
 
+const addVendor = async (payloads, profilePic = null) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+ 
+    const token = await retriveData("token");
+    const formData = new FormData();
+ 
+    // ✅ payload JSON (IMPORTANT: key name = payLoads)
+    formData.append("payLoads", {
+      string: JSON.stringify(payloads),
+      type: "application/json",
+    });
+ 
+    // ✅ profile image
+    if (profilePic?.uri) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        type: profilePic.type || "image/jpeg",
+        name: profilePic.fileName || "profile.jpg",
+      });
+    }
+ 
+    const res = await AxiosConfig.post(
+      "/v2/vendors",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+ 
+    if (res.status === 201 || res.status === 200) {
+      return { success: true, data: res.data };
+    }
+ 
+    return { success: false, message: "Vendor creation failed" };
+  } catch (error) {
+    console.log("ADD VENDOR ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return (
     <CustomerContext.Provider
@@ -709,7 +766,8 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
         resetParticularCustomer,
         loading,
         errorMsg,
-        addCustomer, 
+        addCustomer,
+        addVendor ,
         getBedsByHostelAndDate, 
         checkInCustomer, deleteCustomer,
          changeBedCustomer, 
