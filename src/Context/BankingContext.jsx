@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 export const BankingContext = createContext();
 
@@ -19,8 +19,8 @@ export default function BankingProvider({ children }) {
     try {
       setLoading(true);
       setErrorMsg("");
-
-      const res = await AxiosConfig.get(`/v2/bank/${hostelId}`);
+      const axios = getAxios();
+      const res = await axios.get(`/v2/bank/${hostelId}`);
 
       if (res.status === 200) {
         const banks = res.data?.listBanks || [];

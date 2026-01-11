@@ -1,6 +1,6 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
 import base64 from "react-native-base64";
+import { getAxios } from "../Config/AxiosConfig";
 
 
 export const PGContext = createContext();
@@ -42,8 +42,8 @@ const convertToBase64File = (json) => {
           formData.append("additionalImages", img);
         });
       }
-
-      const response = await AxiosConfig.post("/v2/hostel", formData, {
+      const axios = getAxios();
+      const response = await axios.post("/v2/hostel", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -79,8 +79,8 @@ const convertToBase64File = (json) => {
       } else {
         formData.append("additionalImages", "");
       }
-
-      const response = await AxiosConfig.put(
+      const axios = getAxios();
+      const response = await axios.put(
         `/v2/hostel/${params.hostelId}`,
         formData,
         {
@@ -102,8 +102,8 @@ const convertToBase64File = (json) => {
   try {
     setPgLoading(true);
     setPgError(null);
-
-    const response = await AxiosConfig.delete(`/v2/hostel/${hostelId}`);
+    const axios = getAxios();
+    const response = await axios.delete(`/v2/hostel/${hostelId}`);
     return response;
 
   } catch (error) {

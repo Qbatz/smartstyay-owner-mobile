@@ -2,12 +2,6 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: "com.google.gms.google-services"
-project.ext.envConfigFiles = [
-    dev: ".env.dev",
-    qa: ".env.qa",
-    prod: ".env.prod"
-]
-apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 
 /**
@@ -108,6 +102,12 @@ android {
             applicationIdSuffix ".dev"
             resValue "string", "app_name", "SmartStay Dev"
             versionNameSuffix "-dev"
+        }
+        local {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "SmartStay Dev"
+            versionNameSuffix "-local"
         }
         qa {
             dimension "version"

@@ -1,5 +1,5 @@
 import React, { createContext, useContext,useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 
@@ -13,7 +13,8 @@ const getElectricity = async (hostelId) => {
   try {
     const token = await retriveData("token");
 console.log("token",token , hostelId)
-    const res = await AxiosConfig.get(
+const axios = getAxios();
+    const res = await getAxios.get(
       `/v2/hostel/electricity/${hostelId}`,
       {
         headers: { Authorization: `Bearer ${token}` }
@@ -34,8 +35,8 @@ const updateElectricity = async (hostelId, unitPrice) => {
       const token = await retriveData("token");
 
       const body = { unitPrice };
-
-      const res = await AxiosConfig.put(
+      const axios = getAxios();
+      const res = await getAxios.put(
         `/v2/hostel/electricity/${hostelId}`,
         body,
         {
@@ -71,8 +72,8 @@ const changeRoomHostelElectricity = async (payload) => {
     const url = `/v2/hostel/electricity/config/${payload.hostelId}?${query}`;
 
     console.log("🔵 FINAL EB CONFIG URL →", url);
-
-    const res = await AxiosConfig.put(url, {}, {
+    const axios = getAxios();
+    const res = await axios.put(url, {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -89,8 +90,8 @@ const changeRoomHostelElectricity = async (payload) => {
 const getBillingConfig = async (hostelId) => {
     try {
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/hostel/config/billing/${hostelId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -105,8 +106,8 @@ const getBillingConfig = async (hostelId) => {
 const addBillingRecurring = async (payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/hostel/config/billing/${payload.hostelId}`,
       payload,
       {
@@ -129,8 +130,8 @@ const getRoleByHostel = async (hostelId) => {
     setLoading(true);   // 🔵 START LOADER
 
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/role/hostel/${hostelId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -176,8 +177,8 @@ const getRoleByHostel = async (hostelId) => {
 const getRoleModules = async () => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       "/v2/role/modules",
       {
         headers: { Authorization: `Bearer ${token}` }
@@ -193,8 +194,8 @@ const getRoleModules = async () => {
 const addRole = async (payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       "/v2/role",
       payload,
       {
@@ -218,8 +219,8 @@ const addRole = async (payload) => {
 const updateRole = async (id, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/role/${id}`,
       payload,
       {
@@ -240,8 +241,8 @@ const updateRole = async (id, payload) => {
 const deleteRole = async (roleId) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.delete(
+    const axios = getAxios();
+    const res = await axios.delete(
       `/v2/role/${roleId}`,
       {
         headers: {
@@ -263,8 +264,8 @@ const getUsersByHostel = async (hostelId) => {
   try {
     setLoading(true); 
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/profile/users-list/${hostelId}`,
       {
         headers: {
@@ -289,8 +290,8 @@ const addUser = async (hostelId, payload) => {
     setLoading(true);
 
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/profile/add-user/${hostelId}`, // ✅ IMPORTANT
       payload,
       {
@@ -317,8 +318,8 @@ const addUser = async (hostelId, payload) => {
 const updateUser = async (hostelId, userId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/profile/users/${hostelId}/${userId}`,
       payload,
       {
@@ -352,8 +353,8 @@ const updateUser = async (hostelId, userId, payload) => {
 const deleteUser = async (userId) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.delete(
+    const axios = getAxios();
+    const res = await axios.delete(
       `/v2/profile/delete-user/${userId}`,
       {
         headers: {

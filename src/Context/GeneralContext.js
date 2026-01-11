@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { Alert } from "react-native";
 import { retriveData } from '../Utils/Storage';
 
@@ -15,8 +15,8 @@ export const GeneralProvider = ({ children }) => {
   const addGeneral = async (formData) => {
     try {
       const token = await retriveData("token");
-
-      const response = await AxiosConfig.post(
+      const axios = getAxios();
+      const response = await axios.post(
         "/v2/profile/add-admin",
         formData,
         {
@@ -46,8 +46,8 @@ export const GeneralProvider = ({ children }) => {
   const updateGeneral = async (adminId, formData) => {
     try {
       const token = await retriveData("token");
-
-      const response = await AxiosConfig.put(
+      const axios = getAxios();
+      const response = await axios.put(
         `/v2/profile/admin/${adminId}`,
         formData,
         {
@@ -71,8 +71,8 @@ export const GeneralProvider = ({ children }) => {
   const deleteGeneral = async (userId) => {
     try {
       const token = await retriveData("token");
-
-      const response = await AxiosConfig.delete(
+      const axios = getAxios();
+      const response = await axios.delete(
         `/v2/profile/delete-admin/${userId}`,
         {
           headers: {
@@ -98,8 +98,8 @@ export const GeneralProvider = ({ children }) => {
     try {
       setLoading(true);
       setErrorMsg("");
-
-      const response = await AxiosConfig.get("/v2/profile/admin-list");
+      const axios = getAxios();
+      const response = await axios.get("/v2/profile/admin-list");
       console.log('response', response)
 
       setLoading(false);
@@ -122,8 +122,8 @@ export const GeneralProvider = ({ children }) => {
       adminId,
       password: newPassword
     };
-
-    const response = await AxiosConfig.post(
+    const axios = getAxios();
+    const response = await axios.post(
       "/v2/profile/change-password",
       body,
       {

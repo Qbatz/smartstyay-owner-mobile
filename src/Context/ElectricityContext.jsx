@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 export const ElectricityContext = createContext();
 
@@ -23,7 +23,8 @@ export default function ElectricityProvider({children}){
 
        try{
            setLoading(true);
-           const res = await AxiosConfig.get(`/v2/electricity/${hostelId}`);
+           const axios = getAxios();
+           const res = await axios.get(`/v2/electricity/${hostelId}`);
             if (res.status === 200) {
              setEBRoomReading(res?.data?.listReadings || []);
              return { success: true, data: res?.data };
@@ -46,7 +47,8 @@ export default function ElectricityProvider({children}){
     const GetEBTenantReading = async (hostelId) => {
        try{
            setLoading(true);
-           const res = await AxiosConfig.get(`/v2/electricity/customers/${hostelId}`);
+           const axios = getAxios();
+           const res = await axios.get(`/v2/electricity/customers/${hostelId}`);
             if (res.status === 200) {
              setEBTenantReading(res?.data || []);
              return { success: true, data: res?.data };
@@ -67,7 +69,8 @@ export default function ElectricityProvider({children}){
     const ParticularRoomReadingDetails = async (hostelId, roomId) => {
         try{
             setLoading(true);
-           const res = await AxiosConfig.get(`/v2/electricity/${hostelId}/${roomId}`);
+            const axios = getAxios();
+           const res = await axios.get(`/v2/electricity/${hostelId}/${roomId}`);
             if (res.status === 200) {
              setParticular_EBRoomReading(res?.data || []);
              return { success: true, data: res?.data };
@@ -91,7 +94,8 @@ export default function ElectricityProvider({children}){
      const ParticularTenantReadingDetails = async (hostelId, customerId) => {
         try{
             setLoading(true);
-           const res = await AxiosConfig.get(`/v2/electricity/customers/${hostelId}/${customerId}`);
+            const axios = getAxios();
+           const res = await axios.get(`/v2/electricity/customers/${hostelId}/${customerId}`);
            
             if (res.status === 200) {
              setParticular_EBTenantReading(res?.data || []);
@@ -118,7 +122,8 @@ export default function ElectricityProvider({children}){
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/electricity/${payload.hostelId}`,
       payload
     );
@@ -154,7 +159,8 @@ const UpdateRoomReading = async (payload) => {
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/electricity/${payload.hostelId}/${payload.readingId}`,
       null,
       {
@@ -188,7 +194,8 @@ const DeleteRoomReading = async ({ hostelId, readingId }) => {
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.delete(
+    const axios = getAxios();
+    const res = await axios.delete(
       `/v2/electricity/${hostelId}/${readingId}`
     );
 

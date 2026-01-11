@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import api from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 const FloorContext = createContext();
@@ -12,8 +12,8 @@ export const FloorProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
-
-      const res = await api.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/floor/all-floors/${hostelId}`,
         {
           headers: {
@@ -43,8 +43,8 @@ export const FloorProvider = ({ children }) => {
         hostelId,
         floorName,
       };
-
-      const res = await api.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/floor`,
         payload,
         {
@@ -69,8 +69,8 @@ export const FloorProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
-
-      const res = await api.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/room/all-rooms/${floorId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -95,8 +95,8 @@ export const FloorProvider = ({ children }) => {
         floorId,
         roomName,
       };
-
-      const res = await api.post(`/v2/room`, payload, {
+      const axios = getAxios();
+      const res = await axios.post(`/v2/room`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -117,8 +117,8 @@ export const FloorProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
-
-      const res = await api.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/bed/all-beds/${roomId}`,
         {
           headers: {
@@ -147,8 +147,8 @@ export const FloorProvider = ({ children }) => {
         hostelId,
         amount,
       };
-
-      const res = await api.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/bed`,
         payload,
         {
@@ -176,8 +176,8 @@ export const FloorProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
-
-      const res = await api.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/room/${roomId}/${hostelId}`,
         {
           roomName,
@@ -206,8 +206,8 @@ export const FloorProvider = ({ children }) => {
   const deleteRoom = async (roomId) => {
     try {
       const token = await retriveData("token");
-
-      const res = await api.delete(`/v2/room/${roomId}`, {
+      const axios = getAxios();
+      const res = await axios.delete(`/v2/room/${roomId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -225,8 +225,8 @@ export const FloorProvider = ({ children }) => {
     try {
       const token = await retriveData("token");
       console.log("DELETE BED TOKEN 👉", token); // 🔥 ADD THIS
-
-      const res = await api.delete(`/v2/bed/${bedId}`, {
+      const axios = getAxios();
+      const res = await axios.delete(`/v2/bed/${bedId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -273,8 +273,8 @@ export const FloorProvider = ({ children }) => {
         isActive: true,
         amount: Number(amount),
       };
-
-      const res = await api.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/bed/${bedId}`,
         payload,
         {
@@ -301,8 +301,8 @@ export const FloorProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
-
-      const res = await api.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/floor/${floorId}`,   // ✅ floorId ONLY in URL
         {
           floorName: data.floorName,
@@ -336,8 +336,8 @@ export const FloorProvider = ({ children }) => {
   const deleteFloor = async (floorId) => {
     try {
       const token = await retriveData("token");
-
-      const res = await api.delete(
+      const axios = getAxios();
+      const res = await axios.delete(
         `/v2/floor/${floorId}`,
         {
           headers: {
@@ -365,8 +365,8 @@ const getBedById = async (bedId) => {
   try {
     setLoading(true);
     const token = await retriveData("token");
-
-    const res = await api.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/bed/${bedId}`,
       {
         headers: {
