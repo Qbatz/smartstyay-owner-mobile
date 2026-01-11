@@ -123,13 +123,11 @@ function App() {
 
   useEffect(() => {
      retriveData(USER_ID).then(result => {
-      console.log("app userId", result)
      setUserId(result)
     })
 
     CommonModule.fetchBaseUrl().then(baseUrl => {
       initBaseUrl(baseUrl)
-      console.log(baseUrl)
     })
 
   }, [])
