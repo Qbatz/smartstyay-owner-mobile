@@ -2,6 +2,12 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: "com.google.gms.google-services"
+project.ext.envConfigFiles = [
+    dev: ".env.dev",
+    qa: ".env.qa",
+    prod: ".env.prod"
+]
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 
 /**
@@ -95,6 +101,26 @@ android {
             keyPassword 'android'
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        dev {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "SmartStay Dev"
+            versionNameSuffix "-dev"
+        }
+        qa {
+            dimension "version"
+            applicationIdSuffix ".qa"
+            resValue "string", "app_name", "SmartStay QA"
+            versionNameSuffix "-qa"
+        }
+        prod {
+            dimension "version"
+            resValue "string", "app_name", "SmartStay Owner"
+        }
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
