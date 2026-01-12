@@ -11,7 +11,9 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-
+import { useCustomer } from "../../../Context/CustomerContext";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.6;
 
@@ -30,6 +32,7 @@ export default function EditManualAddressSheet({
   onSuccess,
 }) {
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
+   const { editBasicDetails } = useCustomer();
 
   const [flat, setFlat] = useState("");
   const [area, setArea] = useState("");
@@ -41,6 +44,13 @@ export default function EditManualAddressSheet({
       const [stateQuery, setStateQuery] = useState("");       
    const [stateOpen, setStateOpen] = useState(false);
    const [initialized, setInitialized] = useState(false);
+   const [initialAddress, setInitialAddress] = useState(null);
+const [formError, setFormError] = useState("");
+const pincodeRef = useRef(null);
+const [pincodeError,setPincodeError] = useState("")
+ const [modalType, setModalType] = useState("success");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
 
       const stateList = [
           { label: "Andhra Pradesh", value: "Andhra Pradesh" },
@@ -84,6 +94,10 @@ export default function EditManualAddressSheet({
 const [keyboardHeight, setKeyboardHeight] = useState(0);
 const safeKeyboardHeight = keyboardHeight > 0 ? keyboardHeight - 40 : 0;
 
+
+
+
+
 useEffect(() => {
   if (!visible) return;
 
@@ -125,22 +139,38 @@ const panResponder = useRef(
 ).current;
 
 
- useEffect(() => {
+useEffect(() => {
   if (visible && customerDetails?.address && !initialized) {
     const a = customerDetails.address;
 
-    setFlat(a.houseNo || "");
-    setArea(a.streetName || "");
-    setLandmark(a.landmark || "");
-    setCity(a.city || "");
-    setPincode(a.pincode ? String(a.pincode) : "");
-    setSelectedState(a.state || "");
+    const init = {
+      houseNo: a.houseNo || "",
+      street: a.streetName || "",
+      landmark: a.landmark || "",
+      city: a.city || "",
+      pincode: a.pincode ? String(a.pincode) : "",
+      state: a.state || "",
+    };
 
-    setInitialized(true); // 🔥 IMPORTANT
+    // 🔥 SET CURRENT VALUES
+    setFlat(init.houseNo);
+    setArea(init.street);
+    setLandmark(init.landmark);
+    setCity(init.city);
+    setPincode(init.pincode);
+    setSelectedState(init.state);
+
+    // 🔥 STORE INITIAL SNAPSHOT (THIS WAS MISSING)
+    setInitialAddress(init);
+
+    setInitialized(true);
   }
 
   if (!visible) {
-    setInitialized(false); // 🔁 reset when sheet closes
+    setInitialized(false);
+    setInitialAddress(null);
+    setFormError("");
+    setPincodeError("");
   }
 }, [visible]);
 
@@ -163,26 +193,127 @@ const panResponder = useRef(
     }).start(onClose);
   };
 
-  const handleSave = () => {
-    const payload = {
-      houseNo: flat,
-      streetName: area,
-      landmark,
-      city,
-      pincode,
-      state: selectedState, 
-    };
+  // const handleSave = () => {
+  //   const payload = {
+  //     houseNo: flat,
+  //     streetName: area,
+  //     landmark,
+  //     city,
+  //     pincode,
+  //     state: selectedState, 
+  //   };
 
-    console.log("Manual Address Payload 👉", payload);
+  //   console.log("Manual Address Payload 👉", payload);
 
-    // 👉 API call here
-    onSuccess?.();
-    closeSheet();
+  //   // 👉 API call here
+  //   onSuccess?.();
+  //   closeSheet();
+  // };
+  const handleSave = async () => {
+  let focused = false;
+  let hasError = false;
+  setFormError("");
+
+  const pinString = String(pincode || "").trim();
+
+  // 🔴 PINCODE VALIDATION
+  if (pinString && pinString.length !== 6) {
+    setPincodeError("Pin Code must be exactly 6 digits");
+    if (!focused) {
+      pincodeRef.current?.focus();
+      focused = true;
+    }
+    hasError = true;
+  } else if (pinString === "000000") {
+    setPincodeError("Pin Code cannot be all zeros");
+    if (!focused) {
+      pincodeRef.current?.focus();
+      focused = true;
+    }
+    hasError = true;
+  } else if (pinString.startsWith("0")) {
+    setPincodeError("Pin Code cannot start with 0");
+    if (!focused) {
+      pincodeRef.current?.focus();
+      focused = true;
+    }
+    hasError = true;
+  } else if (pinString.slice(-3) === "000") {
+    setPincodeError("Last 3 digits cannot be 000");
+    if (!focused) {
+      pincodeRef.current?.focus();
+      focused = true;
+    }
+    hasError = true;
+  } else {
+    setPincodeError("");
+  }
+
+  if (hasError) return;
+
+  
+  if (initialAddress) {
+    const noChanges =
+      flat === initialAddress.houseNo &&
+      area === initialAddress.street &&
+      landmark === initialAddress.landmark &&
+      city === initialAddress.city &&
+      pinString === initialAddress.pincode &&
+      selectedState === initialAddress.state;
+
+    if (noChanges) {
+     
+        setModalType("warning");
+            setMessage("No changes detected");
+            setShowSuccess(true);
+          
+            setTimeout(() => {
+                setShowSuccess(false);
+               
+
+            }, 800);
+      return;
+    }
+  }
+
+
+  const payload = {
+    houseNo: flat || "",
+    street: area || "",
+    landmark: landmark || "",
+    city: city || "",
+    pincode: pinString || "",
+    state: selectedState || "",
   };
+
+
+  const res = await editBasicDetails(
+    customerDetails?.customerId,
+    payload
+  );
+
+  if (res.success) {
+   
+      setModalType("success");
+            setMessage(res.data);
+            setShowSuccess(true);
+            await onSuccess();
+            setTimeout(() => {
+                setShowSuccess(false);
+                closeSheet();
+
+            }, 800);
+  } else {
+    setFormError(res.message || "Update failed");
+  }
+};
+
 
   if (!visible) return null;
 
   return (
+    <>
+     <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.overlay}>
       <TouchableOpacity style={{ flex: 1 }} onPress={closeSheet} />
 
@@ -211,45 +342,53 @@ const panResponder = useRef(
   keyboardShouldPersistTaps="handled"
   showsVerticalScrollIndicator={false}
   contentContainerStyle={{
-    paddingBottom: 120,   // 🔥 IMPORTANT
+    paddingBottom:100,   // 🔥 IMPORTANT
   }}
 >
-
+<Text style={styles.label}>Flat , House no , Building , Company , Apartment</Text>
           <TextInput
             style={styles.input}
             placeholder="House No / Apartment"
             value={flat}
             onChangeText={setFlat}
           />
-
+<Text style={styles.label}>Area , Street , Sector , Village</Text>
           <TextInput
             style={styles.input}
             placeholder="Street / Area"
             value={area}
             onChangeText={setArea}
           />
-
+<Text style={styles.label}>Landmark</Text>
           <TextInput
             style={styles.input}
             placeholder="Landmark"
             value={landmark}
             onChangeText={setLandmark}
           />
-
+<Text style={styles.label}>City</Text>
           <TextInput
             style={styles.input}
             placeholder="City"
             value={city}
             onChangeText={setCity}
           />
-
+<Text style={styles.label}>Pincode</Text>
           <TextInput
             style={styles.input}
             placeholder="Pincode"
             keyboardType="numeric"
             value={pincode}
-            onChangeText={setPincode}
+            onChangeText={(text) => {
+  const numeric = text.replace(/[^0-9]/g, "");
+  if (numeric.length <= 6) {
+    setPincode(numeric);
+  }
+  setPincodeError("")
+}}
+
           />
+            {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
 
           {/* STATE DROPDOWN */}
         <Text style={styles.label}>State</Text>
@@ -327,6 +466,7 @@ const panResponder = useRef(
         )}
         
                                                 </View>
+                                                  {formError && <ErrorMessage message={formError} type="error" />}
 <View style={styles.footer}>
           <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
             <Text style={styles.saveText}>Save Address</Text>
@@ -335,6 +475,7 @@ const panResponder = useRef(
         </ScrollView>
       </Animated.View>
     </View>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -437,4 +578,7 @@ paddingTop:10
         fontSize: 15,
         color: "#000",
     },
+    label:{
+      marginBottom:10
+    }
 });

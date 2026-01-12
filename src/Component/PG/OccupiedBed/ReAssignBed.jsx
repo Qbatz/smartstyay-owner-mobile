@@ -63,7 +63,9 @@ useEffect(() => {
   });
 }, [rooms]);
 
-
+const getSharingByRoom = (roomId) => {
+  return bedsByRoom?.[roomId]?.length || 0;
+};
  const selectedDetails = selectedNewBed
   ? (() => {
       const room = rooms.find(r => r.id === selectedNewBed.roomId);
@@ -74,11 +76,14 @@ useEffect(() => {
       return {
         roomNo: room?.name,
         bedLabel: bed?.bedName || bed?.label,
-        sharing: room?.sharing,
+       sharing: getSharingByRoom(room?.id),
       };
     })()
   : null;
 console.log("selectedDetails",selectedNewBed)
+const getSharingCount = (roomId) => {
+  return bedsByRoom?.[roomId]?.length || 0;
+};
 
 const isAvailableBed = (b) =>
   !b.isOccupied &&
@@ -175,8 +180,13 @@ const selectedFloorRooms = rooms.filter(
   {selectedFloorRooms.map((room) => (
     <View key={room.id} style={styles.roomCard}>
 
-      <Text style={styles.roomTitle}>Room No {room.name}</Text>
-      <Text style={styles.roomSub}>{room.sharing}</Text>
+  <View style={styles.roomHeader}>
+  <Text style={styles.roomTitle}>{room.name}</Text>
+  <Text style={styles.roomSub}>
+    {getSharingCount(room.id)} Sharing
+  </Text>
+</View>
+
 
    <View style={styles.bedsRow}>
   {(bedsByRoom?.[room.id] || [])
@@ -242,7 +252,7 @@ const selectedFloorRooms = rooms.filter(
     <View>
       <Text style={styles.bottomLabel}>Bed No  |  {selectedDetails?.sharing}</Text>
       <Text style={styles.bottomValue}>
-        {selectedDetails?.roomNo}, {selectedDetails?.bedLabel}
+      {selectedNewBed?.bed?.floorName} {selectedDetails?.roomNo}, {selectedDetails?.bedLabel}
       </Text>
     </View>
 
@@ -466,6 +476,22 @@ centerContainer: {
     resizeMode: "contain",
     opacity: 0.9,
   },
+  roomHeader: {
+  backgroundColor: "#EAF2FF",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+
+  borderTopLeftRadius: 12,
+  borderTopRightRadius: 12,
+
+  marginLeft: -16,
+  marginRight: -16,
+  marginTop: -16,
+  marginBottom: 12,
+
+ 
+},
+
 
 
 });

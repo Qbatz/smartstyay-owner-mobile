@@ -1520,11 +1520,31 @@ const styles = StyleSheet.create({
     borderColor: "#F2F4F8",
   },
 
+  // roomHeader: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   marginBottom: 12,
+  //   backgroundColor:"red"
+  // },
   roomHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+
+  backgroundColor: "#EAF2FF",  
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+
+  borderTopLeftRadius: 12,      
+  borderTopRightRadius: 12,
+
+  marginLeft: -14,            
+  marginRight: -14,
+  marginTop: -14,
+
+  marginBottom: 12,
+},
+
   roomTitle: { fontSize: 16, fontWeight: "700" },
   roomSubtitle: { fontSize: 12, color: "#888" },
 
