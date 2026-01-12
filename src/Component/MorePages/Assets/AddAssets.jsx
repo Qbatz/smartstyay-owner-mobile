@@ -16,6 +16,8 @@ import Calendar from "../../../Assets/Images/calendar.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 export default function AddAssetSheet({ onClose, title = "Add Assets" }) {
@@ -26,6 +28,19 @@ export default function AddAssetSheet({ onClose, title = "Add Assets" }) {
     const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
     const [openDatePicker, setOpenDatePicker] = useState(false);
     const [purchaseDate, setPurchaseDate] = useState(dayjs());
+
+
+    const [assetName, setAssetName] = useState("");
+const [productName, setProductName] = useState("");
+const [price, setPrice] = useState("");
+const [paymentMode, setPaymentMode] = useState("");
+const [paymentOpen, setPaymentOpen] = useState(false);
+
+const paymentModes = ["Cash", "UPI", "Card", "Bank Transfer"];
+
+
+const [errors, setErrors] = useState({});
+
 
 useEffect(() => {
   const backAction = () => {
@@ -41,6 +56,40 @@ useEffect(() => {
   return () => handler.remove();
 }, [onClose]);
 
+
+const validateForm = () => {
+  let newErrors = {};
+
+  if (!assetName.trim()) {
+    newErrors.assetName = "Please Enter Asset Name"
+  }
+
+  if (!productName.trim()) {
+    newErrors.productName = "Please Enter Product Name"
+  }
+
+  if (!purchaseDate) {
+    newErrors.purchaseDate = "Please Select Purchase date"
+  }
+
+  if (!price.trim()) {
+    newErrors.price = "Please Enter Price"
+  } else if (isNaN(price)) {
+    newErrors.price = "Price must be a number"
+  }
+
+  if (!paymentMode) {
+    newErrors.paymentMode = "Please Select Payment mode"
+  }
+  setErrors(newErrors)
+  return Object.keys(newErrors).length === 0
+};
+
+
+const handleSubmit = () => {
+  if (!validateForm()) return;
+  console.log("Form submitted");
+};
 
 
 
@@ -90,10 +139,35 @@ useEffect(() => {
 
 
                     <Text style={styles.label}>Asset Name</Text>
-                    <TextInput style={styles.input} placeholder="Asset 1" />
+                   <TextInput
+  style={[styles.input, ]}
+  placeholder="Asset 1"
+  value={assetName}
+  onChangeText={(t) => {
+    setAssetName(t);
+    setErrors({ ...errors, assetName: "" });
+  }}
+/>
+  {errors.assetName && (
+                    <ErrorMessage message={errors.assetName} type="error" />
+                                )}
+
 
                     <Text style={styles.label}>Product Name</Text>
-                    <TextInput style={styles.input} placeholder="Enter Product name" />
+                 <TextInput
+  style={[styles.input,]}
+  placeholder="Enter Product name"
+  value={productName}
+  onChangeText={(t) => {
+    setProductName(t);
+    setErrors({ ...errors, productName: "" });
+  }}
+/>
+
+  {errors.productName && (
+                    <ErrorMessage message={errors.productName} type="error" />
+                                )}
+
 
                     <Text style={styles.label}>Vendor name</Text>
 
@@ -149,8 +223,61 @@ useEffect(() => {
 
 
 
+   {errors.purchaseDate && (
+                    <ErrorMessage message={errors.purchaseDate} type="error" />
+                                )}
+
+
+
+
                     <Text style={styles.label}>Price</Text>
-                    <TextInput style={styles.input} placeholder="Vendor 1" />
+                  <TextInput
+  style={[styles.input, ]}
+  placeholder="Enter price"
+  keyboardType="numeric"
+  value={price}
+  onChangeText={(t) => {
+    setPrice(t);
+    setErrors({ ...errors, price: "" });
+  }}
+/>
+  {errors.price && (
+                    <ErrorMessage message={errors.price} type="error" />
+                                )}
+{/* {errors.price && <Text style={styles.errorText}>{errors.price}</Text>} */}
+
+
+     <TouchableOpacity
+  style={[styles.select, ]}
+  onPress={() => setPaymentOpen(!paymentOpen)}
+>
+  <Text>{paymentMode || "Select Payment Mode"}</Text>
+</TouchableOpacity>
+
+{paymentOpen && (
+  <View style={styles.dropdownMenu}>
+    {paymentModes.map((m) => (
+      <TouchableOpacity
+        key={m}
+        style={styles.option}
+        onPress={() => {
+          setPaymentMode(m);
+          setPaymentOpen(false);
+          setErrors({ ...errors, paymentMode: "" });
+        }}
+      >
+        <Text>{m}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+)}
+
+  {errors.paymentMode && (
+                    <ErrorMessage message={errors.paymentMode} type="error" />
+                                )}
+
+
+
 
 
 
@@ -159,7 +286,7 @@ useEffect(() => {
                             <Text style={styles.cancel}>Cancel</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.addBtn}>
+                        <TouchableOpacity style={styles.addBtn} onPress={handleSubmit}>
                             <Text style={styles.addBtnText}>{title}</Text>
                         </TouchableOpacity>
                     </View>
@@ -175,13 +302,16 @@ useEffect(() => {
 
                     <View style={styles.datePickerBox}>
                         <DatePicker
-                            mode="single"
-                            date={purchaseDate}
-                            onChange={(p) => {
-                                setPurchaseDate(p.date || dayjs());
-                                setOpenDatePicker(false);
-                            }}
-                        />
+  mode="single"
+  date={purchaseDate}
+  maxDate={dayjs()}  
+  onChange={(p) => {
+    setPurchaseDate(p.date);
+    setErrors({ ...errors, purchaseDate: "" });
+    setOpenDatePicker(false);
+  }}
+/>
+
                     </View>
                 </View>
             )}
@@ -332,6 +462,15 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0,0,0,0.4)",
         justifyContent: "flex-end",
     },
+errorText: {
+  color: "red",
+  fontSize: 12,
+  marginTop: 4,
+},
+
+errorInput: {
+  borderColor: "red",
+},
 
 
 

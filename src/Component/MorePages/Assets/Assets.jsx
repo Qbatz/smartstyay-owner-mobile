@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useEffect, useCallback, useRef } from "react";
+import React, { useLayoutEffect, useState, useEffect, useCallback, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,10 @@ import {
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-
+import { AssetContext } from "../../../Context/AssetContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import Loader from "../../../Component/Loader/Loader"
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
 import AddIcon from "../../../Assets/Images/TenantAddBlue.png";
@@ -29,8 +32,27 @@ import TrashIcon from "../../../Assets/Images/trash.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import AddAssetSheet from "../Assets/AddAssets";
 import { useFocusEffect } from '@react-navigation/native';
+import EmptyStateImage from "../../../Assets/Images/Empty_state.png"
 
 export default function Assets({ navigation }) {
+
+    const { activeHostelId } = useContext(CommonContexts);
+  const { getAllAssets, assetList, loading , deleteAsset } = useContext(AssetContext);
+
+useEffect(() => {
+  if(activeHostelId){
+  getAllAssets(activeHostelId);
+  }
+}, [activeHostelId]);
+
+console.log("assetlist", assetList);
+
+const [showSuccessModal, setShowSuccessModal] = useState(false);
+const [modalMessage, setModalMessage] = useState("");
+const [modalType, setModalType] = useState("success");
+
+
+
   const [showSheet, setShowSheet] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
 
@@ -48,7 +70,60 @@ export default function Assets({ navigation }) {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   
+const handleDeleteAsset = async () => {
+  if (!selectedAsset?.assetId) return;
 
+  const res = await deleteAsset(
+    selectedAsset.assetId,
+    activeHostelId
+  );
+
+  setShowDeletePopup(false);
+  setShowSheet(false);
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage(res?.message || "Asset deleted successfully");
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Failed to delete asset");
+  }
+
+  setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+    setSelectedAsset(null);
+  }, 1500);
+};
+
+
+const EmptyState = () => (
+  <View style={{ alignItems: "center", marginTop: 120 }}>
+    <Image
+      source={EmptyStateImage}
+      style={{ width: 90, height: 160, }}
+    />
+    <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+      No assets found
+    </Text>
+
+    
+          <TouchableOpacity
+  style={styles.emptystateBtn}
+  onPress={() => {
+    setIsEdit(false);
+    setSelectedAsset(null);
+    setShowAddAsset(true);
+  }}
+>
+  <Text style={styles.emptystateText}>
+    + Add Asset
+  </Text>
+</TouchableOpacity>
+
+  </View>
+);
 
 
   const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
@@ -184,12 +259,7 @@ useFocusEffect(
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
-  const dummyData = [
-    { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
-    { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
-    { name: "Ceiling Fan", model: "SB-989543", brand: "Crompton", price: "₹2,500" },
-    { name: "Mattresses", model: "SB-989543", brand: "CURL ON", price: "₹7,500" },
-  ];
+ 
 
 
   useLayoutEffect(() => {
@@ -259,6 +329,16 @@ useFocusEffect(
   };
 
   return (
+
+    <>
+       { loading && <Loader />}
+            <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/> 
+
     <View style={styles.container}>
 
       <View style={styles.header}>
@@ -282,40 +362,61 @@ useFocusEffect(
       </View>
 
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        {dummyData.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.iconCircle}>
-              <Image source={AssetIcon} style={styles.assetIcon} />
-            </View>
+    <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 120 }}
+>
+  { !loading && assetList?.length > 0 ? (
+    assetList.map((item) => (
+    <TouchableOpacity
+  key={item.assetId}
+  style={styles.card}
+  activeOpacity={0.8}
+  onPress={() => openDetails(item)}
+>
+  <View style={styles.iconCircle}>
+    <Image source={AssetIcon} style={styles.assetIcon} />
+  </View>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.assetTitle}>{item.name}</Text>
-              <Text style={styles.assetSub}>
-                {item.model}{"  •  "}{item.brand}{"  •  "}{item.price}
-              </Text>
-            </View>
+  <View style={{ flex: 1 }}>
+    <Text style={styles.assetTitle}>
+      {item.assetName || "N/A"}
+    </Text>
 
-            <TouchableOpacity
-              onPress={() => openDetails(item)}
-              accessibilityLabel={`Open ${item.name} details`}
-            >
-              <Image source={MenuDots} style={styles.dotsIcon} />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
+    <Text style={styles.assetSub}>
+      {item.serialNumber || "N/A"}
+      {"  •  "}
+      {item.productName || "N/A"}
+      {"  •  "}
+      ₹{item.price ?? "--"}
+    </Text>
+  </View>
 
+  <Image source={MenuDots} style={styles.dotsIcon} />
+</TouchableOpacity>
 
-      <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
+    ))
+  ) : (
+    !loading && <EmptyState />
+  )}
+</ScrollView>
+
+      {
+        !loading && assetList?.length > 0 && (
+  <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
+        )
+      }
 
     
+
+      {
+        !loading && assetList?.length > 0 && (
       <TouchableOpacity
         style={styles.fab}
         onPress={() => {
-          setIsEdit(false);           // ⭐ ADD mode
+          setIsEdit(false);          
           setSelectedAsset(null);
           setShowAddAsset(true);
           setShowSheet(false);
@@ -325,6 +426,8 @@ useFocusEffect(
       >
         <Image source={AddIcon} style={styles.fabIconAdd} />
       </TouchableOpacity>
+        )
+      }
 
 
 
@@ -358,7 +461,7 @@ useFocusEffect(
             <View style={styles.sheetHandle} />
 
             <View style={styles.sheetHeaderRow}>
-              <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
+              <Text style={styles.sheetTitle}>{selectedAsset?.assetName || "N/A"}</Text>
 
               <View style={styles.topActions}>
                 <TouchableOpacity
@@ -385,36 +488,36 @@ useFocusEffect(
             <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Serial No:</Text>
-                <Text style={styles.value}>{selectedAsset?.model}</Text>
+                <Text style={styles.value}> {selectedAsset?.serialNumber || "N/A"}</Text>
               </View>
 
               <View style={styles.colRight}>
                 <Text style={styles.label}>Brand Name</Text>
-                <Text style={styles.value}>{selectedAsset?.brand}</Text>
+                <Text style={styles.value}> {selectedAsset?.brandName || "N/A"}</Text>
               </View>
             </View>
 
             <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Product Name</Text>
-                <Text style={styles.value}>Fridge</Text>
+                <Text style={styles.value}>{selectedAsset?.productName || "N/A"}</Text>
               </View>
 
               <View style={styles.colRight}>
                 <Text style={styles.label}>Purchase Date</Text>
-                <Text style={styles.value}>16-05-2025</Text>
+                <Text style={styles.value}>{selectedAsset?.purchaseDate || "N/A"}</Text>
               </View>
             </View>
 
             <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Vendor Name</Text>
-                <Text style={styles.value}>Ram Kumar</Text>
+                <Text style={styles.value}> {selectedAsset?.vendorName || "N/A"}</Text>
               </View>
 
               <View style={styles.colRight}>
                 <Text style={styles.label}>Price</Text>
-                <Text style={styles.value}>{selectedAsset?.price}.00</Text>
+                <Text style={styles.value}>₹{selectedAsset?.price ?? "00"}</Text>
               </View>
             </View>
 
@@ -747,10 +850,7 @@ useFocusEffect(
 
         <TouchableOpacity 
           style={styles.deleteBtn}
-          onPress={() => {
-            // 🔥 Your delete function here
-            setShowDeletePopup(false);
-          }}
+          onPress={handleDeleteAsset}
         >
           <Text style={styles.deleteText}>Delete</Text>
         </TouchableOpacity>
@@ -762,6 +862,7 @@ useFocusEffect(
 
 
     </View>
+       </>
   );
 }
 
@@ -1039,6 +1140,18 @@ deleteText: {
   fontWeight: "700"
 },
 
+  emptystateBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
 
+  emptystateText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
 });

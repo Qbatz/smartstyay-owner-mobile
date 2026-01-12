@@ -306,15 +306,18 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
     }
   };
 
-  const getParticularComplaint = async (complaintId) => {
+ const getParticularComplaint = async (hostelId, complaintId) => {
   setLoading(true);
   try {
-    const res = await AxiosConfig.get(`/v2/complaint/${complaintId}`);
-    console.log("resposne", res);
+    const res = await AxiosConfig.get(
+      `/v2/complaint/updates/${hostelId}/${complaintId}`
+    );
+
+    console.log("response", res);
     
-    if (res.status === 200) {
-      setSelectedComplaint(res?.data); 
-      return { success: true, data: res.data };
+    if (res?.status === 200) {
+      setSelectedComplaint(res?.data);
+      return { success: true, data: res?.data };
     }
 
     return { success: false };
@@ -323,7 +326,8 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   } finally {
     setLoading(false);
   }
-};
+}
+
 
 const addComplaintComment = async ({ complaintId, message }) => {
   setCommentsLoading(true);
