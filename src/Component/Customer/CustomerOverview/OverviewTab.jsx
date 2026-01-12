@@ -11,9 +11,9 @@ import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
 import Home from "../../../Assets/Images/home-link.png";
 import Location from "../../../Assets/Images/sms.png";
-import BedIcon from "../../../Assets/Images/profile.png";
-import RoomIcon from "../../../Assets/Images/PG_active.png";
-import FloorIcon from "../../../Assets/Images/profile.png";
+import BedIcon from "../../../Assets/Images/BedImage.png";
+import RoomIcon from "../../../Assets/Images/RoomImg.png";
+import FloorIcon from "../../../Assets/Images/FloorImg.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import EditIcon from "../../../Assets/Images/edit.png";
 
@@ -111,7 +111,7 @@ setFlat(customerDetails?.address?.houseNo)
 <View style={styles.card}>
 
 
-  <View style={styles.addressHeader}>
+  {/* <View style={styles.addressHeader}>
     <View style={styles.tabRow}>
       <TouchableOpacity onPress={() => setAddressTab("KYC")}>
         <Text style={[
@@ -130,19 +130,55 @@ setFlat(customerDetails?.address?.houseNo)
           Manual Address
         </Text>
       </TouchableOpacity>
-    </View>
 
-   
-    {addressTab === "MANUAL" && (
+       {addressTab === "MANUAL" && (
      <TouchableOpacity onPress={handleAdressEdit}>
     <Image source={EditIcon} style={styles.editIcon} />
   </TouchableOpacity>
     )}
+    </View>
+
+   
+   
+  </View> */}
+  <View style={styles.addressHeader}>
+  {/* LEFT : Tabs */}
+  <View style={styles.tabRow}>
+    <TouchableOpacity onPress={() => setAddressTab("KYC")}>
+      <Text
+        style={[
+          styles.tabText,
+          addressTab === "KYC" && styles.activeTab,
+        ]}
+      >
+        KYC Address
+      </Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity onPress={() => setAddressTab("MANUAL")}>
+      <Text
+        style={[
+          styles.tabText,
+          addressTab === "MANUAL" && styles.activeTab,
+        ]}
+      >
+        Manual Address
+      </Text>
+    </TouchableOpacity>
   </View>
+
+  {/* RIGHT : Edit Icon */}
+  {addressTab === "MANUAL" && (
+    <TouchableOpacity onPress={handleAdressEdit}>
+      <Image source={EditIcon} style={styles.editIcon} />
+    </TouchableOpacity>
+  )}
+</View>
+
 
    {
     addressTab === "KYC" && (
-      <View style={{paddingTop:18}}>
+      <View >
      <View style={styles.row}>
   <View style={[styles.detailBlock, styles.halfBlock]}>
     <Text style={styles.label}>House No / Apartment</Text>
@@ -290,9 +326,9 @@ setFlat(customerDetails?.address?.houseNo)
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>Floor</Text>
     <View style={styles.valueWithIcon}>
-      <Image source={FloorIcon} style={styles.detailIcon} />
+      <Image source={FloorIcon} style={styles.detailIconFloor} />
       <Text style={styles.detailValue}>
-        {customerDetails?.floorName || "--"}
+        {customerDetails?.hostelInfo?.floorName || "N/A"}
       </Text>
     </View>
   </View>
@@ -301,9 +337,9 @@ setFlat(customerDetails?.address?.houseNo)
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>Room</Text>
     <View style={styles.valueWithIcon}>
-      <Image source={RoomIcon} style={styles.detailIcon} />
+      <Image source={RoomIcon} style={styles.detailIconFloor} />
       <Text style={styles.detailValue}>
-        {customerDetails?.roomName || "--"}
+      {customerDetails?.hostelInfo?.roomName || "N/A"}
       </Text>
     </View>
   </View>
@@ -314,18 +350,26 @@ setFlat(customerDetails?.address?.houseNo)
     <View style={styles.valueWithIcon}>
       <Image source={BedIcon} style={styles.detailIcon} />
       <Text style={styles.detailValue}>
-        {customerDetails?.bedName || "--"}
+          {customerDetails?.hostelInfo?.bedName || "N/A"}
       </Text>
     </View>
   </View>
 
-
+<View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>Booking Date</Text>
+    <View style={styles.valueWithIcon}>
+      <Image source={CalendarIcon} style={styles.detailIcon} />
+      <Text style={styles.detailValue}>
+      {customerDetails?.hostelInfo?.bookingDate || "N/A"}
+      </Text>
+    </View>
+  </View>
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>Joined Date</Text>
     <View style={styles.valueWithIcon}>
       <Image source={CalendarIcon} style={styles.detailIcon} />
       <Text style={styles.detailValue}>
-        {customerDetails?.joiningDate || "20 Sep 2024"}
+      {customerDetails?.hostelInfo?.joiningDate || "N/A"}
       </Text>
     </View>
   </View>
@@ -341,34 +385,34 @@ setFlat(customerDetails?.address?.houseNo)
     <Text style={styles.amountValue}>Monthly Rent</Text>
    <Image source={EditIcon} style={styles.editIconSmall} />
    </View>
-      <Text style={styles.amountLabel}>₹ 7,500</Text>
+      <Text style={styles.amountLabel}>₹ {customerDetails?.hostelInfo?.monthlyRent}</Text>
       
     
   </View>
 
   <View style={styles.amountRow}>
      <View style={styles.amountValueRow}>
-    <Text style={styles.amountLabel}>Advance amount</Text>
+    <Text style={styles.amountValue}>Advance amount</Text>
       <Image source={EditIcon} style={styles.editIconSmall} />
     </View>
-      <Text style={styles.amountValue}>₹ 4,500</Text>
+      <Text style={styles.amountLabel}>₹ 4,500</Text>
     
    
   </View>
 
   <View style={styles.amountRow}>
-    <Text style={styles.amountLabel}>Booking amount</Text>
-    <Text style={styles.amountValue}>₹ 4,500</Text>
+    <Text style={styles.amountValue}>Booking amount</Text>
+    <Text style={styles.amountLabel}>₹ 4,500</Text>
   </View>
 
   <View style={styles.amountRow}>
-    <Text style={styles.amountLabel}>Maintenance</Text>
-    <Text style={styles.amountValue}>₹ 2,000</Text>
+    <Text style={styles.amountValue}>Maintenance</Text>
+    <Text style={styles.amountLabel}>₹ 2,000</Text>
   </View>
 
   <View style={styles.amountRow}>
-    <Text style={styles.amountLabel}>Document Fee</Text>
-    <Text style={styles.amountValue}>₹ 800</Text>
+    <Text style={styles.amountValue}>Document Fee</Text>
+    <Text style={styles.amountLabel}>₹ 800</Text>
   </View>
 
 </View>
@@ -643,10 +687,21 @@ editIcon: {
 
   amount: { fontWeight: "600", color: "#2563EB" },
   editSmall: { width: 14, height: 14, marginLeft: 6 },
-
- tabRow: {
+  addressHeader: {
   flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between", // 🔥 left tabs + right icon
+  marginBottom: 12,
+   borderBottomWidth: 1,          // ✅ bottom border
+  borderBottomColor: "#E0E0E0",  // light gray (or red if you want)
+  paddingBottom: 10, 
 },
+
+tabRow: {
+  flexDirection: "row",
+  gap: 20,
+},
+
 
 tabText: {
   marginRight: 18,
@@ -727,10 +782,17 @@ valueWithIcon: {
 },
 
 detailIcon: {
-  width: 16,
-  height: 16,
+  width: 14,
+  height: 14,
   marginRight: 6,
-  tintColor: "#2563EB",
+  resizeMode: "contain", 
+  
+},
+detailIconFloor:{
+width: 18,
+  height: 18,
+  marginRight: 6,
+  tintColor:"#2563EB"
 },
 detailBlock: {
   marginBottom: 12,
@@ -768,8 +830,9 @@ amountRow: {
 
 amountLabel: {
   fontSize: 12,
-  color: "#9CA3AF",
-  marginBottom:0
+  
+  marginBottom:0,
+  color: "#2563EB",
 },
 
 amountValueRow: {
@@ -780,7 +843,7 @@ amountValueRow: {
 amountValue: {
   fontSize: 14,
   fontWeight: "600",
-  color: "#2563EB",
+  
 },
 
 editIconSmall: {
@@ -864,8 +927,15 @@ actionIcon: {
 sectionHeaderRow: {
   flexDirection: "row",
   alignItems: "center",
-  marginBottom: 14,
+  justifyContent: "space-between",
+
+  paddingBottom: 10,         // ✅ header & content gap
+  marginBottom: 12,          // ✅ divider ku gap
+  borderBottomWidth: 1,
+  borderBottomColor: "#E6E6E6",
 },
+
+
 sectionHeaderRowgur: {
   flexDirection: "row",
   alignItems: "center",

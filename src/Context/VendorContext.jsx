@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 
@@ -20,7 +20,8 @@ export default function VendorProvider({ children }) {
     setVendorList([]);
 
     try {
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/vendors/all-vendors/${hostelId}`
       );
 
@@ -59,8 +60,8 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
         type: "application/json",
       })
     );
-
-    const res = await AxiosConfig.post("/v2/vendors", formData);
+    const axios = getAxios();
+    const res = await axios.post("/v2/vendors", formData);
     // ❌ DO NOT pass headers manually
 
     console.log("res", res);
@@ -111,8 +112,8 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
         type: "application/json",
       })
     );
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/vendors/${updateVendor.vendorId}`,
       formData ,
        {
@@ -138,17 +139,12 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
   }
 };
 
-
-
-
-
-
-
   const deleteVendor = async (vendorId, hostelId) => {
     setLoading(true);
 
     try {
-      const res = await AxiosConfig.delete(`/v2/vendors/${vendorId}`);
+      const axios = getAxios();
+      const res = await axios.delete(`/v2/vendors/${vendorId}`);
 
       if (res.status === 200) {
         await getVendorList(hostelId);

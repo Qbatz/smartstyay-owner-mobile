@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 export const CustomerContext = createContext();
@@ -26,8 +26,8 @@ export const CustomerProvider = ({ children }) => {
       setErrorMsg("");
 
       const token = await retriveData("token");
-
-      const response = await AxiosConfig.get(
+      const axios = getAxios();
+      const response = await axios.get(
         `/v2/customers/${hostelId}`,
         {
           params: {
@@ -63,8 +63,8 @@ export const CustomerProvider = ({ children }) => {
       setErrorMsg("");
 
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/customers/details/${customerId}`,
         {
           headers: {
@@ -114,8 +114,8 @@ export const CustomerProvider = ({ children }) => {
           name: image.fileName || "profile.jpg",
         });
       }
-
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/customers/${hostelId}`,
         formData,
         {
@@ -145,8 +145,8 @@ export const CustomerProvider = ({ children }) => {
   const getBedsByHostelAndDate = async (hostelId, joiningDate) => {
     try {
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/bed/initialize/${hostelId}`,
         {
           params: {
@@ -173,8 +173,8 @@ export const CustomerProvider = ({ children }) => {
   const checkInCustomer = async (customerId, payload) => {
     try {
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/customers/check-in/${customerId}`,
         payload,
         {
@@ -198,8 +198,8 @@ export const CustomerProvider = ({ children }) => {
   const deleteCustomer = async (hostelId, customerId) => {
     try {
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.delete(
+      const axios = getAxios();
+      const res = await axios.delete(
         `/v2/customers/${hostelId}/${customerId}`,
         {
           headers: {
@@ -224,8 +224,8 @@ export const CustomerProvider = ({ children }) => {
   const changeBedCustomer = async (hostelId, customerId, payload) => {
     try {
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/customers/change-bed/${hostelId}/${customerId}`,
         payload,
         {
@@ -257,8 +257,8 @@ export const CustomerProvider = ({ children }) => {
 
     try {
       const token = await retriveData("token");
-
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/customers/details/${customerId}`,
         {
           headers: {
@@ -285,8 +285,8 @@ export const CustomerProvider = ({ children }) => {
 const moveToNoticePeriod = async (hostelId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/customers/notice/${hostelId}`,
       payload,
       {
@@ -319,8 +319,8 @@ const moveToNoticePeriod = async (hostelId, payload) => {
  const bookCustomer = async (hostelId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/customers/booking/${hostelId}`,
       payload,
       {
@@ -351,8 +351,8 @@ const moveToNoticePeriod = async (hostelId, payload) => {
 const cancelCheckout = async (hostelId, customerId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/customers/cancel-checkout/${hostelId}/${customerId}`,
       payload,
       {
@@ -387,8 +387,8 @@ const getSettlementByCustomerId = async (customerId) => {
 
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/customers/settlement/${customerId}`,
       {
         headers: {
@@ -417,8 +417,8 @@ const getSettlementByCustomerId = async (customerId) => {
 const submitSettlement = async (customerId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/customers/settlement/${customerId}`,
       payload,
       {
@@ -448,8 +448,8 @@ const submitSettlement = async (customerId, payload) => {
 const initializeCheckout = async (hostelId, customerId) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/bookings/initialize/checkout/${hostelId}/${customerId}`,
       {}, // 👈 body empty
       {
@@ -473,8 +473,8 @@ const initializeCheckout = async (hostelId, customerId) => {
 const confirmCheckout = async (customerId) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/bookings/checkout/${customerId}`,
       {}, // 👈 empty body
       {
@@ -502,8 +502,8 @@ const confirmCheckout = async (customerId) => {
 const initializeCheckIn = async (hostelId, customerId) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/bookings/initialize-check-in/${hostelId}/${customerId}`,
       {
         headers: {
@@ -527,8 +527,8 @@ const initializeCheckIn = async (hostelId, customerId) => {
 const bookedCheckInCustomer = async (customerId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/customers/booked/check-in/${customerId}`,
       payload,
       {
@@ -558,8 +558,8 @@ const bookedCheckInCustomer = async (customerId, payload) => {
 const initializeCancelBooking = async (customerId) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/bookings/initialize/cancel/${customerId}`,
       {
         headers: {
@@ -587,8 +587,8 @@ const initializeCancelBooking = async (customerId) => {
 const cancelBooking = async (customerId, payload) => {
   try {
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/bookings/cancel/${customerId}`,
       payload,
       {
@@ -622,8 +622,8 @@ const getCheckoutCustomersByHostel = async (hostelId, name = "") => {
     setErrorMsg("");
 
     const token = await retriveData("token");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/customers/checkout/${hostelId}`,
       {
         params: {
@@ -669,8 +669,8 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
         name: profilePic.fileName || "profile.jpg",
       });
     }
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/customers/update/${customerId}`,
       formData,
       {
@@ -723,8 +723,8 @@ const addVendor = async (payloads, profilePic = null) => {
         name: profilePic.fileName || "profile.jpg",
       });
     }
- 
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       "/v2/vendors",
       formData,
       {

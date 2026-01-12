@@ -1,4 +1,4 @@
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 export const setLogin= async(data)=>{
     try{
@@ -12,7 +12,8 @@ export const setLogin= async(data)=>{
 
 export const postNewAccount=async(data)=>{
     try{
-        const response=await AxiosConfig.post('/v2/users', data)
+        const axios = getAxios();
+        const response=await axios.post('/v2/users', data)
        return response;
     }catch(error){
         return{status: error.response.status, message: error.response.data}
@@ -25,7 +26,8 @@ export const updateFcmToken=async(fcmToken,authToken)=>{
         source: 'Mobile',
     }
     try{
-        const response=await AxiosConfig.put('/v2/profile/fcm', data, {
+        const axios = getAxios();
+        const response=await axios.put('/v2/profile/fcm', data, {
             headers: {
                 Authorization: 'Bearer ' + authToken
             }
