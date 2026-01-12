@@ -1,4 +1,4 @@
-import AxiosConfig from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 
 // export const getHostels=async(token)=>{
 //     try{
@@ -15,7 +15,8 @@ import AxiosConfig from "../Config/AxiosConfig";
 
 export const getHostels = async () => {
   try {
-    const response = await AxiosConfig.get("/v2/hostel");
+    const axios = getAxios();
+    const response = await axios.get("/v2/hostel");
     return response;
   } catch (error) {
     return {
