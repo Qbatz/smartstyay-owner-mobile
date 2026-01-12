@@ -166,7 +166,7 @@ const formatDate = (date) => {
  const handleComplaintDetails = async (item) => {
   setSelectedComplaint(item);
 
-  await getParticularComplaint(item?.complaintId);
+  await getParticularComplaint(activeHostelId, item?.complaintId);
 
   setShowSheet(true);
 };
