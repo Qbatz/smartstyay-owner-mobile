@@ -1427,19 +1427,23 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 50 : 64,
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
+header: {
+  flexDirection: "row",
+  alignItems: "flex-start",   // 🔥 IMPORTANT
+  paddingHorizontal: 16,
+  marginBottom: 8,
+},
 
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
+
+
+headerLeft: {
+  flexDirection: "row",
+  alignItems: "flex-start",   // 🔥 allow multi-line
+  flex: 1,                    // 🔥 reserve remaining width
+  marginRight: 12,            // space for +Floor button
+},
+
+
 
   HostelImg: {
     width: 34,
@@ -1447,17 +1451,24 @@ const styles = StyleSheet.create({
     borderRadius: 17,
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
+title: {
+  fontSize: 18,
+  fontWeight: "700",
+  flexWrap: "wrap",
+  flexShrink: 1,  
+  marginLeft:7          
+},
 
-  floorButton: {
-    backgroundColor: "#1E45E1",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-  },
+
+
+ floorButton: {
+  backgroundColor: "#1E45E1",
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 10,
+  alignSelf: "flex-start",    // 🔥 prevents vertical center push
+},
+
   floorButtonText: { color: "#fff", fontWeight: "600" },
 
   floorTab: {

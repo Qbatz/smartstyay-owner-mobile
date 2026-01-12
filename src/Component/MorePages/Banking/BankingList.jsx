@@ -532,7 +532,7 @@ const handleEditBanking = (item) => {
     justifyContent: "space-between",
     paddingHorizontal:16,
     alignItems: "center",
-    marginTop: 20,marginBottom:10}}>
+    marginTop: 23,marginBottom:10}}>
             <Text style={styles.sectionTitle}>Bank List</Text>
 
             <TouchableOpacity style={styles.addBankBtn} onPress={handleAddBanking}>
@@ -548,7 +548,7 @@ const handleEditBanking = (item) => {
               <View key={index} style={styles.bankCard}>
 
   <View
-   style={{backgroundColor:'#f7f5ff',  padding:20}}
+   style={{backgroundColor:'#f7f5ff',  padding:20 ,  flexGrow: 1,paddingTop:7 , paddingBottom:7 }}
   >
 
     <View style={styles.topRow}>
@@ -571,16 +571,20 @@ const handleEditBanking = (item) => {
     </View>
 
  
-    <View style={{ marginTop: 12 }}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.acc}>{item.acc}</Text>
-    </View>
+<View style={styles.middleRow}>
+  {/* LEFT SIDE */}
+  <View style={styles.nameContainer}>
+    <Text style={styles.name}>{item.name}</Text>
+    <Text style={styles.acc}>{item.acc}</Text>
+  </View>
 
+  {/* RIGHT SIDE */}
+  <View style={styles.defaultColumn}>
+    <Text style={styles.defaultText}>Default Bank A/C</Text>
+    <Text style={styles.changeText}>Change</Text>
+  </View>
+</View>
 
-    <View style={styles.defaultRow}>
-      <Text style={styles.defaultText}>Default Bank A/C</Text>
-      <Text style={styles.changeText}>Change</Text>
-    </View>
 
   </View>
 
@@ -1055,17 +1059,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  bankCard: {
+ bankCard: {
   width: 260,
-  height: 180,
+  height:190,
   borderRadius: 18,
   marginHorizontal: 16,
   backgroundColor: "#F7F8FF",
   overflow: "hidden",
-  position: "relative",
-  borderColor:'grey',
-  borderWidth:0.4
-},
+  borderColor: "grey",
+  borderWidth: 0.4,
+  paddingTop:-5
+}
+,
 
 bgImage: {
   flex: 1,
@@ -1123,6 +1128,62 @@ defaultRow: {
   alignItems: "flex-end",
 },
 
+// defaultText: {
+//   color: "green",
+//   fontSize: 11,
+//   fontWeight: "600",
+// },
+
+// changeText: {
+//   color: "blue",
+//   marginTop: 2,
+//   fontSize: 11,
+// },
+
+balanceRow: {
+  backgroundColor: "#fff",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  paddingVertical: 7,
+  paddingHorizontal: 14,
+  borderTopWidth: 1,
+  borderColor: "#E6E6E6",
+},
+
+
+balanceText: { color: "#777" },
+balanceAmount: { fontWeight: "700", fontSize: 16 },
+
+middleRow: {
+  flexDirection: "row",
+  marginTop: 12,
+},
+
+nameContainer: {
+  flex: 1,              // 🔥 THIS IS THE KEY
+  paddingRight: 10,     // gap before right column
+},
+
+name: {
+  fontSize: 15,
+  fontWeight: "600",
+  flexWrap: "wrap",
+  flexShrink: 1,     // 🔥 MUST
+},
+
+
+acc: {
+  fontSize: 13,
+  color: "#666",
+  marginTop: 2,
+},
+
+defaultColumn: {
+  alignItems: "flex-end",
+  width: 90,        // 🔥 prevents pushing left content
+},
+
+
 defaultText: {
   color: "green",
   fontSize: 11,
@@ -1134,21 +1195,6 @@ changeText: {
   marginTop: 2,
   fontSize: 11,
 },
-
-balanceRow: {
-  backgroundColor: "#fff",
-  flexDirection: "row",
-  justifyContent: "space-between",
-  paddingVertical: 12,
-  paddingHorizontal: 14,
-//   borderBottomLeftRadius: 18,
-//   borderBottomRightRadius: 18,
-},
-
-
-balanceText: { color: "#777" },
-balanceAmount: { fontWeight: "700", fontSize: 16 },
-
 
   /* TRANSACTION CARD */
   transCard: {

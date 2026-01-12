@@ -1026,7 +1026,7 @@ const handleConfirmReadingDelete = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15, marginTop: 40 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45},
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
   backIcon: { width: 22, height: 22, marginRight: 10 },

@@ -175,20 +175,38 @@ const handleDescriptionChange = (text) => {
     );
   
 
-const fetchCustomers = async () => {
-  const data = await getCustomersByHostel(activeHostelId);
+// const fetchCustomers = async () => {
+//   const data = await getCustomersByHostel(activeHostelId);
 
-  const filtered = Array.isArray(data?.listCustomers)
-    ? data?.filter(
-        (u) =>
-          u.floorId &&
-          u.roomId &&
-          !blockedStatus.includes(u.currentStatus)
-      )
+//   const filtered = Array.isArray(data?.listCustomers)
+//     ? data?.filter(
+//         (u) =>
+//           u.floorId &&
+//           u.roomId &&
+//           !blockedStatus.includes(u.currentStatus)
+//       )
+//     : [];
+
+//   setCustomerOptions(filtered);
+// }
+
+const fetchCustomers = async () => {
+  const res = await getCustomersByHostel(activeHostelId);
+
+  const list = Array.isArray(res?.listCustomers)
+    ? res.listCustomers
     : [];
+
+  const filtered = list.filter(
+    (u) =>
+      u.floorId &&
+      u.roomId &&
+      !blockedStatus.includes(u.currentStatus)
+  );
 
   setCustomerOptions(filtered);
 };
+
 
     useEffect(()=> {
     if(activeHostelId){
@@ -775,11 +793,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 50,
   },
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
-  backIcon: { width: 20, height: 20, marginRight: 10 },
+  backIcon: { width: 22, height: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
 
   label: {
@@ -799,6 +817,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 10
   },
 
   selectedText: { color: "#000", fontSize: 15 },
@@ -862,6 +881,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 15,
     justifyContent: "center",
+    marginBottom:10
   },
 
   dateBox: {
@@ -873,6 +893,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
+    marginBottom:10
   },
 
   descriptionBox: {
@@ -964,6 +985,7 @@ calendarContainer: {
   height: 48,
   paddingHorizontal: 12,
   marginTop: 6,
+  marginBottom:10
 },
 
 dateInput: {
