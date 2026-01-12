@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 export const BillContext = createContext();
 
@@ -45,8 +45,8 @@ const GetAllBillDetails = async (hostelId, filters = {}) => {
   try {
     setLoading(true);
     setErrorMsg("");
-
-    const res = await AxiosConfig.get(`/v2/bills/${hostelId}`, {
+    const axios = getAxios();
+    const res = await axios.get(`/v2/bills/${hostelId}`, {
       params: {
         startDate: filters.startDate,
         endDate: filters.endDate,
@@ -93,8 +93,8 @@ const GetAllBillDetails = async (hostelId, filters = {}) => {
     try {
       setLoading(true);
       setErrorMsg("");
-
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/bills/manual/${payload.customerId}`,
         payload
       );
@@ -123,8 +123,8 @@ const RecordPayment = async ({ hostelId, invoiceId, data }) => {
   try {
     setLoading(true);
     setErrorMsg("");
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/transaction/${hostelId}/${invoiceId}`,
       data
     );
@@ -170,8 +170,8 @@ const GetInitializeRefundDetails = async ({ hostelId, invoiceId }) => {
   try {
     setLoading(true);
     setErrorMsg("");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/bills/refund/${hostelId}/${invoiceId}`
     );
 
@@ -209,8 +209,8 @@ const CreateRefund = async ({ hostelId, invoiceId, payload }) => {
     try {
       setLoading(true);
       setRefundError("");
- 
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/transaction/refund/${hostelId}/${invoiceId}`,
         payload
        
@@ -251,8 +251,8 @@ const GetRecurringBills = async (hostelId) => {
   try {
     setLoading(true);
     setErrorMsg("");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/customers/config/${hostelId}`
     );
 
@@ -302,8 +302,8 @@ const UpdateTenantRecurringStatus = async ({
     const body = {
       status: String(status), // API expects "true" / "false"
     };
-
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/customers/config/${hostelId}/${customerId}`,
       body
     );
@@ -357,8 +357,8 @@ const GetReceiptsList = async (hostelId) => {
   try {
     setLoading(true);
     setErrorMsg("");
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/bills/receipts/${hostelId}`
     );
 
@@ -407,8 +407,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
   try {
     setLoading(true);
     setErrorMsg("");
-
-    const res = await AxiosConfig.delete(
+    const axios = getAxios();
+    const res = await axios.delete(
       `/v2/transaction/receipts/${hostelId}/${receiptId}`
     );
 
@@ -455,7 +455,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
     setErrorMsg("");
 
     try {
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/bills/${hostelId}/${invoiceId}`
       );
 
@@ -478,7 +479,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
     setErrorMsg("");
 
     try {
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/transaction/${hostelId}/${transactionId}`
       );
 

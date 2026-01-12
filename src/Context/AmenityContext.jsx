@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 export const AmenityContext = createContext();
 
@@ -19,7 +19,8 @@ export default function AmenityProvider({ children }) {
     setAmenities([]);
 
     try {
-      const res = await AxiosConfig.get(`/v2/amenity/${hostelId}`);
+      const axios = getAxios();
+      const res = await axios.get(`/v2/amenity/${hostelId}`);
 
       if (res.status === 200) {
         const formatted = (res.data || []).map((item) => ({
@@ -47,7 +48,8 @@ export default function AmenityProvider({ children }) {
     setAmenityDetail(null);
 
     try {
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/amenity/${hostelId}/${amenityId}`
       );
 
@@ -76,7 +78,8 @@ export default function AmenityProvider({ children }) {
   const addAmenity = async ({ hostelId, payload }) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/amenity/${hostelId}`,
         payload
       );
@@ -96,7 +99,8 @@ export default function AmenityProvider({ children }) {
   const updateAmenity = async ({ hostelId, amenityId, payload }) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/amenity/${hostelId}/${amenityId}`,
         payload
       );
@@ -116,7 +120,8 @@ export default function AmenityProvider({ children }) {
   const deleteAmenity = async ({ hostelId, amenityId }) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.delete(
+      const axios = getAxios();
+      const res = await axios.delete(
         `/v2/amenity/${amenityId}/${hostelId}`
       );
 
@@ -135,7 +140,8 @@ export default function AmenityProvider({ children }) {
   const assignAmenity = async ({ hostelId, amenityId, customers }) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/amenity/assign/${hostelId}/${amenityId}`,
         { customers }
       );
@@ -154,7 +160,8 @@ export default function AmenityProvider({ children }) {
   const unAssignAmenity = async ({ hostelId, amenityId, customers }) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/amenity/unAssign/${hostelId}/${amenityId}`,
         { customers }
       );

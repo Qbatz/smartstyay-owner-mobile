@@ -1,32 +1,5 @@
-
-
-// import React, { createContext, useState } from "react";
-// import { storeData } from "../Utils/Storage";
-
-// export const LoginContexts = createContext();
-
-// const LoginContext = (props) => {
-//   const [AccessToken, setAccessToken] = useState();
-//   const [getUserId, setUserId] = useState(null);
-
-//   const saveToken = async (token) => {
-//     setAccessToken(token);
-//     await storeData("token", token); 
-//   };
-
-//   return (
-//     <LoginContexts.Provider value={{ updateToken: saveToken, getToken: AccessToken }}>
-//       {props.children}
-//     </LoginContexts.Provider>
-//   );
-// };
-
-// export default LoginContext;
-
-
-
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { storeData , removeData  } from "../Utils/Storage";
 import {ACCESS_TOKEN, LOGGEDIN } from "../Utils/Constant";
 
@@ -50,7 +23,8 @@ const LoginContext = ({ children }) => {
   const login = async (payload) => {
     try {
       setLoading(true);
-      const res = await AxiosConfig.post("/v2/mobile/login", payload);
+      const axios = getAxios();
+      const res = await axios.post("/v2/mobile/login", payload);
       console.log("res", res);
       
       // setUserId(res.data.userId);
@@ -73,8 +47,8 @@ const logout = async () => {
   try{
 
       setLoading(true);
-
-    const res = await AxiosConfig.post("/v2/profile/logout", {
+    const axios = getAxios();
+    const res = await axios.post("/v2/profile/logout", {
       source: "MOBILE",
     });
     console.log(res)
@@ -120,7 +94,8 @@ const logout = async () => {
  
   const CreateMpin = async (pin) => {
     try {
-      const res = await AxiosConfig.post(
+      const axios = getAxios();
+      const res = await axios.post(
         `/v2/mobile/pin/${userId}`,
         { pin }
       );
@@ -141,7 +116,8 @@ const logout = async () => {
 
     console.log("user id", userId)
   try {
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/mobile/verify/${userId}`,
       { pin }
     );

@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 export const ExpensesContext = createContext();
 
@@ -20,8 +20,8 @@ export default function ExpensesProvider({ children }) {
     try {
       setLoading(true);
       setError(null);
-
-      const res = await AxiosConfig.get(
+      const axios = getAxios();
+      const res = await axios.get(
         `/v2/expense/category/${hostelId}`
       );
 
@@ -60,7 +60,8 @@ export default function ExpensesProvider({ children }) {
       setLoading(true);
       setError(null);
 
-      await AxiosConfig.post(
+      const axios = getAxios();
+      await axios.post(
         `/v2/expense/category/${hostelId}`,
         { hostelId, categoryName }
       );
@@ -89,8 +90,8 @@ export default function ExpensesProvider({ children }) {
     try {
       setLoading(true);
       setError(null);
-
-      await AxiosConfig.post(
+      const axios = getAxios();
+      await axios.post(
         `/v2/expense/category/${hostelId}`,
         { hostelId, categoryId, subCategory }
       );
@@ -120,8 +121,8 @@ const GetExpenseList = async (hostelId) => {
   try {
     setLoading(true);
     setError(null);
-
-    const res = await AxiosConfig.get(`/v2/expense/${hostelId}`);
+    const axios = getAxios();
+    const res = await axios.get(`/v2/expense/${hostelId}`);
 
     const data = Array.isArray(res?.data) ? res?.data : [];
 
@@ -145,8 +146,8 @@ const AddExpense = async (payload) => {
   try {
     setLoading(true);
     setError(null);
-
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/expense/${payload.hostelId}`,
       payload
     );
@@ -178,8 +179,8 @@ const GetInitializeExpense = async (hostelId) => {
   try {
     setLoading(true);
     setError(null);
-
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/expense/initialize/${hostelId}`
     );
 
