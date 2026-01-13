@@ -750,7 +750,7 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType }) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingTop: 85,
+    paddingTop: 90,
   },
 
   fixedHeader: {
@@ -758,15 +758,16 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 70,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 20,
+    paddingTop:35,
     zIndex: 200,
   },
 
-  backIcon: { width: 20, height: 20, marginRight: 10 },
+  backIcon: { width: 22, height: 22, marginRight: 15 },
   headerTitle: { fontSize: 17, fontWeight: "600" },
 
   sectionLabel: { fontSize: 13, fontWeight: "700" },

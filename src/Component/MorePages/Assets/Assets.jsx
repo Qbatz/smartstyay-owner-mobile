@@ -867,10 +867,10 @@ useFocusEffect(
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 24 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
+  container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 40 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 22, height: 22 },
-  pageTitle: { fontSize: 20, fontWeight: "700", color: "#000" },
+  pageTitle: { fontSize: 20, fontWeight: "700", color: "#000" , marginLeft:15},
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#F8F8F8", borderRadius: 14, padding: 12, marginBottom: 20 },
   searchIcon: { width: 20, height: 20, tintColor: "#9E9E9E" },
   searchInput: { flex: 1, marginLeft: 10 },

@@ -88,7 +88,7 @@ export default function AgreementPolicy({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 20, paddingTop: 20, flex: 1 },
+  container: { paddingHorizontal: 20, paddingTop: 40, flex: 1 },
   
   headerRow: {
     flexDirection: "row",
