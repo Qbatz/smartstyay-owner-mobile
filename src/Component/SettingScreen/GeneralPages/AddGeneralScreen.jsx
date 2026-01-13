@@ -150,173 +150,26 @@ export default function AddGeneralScreen({ navigation, route }) {
       setSelectedImage(editData.profilePic ? { uri: editData.profilePic } : null);
     }
   }, [editData]);
-  // const handleSubmit = async () => {
-  //   let newErrors = {};
-
-  //   if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
-  //   if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
-  //   if (!password.trim()) newErrors.password = "Please Enter Password";
-  //   if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
-  //   if (!city.trim()) newErrors.city = "Please Enter City";
-  //   if (StateSelected === "Select State") newErrors.state = "Please Select State";
-
-  //   if (Object.keys(newErrors).length > 0) {
-  //     setErrors(newErrors);
-  //     return;
-  //   }
-
-  //   setErrors({});
-
-  //   const payload = {
-  //     firstName,
-  //     lastName,
-  //     mobile,
-  //     mailId: email,
-  //     houseNo: flat,
-  //     street,
-  //     landmark,
-  //     city,
-  //     pincode,
-  //     state: StateSelected,
-  //     password: "Test@123",
-  //   };
-
-  //   const formData = new FormData();
-  //   const jsonBase64 = btoa(JSON.stringify(payload));
-
-  //   formData.append("accountInfo", {
-  //     uri: "data:application/json;base64," + jsonBase64,
-  //     type: "application/json",
-  //     name: "account.json",
-  //   });
-
-  //   if (selectedImage) {
-  //     formData.append("profilePic", {
-  //       uri: selectedImage.uri,
-  //       name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
-  //       type: selectedImage.type || "image/jpeg",
-  //     });
-  //   }
-
-  //   const res = await addGeneral(formData);
-  //   console.log("RES:", res);
-
-
-  //   if (!res.success) {
-  //     const errMsg =
-
-  //       res.data.mobileStatus ||
-  //       res.data.message ||
-  //       "Something went wrong";
-
-  //     setEmailError(res.data.emailStatus);
-  //     setPhoneError(  res.data.mobileStatus)
-  //     setModalType("error");
-  //     // setShowSuccessModal(true);
-
-  //     setTimeout(() => setShowSuccessModal(false), 2000);
-  //     return;
-  //   }
-
-  //   setModalMessage("General Added Successfully");
-  //   setModalType("success");
-  //   setShowSuccessModal(true);
-
-  //   await getAdminList();
-
-  //   setTimeout(() => {
-  //     setShowSuccessModal(false);
-  //     navigation.goBack();
-  //   }, 1500);
-  // };
-  // 1
-  // const handleSubmit = async () => {
-  //   let newErrors = {};
-
-  //   if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
-  //   if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
-  //   if (!password.trim()) newErrors.password = "Please Enter Password";
-  //   if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
-  //   if (!city.trim()) newErrors.city = "Please Enter City";
-  //   if (StateSelected === "Select State") newErrors.state = "Please Select State";
-
-  //   if (Object.keys(newErrors).length > 0) {
-  //     setErrors(newErrors);
-  //     return;
-  //   }
-
-  //   setErrors({});
-
-  //   const payload = {
-  //     firstName,
-  //     lastName,
-  //     mobile,
-  //     mailId: email,
-  //     houseNo: flat,
-  //     street,
-  //     landmark,
-  //     city,
-  //     pincode,
-  //     state: StateSelected,
-  //     password: "Test@123",
-  //   };
-
-  //   const formData = new FormData();
-  //   const jsonBase64 = btoa(JSON.stringify(payload));
-
-  //   formData.append("accountInfo", {
-  //     uri: "data:application/json;base64," + jsonBase64,
-  //     type: "application/json",
-  //     name: "account.json",
-  //   });
-
-  //   if (selectedImage) {
-  //     formData.append("profilePic", {
-  //       uri: selectedImage.uri,
-  //       name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
-  //       type: selectedImage.type || "image/jpeg",
-  //     });
-  //   }
-
-  //   const res = await addGeneral(formData);
-  //   console.log("ADD RESPONSE:", res);
-
-  //   // 🔥 Handle API error safely 
-  //   if (!res.success) {
-  //     const apiError = res.data;
-
-  //     if (apiError.emailStatus) setEmailError(apiError.emailStatus);
-  //     if (apiError.mobileStatus) setPhoneError(apiError.mobileStatus);
-  //     if (apiError.message) setTopWarning(apiError.message);
-
-  //     return; 
-  //   }
-
-
-  //   setModalMessage("General Added Successfully");
-  //   setModalType("success");
-  //   setShowSuccessModal(true);
-
-  //   await getAdminList();
-
-  //   setTimeout(() => {
-  //     setShowSuccessModal(false);
-  //     navigation.goBack();
-  //   }, 1500);
-  // };
+  
   const strongPasswordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
   const handleSubmit = async () => {
     let newErrors = {};
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
     if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
-    if (!email.trim()) newErrors.email = "Please Enter Email ID";
+   if (!email.trim()) {
+  newErrors.email = "Please Enter Email ID";
+} else if (!emailRegex.test(email.trim())) {
+  newErrors.email = "Please Enter Valid Email ID";
+}
     if (!password.trim()) {
   newErrors.password = "Please Enter Password";
-} else if (!strongPasswordRegex.test(password)) {
+}
+ else if (!strongPasswordRegex.test(password)) {
   newErrors.password =
     "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character";
 }
@@ -775,18 +628,30 @@ console.log("payloadForApi",payloadForApi)
 
           <Text style={styles.label}>First Name  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="Enter First name" value={firstName}
-            onChangeText={(t) => {
-              setFirstName(t);
-              setErrors({ ...errors, firstName: "" });
-            }} />
+            // onChangeText={(t) => {
+            //   setFirstName(t);
+            //   setErrors({ ...errors, firstName: "" });
+            // }} 
+             onChangeText={(t) => {
+    // ✅ Only letters + space allowed
+    const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+
+    setFirstName(cleaned);
+    setErrors({ ...errors, firstName: "" });
+  }}
+            />
         
           {errors.firstName && (
                                     <ErrorMessage message={errors.firstName} type="error" />
                                 )}
 
           <Text style={styles.label}>Last Name</Text>
-          <TextInput style={styles.input} placeholder="Enter last Name" value={lastName}
-            onChangeText={setLastName} />
+          <TextInput style={styles.input} placeholder="Enter last Name" value={lastName} 
+            onChangeText={(t) => {
+  const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+  setLastName(cleaned);
+}}
+            />
 
           <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" value={mobile}
@@ -812,11 +677,20 @@ console.log("payloadForApi",payloadForApi)
 
           <Text style={styles.label}>Email ID  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
           <TextInput style={styles.input} placeholder="Enter Email" value={email}
+            // onChangeText={(t) => {
+            //   setEmail(t);
+            //   setErrors({ ...errors, email: "" });
+            //   setEmailError("");
+            // }}
             onChangeText={(t) => {
-              setEmail(t);
-              setErrors({ ...errors, email: "" });
-              setEmailError("");
-            }}
+  const cleaned = t
+    .replace(/\s/g, "")                 // ✅ space remove
+    .replace(/[^a-zA-Z0-9@._-]/g, "");  // ✅ valid email chars மட்டும்
+
+  setEmail(cleaned);
+  setErrors({ ...errors, email: "" });
+  setEmailError("");
+}}
           />
           {/* {emailError !== "" && (
             <Text style={styles.errText}>{emailError}</Text>
