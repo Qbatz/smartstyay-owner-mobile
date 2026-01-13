@@ -870,6 +870,32 @@ const editRentalAmount = async (hostelId, bookingId, payload) => {
   }
 };
 
+const assignAmenitiesForTenant = async (hostelId, payload) => {
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/amenity/assign/customer/${hostelId}`,
+      payload, // ✅ body
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.log("ASSIGN AMENITY ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Assign failed",
+    };
+  }
+};
+
 
 
   return (
@@ -889,7 +915,7 @@ const editRentalAmount = async (hostelId, bookingId, payload) => {
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant
       }}
     >
       {children}

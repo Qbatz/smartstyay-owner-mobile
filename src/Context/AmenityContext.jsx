@@ -6,6 +6,7 @@ export const AmenityContext = createContext();
 export default function AmenityProvider({ children }) {
   const [amenities, setAmenities] = useState([]);
   const [amenityDetail, setAmenityDetail] = useState(null);
+  const [amenitiesAllData,setAmenitiesData] = useState([])
   const [loading, setLoading] = useState(false);
 
   const getErrorMessage = (err) =>
@@ -23,7 +24,8 @@ export default function AmenityProvider({ children }) {
       const res = await axios.get(`/v2/amenity/${hostelId}`);
 
       if (res.status === 200) {
-        const formatted = (res.data || []).map((item) => ({
+setAmenitiesData(res.data?.amenities)
+        const formatted = (res.data?.amenities || []).map((item) => ({
           id: item.amenityId,
           name: item.amenityName,
           amount: item.amenityAmount,
@@ -189,7 +191,7 @@ export default function AmenityProvider({ children }) {
         updateAmenity,
         deleteAmenity,
         assignAmenity,
-        unAssignAmenity,
+        unAssignAmenity,amenitiesAllData
       }}
     >
       {children}
