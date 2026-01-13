@@ -11,8 +11,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import EditBasicDetailsSheet from "./EditBasicDetails";
-import EditManualAddressSheet from "./EditAdressDetails"
-
+import EditManualAddressSheet from "./EditAdressDetails";
+import EditJoiningDateSheet from "./EditJoiningDateSheet";
+import EditRentalAmountSheet from "./EditMonthlyRentSheet";
+import EditAdvanceAmountSheet from "./EditAdvanceSheet"
 import OverviewTab from "./OverviewTab";
 import EBReadingTab from "./EBReadingTab";
 import BillTab from "./BillTab";
@@ -32,6 +34,9 @@ const { activeHostelId } = useContext(CommonContexts);
   const [customerDetails,setCustomerDetails] = useState("")
    const [showEdit, setShowEdit] = useState(false);
     const [showEditSheet,setShowEditSheet] = useState(false)
+    const [showEditJoiningDate,setShowEditJoiningDate]=useState(false)
+    const [showEditRent, setShowEditRent] = useState(false);
+    const [showEditAdvance,setShowEditAdvance] = useState(false)
  useEffect(() => {
     if (customer?.customerId) {
       fetchCustomerDetails();
@@ -43,6 +48,18 @@ const { activeHostelId } = useContext(CommonContexts);
    const handleEditAdressDetails = ()=>{
     setShowEditSheet(true)
   }
+  const handleEditJoining =()=>{
+setShowEditJoiningDate(true)
+  }
+  const handleEditMonthlyRent = () => {
+  setShowEditRent(true);
+};
+  const handleEditAdvance = () => {
+  setShowEditAdvance(true);
+};
+const closeEditMonthlyRent = () => {
+  setShowEditRent(false);
+};
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId);
@@ -64,12 +81,13 @@ const { activeHostelId } = useContext(CommonContexts);
       case "Complaints":
         return <ComplaintsTab customerDetails={customerDetails}/>;
       default:
-        return <OverviewTab customerDetails={customerDetails} handleEditBasicDetails = {handleEditBasicDetails} handleEditAdressDetails={handleEditAdressDetails}/>;
+        return <OverviewTab customerDetails={customerDetails} handleEditBasicDetails = {handleEditBasicDetails} handleEditAdressDetails={handleEditAdressDetails} handleEditJoining={handleEditJoining} handleEditMonthlyRent={handleEditMonthlyRent} handleEditAdvance={handleEditAdvance}/>;
     }
   };
 const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
   return (
+    <>
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
@@ -103,12 +121,12 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
           </View>
         </View>
 
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Image
             source={Dots}
             style={{ width: 22, height: 22, transform: [{ rotate: "90deg" }] }}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* TABS */}
@@ -135,7 +153,12 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
   {renderTab()}
 </View>
 
-<EditBasicDetailsSheet
+
+
+
+    </View>
+
+    <EditBasicDetailsSheet
       visible={showEdit}
       onClose={() => setShowEdit(false)}
       customerDetails={customerDetails}
@@ -147,7 +170,24 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
       customerDetails={customerDetails}
        onSuccess={fetchCustomerDetails} 
     />
-    </View>
+    <EditJoiningDateSheet 
+     visible={showEditJoiningDate}
+     onClose={() => setShowEditJoiningDate(false)}
+      customerDetails={customerDetails}
+       onSuccess={fetchCustomerDetails} />
+           <EditRentalAmountSheet
+  visible={showEditRent}
+  onClose={() => setShowEditRent(false)}
+  customerDetails={customerDetails}
+   onSuccess={fetchCustomerDetails}
+/>
+<EditAdvanceAmountSheet
+ visible={showEditAdvance}
+  onClose={() => setShowEditAdvance(false)}
+  customerDetails={customerDetails}
+   onSuccess={fetchCustomerDetails}
+/>
+    </>
   );
 }
 const styles = StyleSheet.create({

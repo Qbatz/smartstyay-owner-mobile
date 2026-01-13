@@ -754,6 +754,121 @@ const addVendor = async (payloads, profilePic = null) => {
   }
 };
 
+const editJoiningDate = async (hostelId, bookingId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bookings/rent/${hostelId}/${bookingId}`,
+      {}, // body empty
+      {
+        params: {
+          joiningDate: payload.joiningDate, // DD-MM-YYYY
+          reason: payload.reason || "",
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Update failed" };
+
+  } catch (error) {
+    console.log("EDIT JOINING DATE ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data ||
+        "Unable to update joining date",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const editRentalAmount = async (hostelId, bookingId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bookings/rent/${hostelId}/${bookingId}`,
+      {}, // body empty
+      {
+        params: {
+          newRent: payload.newRent,
+          reason: payload.reason || "",
+          effectiveDate: payload.effectiveDate || "",
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Update failed" };
+  } catch (error) {
+    console.log("EDIT RENT ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data || "Unable to update rent amount",
+    };
+  } finally {
+    setLoading(false);
+  }
+};const editAdvanceAmount = async (hostelId, bookingId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bookings/advance/${hostelId}/${bookingId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Update failed" };
+  } catch (error) {
+    console.log("EDIT ADVANCE ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Unable to update advance amount",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -774,7 +889,7 @@ const addVendor = async (payloads, profilePic = null) => {
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount
       }}
     >
       {children}
