@@ -36,6 +36,88 @@ export const AssetProvider = ({ children }) => {
     }
   };
 
+  const addAsset = async (payload) => {
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const res = await AxiosConfig.post(
+      `/v2/assets/${payload.hostelId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      await getAllAssets(payload.hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+        message: "Asset created successfully",
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    const msg =
+      err?.response?.data === "Serial number already exists"
+        ? "Serial number already exists"
+        : err?.response?.data || "Failed to add asset";
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const handleUpdateAsset = async (payload) => {
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const res = await AxiosConfig.put(
+      `/v2/assets/${payload.hostelId}/${payload.assetId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      await getAllAssets(payload.hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+        message: "Asset updated successfully",
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log("UPDATE ASSET ERROR", err?.response);
+
+    const msg =
+      err?.response?.status === 403
+        ? "You don’t have permission to update this asset"
+        : err?.response?.data || "Failed to update asset";
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
 
   const deleteAsset = async (assetId, hostelId) => {
     setLoading(true);
@@ -60,6 +142,7 @@ export const AssetProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
  
   return (
     <AssetContext.Provider
@@ -68,6 +151,8 @@ export const AssetProvider = ({ children }) => {
         loading,
         errorMsg,
         getAllAssets,
+        addAsset,
+        handleUpdateAsset,
         deleteAsset,
       }}
     >
