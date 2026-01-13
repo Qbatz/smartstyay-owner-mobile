@@ -19,7 +19,7 @@ import OverviewTab from "./OverviewTab";
 import EBReadingTab from "./EBReadingTab";
 import BillTab from "./BillTab";
 import ComplaintsTab from "./ComplaintsTab";
-
+import AssignAmenitiesSheet from "./AssignAmenitiesSheet"
 import ProfileImg from "../../../Assets/Images/profile.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import RoomIcon from "../../../Assets/Images/profile.png";
@@ -37,6 +37,7 @@ const { activeHostelId } = useContext(CommonContexts);
     const [showEditJoiningDate,setShowEditJoiningDate]=useState(false)
     const [showEditRent, setShowEditRent] = useState(false);
     const [showEditAdvance,setShowEditAdvance] = useState(false)
+    const [showAssignAmenities,setShowAssignAmenities] = useState(false)
  useEffect(() => {
     if (customer?.customerId) {
       fetchCustomerDetails();
@@ -56,6 +57,9 @@ setShowEditJoiningDate(true)
 };
   const handleEditAdvance = () => {
   setShowEditAdvance(true);
+};
+  const handleShowAmenities = () => {
+  setShowAssignAmenities(true);
 };
 const closeEditMonthlyRent = () => {
   setShowEditRent(false);
@@ -81,7 +85,7 @@ const closeEditMonthlyRent = () => {
       case "Complaints":
         return <ComplaintsTab customerDetails={customerDetails}/>;
       default:
-        return <OverviewTab customerDetails={customerDetails} handleEditBasicDetails = {handleEditBasicDetails} handleEditAdressDetails={handleEditAdressDetails} handleEditJoining={handleEditJoining} handleEditMonthlyRent={handleEditMonthlyRent} handleEditAdvance={handleEditAdvance}/>;
+        return <OverviewTab customerDetails={customerDetails} handleEditBasicDetails = {handleEditBasicDetails} handleEditAdressDetails={handleEditAdressDetails} handleEditJoining={handleEditJoining} handleEditMonthlyRent={handleEditMonthlyRent} handleEditAdvance={handleEditAdvance} handleShowAmenities={handleShowAmenities}/>;
     }
   };
 const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
@@ -184,6 +188,12 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 <EditAdvanceAmountSheet
  visible={showEditAdvance}
   onClose={() => setShowEditAdvance(false)}
+  customerDetails={customerDetails}
+   onSuccess={fetchCustomerDetails}
+/>
+<AssignAmenitiesSheet
+ visible={showAssignAmenities}
+  onClose={() => setShowAssignAmenities(false)}
   customerDetails={customerDetails}
    onSuccess={fetchCustomerDetails}
 />

@@ -21,9 +21,9 @@ import { CommonContexts } from "../../../Context/CommonContext";
 
 
 
-export default function OverviewTab({ customerDetails, handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent,handleEditAdvance }) {
+export default function OverviewTab({ customerDetails, handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent,handleEditAdvance,handleShowAmenities }) {
   const [addressTab, setAddressTab] = useState("KYC");
-   const {GetAllAmenities,amenities} = useContext(AmenityContext);
+   const {GetAllAmenities,amenities,amenitiesAllData} = useContext(AmenityContext);
    const { activeHostelId } = useContext(CommonContexts);
   const handleEdit = () => {
     handleEditBasicDetails()
@@ -31,7 +31,7 @@ export default function OverviewTab({ customerDetails, handleEditBasicDetails, h
   const handleAdressEdit = () => {
     handleEditAdressDetails()
   }
-  console.log("amenities", amenities)
+  console.log("amenitiesAllData", amenitiesAllData)
 
   const [docTab, setDocTab] = useState("KYC");
   const [flat, setFlat] = useState("")
@@ -791,7 +791,7 @@ const isDisabled = true;
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Amenities provided</Text>
 
-              <TouchableOpacity style={styles.assignBtn}>
+              <TouchableOpacity style={styles.assignBtn} onPress={handleShowAmenities}>
                 <Text style={styles.assignText}>＋ Assign</Text>
               </TouchableOpacity>
             </View>

@@ -4,7 +4,7 @@ import { View, Text } from "react-native";
 const ComplaintsTab = () => {
   return (
     <View style={{ padding: 20 }}>
-      <Text>EB Reading Screen</Text>
+      <Text>Compliance Screen</Text>
     </View>
   );
 };
