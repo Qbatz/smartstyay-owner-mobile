@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Animated, PanResponder, StyleSheet, Image, TouchableWithoutFeedback } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../Context/PayingGuestContext";
+import SuccessModal from "../../ToastFile/ToastPage";
 
 
 export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed,onDeleteBed,onBedAdded }) {
@@ -10,6 +11,9 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
   const navigation = useNavigation();
   const translateY = useRef(new Animated.Value(300)).current;
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [modalType, setModalType] = useState("success");
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
   const handleEdit = () => {
     handleEditBed(selectedBed);
   }
@@ -50,10 +54,26 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
   const res = await deleteBed(selectedBed.bedId);
 
   if (res?.success) {
-    setShowDeletePopup(false);
+     setModalType("success");
+      setMessage("Bed Deleted successfully");
+      setShowSuccess(true);
+onBedAdded && onBedAdded(selectedBed.roomId)
+      setTimeout(() => {
+        setShowSuccess(false);
+        setShowDeletePopup(false);
     onClose();
+      }, 800);
+   
   } else {
-    alert(res?.message || "Delete failed");
+    // alert(res?.message || "Delete failed");
+      setModalType("error");
+      setMessage(res?.message);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+       
+      }, 800);
   }
 };
 
@@ -62,6 +82,7 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
 
   return (
     <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
 

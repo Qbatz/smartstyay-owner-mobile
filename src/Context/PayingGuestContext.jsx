@@ -231,8 +231,9 @@ export const FloorProvider = ({ children }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+ console.log("resdelete",res)
       return { success: true, data: res.data };
+     
     } catch (err) {
       console.log("Delete Bed API error 👉", err?.response?.data);
       return {
