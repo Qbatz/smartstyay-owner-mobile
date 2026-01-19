@@ -14,15 +14,15 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder,
+  PanResponder, KeyboardAvoidingView ,Keyboard
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-
-
+import Loader from "../../../Component/Loader/Loader"
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import AddBankingDesign from "./AddBanking"
 import AddTransaction from "./AddTransaction"
 import SelfTransferModal from "./SelfTransferScreen";
@@ -58,14 +58,19 @@ export default function BankingScreen() {
   dayjs.extend(customParseFormat)
 
   const { activeHostelId } = useContext(CommonContexts);
-const { bankList, transactionList,  loading, errorMsg, getBankListByHostel } =
+const { bankList, transactionList,  loading, errorMsg, getBankListByHostel , AddBankAmount } =
   useContext(BankingContext);
 
   console.log("bankinglist", bankList , transactionList);
   
 
 
-  
+  const [showAddBalance, setShowAddBalance] = useState(false);
+const [addBankName, setAddBankName] = useState("");
+const [addBankAmount, setAddBankAmount] = useState("");
+const [amountError, setAmountError] = useState("");
+const [selectedBankId, setSelectedBankId] = useState(null);
+
   const [selectedBank, setSelectedBank] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
 
@@ -140,6 +145,10 @@ const { bankList, transactionList,  loading, errorMsg, getBankListByHostel } =
     const [openFrom, setOpenFrom] = useState(false);
     const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
+
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
   
   
   
@@ -209,6 +218,10 @@ const { bankList, transactionList,  loading, errorMsg, getBankListByHostel } =
           setShowFilter(false);
           return true;
         }
+        if(showAddBalance){
+          setShowAddBalance(false)
+           return true;
+        }
       
         
         return false;
@@ -216,7 +229,7 @@ const { bankList, transactionList,  loading, errorMsg, getBankListByHostel } =
   
       const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
       return () => sub.remove();
-    }, [ showFilter, openFrom, openTo, amountDropdownVisible]);
+    }, [ showFilter, openFrom, openTo, amountDropdownVisible , showAddBalance]);
 
 
 
@@ -285,7 +298,7 @@ const { bankList, transactionList,  loading, errorMsg, getBankListByHostel } =
 };
 
   
-const mappedBankList = getUniqueBanks(bankList).map((b) => {
+const mappedBankList = (bankList || []).map((b) => {
   if (b.accountType === "BANK") {
     return {
       id: b.bankingId,
@@ -293,7 +306,7 @@ const mappedBankList = getUniqueBanks(bankList).map((b) => {
       subtitle: "Savings A/C",
       name: b.accountHolderName,
       acc: b.accountNumber,
-      balance: `₹${b.accountBalance ?? 0}`,
+      balance: b.accountBalance ?? 0,
       Icon: BankIcon,
       raw: b,
     };
@@ -306,7 +319,7 @@ const mappedBankList = getUniqueBanks(bankList).map((b) => {
       subtitle: "UPI ID",
       name: b.accountHolderName,
       acc: b.upiId,
-      balance: "—",
+      balance: b.accountBalance ?? 0,
       Icon: UpiIcon,
       raw: b,
     };
@@ -319,7 +332,7 @@ const mappedBankList = getUniqueBanks(bankList).map((b) => {
       subtitle: b.cardType || "Card",
       name: b.accountHolderName,
       acc: b.creditCardNumber || b.debitCardNumber,
-      balance: "—",
+      balance: b.accountBalance ?? 0,
       Icon: CardIcon,
       raw: b,
     };
@@ -332,7 +345,7 @@ const mappedBankList = getUniqueBanks(bankList).map((b) => {
       subtitle: "Petty Cash",
       name: b.accountHolderName,
       acc: "",
-      balance: "—",
+      balance: b.accountBalance ?? 0,
       Icon: CashIcon,
       raw: b,
     };
@@ -340,6 +353,7 @@ const mappedBankList = getUniqueBanks(bankList).map((b) => {
 
   return null;
 }).filter(Boolean);
+
 
 const mappedTransactions = (transactionList || []).map((t) => {
   const isCredit = t.type === "CREDIT";
@@ -359,6 +373,114 @@ const mappedTransactions = (transactionList || []).map((t) => {
     raw: t,
   };
 });
+
+
+
+const handleShowAddBalance = (item) => {
+  setAddBankName(`${item.name} - ${item.title}`);
+  setSelectedBankId(item.id);
+  setShowAddBalance(true);
+};
+
+
+
+const handleAddBankAmount = (v) => {
+  if (!/^\d*$/.test(v)) return;
+  if (/^0+$/.test(v)) return;
+
+  setAddBankAmount(v);
+  setAmountError("");
+};
+
+const closeAddBalancePopup = () => {
+  setShowAddBalance(false);
+  setAddBankName("");
+  setAddBankAmount("");
+  setAmountError("");
+  setSelectedBankId(null);
+};
+
+
+
+const handleAddAmountSubmit = async () => {
+  if (!addBankAmount.trim()) {
+    setAmountError("Please Enter Amount");
+    return;
+  }
+
+  const res = await AddBankAmount(
+    activeHostelId,
+    selectedBankId,
+    addBankAmount
+  );
+
+  if (res.success) {
+    setModalType("success");
+    setModalMessage(res?.message || "Amount Added Successfully");
+    setShowSuccessModal(true);
+
+    closeAddBalancePopup()
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1200);
+
+  } else {
+    setAmountError(res?.message);
+  }
+};
+
+
+
+const addBalanceTranslateY = useRef(new Animated.Value(0)).current;
+
+const addBalancePanResponder = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) addBalanceTranslateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(addBalanceTranslateY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          addBalanceTranslateY.setValue(0);
+          closeAddBalancePopup(); // 🔥 RESET + CLOSE
+        });
+      } else {
+        Animated.spring(addBalanceTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
+ useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(addBalanceTranslateY, {
+        toValue: -e.endCoordinates.height + 60,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(addBalanceTranslateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
 
 
   
@@ -446,13 +568,21 @@ const openMenu = (item) => {
 
 
  
-  const handleAddBanking = () => {
-    setAddBankingShow(true)
-  }
+  // const handleAddBanking = () => {
+  //   setAddBankingShow(true)
+  // }
 
-   const handleCloseAddBanking = () => {
-    setAddBankingShow(false)
-  }
+
+  const handleAddBanking = () => {
+  setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
+  setAddBankingShow(true);
+};
+
+const handleCloseAddBanking = () => {
+  setAddBankingShow(false);
+  setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
+};
+
   const handleDeleteShow = () => {
     setDeleteShow(true)
     setShowMenu(false);
@@ -468,12 +598,16 @@ const handleEditBanking = (item) => {
 
   setEditMode({
     mode: "edit",
-    tab: item.title === "Canara Bank" ? "Bank" :
-         item.title === "UPI" ? "UPI" :
-         item.title === "Cash" ? "Cash" :
-         "Bank",  
+    tab:
+      item.raw.accountType === "BANK" ? "Bank" :
+      item.raw.accountType === "UPI"  ? "UPI"  :
+      item.raw.accountType === "CARD" ? "Card" :
+      "Cash",
+    raw: item.raw,         
+    bankId: item.raw.bankingId
   });
 };
+
 
 
  const handleShowAddTransaction  = () => {
@@ -491,6 +625,7 @@ const handleEditBanking = (item) => {
 
   return (
     <>
+        { loading && <Loader />}
     <View style={styles.container}>
 
       <View style={styles.stickyHeader}>
@@ -515,8 +650,13 @@ const handleEditBanking = (item) => {
         </View>
       </View>
 
-      
-      <Animated.ScrollView
+
+   {!loading && (
+
+    <>
+
+    
+  <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 130 }}
         onScroll={Animated.event(
@@ -588,12 +728,25 @@ const handleEditBanking = (item) => {
 
   </View>
 
-  <View style={styles.balanceRow}>
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Text style={styles.balanceText}>Balance</Text>
-    </View>
-    <Text style={styles.balanceAmount}>{item.balance}</Text>
-  </View>
+<View style={styles.balanceRow}>
+  <Text style={styles.balanceText}>Balance</Text>
+
+ {item.balance === 0 ? (
+  <Text
+    style={styles.addAmountText}
+    onPress={() => handleShowAddBalance(item)}
+  >
+    + Add Amount
+  </Text>
+) : (
+  <Text style={styles.balanceAmount}>
+    ₹{item.balance.toLocaleString("en-IN")}
+  </Text>
+)}
+
+</View>
+
+
 
 </View>
 
@@ -655,7 +808,8 @@ const handleEditBanking = (item) => {
 
       </Animated.ScrollView>
 
-   
+
+
       <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
         <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
@@ -664,20 +818,21 @@ const handleEditBanking = (item) => {
       <TouchableOpacity style={styles.addBtn} onPress={handleShowAddTransaction}>
         <Image source={AddIcon} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
+</>
+
+   )}
+      
+    
+
+   
 
      
 
     </View>
 
 
-       {addbankingshow && (
-        <AddBankingDesign visible={addbankingshow} onClose={handleCloseAddBanking}
-         mode={editMode.mode}
-   editTab={editMode.tab}
-        />
-       )
 
-       }
+       
 
 {showtransaction && (
   <View style={styles.sheetOverlay}>
@@ -763,6 +918,70 @@ const handleEditBanking = (item) => {
     </Animated.View>
   </View>
 )}
+
+
+{showAddBalance && (
+  <View style={styles.sheetOverlay}>
+    {/* BACKGROUND TAP */}
+    <TouchableWithoutFeedback onPress={closeAddBalancePopup}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[
+        styles.addBalanceSheet,
+        { transform: [{ translateY: addBalanceTranslateY }] },
+      ]}
+      {...addBalancePanResponder.panHandlers}
+    >
+      {/* HANDLE */}
+      <View style={styles.sheetHandle} />
+
+      {/* HEADER */}
+      <View style={styles.sheetHeader}>
+        <Text style={styles.sheetTitle}>Add Balance</Text>
+        <TouchableOpacity onPress={closeAddBalancePopup}>
+          <Text style={{ fontSize: 20 }}>✕</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ACCOUNT */}
+      <Text style={styles.label}>
+        Account <Text style={{ color: "red" }}>*</Text>
+      </Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: "#F5F5F5" }]}
+        value={addBankName}
+        editable={false}
+      />
+
+      {/* AMOUNT */}
+      <Text style={styles.label}>
+        Balance <Text style={{ color: "red" }}>*</Text>
+      </Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter Amount"
+        keyboardType="number-pad"
+        value={addBankAmount}
+        onChangeText={handleAddBankAmount}
+      />
+
+{amountError && <ErrorMessage message={amountError} type="error" />}
+     
+
+      {/* BUTTON */}
+      <TouchableOpacity
+        style={styles.addBalanceBtn}
+        onPress={handleAddAmountSubmit}
+      >
+        <Text style={styles.addBalanceBtnText}>Add balance</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  </View>
+)}
+
+
 
 {showFilter && (
       <View style={styles.sheetOverlay}>
@@ -981,8 +1200,20 @@ const handleEditBanking = (item) => {
   />
 )}
 
+       {addbankingshow && (
+        <AddBankingDesign visible={addbankingshow} onClose={handleCloseAddBanking}
+         mode={editMode.mode}
+  editTab={editMode}
+        />
+       )
+
+       }
+
+
     
     </>
+
+    
   );
 }
 const styles = StyleSheet.create({
@@ -1153,6 +1384,11 @@ balanceRow: {
 
 balanceText: { color: "#777" },
 balanceAmount: { fontWeight: "700", fontSize: 16 },
+addAmountText: {
+  color: "#1D5DFF",
+  fontWeight: "600",
+},
+
 
 middleRow: {
   flexDirection: "row",
@@ -1543,6 +1779,54 @@ downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
   applyBtnText: { color: "#fff", fontWeight: "700" },
 
+addBalanceSheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+},
+
+sheetHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 15,
+},
+
+sheetTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+},
+
+label: {
+  fontSize: 14,
+  fontWeight: "500",
+  marginTop: 10,
+  marginBottom: 6,
+},
+
+input: {
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 8,
+  padding: 12,
+  fontSize: 16,
+},
+
+addBalanceBtn: {
+  backgroundColor: "#1E45E1",
+  height: 50,
+  borderRadius: 12,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 20,
+},
+
+addBalanceBtnText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700",
+},
 
 
 

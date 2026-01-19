@@ -10,9 +10,10 @@ import {
     Animated,
     PanResponder,
     ScrollView,
-    BackHandler
+    BackHandler , Keyboard
 } from "react-native";
-import Calendar from "../../../Assets/Images/calendar.png";
+import CalendarImg from "../../../Assets/Images/calendar.png";
+import { Calendar } from "react-native-calendars";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -42,6 +43,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets",  asset: c
            const isEdit = !!currentItem;
 
            const [initialState, setInitialState] = useState(null);
+           
 
 
  useEffect(() => {
@@ -54,11 +56,18 @@ export default function AddAssetSheet({ onClose, title = "Add Assets",  asset: c
     setSelectedVendorId(currentItem.vendorId || null);
     setSelectedMode(currentItem.bankingId || "");
 
+    // setPurchaseDate(
+    //   currentItem.purchaseDate
+    //     ? dayjs(currentItem.purchaseDate, "DD-MM-YYYY").toDate()
+    //     : null
+    // );
+
     setPurchaseDate(
-      currentItem.purchaseDate
-        ? dayjs(currentItem.purchaseDate, "DD-MM-YYYY").toDate()
-        : null
-    );
+  currentItem.purchaseDate
+    ? dayjs(currentItem.purchaseDate, "DD-MM-YYYY").format("YYYY-MM-DD")
+    : null
+);
+
 
     setInitialState({
       assetName: currentItem.assetName || "",
@@ -316,6 +325,66 @@ if (isEdit) {
         })
     ).current;
 
+
+     useEffect(() => {
+        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+          Animated.timing(translateY, {
+            toValue: -e.endCoordinates.height + 60,
+            duration: 180,
+            useNativeDriver: true,
+          }).start();
+        });
+    
+        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: 180,
+            useNativeDriver: true,
+          }).start();
+        });
+    
+        return () => {
+          showSub.remove();
+          hideSub.remove();
+        };
+      }, []);
+
+const today = dayjs();
+
+const isDisabledDate = (d) => {
+  if (!d) return false;
+  return d.isAfter(today, "day")
+};
+
+      
+      
+     const markedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledDate(d)) {
+    markedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+      
+    
+
     return (
      
       <>
@@ -471,26 +540,38 @@ onChangeText={(t) => {
 
 
 
-                   <Text style={styles.label}>
+
+
+
+<Text style={styles.label}>
   Purchase Date <Text style={{ color: "red" }}>*</Text>
 </Text>
 
 <TouchableOpacity
-  style={styles.dateBox}
+  activeOpacity={0.7}
   onPress={() => setOpenDatePicker(true)}
 >
-  <Text style={styles.placeholder}>
-    {purchaseDate
-      ? dayjs(purchaseDate).format("DD-MM-YYYY")
-      : "DD-MM-YYYY"}
-  </Text>
+  <View style={styles.dateInputWrapper}>
+    <TextInput
+      style={styles.dateInput}
+      placeholder="DD-MM-YYYY"
+      value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
+      editable={false}   // 🔒 keyboard open aagathu
+      pointerEvents="none"
+    />
 
-  <Image source={Calendar} style={styles.calendarIcon} />
+    <Image
+      source={require("../../../Assets/Images/calendar.png")}
+      style={styles.calendarIcon}
+    />
+  </View>
 </TouchableOpacity>
 
 {errors.purchaseDate && (
   <ErrorMessage message={errors.purchaseDate} type="error" />
 )}
+
+
 
 
 
@@ -607,35 +688,52 @@ onChangeText={(t) => {
                 </ScrollView>
 
             </Animated.View>
+
 {openDatePicker && (
-  <View style={styles.sheetOverlay}>
+  <View style={styles.dateOverlay}>
     <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
-      <View style={{ flex: 1 }} />
+      <View style={styles.overlayBg} />
     </TouchableWithoutFeedback>
 
-    <View style={styles.datePickerBox}>
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={{
+          ...markedDates,
+          ...(purchaseDate && {
+            [purchaseDate]: {
+              selected: true,
+              selectedColor: "#2563EB",
+              customStyles: {
+                container: {
+                  backgroundColor: "#2563EB",
+                  borderRadius: 8,
+                },
+                text: {
+                  color: "#FFFFFF",
+                },
+              },
+            },
+          }),
+        }}
+        current={purchaseDate || dayjs().format("YYYY-MM-DD")}
+        onDayPress={(day) => {
+          // 🚫 STOP FUTURE DATE CLICK
+          if (markedDates[day.dateString]?.disabled) return;
 
-
-<DatePicker
-  mode="single"
-  value={purchaseDate}          // Date | null
-  maximumDate={todayEnd}        // ✅ future dates FULLY disabled
-  onChange={(params) => {
-    if (params?.date) {
-      setPurchaseDate(params.date);   // JS Date
-      setErrors({ ...errors, purchaseDate: "" });
-    }
-    setOpenDatePicker(false);
-  }}
-/>
-
-
-
-
+          setPurchaseDate(day.dateString);
+          setOpenDatePicker(false);
+          setErrors((p) => ({ ...p, purchaseDate: "" }));
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          arrowColor: "#111827",
+          textDisabledColor: "#9CA3AF",
+        }}
+      />
     </View>
   </View>
 )}
-
         </View>
 
          </>
@@ -855,5 +953,72 @@ dropdownTextSelected: {
 
 
 arrow: { fontSize: 18, color: "#555" },
+
+datePickerBox: {
+    backgroundColor: "#fff",
+    width: "80%",
+    borderColor: "#DCDCDC",
+    borderRadius: 30,
+    padding: 5,
+    marginBottom: 100,
+    borderWidth: 0.5,
+  },
+
+  sheetLabel: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#000",
+  marginBottom: 8,
+},
+ dateInputWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  height: 48,
+  paddingHorizontal: 12,
+},
+
+
+dateInput: {
+  flex: 1,
+  fontSize: 14,
+  color: "#111827",
+},
+
+calendarIconWrapper: {
+  padding: 6,
+},
+
+calendarIcon: {
+  width: 20,
+  height: 20,
+  tintColor: "#6B7280",
+},
+
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
 
 });

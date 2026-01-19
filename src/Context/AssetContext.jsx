@@ -115,6 +115,45 @@ const handleUpdateAsset = async (payload) => {
 };
 
 
+const assignAsset = async (payload) => {
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const res = await AxiosConfig.put(
+      `/v2/assets/assign/${payload.assetId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      // refresh asset list after assign
+      await getAllAssets(payload.hostelId);
+
+      return {
+        success: true,
+        message: res.data || "Asset assigned successfully",
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data ||
+      "Failed to assign asset";
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
 
@@ -154,6 +193,7 @@ const handleUpdateAsset = async (payload) => {
         addAsset,
         handleUpdateAsset,
         deleteAsset,
+        assignAsset,
       }}
     >
       {children}
