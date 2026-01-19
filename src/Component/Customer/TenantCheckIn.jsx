@@ -681,16 +681,22 @@ const validateExtraCharges = () => {
                         )}
 
                       </View>
-{item.titleError ? (
+{/* {item.titleError ? (
   <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
     {item.titleError}
   </Text>
-) : null}
-{item.amountError ? (
+) : null} */}
+ {item.titleError && (
+                  <ErrorMessage message={item.titleError} type="error" />
+                )}
+{/* {item.amountError ? (
   <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
     {item.amountError}
   </Text>
-) : null}
+) : null} */}
+ {item.amountError && (
+                  <ErrorMessage message={item.amountError} type="error" />
+                )}
 
                       {openDropdownId === item.id && item.type === "" && (
                         <View style={styles.nonRefundDropdown}>
