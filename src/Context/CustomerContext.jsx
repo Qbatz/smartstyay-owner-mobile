@@ -935,6 +935,44 @@ const assignAmenitiesForTenant = async (hostelId, payload) => {
   }
 };
 
+const initializeCancelCheckout = async (hostelId, customerId) => {
+  if (!hostelId) {
+    return { success: false, message: "HostelId missing" };
+  }
+
+  if (!customerId) {
+    return { success: false, message: "CustomerId missing" };
+  }
+
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/customers/cancel-checkout/initialize/${hostelId}/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Initialize cancel checkout failed" };
+  } catch (error) {
+    console.log("INIT CANCEL CHECKOUT ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Initialize cancel checkout failed",
+    };
+  }
+};
 
 
   return (
@@ -954,7 +992,7 @@ const assignAmenitiesForTenant = async (hostelId, payload) => {
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout
       }}
     >
       {children}

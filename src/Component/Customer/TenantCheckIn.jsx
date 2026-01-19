@@ -186,15 +186,29 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
   const updateTitle = (id, title) => {
-    setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, title } : i))
-    );
+    // setExtraCharges(prev =>
+    //   prev.map(i => (i.id === id ? { ...i, title } : i))
+    // );
+     setExtraCharges(prev =>
+    prev.map(i =>
+      i.id === id
+        ? { ...i, title, titleError: "" }
+        : i
+    )
+  );
   };
 
   const updateAmount = (id, amount) => {
+    // setExtraCharges(prev =>
+    //   prev.map(i => (i.id === id ? { ...i, amount } : i))
+    // );
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, amount } : i))
-    );
+    prev.map(i =>
+      i.id === id
+        ? { ...i, amount, amountError: "" }
+        : i
+    )
+  );
   };
 
 
@@ -243,11 +257,73 @@ export default function TenantCheckIn({ navigation, route }) {
 
     return valid;
   };
+const validateExtraCharges = () => {
+  let valid = true;
+
+  const updated = extraCharges.map((e) => {
+    let titleError = "";
+    let amountError = "";
+
+    const titleFilled = e.title?.trim()?.length > 0;
+    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+    const amt = Number(e.amount);
+
+    // ✅ CASE 1: type not selected -> ignore row (no validation)
+    if (!e.type) {
+      return { ...e, titleError: "", amountError: "" };
+    }
+
+    // ✅ CASE 2: Maintenance -> amount mandatory
+    if (e.type === "Maintenance") {
+      if (!amountFilled) {
+        amountError = "Please enter maintenance amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError: "", amountError };
+    }
+
+    // ✅ CASE 3: Others -> reason + amount both mandatory
+    if (e.type === "Others") {
+      // both empty -> ok (optional row)
+      if (!titleFilled && !amountFilled) {
+        return { ...e, titleError: "", amountError: "" };
+      }
+
+      if (!titleFilled) {
+        titleError = "Please enter reason";
+        valid = false;
+      }
+
+      if (!amountFilled) {
+        amountError = "Please enter amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError, amountError };
+    }
+
+    return { ...e, titleError: "", amountError: "" };
+  });
+
+  setExtraCharges(updated);
+  return valid;
+};
+
 
   const submitLongStay = async () => {
     const isValid = validateLongStay();
 
     if (!isValid) return;
+     const chargeValid = validateExtraCharges();
+  if (!chargeValid) return;
     const payload = {
       floorId: selectedFloor.id,
       roomId: selectedRoom.id,
@@ -531,7 +607,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                 <View style={styles.nonRefund}>
                   <View style={styles.extraHeader}>
-                    <Text style={styles.label}>Non Refundable Amount</Text>
+                    <Text style={styles.label}>Non Refundable Amoun</Text>
 
                     <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
                       <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
@@ -582,6 +658,7 @@ export default function TenantCheckIn({ navigation, route }) {
                               updateTitle(item.id, onlyLetters);
                             }}
                           />
+                          
                         ) : (
                           <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
                             <Text>Maintenance</Text>
@@ -604,7 +681,16 @@ export default function TenantCheckIn({ navigation, route }) {
                         )}
 
                       </View>
-
+{item.titleError ? (
+  <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+    {item.titleError}
+  </Text>
+) : null}
+{item.amountError ? (
+  <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+    {item.amountError}
+  </Text>
+) : null}
 
                       {openDropdownId === item.id && item.type === "" && (
                         <View style={styles.nonRefundDropdown}>
