@@ -43,7 +43,10 @@ export default function ComplaintDetails({
   console.log("complaint", complaint);
   
     const { getParticularComplaint , selectedComplaint } = useContext(ComplaintContext);
-  
+       const { activeHostelId } = useContext(CommonContexts);
+
+       console.log("selectedComplaint", selectedComplaint);
+       
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gesture) =>
@@ -111,12 +114,18 @@ export default function ComplaintDetails({
   if (!visible || !complaint) return null;
 
 
-
 const openComments = async () => {
-  await getParticularComplaint(complaint?.complaintId);
-  handleCloseSheet();
-  setTimeout(onOpenCommentSheet, 200);
+  const res = await getParticularComplaint(
+    activeHostelId,
+    complaint?.complaintId
+  )
+
+  if (res?.success) {
+    handleCloseSheet();
+    onOpenCommentSheet();
+  }
 };
+
 
 console.log("comments", complaint);
 

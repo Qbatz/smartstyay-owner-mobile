@@ -194,9 +194,24 @@ console.log("matchedCustomer",matchedCustomer)
             </View>
           )} */}
           {menuVisible && (
+            <>
+            {/* {menuVisible && (
+  <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+    <View style={styles.menuOverlay} />
+  </TouchableWithoutFeedback>
+)} */}
             <View style={styles.dropdown}>
 
-
+  <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleEdit}
+              >
+                <Image
+                  source={require("../../../Assets/Images/editIcon.png")}
+                  style={styles.menuIcon}
+                />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
               {matchedCustomer?.currentStatus === "Settlement Generated" ? (
                 <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
                   <Image
@@ -244,17 +259,9 @@ console.log("matchedCustomer",matchedCustomer)
 
                 </>
               )}
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={handleEdit}
-              >
-                <Image
-                  source={require("../../../Assets/Images/editIcon.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>Edit</Text>
-              </TouchableOpacity>
+            
             </View>
+            </>
           )}
 
 

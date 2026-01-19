@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useEffect, useCallback, useRef } from "react";
+import React, { useLayoutEffect, useState, useEffect, useCallback, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,12 @@ import {
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-
+import { AssetContext } from "../../../Context/AssetContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useFloor } from "../../../Context/PayingGuestContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import Loader from "../../../Component/Loader/Loader"
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
 import AddIcon from "../../../Assets/Images/TenantAddBlue.png";
@@ -29,8 +34,60 @@ import TrashIcon from "../../../Assets/Images/trash.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import AddAssetSheet from "../Assets/AddAssets";
 import { useFocusEffect } from '@react-navigation/native';
+import EmptyStateImage from "../../../Assets/Images/Empty_state.png"
 
 export default function Assets({ navigation }) {
+
+    const { activeHostelId } = useContext(CommonContexts);
+  const { getAllAssets, assetList, loading , deleteAsset  , assignAsset} = useContext(AssetContext);
+   const { getAllFloorsByHostel, getAllRoomsByFloor,  } = useFloor();
+
+        const [floors, setFloors] = useState([]);
+        const [rooms, setRooms] = useState([]);
+        const [floorError, setFloorError] = useState("")
+        const [roomError, setRoomError] = useState("")
+        const [floorOpen, setFloorOpen] = useState(false);
+        const [selectedFloor, setSelectedFloor] = useState(null);
+        const [roomOpen, setRoomOpen] = useState(false);
+        const [selectedRoom, setSelectedRoom] = useState(null);
+
+useEffect(() => {
+  if(activeHostelId){
+  getAllAssets(activeHostelId);
+  }
+}, [activeHostelId]);
+
+
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    loadFloors();
+  }, [activeHostelId]);
+
+  const loadFloors = async () => {
+    const res = await getAllFloorsByHostel(activeHostelId);
+    if (res.success) {
+      setFloors(res.data);
+    }
+  }
+
+    const loadRooms = async (floorId) => {
+    const res = await getAllRoomsByFloor(floorId);
+    if (res.success) {
+      setRooms(res.data);
+    } else {
+      setRooms([]);
+    }
+  };
+
+console.log("assetlist", assetList);
+
+const [showSuccessModal, setShowSuccessModal] = useState(false);
+const [modalMessage, setModalMessage] = useState("");
+const [modalType, setModalType] = useState("success");
+
+
+
   const [showSheet, setShowSheet] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
 
@@ -38,20 +95,71 @@ export default function Assets({ navigation }) {
   const [showAssignSheet, setShowAssignSheet] = useState(false);
   const [assignDate, setAssignDate] = useState(dayjs());
   const [openAssignDate, setOpenAssignDate] = useState(false);
-  const [floorOpen, setFloorOpen] = useState(false);
-  const [selectedFloor, setSelectedFloor] = useState("");
-  const floorOptions = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"];
-  const [roomOpen, setRoomOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState("");
+
+  // const floorOptions = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"];
+
   const [showAddAsset, setShowAddAsset] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   
+const handleDeleteAsset = async () => {
+  if (!selectedAsset?.assetId) return;
+
+  const res = await deleteAsset(
+    selectedAsset.assetId,
+    activeHostelId
+  );
+
+  setShowDeletePopup(false);
+  setShowSheet(false);
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage(res?.message || "Asset deleted successfully");
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Failed to delete asset");
+  }
+
+  setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+    setSelectedAsset(null);
+  }, 1500);
+};
 
 
+const EmptyState = () => (
+  <View style={{ alignItems: "center", marginTop: 120 }}>
+    <Image
+      source={EmptyStateImage}
+      style={{ width: 90, height: 160, }}
+    />
+    <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+      No assets found
+    </Text>
 
-  const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
+    
+          <TouchableOpacity
+  style={styles.emptystateBtn}
+  onPress={() => {
+    setIsEdit(false);
+    setSelectedAsset(null);
+    setShowAddAsset(true);
+  }}
+>
+  <Text style={styles.emptystateText}>
+    + Add Asset
+  </Text>
+</TouchableOpacity>
+
+  </View>
+);
+
+
+  // const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
 
 
 
@@ -177,19 +285,76 @@ useFocusEffect(
     "High to Low (Highest First)",
     "Newest First",
     "Oldest First",
-  ];
+  ]
+
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
+ const floorOptions = [
+  { id: 1, name: "Ground Floor" },
+  { id: 2, name: "1st Floor" },
+];
 
-  const dummyData = [
-    { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
-    { name: "Refrigerator", model: "6987165476", brand: "Whirlpool", price: "₹16,500" },
-    { name: "Ceiling Fan", model: "SB-989543", brand: "Crompton", price: "₹2,500" },
-    { name: "Mattresses", model: "SB-989543", brand: "CURL ON", price: "₹7,500" },
-  ];
+const roomOptions = [  { id: 1, name: "Room 101" },
+  { id: 2, name: "Room 102"},]
+
+const handleAssignAsset = async () => {
+  if (!selectedAsset?.assetId) return;
+
+  setFloorError("");
+  setRoomError("");
+
+  let valid = true;
+
+  if (!selectedFloor) {
+    setFloorError("Please select a floor");
+    valid = false;
+  }
+
+  if (!selectedRoom) {
+    setRoomError("Please select a room");
+    valid = false;
+  }
+
+  if (!assignDate) {
+    setModalType("error");
+    setModalMessage("Please select assign date");
+    setShowSuccessModal(true);
+    return;
+  }
+
+  if (!valid) return;
+
+  const payload = {
+    assetId: selectedAsset.assetId,
+    hostelId: activeHostelId,
+    floorId: selectedFloor.id,   // ✅ FIXED
+    roomId: selectedRoom.id,     // ✅ FIXED
+    assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
+  };
+
+  const res = await assignAsset(payload);
+
+  setShowAssignSheet(false);
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage(res.message || "Asset assigned successfully");
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Assign failed");
+  }
+
+  setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 1500);
+};
+
+
 
 
   useLayoutEffect(() => {
@@ -259,6 +424,16 @@ useFocusEffect(
   };
 
   return (
+
+    <>
+       { loading && <Loader />}
+            <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/> 
+
     <View style={styles.container}>
 
       <View style={styles.header}>
@@ -282,40 +457,61 @@ useFocusEffect(
       </View>
 
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        {dummyData.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.iconCircle}>
-              <Image source={AssetIcon} style={styles.assetIcon} />
-            </View>
+    <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 120 }}
+>
+  { !loading && assetList?.length > 0 ? (
+    assetList.map((item) => (
+    <TouchableOpacity
+  key={item.assetId}
+  style={styles.card}
+  activeOpacity={0.8}
+  onPress={() => openDetails(item)}
+>
+  <View style={styles.iconCircle}>
+    <Image source={AssetIcon} style={styles.assetIcon} />
+  </View>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.assetTitle}>{item.name}</Text>
-              <Text style={styles.assetSub}>
-                {item.model}{"  •  "}{item.brand}{"  •  "}{item.price}
-              </Text>
-            </View>
+  <View style={{ flex: 1 }}>
+    <Text style={styles.assetTitle}>
+      {item.assetName || "N/A"}
+    </Text>
 
-            <TouchableOpacity
-              onPress={() => openDetails(item)}
-              accessibilityLabel={`Open ${item.name} details`}
-            >
-              <Image source={MenuDots} style={styles.dotsIcon} />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
+    <Text style={styles.assetSub}>
+      {item.serialNumber || "N/A"}
+      {"  •  "}
+      {item.productName || "N/A"}
+      {"  •  "}
+      ₹{item.price ?? "--"}
+    </Text>
+  </View>
 
+  <Image source={MenuDots} style={styles.dotsIcon} />
+</TouchableOpacity>
 
-      <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
+    ))
+  ) : (
+    !loading && <EmptyState />
+  )}
+</ScrollView>
+
+      {
+        !loading && assetList?.length > 0 && (
+  <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
+        )
+      }
 
     
+
+      {
+        !loading && assetList?.length > 0 && (
       <TouchableOpacity
         style={styles.fab}
         onPress={() => {
-          setIsEdit(false);           // ⭐ ADD mode
+          setIsEdit(false);          
           setSelectedAsset(null);
           setShowAddAsset(true);
           setShowSheet(false);
@@ -325,6 +521,8 @@ useFocusEffect(
       >
         <Image source={AddIcon} style={styles.fabIconAdd} />
       </TouchableOpacity>
+        )
+      }
 
 
 
@@ -358,7 +556,7 @@ useFocusEffect(
             <View style={styles.sheetHandle} />
 
             <View style={styles.sheetHeaderRow}>
-              <Text style={styles.sheetTitle}>{selectedAsset?.name}</Text>
+              <Text style={styles.sheetTitle}>{selectedAsset?.assetName || "N/A"}</Text>
 
               <View style={styles.topActions}>
                 <TouchableOpacity
@@ -385,36 +583,36 @@ useFocusEffect(
             <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Serial No:</Text>
-                <Text style={styles.value}>{selectedAsset?.model}</Text>
+                <Text style={styles.value}> {selectedAsset?.serialNumber || "N/A"}</Text>
               </View>
 
               <View style={styles.colRight}>
                 <Text style={styles.label}>Brand Name</Text>
-                <Text style={styles.value}>{selectedAsset?.brand}</Text>
+                <Text style={styles.value}> {selectedAsset?.brandName || "N/A"}</Text>
               </View>
             </View>
 
             <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Product Name</Text>
-                <Text style={styles.value}>Fridge</Text>
+                <Text style={styles.value}>{selectedAsset?.productName || "N/A"}</Text>
               </View>
 
               <View style={styles.colRight}>
                 <Text style={styles.label}>Purchase Date</Text>
-                <Text style={styles.value}>16-05-2025</Text>
+                <Text style={styles.value}>{selectedAsset?.purchaseDate || "N/A"}</Text>
               </View>
             </View>
 
             <View style={styles.twoColRow}>
               <View style={styles.colLeft}>
                 <Text style={styles.label}>Vendor Name</Text>
-                <Text style={styles.value}>Ram Kumar</Text>
+                <Text style={styles.value}> {selectedAsset?.vendorName || "N/A"}</Text>
               </View>
 
               <View style={styles.colRight}>
                 <Text style={styles.label}>Price</Text>
-                <Text style={styles.value}>{selectedAsset?.price}.00</Text>
+                <Text style={styles.value}>₹{selectedAsset?.price ?? "00"}</Text>
               </View>
             </View>
 
@@ -609,86 +807,82 @@ useFocusEffect(
             <Text style={styles.assignTitle}>Assign Asset</Text>
 
 
-            <Text style={styles.label}>Floor *</Text>
+          <Text style={styles.label}>Floor <Text style={styles.star}>*</Text></Text>
 
-            <View style={{ position: "relative", marginTop: 10 }}>
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              style={styles.select}
+              onPress={() => setFloorOpen(!floorOpen)}
+              activeOpacity={0.9}
+            >
+              <Text >
+                {selectedFloor ? selectedFloor.name : "Select a Floor"}
+              </Text>
+              <Image source={DownArrow} style={styles.arrow} />
+            </TouchableOpacity>
 
+            {floorOpen && (
+              <View style={styles.dropdownMenu}>
+                <ScrollView style={{ maxHeight: 160 }}>
+                  {floors.map((v) => (
 
-              <TouchableOpacity
-                style={styles.selectBox}
-                onPress={() => setFloorOpen(!floorOpen)}
-              >
-                <Text style={styles.selectedText}>
-                  {selectedFloor || "Select a Floor"}
-                </Text>
-                <Image source={DownArrow} style={styles.downArrow} />
-              </TouchableOpacity>
+                    <TouchableOpacity
+                      key={v.id}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedFloor(v);
+                        setFloorOpen(false);
+                        setSelectedRoom(null);
+                        setRooms([]);
+                        loadRooms(v.id);
+                        setFloorError("")
+                      }}
+                    >
+                      <Text style={styles.optionText}>{v.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+          {floorError && <ErrorMessage message={floorError} type="error" />}
 
+          <Text style={styles.label}>Room <Text style={styles.star}>*</Text></Text>
 
-              {floorOpen && (
-                <View style={styles.dropdown}>
-                  <ScrollView
-                    style={{ maxHeight: 100 }}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    {floorOptions.map((item, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.option}
-                        onPress={() => {
-                          setSelectedFloor(item);
-                          setFloorOpen(false);
-                        }}
-                      >
-                        <Text style={styles.optionText}>{item}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              style={styles.select}
+              onPress={() => setRoomOpen(!roomOpen)}
+              activeOpacity={0.9}
+              disabled={!rooms.length}
+            >
+              <Text >
+                {selectedRoom ? selectedRoom.name : "Select a Room"}
+              </Text>
+              <Image source={DownArrow} style={styles.arrow} />
+            </TouchableOpacity>
 
-            </View>
-
-
-
-            <Text style={[styles.label, { marginTop: 15 }]}>Select a Room *</Text>
-            <View style={{ position: "relative", marginTop: 15 }}>
-
-              <TouchableOpacity
-                style={styles.selectBox}
-                onPress={() => setRoomOpen(!roomOpen)}
-              >
-                <Text style={styles.selectedText}>
-                  {selectedRoom || "Select Room"}
-                </Text>
-                <Image source={DownArrow} style={styles.downArrow} />
-              </TouchableOpacity>
-
-
-              {roomOpen && (
-                <View style={styles.dropdown}>
-                  <ScrollView
-                    style={{ maxHeight: 200 }}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    {roomOptions.map((r, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.option}
-                        onPress={() => {
-                          setSelectedRoom(r);
-                          setRoomOpen(false);
-                        }}
-                      >
-                        <Text style={styles.optionText}>{r}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-            </View>
-
+            {roomOpen && rooms.length > 0 && (
+              <View style={styles.dropdownMenu}>
+                <ScrollView style={{ maxHeight: 160 }}>
+                  {rooms.map((r) => (
+                    <TouchableOpacity
+                      key={r.id}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedRoom(r);
+                        setRoomOpen(false);
+                        setRoomError("")
+                      }}
+                    >
+                      <Text style={styles.optionText}>{r.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+          {roomError && <ErrorMessage message={roomError} type="error" />}
 
             <Text style={[styles.label, { marginTop: 15 }]}>Date *</Text>
             <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
@@ -702,7 +896,7 @@ useFocusEffect(
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.applyBtn}>
+              <TouchableOpacity style={styles.applyBtn}   onPress={handleAssignAsset}>
                 <Text style={styles.applyBtnText}>Assign</Text>
               </TouchableOpacity>
             </View>
@@ -747,10 +941,7 @@ useFocusEffect(
 
         <TouchableOpacity 
           style={styles.deleteBtn}
-          onPress={() => {
-            // 🔥 Your delete function here
-            setShowDeletePopup(false);
-          }}
+          onPress={handleDeleteAsset}
         >
           <Text style={styles.deleteText}>Delete</Text>
         </TouchableOpacity>
@@ -762,14 +953,15 @@ useFocusEffect(
 
 
     </View>
+       </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 24 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
+  container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 40 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 22, height: 22 },
-  pageTitle: { fontSize: 20, fontWeight: "700", color: "#000" },
+  pageTitle: { fontSize: 20, fontWeight: "700", color: "#000" , marginLeft:15},
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#F8F8F8", borderRadius: 14, padding: 12, marginBottom: 20 },
   searchIcon: { width: 20, height: 20, tintColor: "#9E9E9E" },
   searchInput: { flex: 1, marginLeft: 10 },
@@ -818,6 +1010,7 @@ width: 60, height: 60
   twoColRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
   colLeft: { width: "48%" },
   colRight: { width: "48%" },
+    arrow: { width: 18, height: 18, tintColor: "#777" },
 
   label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6 },
   value: { fontSize: 15, fontWeight: "600", color: "#000" },
@@ -825,6 +1018,9 @@ width: 60, height: 60
   assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20 },
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
   assignText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+   star: {
+    color: "red",
+  },
 
   // filter sheet
   filterSheet: {
@@ -856,6 +1052,17 @@ width: 60, height: 60
   sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
+
+    select: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#e1e1e1",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 
   dropdownMenu: {
     position: "absolute",
@@ -1039,6 +1246,18 @@ deleteText: {
   fontWeight: "700"
 },
 
+  emptystateBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
 
+  emptystateText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
 });

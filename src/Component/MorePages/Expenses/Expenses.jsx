@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 40,
   },
 
   topHeader: {
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
 
-  backIcon: { width: 18, height: 18, marginRight: 10, tintColor: "#222" },
+  backIcon: { width: 22, height: 22, marginRight: 10, tintColor: "#222" },
 
   headerTitle: { fontSize: 18, fontWeight: "700" },
 

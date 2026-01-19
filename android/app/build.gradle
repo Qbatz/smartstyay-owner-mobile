@@ -95,6 +95,32 @@ android {
             keyPassword 'android'
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        dev {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "SmartStay Dev"
+            versionNameSuffix "-dev"
+        }
+        local {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "SmartStay Dev"
+            versionNameSuffix "-local"
+        }
+        qa {
+            dimension "version"
+            applicationIdSuffix ".qa"
+            resValue "string", "app_name", "SmartStay QA"
+            versionNameSuffix "-qa"
+        }
+        prod {
+            dimension "version"
+            resValue "string", "app_name", "SmartStay Owner"
+        }
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug

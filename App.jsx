@@ -14,7 +14,7 @@
 
 import React, { useContext, useEffect, useState } from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, NativeModules } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -96,12 +96,12 @@ import PGContext from './src/Context/PGContext';
 import ComplaintProvider from "./src/Context/ComplaintContext";
 import { SettingProvider } from "./src/Context/SettingContext";
 import ExpensesProvider from "./src/Context/ExpensesContext"
-import AmenityProvider from "./src/Context/AmenityContext";
+import AmenityProvider from './src/Context/AmenityContext';
 import { CustomerProvider } from "./src/Context/CustomerContext";
 import VendorProvider from './src/Context/VendorContext';
 import { UIProvider  } from "./src/Component/Tabs/UIContext"
 import BillsProvider from "./src/Context/BillsContext"
-
+import {AssetProvider} from  "./src/Context/AssetContext"
 import { FloorProvider } from './src/Context/PayingGuestContext';
 import BankingProvider from "./src/Context/BankingContext";
 import ElectricityProvider from "./src/Context/ElectricityContext"
@@ -111,18 +111,25 @@ import ConfirmMPin from "./src/Component/CreateAccount/ConfirmPin"
 import { retriveData } from './src/Utils/Storage';
 import { LOGGEDIN, USER_ID } from './src/Utils/Constant';
 import SuccessFlow from './src/SuccessFlow'
+import { initBaseUrl } from './src/Utils/Constant';
 
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
+  const { CommonModule } = NativeModules;
+
   const [userId, setUserId] = useState();
 
   useEffect(() => {
      retriveData(USER_ID).then(result => {
-      console.log("app userId", result)
      setUserId(result)
     })
+
+    CommonModule.fetchBaseUrl().then(baseUrl => {
+      initBaseUrl(baseUrl)
+    })
+
   }, [])
 
   return (
@@ -144,7 +151,9 @@ function App() {
                               <ElectricityProvider>
                                 <VendorProvider>
                                   <UIProvider >
+                                    <AssetProvider>
                                 <AppContent userId={userId}/>
+                                </AssetProvider>
                                 </UIProvider >
                                 </VendorProvider>
                               </ElectricityProvider>

@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 
 
 export const ComplaintContext = createContext();
@@ -37,7 +37,8 @@ const fetchComplaintTypes = async (hostelId) => {
   setLoading(true);       
 
   try {
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/ComplaintType/all-complaintTypes/${hostelId}`
     );
 
@@ -72,7 +73,8 @@ const fetchComplaintTypes = async (hostelId) => {
  const addComplaintType = async ({ hostelId, complaintTypeName }) => {
   try {
     const payload = { complaintTypeName, hostelId, isActive: true };
-    const res = await AxiosConfig.post("/v2/ComplaintType", payload);
+    const axios = getAxios();
+    const res = await axios.post("/v2/ComplaintType", payload);
 
     if (res?.status === 200 || res?.status === 201) {
         console.log("response", res);
@@ -90,7 +92,8 @@ const fetchComplaintTypes = async (hostelId) => {
   const { id, complaintTypeName, isActive, hostelId } = data;
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/ComplaintType/${id}`,
       { complaintTypeName, isActive, hostelId }
     );
@@ -105,11 +108,10 @@ const fetchComplaintTypes = async (hostelId) => {
   }
 };
 
-
-
   const deleteComplaintType = async (id, hostelId) => {
   try {
-    const res = await AxiosConfig.delete(`/v2/ComplaintType/${id}`);
+    const axios = getAxios();
+    const res = await axios.delete(`/v2/ComplaintType/${id}`);
 
     if (res?.status === 200) {
          console.log("response", res);
@@ -131,7 +133,8 @@ const fetchComplaintTypes = async (hostelId) => {
   setLoading(true);
 
   try {
-    const res = await AxiosConfig.get(
+    const axios = getAxios();
+    const res = await axios.get(
       `/v2/complaint/all-complaints/${hostelId}`
     );
 
@@ -161,7 +164,8 @@ const AddComplaint = async (payload) => {
   setLoading(true);
 
   try {
-    const res = await AxiosConfig.post("/v2/complaint", payload);
+    const axios = getAxios();
+    const res = await axios.post("/v2/complaint", payload);
 
     if (res.status === 201 || res.status === 200) {
       await GetComplaintListDetails(payload.hostelId);
@@ -187,7 +191,8 @@ const EditComplaint = async ({ complaintId, complaintDate, description, hostelId
   setLoading(true);
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/complaint/${complaintId}`,
       {
         complaintDate,
@@ -219,7 +224,8 @@ const deleteComplaint = async (complaintId, hostelId) => {
   setLoading(true);
 
   try {
-    const res = await AxiosConfig.delete(
+    const axios = getAxios();
+    const res = await axios.delete(
       `/v2/complaint/delete-complaint/${complaintId}`
     );
 
@@ -251,7 +257,8 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   setLoading(true);
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/complaint/update-status/${complaintId}`,
       { status }
     );
@@ -278,8 +285,8 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
     try {
       setLoading(true);
       setAssignError("");
-
-      const res = await AxiosConfig.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/complaint/assign-user/${complaintId}`,
         { userId }
       );
@@ -306,15 +313,20 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
     }
   };
 
-  const getParticularComplaint = async (complaintId) => {
+ const getParticularComplaint = async (hostelId, complaintId) => {
   setLoading(true);
   try {
-    const res = await AxiosConfig.get(`/v2/complaint/${complaintId}`);
-    console.log("resposne", res);
+
+    const res = await AxiosConfig.get(
+      `/v2/complaint/${complaintId}`
+    );
+
+    console.log("response", res);
+
     
-    if (res.status === 200) {
-      setSelectedComplaint(res?.data); 
-      return { success: true, data: res.data };
+    if (res?.status === 200) {
+      setSelectedComplaint(res?.data);
+      return { success: true, data: res?.data };
     }
 
     return { success: false };
@@ -323,13 +335,15 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   } finally {
     setLoading(false);
   }
-};
+}
+
 
 const addComplaintComment = async ({ complaintId, message }) => {
   setCommentsLoading(true);
 
   try {
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/complaint/add-comment/${complaintId}`,
       { message },
       { headers: { "Content-Type": "application/json" } }

@@ -25,7 +25,7 @@ export default function DoubleStatusSheet({
   onPressNotice,
   handleShowFinalSettlement,
   handleNoticeToBookin,
-  handleReAssignBed,handleMakeUsInActive,handleCheckIn,selectedBed,handleNoticeToCheckout
+  handleReAssignBed,handleMakeUsInActive,handleCheckIn,selectedBed,handleNoticeToCheckout,handleEditBed
 }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
@@ -43,6 +43,12 @@ export default function DoubleStatusSheet({
     onClose();
   }
   const roomChip = room?.room_no ? `${room.room_no} - ${bed?.label || ""}` : "Room";
+
+   const handleEdit = () => {
+    if (!handleEditBed || !selectedBed) return;
+    handleEditBed(selectedBed);
+    onClose()
+  };
 
  console.log("selectedBed",selectedBed)
   const openSheet = () => {
@@ -154,7 +160,7 @@ const handleBookToCheckin=()=>{
       },
     })
   ).current;
-  const isDisabled = true; // or your condition
+  const isDisabled = true; 
 
 
   if (!visible) return null;
@@ -239,9 +245,25 @@ const handleBookToCheckin=()=>{
           </View>
 
           {showOccupiedMenu && (
+<>
+ {/* {showOccupiedMenu && (
+  <TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
+    <View style={styles.menuOverlay} />
+  </TouchableWithoutFeedback>
+)}    */}
             <View style={styles.menuCard}>
-
+ <TouchableOpacity
+                                              style={styles.menuItem}
+                                              onPress={handleEdit}
+                                            >
+                                              <Image
+                                                source={require("../../../Assets/Images/editIcon.png")}
+                                                style={styles.menuIcon}
+                                              />
+                                              <Text style={styles.menuText}>Edit</Text>
+                                            </TouchableOpacity>
                {matchedCustomer?.currentStatus === "Settlement Generated" ? (
+                <>
                               <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
                                 <Image
                                   source={require("../../../Assets/Images/NewBook.png")}
@@ -249,6 +271,8 @@ const handleBookToCheckin=()=>{
                                 />
                                 <Text style={styles.menuText}>Checkout</Text>
                               </TouchableOpacity>
+                              
+                              </>
                             ) : (
             <>
               <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
@@ -275,6 +299,7 @@ const handleBookToCheckin=()=>{
 } */}
 
             </View>
+            </>
           )}
         </View>
 
@@ -484,7 +509,7 @@ const styles = StyleSheet.create({
 
   menuCard: {
     position: "absolute",
-    top: 60,
+    top: 30,
     right: 20,
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -561,5 +586,14 @@ menuTextDisabled: {
   paddingVertical: 6,
   zIndex: 999,
 },
+ menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 1,
+  },
 
 });

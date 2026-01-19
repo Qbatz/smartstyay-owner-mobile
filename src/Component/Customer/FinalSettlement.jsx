@@ -28,6 +28,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
+import { Calendar } from "react-native-calendars";
+import EditIcon from "../../Assets/Images/edit.png";
+
 
 export default function FinalSettlement({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
@@ -45,29 +48,53 @@ export default function FinalSettlement({ navigation, route }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [showDetails, setShowDetails] = useState(false);
-
+const [openCheckoutCalendar, setOpenCheckoutCalendar] = useState(false);
 console.log("settlementDetails",settlementDetails)
+const [actualCheckoutDate, setActualCheckoutDate] = useState(
+  dayjs().format("DD-MM-YYYY")
+);
 console.log("selectedBed",selectedBed)
   const TYPE_OPTIONS = ["Maintenance", "Others"];
   useEffect(() => {
-    if (!selectedItem && !selectedBed) return;
+  if (!selectedItem && !selectedBed) return;
 
-    const fetchSettlement = async () => {
+  const fetchSettlement = async () => {
+    const customerId =
+      selectedItem?.customerId || selectedBed?.currentTenantInfo[0]?.tenetId;
+
+    const leavingDate = actualCheckoutDate || dayjs().format("DD-MM-YYYY"); // ✅
+
+    const res = await getSettlementByCustomerId(customerId, leavingDate);
+
+    if (res.success) {
+      setSettlementDetails(res.data);
+    } else {
+      alert(res.message || "Failed to load settlement");
+    }
+  };
+
+  fetchSettlement();
+}, [selectedItem, selectedBed, actualCheckoutDate]);
+
+  // useEffect(() => {
+  //   if (!selectedItem && !selectedBed) return;
+
+  //   const fetchSettlement = async () => {
 
 
-      const res = await getSettlementByCustomerId(selectedItem?.customerId || selectedBed?.currentTenantInfo[0]?.tenetId);
+  //     const res = await getSettlementByCustomerId(selectedItem?.customerId || selectedBed?.currentTenantInfo[0]?.tenetId);
 
-      if (res.success) {
-        setSettlementDetails(res.data);
-      } else {
-        alert(res.message || "Failed to load settlement");
-      }
+  //     if (res.success) {
+  //       setSettlementDetails(res.data);
+  //     } else {
+  //       alert(res.message || "Failed to load settlement");
+  //     }
 
 
-    };
+  //   };
 
-    fetchSettlement();
-  }, [selectedItem, selectedBed]);
+  //   fetchSettlement();
+  // }, [selectedItem, selectedBed]);
 
 
 
@@ -404,10 +431,28 @@ console.log("selectedBed",selectedBed)
               </View>
 
               <View style={styles.gridPair}>
-                <View style={styles.gridCol}>
+                {/* <View style={styles.gridCol}>
                   <Text style={styles.gridLabel}>Actual Checkout Date</Text>
                   <Text style={styles.gridValue}>{settlementDetails?.stayInfo?.checkoutDate}</Text>
-                </View>
+                </View> */}
+                <View style={styles.gridCol}>
+  <Text style={styles.gridLabel}>Actual Checkout Date</Text>
+
+  <View style={styles.checkoutRow}>
+    <Text style={styles.gridValue}>
+      {actualCheckoutDate || "DD-MM-YYYY"}
+    </Text>
+
+    <TouchableOpacity
+      style={styles.editBtn}
+      onPress={() => setOpenCheckoutCalendar(true)}
+      activeOpacity={0.7}
+    >
+      <Image source={EditIcon} style={styles.editIcon} />
+    </TouchableOpacity>
+  </View>
+</View>
+
 
                 <View style={[styles.gridCol, { marginLeft: 30 }]}>
                   <Text style={styles.gridLabel}>Status</Text>
@@ -808,6 +853,45 @@ console.log("selectedBed",selectedBed)
           />
         )}
       </SafeAreaView>
+      <Modal
+  transparent
+  visible={openCheckoutCalendar}
+  animationType="fade"
+  onRequestClose={() => setOpenCheckoutCalendar(false)}
+>
+  <View style={styles.calendarOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenCheckoutCalendar(false)}
+    />
+
+    <View style={styles.calendarBox}>
+      <Text style={styles.calendarTitle}>Select Checkout Date</Text>
+
+      <Calendar
+        maxDate={dayjs().format("YYYY-MM-DD")} // ✅ future disabled
+        markedDates={
+          actualCheckoutDate
+            ? {
+                [dayjs(actualCheckoutDate, "DD-MM-YYYY").format("YYYY-MM-DD")]:
+                  {
+                    selected: true,
+                    selectedColor: "#2B6CF6",
+                  },
+              }
+            : {}
+        }
+        onDayPress={(day) => {
+          const formatted = dayjs(day.dateString).format("DD-MM-YYYY");
+          setActualCheckoutDate(formatted);
+          setOpenCheckoutCalendar(false);
+        }}
+      />
+    </View>
+  </View>
+</Modal>
+
     </>
   );
 }
@@ -1219,6 +1303,56 @@ const styles = StyleSheet.create({
    rightText: {
     fontSize: 13,
   },
+  checkoutRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+editBtn: {
+  padding: 6,
+  borderRadius: 8,
+  marginLeft: 10,
+  backgroundColor: "#F3F4F6",
+},
+
+editIcon: {
+  width: 18,
+  height: 18,
+  tintColor: "#111827",
+},
+
+calendarOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.45)",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 16,
+},
+
+calendarBox: {
+  width: "95%",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  elevation: 12,
+},
+
+calendarTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: 10,
+  color: "#111",
+},
+
+outsideTouch: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+
 
 
 });

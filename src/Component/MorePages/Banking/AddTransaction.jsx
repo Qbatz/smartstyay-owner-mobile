@@ -249,7 +249,7 @@ export default function AddTransaction({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop:30},
 
   topHeader: {
     flexDirection: "row",
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  backIcon: { width: 20, height: 20, marginRight: 12, tintColor: "#222" },
+  backIcon: { width: 22, height: 22, marginRight: 12, tintColor: "#222" },
 
   headerTitle: { fontSize: 20, fontWeight: "700", color: "#111" },
 

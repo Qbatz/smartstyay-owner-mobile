@@ -359,12 +359,11 @@ useEffect(() => {
         colors={["#E9F2FF", "#F6FBFF"]}
         style={styles.header}
       >
-        <View style={styles.headerTop}>
+        {/* <View style={styles.headerTop}>
           <View style={styles.hostelRow}>
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
-            <View style={{ marginLeft: 12 }}>
+            <View style={{ marginLeft: 12 , flex:1, paddingRight:13}}>
             <Text style={styles.hostelTitle}>  {activeHostel?.name || "Select PG"}</Text>
-              {/* <Text style={styles.changeText}>Change Hostel →</Text> */}
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                 <Text style={styles.changeText}>Change Hostel →</Text>
               </TouchableOpacity>
@@ -385,7 +384,39 @@ useEffect(() => {
               <Image source={Profile} style={{ width: 40, height: 40 }} />
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
+
+<View style={styles.headerTop}>
+  <View style={styles.hostelRow}>
+    <Image source={PgImg} style={{ width: 38, height: 38 }} />
+
+    <View style={{ marginLeft: 12, flex: 1 }}>
+      <Text style={styles.hostelTitle}>
+        {activeHostel?.name || "Select PG"}
+      </Text>
+
+      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+        <Text style={styles.changeText}>Change Hostel →</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+
+  <View style={styles.rightIcons}>
+    <TouchableOpacity
+      style={styles.iconCircle}
+      onPress={() => navigation.navigate("NotificationDetails")}
+    >
+      <Image source={Bell} style={{ width: 40, height: 40 }} />
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={[styles.iconCircle, { marginLeft: 10 }]}
+      onPress={() => setDrawerVisible(true)}
+    >
+      <Image source={Profile} style={{ width: 40, height: 40 }} />
+    </TouchableOpacity>
+  </View>
+</View>
 
 
         <ScrollView
@@ -952,22 +983,37 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-  rightIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+rightIcons: {
+  flexDirection: "row",
+  alignItems: "center",
+  width: 90,        
+  justifyContent: "flex-end",
+},
 
 
-  headerTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+ headerTop: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+},
 
-  },
 
-  hostelRow: { flexDirection: "row", alignItems: "center" },
+hostelRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  flex: 1,
+  paddingRight: 30,   
+},
 
-  hostelTitle: { fontSize: 16, fontWeight: "700", color: "#1E293B", marginLeft:-8 },
+
+
+hostelTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#1E293B",
+  flexWrap: "wrap",
+},
+
+
 
   changeText: { fontSize: 12, color: "#2F80ED", marginTop: 3 },
 

@@ -96,7 +96,7 @@ export default function RentalAgreement({ onBack }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF", padding: 20 },
+  container: { flex: 1, backgroundColor: "#FFF", padding: 20 , paddingTop:40 },
 
   headerRow: {
     flexDirection: "row",

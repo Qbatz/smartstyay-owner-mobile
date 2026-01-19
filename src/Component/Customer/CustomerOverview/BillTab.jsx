@@ -1,13 +1,19 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet ,TouchableOpacity,Image} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import AddIcon from "../../../Assets/Images/add-circle.png";
 
 export default function BillTab({ customerDetails }) {
   const invoiceList = customerDetails?.invoiceResponseList || [];
-
+ const navigation = useNavigation();
   console.log("customerDetailsBillTab", invoiceList);
+  const handleCreateBill = () => {
+navigation.navigate("CreateBills" , {mode: "add",customerDetails})
+}
 
   return (
     <View style={{ paddingBottom: 30 }}>
+      
       {invoiceList.map((item, index) => (
         <View key={index} style={styles.row}>
           {/* LEFT */}
@@ -46,6 +52,9 @@ export default function BillTab({ customerDetails }) {
           </View>
         </View>
       ))}
+       <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
+            <Image source={AddIcon} style={{ width: 25, height: 25 }} />
+          </TouchableOpacity>
     </View>
   );
 }
@@ -119,5 +128,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#6B7280",
     marginTop: 6,
+  },
+  addBtn: {
+    position: "absolute",
+    bottom: 50,
+    right: 10,
+    backgroundColor: "#1D5DFF",
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
   },
 });

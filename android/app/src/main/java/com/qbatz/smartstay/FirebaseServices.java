@@ -54,7 +54,8 @@ public class FirebaseServices extends FirebaseMessagingService {
             Map<String, String> data = remoteMessage.getData();
             if (data.containsKey("type")) {
                 String type = data.get("type");
-                if (type != null && type.equalsIgnoreCase(" COMPLAINTS_RAISED")) {
+                if (type != null && type.equalsIgnoreCase(NotificationType.COMPLAINTS_RAISED.name())) {
+
                     title = data.get("title");
                     description = data.get("description");
                 }
@@ -79,7 +80,7 @@ public class FirebaseServices extends FirebaseMessagingService {
         createNotificationChannel();
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                .setSmallIcon(com.facebook.react.R.drawable.ic_resume)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)

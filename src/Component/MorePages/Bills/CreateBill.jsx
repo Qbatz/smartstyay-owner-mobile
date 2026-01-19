@@ -15,7 +15,6 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import { BillContext } from "../../../Context/BillsContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
-
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import DownArrow from "../../../Assets/Images/direction-down.png";
@@ -44,7 +43,7 @@ export default function CreateBill({navigation}) {
   const itemOptions = ["Room rent", "EB", "Others"];
 
     const route = useRoute();
-    const { mode, data } = route.params || {};
+    const { mode, data,customerDetails } = route.params || {};
      const [customers, setCustomers] = useState([]);
   const [customer, setCustomer] = useState("");
   const [invoiceNo, setInvoiceNo] = useState("");
@@ -69,6 +68,20 @@ const [customerErr, setCustomerErr] = useState("");
 const [itemErr, setItemErr] = useState("");
 
 
+useEffect(() => {
+  if (customerDetails?.customerId) {
+    setSelectedCustomer({
+      id: customerDetails.customerId,
+      name: customerDetails.fullName,
+    });
+
+    setCustomerOpen(false);
+    setCustomerErr("");
+
+    setInvoiceDate(null);
+    setDueDate(null);
+  }
+}, [customerDetails?.customerId]);
 
   const [items, setItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -107,7 +120,7 @@ const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
   await GetParticularCustomerDetails(selectedCustomer.id);
 };
 
-
+console.log("selectedCustomer?.id",selectedCustomer?.id)
 
 
 useEffect(() => {
@@ -418,7 +431,7 @@ const handleDueDateChange = (date) => {
 
     <ScrollView style={styles.container}   scrollEnabled={!customerOpen}   >
     
-  <Text style={styles.label}>Customer <Text style={{color:'red'}}>*</Text></Text>
+  {/* <Text style={styles.label}>Customer <Text style={{color:'red'}}>*</Text></Text>
 
 <TouchableOpacity
   style={styles.customerdropdownBox}
@@ -473,8 +486,64 @@ const handleDueDateChange = (date) => {
       })}
     </ScrollView>
   </View>
+)} */}
+
+<Text style={styles.label}>
+  Customer <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<TouchableOpacity
+  style={styles.customerdropdownBox}
+  onPress={() => setCustomerOpen((v) => !v)}
+>
+  <Text style={{ color: selectedCustomer ? "#000" : "#9CA3AF" }}>
+    {selectedCustomer?.name || "Select Customer"}
+  </Text>
+
+  <Image source={DownArrow} style={styles.arrowIcon} />
+</TouchableOpacity>
+
+{customerOpen && (
+  <View style={styles.customerDropdownMenu}>
+    <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}>
+      {customers.map((item) => {
+        const isSelected = selectedCustomer?.id === item.customerId;
+
+        return (
+          <TouchableOpacity
+            key={item.customerId}
+            style={[
+              styles.customerOption,
+              isSelected && styles.customerOptionSelected,
+            ]}
+            onPress={() => {
+              setSelectedCustomer({
+                id: item.customerId,
+                name: item.fullName,
+              });
+
+              setCustomerOpen(false);
+              setCustomerErr("");
+              setInvoiceDate(null);
+              setDueDate(null);
+            }}
+          >
+            <Text
+              style={[
+                styles.customerOptionText,
+                isSelected && styles.customerOptionTextSelected,
+              ]}
+            >
+              {item.fullName}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  </View>
 )}
 
+{customerErr ? <ErrorMessage message={customerErr} type="error" /> : null}
 
 
       {customerErr && (

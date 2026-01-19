@@ -591,7 +591,8 @@ useFocusEffect(
         !showNewBooking &&
         !showDoubleStatus &&
         !showInactiveSheet &&
-        !showNotice
+        !showNotice &&
+        !showCheckout
       );
     }
   }, [
@@ -604,7 +605,7 @@ useFocusEffect(
     showOccupiedSheet,
     showNoticePeriodSheet,
     showNewBooking, showDoubleStatus,
-    route, showInactiveSheet,showNotice
+    route, showInactiveSheet,showNotice,showCheckout
   ]);
 
 
@@ -659,6 +660,12 @@ useFocusEffect(
         return true;
 
       }
+       if(showCheckout){
+        setShowCheckout(false)
+        return true;
+
+      }
+     
       return false;
     };
 
@@ -673,7 +680,7 @@ useFocusEffect(
     showReservedSheet,
     showOccupiedSheet,
     showNoticePeriodSheet,
-    showNewBooking, showDoubleStatus, showInactiveSheet,showNotice
+    showNewBooking, showDoubleStatus, showInactiveSheet,showNotice,showCheckout
   ]);
 
   const handleAddFloor = (floorName) => {
@@ -1323,6 +1330,7 @@ useFocusEffect(
         handleCheckIn={handleCheckIn}
         selectedBed={selectedBed}
         handleNoticeToCheckout={handleNoticeToCheckout}
+         handleEditBed={handleEditBed}
       />
       <InactiveTenantSheet
         visible={showInactiveSheet}
@@ -1427,19 +1435,23 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 50 : 64,
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
+header: {
+  flexDirection: "row",
+  alignItems: "flex-start",   // 🔥 IMPORTANT
+  paddingHorizontal: 16,
+  marginBottom: 8,
+},
 
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
+
+
+headerLeft: {
+  flexDirection: "row",
+  alignItems: "flex-start",   // 🔥 allow multi-line
+  flex: 1,                    // 🔥 reserve remaining width
+  marginRight: 12,            // space for +Floor button
+},
+
+
 
   HostelImg: {
     width: 34,
@@ -1447,17 +1459,24 @@ const styles = StyleSheet.create({
     borderRadius: 17,
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
+title: {
+  fontSize: 18,
+  fontWeight: "700",
+  flexWrap: "wrap",
+  flexShrink: 1,  
+  marginLeft:7          
+},
 
-  floorButton: {
-    backgroundColor: "#1E45E1",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-  },
+
+
+ floorButton: {
+  backgroundColor: "#1E45E1",
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 10,
+  alignSelf: "flex-start",    // 🔥 prevents vertical center push
+},
+
   floorButtonText: { color: "#fff", fontWeight: "600" },
 
   floorTab: {
@@ -1520,11 +1539,31 @@ const styles = StyleSheet.create({
     borderColor: "#F2F4F8",
   },
 
+  // roomHeader: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   marginBottom: 12,
+  //   backgroundColor:"red"
+  // },
   roomHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+
+  backgroundColor: "#EAF2FF",  
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+
+  borderTopLeftRadius: 12,      
+  borderTopRightRadius: 12,
+
+  marginLeft: -14,            
+  marginRight: -14,
+  marginTop: -14,
+
+  marginBottom: 12,
+},
+
   roomTitle: { fontSize: 16, fontWeight: "700" },
   roomSubtitle: { fontSize: 12, color: "#888" },
 

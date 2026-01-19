@@ -439,13 +439,15 @@ const { line1, line2 } = formatAddressLines(activeHostel);
 
       <View style={styles.card}>
         <View style={styles.topRow}>
-          <View style={{ flexDirection: "row" }}>
+          <View style={{ flexDirection: "row", paddingRight: 40 , flex: 1 }}>
             <Image source={mainHostel?.profilePhoto} style={styles.hostelImg} />
-            <View style={{ marginLeft: 10 }}>
+            <View style={{ marginLeft: 10 , flex: 1}}>
               <Text style={styles.hostelName}>{mainHostel?.name}</Text>
               <Text style={styles.badge}>{mainHostel?.type}</Text>
             </View>
           </View>
+
+          <View style={styles.dotsWrapper}>
 <TouchableOpacity
   ref={(ref) => {
     if (ref) dotRefs.current[mainHostel?.id] = ref;
@@ -465,7 +467,7 @@ const { line1, line2 } = formatAddressLines(activeHostel);
 >
   <Image source={Dots} style={styles.dotsIcon} />
 </TouchableOpacity>
-
+</View>
 
         </View>
 
@@ -633,7 +635,7 @@ const { line1, line2 } = formatAddressLines(activeHostel);
                   source={switchHostel?.profilePhoto}
                   style={styles.switchImg}
                 />
-                <View style={{ marginLeft: 12 }}>
+                <View style={{ flex: 1,marginLeft: 12 }}>
                   <Text style={styles.otherName}>{switchHostel?.name}</Text>
                   <Text style={styles.otherBadge} numberOfLines={1}>{switchHostel?.type}</Text>
 
@@ -715,10 +717,25 @@ const styles = StyleSheet.create({
     borderColor: "#E8ECF8",
   },
 
-  topRow: { flexDirection: "row", justifyContent: "space-between" },
+topRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+},
+hostelName: {
+  fontSize: 18,
+  fontWeight: "700",
+  flexWrap: "wrap",
+},
+
+  dotsWrapper: {
+  width: 40,         
+  alignItems: "flex-end",
+  paddingTop: 4,
+},
+
   dotsIcon: { width: 26, height: 26 },
   hostelImg: { width: 50, height: 50, borderRadius: 25 },
-  hostelName: { fontSize: 18, fontWeight: "700" },
+  // hostelName: { fontSize: 18, fontWeight: "700" },
 
   badge: {
     backgroundColor: "#FFF3C6",
