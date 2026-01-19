@@ -24,7 +24,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function CancelNotice({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout } = useCustomer();
+  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout,initializeCancelCheckout } = useCustomer();
   const [openDate, setOpenDate] = useState(false);
   const [checkInDate, setCheckInDate] = useState(new Date());
   const [modalType, setModalType] = useState("success");
@@ -44,6 +44,28 @@ export default function CancelNotice({ navigation, route }) {
 
   console.log("selectedItem", selectedItem)
   console.log("selectedBed", selectedBed)
+useFocusEffect(
+  useCallback(() => {
+    if (activeHostelId && tenantId) {
+      initCancel();
+    }
+  }, [activeHostelId, tenantId])
+);
+
+const initCancel = async () => {
+  const res = await initializeCancelCheckout(activeHostelId, tenantId);
+
+  if (res?.success) {
+    console.log("INIT CANCEL CHECKOUT DATA ✅", res.data);
+
+    // Example: set default date
+    // setCheckInDate(dayjs(res.data?.reCheckInDate, "DD-MM-YYYY").toDate());
+    // setReason(res.data?.reason || "");
+  } else {
+    alert(res?.message);
+  }
+};
+
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -65,6 +87,7 @@ export default function CancelNotice({ navigation, route }) {
       return () => subscription.remove();
     }, [navigation])
   );
+
   const handleCancelNotice = async () => {
     const data = selectedItem || selectedBed;
 

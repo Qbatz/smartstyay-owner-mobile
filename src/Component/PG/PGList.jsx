@@ -591,7 +591,8 @@ useFocusEffect(
         !showNewBooking &&
         !showDoubleStatus &&
         !showInactiveSheet &&
-        !showNotice
+        !showNotice &&
+        !showCheckout
       );
     }
   }, [
@@ -604,7 +605,7 @@ useFocusEffect(
     showOccupiedSheet,
     showNoticePeriodSheet,
     showNewBooking, showDoubleStatus,
-    route, showInactiveSheet,showNotice
+    route, showInactiveSheet,showNotice,showCheckout
   ]);
 
 
@@ -659,6 +660,12 @@ useFocusEffect(
         return true;
 
       }
+       if(showCheckout){
+        setShowCheckout(false)
+        return true;
+
+      }
+     
       return false;
     };
 
@@ -673,7 +680,7 @@ useFocusEffect(
     showReservedSheet,
     showOccupiedSheet,
     showNoticePeriodSheet,
-    showNewBooking, showDoubleStatus, showInactiveSheet,showNotice
+    showNewBooking, showDoubleStatus, showInactiveSheet,showNotice,showCheckout
   ]);
 
   const handleAddFloor = (floorName) => {
@@ -1323,6 +1330,7 @@ useFocusEffect(
         handleCheckIn={handleCheckIn}
         selectedBed={selectedBed}
         handleNoticeToCheckout={handleNoticeToCheckout}
+         handleEditBed={handleEditBed}
       />
       <InactiveTenantSheet
         visible={showInactiveSheet}
