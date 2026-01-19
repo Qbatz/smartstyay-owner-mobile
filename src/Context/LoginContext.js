@@ -101,6 +101,7 @@ const logout = async () => {
         { pin }
       );
        console.log(res)
+       await storeData("token", res.data)
 
       // await storeData(LOGGEDIN, "true");
       // setLoggedIn(true);
