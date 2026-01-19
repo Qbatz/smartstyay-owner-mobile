@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useId, useState } from "react";
 import {getAxios} from "../Config/AxiosConfig";
 import { storeData , removeData  } from "../Utils/Storage";
 import {ACCESS_TOKEN, LOGGEDIN } from "../Utils/Constant";
@@ -93,6 +93,7 @@ const logout = async () => {
 
  
   const CreateMpin = async (pin) => {
+    console.log(userId)
     try {
       const axios = getAxios();
       const res = await axios.post(
@@ -100,6 +101,7 @@ const logout = async () => {
         { pin }
       );
        console.log(res)
+       await storeData("token", res.data)
 
       // await storeData(LOGGEDIN, "true");
       // setLoggedIn(true);
