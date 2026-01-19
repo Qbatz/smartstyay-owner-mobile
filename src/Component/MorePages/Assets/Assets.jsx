@@ -17,7 +17,9 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { AssetContext } from "../../../Context/AssetContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useFloor } from "../../../Context/PayingGuestContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../../Component/Loader/Loader"
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
@@ -37,13 +39,46 @@ import EmptyStateImage from "../../../Assets/Images/Empty_state.png"
 export default function Assets({ navigation }) {
 
     const { activeHostelId } = useContext(CommonContexts);
-  const { getAllAssets, assetList, loading , deleteAsset } = useContext(AssetContext);
+  const { getAllAssets, assetList, loading , deleteAsset  , assignAsset} = useContext(AssetContext);
+   const { getAllFloorsByHostel, getAllRoomsByFloor,  } = useFloor();
+
+        const [floors, setFloors] = useState([]);
+        const [rooms, setRooms] = useState([]);
+        const [floorError, setFloorError] = useState("")
+        const [roomError, setRoomError] = useState("")
+        const [floorOpen, setFloorOpen] = useState(false);
+        const [selectedFloor, setSelectedFloor] = useState(null);
+        const [roomOpen, setRoomOpen] = useState(false);
+        const [selectedRoom, setSelectedRoom] = useState(null);
 
 useEffect(() => {
   if(activeHostelId){
   getAllAssets(activeHostelId);
   }
 }, [activeHostelId]);
+
+
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    loadFloors();
+  }, [activeHostelId]);
+
+  const loadFloors = async () => {
+    const res = await getAllFloorsByHostel(activeHostelId);
+    if (res.success) {
+      setFloors(res.data);
+    }
+  }
+
+    const loadRooms = async (floorId) => {
+    const res = await getAllRoomsByFloor(floorId);
+    if (res.success) {
+      setRooms(res.data);
+    } else {
+      setRooms([]);
+    }
+  };
 
 console.log("assetlist", assetList);
 
@@ -60,11 +95,9 @@ const [modalType, setModalType] = useState("success");
   const [showAssignSheet, setShowAssignSheet] = useState(false);
   const [assignDate, setAssignDate] = useState(dayjs());
   const [openAssignDate, setOpenAssignDate] = useState(false);
-  const [floorOpen, setFloorOpen] = useState(false);
-  const [selectedFloor, setSelectedFloor] = useState("");
-  const floorOptions = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"];
-  const [roomOpen, setRoomOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState("");
+
+  // const floorOptions = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"];
+
   const [showAddAsset, setShowAddAsset] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
@@ -126,7 +159,7 @@ const EmptyState = () => (
 );
 
 
-  const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
+  // const roomOptions = ["Room 101", "Room 102", "Room 201", "Room 202", "Room 301", "Room 302"];
 
 
 
@@ -252,14 +285,76 @@ useFocusEffect(
     "High to Low (Highest First)",
     "Newest First",
     "Oldest First",
-  ];
+  ]
+
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
+ const floorOptions = [
+  { id: 1, name: "Ground Floor" },
+  { id: 2, name: "1st Floor" },
+];
 
- 
+const roomOptions = [  { id: 1, name: "Room 101" },
+  { id: 2, name: "Room 102"},]
+
+const handleAssignAsset = async () => {
+  if (!selectedAsset?.assetId) return;
+
+  setFloorError("");
+  setRoomError("");
+
+  let valid = true;
+
+  if (!selectedFloor) {
+    setFloorError("Please select a floor");
+    valid = false;
+  }
+
+  if (!selectedRoom) {
+    setRoomError("Please select a room");
+    valid = false;
+  }
+
+  if (!assignDate) {
+    setModalType("error");
+    setModalMessage("Please select assign date");
+    setShowSuccessModal(true);
+    return;
+  }
+
+  if (!valid) return;
+
+  const payload = {
+    assetId: selectedAsset.assetId,
+    hostelId: activeHostelId,
+    floorId: selectedFloor.id,   // ✅ FIXED
+    roomId: selectedRoom.id,     // ✅ FIXED
+    assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
+  };
+
+  const res = await assignAsset(payload);
+
+  setShowAssignSheet(false);
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage(res.message || "Asset assigned successfully");
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Assign failed");
+  }
+
+  setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 1500);
+};
+
+
 
 
   useLayoutEffect(() => {
@@ -712,86 +807,82 @@ useFocusEffect(
             <Text style={styles.assignTitle}>Assign Asset</Text>
 
 
-            <Text style={styles.label}>Floor *</Text>
+          <Text style={styles.label}>Floor <Text style={styles.star}>*</Text></Text>
 
-            <View style={{ position: "relative", marginTop: 10 }}>
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              style={styles.select}
+              onPress={() => setFloorOpen(!floorOpen)}
+              activeOpacity={0.9}
+            >
+              <Text >
+                {selectedFloor ? selectedFloor.name : "Select a Floor"}
+              </Text>
+              <Image source={DownArrow} style={styles.arrow} />
+            </TouchableOpacity>
 
+            {floorOpen && (
+              <View style={styles.dropdownMenu}>
+                <ScrollView style={{ maxHeight: 160 }}>
+                  {floors.map((v) => (
 
-              <TouchableOpacity
-                style={styles.selectBox}
-                onPress={() => setFloorOpen(!floorOpen)}
-              >
-                <Text style={styles.selectedText}>
-                  {selectedFloor || "Select a Floor"}
-                </Text>
-                <Image source={DownArrow} style={styles.downArrow} />
-              </TouchableOpacity>
+                    <TouchableOpacity
+                      key={v.id}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedFloor(v);
+                        setFloorOpen(false);
+                        setSelectedRoom(null);
+                        setRooms([]);
+                        loadRooms(v.id);
+                        setFloorError("")
+                      }}
+                    >
+                      <Text style={styles.optionText}>{v.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+          {floorError && <ErrorMessage message={floorError} type="error" />}
 
+          <Text style={styles.label}>Room <Text style={styles.star}>*</Text></Text>
 
-              {floorOpen && (
-                <View style={styles.dropdown}>
-                  <ScrollView
-                    style={{ maxHeight: 100 }}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    {floorOptions.map((item, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.option}
-                        onPress={() => {
-                          setSelectedFloor(item);
-                          setFloorOpen(false);
-                        }}
-                      >
-                        <Text style={styles.optionText}>{item}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              style={styles.select}
+              onPress={() => setRoomOpen(!roomOpen)}
+              activeOpacity={0.9}
+              disabled={!rooms.length}
+            >
+              <Text >
+                {selectedRoom ? selectedRoom.name : "Select a Room"}
+              </Text>
+              <Image source={DownArrow} style={styles.arrow} />
+            </TouchableOpacity>
 
-            </View>
-
-
-
-            <Text style={[styles.label, { marginTop: 15 }]}>Select a Room *</Text>
-            <View style={{ position: "relative", marginTop: 15 }}>
-
-              <TouchableOpacity
-                style={styles.selectBox}
-                onPress={() => setRoomOpen(!roomOpen)}
-              >
-                <Text style={styles.selectedText}>
-                  {selectedRoom || "Select Room"}
-                </Text>
-                <Image source={DownArrow} style={styles.downArrow} />
-              </TouchableOpacity>
-
-
-              {roomOpen && (
-                <View style={styles.dropdown}>
-                  <ScrollView
-                    style={{ maxHeight: 200 }}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    {roomOptions.map((r, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.option}
-                        onPress={() => {
-                          setSelectedRoom(r);
-                          setRoomOpen(false);
-                        }}
-                      >
-                        <Text style={styles.optionText}>{r}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-            </View>
-
+            {roomOpen && rooms.length > 0 && (
+              <View style={styles.dropdownMenu}>
+                <ScrollView style={{ maxHeight: 160 }}>
+                  {rooms.map((r) => (
+                    <TouchableOpacity
+                      key={r.id}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedRoom(r);
+                        setRoomOpen(false);
+                        setRoomError("")
+                      }}
+                    >
+                      <Text style={styles.optionText}>{r.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+          {roomError && <ErrorMessage message={roomError} type="error" />}
 
             <Text style={[styles.label, { marginTop: 15 }]}>Date *</Text>
             <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
@@ -805,7 +896,7 @@ useFocusEffect(
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.applyBtn}>
+              <TouchableOpacity style={styles.applyBtn}   onPress={handleAssignAsset}>
                 <Text style={styles.applyBtnText}>Assign</Text>
               </TouchableOpacity>
             </View>
@@ -919,6 +1010,7 @@ width: 60, height: 60
   twoColRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
   colLeft: { width: "48%" },
   colRight: { width: "48%" },
+    arrow: { width: 18, height: 18, tintColor: "#777" },
 
   label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6 },
   value: { fontSize: 15, fontWeight: "600", color: "#000" },
@@ -926,6 +1018,9 @@ width: 60, height: 60
   assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20 },
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
   assignText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+   star: {
+    color: "red",
+  },
 
   // filter sheet
   filterSheet: {
@@ -957,6 +1052,17 @@ width: 60, height: 60
   sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
+
+    select: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#e1e1e1",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 
   dropdownMenu: {
     position: "absolute",

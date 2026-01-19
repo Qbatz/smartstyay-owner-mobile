@@ -318,7 +318,7 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   try {
 
     const res = await AxiosConfig.get(
-      `/v2/complaint/updates/${hostelId}/${complaintId}`
+      `/v2/complaint/${complaintId}`
     );
 
     console.log("response", res);

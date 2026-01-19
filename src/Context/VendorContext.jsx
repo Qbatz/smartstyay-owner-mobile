@@ -1,13 +1,27 @@
 import React, { createContext, useState } from "react";
-import {getAxios} from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
-
+  import base64 from "react-native-base64";
 
 export const VendorContext = createContext();
 
 export default function VendorProvider({ children }) {
   const [vendorList, setVendorList] = useState([]);
   const [loading, setLoading] = useState(false);
+
+
+
+const convertToBase64File = (json) => {
+  const jsonString = JSON.stringify(json);
+  const encoded = base64.encode(jsonString);
+
+  return {
+    uri: `data:application/json;base64,${encoded}`,
+    type: "application/json",
+    name: "payload.json",
+  };
+};
+
 
   const getErrorMessage = (err) =>
     err?.response?.data?.message ||
@@ -42,44 +56,34 @@ export default function VendorProvider({ children }) {
  
 const addVendor = async ({ profilePic, payLoads, hostelId }) => {
   setLoading(true);
+
   try {
     const formData = new FormData();
 
+    formData.append("payloads", convertToBase64File(payLoads));
+
     if (profilePic) {
-      formData.append("profilePic", {
-        uri: profilePic.uri,
-        name: "vendor.jpg",
-        type: "image/jpeg",
-      });
+      formData.append("profilePic", profilePic);
     }
 
-    // ✅ MUST be Blob (same as website)
-    formData.append(
-      "payLoads",
-      new Blob([JSON.stringify(payLoads)], {
-        type: "application/json",
-      })
-    );
-    const axios = getAxios();
-    const res = await axios.post("/v2/vendors", formData);
-    // ❌ DO NOT pass headers manually
+    const res = await AxiosConfig.post("/v2/vendors", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-    console.log("res", res);
-    
-
-    if (res.status === 201 || res.status === 200) {
+    if (res.status === 200 || res.status === 201) {
       await getVendorList(hostelId);
       return { success: true, message: res.data };
     }
 
     return { success: false };
   } catch (err) {
-    console.log("ADD VENDOR ERROR 👉", err.response?.data);
+    console.log("ADD VENDOR ERROR 👉", err?.response?.data);
     return { success: false, message: getErrorMessage(err) };
   } finally {
     setLoading(false);
   }
 };
+
 
 
 
@@ -90,40 +94,23 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
 
 const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
   setLoading(true);
+
   try {
     const formData = new FormData();
-        const token = await retriveData("token");
 
-        console.log("token", token);
-        
+    formData.append("payloads", convertToBase64File(updateVendor));
 
     if (profilePic) {
-      formData.append("profilePic", {
-        uri: profilePic.uri,
-        name: "vendor.jpg",
-        type: "image/jpeg",
-      });
+      formData.append("profilePic", profilePic);
     }
 
-    // ✅ MUST be Blob (NOT string)
-    formData.append(
-      "updateVendor",
-      new Blob([JSON.stringify(updateVendor)], {
-        type: "application/json",
-      })
-    );
-    const axios = getAxios();
-    const res = await axios.put(
+    const res = await AxiosConfig.put(
       `/v2/vendors/${updateVendor.vendorId}`,
-      formData ,
-       {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-    )
-    // ❌ DO NOT set Content-Type
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
 
     if (res.status === 200) {
       await getVendorList(hostelId);
@@ -132,12 +119,13 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
 
     return { success: false };
   } catch (err) {
-    console.log("UPDATE ERROR 👉", err.response?.data);
+    console.log("UPDATE VENDOR ERROR 👉", err?.response?.data);
     return { success: false, message: getErrorMessage(err) };
   } finally {
     setLoading(false);
   }
 };
+
 
   const deleteVendor = async (vendorId, hostelId) => {
     setLoading(true);
