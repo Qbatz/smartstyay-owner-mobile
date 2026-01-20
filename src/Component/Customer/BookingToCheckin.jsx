@@ -211,16 +211,30 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
     const updateTitle = (id, title) => {
-        setExtraCharges(prev =>
-            prev.map(i => (i.id === id ? { ...i, title } : i))
-        );
+        // setExtraCharges(prev =>
+        //     prev.map(i => (i.id === id ? { ...i, title } : i))
+        // );
+           setExtraCharges(prev =>
+    prev.map(i =>
+      i.id === id
+        ? { ...i, title, titleError: "" }
+        : i
+    )
+  );
     };
 
-    const updateAmount = (id, amount) => {
-        setExtraCharges(prev =>
-            prev.map(i => (i.id === id ? { ...i, amount } : i))
-        );
-    };
+   const updateAmount = (id, amount) => {
+  const onlyNum = amount.replace(/[^0-9]/g, "");
+
+  setExtraCharges((prev) =>
+    prev.map((i) =>
+      i.id === id
+        ? { ...i, amount: onlyNum, amountError: "" }
+        : i
+    )
+  );
+};
+
     const bookedAtDate = dayjs(bookingDetails?.bookedDate, "DD/MM/YYYY");
     const today = dayjs();
     dayjs.extend(customParseFormat);
@@ -303,11 +317,72 @@ export default function BookingCheckIn({ navigation, route }) {
 
         return valid;
     };
+    const validateExtraCharges = () => {
+  let valid = true;
+
+  const updated = extraCharges.map((e) => {
+    let titleError = "";
+    let amountError = "";
+
+    const titleFilled = e.title?.trim()?.length > 0;
+    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+    const amt = Number(e.amount);
+
+   
+    if (!e.type) {
+      return { ...e, titleError: "", amountError: "" };
+    }
+
+   
+    if (e.type === "Maintenance") {
+      if (!amountFilled) {
+        amountError = "Please enter maintenance amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError: "", amountError };
+    }
+
+    // ✅ CASE 3: Others -> reason + amount both mandatory
+    if (e.type === "Others") {
+      // both empty -> ok (optional row)
+      if (!titleFilled && !amountFilled) {
+        return { ...e, titleError: "", amountError: "" };
+      }
+
+      if (!titleFilled) {
+        titleError = "Please enter reason";
+        valid = false;
+      }
+
+      if (!amountFilled) {
+        amountError = "Please enter amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError, amountError };
+    }
+
+    return { ...e, titleError: "", amountError: "" };
+  });
+
+  setExtraCharges(updated);
+  return valid;
+};
 
     const submitLongStay = async () => {
         const isValid = validateLongStay();
 
         if (!isValid) return;
+         const chargeValid = validateExtraCharges();
+  if (!chargeValid) return;
         const payload = {
             bookingId: bookingDetails?.bookingId,
             joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
@@ -691,9 +766,14 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         onChangeText={(t) => updateAmount(item.id, t)}
                                                     />
                                                 )}
-
+               
                                             </View>
-
+{item.titleError && (
+                  <ErrorMessage message={item.titleError} type="error" />
+                )}
+                {item.amountError && (
+                  <ErrorMessage message={item.amountError} type="error" />
+                )}
 
                                             {openDropdownId === item.id && item.type === "" && (
                                                 <View style={styles.nonRefundDropdown}>
@@ -723,6 +803,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
                                 </View>
+                  
                                 <View style={styles.centerError}>
                                     {bookingDetailsError && (
                                         <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />

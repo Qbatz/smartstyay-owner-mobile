@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+import { Calendar } from "react-native-calendars";
 import SampleAvatar from "../../../Assets/Images/Avatar.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import BedIcon from "../../../Assets/Images/Bed_Icon.png";
@@ -24,24 +25,42 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function CancelNotice({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout,initializeCancelCheckout } = useCustomer();
+  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout,initializeCancelCheckout,getCustomerDetails } = useCustomer();
   const [openDate, setOpenDate] = useState(false);
   const [checkInDate, setCheckInDate] = useState(new Date());
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [reason, setReason] = useState("");
+  const [reCheckinSameBed,setReCheckinSameBed] = useState("")
   const bedData = selectedBed || selectedItem;
   const data = selectedItem || selectedBed;
+  const [customerDetails,setCustomerDetails] = useState("")
 
   const bedId =
     data?.bedId;
 
   const tenantId =
-    data?.customerId ||                 // from selectedItem
-    data?.currentTenantInfo?.[0]?.tenetId; // from selectedBed
+    data?.customerId ||                
+    data?.currentTenantInfo?.[0]?.tenetId;
 
+ useEffect(() => {
+    if (tenantId) {
+      fetchCustomerDetails();
+    }
+  }, [tenantId]);
 
+     const fetchCustomerDetails = async () => {
+    const res = await getCustomerDetails(tenantId);
+    console.log("fetchCustomerDetails", res)
+    if (res.success) {
+     setCustomerDetails(res.data)
+
+    } else {
+      alert(res.message);
+    }
+  };
+console.log("customerDetails",customerDetails)
   console.log("selectedItem", selectedItem)
   console.log("selectedBed", selectedBed)
 useFocusEffect(
@@ -57,7 +76,7 @@ const initCancel = async () => {
 
   if (res?.success) {
     console.log("INIT CANCEL CHECKOUT DATA ✅", res.data);
-
+setReCheckinSameBed(res.data)
     // Example: set default date
     // setCheckInDate(dayjs(res.data?.reCheckInDate, "DD-MM-YYYY").toDate());
     // setReason(res.data?.reason || "");
@@ -65,6 +84,16 @@ const initCancel = async () => {
     alert(res?.message);
   }
 };
+const canCheckin = reCheckinSameBed?.canRecheckinSameBed === true;
+
+const requestedLeavingDate =
+  customerDetails?.checkoutInfo?.noticeDate; 
+
+const minSelectableDate = requestedLeavingDate
+  ? dayjs(requestedLeavingDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+  : dayjs().format("YYYY-MM-DD");
+
+const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
 
   useFocusEffect(
     useCallback(() => {
@@ -208,7 +237,7 @@ const initCancel = async () => {
           onChangeText={setReason}
         />
       </ScrollView>
-      {openDate && (
+      {/* {openDate && (
         <View style={styles.dropdownBox}>
           <DatePicker
             mode="single"
@@ -219,7 +248,31 @@ const initCancel = async () => {
             }}
           />
         </View>
-      )}
+      )} */}
+      {openDate && (
+  <View style={styles.dropdownBox}>
+    <Calendar
+      current={dayjs(checkInDate).format("YYYY-MM-DD")}
+      minDate={minSelectableDate}
+      maxDate={maxSelectableDate}
+      onDayPress={(day) => {
+        setCheckInDate(new Date(day.dateString));
+        setOpenDate(false);
+      }}
+      markedDates={{
+        [dayjs(checkInDate).format("YYYY-MM-DD")]: {
+          selected: true,
+          selectedColor: "#2B6CF6",
+        },
+      }}
+      theme={{
+        todayTextColor: "#2B6CF6",
+        arrowColor: "#2B6CF6",
+      }}
+    />
+  </View>
+)}
+
 
       {/* Bottom Buttons */}
       <View style={styles.btnRow}>
@@ -230,9 +283,18 @@ const initCancel = async () => {
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
+        {/* <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
           <Text style={styles.addBtnText}>Check-In</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+  style={[styles.addBtn2, !canCheckin && styles.disabledBtn]}
+  onPress={handleCancelNotice}
+  disabled={!canCheckin}
+>
+  <Text style={[styles.addBtnText, !canCheckin && styles.disabledText]}>
+    Check-In
+  </Text>
+</TouchableOpacity>
       </View>
     </View>
     </>
@@ -395,5 +457,11 @@ const styles = StyleSheet.create({
     height: 16,
     tintColor: "#555",   // arrow light black
   },
+  disabledBtn: {
+  backgroundColor: "#CBD5E1", // grey
+},
+disabledText: {
+  color: "#6B7280",
+},
 
 });
