@@ -22,6 +22,7 @@ import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
 import { useFloor } from "../../Context/PayingGuestContext";
 import SuccessModal from "../../ToastFile/ToastPage";
+import { Calendar } from "react-native-calendars";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -64,6 +65,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const [currentFloorName, setCurrentFloorName] = useState("")
   const [currentRoomName, setCurrentRoomName] = useState("")
   const [currentBedName, setCurrentBedName] = useState("")
+  const [reAssignBedDate,setReAssignBedDate]=useState("")
 
 
   useEffect(() => {
@@ -77,7 +79,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     console.log("fetchCustomerDetails", res)
     if (res.success) {
       setRentAmount(String(res.data.hostelInfo?.monthlyRent || ""));
-
+setReAssignBedDate(res.data.hostelInfo.joiningDate)
       setCurrentFloorName(res.data.hostelInfo.floorName)
       setCurrentRoomName(res.data.hostelInfo.roomName)
       setCurrentBedName(res.data.hostelInfo.bedName)
@@ -87,12 +89,67 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     }
   };
 
+  const minDate = reAssignBedDate
+  ? dayjs(reAssignBedDate, "DD/MM/YYYY")
+  : null;
+
+const maxDate = dayjs(); // today
+const isDisabledReassignDate = (dateStr) => {
+  const d = dayjs(dateStr, "YYYY-MM-DD");
+
+  // joiningDate இல்லனா future மட்டும் disable
+  if (!minDate) return d.isAfter(maxDate, "day");
+
+  // joiningDate ku munnadi disable
+  if (d.isBefore(minDate, "day")) return true;
+
+  // future date disable
+  if (d.isAfter(maxDate, "day")) return true;
+
+  return false;
+};
+const markedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledReassignDate(key)) {
+    markedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+// selected date highlight
+if (date) {
+  const selectedKey = dayjs(date).format("YYYY-MM-DD");
+  markedDates[selectedKey] = {
+    ...markedDates[selectedKey],
+    selected: true,
+    selectedColor: "#2563EB",
+    selectedTextColor: "#fff",
+  };
+}
+
+
   useEffect(() => {
     const isOpen = openDropdown !== null;
     setDisableSheetDrag(isOpen);
     setDisableSheetScroll(isOpen);
   }, [openDropdown]);
-
+console.log("reAssignBedDate",reAssignBedDate)
   const resetForm = () => {
 
     setDate(null);
@@ -340,7 +397,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
       <TouchableWithoutFeedback onPress={closeSheet}>
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
-      {openDatePicker && (
+      {/* {openDatePicker && (
         <View style={styles.datePickerOverlay}>
 
           <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
@@ -372,7 +429,46 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
           </TouchableWithoutFeedback>
 
         </View>
-      )}
+      )} */}
+{openDatePicker && (
+  <View style={styles.datePickerOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+      <View style={styles.overlayTouch} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.datePickerBox}>
+      <Calendar
+        markingType="custom"
+        markedDates={markedDates}
+        current={
+          date
+            ? dayjs(date).format("YYYY-MM-DD")
+            : minDate
+            ? minDate.format("YYYY-MM-DD")
+            : dayjs().format("YYYY-MM-DD")
+        }
+        onDayPress={(day) => {
+          if (isDisabledReassignDate(day.dateString)) return;
+
+          setDate(day.dateString);
+          setOpenDatePicker(false);
+          setDateError("");
+
+          setRooms([]);
+          setBeds([]);
+          loadBedsByDate(day.dateString);
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          selectedDayBackgroundColor: "#2563EB",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)}
 
 
       <Animated.View
@@ -389,7 +485,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             paddingBottom: 60,
           }}
         >
-          <Text style={styles.title}>Re Assign Bed</Text>
+          <Text style={styles.title}>Change Bed</Text>
 
           <Text style={styles.label}>Current Floor</Text>
           <View style={styles.inputBox}>

@@ -30,6 +30,7 @@ import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
 import EditIcon from "../../Assets/Images/edit.png";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 
 
 export default function FinalSettlement({ navigation, route }) {
@@ -41,7 +42,10 @@ export default function FinalSettlement({ navigation, route }) {
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const [open, setOpen] = useState(false);
-  const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
+  // const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
+  const maintenanceAlreadyUsed = extraCharges.some(
+  (c) => c.type === "Maintenance" && c.isDefault === false
+);
   const [settlementDetails, setSettlementDetails] = useState("")
   const [ReturnAmount, setReturnAmount] = useState('')
   const [modalType, setModalType] = useState("success");
@@ -119,18 +123,35 @@ console.log("selectedBed",selectedBed)
     //   setDisabledTypes([]);
     // }
   };
+const selectType = (id, type) => {
+  const maintenanceExists = extraCharges.some(
+    (c) => c.type === "Maintenance" && c.isDefault === false
+  );
 
-  const selectType = (id, type) => {
+  if (type === "Maintenance" && maintenanceExists) {
+    return; // ✅ user already added maintenance once
+  }
+
+  setExtraCharges((prev) =>
+    prev.map((i) =>
+      i.id === id ? { ...i, type, title: "", amount: "" } : i
+    )
+  );
+
+  setOpenDropdownId(null);
+};
+
+  // const selectType = (id, type) => {
 
 
-    if (type === "Maintenance" && maintenanceAlreadyUsed) return;
+  //   if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
-    setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
-    );
+  //   setExtraCharges(prev =>
+  //     prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
+  //   );
 
-    setOpenDropdownId(null);
-  };
+  //   setOpenDropdownId(null);
+  // };
   useEffect(() => {
     if (!settlementDetails?.customerInfo?.listDeductions?.length) return;
 
@@ -154,17 +175,40 @@ console.log("selectedBed",selectedBed)
 
 
 
-  const updateTitle = (id, title) => {
-    setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, title } : i))
-    );
-  };
+  // const updateTitle = (id, title) => {
+  //   setExtraCharges(prev =>
+  //     prev.map(i => (i.id === id ? { ...i, title } : i))
+  //   );
+  // };
+   const updateTitle = (id, title) => {
+        // setExtraCharges(prev =>
+        //     prev.map(i => (i.id === id ? { ...i, title } : i))
+        // );
+           setExtraCharges(prev =>
+    prev.map(i =>
+      i.id === id
+        ? { ...i, title, titleError: "" }
+        : i
+    )
+  );
+    };
 
-  const updateAmount = (id, amount) => {
-    setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, amount } : i))
-    );
-  };
+  // const updateAmount = (id, amount) => {
+  //   setExtraCharges(prev =>
+  //     prev.map(i => (i.id === id ? { ...i, amount } : i))
+  //   );
+  // };
+    const updateAmount = (id, amount) => {
+  const onlyNum = amount.replace(/[^0-9]/g, "");
+
+  setExtraCharges((prev) =>
+    prev.map((i) =>
+      i.id === id
+        ? { ...i, amount: onlyNum, amountError: "" }
+        : i
+    )
+  );
+};
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -317,8 +361,68 @@ console.log("selectedBed",selectedBed)
     }));
 
 
+    const validateExtraCharges = () => {
+  let valid = true;
 
+  const updated = extraCharges.map((e) => {
+    let titleError = "";
+    let amountError = "";
+
+    const titleFilled = e.title?.trim()?.length > 0;
+    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+    const amt = Number(e.amount);
+
+   
+    if (!e.type) {
+      return { ...e, titleError: "", amountError: "" };
+    }
+
+   
+    if (e.type === "Maintenance") {
+      if (!amountFilled) {
+        amountError = "Please enter maintenance amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError: "", amountError };
+    }
+
+  
+    if (e.type === "Others") {
+    
+      if (!titleFilled && !amountFilled) {
+        return { ...e, titleError: "", amountError: "" };
+      }
+
+      if (!titleFilled) {
+        titleError = "Please enter reason";
+        valid = false;
+      }
+
+      if (!amountFilled) {
+        amountError = "Please enter amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError, amountError };
+    }
+
+    return { ...e, titleError: "", amountError: "" };
+  });
+
+  setExtraCharges(updated);
+  return valid;
+};
   const handleGenerate = async () => {
+     const chargeValid = validateExtraCharges();
+  if (!chargeValid) return;
     const customerId =
       selectedItem?.customerId ||
       selectedBed?.currentTenantInfo[0]?.tenetId;
@@ -573,7 +677,17 @@ console.log("selectedBed",selectedBed)
                   )}
 
                 </View>
-
+ {item.titleError && (
+                  <ErrorMessage message={item.titleError} type="error" />
+                )}
+{/* {item.amountError ? (
+  <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
+    {item.amountError}
+  </Text>
+) : null} */}
+ {item.amountError && (
+                  <ErrorMessage message={item.amountError} type="error" />
+                )}
 
                 {openDropdownId === item.id && item.type === "" && (
                   <View style={styles.nonRefundDropdown}>

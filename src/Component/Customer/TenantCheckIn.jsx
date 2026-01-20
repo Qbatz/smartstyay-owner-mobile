@@ -751,7 +751,7 @@ const validateExtraCharges = () => {
       </SafeAreaView>
       {openDatePicker && (
         <View style={styles.sheetOverlay} pointerEvents="box-none">
-          <TouchableWithoutFeedback onPress={close} >
+          <TouchableWithoutFeedback  onPress={() => navigation?.goBack?.()} >
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
 
