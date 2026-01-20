@@ -37,7 +37,7 @@ export default function SettingsScreen({ navigation }) {
     { icon: Manage, title: "Manage PG" ,screen: "SettingsPG"  },
     { icon: Security, title: "Security",screen: "SettingsSecurity" },
     { icon: Subscription, title: "Subscription",screen: "SubscriptionPlans" },
-    { icon: Integration, title: "Integration",screen: "Assets" },
+    { icon: Integration, title: "Integration",screen: "Integration" },
   ];
 
  
