@@ -38,6 +38,9 @@ useEffect(() => {
  const loadElectricity = async (id) => {
   const res = await getElectricity(id);
 
+  console.log("response", res);
+  
+
   if (!res || res.success === false || !res.data) {
     setEbUnitList(null);   
     return;

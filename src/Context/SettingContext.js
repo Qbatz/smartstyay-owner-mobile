@@ -1,5 +1,5 @@
 import React, { createContext, useContext,useState } from "react";
-import {getAxios} from "../Config/AxiosConfig";
+import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 
@@ -14,12 +14,15 @@ const getElectricity = async (hostelId) => {
     const token = await retriveData("token");
 console.log("token",token , hostelId)
 const axios = getAxios();
-    const res = await getAxios.get(
+    const res = await AxiosConfig.get(
       `/v2/hostel/electricity/${hostelId}`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }
     );
+
+    console.log("res", res);
+    
     
     return { success: true, data: res.data }; 
 

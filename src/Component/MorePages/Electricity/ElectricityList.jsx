@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  ScrollView,
+  ScrollView, Modal,
   PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { Calendar } from "react-native-calendars";
+import UserProfile from "../../../Assets/Images/profileElec.png";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react"; 
 import {ElectricityContext} from "../../../Context/ElectricityContext";
@@ -18,7 +20,10 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
-
+import Dots from "../../../Assets/Images/3dots.png";
+import Add from "../../../Assets/Images/ElectricityAdd.png";
+import DeleteIcon from  "../../../Assets/Images/trash.png"
+import EditIcon from  "../../../Assets/Images/editIcon.png" 
 
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
@@ -35,9 +40,8 @@ import EmptyState from "../../../Assets/Images/Empty_state.png"
 export default function Electricity({ navigation }) {
 
    const { activeHostelId } = useContext(CommonContexts);
-  const { EbRoomReading , 
-            EbTenantReading,
-            loading,
+  const { EbRoomReading ,  hostelBased, EbTenantReading, hostelElectricityDetails,
+            loading,DeleteRoomReading,
             error, 
             errorMsg,
             GetEBRoomReading,
@@ -46,20 +50,82 @@ export default function Electricity({ navigation }) {
             console.log("EbRoomReading" , EbRoomReading);
             console.log("EbTenantReading" , EbTenantReading);
 
-  const [activeTab, setActiveTab] = useState("Room Reading");
+const [activeTab, setActiveTab] = useState("Room Reading");
+
+
   const [underlineWidth, setUnderlineWidth] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [fromDate, setFromDate] = useState(dayjs());
 
+
+  const [currentReadingData, setCurrentReadingData] = useState(null);
+const [roomData, setRoomData] = useState(null);
+const [isEditMode, setIsEditMode] = useState(false);
+
+console.log("roomdata", roomData);
+
+
+const [apiError, setApiError] = useState("");
+const [showSuccess, setShowSuccess] = useState(false);
+const [modalType, setModalType] = useState("");
+const [message, setMessage] = useState("");
+
+      const [openReadingDatePic, setOpenReadingDatePic] = useState(false);
+      const [readingDate, setReadingDate] = useState(null);
+      const [readingDateError, setReadingDateError] = useState("");
+
     const [readingError, setReadingError] = useState("");
     const [dateError, setDateError] = useState("");
     const [currentReading, setCurrentReading] = useState("");
-    const [readingDate, setReadingDate] = useState(null);
     const [toDate, setToDate] = useState(dayjs());
     const [openFrom, setOpenFrom] = useState(false);
     const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
      const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+
+       const [showDeleteModal, setShowDeleteModal] = useState(false);
+       const [deleteData, setDeleteData] = useState(null);
+       const [ showActionMenu, setShowActionMenu] = useState(false)
+       const [initialValues, setInitialValues] = useState(null);
+   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+     const dotsRefs = useRef({});
+       const today = dayjs();
+
+          const isDisabledReadingDate = (d) => {
+         if (!d) return false;
+       
+         // ❌ future dates disable
+         if (d.isAfter(today, "day")) return true;
+       
+         return false; // ✅ past & today allowed
+       };
+       
+       
+          const readingMarkedDates = {};
+       
+       for (let i = -180; i <= 180; i++) {
+         const d = dayjs().add(i, "day");
+         const key = d.format("YYYY-MM-DD");
+       
+         if (isDisabledReadingDate(d)) {
+           readingMarkedDates[key] = {
+             disabled: true,
+             disableTouchEvent: true,
+             customStyles: {
+               container: {
+                 backgroundColor: "#F3F4F6",
+                 opacity: 0.4,
+                 borderRadius: 8,
+               },
+               text: {
+                 color: "#9CA3AF",
+               },
+             },
+           };
+         }
+       }
+       
+
       const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
        const toggleAmountDropdown = () => {
     setAmountDropdownVisible((v) => !v);
@@ -97,6 +163,76 @@ export default function Electricity({ navigation }) {
   return () => backHandler.remove();
 }, [showFilter]);
 
+useEffect(() => {
+  if (hostelElectricityDetails?.hostelReadings?.length > 0) {
+    setCurrentReadingData(
+      hostelElectricityDetails.hostelReadings[0]
+    );
+  }
+}, [hostelElectricityDetails]);
+
+
+
+useEffect(() => {
+  setActiveTab(hostelBased ? "Hostel Reading" : "Room Reading");
+}, [hostelBased]);
+
+
+
+  // ⭐ Bottom Sheet State
+const [showAddSheet, setShowAddSheet] = useState(false);
+
+// ⭐ Animated value for swipe sheet
+// const translateX = useRef(new Animated.Value(500)).current;
+
+// ⭐ Animate open
+const openSheet = () => {
+  setShowAddSheet(true);
+  Animated.timing(translateY, {
+    toValue: 0,
+    duration: 200,
+    useNativeDriver: true,
+  }).start();
+};
+
+// ⭐ Animate close
+const closeSheet = () => {
+
+   setReadingDate(null)
+   setCurrentReading("")
+   setReadingError("")
+   setApiError("")
+   setReadingDateError("")
+
+  Animated.timing(translateY, {
+    toValue: 500,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => setShowAddSheet(false));
+};
+
+// ⭐ PanResponder (Swipe down)
+const panResponderdots = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) translateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        closeSheet();
+      } else {
+        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    }
+  })
+).current;
+
+const hasReading = !!hostelElectricityDetails?.hostelInfo?.lastReading;
+
+
+
+
 
      const amountOptions = [
     "Low to High (Lowest First)",
@@ -106,6 +242,7 @@ export default function Electricity({ navigation }) {
   ];
       const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
    const translateY = useRef(new Animated.Value(0)).current;
+
    const panResponder = useRef(
        PanResponder.create({
          onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
@@ -133,10 +270,197 @@ export default function Electricity({ navigation }) {
      ).current;
    
 
-  const tabs = [
-    { key: "Room Reading" },
-    { key: "Tenant Reading" },
-  ];
+ const tabs = [
+  { key: hostelBased ? "Hostel Reading" : "Room Reading" },
+  { key: "Tenant Reading" },
+];
+
+
+const HostelHeaderCard = ({ data }) => {
+  return (
+    <View style={styles.hostelHeaderCard}>
+      
+    <View style={styles.hostelTopRow}>
+  {/* LEFT */}
+  <View style={styles.hostelInfo}>
+    <Image
+      source={
+        hostelElectricityDetails?.hostelInfo?.hostelImage
+          ? { uri: hostelElectricityDetails?.hostelInfo?.hostelImage }
+          : require("../../../Assets/Images/PgImg.png")
+      }
+      style={styles.hostelImage}
+    />
+
+    <Text style={styles.hostelTitle}>
+      {hostelElectricityDetails?.hostelInfo?.hostelName}
+    </Text>
+  </View>
+
+  {/* RIGHT */}
+  <View style={styles.hostelActions}>
+    <TouchableOpacity style={styles.addBtn} onPress={openSheet}>
+      <Image source={Add} style={styles.AddPeple} />
+      <Text style={styles.addText}>Add</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      ref={(ref) => (dotsRefs.current["room"] = ref)}
+      disabled={!hasReading}
+      onPress={() => {
+        if (!hasReading || !currentReadingData) return;
+
+        dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
+          setPopupPosition({ x: x + width, y: y + height });
+          setShowActionMenu(true);
+        });
+      }}
+      activeOpacity={hasReading ? 0.6 : 1}
+    >
+      <Image
+        source={Dots}
+        style={{
+          width: 24,
+          height: 24,
+          tintColor: hasReading ? "#1E45E1" : "#BDBDBD",
+          opacity: hasReading ? 1 : 0.4,
+          marginLeft: 12,
+        }}
+      />
+    </TouchableOpacity>
+  </View>
+</View>
+
+
+        <Modal
+          transparent
+          visible={showActionMenu}
+          animationType="fade"
+          onRequestClose={() => setShowActionMenu(false)}
+        >
+          {/* FULL SCREEN OVERLAY */}
+          <TouchableWithoutFeedback onPress={() => setShowActionMenu(false)}>
+            <View style={styles.popupBackdrop}>
+              {/* STOP touch propagation inside popup */}
+              <TouchableWithoutFeedback>
+                <View
+                  style={[
+                    styles.popupBox,
+                    {
+                      top: popupPosition.y - 10,
+                      left: Math.max(10, popupPosition.x - 140),
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowActionMenu(false);
+                      handleEditRoomReading(currentReadingData);
+                    }}
+                  >
+                    <Image source={EditIcon} style={styles.popupIcon} />
+                    <Text style={styles.popupText}>Edit</Text>
+                  </TouchableOpacity>
+        
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowActionMenu(false);
+                      handleDeleteRoomReading(currentReadingData);
+                    }}
+                  >
+                    <Image source={DeleteIcon} style={styles.popupIcon} />
+                    <Text style={styles.popupText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+       {showDeleteModal && (
+                      <Modal
+                        transparent
+                        animationType="fade"
+                        visible={showDeleteModal}
+                        onRequestClose={() => setShowDeleteModal(false)}
+                      >
+                        <View style={styles.deleteOverlay}>
+                          <View style={styles.deleteBox}>
+                    
+                            <Text style={styles.deleteTitle}>Delete Reading?</Text>
+                            <Text style={styles.deleteSub}>
+                              Are you sure you want to delete this Reading?
+                            </Text>
+                    
+                            <View style={styles.deleteBtnRow}>
+                              <TouchableOpacity
+                                style={styles.cancelBtn}
+                                onPress={() => setShowDeleteModal(false)}
+                              >
+                                <Text style={styles.cancelText}>Cancel</Text>
+                              </TouchableOpacity>
+                    
+                              <TouchableOpacity
+                                style={styles.deleteBtn}
+                               onPress={handleConfirmReadingDelete}
+                              >
+                                <Text style={styles.deleteBtnText}>Delete</Text>
+                              </TouchableOpacity>
+                            </View>
+                    
+                          </View>
+                        </View>
+                      </Modal>
+                    )}
+
+
+      
+
+      {/* STATS */}
+      <View style={styles.statsRow}>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>Previous</Text>
+          <Text style={styles.statValue}>{hostelElectricityDetails?.hostelInfo?.previousEntry}</Text>
+        </View>
+
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>Current</Text>
+          <Text style={styles.statValue}>{hostelElectricityDetails?.lastReading}</Text>
+        </View>
+
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>Total Units</Text>
+          <Text style={styles.statValue}>{hostelElectricityDetails?.hostelInfo?.consumption}</Text>
+        </View>
+      </View>
+
+      {/* BOTTOM */}
+      <View style={styles.bottomRow}>
+        <View style={styles.badgeRow}>
+          <View style={styles.badge}>
+<View style={{ flexDirection: "row", alignItems: "center" }}>
+  <Image source={UserProfile} style={styles.peopleIcon} />
+  <Text style={styles.badgeText}>
+    {hostelElectricityDetails?.hostelInfo?.noOfOccupants || "N/A"}
+  </Text>
+</View>
+
+          </View>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>📅 {hostelElectricityDetails?.hostelInfo?.billingMonth}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.totalAmount}>₹ {hostelElectricityDetails?.hostelInfo?.totalAmount || "0"}</Text>
+      </View>
+
+    </View>
+  );
+};
+
+
 
   const dummy = [
     { room: "Room 001", floor: "Ground Floor", users: 3, amount: "1,500.00", month: "August" },
@@ -198,6 +522,120 @@ const formatApiMonth = (date) => {
 //   }
 // };
 
+const handleSubmit = async () => {
+  if (!readingDate) {
+    setReadingDateError("Select reading date");
+    return;
+  }
+
+  if (!currentReading) {
+    setReadingError("Enter reading");
+    return;
+  }
+
+  // const payload = {
+  //   hostelId: activeHostelId,
+  //   reading: currentReading,
+  //   readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+  //   ebId: isEditMode ? currentReadingData?.ebId : undefined,
+  // };
+
+  const payload = {
+  hostelId: activeHostelId,
+  reading: currentReading,
+  entryDate: dayjs(readingDate).format("DD/MM/YYYY"),
+  readingId: isEditMode ? currentReadingData?.id : undefined,
+};
+
+
+  const res = isEditMode
+    ? await UpdateRoomReading(payload)
+    : await AddRoomReading(payload);
+
+  if (res.success) {
+    closeSheet();
+    GetEBRoomReading(activeHostelId);
+    setShowSuccess(true);
+    setMessage(isEditMode ? "Updated successfully" : "Added successfully");
+    setTimeout(() => setShowSuccess(false), 1200);
+  } else {
+    setApiError("Something went wrong");
+  }
+};
+
+
+const handleEditRoomReading = (data) => {
+  setIsEditMode(true);
+  setCurrentReading(data?.currentReading?.toString() || "");
+  // setReadingDate(data?.readingDate);
+  setReadingDate(
+  dayjs(data?.entryDate, "DD/MM/YYYY")
+);
+
+  setCurrentReadingData(data)
+  openSheet();
+};
+
+
+
+const handleDeleteRoomReading = (data) => {
+
+  console.log("data", data);
+  
+  if (!data || !data.readingId) {
+    console.log("Invalid delete data", data);
+    return;
+  }
+
+  setDeleteData(data);
+  setShowDeleteModal(true);
+  setShowActionMenu(false);
+};
+
+
+
+const handleConfirmReadingDelete = async () => {
+   const res = await DeleteRoomReading({
+    hostelId: activeHostelId,
+    readingId: deleteData?.readingId,
+  });
+
+  if (res.success) {
+    setShowDeleteModal(false);
+    GetEBRoomReading(activeHostelId);
+
+    setMessage("Deleted successfully");
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1200);
+  }
+    else{
+      setModalType("warning");
+      setMessage("something went wrong");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1200);
+    }
+  }
+
+//   const handleConfirmReadingDelete = async () => {
+//   const res = await DeleteRoomReading({
+//     hostelId: activeHostelId,
+//     readingId: deleteData?.readingId,
+//   }); 
+
+//   if (res.success) {
+//     setShowDeleteModal(false);
+//     GetEBRoomReading(activeHostelId);
+
+//     setMessage("Deleted successfully");
+//     setShowSuccess(true);
+//     setTimeout(() => setShowSuccess(false), 1200);
+//   }
+// };
+
+
+console.log("hostelBased", hostelBased);
+
+
 
   return (
 
@@ -250,28 +688,66 @@ const formatApiMonth = (date) => {
         ))}
       </View>
 
-     {activeTab === "Room Reading" &&
-     <>
-     <ScrollView    showsVerticalScrollIndicator={false}
+   {activeTab === "Hostel Reading" && hostelBased && (
+  <ScrollView  showsVerticalScrollIndicator={false}
     contentContainerStyle={{
     flexGrow: 1,
     justifyContent:
       !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
   }}>
-      { !loading && EbRoomReading && EbRoomReading.length > 0 && (
+
+    <HostelHeaderCard data={{}} />
+
+    {EbRoomReading.map((item, index) => (
+      <View key={index} style={styles.roomRow}>
+        <View style={styles.roomLeft}>
+          <View style={styles.roomIcon}>
+            <Image source={RoomIcon} style={{ width: 18, height: 18 }} />
+          </View>
+
+          <View>
+            <Text style={styles.roomName}>{item.roomName}</Text>
+            <View style={styles.roomMeta}>
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorText}>{item.floorName}</Text>
+              </View>
+              <View style={{display:'flex', flexDirection:'row'}}>
+                <Image source={ProfileIcon} style={styles.peopleIcon} /> <Text style={styles.peopleText}>{item.noOfTenants}</Text>
+                </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={styles.roomAmount}>₹ {item.totalPrice}</Text>
+          <Text style={styles.roomMonth}>
+            {formatApiMonth(item.startDate)}
+          </Text>
+        </View>
+      </View>
+    ))}
+  </ScrollView>
+)}
+
+
+
+{activeTab === "Room Reading" && !hostelBased && (
+  <ScrollView  showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+    flexGrow: 1,
+    justifyContent:
+      !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
+  }}>
+  {!loading && !hostelBased && EbRoomReading?.length > 0 && (
   EbRoomReading.map((item, index) => (
     <View key={index} style={styles.row}>
 
-      {/* ICON */}
       <View style={styles.iconCircle}>
         <Image source={RoomIcon} style={styles.iconImg} />
       </View>
 
-      {/* MIDDLE */}
       <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          onPress={() =>handleClickRoomDetails(item)}
-        >
+        <TouchableOpacity onPress={() => handleClickRoomDetails(item)}>
           <Text style={styles.roomName}>{item.roomName}</Text>
         </TouchableOpacity>
 
@@ -282,40 +758,23 @@ const formatApiMonth = (date) => {
 
           <View style={styles.people}>
             <Image source={ProfileIcon} style={styles.peopleIcon} />
-            <Text style={styles.peopleText}>
-              {item.noOfTenants ?? 0}
-            </Text>
+            <Text style={styles.peopleText}>{item.noOfTenants ?? 0}</Text>
           </View>
         </View>
       </View>
 
-      {/* RIGHT */}
       <View style={{ alignItems: "flex-end" }}>
         <Text style={styles.price}>₹ {item.totalPrice ?? 0}</Text>
         <Text style={styles.month}>
-           {formatApiMonth(item?.startDate)}
-          {/* {dayjs(item.startDate).format("MMM")} */}
+          {formatApiMonth(item?.startDate)}
         </Text>
       </View>
 
     </View>
-  )))
-}
+  ))
+)}
 
-  {( 
-         !loading && EbRoomReading && EbRoomReading.length === 0 &&
-            <View style={styles.centerContainer}>
-              <Image source={EmptyState} style={styles.image} />
-              <Text style={styles.noFloorText}>No Room Readings are there!</Text>
-      
-              
-            </View>
-          )}
-
-      </ScrollView>
-
-      {/* Floating Filter Button */}
-      {
+  {
        !loading &&  EbRoomReading && EbRoomReading.length > 0 &&
        (
 <TouchableOpacity style={styles.fab}  onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
@@ -323,9 +782,25 @@ const formatApiMonth = (date) => {
       </TouchableOpacity>
        )
       }
-      
-     </>
-     }
+
+{!loading &&
+  (
+    (hostelBased && EbRoomReading.length === 0) ||
+    (!hostelBased && EbRoomReading?.length === 0)
+  ) && (
+    <View style={styles.centerContainer}>
+      <Image source={EmptyState} style={styles.image} />
+      <Text style={styles.noFloorText}>
+        No Electricity Readings Found
+      </Text>
+    </View>
+)}
+
+
+  </ScrollView>
+)}
+
+   
       
   {activeTab === "Tenant Reading" &&
   <TenantsList/>}
@@ -443,6 +918,157 @@ const formatApiMonth = (date) => {
 
 
 
+                        {showAddSheet && (
+  <View style={styles.sheetOverlay}>
+    
+    {/* Outside Tap Close */}
+    <TouchableOpacity style={styles.overlayTouchable} onPress={closeSheet} />
+
+    {/* Bottom Sheet */}
+    <Animated.View
+      style={[styles.sheetContainer, { transform: [{ translateY  }] }]}
+      {...panResponderdots.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
+
+      <Text style={styles.sheetTitle}>{isEditMode ? "Edit Hostel Reading" : "Add Hostel Reading"}</Text>
+      
+
+      {/* ROOM CARD */}
+      {/* <View style={styles.sheetRoomRow}>
+        <Image   source={
+        hostelElectricityDetails?.hostelInfo?.hostelImage
+          ? { uri: hostelElectricityDetails?.hostelInfo?.hostelImage }
+          : require("../../../Assets/Images/PgImg.png")
+      } style={styles.sheetRoomIcon} />
+        <View>
+          <Text style={styles.sheetRoomName}> {hostelElectricityDetails?.hostelInfo?.hostelName}</Text>
+        </View>
+
+        <View style={{ marginLeft: "auto" }}>
+          <Text style={styles.sheetDateLabel}>Date</Text>
+          <Text style={styles.sheetDateValue}>{dayjs().format("DD-MM-YYYY")}</Text>
+        </View>
+      </View> */}
+
+  
+   
+ <Text style={styles.sheetLabel}>
+  Reading Date <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<View style={styles.dateInputWrapper}>
+  <TextInput
+    style={styles.dateInput}
+    placeholder="DD-MM-YYYY"
+    value={readingDate ? dayjs(readingDate).format("DD-MM-YYYY") : ""}
+    editable={false}
+    pointerEvents="none"
+  />
+
+  <TouchableOpacity
+    style={styles.calendarIconWrapper}
+    onPress={() => setOpenReadingDatePic(true)}
+  >
+    <Image
+      source={require("../../../Assets/Images/calendar.png")}
+      style={styles.calendarIcon}
+    />
+  </TouchableOpacity>
+</View>
+
+{readingDateError && (
+  <ErrorMessage message={readingDateError} type="error" />
+)}
+
+
+
+
+{openReadingDatePic && (
+  <View style={styles.dateOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenReadingDatePic(false)}>
+      <View style={styles.overlayBg} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={readingMarkedDates}
+        current={
+          readingDate
+            ? dayjs(readingDate).format("YYYY-MM-DD")
+            : dayjs().format("YYYY-MM-DD")
+        }
+        onDayPress={(day) => {
+          if (readingMarkedDates[day.dateString]?.disabled) return;
+
+          setReadingDate(day.dateString);
+          setOpenReadingDatePic(false);
+          setReadingDateError("");
+          setApiError("");
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          selectedDayBackgroundColor: "#2563EB",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)}
+
+
+
+
+<View style={{ flexDirection: "row", justifyContent: "space-between", marginTop:10 }}>
+  <Text style={styles.sheetLabel}>Current Reading <Text style={{ color: "red" }}>*</Text></Text>
+
+  <TouchableOpacity>
+    <Text style={styles.lastReading}>Last Reading : {roomData?.currentReading} </Text>
+  </TouchableOpacity>
+</View>
+
+{/* Input */}
+<TextInput
+  placeholder="0"
+  style={styles.sheetInput}
+  keyboardType="numeric"
+  value={currentReading}
+  onChangeText={(text) => {
+    setCurrentReading(text);
+    setReadingError("");
+    setApiError("");
+  }}
+/>
+
+{readingError && (
+  <ErrorMessage message={readingError} type="error" />
+)}
+
+{apiError && (
+  <ErrorMessage message={apiError} type="error" />
+)}
+
+
+
+      {/* Buttons */}
+      <View style={styles.sheetBtnRow}>
+        <TouchableOpacity style={styles.sheetCancel} onPress={closeSheet}>
+          <Text style={styles.sheetCancelTxt}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.sheetAdd} onPress={handleSubmit}>
+          <Text style={styles.sheetAddTxt}>  {isEditMode ? "Update" : "Add"}</Text>
+        </TouchableOpacity>
+      </View>
+
+    </Animated.View>
+  </View>
+)}
+
+
       {openFrom && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenFrom(false)}>
@@ -507,6 +1133,164 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
+overlayTouchable: {
+  ...StyleSheet.absoluteFillObject,
+},
+
+sheetContainer: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+ paddingBottom: 20,
+},
+
+sheetHandle: {
+  width: 50,
+  height: 5,
+  backgroundColor: "#ccc",
+  borderRadius: 3,
+  alignSelf: "center",
+  marginBottom: 15,
+},
+
+sheetTitle: {
+  fontSize: 20,
+  fontWeight: "700",
+  marginBottom: 20,
+  color: "#000",
+},
+
+sheetRoomRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 25,
+},
+
+sheetRoomIcon: { width: 40, height: 40, marginRight: 12 },
+
+sheetRoomName: { fontSize: 16, fontWeight: "700" },
+sheetFloor: { color: "#777", marginTop: 3 },
+
+sheetDateLabel: { color: "#555", fontSize: 12 },
+sheetDateValue: { fontSize: 14, fontWeight: "700", color: "#000" },
+
+sheetLabel: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#000",
+  marginBottom: 8,
+},
+
+sheetReadingRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 30,
+},
+
+sheetInput: {
+  borderWidth: 1,
+  borderColor: "#DADADA",
+  borderRadius: 10,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  fontSize: 16,
+  color: "#000",
+  marginTop: 6,
+  backgroundColor: "#fff",
+},
+
+
+  
+datePickerBox: {
+    backgroundColor: "#fff",
+    width: "80%",
+    borderColor: "#DCDCDC",
+    borderRadius: 30,
+    padding: 5,
+    marginBottom: 100,
+    borderWidth: 0.5,
+  },
+
+  dateInputWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  height: 48,
+  paddingHorizontal: 12,
+  marginTop: 6,
+},
+
+dateInput: {
+  flex: 1,
+  fontSize: 14,
+  color: "#111827",
+},
+
+calendarIconWrapper: {
+  padding: 6,
+},
+
+calendarIcon: {
+  width: 20,
+  height: 20,
+  tintColor: "#6B7280",
+},
+
+lastReading: { color: "#1E45E1", fontWeight: "600" },
+
+sheetBtnRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop:20
+},
+
+sheetCancel: {
+  width: "48%",
+  paddingVertical: 12,
+  borderWidth: 1,
+  borderRadius: 10,
+  borderColor: "#ccc",
+  alignItems: "center",
+},
+
+sheetAdd: {
+  width: "48%",
+  backgroundColor: "#1E45E1",
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: "center",
+},
+
+sheetCancelTxt: { color: "#000", fontSize: 16, fontWeight: "600" },
+sheetAddTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },
+readingRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "flex-start",   // ⭐ VERY IMPORTANT — aligns last reading to top
+  marginTop: 8,
+},
+
+readingInput: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: "#D8D8D8",
+  borderRadius: 10,
+  padding: 12,
+  fontSize: 16,
+  color: "#000",
+  marginRight: 10,             // space between input & last reading
+},
+
+lastReadingText: {
+  fontSize: 14,
+  color: "#1E45E1",
+  fontWeight: "600",
+  marginTop: 4,                // aligns exactly like Figma
+},
 
   searchIcon: { width: 18, height: 18, tintColor: "#9CA3AF" },
   searchInput: { flex: 1, marginLeft: 8, color: "#000" },
@@ -538,6 +1322,59 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   sheetHandle: { width: 60, height: 4, backgroundColor: "#D1D5DB", alignSelf: "center", borderRadius: 20, marginBottom: 15 },
+
+
+  hostelCard: {
+  flexDirection: "row",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 14,
+  marginBottom: 14,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  alignItems: "center",
+},
+hostelIcon: {
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: "#EEF2FF",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+},
+hostelName: {
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: 6,
+},
+hostelStatsRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+statLabel: {
+  fontSize: 12,
+  color: "#6B7280",
+},
+statValue: {
+  fontSize: 14,
+  fontWeight: "600",
+},
+amountBox: {
+  backgroundColor: "#FFF6E5",
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 12,
+  alignItems: "center",
+},
+amountLabel: {
+  fontSize: 12,
+  color: "#6B7280",
+},
+amountValue: {
+  fontSize: 16,
+  fontWeight: "700",
+},
 
   /* LIST ROW */
   row: {
@@ -575,8 +1412,8 @@ const styles = StyleSheet.create({
   tagText: { fontSize: 12, fontWeight: "600", color: "#A47E00" },
 
   people: { flexDirection: "row", alignItems: "center" },
-  peopleIcon: { width: 16, height: 16},
-  peopleText: { marginLeft: 4, color: "#3D6AE8", fontWeight: "600" },
+  // peopleIcon: { width: 16, height: 16},
+  peopleText: { marginLeft: 3, color: "#3D6AE8", fontWeight: "600" , },
 
   price: { fontSize: 16, fontWeight: "700", color: "#000" },
   month: { color: "#6B7280", fontSize: 13, marginTop: 4 },
@@ -673,5 +1510,372 @@ const styles = StyleSheet.create({
     color: "#777",
     marginTop: 10,
   },
-  
+
+  hostelHeaderCard: {
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  padding: 16,
+  marginBottom: 16,
+  borderWidth: 1,
+  borderColor: "#EEE",
+},
+
+hostelTopRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+hostelInfo: {
+  flexDirection: "row",
+  alignItems: "center",
+  flex: 1,              // ⭐ IMPORTANT
+  marginRight: 10,
+},
+
+
+hostelImage: {
+  width: 36,
+  height: 36,
+  borderRadius: 8,
+  marginRight: 10,
+},
+
+hostelTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  flexShrink: 1,       
+  flexWrap: "wrap",
+},
+hostelActions: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginLeft: 8,
+},
+addBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#EEF2FF",
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 8,
+},
+
+addText: {
+  color: "#1E45E1",
+  fontWeight: "700",
+  fontSize: 13,
+},
+
+
+menuDots: {
+  fontSize: 22,
+  color: "#777",
+},
+
+statsRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 14,
+},
+
+statBox: {
+  alignItems: "center",
+  flex: 1,
+},
+
+statLabel: {
+  fontSize: 12,
+  color: "#777",
+},
+
+statValue: {
+  fontSize: 15,
+  fontWeight: "700",
+  marginTop: 4,
+},
+
+bottomRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 14,
+},
+
+badgeRow: {
+  flexDirection: "row",
+},
+
+badge: {
+  backgroundColor: "#F4F6FF",
+  paddingVertical: 4,
+  paddingHorizontal: 10,
+  borderRadius: 8,
+  marginRight: 8,
+},
+
+badgeText: {
+  fontSize: 12,
+  fontWeight: "600",
+  color: "#333",
+},
+
+totalAmount: {
+  fontSize: 18,
+  fontWeight: "800",
+},
+
+/* ROOM LIST */
+roomRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  paddingVertical: 14,
+  borderBottomWidth: 1,
+  borderColor: "#F0F0F0",
+},
+
+roomLeft: {
+  flexDirection: "row",
+},
+
+roomIcon: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: "#EEF3FF",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+roomName: {
+  fontSize: 15,
+  fontWeight: "700",
+},
+
+roomMeta: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 4,
+},
+
+floorBadge: {
+  backgroundColor: "#FFF1C1",
+  borderRadius: 6,
+  paddingHorizontal: 6,
+  marginRight: 8,
+},
+
+floorText: {
+  fontSize: 11,
+  fontWeight: "600",
+  color: "#8A6A00",
+},
+
+roomAmount: {
+  fontSize: 15,
+  fontWeight: "700",
+},
+
+roomMonth: {
+  fontSize: 12,
+  color: "#777",
+  marginTop: 2,
+},
+
+ deleteOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+deleteBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  padding: 25,
+  borderRadius: 15,
+  alignItems: "center",
+  elevation: 10,
+},
+
+deleteTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#111",
+  marginBottom: 10,
+},
+
+deleteSub: {
+  fontSize: 14,
+  color: "#555",
+  textAlign: "center",
+  marginBottom: 25,
+},
+
+deleteBtnRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
+},
+
+cancelBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#2D6CDF",
+  marginRight: 10,
+  alignItems: "center",
+},
+
+cancelText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#2D6CDF",
+},
+
+deleteBtn: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 10,
+  backgroundColor: "#2D6CDF",
+  alignItems: "center",
+},
+
+deleteBtnText: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#fff",
+}, 
+
+
+ popupOverlay: {
+  position: "absolute",
+  top: 10,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "transparent",
+},
+
+
+popupBackdrop: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.25)", 
+},
+
+popupBox: {
+  position: "absolute",
+  width: 140,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  elevation: 20,
+  paddingVertical: 8,
+},
+
+// popupBox: {
+//   position: "absolute",
+//   width: 120,
+//   backgroundColor: "#fff",
+//   borderRadius: 12,
+//   elevation: 20,
+//   paddingVertical: 10,
+//   zIndex: 10000,
+// },
+
+  popupRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+},
+
+popupIcon: {
+  width: 20,
+  height: 20,
+  marginRight: 10,
+},
+
+popupText: {
+  fontSize: 14,
+  color: "#333",
+},
+peopleBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#FFF3D6",
+  paddingVertical: 5,
+  paddingHorizontal: 10,
+  borderRadius: 10,
+},
+
+
+peopleIcon: {
+  width: 14,
+  height: 14,
+  marginRight: 6,
+},
+
+
+
+AddPeple:{
+ width: 12,
+  height: 12,
+  marginRight: 8,
+},
+
+// peopleText: {
+//   fontSize: 14,
+//   color: "#8A5A00",
+//   fontWeight: "600",
+// },
+
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
+actionPopup: {
+  position: "absolute",
+  top: 60,
+  right: 10,
+  backgroundColor: "#F9F9F9",
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#EBEBEB",
+  width: 130,
+  zIndex: 999,
+},
+
+actionItem: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+editText: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#1E45E1",
+},
+
+
 });

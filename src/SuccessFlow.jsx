@@ -47,6 +47,7 @@ import ReserveToCheckin from "../src/Component/PG/ReservedBed/ReservedToCheckin"
 import ComplaintsSettings from "../src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings";
 import ReassignBedScreen from "../src/Component/PG/OccupiedBed/ReAssignBed";
 import ExpensesSettings from "../src/Component/SettingScreen/ExpensesCategory/SettingsExpenses";
+import Integration from "../src/Component/SettingScreen/Integration/Integration";
 import UsersScreen from "../src/Component/SettingScreen/Users/UsersList";
 import AmenitySettings from "../src/Component/SettingScreen/Amenity/AmenitySettings";
 import BillingRuleScreen from "../src/Component/SettingScreen/BillingRule/BillingRuleList";
@@ -64,7 +65,7 @@ import { LoginContexts } from "./Context/LoginContext";
 import CreateMpin from "../src/Component/CreateAccount/CreatePin";
 import ConfirmMPin from "../src/Component/CreateAccount/ConfirmPin";
 import CustomerOverviewScreen from "../src/Component/Customer/CustomerOverview/CustomerOverviewSheet"
-
+import Reports from  "../src/Component/MorePages/Reports/Reports";
 
 const SuccessFlow = (props) => {
 
@@ -137,6 +138,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ComplaintType" component={ComplaintsSettings} />
                     <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
                     <Navigation.Screen name="ExpensesCategory" component={ExpensesSettings} />
+                    <Navigation.Screen name="Integration" component={Integration} />
                     <Navigation.Screen name="UsersScreen" component={UsersScreen} />
                     <Navigation.Screen name="SettingsAmenity" component={AmenitySettings} />
                     <Navigation.Screen name="BillingRuleScreen" component={BillingRuleScreen} />
@@ -148,6 +150,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="Agreement" component={AgreementPolicy} />
                     <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
                     <Navigation.Screen name="PG" component={PGPageFull} />
+                    <Navigation.Screen name="Reports" component={Reports} />
                      <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
 
                 </Navigation.Navigator>

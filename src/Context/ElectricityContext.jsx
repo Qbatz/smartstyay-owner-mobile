@@ -7,6 +7,8 @@ export const ElectricityContext = createContext();
 export default function ElectricityProvider({children}){
 
   const [EbRoomReading, setEBRoomReading] = useState([]);
+  const [hostelBased , setHostelBased] = useState(false)
+  const [hostelElectricityDetails, setHostelELectricityDetails] = useState(null)
   const [particular_EbRoomReading, setParticular_EBRoomReading] = useState([]);
   const [EbTenantReading, setEBTenantReading] = useState([]);
   const [particular_EbTenantReading, setParticular_EBTenantReading] = useState([]);
@@ -27,6 +29,8 @@ export default function ElectricityProvider({children}){
            const res = await axios.get(`/v2/electricity/${hostelId}`);
             if (res.status === 200) {
              setEBRoomReading(res?.data?.listReadings || []);
+             setHostelBased(res.data.isHostelBased)
+             setHostelELectricityDetails(res.data)
              return { success: true, data: res?.data };
             }
 
@@ -217,6 +221,8 @@ const DeleteRoomReading = async ({ hostelId, readingId }) => {
     return(
         <ElectricityContext.Provider
         value={{
+            hostelBased,
+            hostelElectricityDetails,
             EbRoomReading , 
             particular_EbRoomReading,
             EbTenantReading,
