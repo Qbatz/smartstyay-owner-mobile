@@ -16,7 +16,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export default function ReserveToCheckin({ route, navigation }) {
 
-  const { selectedBed,selectedBedReserv } = route.params || {};
+  const { selectedBed,selectedBedReserv,onBedAdded } = route.params || {};
 
   console.log("selectedBedReserv", selectedBedReserv)
   const [openJoinPicker, setOpenJoinPicker] = useState(false);
@@ -213,6 +213,7 @@ export default function ReserveToCheckin({ route, navigation }) {
       setModalType("success");
       setMessage(res.data);
       setShowSuccess(true);
+       onBedAdded && onBedAdded(selectedBed.roomId)
       navigation.goBack();
 
       setTimeout(() => {

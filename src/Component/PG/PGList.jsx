@@ -757,10 +757,12 @@ useFocusEffect(
 
   const handleCheckIn = () => {
     setShowDoubleStatus(false)
+    setShowReservedSheet(false)
     // navigation.navigate("ReserveToCheckin")
     // selectedBed:selectedBed
     navigation.navigate("ReserveToCheckin", {
       selectedBed: selectedBed,
+       onBedAdded:handleBedAdded
     });
   }
   const handleAddBed = (roomId) => {

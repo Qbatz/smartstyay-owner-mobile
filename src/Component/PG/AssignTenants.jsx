@@ -591,7 +591,7 @@ export default function AssignTenant({ navigation, route }) {
     setCheckinTenantSelected(null);
     setCheckinTenantsopen(false);
 
-    setcheckJoiningDate(dayjs()); // today reset
+    setcheckJoiningDate(dayjs()); 
     setOpenDropdownId(null);
   };
 
@@ -652,10 +652,20 @@ export default function AssignTenant({ navigation, route }) {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-        <ScrollView
+        {/* <ScrollView
   ref={scrollRef}
   keyboardShouldPersistTaps="handled"
   showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight + 80,
+  }}
+> */}
+<ScrollView
+  ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  scrollEnabled={!checkinTenantsOpen}   // ✅ dropdown open = parent scroll OFF
+  nestedScrollEnabled={true}
   contentContainerStyle={{
     paddingBottom: keyboardHeight + 80,
   }}
@@ -682,8 +692,57 @@ export default function AssignTenant({ navigation, route }) {
                   {tenentsError && (
                     <ErrorMessage message={tenentsError} type="error" />
                   )}
+{/* {checkinTenantsOpen && (
+  <View style={styles.dropdownMenuone}>
+    <ScrollView
+      nestedScrollEnabled={true}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      style={{ maxHeight: 200 }}
+    >
+      {CheckinTenants.map((v, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.option}
+          onPress={() => {
+            setCheckinTenantSelected(v);
+            setCheckinTenantsopen(false);
+            setTenantsError("");
+          }}
+        >
+          <Text style={styles.optionText}>{v.fullName}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+)} */}
+{checkinTenantsOpen && (
+  <View style={styles.dropdownMenuone}>
+    <ScrollView
+      nestedScrollEnabled={true}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      style={{ maxHeight: 160 }}
+    >
+      {CheckinTenants.map((v, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.option}
+          onPress={() => {
+            setCheckinTenantSelected(v);
+            setCheckinTenantsopen(false);
+            setTenantsError("");
+          }}
+        >
+          <Text style={styles.optionText}>{v.fullName}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+)}
 
-                  {checkinTenantsOpen && (
+
+                  {/* {checkinTenantsOpen && (
                     <View style={styles.dropdownMenuone}>
                       <ScrollView style={{ maxHeight: 160 }}>
                         {CheckinTenants && CheckinTenants?.map((v, index) => (
@@ -701,7 +760,7 @@ export default function AssignTenant({ navigation, route }) {
                         ))}
                       </ScrollView>
                     </View>
-                  )}
+                  )} */}
                 </View>
 
                 <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
@@ -840,8 +899,32 @@ export default function AssignTenant({ navigation, route }) {
                   {tenentsError && (
                     <ErrorMessage message={tenentsError} type="error" />
                   )}
+{checkinTenantsOpen && (
+  <View style={styles.dropdownMenuone}>
+    <ScrollView
+      nestedScrollEnabled={true}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      style={{ maxHeight: 160 }}
+    >
+      {CheckinTenants.map((v, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.option}
+          onPress={() => {
+            setCheckinTenantSelected(v);
+            setCheckinTenantsopen(false);
+            setTenantsError("");
+          }}
+        >
+          <Text style={styles.optionText}>{v.fullName}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+)}
 
-                  {checkinTenantsOpen && (
+                  {/* {checkinTenantsOpen && (
                     <View style={styles.dropdownMenuone}>
                       <ScrollView style={{ maxHeight: 160 }}>
                         {CheckinTenants.map((v, index) => (
@@ -859,7 +942,7 @@ export default function AssignTenant({ navigation, route }) {
                         ))}
                       </ScrollView>
                     </View>
-                  )}
+                  )} */}
                 </View>
                 <Text style={styles.label}>
                   Stay Type <Text style={{ color: "red" }}>*</Text>
@@ -1431,20 +1514,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
+dropdownMenuone: {
+  position: "absolute",
+  top: 50,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 999,
+  elevation: 10,
+
+  maxHeight: 220,   // ✅ முக்கியம்
+  overflow: "hidden" // ✅ scroll clean ஆகும்
+},
 
 
-  dropdownMenuone: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 999,
-    elevation: 10,
-  },
+  // dropdownMenuone: {
+  //   position: "absolute",
+  //   top: 50,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: "#fff",
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   borderRadius: 12,
+  //   zIndex: 999,
+  //   elevation: 10,
+  // },
 
   option: {
     paddingVertical: 12,

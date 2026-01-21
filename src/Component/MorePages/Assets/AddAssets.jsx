@@ -105,6 +105,22 @@ const isChanged = () => {
 
 
 
+const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
 
       
     const translateY = useRef(new Animated.Value(0)).current;
@@ -300,6 +316,24 @@ if (isEdit) {
 
 
 
+const scrollRef = useRef(null);
+const assetRef = useRef(null);
+const productRef = useRef(null);
+const vendorRef = useRef(null);
+const purchaseRef = useRef(null);
+const priceRef = useRef(null);
+const paymentRef = useRef(null);
+const scrollToField = (ref) => {
+  if (!ref?.current || !scrollRef.current) return;
+
+  ref.current.measureLayout(
+    scrollRef.current.getInnerViewNode(),
+    (x, y) => {
+      scrollRef.current.scrollTo({ y: y - 20, animated: true });
+    },
+    () => {}
+  );
+};
 
 
     const panResponder = useRef(
@@ -326,28 +360,28 @@ if (isEdit) {
     ).current;
 
 
-     useEffect(() => {
-        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-          Animated.timing(translateY, {
-            toValue: -e.endCoordinates.height + 60,
-            duration: 180,
-            useNativeDriver: true,
-          }).start();
-        });
+    //  useEffect(() => {
+    //     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    //       Animated.timing(translateY, {
+    //         toValue: -e.endCoordinates.height + 60,
+    //         duration: 180,
+    //         useNativeDriver: true,
+    //       }).start();
+    //     });
     
-        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-          Animated.timing(translateY, {
-            toValue: 0,
-            duration: 180,
-            useNativeDriver: true,
-          }).start();
-        });
+    //     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    //       Animated.timing(translateY, {
+    //         toValue: 0,
+    //         duration: 180,
+    //         useNativeDriver: true,
+    //       }).start();
+    //     });
     
-        return () => {
-          showSub.remove();
-          hideSub.remove();
-        };
-      }, []);
+    //     return () => {
+    //       showSub.remove();
+    //       hideSub.remove();
+    //     };
+    //   }, []);
 
 const today = dayjs();
 
@@ -382,7 +416,15 @@ for (let i = -365; i <= 365; i++) {
   }
 }
 
-      
+      const removeEmoji = (text) => {
+  return text
+    .replace(/[\u{1F600}-\u{1F64F}]/gu, "") // 😀😅🙂
+    .replace(/[\u{1F300}-\u{1F5FF}]/gu, "") // 🌍🌟🎉
+    .replace(/[\u{1F680}-\u{1F6FF}]/gu, "") // 🚗✈️🚀
+    .replace(/[\u{2600}-\u{26FF}]/gu, "")   // ☀️⚡✅
+    .replace(/[\u{2700}-\u{27BF}]/gu, "");  // ✂️✏️✔️
+};
+
     
 
     return (
@@ -407,12 +449,27 @@ for (let i = -365; i <= 365; i++) {
             >
                 <View style={styles.handle} />
 
-                <ScrollView
+                {/* <ScrollView
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 20 }}
                     scrollEnabled={!vendorOpen}
                     nestedScrollEnabled={true}
-                >
+                > */}
+                {/* <ScrollView
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight + 40, // ✅ keyboard வந்தாலும் மேலே jump ஆகாது
+  }}
+> */}
+<ScrollView
+  ref={scrollRef}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight + 40,
+  }}
+>
 
                     <Text style={styles.title}>{title}</Text>
 
@@ -420,10 +477,12 @@ for (let i = -365; i <= 365; i++) {
                     <Text style={styles.label}>Asset Name  <Text style={{ color: "red" }}>*</Text></Text>
                    <TextInput
   style={[styles.input, ]}
+  
   placeholder="Enter Asset"
   value={assetName}
   onChangeText={(t) => {
-    setAssetName(t);
+    const cleaned = removeEmoji(t);
+   setAssetName(cleaned);
     setErrors({ ...errors, assetName: "" });
      clearApiError();
   }}
@@ -439,7 +498,8 @@ for (let i = -365; i <= 365; i++) {
   placeholder="Enter Product name"
   value={productName}
   onChangeText={(t) => {
-    setProductName(t);
+    const cleaned = removeEmoji(t);
+    setProductName(cleaned);
     setErrors({ ...errors, productName: "" });
      clearApiError();
   }}
@@ -518,10 +578,12 @@ for (let i = -365; i <= 365; i++) {
                     <Text style={styles.label}>Brand name</Text>
                    <TextInput
   style={styles.input}
+  
   placeholder="Enter Brand Name"
   value={brandName}
 onChangeText={(t) => {
-  setBrandName(t);
+  const cleaned = removeEmoji(t);
+  setBrandName(cleaned);
   clearApiError();
 }}
 />
@@ -533,7 +595,9 @@ onChangeText={(t) => {
   placeholder="Enter Serial Number"
   value={serialNumber}
 onChangeText={(t) => {
-  setSerialNumber(t);
+  const cleaned = removeEmoji(t);
+
+  setSerialNumber(cleaned);
   clearApiError();
 }}
 />
@@ -588,7 +652,8 @@ onChangeText={(t) => {
   keyboardType="numeric"
   value={price}
   onChangeText={(t) => {
-    setPrice(t);
+    const cleaned = removeEmoji(t);
+    setPrice(cleaned);
     setErrors({ ...errors, price: "" });
      clearApiError();
   }}
