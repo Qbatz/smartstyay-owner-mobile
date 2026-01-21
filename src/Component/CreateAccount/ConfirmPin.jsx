@@ -6,6 +6,7 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import { LoginContexts } from "../../Context/LoginContext";
 import { storeData } from "../../Utils/Storage";
 import { LOGGEDIN } from "../../Utils/Constant";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 
 const ConfirmMPin = ({ route }) => {
   const navigation = useNavigation();
@@ -20,6 +21,7 @@ const ConfirmMPin = ({ route }) => {
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
   const [type, setType] = useState("success");
+  const [enterPinError, setEnterPinError] = useState()
 
   const handleChange = (text, index) => {
     const newArr = [...pinArr];
@@ -41,7 +43,22 @@ const ConfirmMPin = ({ route }) => {
 
     console.log("mpin", route.params.mPinNumber , pin);
 
+    const validateForm=()=>{
+        let valid=true;
+
+        setEnterPinError("")
+
+        const isValid = pinArr.every(digit => digit !== "");
+
+        if (!isValid) {
+            setEnterPinError("Please enter a valid 4-digit MPIN");
+            return false;
+        }
+        return valid;        
+    }
+
   const savePinClick = async () => {
+     if(!validateForm()) return;
     if (route.params.mPinNumber !== pin) {
       setType("error");
       setMessage("MPIN mismatch");
@@ -103,6 +120,7 @@ const ConfirmMPin = ({ route }) => {
           />
         ))}
       </View>
+      {enterPinError && <ErrorMessage message={enterPinError} type="error"/>}
 
       <TouchableOpacity onPress={savePinClick} style={styles.nextButton}>
         <Text style={styles.nextText}>Save mPIN</Text>
