@@ -61,7 +61,10 @@ import { retriveData } from "../../Utils/Storage";
 
 
 
-export default function DashboardScreen() {
+export default function DashboardScreen({initialParams}) {
+
+  console.log("initialParams", initialParams);
+  
   const insets = useSafeAreaInsets();
 
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -118,50 +121,91 @@ const activeHostel =
   console.log("activeHostelId", activeHostelId);
   
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        if (drawerVisible) {
-          setDrawerVisible(false);
-          return true;
-        }
-        return false;
-      };
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const onBackPress = () => {
+  //       if (drawerVisible) {
+  //         setDrawerVisible(false);
+  //         return true;
+  //       }
+  //       return false;
+  //     };
 
-      const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-      return () => sub.remove();
-    }, [drawerVisible])
-  );
+  //     const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+  //     return () => sub.remove();
+  //   }, [drawerVisible])
+  // );
 
-  useFocusEffect(
+
+useFocusEffect(
   useCallback(() => {
     const onBackPress = () => {
 
-      
+      // Drawer open → close drawer
       if (drawerVisible) {
         setDrawerVisible(false);
         return true;
       }
 
-      
+      // Updates → Announcement
       if (activeTab === "Updates") {
         setActiveTab("Announcement");
         return true;
       }
 
+      // Announcement → Dashboard
       if (activeTab === "Announcement") {
         setActiveTab("Dashboard");
         return true;
       }
 
-     
+      // Dashboard → EXIT APP
+      // if (activeTab === "Dashboard") {
+      //   BackHandler.exitApp();
+      //   return true;
+      // }
+
       return false;
     };
 
-    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-    return () => sub.remove();
-  }, [drawerVisible, activeTab])
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [activeTab, drawerVisible])
 );
+
+//   useFocusEffect(
+//   useCallback(() => {
+//     const onBackPress = () => {
+
+      
+//       if (drawerVisible) {
+//         setDrawerVisible(false);
+//         return true;
+//       }
+
+      
+//       if (activeTab === "Updates") {
+//         setActiveTab("Announcement");
+//         return true;
+//       }
+
+//       if (activeTab === "Announcement") {
+//         setActiveTab("Dashboard");
+//         return true;
+//       }
+
+     
+//       return false;
+//     };
+
+//     const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+//     return () => sub.remove();
+//   }, [drawerVisible, activeTab])
+// );
 
   // useFocusEffect(
   //   useCallback(() => {

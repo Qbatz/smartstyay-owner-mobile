@@ -3,6 +3,9 @@ import { View, Image,Platform  } from "react-native";
 import { useLinkBuilder, useTheme } from "@react-navigation/native";
 import { Text, PlatformPressable } from "@react-navigation/elements";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { BackHandler } from "react-native";
+import { useFocusEffect, useNavigationState } from "@react-navigation/native";
+import { useCallback } from "react"
 import { SafeAreaView } from "react-native-safe-area-context";
 import { UIContext } from "./UIContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -157,6 +160,30 @@ function MyTabBar({ state, descriptors, navigation }) {
 
 export default function MyTabs() {
     const [showTabBar, setShowTabBar] = useState(true);
+  const currentRouteName = useNavigationState(
+    (state) => state.routes[state.index]?.name
+  );
+
+     useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+
+        if (currentRouteName !== "Home") {
+          return false; 
+        }
+
+        BackHandler.exitApp();
+        return true;
+      };
+
+      const sub = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => sub.remove();
+    }, [currentRouteName])
+  );
  return (
     <Tab.Navigator
       id="MainTabs"
