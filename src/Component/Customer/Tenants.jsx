@@ -255,44 +255,102 @@ console.log("selectedCustomer",selectedCustomer)
     setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice && !showInactiveSheet);
   }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
+useLayoutEffect(() => {
+  const backAction = () => {
+
+    // ✅ 1) First close sheets / modals (your existing)
+    if (showDetailModal) {
+      closeDetailSheet();
+      return true;
+    }
+
+    if (showInactiveSheet) {
+      setShowInactiveSheet(false);
+      return true;
+    }
+
+    if (showFilter) {
+      setShowFilter(false);
+      return true;
+    }
+
+    if (showCheckout) {
+      setShowCheckout(false);
+      return true;
+    }
+
+    if (showNotice) {
+      setShowNotice(false);
+      return true;
+    }
+
+    // ✅ 2) Tab navigation back order
+    if (activeTab === "Walkin") {
+      setActiveTab("Checkout");
+      return true;
+    }
+
+    if (activeTab === "Checkout") {
+      setActiveTab("Tenants");
+      return true;
+    }
+
+  
+    return false;
+  };
+
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => handler.remove();
+}, [
+  showDetailModal,
+  showInactiveSheet,
+  showFilter,
+  showCheckout,
+  showNotice,
+  activeTab,
+]);
 
 
-  useLayoutEffect(() => {
-    const backAction = () => {
-      if (showDetailModal) {
-        setShowDetailModal(false);
-        return true;
-      }
-      if(showInactiveSheet){
-setShowInactiveSheet(false)
-return true;
-      }
+//   useLayoutEffect(() => {
+//     const backAction = () => {
+//       if (showDetailModal) {
+//         setShowDetailModal(false);
+//         return true;
+//       }
+//       if(showInactiveSheet){
+// setShowInactiveSheet(false)
+// return true;
+//       }
 
-      if (showFilter) {
-        setShowFilter(false);
-        return true;
-      }
-      if (showCheckout) {
-        setShowCheckout(false);
-        return true;
-      }
-      if (showNotice) {
-        setShowNotice(false);
-        return true;
-      }
+//       if (showFilter) {
+//         setShowFilter(false);
+//         return true;
+//       }
+//       if (showCheckout) {
+//         setShowCheckout(false);
+//         return true;
+//       }
+//       if (showNotice) {
+//         setShowNotice(false);
+//         return true;
+//       }
 
 
 
-      return false;
-    };
+//       return false;
+//     };
 
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+//     const handler = BackHandler.addEventListener(
+//       "hardwareBackPress",
+//       backAction
+//     );
 
-    return () => handler.remove();
-  }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
+//     return () => handler.remove();
+//   }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
 
 
@@ -1382,16 +1440,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
+    paddingVertical:50
+
    
   },
   searchContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F6FA",
-    borderRadius: 40,
-    paddingHorizontal: 12,
-    marginTop: 10,
-    height: 55,
+  alignItems: "center",
+  backgroundColor: "#F5F6FA",
+  borderRadius: 10,
+  paddingHorizontal: 12,
+  height: 55,
+  
   },
   searchIcon: {
     width: 18,
