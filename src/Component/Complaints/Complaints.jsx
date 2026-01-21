@@ -231,17 +231,17 @@ const formatDate = (date) => {
   return () => handler.remove();
 }, [ showFilter,showSheet,showAssignSheet,showStatusSheet,showCommentSheet])
 
-  useEffect(() => {
-              const backHandler = BackHandler.addEventListener(
-                "hardwareBackPress",
-                () => {
-                  navigation.goBack();  
-                  return true;
-                }
-              );
+  // useEffect(() => {
+  //             const backHandler = BackHandler.addEventListener(
+  //               "hardwareBackPress",
+  //               () => {
+  //                 navigation.goBack();  
+  //                 return true;
+  //               }
+  //             );
             
-              return () => backHandler.remove();
-            }, [])
+  //             return () => backHandler.remove();
+  //           }, [])
 
   
 

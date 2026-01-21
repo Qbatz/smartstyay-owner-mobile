@@ -24,17 +24,30 @@ import RightArrow from "../../Assets/Images/right_direction.png"
 
 
 export default function MoreDesign({ navigation }) {
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        navigation.navigate("MyTabs");
-        return true; 
-      }
-    );
+
+  // useEffect(() => {
+  //   const backHandler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     () => {
+  //       navigation.navigate("MyTabs");
+  //       return true; 
+  //     }
+  //   );
   
-    return () => backHandler.remove();
-  }, []);
+  //   return () => backHandler.remove();
+  // }, []);
+
+    // useEffect(() => {
+    //             const backHandler = BackHandler.addEventListener(
+    //               "hardwareBackPress",
+    //               () => {
+    //                 navigation.goBack();  
+    //                 return true;
+    //               }
+    //             );
+              
+    //             return () => backHandler.remove();
+    //           }, [])
 
   const menuItems = [
     { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
