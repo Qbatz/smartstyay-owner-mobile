@@ -585,7 +585,7 @@ console.log("payloadForApi",payloadForApi)
               />
             </TouchableOpacity>
 
-            <Text style={styles.headerTitle}>Add General</Text>
+            <Text style={styles.headerTitle}>{editData ? "Edit General":"Add General"}</Text>
           </View>
 
 
@@ -840,7 +840,7 @@ console.log("payloadForApi",payloadForApi)
             onPress={editData ? handleUpdate : handleSubmit}
           >
             <Text style={styles.submitText}>
-              {loading ? "Saving..." : "Add General"}
+               {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
             </Text>
           </TouchableOpacity>
 

@@ -1382,7 +1382,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingVertical: 50
+   
   },
   searchContainer: {
     flexDirection: "row",

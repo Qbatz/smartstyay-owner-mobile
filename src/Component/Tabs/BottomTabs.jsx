@@ -1,11 +1,11 @@
 import React,{useState , useContext} from "react";
-import { View, Image, } from "react-native";
+import { View, Image,Platform  } from "react-native";
 import { useLinkBuilder, useTheme } from "@react-navigation/native";
 import { Text, PlatformPressable } from "@react-navigation/elements";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { UIContext } from "./UIContext";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import HomeScreen from "../Dashboard/DashboardPage";
 import Tenant from "../Customer/Tenants";
 import Complaints from "../Complaints/Complaints";
@@ -36,25 +36,80 @@ const icons = {
 function MyTabBar({ state, descriptors, navigation }) {
   const { buildHref } = useLinkBuilder();
   const { setTabBarHeight } = useContext(UIContext);
+ 
+
+  const insets = useSafeAreaInsets();
+  
   return (
-    <SafeAreaView
-      edges={["bottom"]}
-      onLayout={(e) => {
-        setTabBarHeight(e.nativeEvent.layout.height);
-      }}
+    // <SafeAreaView
+    //   edges={["bottom"]}
+    //   onLayout={(e) => {
+    //     setTabBarHeight(e.nativeEvent.layout.height);
+    //   }}
+    //   style={{
+    //     backgroundColor: "#fff",
+    //     borderTopLeftRadius: 30,
+    //     borderTopRightRadius: 30,
+    //     elevation: 10,
+    //   }}
+    // >
+    //   <View
+    //     style={{
+    //       flexDirection: "row",
+    //       paddingVertical: 10,
+    //     }}
+    //   >
+    //     {state.routes.map((route, index) => {
+    //       const isFocused = state.index === index;
+
+    //       return (
+    //         <PlatformPressable
+    //           key={route.key}
+    //           href={buildHref(route.name, route.params)}
+    //           onPress={() => navigation.navigate(route.name)}
+    //           android_ripple={{ color: "#EAF0FF" }}
+    //           style={{
+    //             flex: 1,
+    //             alignItems: "center",
+    //             justifyContent: "center",
+    //           }}
+    //         >
+    //           <Image
+    //             source={
+    //               isFocused
+    //                 ? icons[route.name].active
+    //                 : icons[route.name].inactive
+    //             }
+    //             style={{ width: 26, height: 26 }}
+    //           />
+
+    //           <Text
+    //             style={{
+    //               marginTop: 4,
+    //               fontSize: 12,
+    //               color: isFocused ? "#1E45E1" : "#999",
+    //               fontWeight: isFocused ? "600" : "400",
+    //             }}
+    //           >
+    //             {route.name}
+    //           </Text>
+    //         </PlatformPressable>
+    //       );
+    //     })}
+    //   </View>
+    // </SafeAreaView>
+      <View
+      onLayout={(e) => setTabBarHeight(e.nativeEvent.layout.height)}
       style={{
         backgroundColor: "#fff",
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        elevation: 10,
+        elevation: 12,
+        paddingBottom: insets.bottom > 0 ? insets.bottom : 10, 
+        paddingTop: 10,
       }}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          paddingVertical: 10,
-        }}
-      >
+      <View style={{ flexDirection: "row" }}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
 
@@ -68,6 +123,7 @@ function MyTabBar({ state, descriptors, navigation }) {
                 flex: 1,
                 alignItems: "center",
                 justifyContent: "center",
+                paddingVertical: 6,
               }}
             >
               <Image
@@ -77,6 +133,7 @@ function MyTabBar({ state, descriptors, navigation }) {
                     : icons[route.name].inactive
                 }
                 style={{ width: 26, height: 26 }}
+                resizeMode="contain"
               />
 
               <Text
@@ -93,7 +150,7 @@ function MyTabBar({ state, descriptors, navigation }) {
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
