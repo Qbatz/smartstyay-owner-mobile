@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard,TouchableWithoutFeedback } from "react-native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { launchImageLibrary } from 'react-native-image-picker';
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
@@ -146,7 +146,7 @@ export default function AddGeneralScreen({ navigation, route }) {
       setLandmark(editData.landmark || "");
       setCity(editData.city || "");
       setPincode(String(editData.pincode || ""));
-      setStateSelected(editData.state || "Select State");
+      setSelectedState(editData.state || "Select State");
       setSelectedImage(editData.profilePic ? { uri: editData.profilePic } : null);
     }
   }, [editData]);
@@ -176,7 +176,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
     if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     if (!city.trim()) newErrors.city = "Please Enter City";
-    if (StateSelected === "Select State") newErrors.state = "Please Select State";
+    if (selectedState === "Select State") newErrors.state = "Please Select State";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -195,7 +195,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       landmark,
       city,
       pincode,
-      state: StateSelected,
+      state: selectedState,
       password: "Test@123",
     };
 
@@ -324,7 +324,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       editData.landmark === landmark &&
       editData.city === city &&
       String(editData.pincode) === String(pincode) &&
-      editData.state === StateSelected &&            // ✔ matches your API
+      editData.state === selectedState &&            // ✔ matches your API
       !selectedImage                                 // image unchanged
     );
   };
@@ -339,7 +339,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!email.trim()) newErrors.email = "Please Enter Email ID";
     if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     if (!city.trim()) newErrors.city = "Please Enter City";
-    if (StateSelected === "Select State") newErrors.state = "Please Select State";
+    if (selectedState === "Select State") newErrors.state = "Please Select State";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -371,7 +371,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     landmark,
     city,
     pincode: Number(pincode),
-    state: StateSelected
+    state: selectedState
   };
 
   const formData = new FormData();
@@ -488,7 +488,7 @@ console.log("payloadForApi",payloadForApi)
     }
   }, []);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
-  const [StateOpen, setStateOpen] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
   const [StateSelected, setStateSelected] = useState("Select State");
   const [selectedImage, setSelectedImage] = useState(null);
   const pickImage = () => {
@@ -541,6 +541,53 @@ console.log("payloadForApi",payloadForApi)
     { label: "West Bengal", value: "West Bengal" },
   ];
 
+  const [stateQuery, setStateQuery] = useState(""); 
+
+
+
+         const [selectedState, setSelectedState] = useState(""); // final value
+           
+            const stateList = [
+                { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+                { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+                { label: "Assam", value: "Assam" },
+                { label: "Bihar", value: "Bihar" },
+                { label: "Chhattisgarh", value: "Chhattisgarh" },
+                { label: "Goa", value: "Goa" },
+                { label: "Gujarat", value: "Gujarat" },
+                { label: "Haryana", value: "Haryana" },
+                { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+                { label: "Jharkhand", value: "Jharkhand" },
+                { label: "Karnataka", value: "Karnataka" },
+                { label: "Kerala", value: "Kerala" },
+                { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+                { label: "Maharashtra", value: "Maharashtra" },
+                { label: "Manipur", value: "Manipur" },
+                { label: "Meghalaya", value: "Meghalaya" },
+                { label: "Mizoram", value: "Mizoram" },
+                { label: "Nagaland", value: "Nagaland" },
+                { label: "Odisha", value: "Odisha" },
+                { label: "Punjab", value: "Punjab" },
+                { label: "Rajasthan", value: "Rajasthan" },
+                { label: "Sikkim", value: "Sikkim" },
+                { label: "Tamil Nadu", value: "Tamil Nadu" },
+                { label: "Telangana", value: "Telangana" },
+                { label: "Tripura", value: "Tripura" },
+                { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+                { label: "Uttarakhand", value: "Uttarakhand" },
+                { label: "West Bengal", value: "West Bengal" },
+            ];
+
+               const filteredStateList = stateList
+        .filter((s) =>
+            s.label.toLowerCase().includes(stateQuery.toLowerCase())
+        )
+        .sort((a, b) => {
+            const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+            const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+            return bStart - aStart;
+        });
+
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardOpen(true));
     const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardOpen(false));
@@ -559,69 +606,79 @@ console.log("payloadForApi",payloadForApi)
         type={modalType}
       />
 
+       <View style={styles.mainContainer}>
+
+      {/* ✅ FIXED HEADER */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={LeftArrow} style={styles.backIcon} />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>
+          {editData ? "Edit General" : "Add General"}
+        </Text>
+      </View>
+
+      {/* ✅ FIXED PROFILE SECTION */}
+      <TouchableOpacity
+        style={styles.profileSection}
+        onPress={pickImage}
+        activeOpacity={0.8}
+      >
+        <View style={styles.profileCircle}>
+          <Image
+            source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
+            style={styles.profileImg}
+          />
+
+          {!selectedImage && (
+            <View style={styles.addBadge}>
+              <Image source={plusIcon} style={{ width: 16, height: 16 }} />
+            </View>
+          )}
+
+          {selectedImage && (
+            <View style={styles.centerEditBadge}>
+              <Image source={Edit} style={{ width: 20, height: 20 }} />
+            </View>
+          )}
+        </View>
+
+        <View style={{ marginLeft: 16 }}>
+          <Text style={styles.profileLabel}>Profile Photo</Text>
+          <Text style={styles.profileSub}>
+            Add Profile Image of Vendor/Business.{"\n"}Max size of image 2 MB
+          </Text>
+        </View>
+      </TouchableOpacity>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView
-          style={styles.container}
+        {/* <ScrollView
+          style={styles.formContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          scrollEnabled={!StateOpen}
-          contentContainerStyle={{
-            paddingBottom: keyboardOpen ? 0 : 0,
-            flexGrow: keyboardOpen ? 0 : 1,
-          }}
-        >
+          scrollEnabled={!stateOpen}
+          contentContainerStyle={{ paddingBottom: 50 }}
+        > */}
+
+{/* <ScrollView
+  style={styles.formContainer}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="always"
+  contentContainerStyle={{ paddingBottom: 250 }}
+> */}
+<ScrollView
+  style={styles.formContainer}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="always"
+  contentContainerStyle={{ paddingBottom: 20 }}
+>
 
 
-
-
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image
-                source={LeftArrow}
-                style={styles.backIcon}
-              />
-            </TouchableOpacity>
-
-            <Text style={styles.headerTitle}>{editData ? "Edit General":"Add General"}</Text>
-          </View>
-
-
-          <TouchableOpacity
-            style={styles.profileSection}
-            onPress={pickImage}
-            activeOpacity={0.8}
-          >
-            <View style={styles.profileCircle}>
-
-              <Image
-                source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
-                style={styles.profileImg}
-              />
-
-              {!selectedImage && (
-                <View style={styles.addBadge}>
-                  <Image source={plusIcon} style={{ width: 16, height: 16 }} />
-                </View>
-              )}
-
-              {selectedImage && (
-                <View style={styles.centerEditBadge}>
-                  <Image source={Edit} style={{ width: 20, height: 20 }} />
-                </View>
-              )}
-
-            </View>
-
-            <View style={{ marginLeft: 16 }}>
-              <Text style={styles.profileLabel}>Profile Photo</Text>
-              <Text style={styles.profileSub}>
-                Add Profile Image of Vendor/Business.{"\n"}Max size of image 2 MB
-              </Text>
-            </View>
-          </TouchableOpacity>
+          
 
 
 
@@ -776,7 +833,7 @@ console.log("payloadForApi",payloadForApi)
                                     <ErrorMessage message={errors.city} type="error" />
                                 )}
 
-          <Text style={styles.label}>State  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+          {/* <Text style={styles.label}>State  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -813,7 +870,101 @@ console.log("payloadForApi",payloadForApi)
                 </ScrollView>
               </View>
             )}
-          </View>
+          </View> */}
+
+
+
+
+          <Text style={styles.label}>State</Text>
+          
+                                                  <View style={{ position: "relative" }}>
+                                                      <TextInput
+                                                          style={styles.select}
+                                                          placeholder="Select state"
+                                                          placeholderTextColor="#9CA3AF"
+                                                         value={stateOpen ? stateQuery : selectedState}
+          
+                                                          onFocus={() => {
+                                                              setStateOpen(true);
+                                                              setStateQuery("");   // 🔥 cursor focus panna fresh search
+                                                          }}
+                                                          onChangeText={(t) => {
+                                                              setStateQuery(t);    // 🔥 typing always search
+                                                              setStateOpen(true);
+                                                          }}
+                                                      />
+          <TouchableOpacity
+  style={styles.arrowTouchable}
+  activeOpacity={0.7}
+  onPress={() => {
+    setStateOpen(!stateOpen);
+
+    
+    if (stateOpen) setStateQuery("");
+  }}
+>
+  <Image source={DownArrow} style={styles.arrowIcon} />
+</TouchableOpacity>
+
+          
+                                                      {/* <Image source={DownArrow} style={styles.arrowIcon} /> */}
+          
+                                                    {stateOpen && (
+                                                     <>
+                                                     <TouchableWithoutFeedback
+                onPress={() => {
+                  setStateOpen(false);
+                  setStateQuery("");
+                }}
+              >
+                <View style={styles.dropdownOverlay} />
+              </TouchableWithoutFeedback>
+          
+            <View style={styles.dropdownMenu}>
+              <ScrollView
+                keyboardShouldPersistTaps="always"
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+              >
+                {filteredStateList.length > 0 ? (
+                  filteredStateList.map((v, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.option}
+                      onPress={() => {
+                        setSelectedState(v.label);
+                        setStateQuery("");
+                        setStateOpen(false);
+                      }}
+                    >
+                      <Text style={styles.optionText}>{v.label}</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={styles.noResult}>No state found</Text>
+                )}
+          
+                {/* 🔴 CLEAR OPTION */}
+                {selectedState && (
+                  <TouchableOpacity
+                    style={{ padding: 12, alignItems: "center" }}
+                    onPress={() => {
+                      setSelectedState("");
+                      setStateQuery("");
+                      setStateOpen(false);
+                    }}
+                  >
+                    <Text style={{ color: "red", fontWeight: "600" }}>
+                      Clear selection
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </ScrollView>
+            </View>
+            </>
+          )}
+          
+                                                  </View>
           {/* {errors.state && (
             <Text style={styles.errText}>{errors.state}</Text>
           )} */}
@@ -835,14 +986,24 @@ console.log("payloadForApi",payloadForApi)
 
 
 
-
+{/* 
           <TouchableOpacity style={styles.submitBtn}
             onPress={editData ? handleUpdate : handleSubmit}
           >
             <Text style={styles.submitText}>
                {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          <View style={styles.fixedBtnWrapper}>
+  <TouchableOpacity
+    style={styles.submitBtn}
+    onPress={editData ? handleUpdate : handleSubmit}
+  >
+    <Text style={styles.submitText}>
+      {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
+    </Text>
+  </TouchableOpacity>
+</View>
 
           {/* {errorMsg !== "" && (
             <Text style={{ color: "red", textAlign: "center", marginTop: 5 }}>
@@ -861,17 +1022,46 @@ console.log("payloadForApi",payloadForApi)
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", padding: 16, paddingTop: 50 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  // header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 22, height: 22, tintColor: "#000" },
   headerTitle: { fontSize: 20, fontWeight: "600", marginLeft: 10 },
 
-  profileSection: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  // profileSection: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+
+
+  mainContainer: {
+  flex: 1,
+  backgroundColor: "#fff",
+},
+
+header: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingTop: 50,
+  paddingBottom: 12,
+  backgroundColor: "#fff",
+},
+
+profileSection: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingBottom: 15,
+  backgroundColor: "#fff",
+},
+
+formContainer: {
+  flex: 1,
+  paddingHorizontal: 16,
+},
 
   profileCircle: {
     width: 75,
@@ -926,12 +1116,12 @@ const styles = StyleSheet.create({
   },
 
   submitBtn: {
-    backgroundColor: "#7B8CFF",
+    backgroundColor: "#1D5DFF",
     paddingVertical: 14,
     borderRadius: 10,
     marginTop: 25,
     alignItems: "center",
-    marginBottom: 70
+    marginBottom: 0
   },
 
   submitText: {
@@ -939,31 +1129,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
-  select: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#e1e1e1",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10
-  },
-  dropdownMenu: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 999,
-    elevation: 10,
+   select: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#e1e1e1",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+  // select: {
+  //   height: 48,
+  //   borderWidth: 1,
+  //   borderColor: "#e1e1e1",
+  //   borderRadius: 12,
+  //   paddingHorizontal: 12,
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   alignItems: "center",
+  //   marginTop: 10
+  // },
+     dropdownMenu: {
+  position: "absolute",
+  top: 62,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 1000,
+  
+  maxHeight: 130,        // 🔥 increase
+},
+
+  // dropdownMenu: {
+  //   position: "absolute",
+  //   top: 50,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: "#fff",
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   borderRadius: 12,
+  //   zIndex: 999,
+  //   elevation: 10,
 
 
-  },
+  // },
 
   option: {
     paddingVertical: 12,
@@ -1019,7 +1233,28 @@ const styles = StyleSheet.create({
   alignItems: "center",
   width: "100%",
   display:"flex"
-}
+},
+arrowIcon: {
+        // position: "absolute",
+        // right: 12,
+        // top: 14,
+        width: 18,
+        height: 18,
+        tintColor: "#777",
+    },
+    fixedBtnWrapper: {
+  paddingHorizontal: 0,
+  paddingBottom: 15,
+  backgroundColor: "#fff",
+},
+arrowTouchable: {
+  position: "absolute",
+  right: 12,
+  top: 14,
+  // padding: 10,   // ✅ easy click area
+  zIndex: 2000,
+},
+
 
 
 });
