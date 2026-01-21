@@ -18,15 +18,15 @@ import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useNavigation } from "@react-navigation/native";
 
 
-export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed }) {
+export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed,onBedAdded }) {
     const navigation = useNavigation();
-    console.log("selectedBed",selectedBed)
+    console.log("selectedBedTHIFDGDGFG",selectedBed)
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
     const [showInactiveSheet, setShowInactiveSheet] = useState(false)
     const [bookedItems,setBookedItems] = useState("")
     const [bookDetails,setBookDetails] = useState("")
-    console.log("bookedItems",bookedItems)
+    console.log("bookedItemsbookedItems",bookedItems)
     useEffect(() => {
         if (selectTap) {
             selectTap(!showInactiveSheet);
@@ -90,6 +90,8 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
                 visible={showInactiveSheet}
                 onClose={() => setShowInactiveSheet(false)}
                 bookedItems={bookedItems}
+                selectedBed={selectedBed}
+                onBedAdded={onBedAdded}
             />
         );
     }
@@ -247,6 +249,8 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
                 visible={showInactiveSheet}
                 onClose={() => setShowInactiveSheet(false)}
                 bookedItems={bookedItems}
+                selectedBed={selectedBed}
+                onBedAdded={onBedAdded}
             />
 
         </>

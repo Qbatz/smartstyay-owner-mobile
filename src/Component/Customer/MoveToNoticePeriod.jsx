@@ -21,7 +21,14 @@ dayjs.extend(customParseFormat);
 export default function MoveNoticeSheet({
   visible, onClose, customer, onSuccess, selectedBed, onBedAdded, roomId
 }) {
-  if (!visible) return null;
+    const [reqDate, setReqDate] = useState(null);
+  const [outDate, setOutDate] = useState(null);
+  const [reqDateError, setReqDateError] = useState("");
+  const [outDateError, setOutDateError] = useState("");
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+ if (!visible && !showSuccess) return null;
+
 
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
@@ -33,12 +40,7 @@ export default function MoveNoticeSheet({
   const [reason, setReason] = useState("");
 const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
 
-  const [reqDate, setReqDate] = useState(null);
-  const [outDate, setOutDate] = useState(null);
-  const [reqDateError, setReqDateError] = useState("");
-  const [outDateError, setOutDateError] = useState("");
-  const [modalType, setModalType] = useState("success");
-  const [showSuccess, setShowSuccess] = useState(false);
+
   const [message, setMessage] = useState("");
   console.log("customer", customer)
   console.log("selectedBed", selectedBed)
@@ -147,10 +149,18 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
      onSuccess && onSuccess()
       
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        onClose();
-      }, 800);
+      // setTimeout(() => {
+      //   setShowSuccess(false);
+      //   onClose();
+      // }, 800);
+        setTimeout(() => {
+    setShowSuccess(false);
+  }, 800);
+
+  // ✅ next sheet close
+  setTimeout(() => {
+    onClose();
+  }, 900);
     } else {
       alert(res.message || "Move to notice failed");
     }

@@ -1010,7 +1010,7 @@ const handleShowFinalSettlementNotice = (item)=>{
                         style={styles.popupRow}
 
                         onPress={() => {
-                          setSelectedCustomer(selectedItem);
+                          // setSelectedCustomer(selectedItem);
                           setShowMenu(false);
                           setMenuVisible(false)
                           setShowNotice(true);
