@@ -107,7 +107,7 @@ export default function ReceiptTemplate() {
           </View>
         </View>
 
-<View style={styles.card}>
+{/* <View style={styles.card}>
     <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
   <Text style={styles.boxTitle}>Upload QR</Text>
  <Image source={EditIcon} style={styles.iconSmall} />
@@ -132,13 +132,11 @@ export default function ReceiptTemplate() {
       </View>
     )}
   </TouchableOpacity>
-</View>
+</View> */}
 
-        {/* FORM SPECIFIC */}
-        <Text style={styles.sectionTitle}>Form Specific Details</Text>
+        {/* <Text style={styles.sectionTitle}>Form Specific Details</Text>
         <Text style={styles.sectionSub}>Fill the form with details you'd like to customize.</Text>
 
-        {/* INVOICE */}
         <View style={styles.card}>
           <Text style={styles.boxTitle}>Invoice No</Text>
 
@@ -159,7 +157,6 @@ export default function ReceiptTemplate() {
           </View>
         </View>
 
-        {/* PG TAX PAYABLE */}
         <View style={styles.card}>
           <Text style={styles.boxTitle}>PG Tax Payable</Text>
           <Text style={styles.label}>Add the Tax payable GST in Percentage %</Text>
@@ -171,7 +168,6 @@ export default function ReceiptTemplate() {
             onChangeText={(t) => setTax(t.replace(/\D/g, ""))}
           />
         </View>
-{/* ---------------- ACCOUNT DETAILS (BANK LIST) ---------------- */}
 <View style={styles.card}>
   <View style={styles.bankHeaderRow}>
     <Text style={styles.boxTitle}>Account Details</Text>
@@ -183,7 +179,6 @@ export default function ReceiptTemplate() {
 
   <View style={styles.divider} />
 
-  {/* SCROLLABLE BANK LIST */}
   <View style={{ maxHeight: 200 }}>
     <ScrollView showsVerticalScrollIndicator>
       {[
@@ -193,12 +188,10 @@ export default function ReceiptTemplate() {
       ].map((item) => (
         <TouchableOpacity key={item.id} style={styles.bankRow}>
           
-          {/* Radio */}
           <View style={styles.radioOuter}>
             <View style={styles.radioInner} />
           </View>
 
-          {/* Icon */}
           <View style={styles.bankIconCircle}>
             <Image
               source={require("../../../Assets/Images/bank.png")}
@@ -206,7 +199,6 @@ export default function ReceiptTemplate() {
             />
           </View>
 
-          {/* Labels */}
           <View style={{ marginLeft: 10 }}>
             <Text style={styles.bankName}>{item.name}</Text>
             <Text style={styles.bankSub}>{item.holder} / Savings A/C</Text>
@@ -216,7 +208,7 @@ export default function ReceiptTemplate() {
       ))}
     </ScrollView>
   </View>
-</View>
+</View> */}
 
 
 

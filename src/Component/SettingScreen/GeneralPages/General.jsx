@@ -211,10 +211,13 @@ onPress={() => {
 
             <Text style={styles.headerTitle}>General</Text>
 
-            <TouchableOpacity style={styles.masterButton} onPress={() => navigation.navigate("AddGeneralScreen")}>
+              {getData?.length > 0 && (
+   <TouchableOpacity style={styles.masterButton} onPress={() => navigation.navigate("AddGeneralScreen")}>
               <Text style={styles.masterText}>+ Master</Text>
             </TouchableOpacity>
-          </View>
+        
+              )}
+           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
           
@@ -222,6 +225,12 @@ onPress={() => {
   <View style={styles.emptyContainer}>
     <Image source={EmptyState} style={styles.emptyImage} />
     <Text style={styles.emptyText}>No Data Found</Text>
+        <TouchableOpacity style={{    backgroundColor: "#4466F2",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,marginTop:10}} onPress={() => navigation.navigate("AddGeneralScreen")}>
+              <Text style={styles.masterText}>+ Master</Text>
+            </TouchableOpacity>
   </View>
 ) : (
   getData?.map((u, index) => renderUserCard(u, index))
@@ -273,7 +282,7 @@ onPress={() => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 16, paddingTop: 30 },
+  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 16, paddingTop: 50 },
 
   header: {
     flexDirection: "row",

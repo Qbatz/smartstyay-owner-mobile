@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
     paddingHorizontal: 30,
-    paddingTop:40
+    paddingTop:60
    
   },
 
@@ -97,13 +97,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 25,
+    marginBottom: 15,
   },
 
   profileImg: {
-    width: 35,
-    height: 35,
+    width: 30,
+    height: 30,
     borderRadius: 20,
+    marginLeft:10
   },
 
   headerTitle: {

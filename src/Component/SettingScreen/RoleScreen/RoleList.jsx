@@ -261,7 +261,7 @@ const getPermissionCount = (role) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F6F7FB",paddingTop:20
+    backgroundColor: "#F6F7FB",paddingTop:50
   },
 
   
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 16,
     marginHorizontal: 16,
-    marginTop: 14,
+    marginTop: 6,
     borderRadius: 14,
     borderColor: "#E6E6E6",
     borderWidth: 1,

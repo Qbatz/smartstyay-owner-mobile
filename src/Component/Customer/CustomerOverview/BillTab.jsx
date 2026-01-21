@@ -12,6 +12,9 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
 }
 
   return (
+    <>
+    
+   
     <View style={{ paddingBottom: 30 }}>
       
       {invoiceList.map((item, index) => (
@@ -52,10 +55,13 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
           </View>
         </View>
       ))}
+    
+    </View>
+
        <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
-    </View>
+           </>
   );
 }
 
@@ -130,15 +136,26 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   addBtn: {
-    position: "absolute",
-    bottom: 50,
-    right: 10,
+    // position: "absolute",
+    // bottom: 0,
+    // right: 10,
+    // backgroundColor: "#1D5DFF",
+    // width: 55,
+    // height: 55,
+    // borderRadius: 30,
+    // justifyContent: "center",
+    // alignItems: "center",
+    // elevation: 6,
+
+        position: "absolute",
+    bottom: 80,
+    right: 20,
     backgroundColor: "#1D5DFF",
-    width: 55,
-    height: 55,
+    width: 50,
+    height: 50,
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 6,
+    elevation: 5,
   },
 });

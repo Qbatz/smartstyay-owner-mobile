@@ -491,7 +491,7 @@ const formatDate = (date) => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 40 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 60 },
 
  searchBox: {
     flexDirection: "row",
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   filterBtn: {
     position: "absolute",
     bottom: 150,
-    right: 20,
+    right: 30,
     backgroundColor: "#fff",
     padding: 12,
     borderRadius: 30,
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   addBtn: {
     position: "absolute",
     bottom: 80,
-    right: 20,
+    right: 30,
     backgroundColor: "#1D5DFF",
     width: 50,
     height: 50,

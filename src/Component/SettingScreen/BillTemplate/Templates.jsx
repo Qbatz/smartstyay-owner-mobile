@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: Platform.OS === "ios" ? 44 : 20,
+    paddingTop: Platform.OS === "ios" ? 54 : 60,
   },
 
   header: {

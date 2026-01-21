@@ -126,11 +126,14 @@ export default function ElectricityProvider({children}){
   setErrorMsg("");
 
   try {
-    const axios = getAxios();
-    const res = await axios.post(
+    // const axios = getAxios();
+    const res = await AxiosConfig.post(
       `/v2/electricity/${payload.hostelId}`,
       payload
     );
+
+    console.log("res", res);
+    
 
     if (res.status === 200 || res.status === 201) {
       await GetEBRoomReading(payload.hostelId);
@@ -163,14 +166,13 @@ const UpdateRoomReading = async (payload) => {
   setErrorMsg("");
 
   try {
-    const axios = getAxios();
-    const res = await axios.put(
+    const res = await AxiosConfig.put(
       `/v2/electricity/${payload.hostelId}/${payload.readingId}`,
       null,
       {
         params: {
           reading: payload.reading,
-          entryDate: payload.readingDate,
+          entryDate: payload?.readingDate || payload?.entryDate,
         },
       }
     );
@@ -192,6 +194,7 @@ const UpdateRoomReading = async (payload) => {
     setLoading(false);
   }
 };
+
 
 const DeleteRoomReading = async ({ hostelId, readingId }) => {
   setLoading(true);
