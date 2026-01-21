@@ -66,6 +66,7 @@ import CreateMpin from "../src/Component/CreateAccount/CreatePin";
 import ConfirmMPin from "../src/Component/CreateAccount/ConfirmPin";
 import CustomerOverviewScreen from "../src/Component/Customer/CustomerOverview/CustomerOverviewSheet"
 import Reports from  "../src/Component/MorePages/Reports/Reports";
+import FinalSettlementScreen from "../src/Component/Customer/FinalSettlementNew"
 
 const SuccessFlow = (props) => {
 
@@ -152,6 +153,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="PG" component={PGPageFull} />
                     <Navigation.Screen name="Reports" component={Reports} />
                      <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
+                      <Navigation.Screen name="FinalSettlementScreen" component={FinalSettlementScreen} />
 
                 </Navigation.Navigator>
             </NavigationContainer>

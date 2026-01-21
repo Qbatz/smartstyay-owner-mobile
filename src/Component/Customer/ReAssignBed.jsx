@@ -10,9 +10,8 @@ import {
   Animated,
   ScrollView,
   BackHandler,
-  PanResponder, Dimensions
+  PanResponder, Dimensions, KeyboardAvoidingView, Keyboard, Platform
 } from "react-native";
-import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import DirectionDownIcon from "../../Assets/Images/direction_down.png";
 import CalendorIcon from "../../Assets/Images/calendar.png";
@@ -65,7 +64,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const [currentFloorName, setCurrentFloorName] = useState("")
   const [currentRoomName, setCurrentRoomName] = useState("")
   const [currentBedName, setCurrentBedName] = useState("")
-  const [reAssignBedDate,setReAssignBedDate]=useState("")
+  const [reAssignBedDate, setReAssignBedDate] = useState("")
 
 
   useEffect(() => {
@@ -79,7 +78,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     console.log("fetchCustomerDetails", res)
     if (res.success) {
       setRentAmount(String(res.data.hostelInfo?.monthlyRent || ""));
-setReAssignBedDate(res.data.hostelInfo.joiningDate)
+      setReAssignBedDate(res.data.hostelInfo.joiningDate)
       setCurrentFloorName(res.data.hostelInfo.floorName)
       setCurrentRoomName(res.data.hostelInfo.roomName)
       setCurrentBedName(res.data.hostelInfo.bedName)
@@ -90,66 +89,66 @@ setReAssignBedDate(res.data.hostelInfo.joiningDate)
   };
 
   const minDate = reAssignBedDate
-  ? dayjs(reAssignBedDate, "DD/MM/YYYY")
-  : null;
+    ? dayjs(reAssignBedDate, "DD/MM/YYYY")
+    : null;
 
-const maxDate = dayjs(); // today
-const isDisabledReassignDate = (dateStr) => {
-  const d = dayjs(dateStr, "YYYY-MM-DD");
+  const maxDate = dayjs(); // today
+  const isDisabledReassignDate = (dateStr) => {
+    const d = dayjs(dateStr, "YYYY-MM-DD");
 
-  // joiningDate இல்லனா future மட்டும் disable
-  if (!minDate) return d.isAfter(maxDate, "day");
+    // joiningDate இல்லனா future மட்டும் disable
+    if (!minDate) return d.isAfter(maxDate, "day");
 
-  // joiningDate ku munnadi disable
-  if (d.isBefore(minDate, "day")) return true;
+    // joiningDate ku munnadi disable
+    if (d.isBefore(minDate, "day")) return true;
 
-  // future date disable
-  if (d.isAfter(maxDate, "day")) return true;
+    // future date disable
+    if (d.isAfter(maxDate, "day")) return true;
 
-  return false;
-};
-const markedDates = {};
+    return false;
+  };
+  const markedDates = {};
 
-for (let i = -365; i <= 365; i++) {
-  const d = dayjs().add(i, "day");
-  const key = d.format("YYYY-MM-DD");
+  for (let i = -365; i <= 365; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
 
-  if (isDisabledReassignDate(key)) {
-    markedDates[key] = {
-      disabled: true,
-      disableTouchEvent: true,
-      customStyles: {
-        container: {
-          backgroundColor: "#F3F4F6",
-          opacity: 0.4,
-          borderRadius: 8,
+    if (isDisabledReassignDate(key)) {
+      markedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
         },
-        text: {
-          color: "#9CA3AF",
-        },
-      },
+      };
+    }
+  }
+
+  // selected date highlight
+  if (date) {
+    const selectedKey = dayjs(date).format("YYYY-MM-DD");
+    markedDates[selectedKey] = {
+      ...markedDates[selectedKey],
+      selected: true,
+      selectedColor: "#2563EB",
+      selectedTextColor: "#fff",
     };
   }
-}
-
-// selected date highlight
-if (date) {
-  const selectedKey = dayjs(date).format("YYYY-MM-DD");
-  markedDates[selectedKey] = {
-    ...markedDates[selectedKey],
-    selected: true,
-    selectedColor: "#2563EB",
-    selectedTextColor: "#fff",
-  };
-}
-
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     const isOpen = openDropdown !== null;
     setDisableSheetDrag(isOpen);
     setDisableSheetScroll(isOpen);
   }, [openDropdown]);
-console.log("reAssignBedDate",reAssignBedDate)
+  console.log("reAssignBedDate", reAssignBedDate)
   const resetForm = () => {
 
     setDate(null);
@@ -430,45 +429,45 @@ console.log("reAssignBedDate",reAssignBedDate)
 
         </View>
       )} */}
-{openDatePicker && (
-  <View style={styles.datePickerOverlay}>
-    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
-      <View style={styles.overlayTouch} />
-    </TouchableWithoutFeedback>
+      {openDatePicker && (
+        <View style={styles.datePickerOverlay}>
+          <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+            <View style={styles.overlayTouch} />
+          </TouchableWithoutFeedback>
 
-    <View style={styles.datePickerBox}>
-      <Calendar
-        markingType="custom"
-        markedDates={markedDates}
-        current={
-          date
-            ? dayjs(date).format("YYYY-MM-DD")
-            : minDate
-            ? minDate.format("YYYY-MM-DD")
-            : dayjs().format("YYYY-MM-DD")
-        }
-        onDayPress={(day) => {
-          if (isDisabledReassignDate(day.dateString)) return;
+          <View style={styles.datePickerBox}>
+            <Calendar
+              markingType="custom"
+              markedDates={markedDates}
+              current={
+                date
+                  ? dayjs(date).format("YYYY-MM-DD")
+                  : minDate
+                    ? minDate.format("YYYY-MM-DD")
+                    : dayjs().format("YYYY-MM-DD")
+              }
+              onDayPress={(day) => {
+                if (isDisabledReassignDate(day.dateString)) return;
 
-          setDate(day.dateString);
-          setOpenDatePicker(false);
-          setDateError("");
+                setDate(day.dateString);
+                setOpenDatePicker(false);
+                setDateError("");
 
-          setRooms([]);
-          setBeds([]);
-          loadBedsByDate(day.dateString);
-        }}
-        theme={{
-          todayTextColor: "#2563EB",
-          selectedDayBackgroundColor: "#2563EB",
-          selectedDayTextColor: "#FFFFFF",
-          textDisabledColor: "#9CA3AF",
-          arrowColor: "#111827",
-        }}
-      />
-    </View>
-  </View>
-)}
+                setRooms([]);
+                setBeds([]);
+                loadBedsByDate(day.dateString);
+              }}
+              theme={{
+                todayTextColor: "#2563EB",
+                selectedDayBackgroundColor: "#2563EB",
+                selectedDayTextColor: "#FFFFFF",
+                textDisabledColor: "#9CA3AF",
+                arrowColor: "#111827",
+              }}
+            />
+          </View>
+        </View>
+      )}
 
 
       <Animated.View
@@ -477,301 +476,323 @@ console.log("reAssignBedDate",reAssignBedDate)
       >
         <View style={styles.headerBar} />
 
-        <ScrollView
+        {/* <ScrollView
           showsVerticalScrollIndicator={false}
           scrollEnabled={!disableSheetScroll}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingBottom: 60,
           }}
+        > */}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 20}
         >
-          <Text style={styles.title}>Change Bed</Text>
-
-          <Text style={styles.label}>Current Floor</Text>
-          <View style={styles.inputBox}>
-            <TextInput
-              placeholder="Enter Floor"
-              keyboardType="numeric"
-              value={currentFloorName}
-
-              style={{ flex: 1 }}
-            />
-          </View>
-
-          <Text style={styles.label}>Current Room</Text>
-          <View style={styles.inputBox}>
-            <TextInput
-              placeholder="Enter Room"
-              keyboardType="numeric"
-              value={currentRoomName}
-
-              style={{ flex: 1 }}
-            />
-          </View>
-          <Text style={styles.label}>Current Bed</Text>
-          <View style={styles.inputBox}>
-            <TextInput
-              placeholder="Enter Bed"
-              keyboardType="numeric"
-              value={currentBedName}
-
-              style={{ flex: 1 }}
-            />
-          </View>
-          <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
-          <TouchableOpacity
-            style={styles.inputBoxdate}
-            onPress={() => setOpenDatePicker(true)}
+          <ScrollView ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{ paddingBottom: 40 }}
           >
-            <Text>
-              {date ? dayjs(date).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-            </Text>
+            <Text style={styles.title}>Change Bed</Text>
 
-            <Image source={CalendorIcon} style={styles.downIcon} />
-          </TouchableOpacity>
-          {dateError && (
-            <ErrorMessage message={dateError} type="error" />
-          )}
+            <Text style={styles.label}>Current Floor</Text>
+            <View style={styles.inputBox}>
+              <TextInput
+                placeholder="Enter Floor"
+                keyboardType="numeric"
+                value={currentFloorName}
 
+                style={{ flex: 1 }}
+              />
+            </View>
 
+            <Text style={styles.label}>Current Room</Text>
+            <View style={styles.inputBox}>
+              <TextInput
+                placeholder="Enter Room"
+                keyboardType="numeric"
+                value={currentRoomName}
 
-          <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
+                style={{ flex: 1 }}
+              />
+            </View>
+            <Text style={styles.label}>Current Bed</Text>
+            <View style={styles.inputBox}>
+              <TextInput
+                placeholder="Enter Bed"
+                keyboardType="numeric"
+                value={currentBedName}
 
-          <View style={{ position: "relative" }}>
+                style={{ flex: 1 }}
+              />
+            </View>
+            <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              style={[
-                styles.select,
-                isFloorDisabled && styles.disabledSelect
-              ]}
-              disabled={isFloorDisabled}
-              onPress={() => setOpenDropdown("floor")}
-            >
-              <Text style={styles.selectText}>
-                {floorSelected ? floorSelected.name : "Select a Floor"}
-              </Text>
-              <Image source={DownArrow} style={styles.arrow} />
-            </TouchableOpacity>
-
-
-
-            {openDropdown === "floor" && (
-              <View style={styles.dropdownMenu}>
-                <ScrollView style={{ maxHeight: 160 }}>
-                  {floors.map((f) => (
-                    <TouchableOpacity
-                      key={f.id}
-                      style={styles.option}
-                      onPress={() => {
-
-                        setFloorSelected(f);
-                        setOpenDropdown(null);
-
-                        setRoomSelected(null);
-                        setBedSelected(null);
-                        setRooms([]);
-
-                        setFloorError("")
-                        loadRoomsByFloor(f.id);
-                      }}
-
-
-                    >
-                      <Text style={styles.optionText}>{f.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-          </View>
-          {floorError && (
-            <ErrorMessage message={floorError} type="error" />
-          )}
-          <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
-
-          <View style={{ position: "relative" }}>
-            <TouchableOpacity
-              style={[
-                styles.select,
-                isRoomDisabled && styles.disabledSelect
-              ]}
-              disabled={isRoomDisabled}
-              onPress={() => setOpenDropdown("room")}
+              style={styles.inputBoxdate}
+              onPress={() => setOpenDatePicker(true)}
             >
               <Text>
-                {roomSelected ? roomSelected.name : "Select a Room"}
+                {date ? dayjs(date).format("DD/MM/YYYY") : "DD/MM/YYYY"}
               </Text>
-              <Image source={DownArrow} style={styles.arrow} />
+
+              <Image source={CalendorIcon} style={styles.downIcon} />
             </TouchableOpacity>
+            {dateError && (
+              <ErrorMessage message={dateError} type="error" />
+            )}
 
 
 
-            {openDropdown === "room" && (
-              <View style={styles.dropdownMenu}>
-                <ScrollView style={{ maxHeight: 160 }}>
+            <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
 
-                  {!hasRooms ? (
-                    <View style={styles.emptyOption}>
-                      <Text style={styles.emptyText}>No room available</Text>
-                    </View>
-                  ) : (
-                    rooms.map((r) => (
+            <View style={{ position: "relative" }}>
+              <TouchableOpacity
+                style={[
+                  styles.select,
+                  isFloorDisabled && styles.disabledSelect
+                ]}
+                disabled={isFloorDisabled}
+                onPress={() => setOpenDropdown("floor")}
+              >
+                <Text style={styles.selectText}>
+                  {floorSelected ? floorSelected.name : "Select a Floor"}
+                </Text>
+                <Image source={DownArrow} style={styles.arrow} />
+              </TouchableOpacity>
+
+
+
+              {openDropdown === "floor" && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView style={{ maxHeight: 160 }}>
+                    {floors.map((f) => (
                       <TouchableOpacity
-                        key={r.id}
+                        key={f.id}
                         style={styles.option}
                         onPress={() => {
-                          setRoomSelected(r);
+
+                          setFloorSelected(f);
                           setOpenDropdown(null);
+
+                          setRoomSelected(null);
                           setBedSelected(null);
-                          setRoomError("")
-                        }}
-                      >
-                        <Text style={styles.optionText}>{r.name}</Text>
-                      </TouchableOpacity>
-                    ))
-                  )}
+                          setRooms([]);
 
-                </ScrollView>
-              </View>
+                          setFloorError("")
+                          loadRoomsByFloor(f.id);
+                        }}
+
+
+                      >
+                        <Text style={styles.optionText}>{f.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+            {floorError && (
+              <ErrorMessage message={floorError} type="error" />
+            )}
+            <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
+
+            <View style={{ position: "relative" }}>
+              <TouchableOpacity
+                style={[
+                  styles.select,
+                  isRoomDisabled && styles.disabledSelect
+                ]}
+                disabled={isRoomDisabled}
+                onPress={() => setOpenDropdown("room")}
+              >
+                <Text>
+                  {roomSelected ? roomSelected.name : "Select a Room"}
+                </Text>
+                <Image source={DownArrow} style={styles.arrow} />
+              </TouchableOpacity>
+
+
+
+              {openDropdown === "room" && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView style={{ maxHeight: 160 }}>
+
+                    {!hasRooms ? (
+                      <View style={styles.emptyOption}>
+                        <Text style={styles.emptyText}>No room available</Text>
+                      </View>
+                    ) : (
+                      rooms.map((r) => (
+                        <TouchableOpacity
+                          key={r.id}
+                          style={styles.option}
+                          onPress={() => {
+                            setRoomSelected(r);
+                            setOpenDropdown(null);
+                            setBedSelected(null);
+                            setRoomError("")
+                          }}
+                        >
+                          <Text style={styles.optionText}>{r.name}</Text>
+                        </TouchableOpacity>
+                      ))
+                    )}
+
+                  </ScrollView>
+                </View>
+              )}
+
+            </View>
+            {roomError && (
+              <ErrorMessage message={roomError} type="error" />
+            )}
+            <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
+
+            <View style={{ position: "relative" }}>
+              <TouchableOpacity
+                style={[
+                  styles.select,
+                  isBedDisabled && styles.disabledSelect
+                ]}
+                disabled={isBedDisabled}
+                onPress={() => setOpenDropdown("bed")}
+              >
+                <Text style={styles.selectText}>
+                  {bedSelected ? bedSelected.bedName : "Select a Bed"}
+                </Text>
+                <Image source={DownArrow} style={styles.arrow} />
+              </TouchableOpacity>
+
+
+              {openDropdown === "bed" && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView style={{ maxHeight: 160 }}>
+
+                    {!hasBeds ? (
+                      <View style={styles.emptyOption}>
+                        <Text style={styles.emptyText}>No bed available</Text>
+                      </View>
+                    ) : (
+                      filteredBeds.map((b) => (
+                        <TouchableOpacity
+                          key={b.bedId}
+                          style={styles.option}
+
+                          onPress={() => {
+                            setBedSelected(b);
+                            setOpenDropdown(null);
+                            setBedError("");
+
+
+                            if (!sameAsCurrent) {
+                              setAmount(String(b.rentAmount));
+                              setRentError("");
+                            }
+                          }}
+
+                        >
+                          <Text style={styles.optionText}>{b.bedName}</Text>
+                        </TouchableOpacity>
+                      ))
+                    )}
+
+                  </ScrollView>
+                </View>
+              )}
+
+            </View>
+            {bedError && (
+              <ErrorMessage message={bedError} type="error" />
             )}
 
-          </View>
-          {roomError && (
-            <ErrorMessage message={roomError} type="error" />
-          )}
-          <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
-
-          <View style={{ position: "relative" }}>
-            <TouchableOpacity
-              style={[
-                styles.select,
-                isBedDisabled && styles.disabledSelect
-              ]}
-              disabled={isBedDisabled}
-              onPress={() => setOpenDropdown("bed")}
-            >
-              <Text style={styles.selectText}>
-                {bedSelected ? bedSelected.bedName : "Select a Bed"}
+            <View style={styles.rentHeader}>
+              <Text style={styles.label}>
+                New Rent Amount <Text style={{ color: "red" }}>*</Text>
               </Text>
-              <Image source={DownArrow} style={styles.arrow} />
-            </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.sameRow}
+                onPress={() => {
+                  const val = !sameAsCurrent;
+                  setSameAsCurrent(val);
+
+                  if (val) {
+                    setAmount(rentAmount);
+                    setRentError("");
+                  } else {
+                    setAmount("");
+                  }
+                }}
+                activeOpacity={0.8}
+              >
+
+                <View style={[styles.checkbox, sameAsCurrent && styles.checkboxChecked]}>
+                  {sameAsCurrent && <Text style={styles.tick}>✓</Text>}
+                </View>
+                <Text style={styles.sameText}>Same as Current</Text>
+              </TouchableOpacity>
+            </View>
 
 
-            {openDropdown === "bed" && (
-              <View style={styles.dropdownMenu}>
-                <ScrollView style={{ maxHeight: 160 }}>
+            <View
+              style={[
+                styles.inputBox,
+                sameAsCurrent && styles.disabledInput,
+              ]}
+            >
+              <TextInput
+                placeholder="Enter Amount"
+                keyboardType="numeric"
+                value={amount}
 
-                  {!hasBeds ? (
-                    <View style={styles.emptyOption}>
-                      <Text style={styles.emptyText}>No bed available</Text>
-                    </View>
-                  ) : (
-                    filteredBeds.map((b) => (
-                      <TouchableOpacity
-                        key={b.bedId}
-                        style={styles.option}
+                onChangeText={(text) => {
+                  setAmount(text);
+                  setRentError("");
+                }}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }, 200);
+                }}
+                style={{ flex: 1, color: sameAsCurrent ? "#000" : "#000" }}
+              />
 
-                        onPress={() => {
-                          setBedSelected(b);
-                          setOpenDropdown(null);
-                          setBedError("");
+            </View>
 
-
-                          if (!sameAsCurrent) {
-                            setAmount(String(b.rentAmount));
-                            setRentError("");
-                          }
-                        }}
-
-                      >
-                        <Text style={styles.optionText}>{b.bedName}</Text>
-                      </TouchableOpacity>
-                    ))
-                  )}
-
-                </ScrollView>
-              </View>
+            {rentError && (
+              <ErrorMessage message={rentError} type="error" />
             )}
 
-          </View>
-          {bedError && (
-            <ErrorMessage message={bedError} type="error" />
-          )}
 
-          <View style={styles.rentHeader}>
-            <Text style={styles.label}>
-              New Rent Amount <Text style={{ color: "red" }}>*</Text>
-            </Text>
+            <Text style={styles.label}>Reason </Text>
+            <View style={styles.textArea}>
+              <TextInput
+                multiline
+                value={reason}
+                onChangeText={setReason}
+                placeholder="Enter Comments"
+                style={styles.textAreaInput}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }, 200);
+                }}
+              />
+            </View>
 
-            <TouchableOpacity
-              style={styles.sameRow}
-              onPress={() => {
-                const val = !sameAsCurrent;
-                setSameAsCurrent(val);
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
+                <Text>Cancel</Text>
+              </TouchableOpacity>
 
-                if (val) {
-                  setAmount(rentAmount);
-                  setRentError("");
-                } else {
-                  setAmount("");
-                }
-              }}
-              activeOpacity={0.8}
-            >
-
-              <View style={[styles.checkbox, sameAsCurrent && styles.checkboxChecked]}>
-                {sameAsCurrent && <Text style={styles.tick}>✓</Text>}
-              </View>
-              <Text style={styles.sameText}>Same as Current</Text>
-            </TouchableOpacity>
-          </View>
-
-
-          <View
-            style={[
-              styles.inputBox,
-              sameAsCurrent && styles.disabledInput,
-            ]}
-          >
-            <TextInput
-              placeholder="Enter Amount"
-              keyboardType="numeric"
-              value={amount}
-
-              onChangeText={(text) => {
-                setAmount(text);
-                setRentError("");
-              }}
-              style={{ flex: 1, color: sameAsCurrent ? "#000" : "#000" }}
-            />
-
-          </View>
-
-          {rentError && (
-            <ErrorMessage message={rentError} type="error" />
-          )}
-
-
-          <Text style={styles.label}>Reason </Text>
-          <View style={styles.textArea}>
-            <TextInput
-              multiline
-              value={reason}
-              onChangeText={setReason}
-              placeholder="Enter Comments"
-              style={styles.textAreaInput}
-            />
-          </View>
-
-          <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
-              <Text>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.reassignBtn} onPress={handleSubmit}>
-              <Text style={{ color: "#fff" }}>Re Assign</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+              <TouchableOpacity style={styles.reassignBtn} onPress={handleSubmit}>
+                <Text style={{ color: "#fff" }}>Change Bed</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Animated.View>
 
 
