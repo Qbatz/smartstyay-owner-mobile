@@ -5,7 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
+  Image,BackHandler 
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -75,6 +75,80 @@ const closeEditMonthlyRent = () => {
       alert(res.message);
     }
   };
+
+ 
+
+useEffect(() => {
+  const backAction = () => {
+
+    // ✅ 1) First close bottom sheets if open
+    if (showEdit) {
+      setShowEdit(false);
+      return true;
+    }
+
+    if (showEditSheet) {
+      setShowEditSheet(false);
+      return true;
+    }
+
+    if (showEditJoiningDate) {
+      setShowEditJoiningDate(false);
+      return true;
+    }
+
+    if (showEditRent) {
+      setShowEditRent(false);
+      return true;
+    }
+
+    if (showEditAdvance) {
+      setShowEditAdvance(false);
+      return true;
+    }
+
+    if (showAssignAmenities) {
+      setShowAssignAmenities(false);
+      return true;
+    }
+
+    // ✅ 2) Tab Back Order
+    if (activeTab === "Complaints") {
+      setActiveTab("Bill");
+      return true;
+    }
+
+    if (activeTab === "Bill") {
+      setActiveTab("EB Reading");
+      return true;
+    }
+
+    if (activeTab === "EB Reading") {
+      setActiveTab("Overview");
+      return true;
+    }
+
+    // ✅ 3) Overview வந்தா மட்டும் goBack()
+    navigation.goBack();
+    return true;
+  };
+
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => handler.remove();
+}, [
+  activeTab,
+  showEdit,
+  showEditSheet,
+  showEditJoiningDate,
+  showEditRent,
+  showEditAdvance,
+  showAssignAmenities,
+]);
+
   console.log("customre",customerDetails)
   const renderTab = () => {
     switch (activeTab) {

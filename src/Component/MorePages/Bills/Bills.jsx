@@ -219,7 +219,90 @@ useEffect(() => {
   }
 }, [activeHostelId]);
 
-  
+ useLayoutEffect(() => {
+  const backAction = () => {
+
+    // ✅ 1) First close all opened sheets / modals
+    if (showDetailModal) {
+      setShowDetailModal(false);
+      return true;
+    }
+
+    if (showFilter) {
+      setShowFilter(false);
+      return true;
+    }
+
+    if (showBillDetails) {
+      setShowBillDetails(false);
+      return true;
+    }
+
+    if (showReceiptDetails) {
+      setShowReceiptDetails(false);
+      return true;
+    }
+
+    if (showWriteOff) {
+      setShowWriteOff(false);
+      return true;
+    }
+
+    if (showRecordPayment) {
+      setShowRecordPayment(false);
+      return true;
+    }
+
+    if (showRefundPayment) {
+      setShowRefundPayment(false);
+      return true;
+    }
+
+    if (deleteTenants) {
+      setDeleteTenants(false);
+      return true;
+    }
+
+    if (showMenu) {
+      setShowMenu(false);
+      return true;
+    }
+
+    // ✅ 2) Tab navigation back order
+    if (activeTab === "Receipt") {
+      setActiveTab("RecurringBills");
+      return true;
+    }
+
+    if (activeTab === "RecurringBills") {
+      setActiveTab("All Bills");
+      return true;
+    }
+
+    // ✅ 3) Last → screen goBack
+    navigation.goBack();
+    return true;
+  };
+
+  const handler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => handler.remove();
+}, [
+  showDetailModal,
+  showFilter,
+  showBillDetails,
+  showReceiptDetails,
+  showWriteOff,
+  showRecordPayment,
+  showRefundPayment,
+  deleteTenants,
+  showMenu,
+  activeTab,
+]);
+ 
 
 const dotsRef = useRef(null);
 
@@ -2841,7 +2924,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingVertical:50
+    paddingVertical:60
   },
 searchContainer: {
   flexDirection: "row",

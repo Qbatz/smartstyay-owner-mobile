@@ -133,6 +133,54 @@ const activeHostel =
     }, [drawerVisible])
   );
 
+  useFocusEffect(
+  useCallback(() => {
+    const onBackPress = () => {
+
+      
+      if (drawerVisible) {
+        setDrawerVisible(false);
+        return true;
+      }
+
+      
+      if (activeTab === "Updates") {
+        setActiveTab("Announcement");
+        return true;
+      }
+
+      if (activeTab === "Announcement") {
+        setActiveTab("Dashboard");
+        return true;
+      }
+
+     
+      return false;
+    };
+
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => sub.remove();
+  }, [drawerVisible, activeTab])
+);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const onBackPress = () => {
+  //       if (navigation.canGoBack()) {
+  //         navigation.goBack();
+  //         return true;
+  //       }
+  //       return false;
+  //     };
+
+  //     const subscription = BackHandler.addEventListener(
+  //       "hardwareBackPress",
+  //       onBackPress
+  //     );
+
+  //     return () => subscription.remove();
+  //   }, [navigation])
+  // );
   const context=useContext(LoginContexts)
     const [tooltip, setTooltip] = useState(null);
     const { width } = Dimensions.get("window");
@@ -226,24 +274,7 @@ useEffect(() => {
 
 
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-          return true;
-        }
-        return false;
-      };
 
-      const subscription = BackHandler.addEventListener(
-        "hardwareBackPress",
-        onBackPress
-      );
-
-      return () => subscription.remove();
-    }, [navigation])
-  );
   const revenue = [300, 250, 400, 150, 450];
   const product = [400, 200, 350, 250, 300];
   const BarLabels = ({ x, y, bandwidth, revenueData, productData }) => (

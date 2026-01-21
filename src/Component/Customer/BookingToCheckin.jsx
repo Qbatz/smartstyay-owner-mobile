@@ -854,14 +854,22 @@ export default function BookingCheckIn({ navigation, route }) {
                             markingType="custom"
                             markedDates={joiningMarkedDates}
                             current={dayjs(joiningDate).format("YYYY-MM-DD")}
+                            // onDayPress={(day) => {
+                            //     const selected = dayjs(day.dateString);
+
+                            //     if (isDisabledJoiningDate(selected)) return;
+
+                            //     setJoiningDate(day.dateString);
+                            //     // setCheckJoinDateError("");
+                            // }}
                             onDayPress={(day) => {
-                                const selected = dayjs(day.dateString);
+    const selected = dayjs(day.dateString);
 
-                                if (isDisabledJoiningDate(selected)) return;
+    if (isDisabledJoiningDate(selected)) return;
 
-                                setJoiningDate(day.dateString);
-                                // setCheckJoinDateError("");
-                            }}
+    setJoiningDate(selected.toDate()); 
+    setOpenDatePicker(false);
+  }}
                             theme={{
                                 todayTextColor: "#2563EB",
                                 selectedDayBackgroundColor: "#2563EB",
