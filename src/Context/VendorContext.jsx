@@ -1,26 +1,12 @@
 import React, { createContext, useState } from "react";
 import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
-  import base64 from "react-native-base64";
 
 export const VendorContext = createContext();
 
 export default function VendorProvider({ children }) {
   const [vendorList, setVendorList] = useState([]);
   const [loading, setLoading] = useState(false);
-
-
-
-const convertToBase64File = (json) => {
-  const jsonString = JSON.stringify(json);
-  const encoded = base64.encode(jsonString);
-
-  return {
-    uri: `data:application/json;base64,${encoded}`,
-    type: "application/json",
-    name: "payload.json",
-  };
-};
 
 
   const getErrorMessage = (err) =>
@@ -60,15 +46,17 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
   try {
     const formData = new FormData();
 
-    formData.append("payloads", convertToBase64File(payLoads));
+    formData.append("payLoads", {
+      string: JSON.stringify(payLoads),
+      type: "application/json",
+      name: "blob",
+    });
 
     if (profilePic) {
       formData.append("profilePic", profilePic);
     }
 
-    const res = await AxiosConfig.post("/v2/vendors", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await AxiosConfig.post("/v2/vendors", formData);
 
     if (res.status === 200 || res.status === 201) {
       await getVendorList(hostelId);
@@ -89,16 +77,20 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
 
 
 
- 
- 
 
+ 
+ 
 const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
   setLoading(true);
 
   try {
     const formData = new FormData();
 
-    formData.append("payloads", convertToBase64File(updateVendor));
+    formData.append("updateVendor", {
+      string: JSON.stringify(updateVendor),
+      type: "application/json",
+      name: "blob",
+    });
 
     if (profilePic) {
       formData.append("profilePic", profilePic);
@@ -106,10 +98,7 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
 
     const res = await AxiosConfig.put(
       `/v2/vendors/${updateVendor.vendorId}`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      formData
     );
 
     if (res.status === 200) {
@@ -125,6 +114,7 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
     setLoading(false);
   }
 };
+
 
 
   const deleteVendor = async (vendorId, hostelId) => {
