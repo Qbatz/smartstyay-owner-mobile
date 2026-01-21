@@ -88,8 +88,7 @@ async function pickImage(setFunction) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F8F8FB" }}>
-      {/* ---------- FIXED HEADER ---------- */}
+    <View style={{ flex: 1, backgroundColor: "#F8F8FB", paddingTop:40 }}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={onBack}>
           <Image source={BackIcon} style={styles.backIcon} />
@@ -97,15 +96,12 @@ async function pickImage(setFunction) {
         <Text style={styles.headerTitle}>Global Bill Settings</Text>
       </View>
 
-      {/* ---------- SCROLL AREA ---------- */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}>
         
-        {/* Description */}
         <Text style={styles.description}>
           Add your basic billing details here. These will appear on all invoices.
         </Text>
 
-        {/* ---------- LOGO UPLOAD ---------- */}
         <Text style={styles.fieldTitle}>Hostel / PG Logo</Text>
         <Text style={styles.fieldSubtitle}>This will appear in Bill Template</Text>
 
@@ -118,7 +114,6 @@ async function pickImage(setFunction) {
   style={styles.uploadRow}
   onPress={() => pickImage(setUploadedLogo)}
 >
-  {/* LEFT SIDE TEXT + ICON */}
   <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
     <Image source={UploadIcon} style={styles.uploadIcon} />
     <View>
@@ -128,7 +123,6 @@ async function pickImage(setFunction) {
     </View>
   </View>
 
-  {/* RIGHT SIDE PREVIEW */}
   {uploadedLogo && (
     <Image
       source={{ uri: uploadedLogo }}
@@ -142,7 +136,6 @@ async function pickImage(setFunction) {
 
         
 
-        {/* ---------- CONTACT NUMBER ---------- */}
         <Text style={styles.fieldTitle}>Contact Number</Text>
 
         <View style={styles.checkboxRow}>
@@ -162,7 +155,6 @@ async function pickImage(setFunction) {
           />
         </View>
 
-        {/* ---------- EMAIL ---------- */}
         <Text style={styles.fieldTitle}>Email Address</Text>
 
         <View style={styles.checkboxRow}>
@@ -178,7 +170,6 @@ async function pickImage(setFunction) {
           onChangeText={setEmail}
         />
 
-        {/* ---------- SIGNATURE UPLOAD ---------- */}
         <Text style={styles.fieldTitle}>Digital Signature Upload</Text>
         <Text style={styles.fieldSubtitle}>Add a respected person's signature</Text>
 
@@ -187,7 +178,6 @@ async function pickImage(setFunction) {
           <Text style={styles.customizeText}>Customize in Specific Templates</Text>
         </View>
 
-        {/* Signature area */}
       <TouchableOpacity
   style={styles.signatureBox}
   onPress={() => pickImage(setSignatureImage)}
@@ -200,7 +190,6 @@ async function pickImage(setFunction) {
 </TouchableOpacity>
 
 
-        {/* Done / Clear Buttons */}
         <View style={styles.signatureActions}>
           <TouchableOpacity onPress={() => setSignatureImage(null)}>
             <Text style={styles.footerClear}>Clear</Text>
@@ -219,7 +208,6 @@ async function pickImage(setFunction) {
           </TouchableOpacity>
         </View>
 
-        {/* ---------- RESET / SAVE BUTTONS ---------- */}
         <View style={styles.bottomActionRow}>
           <TouchableOpacity onPress={handleReset}>
             <Text style={styles.resetBtn}>Reset</Text>
@@ -235,7 +223,6 @@ async function pickImage(setFunction) {
   );
 }
 
-/* ---------- CUSTOM CHECKBOX ---------- */
 const CustomCheckbox = ({ value, onChange }) => (
   <TouchableOpacity
     onPress={() => onChange(!value)}
@@ -245,7 +232,6 @@ const CustomCheckbox = ({ value, onChange }) => (
   </TouchableOpacity>
 );
 
-/* ---------- STYLES ---------- */
 const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
@@ -301,7 +287,6 @@ const styles = StyleSheet.create({
   height: 70,
   borderRadius: 10,
   resizeMode: "contain",
-  // backgroundColor: "#fff",
   marginLeft: 10,
 },
 

@@ -373,7 +373,7 @@ const openSheet = (edit = false, item = null) => {
           flex: 1,
           backgroundColor: showSheet ? "transparent" : "#FFFFFF",
           padding: 20,
-          paddingTop: 40,
+          paddingTop: 60,
         }}
       >
       

@@ -371,6 +371,7 @@ useEffect(() => {
               <Text style={{ marginTop: 12, fontSize: 16, color: "#777", fontFamily: "Gilroy-Medium" }}>
                 No Electricity Settings Found
               </Text>
+              
             </View>
           ) : (
             <View style={styles.card}>
@@ -504,7 +505,7 @@ useEffect(() => {
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F7FA", padding: 20, paddingTop: 30 },
+  container: { flex: 1, backgroundColor: "#F7F7FA", padding: 20, paddingTop: 60 },
 
   headerRow: {
     flexDirection: "row",

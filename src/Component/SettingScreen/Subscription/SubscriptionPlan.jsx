@@ -99,26 +99,14 @@ export default function SubscriptionPlans({navigation}) {
    
 
 
-        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", marginBottom:10,marginTop:30,marginLeft:10}}  onPress={() => navigation.goBack()}>
-          {/* <Text style={styles.backArrow}>←</Text> */}
+        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center",marginLeft:10, paddingTop:60}}  onPress={() => navigation.goBack()}>
           <Image source={Arrow} style={styles.backArrow}/>
           <Text style={styles.screenTitle}>Subscription plans</Text>
         </TouchableOpacity>
    <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 16 }}>
-       {/*
-        <View style={styles.expiredCard}>
-          <Image
-            source={SubscriptionPlan}
-            style={styles.expireImage}
-          />
-          <Text style={styles.expireTitle}>Your Trial got expired!</Text>
-          <Text style={styles.expireSubtitle}>
-            Your free trial has ended. Subscribe now to continue accessing all features.
-          </Text>
-        </View>*/}
+
  <View style={styles.card}>
 
-      {/* Header Row */}
       <View style={styles.rowBetween}>
         <Text style={styles.title}>Free Trial</Text>
 
@@ -131,7 +119,6 @@ export default function SubscriptionPlans({navigation}) {
         </View>
       </View>
 
-      {/* Description */}
       <Text style={styles.desc}>
         You are in 30 days Free Trial,
       </Text>
@@ -139,12 +126,10 @@ export default function SubscriptionPlans({navigation}) {
         Upgrade to continue unlimited access once your trial ends.
       </Text>
 
-      {/* Upgrade Button */}
       <TouchableOpacity style={styles.upgradeBtn}>
         <Text style={styles.upgradeText}>Upgrade to Premium</Text>
       </TouchableOpacity>
 
-      {/* Dates */}
       <View style={styles.dateRow}>
         <Image
           source={Calendar}
@@ -207,7 +192,6 @@ export default function SubscriptionPlans({navigation}) {
               activeOpacity={0.9}
               onPress={() => setSelectedPlan(item.id)}
             >
-              {/* {item.tag && <Text style={styles.tag}>Most Popular</Text>} */}
               {item.tag && (
   <LinearGradient
     colors={["#FFA73B", "#FF7A18"]}
@@ -220,7 +204,6 @@ export default function SubscriptionPlans({navigation}) {
 )}
 
 
-              {/* Plan Header */}
               <View style={styles.rowBetween}>
                 <Text style={styles.planName}>{item.name}</Text>
                 <Text style={styles.planPrice}>
@@ -230,7 +213,6 @@ export default function SubscriptionPlans({navigation}) {
 
               <Text style={styles.monthlyText}>Monthly</Text>
 
-              {/* Feature List */}
               <Text style={styles.includeTitle}>Which Includes</Text>
 
               {(expanded ? item.full : item.short).map((f, idx) => (
@@ -240,7 +222,6 @@ export default function SubscriptionPlans({navigation}) {
                 </View>
               ))}
 
-              {/* See More */}
               <TouchableOpacity
                 style={styles.seeMoreBtn}
                 onPress={() => handleExpand(item.id)}
@@ -252,7 +233,6 @@ export default function SubscriptionPlans({navigation}) {
         })}
       </ScrollView>
 
-      {/* Continue Button */}
    <TouchableOpacity
   disabled={!selectedPlan}
   style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
@@ -271,10 +251,9 @@ export default function SubscriptionPlans({navigation}) {
 
 const styles = StyleSheet.create({
   backArrow: {marginRight: 8,width:20,height:20 },
-  screenTitle: { fontSize: 20, fontWeight: "700" },
+  screenTitle: { fontSize: 20, fontWeight: "700" , paddingBottom:0},
 
   expiredCard: {
-    // backgroundColor: "#FFF8F2",
     borderRadius: 14,
     padding: 16,
     borderColor: "#FFD9C5",
@@ -290,7 +269,6 @@ const styles = StyleSheet.create({
 
   switchContainer: {
     flexDirection: "row",
-    // backgroundColor: "#E8EDFF",
     padding: 4,
     borderRadius: 20,
     justifyContent: "center",
@@ -363,26 +341,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#AAB4DD",
   },
   continueText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  //  card: {
-  //   backgroundColor: "#FFFFFF",
-  //   borderRadius: 14,
-  //   borderWidth: 1,
-  //   borderColor: "#E3E8FF",
-  //   padding: 16,
-  //   marginTop: 10,
-  // },
   card: {
   backgroundColor: "#FFFFFF",
   borderRadius: 14,
   borderWidth: 1,
   borderColor: "#E3E8FF",
   padding: 16,
-  marginTop: 30,   // IMPORTANT (space for badge)
+  marginTop: 5,   
   position: "relative",
 },
 popularTag: {
   position: "absolute",
-  top: -15,                 // ⬅️ border மேல வர விடும் magic line
+  top: -15,               
   alignSelf: "center",
   paddingHorizontal: 14,
   paddingVertical: 4,

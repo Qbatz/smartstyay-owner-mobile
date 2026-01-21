@@ -249,7 +249,7 @@ export default function AddTransaction({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop:30},
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop:50},
 
   topHeader: {
     flexDirection: "row",
@@ -339,8 +339,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  cancelBtn: {},
-  cancelText: { fontSize: 15, color: "#6B7280" },
+ cancelBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+  },
+
+  cancelText: {
+    color: "#6B7280",
+    fontSize: 15,
+  },
+
 
   saveBtn: {
     backgroundColor: "#2B6CF6",

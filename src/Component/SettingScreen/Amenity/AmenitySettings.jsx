@@ -940,7 +940,7 @@ const moveUpSelected = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 40, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
 
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   backIcon: { width: 20, height: 20, marginRight: 10 },

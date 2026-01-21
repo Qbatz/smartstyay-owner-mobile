@@ -228,7 +228,7 @@ const closeEditSheet = () => {
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F7FA", padding: 20 },
+  container: { flex: 1, backgroundColor: "#F7F7FA", padding: 20, paddingTop:60 },
 
   headerRow: {
     flexDirection: "row",

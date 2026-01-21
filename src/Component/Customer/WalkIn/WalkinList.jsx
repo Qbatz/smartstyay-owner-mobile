@@ -16,7 +16,7 @@ import PhoneIcon from "../../../Assets/Images/call.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
 import UserIcon from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
-import PlusIcon from "../../../Assets/Images/TenantAdd.png";
+import PlusIcon from "../../../Assets/Images/add-circle.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -257,9 +257,8 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
         )}
 
 
-
         <TouchableOpacity style={styles.filterBtn} onPress={handleWalkinFilter}>
-          <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
+          <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
         </TouchableOpacity>
 
 
@@ -268,7 +267,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
             refreshWalkins: walkinCustomers,
           })
         }>
-          <Image source={PlusIcon} style={{ width: 50, height: 50 }} />
+          <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
         </TouchableOpacity>
 
 
@@ -623,29 +622,31 @@ const styles = StyleSheet.create({
 
   date: { fontSize: 11, color: "#6B7280", marginTop: 4 },
 
-  filterBtn: {
+filterBtn: {
+  position: "absolute",
+  bottom: 110,
+  right: 20,
+  backgroundColor: "#fff",
+  padding: 12,
+  borderRadius: 30,
+  elevation: 5,
+},
+
+addBtn: {
     position: "absolute",
-    bottom: 80,
-    right: 22,
-    backgroundColor: "#fff",
-    padding: 7,
+    bottom: 50,
+    right: 20,
+    backgroundColor: "#00A32E",
+    width: 50,
+    height: 50,
     borderRadius: 30,
-    elevation: 5,
-
-  },
-
-  addBtn: {
-    width: 55,
-    height: 55,
-
-    borderRadius: 60,
-    position: "absolute",
-    right: 15,
-    bottom: 20,
-    alignItems: "center",
     justifyContent: "center",
-
+    alignItems: "center",
+    elevation: 5,
   },
+
+
+  plus: { fontSize: 30, color: "#fff", marginTop: -3 },
 
   overlay: {
     flex: 1,

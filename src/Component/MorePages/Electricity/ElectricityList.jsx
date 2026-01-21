@@ -7,7 +7,7 @@ import {
   TextInput,
   Image,
   ScrollView, Modal,
-  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler
+  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -41,14 +41,14 @@ export default function Electricity({ navigation }) {
 
    const { activeHostelId } = useContext(CommonContexts);
   const { EbRoomReading ,  hostelBased, EbTenantReading, hostelElectricityDetails,
-            loading,DeleteRoomReading,
+            loading,DeleteRoomReading, UpdateRoomReading,
             error, 
             errorMsg,
             GetEBRoomReading,
             GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading } = useContext(ElectricityContext);
 
             console.log("EbRoomReading" , EbRoomReading);
-            console.log("EbTenantReading" , EbTenantReading);
+            console.log("hostelElectricityDetails" , hostelElectricityDetails);
 
 const [activeTab, setActiveTab] = useState("Room Reading");
 
@@ -65,10 +65,10 @@ const [isEditMode, setIsEditMode] = useState(false);
 console.log("roomdata", roomData);
 
 
-const [apiError, setApiError] = useState("");
-const [showSuccess, setShowSuccess] = useState(false);
-const [modalType, setModalType] = useState("");
-const [message, setMessage] = useState("");
+      const [apiError, setApiError] = useState("");
+      const [showSuccess, setShowSuccess] = useState(false);
+      const [message, setMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
 
       const [openReadingDatePic, setOpenReadingDatePic] = useState(false);
       const [readingDate, setReadingDate] = useState(null);
@@ -165,9 +165,9 @@ const [message, setMessage] = useState("");
 
 useEffect(() => {
   if (hostelElectricityDetails?.hostelReadings?.length > 0) {
-    setCurrentReadingData(
-      hostelElectricityDetails.hostelReadings[0]
-    );
+    console.log("reading", hostelElectricityDetails);
+    
+    setCurrentReadingData(hostelElectricityDetails?.hostelReadings[0])
   }
 }, [hostelElectricityDetails]);
 
@@ -184,6 +184,31 @@ const [showAddSheet, setShowAddSheet] = useState(false);
 
 // ⭐ Animated value for swipe sheet
 // const translateX = useRef(new Animated.Value(500)).current;
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    const keyboardHeight = e.endCoordinates.height;
+    Animated.timing(translateY, {
+      toValue: -keyboardHeight + 40, // sheet top visible
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+
 
 // ⭐ Animate open
 const openSheet = () => {
@@ -203,6 +228,7 @@ const closeSheet = () => {
    setReadingError("")
    setApiError("")
    setReadingDateError("")
+   setIsEditMode(false)
 
   Animated.timing(translateY, {
     toValue: 500,
@@ -228,7 +254,8 @@ const panResponderdots = useRef(
   })
 ).current;
 
-const hasReading = !!hostelElectricityDetails?.hostelInfo?.lastReading;
+const hasReading = !!hostelElectricityDetails?.hostelReadings?.[0]?.lastReading;
+
 
 
 
@@ -304,30 +331,31 @@ const HostelHeaderCard = ({ data }) => {
       <Text style={styles.addText}>Add</Text>
     </TouchableOpacity>
 
-    <TouchableOpacity
-      ref={(ref) => (dotsRefs.current["room"] = ref)}
-      disabled={!hasReading}
-      onPress={() => {
-        if (!hasReading || !currentReadingData) return;
+<TouchableOpacity
+  ref={(ref) => (dotsRefs.current["room"] = ref)}
+  disabled={!hasReading}
+  onPress={() => {
+    if (!hasReading || !currentReadingData) return;
 
-        dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
-          setPopupPosition({ x: x + width, y: y + height });
-          setShowActionMenu(true);
-        });
-      }}
-      activeOpacity={hasReading ? 0.6 : 1}
-    >
-      <Image
-        source={Dots}
-        style={{
-          width: 24,
-          height: 24,
-          tintColor: hasReading ? "#1E45E1" : "#BDBDBD",
-          opacity: hasReading ? 1 : 0.4,
-          marginLeft: 12,
-        }}
-      />
-    </TouchableOpacity>
+    dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
+      setPopupPosition({ x: x + width, y: y + height });
+      setShowActionMenu(true);
+    });
+  }}
+  activeOpacity={hasReading ? 0.6 : 1}
+>
+  <Image
+    source={Dots}
+    style={{
+      width: 24,
+      height: 24,
+      tintColor: hasReading ? "#1E45E1" : "#BDBDBD",
+      opacity: hasReading ? 1 : 0.4,
+      marginLeft: 12,
+    }}
+  />
+</TouchableOpacity>
+
   </View>
 </View>
 
@@ -523,98 +551,135 @@ const formatApiMonth = (date) => {
 // };
 
 const handleSubmit = async () => {
+  setReadingError("");
+  setReadingDateError("");
+  setApiError("");
+
+  let hasError = false;
+
   if (!readingDate) {
-    setReadingDateError("Select reading date");
-    return;
+    setReadingDateError("Select Reading Date");
+    hasError = true;
   }
 
   if (!currentReading) {
-    setReadingError("Enter reading");
-    return;
+    setReadingError("Enter Reading");
+    hasError = true;
   }
 
-  // const payload = {
-  //   hostelId: activeHostelId,
-  //   reading: currentReading,
-  //   readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
-  //   ebId: isEditMode ? currentReadingData?.ebId : undefined,
-  // };
+  if (hasError) return;
 
-  const payload = {
-  hostelId: activeHostelId,
-  reading: currentReading,
-  entryDate: dayjs(readingDate).format("DD/MM/YYYY"),
-  readingId: isEditMode ? currentReadingData?.id : undefined,
-};
+  if (isEditMode && initialValues) {
+    const isReadingChanged =
+      Number(currentReading) !== Number(initialValues.reading);
 
+    const isDateChanged =
+      !dayjs(readingDate).isSame(initialValues.date, "day");
+
+    if (!isReadingChanged && !isDateChanged) {
+      setApiError("No changes detected");
+      return; 
+    }
+  }
+
+  const payload = isEditMode
+    ? {
+        hostelId: activeHostelId,
+        readingId: currentReadingData?.id,
+        reading: Number(currentReading),
+        entryDate: dayjs(readingDate).format("DD-MM-YYYY"),
+      }
+    : {
+        hostelId: activeHostelId,
+        reading: Number(currentReading),
+        readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+      };
+
+      console.log("payload", payload);
+      
 
   const res = isEditMode
     ? await UpdateRoomReading(payload)
     : await AddRoomReading(payload);
 
-  if (res.success) {
+  if (res?.success) {
     closeSheet();
     GetEBRoomReading(activeHostelId);
-    setShowSuccess(true);
+
+    setModalType("success");
     setMessage(isEditMode ? "Updated successfully" : "Added successfully");
+    setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 1200);
+
+    setIsEditMode(false);
+    setInitialValues(null);
   } else {
-    setApiError("Something went wrong");
+    setApiError(res?.message || "Something went wrong");
   }
 };
 
 
-const handleEditRoomReading = (data) => {
-  setIsEditMode(true);
-  setCurrentReading(data?.currentReading?.toString() || "");
-  // setReadingDate(data?.readingDate);
-  setReadingDate(
-  dayjs(data?.entryDate, "DD/MM/YYYY")
-);
 
-  setCurrentReadingData(data)
+
+
+
+const handleEditRoomReading = (data) => {
+  const parsedDate = dayjs(data?.entryDate, "DD/MM/YYYY");
+
+  console.log("date", data);
+  
+
+  setIsEditMode(true);
+  setCurrentReading(String(data?.lastReading || ""));
+  setReadingDate(parsedDate);
+
+  // ⭐ VERY IMPORTANT (baseline)
+  setInitialValues({
+    reading: Number(data?.lastReading || 0),
+    date: parsedDate,
+  });
+
+  setCurrentReadingData(data);
   openSheet();
 };
+
+console.log("readingdate", currentReadingData);
+
+
 
 
 
 const handleDeleteRoomReading = (data) => {
-
-  console.log("data", data);
-  
-  if (!data || !data.readingId) {
-    console.log("Invalid delete data", data);
-    return;
-  }
-
+  if (!data?.id) return;
   setDeleteData(data);
   setShowDeleteModal(true);
   setShowActionMenu(false);
 };
 
 
-
 const handleConfirmReadingDelete = async () => {
-   const res = await DeleteRoomReading({
+  const res = await DeleteRoomReading({
     hostelId: activeHostelId,
-    readingId: deleteData?.readingId,
+    readingId: deleteData?.id,
   });
 
-  if (res.success) {
+  if (res?.success) {
     setShowDeleteModal(false);
     GetEBRoomReading(activeHostelId);
-
+    setModalType("success");
     setMessage("Deleted successfully");
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 1200);
-  }
-    else{
+  } else {
       setModalType("warning");
       setMessage("something went wrong");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 1200);
-    }
   }
+};
+
+
+
 
 //   const handleConfirmReadingDelete = async () => {
 //   const res = await DeleteRoomReading({
@@ -641,6 +706,7 @@ console.log("hostelBased", hostelBased);
 
     <>
     { loading && <Loader />}
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.container}>
 
       {/* HEADER */}
@@ -689,11 +755,12 @@ console.log("hostelBased", hostelBased);
       </View>
 
    {activeTab === "Hostel Reading" && hostelBased && (
+      hostelElectricityDetails?.hostelReadings?.length > 0 ? (
   <ScrollView  showsVerticalScrollIndicator={false}
     contentContainerStyle={{
     flexGrow: 1,
-    justifyContent:
-      !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
+    // justifyContent:
+    //   !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
   }}>
 
     <HostelHeaderCard data={{}} />
@@ -712,7 +779,8 @@ console.log("hostelBased", hostelBased);
                 <Text style={styles.floorText}>{item.floorName}</Text>
               </View>
               <View style={{display:'flex', flexDirection:'row'}}>
-                <Image source={ProfileIcon} style={styles.peopleIcon} /> <Text style={styles.peopleText}>{item.noOfTenants}</Text>
+                <Image source={ProfileIcon} style={styles.peopleIcon} /> 
+                <Text style={styles.peopleText}>{item.noOfTenants}</Text>
                 </View>
             </View>
           </View>
@@ -726,8 +794,29 @@ console.log("hostelBased", hostelBased);
         </View>
       </View>
     ))}
-  </ScrollView>
+  </ScrollView> ):
+
+  (
+    /* ✅ EMPTY STATE */
+    <View style={styles.centerContainer}>
+      <Image source={EmptyState} style={styles.image} />
+      <Text style={styles.noFloorText}>
+        No Electricity Readings Found
+      </Text>
+          <TouchableOpacity style={{  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#EEF2FF",
+  paddingHorizontal: 13,
+  paddingVertical: 9,
+  borderRadius: 8,
+  marginTop:10}} onPress={openSheet}>
+      <Image source={Add} style={styles.AddPeple} />
+      <Text style={styles.addText}>Add Reading</Text>
+    </TouchableOpacity>
+    </View>
+  )
 )}
+
 
 
 
@@ -961,7 +1050,8 @@ console.log("hostelBased", hostelBased);
   <TextInput
     style={styles.dateInput}
     placeholder="DD-MM-YYYY"
-    value={readingDate ? dayjs(readingDate).format("DD-MM-YYYY") : ""}
+    // value={readingDate ? dayjs(readingDate).format("DD-MM-YYYY") : ""}
+    value={readingDate ? readingDate.format("DD-MM-YYYY") : ""}
     editable={false}
     pointerEvents="none"
   />
@@ -994,15 +1084,17 @@ console.log("hostelBased", hostelBased);
       <Calendar
         markingType="custom"
         markedDates={readingMarkedDates}
+       
+
         current={
-          readingDate
-            ? dayjs(readingDate).format("YYYY-MM-DD")
-            : dayjs().format("YYYY-MM-DD")
-        }
+  readingDate
+    ? readingDate.format("YYYY-MM-DD")
+    : dayjs().format("YYYY-MM-DD")
+}
+
         onDayPress={(day) => {
           if (readingMarkedDates[day.dateString]?.disabled) return;
-
-          setReadingDate(day.dateString);
+          setReadingDate(dayjs(day.dateString, "YYYY-MM-DD")); 
           setOpenReadingDatePic(false);
           setReadingDateError("");
           setApiError("");
@@ -1026,7 +1118,7 @@ console.log("hostelBased", hostelBased);
   <Text style={styles.sheetLabel}>Current Reading <Text style={{ color: "red" }}>*</Text></Text>
 
   <TouchableOpacity>
-    <Text style={styles.lastReading}>Last Reading : {roomData?.currentReading} </Text>
+    <Text style={styles.lastReading}>Last Reading :{currentReadingData?.lastReading ?? "--"}</Text>
   </TouchableOpacity>
 </View>
 
