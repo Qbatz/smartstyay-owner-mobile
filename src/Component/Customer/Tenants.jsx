@@ -24,7 +24,7 @@ import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
 import MoveNoticeSheet from '../Customer/MoveToNoticePeriod';
-import ReassignBedModal from '../Customer/ReAssignBed';
+import ReassignBedSheet from '../Customer/ReAssignBed';
 import CheckoutList from '../Customer/Checkout/CheckoutList';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -251,9 +251,28 @@ console.log("selectedCustomer",selectedCustomer)
 
 
 
+  // useLayoutEffect(() => {
+  //   setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice && !showInactiveSheet,!showReAssignbed);
+  // }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet,showReAssignbed]);
+
   useLayoutEffect(() => {
-    setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice && !showInactiveSheet);
-  }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
+  setShowTabBar(
+    !showDetailModal &&
+    !showFilter &&
+    !showCheckout &&
+    !showNotice &&
+    !showInactiveSheet &&
+    !showReAssignbed
+  );
+}, [
+  showDetailModal,
+  showFilter,
+  showCheckout,
+  showNotice,
+  showInactiveSheet,
+  showReAssignbed
+]);
+
 
 useLayoutEffect(() => {
   const backAction = () => {
@@ -266,6 +285,11 @@ useLayoutEffect(() => {
 
     if (showInactiveSheet) {
       setShowInactiveSheet(false);
+      return true;
+    }
+
+    if (showReAssignbed) {
+      setShowReAssignBed(false);
       return true;
     }
 
@@ -311,7 +335,7 @@ useLayoutEffect(() => {
   showFilter,
   showCheckout,
   showNotice,
-  activeTab,
+  activeTab,showReAssignbed
 ]);
 
 
@@ -380,6 +404,17 @@ useLayoutEffect(() => {
    setShowDetailsMenu(false)
     setMenuVisible(false)
     navigation.navigate("FinalSettlement", {
+      selectedItem: selectedItem
+      // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+    });
+  }
+
+
+   const handleShowFinalNew = () => {
+     setShowDetailModal(false)
+   setShowDetailsMenu(false)
+    setMenuVisible(false)
+    navigation.navigate("FinalSettlementScreen", {
       selectedItem: selectedItem
       // selectedBed?.currentTenantInfo?.[0]?.tenetId,
     });
@@ -914,7 +949,13 @@ const handleShowFinalSettlementNotice = (item)=>{
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Final Settlement</Text>
               </TouchableOpacity>
-
+ <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleShowFinalNew}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Generate New</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowCancelNotice}
@@ -1020,6 +1061,13 @@ const handleShowFinalSettlementNotice = (item)=>{
                           />
                           <Text style={styles.popupText}>Final Settlemnent</Text>
                         </TouchableOpacity>
+                         <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleShowFinalNew}
+              >
+                <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Generate New</Text>
+              </TouchableOpacity>
 
                         <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
                           <Image
@@ -1396,7 +1444,7 @@ const handleShowFinalSettlementNotice = (item)=>{
       </SafeAreaView>
       {
         showReAssignbed &&
-        <ReassignBedModal visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
+        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
 
       }
       <InactiveTenantSheet

@@ -433,9 +433,14 @@ export default function BookingCheckIn({ navigation, route }) {
         <>
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.safe}>
-              <KeyboardAvoidingView
+              {/* <KeyboardAvoidingView
   style={{ flex: 1 }}
   behavior={Platform.OS === "ios" ? "padding" : undefined}
+> */}
+<KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
 >
                     <View style={styles.header}>
                         <TouchableOpacity
@@ -477,12 +482,21 @@ export default function BookingCheckIn({ navigation, route }) {
                         </TouchableOpacity>
                     </View>
 
-                 <ScrollView
+                 {/* <ScrollView
   style={styles.container}
   keyboardShouldPersistTaps="handled"
   showsVerticalScrollIndicator={false}
   contentContainerStyle={{
     paddingBottom: 60,  
+  }}
+> */}
+<ScrollView
+  style={styles.container}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: 80, // ✅ button row height + extra space
   }}
 >
 
@@ -1014,17 +1028,16 @@ const styles = StyleSheet.create({
 
     addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
-    BtnRow: {
-        // flexDirection: "row",
-        // width: "99%",
-        // marginTop: 18,
-        // gap: 10,
-         flexDirection: "row",
+  BtnRow: {
+  flexDirection: "row",
   gap: 10,
   padding: 16,
   backgroundColor: "#fff",
-}
-    ,
+
+
+},
+
+    
 
     CancelBtn: {
         flex: 1,
@@ -1108,12 +1121,14 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
     },
     datePickerBox: {
-        backgroundColor: "#fff",
-        width: "80%",
-
-        borderRadius: 20,
-        padding: 10,
-        marginBottom: 190
+         position: "absolute",
+    left: "10%",
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 10,
+    bottom:90
     },
 
     nonRefund: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard,TouchableWithoutFeedback } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from "react-native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { launchImageLibrary } from 'react-native-image-picker';
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
@@ -150,29 +150,29 @@ export default function AddGeneralScreen({ navigation, route }) {
       setSelectedImage(editData.profilePic ? { uri: editData.profilePic } : null);
     }
   }, [editData]);
-  
-  const strongPasswordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const strongPasswordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
   const handleSubmit = async () => {
     let newErrors = {};
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
     if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
-   if (!email.trim()) {
-  newErrors.email = "Please Enter Email ID";
-} else if (!emailRegex.test(email.trim())) {
-  newErrors.email = "Please Enter Valid Email ID";
-}
+    if (!email.trim()) {
+      newErrors.email = "Please Enter Email ID";
+    } else if (!emailRegex.test(email.trim())) {
+      newErrors.email = "Please Enter Valid Email ID";
+    }
     if (!password.trim()) {
-  newErrors.password = "Please Enter Password";
-}
- else if (!strongPasswordRegex.test(password)) {
-  newErrors.password =
-    "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character";
-}
+      newErrors.password = "Please Enter Password";
+    }
+    else if (!strongPasswordRegex.test(password)) {
+      newErrors.password =
+        "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character";
+    }
 
     if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     if (!city.trim()) newErrors.city = "Please Enter City";
@@ -361,37 +361,37 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     }
 
     setErrors({});
-     const payloadForApi = {
-    firstName,
-    lastName,
-    mobile,
-    mailId: email,
-    houseNo: flat,
-    street,
-    landmark,
-    city,
-    pincode: Number(pincode),
-    state: selectedState
-  };
+    const payloadForApi = {
+      firstName,
+      lastName,
+      mobile,
+      mailId: email,
+      houseNo: flat,
+      street,
+      landmark,
+      city,
+      pincode: Number(pincode),
+      state: selectedState
+    };
 
-  const formData = new FormData();
-  const jsonBase64 = btoa(JSON.stringify(payloadForApi));
-console.log("payloadForApi",payloadForApi)
-  formData.append("payload", {
-    uri: "data:application/json;base64," + jsonBase64,
-    type: "application/json",
-    name: "payload.json",
-  });
-
-  if (selectedImage?.uri) {
-    formData.append("profilePic", {
-      uri: selectedImage.uri,
-      name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
-      type: selectedImage.type || "image/jpeg",
+    const formData = new FormData();
+    const jsonBase64 = btoa(JSON.stringify(payloadForApi));
+    console.log("payloadForApi", payloadForApi)
+    formData.append("payload", {
+      uri: "data:application/json;base64," + jsonBase64,
+      type: "application/json",
+      name: "payload.json",
     });
-  }
 
-  
+    if (selectedImage?.uri) {
+      formData.append("profilePic", {
+        uri: selectedImage.uri,
+        name: selectedImage.fileName || `photo_${Date.now()}.jpg`,
+        type: selectedImage.type || "image/jpeg",
+      });
+    }
+
+
 
     const res = await updateGeneral(editData.userId, formData);
 
@@ -541,52 +541,52 @@ console.log("payloadForApi",payloadForApi)
     { label: "West Bengal", value: "West Bengal" },
   ];
 
-  const [stateQuery, setStateQuery] = useState(""); 
+  const [stateQuery, setStateQuery] = useState("");
 
 
 
-         const [selectedState, setSelectedState] = useState(""); // final value
-           
-            const stateList = [
-                { label: "Andhra Pradesh", value: "Andhra Pradesh" },
-                { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
-                { label: "Assam", value: "Assam" },
-                { label: "Bihar", value: "Bihar" },
-                { label: "Chhattisgarh", value: "Chhattisgarh" },
-                { label: "Goa", value: "Goa" },
-                { label: "Gujarat", value: "Gujarat" },
-                { label: "Haryana", value: "Haryana" },
-                { label: "Himachal Pradesh", value: "Himachal Pradesh" },
-                { label: "Jharkhand", value: "Jharkhand" },
-                { label: "Karnataka", value: "Karnataka" },
-                { label: "Kerala", value: "Kerala" },
-                { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-                { label: "Maharashtra", value: "Maharashtra" },
-                { label: "Manipur", value: "Manipur" },
-                { label: "Meghalaya", value: "Meghalaya" },
-                { label: "Mizoram", value: "Mizoram" },
-                { label: "Nagaland", value: "Nagaland" },
-                { label: "Odisha", value: "Odisha" },
-                { label: "Punjab", value: "Punjab" },
-                { label: "Rajasthan", value: "Rajasthan" },
-                { label: "Sikkim", value: "Sikkim" },
-                { label: "Tamil Nadu", value: "Tamil Nadu" },
-                { label: "Telangana", value: "Telangana" },
-                { label: "Tripura", value: "Tripura" },
-                { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-                { label: "Uttarakhand", value: "Uttarakhand" },
-                { label: "West Bengal", value: "West Bengal" },
-            ];
+  const [selectedState, setSelectedState] = useState(""); // final value
 
-               const filteredStateList = stateList
-        .filter((s) =>
-            s.label.toLowerCase().includes(stateQuery.toLowerCase())
-        )
-        .sort((a, b) => {
-            const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
-            const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
-            return bStart - aStart;
-        });
+  const stateList = [
+    { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+    { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+    { label: "Assam", value: "Assam" },
+    { label: "Bihar", value: "Bihar" },
+    { label: "Chhattisgarh", value: "Chhattisgarh" },
+    { label: "Goa", value: "Goa" },
+    { label: "Gujarat", value: "Gujarat" },
+    { label: "Haryana", value: "Haryana" },
+    { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+    { label: "Jharkhand", value: "Jharkhand" },
+    { label: "Karnataka", value: "Karnataka" },
+    { label: "Kerala", value: "Kerala" },
+    { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+    { label: "Maharashtra", value: "Maharashtra" },
+    { label: "Manipur", value: "Manipur" },
+    { label: "Meghalaya", value: "Meghalaya" },
+    { label: "Mizoram", value: "Mizoram" },
+    { label: "Nagaland", value: "Nagaland" },
+    { label: "Odisha", value: "Odisha" },
+    { label: "Punjab", value: "Punjab" },
+    { label: "Rajasthan", value: "Rajasthan" },
+    { label: "Sikkim", value: "Sikkim" },
+    { label: "Tamil Nadu", value: "Tamil Nadu" },
+    { label: "Telangana", value: "Telangana" },
+    { label: "Tripura", value: "Tripura" },
+    { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+    { label: "Uttarakhand", value: "Uttarakhand" },
+    { label: "West Bengal", value: "West Bengal" },
+  ];
+
+  const filteredStateList = stateList
+    .filter((s) =>
+      s.label.toLowerCase().includes(stateQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+      const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+      return bStart - aStart;
+    });
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardOpen(true));
@@ -606,57 +606,57 @@ console.log("payloadForApi",payloadForApi)
         type={modalType}
       />
 
-       <View style={styles.mainContainer}>
+      <View style={styles.mainContainer}>
 
-      {/* ✅ FIXED HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={LeftArrow} style={styles.backIcon} />
-        </TouchableOpacity>
+        {/* ✅ FIXED HEADER */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={LeftArrow} style={styles.backIcon} />
+          </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
-          {editData ? "Edit General" : "Add General"}
-        </Text>
-      </View>
-
-      {/* ✅ FIXED PROFILE SECTION */}
-      <TouchableOpacity
-        style={styles.profileSection}
-        onPress={pickImage}
-        activeOpacity={0.8}
-      >
-        <View style={styles.profileCircle}>
-          <Image
-            source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
-            style={styles.profileImg}
-          />
-
-          {!selectedImage && (
-            <View style={styles.addBadge}>
-              <Image source={plusIcon} style={{ width: 16, height: 16 }} />
-            </View>
-          )}
-
-          {selectedImage && (
-            <View style={styles.centerEditBadge}>
-              <Image source={Edit} style={{ width: 20, height: 20 }} />
-            </View>
-          )}
-        </View>
-
-        <View style={{ marginLeft: 16 }}>
-          <Text style={styles.profileLabel}>Profile Photo</Text>
-          <Text style={styles.profileSub}>
-            Add Profile Image of Vendor/Business.{"\n"}Max size of image 2 MB
+          <Text style={styles.headerTitle}>
+            {editData ? "Edit General" : "Add General"}
           </Text>
         </View>
-      </TouchableOpacity>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        {/* <ScrollView
+        {/* ✅ FIXED PROFILE SECTION */}
+        <TouchableOpacity
+          style={styles.profileSection}
+          onPress={pickImage}
+          activeOpacity={0.8}
+        >
+          <View style={styles.profileCircle}>
+            <Image
+              source={selectedImage ? { uri: selectedImage.uri } : ProfilePlaceholder}
+              style={styles.profileImg}
+            />
+
+            {!selectedImage && (
+              <View style={styles.addBadge}>
+                <Image source={plusIcon} style={{ width: 16, height: 16 }} />
+              </View>
+            )}
+
+            {selectedImage && (
+              <View style={styles.centerEditBadge}>
+                <Image source={Edit} style={{ width: 20, height: 20 }} />
+              </View>
+            )}
+          </View>
+
+          <View style={{ marginLeft: 16 }}>
+            <Text style={styles.profileLabel}>Profile Photo</Text>
+            <Text style={styles.profileSub}>
+              Add Profile Image of Vendor/Business.{"\n"}Max size of image 2 MB
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          {/* <ScrollView
           style={styles.formContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -664,176 +664,176 @@ console.log("payloadForApi",payloadForApi)
           contentContainerStyle={{ paddingBottom: 50 }}
         > */}
 
-{/* <ScrollView
+          {/* <ScrollView
   style={styles.formContainer}
   showsVerticalScrollIndicator={false}
   keyboardShouldPersistTaps="always"
   contentContainerStyle={{ paddingBottom: 250 }}
 > */}
-<ScrollView
-  style={styles.formContainer}
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="always"
-  contentContainerStyle={{ paddingBottom: 20 }}
->
-
-
-          
+          <ScrollView
+            style={styles.formContainer}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
 
 
 
 
-          <Text style={styles.label}>First Name  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Enter First name" value={firstName}
-            // onChangeText={(t) => {
-            //   setFirstName(t);
-            //   setErrors({ ...errors, firstName: "" });
-            // }} 
-             onChangeText={(t) => {
-    // ✅ Only letters + space allowed
-    const cleaned = t.replace(/[^A-Za-z\s]/g, "");
 
-    setFirstName(cleaned);
-    setErrors({ ...errors, firstName: "" });
-  }}
-            />
-        
-          {errors.firstName && (
-                                    <ErrorMessage message={errors.firstName} type="error" />
-                                )}
 
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput style={styles.input} placeholder="Enter last Name" value={lastName} 
-            onChangeText={(t) => {
-  const cleaned = t.replace(/[^A-Za-z\s]/g, "");
-  setLastName(cleaned);
-}}
+
+            <Text style={styles.label}>First Name  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="Enter First name" value={firstName}
+              // onChangeText={(t) => {
+              //   setFirstName(t);
+              //   setErrors({ ...errors, firstName: "" });
+              // }} 
+              onChangeText={(t) => {
+                // ✅ Only letters + space allowed
+                const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+
+                setFirstName(cleaned);
+                setErrors({ ...errors, firstName: "" });
+              }}
             />
 
-          <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" value={mobile}
-            onChangeText={(t) => {
-              const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
-              setMobile(cleaned);
-              setErrors({ ...errors, mobile: "" });
-              setPhoneError("")
-            }} />
-          {/* {errors.mobile && (
+            {errors.firstName && (
+              <ErrorMessage message={errors.firstName} type="error" />
+            )}
+
+            <Text style={styles.label}>Last Name</Text>
+            <TextInput style={styles.input} placeholder="Enter last Name" value={lastName}
+              onChangeText={(t) => {
+                const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+                setLastName(cleaned);
+              }}
+            />
+
+            <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" value={mobile}
+              onChangeText={(t) => {
+                const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+                setMobile(cleaned);
+                setErrors({ ...errors, mobile: "" });
+                setPhoneError("")
+              }} />
+            {/* {errors.mobile && (
             <Text style={styles.errText}>{errors.mobile}</Text>
           )} */}
-          
-          {errors.mobile && (
-                                    <ErrorMessage message={errors.mobile} type="error" />
-                                )}
-          {/* {phoneError !== "" && (
+
+            {errors.mobile && (
+              <ErrorMessage message={errors.mobile} type="error" />
+            )}
+            {/* {phoneError !== "" && (
             <Text style={styles.errText}>{phoneError}</Text>
           )} */}
-           {phoneError !== "" &&  (
-                                    <ErrorMessage message={phoneError} type="error" />
-                                )}
+            {phoneError !== "" && (
+              <ErrorMessage message={phoneError} type="error" />
+            )}
 
-          <Text style={styles.label}>Email ID  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Enter Email" value={email}
-            // onChangeText={(t) => {
-            //   setEmail(t);
-            //   setErrors({ ...errors, email: "" });
-            //   setEmailError("");
-            // }}
-            onChangeText={(t) => {
-  const cleaned = t
-    .replace(/\s/g, "")                 // ✅ space remove
-    .replace(/[^a-zA-Z0-9@._-]/g, "");  // ✅ valid email chars மட்டும்
+            <Text style={styles.label}>Email ID  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="Enter Email" value={email}
+              // onChangeText={(t) => {
+              //   setEmail(t);
+              //   setErrors({ ...errors, email: "" });
+              //   setEmailError("");
+              // }}
+              onChangeText={(t) => {
+                const cleaned = t
+                  .replace(/\s/g, "")                 // ✅ space remove
+                  .replace(/[^a-zA-Z0-9@._-]/g, "");  // ✅ valid email chars மட்டும்
 
-  setEmail(cleaned);
-  setErrors({ ...errors, email: "" });
-  setEmailError("");
-}}
-          />
-          {/* {emailError !== "" && (
+                setEmail(cleaned);
+                setErrors({ ...errors, email: "" });
+                setEmailError("");
+              }}
+            />
+            {/* {emailError !== "" && (
             <Text style={styles.errText}>{emailError}</Text>
           )} */}
-            {emailError !== "" &&  (
-                                    <ErrorMessage message={emailError} type="error" />
-                                )}
-          {/* {errors.email && (
+            {emailError !== "" && (
+              <ErrorMessage message={emailError} type="error" />
+            )}
+            {/* {errors.email && (
             <Text style={styles.errText}>{errors.email}</Text>
           )} */}
             {errors.email && (
-                                    <ErrorMessage message={errors.email} type="error" />
-                                )}
-          {!editData && (
-            <>
-              <Text style={styles.label}>Password  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+              <ErrorMessage message={errors.email} type="error" />
+            )}
+            {!editData && (
+              <>
+                <Text style={styles.label}>Password  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
 
-              <View style={styles.passwordWrapper}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="Enter Password"
-                  secureTextEntry={!showPassword}   // 👁 show / hide logic
-                  value={password}
-                  onChangeText={(t) => {
-                    setPassword(t);
-                    setErrors({ ...errors, password: "" });
-                  }}
-                />
-
-                <TouchableOpacity
-                  style={styles.eyeIconBox}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Image
-                    source={showPassword ? Eye : EyeClose}
-                    style={styles.eyeIcon}
+                <View style={styles.passwordWrapper}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Enter Password"
+                    secureTextEntry={!showPassword}   // 👁 show / hide logic
+                    value={password}
+                    onChangeText={(t) => {
+                      setPassword(t);
+                      setErrors({ ...errors, password: "" });
+                    }}
                   />
-                </TouchableOpacity>
-              </View>
 
-              {errors.password && (
-                                    <ErrorMessage message={errors.password} type="error" />
-                                )}
-            </>
-          )}
-          <Text style={styles.label}>Flat, House no, Building...</Text>
-          <TextInput style={styles.input} placeholder="Enter House No" value={flat}
-            onChangeText={setFlat} />
+                  <TouchableOpacity
+                    style={styles.eyeIconBox}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Image
+                      source={showPassword ? Eye : EyeClose}
+                      style={styles.eyeIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-          <Text style={styles.label}>Area, Street, Sector...</Text>
-          <TextInput style={styles.input} placeholder="Enter Street" value={street}
-            onChangeText={setStreet} />
+                {errors.password && (
+                  <ErrorMessage message={errors.password} type="error" />
+                )}
+              </>
+            )}
+            <Text style={styles.label}>Flat, House no, Building...</Text>
+            <TextInput style={styles.input} placeholder="Enter House No" value={flat}
+              onChangeText={setFlat} />
 
-          <Text style={styles.label}>Landmark</Text>
-          <TextInput style={styles.input} placeholder="Eg: Near SBI" value={landmark}
-            onChangeText={setLandmark} />
+            <Text style={styles.label}>Area, Street, Sector...</Text>
+            <TextInput style={styles.input} placeholder="Enter Street" value={street}
+              onChangeText={setStreet} />
 
-          <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
-             onChangeText={(t) => {
-    
-    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 6);
-    setPincode(cleaned);
-    setErrors({ ...errors, pincode: "" });
-  }} />
-          {/* {errors.pincode && (
+            <Text style={styles.label}>Landmark</Text>
+            <TextInput style={styles.input} placeholder="Eg: Near SBI" value={landmark}
+              onChangeText={setLandmark} />
+
+            <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
+              onChangeText={(t) => {
+
+                const cleaned = t.replace(/[^0-9]/g, "").slice(0, 6);
+                setPincode(cleaned);
+                setErrors({ ...errors, pincode: "" });
+              }} />
+            {/* {errors.pincode && (
             <Text style={styles.errText}>{errors.pincode}</Text>
           )} */}
-           {errors.pincode && (
-                                    <ErrorMessage message={errors.pincode} type="error" />
-                                )}
+            {errors.pincode && (
+              <ErrorMessage message={errors.pincode} type="error" />
+            )}
 
-          <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Enter City" value={city}
-            onChangeText={(t) => {
-              setCity(t);
-              setErrors({ ...errors, city: "" });
-            }} />
-          {/* {errors.city && (
+            <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="Enter City" value={city}
+              onChangeText={(t) => {
+                setCity(t);
+                setErrors({ ...errors, city: "" });
+              }} />
+            {/* {errors.city && (
             <Text style={styles.errText}>{errors.city}</Text>
           )} */}
-  {errors.city && (
-                                    <ErrorMessage message={errors.city} type="error" />
-                                )}
+            {errors.city && (
+              <ErrorMessage message={errors.city} type="error" />
+            )}
 
-          {/* <Text style={styles.label}>State  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            {/* <Text style={styles.label}>State  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -875,118 +875,118 @@ console.log("payloadForApi",payloadForApi)
 
 
 
-          <Text style={styles.label}>State</Text>
-          
-                                                  <View style={{ position: "relative" }}>
-                                                      <TextInput
-                                                          style={styles.select}
-                                                          placeholder="Select state"
-                                                          placeholderTextColor="#9CA3AF"
-                                                         value={stateOpen ? stateQuery : selectedState}
-          
-                                                          onFocus={() => {
-                                                              setStateOpen(true);
-                                                              setStateQuery("");   // 🔥 cursor focus panna fresh search
-                                                          }}
-                                                          onChangeText={(t) => {
-                                                              setStateQuery(t);    // 🔥 typing always search
-                                                              setStateOpen(true);
-                                                          }}
-                                                      />
-          <TouchableOpacity
-  style={styles.arrowTouchable}
-  activeOpacity={0.7}
-  onPress={() => {
-    setStateOpen(!stateOpen);
+            <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
 
-    
-    if (stateOpen) setStateQuery("");
-  }}
->
-  <Image source={DownArrow} style={styles.arrowIcon} />
-</TouchableOpacity>
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={styles.select}
+                placeholder="Select state"
+                placeholderTextColor="#9CA3AF"
+                value={stateOpen ? stateQuery : selectedState}
 
-          
-                                                      {/* <Image source={DownArrow} style={styles.arrowIcon} /> */}
-          
-                                                    {stateOpen && (
-                                                     <>
-                                                     <TouchableWithoutFeedback
+                onFocus={() => {
+                  setStateOpen(true);
+                  setStateQuery("");   // 🔥 cursor focus panna fresh search
+                }}
+                onChangeText={(t) => {
+                  setStateQuery(t);    // 🔥 typing always search
+                  setStateOpen(true);
+                }}
+              />
+              <TouchableOpacity
+                style={styles.arrowTouchable}
+                activeOpacity={0.7}
                 onPress={() => {
-                  setStateOpen(false);
-                  setStateQuery("");
+                  setStateOpen(!stateOpen);
+
+
+                  if (stateOpen) setStateQuery("");
                 }}
               >
-                <View style={styles.dropdownOverlay} />
-              </TouchableWithoutFeedback>
-          
-            <View style={styles.dropdownMenu}>
-              <ScrollView
-                keyboardShouldPersistTaps="always"
-                nestedScrollEnabled={true}
-                showsVerticalScrollIndicator={true}
-              >
-                {filteredStateList.length > 0 ? (
-                  filteredStateList.map((v, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.option}
-                      onPress={() => {
-                        setSelectedState(v.label);
-                        setStateQuery("");
-                        setStateOpen(false);
-                      }}
-                    >
-                      <Text style={styles.optionText}>{v.label}</Text>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <Text style={styles.noResult}>No state found</Text>
-                )}
-          
-                {/* 🔴 CLEAR OPTION */}
-                {selectedState && (
-                  <TouchableOpacity
-                    style={{ padding: 12, alignItems: "center" }}
+                <Image source={DownArrow} style={styles.arrowIcon} />
+              </TouchableOpacity>
+
+
+              {/* <Image source={DownArrow} style={styles.arrowIcon} /> */}
+
+              {stateOpen && (
+                <>
+                  <TouchableWithoutFeedback
                     onPress={() => {
-                      setSelectedState("");
-                      setStateQuery("");
                       setStateOpen(false);
+                      setStateQuery("");
                     }}
                   >
-                    <Text style={{ color: "red", fontWeight: "600" }}>
-                      Clear selection
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </ScrollView>
+                    <View style={styles.dropdownOverlay} />
+                  </TouchableWithoutFeedback>
+
+                  <View style={styles.dropdownMenu}>
+                    <ScrollView
+                      keyboardShouldPersistTaps="always"
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={true}
+                    >
+                      {filteredStateList.length > 0 ? (
+                        filteredStateList.map((v, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={styles.option}
+                            onPress={() => {
+                              setSelectedState(v.label);
+                              setStateQuery("");
+                              setStateOpen(false);
+                            }}
+                          >
+                            <Text style={styles.optionText}>{v.label}</Text>
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        <Text style={styles.noResult}>No state found</Text>
+                      )}
+
+                      {/* 🔴 CLEAR OPTION */}
+                      {selectedState && (
+                        <TouchableOpacity
+                          style={{ padding: 12, alignItems: "center" }}
+                          onPress={() => {
+                            setSelectedState("");
+                            setStateQuery("");
+                            setStateOpen(false);
+                          }}
+                        >
+                          <Text style={{ color: "red", fontWeight: "600" }}>
+                            Clear selection
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </ScrollView>
+                  </View>
+                </>
+              )}
+
             </View>
-            </>
-          )}
-          
-                                                  </View>
-          {/* {errors.state && (
+            {/* {errors.state && (
             <Text style={styles.errText}>{errors.state}</Text>
           )} */}
-  {errors.state && (
-                                    <ErrorMessage message={errors.state} type="error" />
-                                )}
+            {errors.state && (
+              <ErrorMessage message={errors.state} type="error" />
+            )}
 
 
-          {/* {topWarning !== "" && (
+            {/* {topWarning !== "" && (
             <Text style={styles.errText}>{topWarning}</Text>
           )} */}
             {topWarning !== "" && (
-  <ErrorMessage 
-    message={topWarning} 
-    type="error" 
-    containerStyle={styles.centerWarning}
-  />
-)}
+              <ErrorMessage
+                message={topWarning}
+                type="error"
+                containerStyle={styles.centerWarning}
+              />
+            )}
 
 
 
-{/* 
+            {/* 
           <TouchableOpacity style={styles.submitBtn}
             onPress={editData ? handleUpdate : handleSubmit}
           >
@@ -994,34 +994,34 @@ console.log("payloadForApi",payloadForApi)
                {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
             </Text>
           </TouchableOpacity> */}
-          <View style={styles.fixedBtnWrapper}>
-  <TouchableOpacity
-    style={styles.submitBtn}
-    onPress={editData ? handleUpdate : handleSubmit}
-  >
-    <Text style={styles.submitText}>
-      {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
-    </Text>
-  </TouchableOpacity>
-</View>
+            <View style={styles.fixedBtnWrapper}>
+              <TouchableOpacity
+                style={styles.submitBtn}
+                onPress={editData ? handleUpdate : handleSubmit}
+              >
+                <Text style={styles.submitText}>
+                  {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-          {/* {errorMsg !== "" && (
+            {/* {errorMsg !== "" && (
             <Text style={{ color: "red", textAlign: "center", marginTop: 5 }}>
               {errorMsg}
             </Text>
           )} */}
             {errorMsg !== "" && (
-                                    <ErrorMessage message={errorMsg} type="error" />
-                                )}
-          {/* {successMsg !== "" && (
+              <ErrorMessage message={errorMsg} type="error" />
+            )}
+            {/* {successMsg !== "" && (
     <Text style={{ color: "green", marginTop: 8 }}>{successMsg}</Text>
   )} */}
 
 
 
-          <View style={{ height: 40 }} />
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </>
   );
@@ -1037,31 +1037,31 @@ const styles = StyleSheet.create({
 
 
   mainContainer: {
-  flex: 1,
-  backgroundColor: "#fff",
-},
+    flex: 1,
+    backgroundColor: "#fff",
+  },
 
-header: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingTop: 50,
-  paddingBottom: 12,
-  backgroundColor: "#fff",
-},
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 12,
+    backgroundColor: "#fff",
+  },
 
-profileSection: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingBottom: 15,
-  backgroundColor: "#fff",
-},
+  profileSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 15,
+    backgroundColor: "#fff",
+  },
 
-formContainer: {
-  flex: 1,
-  paddingHorizontal: 16,
-},
+  formContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
 
   profileCircle: {
     width: 75,
@@ -1129,16 +1129,16 @@ formContainer: {
     fontSize: 16,
     fontWeight: "700",
   },
-   select: {
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#e1e1e1",
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
+  select: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#e1e1e1",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   // select: {
   //   height: 48,
   //   borderWidth: 1,
@@ -1150,19 +1150,19 @@ formContainer: {
   //   alignItems: "center",
   //   marginTop: 10
   // },
-     dropdownMenu: {
-  position: "absolute",
-  top: 62,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 12,
-  zIndex: 1000,
-  
-  maxHeight: 130,        // 🔥 increase
-},
+  dropdownMenu: {
+    position: "absolute",
+    top: 62,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 1000,
+
+    maxHeight: 130,        // 🔥 increase
+  },
 
   // dropdownMenu: {
   //   position: "absolute",
@@ -1228,32 +1228,32 @@ formContainer: {
     tintColor: "#999",
   },
   centerWarning: {
-  alignSelf: "center",
-  justifyContent: "center",
-  alignItems: "center",
-  width: "100%",
-  display:"flex"
-},
-arrowIcon: {
-        // position: "absolute",
-        // right: 12,
-        // top: 14,
-        width: 18,
-        height: 18,
-        tintColor: "#777",
-    },
-    fixedBtnWrapper: {
-  paddingHorizontal: 0,
-  paddingBottom: 15,
-  backgroundColor: "#fff",
-},
-arrowTouchable: {
-  position: "absolute",
-  right: 12,
-  top: 14,
-  // padding: 10,   // ✅ easy click area
-  zIndex: 2000,
-},
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    display: "flex"
+  },
+  arrowIcon: {
+    // position: "absolute",
+    // right: 12,
+    // top: 14,
+    width: 18,
+    height: 18,
+    tintColor: "#777",
+  },
+  fixedBtnWrapper: {
+    paddingHorizontal: 0,
+    paddingBottom: 15,
+    backgroundColor: "#fff",
+  },
+  arrowTouchable: {
+    position: "absolute",
+    right: 12,
+    top: 14,
+    // padding: 10,   // ✅ easy click area
+    zIndex: 2000,
+  },
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef,useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
-  Image, TouchableWithoutFeedback, Keyboard
+  Image, TouchableWithoutFeedback, Keyboard,BackHandler
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -25,6 +25,7 @@ import { useCustomer } from '../../Context/CustomerContext';
 import Delete from "../../Assets/Images/remove.png";
 import ErrorMessage from '../ErrorMessagr/Errormessagestyle';
 import SuccessModal from '../../ToastFile/ToastPage';
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function TenantCheckIn({ navigation, route }) {
   const { customerId, customer } = route.params || {};
@@ -114,7 +115,21 @@ export default function TenantCheckIn({ navigation, route }) {
     }
   };
 
+  useFocusEffect(
+  useCallback(() => {
+    const backAction = () => {
+      navigation.goBack();  
+      return true;        
+    };
 
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => handler.remove();
+  }, [navigation])
+);
 
 
   useEffect(() => {

@@ -7,7 +7,7 @@ import {
   ScrollView,
   TextInput,
   Image,
-  Platform, TouchableWithoutFeedback
+  Platform, TouchableWithoutFeedback,KeyboardAvoidingView,BackHandler
 } from "react-native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
@@ -23,6 +23,9 @@ import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../ToastFile/ToastPage";
+import { useFocusEffect } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
 
 export default function AddBookingScreen({ navigation, route }) {
   const { selectedItem } = route.params || {};
@@ -85,6 +88,22 @@ const [datePickerTop, setDatePickerTop] = useState(0);
 
     }
   };
+  useFocusEffect(
+  useCallback(() => {
+    const backAction = () => {
+      navigation.goBack();   // ✅ close screen
+      return true;           // ✅ stop default behavior
+    };
+
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => handler.remove();
+  }, [navigation])
+);
+
 
   const loadRooms = async (floorId) => {
     const res = await getAllRoomsByFloor(floorId);
@@ -230,7 +249,14 @@ const [datePickerTop, setDatePickerTop] = useState(0);
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-      <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 20 }}>
+      {/* <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 20 }}> */}
+<KeyboardAvoidingView
+  style={{ flex: 1, backgroundColor: "#fff" }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}   // ✅ change here
+  keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+>
+      <View style={styles.page}>
+
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={BackIcon} style={styles.backIcon} />
@@ -246,7 +272,19 @@ const [datePickerTop, setDatePickerTop] = useState(0);
           <Text style={styles.userName}>{selectedItem?.fullName}</Text>
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+        {/* <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}> */}
+<ScrollView
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  contentContainerStyle={{
+    paddingHorizontal: 20,
+    paddingBottom: 30,     // ✅ 180 remove
+    backgroundColor: "#fff",
+  }}
+  style={{ flex: 1, backgroundColor: "#fff" }}  // ✅ IMPORTANT
+>
+
+
 
           <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
           {/* <TouchableOpacity
@@ -500,7 +538,8 @@ const [datePickerTop, setDatePickerTop] = useState(0);
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </View>
+        </View>
+     </KeyboardAvoidingView>
      {showDatePicker && (
   <View style={styles.datePickerOverlay}>
     <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
@@ -589,7 +628,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "left",
-    padding: 18,
+    padding: 25,
   },
   backIcon: { width: 22, height: 22 },
   headerTitle: {
@@ -750,5 +789,11 @@ datePickerBox: {
         padding: 10,
         marginBottom: 350
     },
+    page: {
+  flex: 1,
+  backgroundColor: "#fff", 
+  paddingTop:30,
+  paddingBottom:30  
+}
 
 });
