@@ -10,10 +10,9 @@ import {
   ScrollView,
   Animated,
   PanResponder,
-  Dimensions, BackHandler
+  Dimensions, BackHandler , Keyboard
 } from "react-native";
 import { CustomerContext } from "../../../Context/CustomerContext";
-import { VendorContext } from "../../../Context/VendorContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
@@ -24,14 +23,39 @@ import { useCustomer } from "../../../Context/CustomerContext";
 
 export default function AddVendorSheet({ onClose, vendorData }) {
 
+  const getCurrentData = () => ({
+  firstName,
+  lastName,
+  mobile,
+  email,
+  businessName,
+  houseNo,
+  street,
+  landmark,
+  city,
+  stateName,
+  country,
+  pinCode,
+});
 
-  const {  addVendor,updateVendor } = useContext(CustomerContext);
-  const {     getVendorList } = useContext(VendorContext);
+
+
+const isSameData = (a, b) => {
+  return JSON.stringify(a) === JSON.stringify(b);
+};
+
+
+  const {  addVendor,updateVendor , getVendorList } = useContext(CustomerContext);;
   const { activeHostelId } = useContext(CommonContexts);
 
   const translateY = useRef(new Animated.Value(0)).current;
 
   const [selectedImage, setSelectedImage] = useState(null);
+  const [initialImage, setInitialImage] = useState(null);
+
+
+  const [stateOpen, setStateOpen] = useState(false);
+const [stateQuery, setStateQuery] = useState("");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -58,31 +82,114 @@ const [countryOpen, setCountryOpen] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const [initialData, setInitialData] = useState(null);
+const [noChangeError, setNoChangeError] = useState("");
 
-  useEffect(() => {
-    if (vendorData) {
-      const phone = vendorData.mobile || "";
-      const mobileOnly = phone.slice(-10);
 
-      setFirstName(vendorData.firstName || "");
-      setLastName(vendorData.lastName || "");
-      setMobile(mobileOnly);
-      setEmail(vendorData.emailId || "");
-      setBusinessName(vendorData.businessName || "");
+useEffect(() => {
+  if (!vendorData) return;
 
-      setHouseNo(vendorData.houseNo || "");
-      setStreet(vendorData.area || "");
-      setLandmark(vendorData.landMark || "");
-      setCity(vendorData.city || "");
-      setStateName(vendorData.state || "");
-     setCountry(vendorData?.countryId || "");
-      setPinCode(vendorData.pinCode ? String(vendorData.pinCode) : "");
+  const phone = vendorData.mobile || "";
+  const mobileOnly = phone.slice(-10);
 
-      if (vendorData.profilePic) {
-        setSelectedImage({ uri: vendorData.profilePic });
-      }
-    }
-  }, [vendorData]);
+  const snapshot = {
+    firstName: vendorData.firstName || "",
+    lastName: vendorData.lastName || "",
+    mobile: mobileOnly,
+    email: vendorData.emailId || "",
+    businessName: vendorData.businessName || "",
+    houseNo: vendorData.houseNo || "",
+    street: vendorData.area || "",
+    landmark: vendorData.landMark || "",
+    city: vendorData.city || "",
+    stateName: vendorData.state || "",
+    country: vendorData.countryId || "",
+    pinCode: vendorData.pinCode ? String(vendorData.pinCode) : "",
+  };
+
+  // set form values
+  setFirstName(snapshot.firstName);
+  setLastName(snapshot.lastName);
+  setMobile(snapshot.mobile);
+  setEmail(snapshot.email);
+  setBusinessName(snapshot.businessName);
+  setHouseNo(snapshot.houseNo);
+  setStreet(snapshot.street);
+  setLandmark(snapshot.landmark);
+  setCity(snapshot.city);
+  setStateName(snapshot.stateName);
+  setCountry(snapshot.country);
+  setPinCode(snapshot.pinCode);
+
+ 
+  if (vendorData.profilePic) {
+  setSelectedImage({ uri: vendorData.profilePic });
+  setInitialImage(vendorData.profilePic);
+}
+
+
+  // save initial snapshot
+  setInitialData(snapshot);
+}, [vendorData]);
+
+const isImageChanged = () => {
+  if (!initialImage && selectedImage) return true;
+  if (initialImage && !selectedImage) return true;
+  if (
+    initialImage &&
+    selectedImage &&
+    selectedImage.uri !== initialImage
+  )
+    return true;
+
+  return false;
+};
+
+
+ const vendors = [
+    { label: "Andhra Pradesh", value: "Andhra Pradesh" },
+    { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
+    { label: "Assam", value: "Assam" },
+    { label: "Bihar", value: "Bihar" },
+    { label: "Chhattisgarh", value: "Chhattisgarh" },
+    { label: "Goa", value: "Goa" },
+    { label: "Gujarat", value: "Gujarat" },
+    { label: "Haryana", value: "Haryana" },
+    { label: "Himachal Pradesh", value: "Himachal Pradesh" },
+    { label: "Jharkhand", value: "Jharkhand" },
+    { label: "Karnataka", value: "Karnataka" },
+    { label: "Kerala", value: "Kerala" },
+    { label: "Madhya Pradesh", value: "Madhya Pradesh" },
+    { label: "Maharashtra", value: "Maharashtra" },
+    { label: "Manipur", value: "Manipur" },
+    { label: "Meghalaya", value: "Meghalaya" },
+    { label: "Mizoram", value: "Mizoram" },
+    { label: "Nagaland", value: "Nagaland" },
+    { label: "Odisha", value: "Odisha" },
+    { label: "Punjab", value: "Punjab" },
+    { label: "Rajasthan", value: "Rajasthan" },
+    { label: "Sikkim", value: "Sikkim" },
+    { label: "Tamil Nadu", value: "Tamil Nadu" },
+    { label: "Telangana", value: "Telangana" },
+    { label: "Tripura", value: "Tripura" },
+    { label: "Uttar Pradesh", value: "Uttar Pradesh" },
+    { label: "Uttarakhand", value: "Uttarakhand" },
+    { label: "West Bengal", value: "West Bengal" },
+  ];
+
+
+const stateList = vendors; // reuse your vendors array
+
+
+const filteredStateList = stateList?.filter((s) =>
+    s.label.toLowerCase().includes(stateQuery.toLowerCase())
+  )
+  .sort((a, b) => {
+    const aStart = a.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+    const bStart = b.label.toLowerCase().startsWith(stateQuery.toLowerCase());
+    return bStart - aStart;
+  });
+
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -98,21 +205,71 @@ const [countryOpen, setCountryOpen] = useState(false);
 
 
 
-  const validate = () => {
+//   const validate = () => {
+//   let newErrors = {};
+
+//   if (!firstName.trim()) {
+//     newErrors.firstName = "Please Enter First Name";
+//   }
+
+//   if (!mobile.trim()) {
+//     newErrors.mobile = "Please Enter Mobile Number";
+//   } else if (mobile.length !== 10) {
+//     newErrors.mobile = "Mobile number must be 10 digits";
+//   }
+
+//   if (email && !emailRegex.test(email)) {
+//     newErrors.email = "Please Enter Valid Email ID";
+//   }
+
+//   const pinError = validatePincode(pinCode);
+//   if (pinError) {
+//     newErrors.pinCode = pinError;
+//   }
+
+//   if (!country) {
+//     newErrors.country = "Please Select Country";
+//   }
+
+//   setErrors(newErrors);
+//   return Object.keys(newErrors).length === 0;
+// };
+
+
+const validate = () => {
+if (vendorData && initialData) {
+  const currentData = getCurrentData();
+  const dataSame = isSameData(initialData, currentData);
+  const imageSame = !isImageChanged();
+
+  if (dataSame && imageSame) {
+    setNoChangeError("No changes detected");
+    return false;
+  }
+}
+
   let newErrors = {};
 
   if (!firstName.trim()) {
     newErrors.firstName = "Please Enter First Name";
   }
 
-  if (!mobile.trim()) {
-    newErrors.mobile = "Please Enter Mobile Number";
-  } else if (mobile.length !== 10) {
-    newErrors.mobile = "Mobile number must be 10 digits";
+if (!mobile.trim()) {
+  newErrors.mobile = "Please Enter Mobile Number";
+} else if (mobile.length !== 10) {
+  newErrors.mobile = "Mobile number must be 10 digits";
+} else if (mobile[0] === "0") {
+  newErrors.mobile = "Mobile number cannot start with 0";
+} else if (/^0+$/.test(mobile)) {
+  newErrors.mobile = "Mobile number cannot be all zeros";
+}
+
+  if (!businessName.trim()) {
+    newErrors.businessName = "Please Enter Business Name";
   }
 
-  if (email && !emailRegex.test(email)) {
-    newErrors.email = "Please Enter Valid Email ID";
+  if (!city.trim()) {
+    newErrors.city = "Please Enter City";
   }
 
   const pinError = validatePincode(pinCode);
@@ -120,15 +277,21 @@ const [countryOpen, setCountryOpen] = useState(false);
     newErrors.pinCode = pinError;
   }
 
+  if (!stateName) {
+    newErrors.stateName = "Please Select State";
+  }
+
   if (!country) {
-    newErrors.country = "Please Select Country";
+    newErrors.country = "Please Enter Country";
+  }
+
+  if (email && !emailRegex.test(email)) {
+    newErrors.email = "Please Enter Valid Email ID";
   }
 
   setErrors(newErrors);
   return Object.keys(newErrors).length === 0;
 };
-
-
 
 
 
@@ -165,6 +328,7 @@ const [countryOpen, setCountryOpen] = useState(false);
         console.log("Error:", response.errorMessage);
       } else {
         setSelectedImage(response.assets[0]);
+        setNoChangeError("");
       }
     });
   };
@@ -404,37 +568,7 @@ const [countryOpen, setCountryOpen] = useState(false);
   //  const vendors = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
   const [vendorOpen, setVendorOpen] = useState(false);
   const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
-  const vendors = [
-    { label: "Andhra Pradesh", value: "Andhra Pradesh" },
-    { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
-    { label: "Assam", value: "Assam" },
-    { label: "Bihar", value: "Bihar" },
-    { label: "Chhattisgarh", value: "Chhattisgarh" },
-    { label: "Goa", value: "Goa" },
-    { label: "Gujarat", value: "Gujarat" },
-    { label: "Haryana", value: "Haryana" },
-    { label: "Himachal Pradesh", value: "Himachal Pradesh" },
-    { label: "Jharkhand", value: "Jharkhand" },
-    { label: "Karnataka", value: "Karnataka" },
-    { label: "Kerala", value: "Kerala" },
-    { label: "Madhya Pradesh", value: "Madhya Pradesh" },
-    { label: "Maharashtra", value: "Maharashtra" },
-    { label: "Manipur", value: "Manipur" },
-    { label: "Meghalaya", value: "Meghalaya" },
-    { label: "Mizoram", value: "Mizoram" },
-    { label: "Nagaland", value: "Nagaland" },
-    { label: "Odisha", value: "Odisha" },
-    { label: "Punjab", value: "Punjab" },
-    { label: "Rajasthan", value: "Rajasthan" },
-    { label: "Sikkim", value: "Sikkim" },
-    { label: "Tamil Nadu", value: "Tamil Nadu" },
-    { label: "Telangana", value: "Telangana" },
-    { label: "Tripura", value: "Tripura" },
-    { label: "Uttar Pradesh", value: "Uttar Pradesh" },
-    { label: "Uttarakhand", value: "Uttarakhand" },
-    { label: "West Bengal", value: "West Bengal" },
-  ];
-
+ 
 
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -465,7 +599,28 @@ const [countryOpen, setCountryOpen] = useState(false);
   ).current;
 
 
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height + 60,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
 
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
 
@@ -503,8 +658,8 @@ const [countryOpen, setCountryOpen] = useState(false);
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
-          scrollEnabled={!vendorOpen}
-          nestedScrollEnabled={true}  
+          scrollEnabled={!stateOpen}    
+          keyboardShouldPersistTaps="handled"
         >
 
           <Text style={styles.title}>
@@ -547,10 +702,15 @@ const [countryOpen, setCountryOpen] = useState(false);
 
 
           {/* Form Fields */}
-          <Text style={styles.label}>First Name *</Text>
+          <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
           <TextInput
             value={firstName}
-            onChangeText={(t) => setFirstName(t.replace(/[^a-zA-Z\s]/g, ""))}
+                    onChangeText={(t) => {
+            setFirstName(t.replace(/[^a-zA-Z\s]/g, ""));
+           setErrors({ ...errors, firstName: "" });
+           setNoChangeError("");
+          }}
+            // onChangeText={(t) => setFirstName(t.replace(/[^a-zA-Z\s]/g, ""))}
             placeholder="Enter First Name"
             style={styles.input}
           />
@@ -563,19 +723,24 @@ const [countryOpen, setCountryOpen] = useState(false);
           <Text style={styles.label}>Last Name</Text>
           <TextInput
             value={lastName}
-            onChangeText={(t) => setLastName(t.replace(/[^a-zA-Z\s]/g, ""))}
+            onChangeText={(t) =>  {
+              setLastName(t.replace(/[^a-zA-Z\s]/g, ""))
+              setNoChangeError("")
+            }
+            }
             style={styles.input}
             placeholder="Enter last Name"
           />
 
-          <Text style={styles.label}>Mobile Number *</Text>
+          <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
        <TextInput
   value={mobile}
   keyboardType="numeric"
   onChangeText={(t) => {
     const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
     setMobile(cleaned);
-    setErrors({ ...errors, mobile: "" });
+    setErrors({ ...errors, mobile: "" })
+     setNoChangeError("")
   }}
   style={styles.input}
   placeholder="Enter Mobile No"
@@ -590,47 +755,74 @@ const [countryOpen, setCountryOpen] = useState(false);
   value={email}
   onChangeText={(t) => {
     setEmail(t.toLowerCase());
-    setErrors({ ...errors, email: "" });
+    setErrors({ ...errors, email: "" })
+     setNoChangeError("")
   }}
   style={styles.input}
   placeholder="Enter Email"
 />
 
 
-          <Text style={styles.label}>Business Name *</Text>
+          <Text style={styles.label}>Business Name <Text style={{ color: "red" }}>*</Text></Text>
           <TextInput
             value={businessName}
-            onChangeText={(t) => setBusinessName(t.replace(/[^a-zA-Z\s]/g, ""))}
+            onChangeText={(t) => {
+            setBusinessName(t.replace(/[^a-zA-Z\s]/g, ""));
+           setErrors({ ...errors, businessName: "" })
+            setNoChangeError("")
+          }}
             style={styles.input}
             placeholder="Enter Business Name"
+            
           />
 
+          {errors.businessName && (
+  <ErrorMessage message={errors.businessName} type="error" />
+)}
+
+
           <Text style={styles.label}>Flat, House No., Building...</Text>
-          <TextInput
-            value={street}
-            onChangeText={(t) => setStreet(t.replace(/[^a-zA-Z\s]/g, ""))}
-            style={styles.input}
-            placeholder="Enter Street"
-          />
+        <TextInput
+  value={street}
+  onChangeText={(t) => {
+    setStreet(t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""))
+    setNoChangeError("");
+  }}
+  style={styles.input}
+  placeholder="Enter Street"
+/>
+
 
 
           <Text style={styles.label}>Landmark</Text>
           <TextInput
             value={landmark}
-            onChangeText={(t) => setLandmark(t.replace(/[^a-zA-Z\s]/g, ""))}
+            onChangeText={(t) =>{
+            setLandmark(t.replace(/[^a-zA-Z\s]/g, ""))
+            setNoChangeError("")
+            }
+              }
             style={styles.input}
             placeholder="Enter Landmark"
           />
 
-          <Text style={styles.label}>Town/City *</Text>
+          <Text style={styles.label}>Town/City <Text style={{ color: "red" }}>*</Text></Text>
            <TextInput
             value={city}
-            onChangeText={(t) => setCity(t.replace(/[^a-zA-Z\s]/g, ""))}
+               onChangeText={(t) => {
+            setCity(t.replace(/[^a-zA-Z\s]/g, ""));
+           setErrors({ ...errors, city: "" })
+              setNoChangeError("")
+          }}
             style={styles.input}
             placeholder="Enter City"
           />
+          {errors.city && (
+  <ErrorMessage message={errors.city} type="error" />
+)}
 
-          <Text style={styles.label}>Pincode *</Text>
+
+          <Text style={styles.label}>Pincode <Text style={{ color: "red" }}>*</Text></Text>
            <TextInput
   value={pinCode}
   keyboardType="numeric"
@@ -639,7 +831,8 @@ const [countryOpen, setCountryOpen] = useState(false);
     setPinCode(cleaned);
 
     const errorMsg = validatePincode(cleaned);
-    setErrors({ ...errors, pinCode: errorMsg });
+    setErrors({ ...errors, pinCode: errorMsg })
+       setNoChangeError("")
   }}
   style={styles.input}
   placeholder="Enter Pincode"
@@ -652,7 +845,7 @@ const [countryOpen, setCountryOpen] = useState(false);
 
       
 
-          <Text style={styles.label}>State</Text>
+          {/* <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
 
           <View style={{ position: "relative" }}>
             <TouchableOpacity
@@ -677,6 +870,8 @@ const [countryOpen, setCountryOpen] = useState(false);
                      onPress={() => {
   setStateName(v.value);
   setVendorOpen(false);
+  setErrors({ ...errors, stateName: "" })
+     setNoChangeError("")
 }}
 
                     >
@@ -688,11 +883,83 @@ const [countryOpen, setCountryOpen] = useState(false);
             )}
           </View>
 
+          {errors.stateName && (
+  <ErrorMessage message={errors.stateName} type="error" />
+)} */}
+
+<Text style={styles.label}>
+  State <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<View style={{ position: "relative", marginBottom: 6 }}>
+  <TextInput
+    style={styles.select}
+    placeholder="Select State"
+    placeholderTextColor="#9CA3AF"
+    value={stateOpen ? stateQuery : stateName}
+    editable={true}
+    onFocus={() => {
+      setStateOpen(true);
+      setStateQuery("");
+    }}
+    onChangeText={(t) => {
+      setStateQuery(t);
+      setStateOpen(true);
+    }}
+  />
+
+  <Image source={DownArrow} style={styles.arrowIcon} />
+
+ {stateOpen && (
+  <View style={styles.dropdownMenu}>
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled={true}
+    >
+      {filteredStateList.length > 0 ? (
+        filteredStateList.map((v, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.option,
+              stateName === v.label && styles.selectedOption,
+            ]}
+            onPress={() => {
+              setStateName(v.label);
+              setStateQuery("");
+              setStateOpen(false);
+              setErrors({ ...errors, stateName: "" });
+              setNoChangeError("");
+            }}
+          >
+            <Text
+              style={[
+                styles.optionText,
+                stateName === v.label && styles.selectedOptionText,
+              ]}
+            >
+              {v.label}
+            </Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={styles.noResult}>No state found</Text>
+      )}
+    </ScrollView>
+  </View>
+)}
+
+</View>
+
+{errors.stateName && (
+  <ErrorMessage message={errors.stateName} type="error" />
+)}
 
 
 
 
-        <Text style={styles.label}>Country *</Text>
+
+        <Text style={styles.label}>Country <Text style={{ color: "red" }}>*</Text></Text>
 
 <View style={{ position: "relative" }}>
   <TouchableOpacity
@@ -710,8 +977,10 @@ const [countryOpen, setCountryOpen] = useState(false);
       <TouchableOpacity
         style={styles.option}
        onPress={() => {
-  setCountry(1);   // ✅ number
+  setCountry(1);
   setCountryOpen(false);
+  setErrors({ ...errors, country: "" })
+     setNoChangeError("")
 }}
       >
         <Text style={styles.optionText}>India</Text>
@@ -721,6 +990,14 @@ const [countryOpen, setCountryOpen] = useState(false);
 </View>
 
 {errors.country && <ErrorMessage message={errors.country} type="error" />}
+
+{noChangeError !== "" && (
+  <View style={styles.noChangeWrapper}>
+    <View style={styles.noChangeInner}>
+      <ErrorMessage message={noChangeError} type="warning" />
+    </View>
+  </View>
+)}
 
 
 
@@ -853,12 +1130,29 @@ const styles = StyleSheet.create({
   selectText: { color: "#444" },
   arrow: { width: 18, height: 18, tintColor: "#444" },
 
-  footerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-    marginBottom: 10,
-  },
+ footerRow: {
+  flexDirection: "row",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  marginTop: 20,
+  marginBottom: 10,
+  gap: 20,  
+},
+noChangeWrapper: {
+  width: "100%",
+  alignItems: "center",
+  textAlign:'center',
+  marginTop: 12,
+  marginBottom: 12,
+},
+
+noChangeInner: {
+  width: "50%",        
+  alignItems: "center",
+  justifyContent:'center'
+},
+
+
   sheet: {
     backgroundColor: "#fff",
     padding: 20,
@@ -930,18 +1224,45 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  dropdownMenu: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 999,
-    elevation: 10,
-  },
+ arrowIcon: {
+  position: "absolute",
+  right: 12,
+  top: 14,
+  width: 18,
+  height: 18,
+  tintColor: "#777",
+},
+
+dropdownMenu: {
+  position: "absolute",
+  bottom: 52,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 9999,
+  elevation: 20,
+  minHeight: 150,
+  maxHeight: 200,
+},
+
+selectedOption: {
+  backgroundColor: "#E3EEFF",
+},
+
+selectedOptionText: {
+  color: "#2D6CDF",
+  fontWeight: "700",
+},
+
+noResult: {
+  padding: 12,
+  textAlign: "center",
+  color: "#6B7280",
+},
+
 
   option: {
     paddingVertical: 12,

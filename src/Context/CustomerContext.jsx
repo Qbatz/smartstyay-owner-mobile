@@ -7,6 +7,7 @@ export const CustomerContext = createContext();
 export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("")
+  const [vendorList, setVendorList] = useState([]);
   
 
   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
@@ -740,6 +741,53 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
 };
 
 
+
+
+
+  const getVendorList = async (hostelId) => {
+    setLoading(true);
+    setVendorList([]);
+
+    try {
+      const axios = getAxios();
+      const res = await axios.get(`/v2/vendors/all-vendors/${hostelId}`);
+
+      if (res.status === 200) {
+        setVendorList(res.data || []);
+        return { success: true, data: res.data };
+      }
+
+      return { success: false };
+    } catch (err) {
+      console.log("Vendor list error:", err?.response?.data || err);
+      return { success: false, message: getErrorMessage(err) };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   const deleteVendor = async (vendorId, hostelId) => {
+      setLoading(true);
+  
+      try {
+        const axios = getAxios();
+        const res = await axios.delete(`/v2/vendors/${vendorId}`);
+  
+        if (res.status === 200) {
+          await getVendorList(hostelId);
+          return { success: true, message: "Vendor deleted successfully" };
+        }
+  
+        return { success: false, message: "Failed to delete vendor" };
+      } catch (err) {
+        return { success: false, message: getErrorMessage(err) };
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+
+
 const addVendor = async (payloads, profilePic = null) => {
   try {
     setLoading(true);
@@ -1035,17 +1083,18 @@ const initializeCancelCheckout = async (hostelId, customerId) => {
         GetParticularCustomerDetails,
         ParticularcustomerDetails,
         resetParticularCustomer,
-        loading,
+        loading, 
         errorMsg,
         addCustomer,
-        addVendor ,
         getBedsByHostelAndDate, 
         checkInCustomer, deleteCustomer,
          changeBedCustomer, 
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,updateVendor
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
+        addVendor, updateVendor , vendorList,
+        getVendorList, deleteVendor,
       }}
     >
       {children}
