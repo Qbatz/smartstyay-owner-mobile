@@ -18,6 +18,8 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { s, vs } from "../../../Utils/rnScale";
+
 
 
 
@@ -44,6 +46,12 @@ const RecurringBills = () => {
   const { activeHostelId } = useContext(CommonContexts);
 
       console.log("recurringBills", recurringBills);
+
+
+      // styles ==>
+
+      // fontSize / padding / margin / width / height → s()
+      // marginTop / bottom / modal height → vs()
 
   const [stayType, setStayType] = useState("Long Stay");
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -263,14 +271,14 @@ const handleToggleRecurring = async (item) => {
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{item.fullName}</Text>
 
-        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginTop: vs(3) }}>
           <View style={styles.tagBox}>
             <Text style={styles.tag}>Recurring Inv</Text>
           </View>
 
           <Image
             source={Bills_Black_Icon}
-            style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
+            style={{ width: 12, height: 12, marginTop: vs(3), marginRight: s(5) }}
           />
 
           <Text style={styles.bill}>
@@ -297,7 +305,7 @@ const handleToggleRecurring = async (item) => {
               <View
                 style={[
                   styles.knob,
-                  { transform: [{ translateX: isActive ? 18 : 0 }] },
+                  { transform: [{ translateX: isActive ? s(18) : 0 }] },
                 ]}
               >
                 <Text style={{ fontSize: 10, fontWeight: "700" }}>
@@ -374,13 +382,14 @@ const handleToggleRecurring = async (item) => {
   keyExtractor={(item) => item.customerId}
     showsVerticalScrollIndicator={false}
   overScrollMode="never"
+   contentContainerStyle={{ paddingBottom: vs(120) }}
 />
 
 {(!recurringBills?.customers ||
   recurringBills.customers.length === 0) && (
-  <View style={{ alignItems: "center", marginTop: 80 }}>
+  <View style={{ alignItems: "center", marginTop: vs(80) }}>
     <Image source={EmptyFloor} style={{ width: 120, height: 120 }} />
-    <Text style={{ marginTop: 10, color: "#777" }}>
+    <Text style={{ marginTop: vs(10), color: "#777" }}>
       No Recurring Bills Found
     </Text>
   </View>
@@ -403,7 +412,7 @@ const handleToggleRecurring = async (item) => {
             <Animated.View
               style={[
                 styles.transactionSheet,
-                { height: "44%", transform: [{ translateY: detailsSheetY }] }
+                { minHeight: vs(280),maxHeight: vs(420), transform: [{ translateY: detailsSheetY }] }
               ]}
               {...billDetailsPan.panHandlers}
             >
@@ -447,20 +456,20 @@ const handleToggleRecurring = async (item) => {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
         
-              <View style={{ flexDirection: "row", marginTop: 4 }}>
+              <View style={{ flexDirection: "row", marginTop: vs(4) }}>
                 <View style={styles.invTypeBadge}>
                   <Text style={styles.invTypeText}>Recurring Inv</Text>
                 </View>
          
                 <Image source={Bills_Black_Icon} style={{   width: 12,
-            height: 12, marginTop:5 , marginRight:5
+            height: 12, marginTop:vs(5) , marginRight: s(5)
           }} />
                 <Text style={styles.billNumber}> #{selectedBill?.lastInvoiceNumber || "--"}</Text>
               </View>
             </View>
           </View>
 
-          <View style={{display:'flex', flexDirection:'row' , justifyContent:'space-between', marginTop:10}}>
+          <View style={{display:'flex', flexDirection:'row' , justifyContent:'space-between', marginTop: vs(10)}}>
             <View><Text style={{fontSize:16, fontWeight:500}}>Recurring</Text></View>
              <View style={{display:'flex', flexDirection:'row', alignItems: "center" }}>
       <Text style={styles.labelOn}>
@@ -477,7 +486,7 @@ const handleToggleRecurring = async (item) => {
     <View
       style={[
         styles.knob,
-        { transform: [{ translateX: selectedBill?.currentStatus ? 18 : 0 }] },
+        { transform: [{ translateX: selectedBill?.currentStatus ? s(18) : 0 }] },
       ]}
     >
       <Text style={{ fontSize: 10, fontWeight: "700" }}>
@@ -515,7 +524,7 @@ const handleToggleRecurring = async (item) => {
               <Text style={styles.label}>Amount</Text>
               <View style={styles.rowAlign}>
                     <Image source={MoneyCheckIcon} style={{   width: 18,
-            height: 18, marginTop:5 , marginRight:5
+            height: 18, marginTop: vs(5) , marginRight:s(5)
           }} />
                 <Text style={styles.amountValue}>₹{selectedBill?.invoiceAmount ?? "--"}</Text>
               </View>
@@ -599,7 +608,7 @@ const handleToggleRecurring = async (item) => {
                            </TouchableOpacity>
                          </View>
              
-                         <Text style={[styles.label, { marginTop: 18 }]}>Type</Text>
+                         <Text style={[styles.label, { marginTop: vs(18) }]}>Type</Text>
              
                          <View
                            style={styles.selectWrapper}
@@ -662,7 +671,7 @@ export default RecurringBills;
 const styles = StyleSheet.create({
 container: {
   flex: 1,
-  padding: 15,
+  padding: s(15),
   backgroundColor: "#fff",
   position: "relative",
   zIndex: 1,
@@ -672,18 +681,18 @@ container: {
 headerRow: {
   flexDirection: "row",
   justifyContent: "space-between",
-  marginTop: 10,
-  marginBottom: 10,
+marginTop: vs(10),
+marginBottom: vs(10),
   zIndex: 1000,
 },
 
-  monthText: { fontSize: 16, fontWeight: "600" },
+  monthText: { fontSize: s(16), fontWeight: "600" },
 
  dropButton: {
   borderWidth: 1,
   borderColor: "#C9C9C9",
   paddingHorizontal: 12,
-  paddingVertical: 6,
+  paddingVertical: vs(6),
   borderRadius: 20,
   flexDirection: "row",
   alignItems: "center",
@@ -691,24 +700,24 @@ headerRow: {
 },
 
 dropButtonText: {
-  fontSize: 14,
+  fontSize: s(14),
   color: "#000",
-  marginRight: 6,
+  marginRight: s(6),
 },
 
 arrow: {
-  fontSize: 12,
+  fontSize: s(12),
   color: "#444",
 },
 
 dropCard: {
   position: "absolute",
-  top: 40,
+  top: vs(40),
   right: 0,
-  width: 150,
+  width: s(150),
   backgroundColor: "#fff",
   borderRadius: 12,
-  paddingVertical: 8,
+  paddingVertical: vs(8),
   elevation: 10,      
   zIndex: 9999,       
   shadowColor: "#000",
@@ -719,57 +728,57 @@ dropCard: {
 
 
 optionRow: {
-  paddingVertical: 8,
+  paddingVertical: vs(8),
   paddingHorizontal: 12,
 },
 
 optionText: {
-  fontSize: 14,
+  fontSize: s(14),
   color: "#000",
 },
 
 
   row: {
     flexDirection: "row",
-    paddingVertical: 14,
+    paddingVertical: vs(14),
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
 
   avatar: {
-    width: 50,
-    height: 50,
+    width: s(50),
+    height: s(50),
     borderRadius: 30,
-    marginRight: 12,
+    marginRight: s(12),
   },
 
-  name: { fontSize: 16, fontWeight: "700", color: "#000" },
+  name: { fontSize: s(16), fontWeight: "700", color: "#000" },
 
   tagBox: {
     backgroundColor: "#FFE69C",
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: vs(3),
     borderRadius: 6,
-    marginRight: 6,
+    marginRight: s(6),
   },
 
-  tag: { fontSize: 12, fontWeight: "600", color: "#976600" },
+  tag: { fontSize: s(12), fontWeight: "600", color: "#976600" },
 
-  bill: { fontSize: 10, color: "#777" },
+  bill: { fontSize: s(10), color: "#777" },
 
-  labelOn: { fontSize: 12, color: "#3562FF", marginBottom: 2 , marginRight:5},
+  labelOn: { fontSize: s(12), color: "#3562FF", marginBottom: 2 , marginRight:s(5)},
 
   switch: {
-    width: 42,
-    height: 24,
+    width: s(42),
+    height: s(24),
     borderRadius: 20,
-    padding: 3,
+    padding: s(3),
     justifyContent: "center",
   },
 
   knob: {
-    width: 18,
-    height: 18,
+    width: s(18),
+    height: s(18),
     backgroundColor: "#fff",
     borderRadius: 50,
     alignItems: "center",
@@ -777,18 +786,18 @@ optionText: {
   },
 
   date: {
-    marginTop: 4,
-    fontSize: 11,
+    marginTop: vs(4),
+    fontSize: s(11),
     color: "#878787",
   },
 
 
    filterButton: {
     position: "absolute",
-    bottom: 70,
-    right: 15,
+    bottom: vs(70),
+    right: s(15),
     backgroundColor: "#fff",
-    padding: 10,
+    padding: s(10),
     borderRadius: 30,
     elevation: 5,
   },
@@ -803,15 +812,16 @@ optionText: {
 },
 transactionSheet: {
   backgroundColor: "#fff",
-  padding: 20,
+  padding: s(20),
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
-  paddingBottom: 30,
-  minHeight: 400,
+  paddingBottom: vs(30),
+  minHeight: vs(280),
+  maxHeight: vs(420),
 },
 sheetHandle: {
-  width: 60,
-  height: 5,
+  width: s(60),
+  height: s(5),
   backgroundColor: "#ccc",
   alignSelf: "center",
   borderRadius: 30,
@@ -826,7 +836,7 @@ billHeaderRow: {
 },
 
 billHeaderText: {
-  fontSize: 20,
+  fontSize: s(20),
   fontWeight: "700",
   color: "#000",
 },
@@ -834,30 +844,30 @@ billHeaderText: {
 statusBadge: {
   backgroundColor: "#D7FFD7",
   paddingHorizontal: 14,
-  paddingVertical: 6,
+  paddingVertical: vs(6),
   borderRadius: 20,
 },
 
 statusText: {
   color: "#2E8B2E",
   fontWeight: "700",
-  fontSize: 13,
+  fontSize: s(13),
 },
 
 userRow: {
   flexDirection: "row",
   alignItems: "center",
-  marginTop: 15,
+  marginTop: vs(15),
 },
 
 userImg: {
-  width: 55,
-  height: 55,
+  width: s(55),
+  height: s(55),
   borderRadius: 30,
 },
 
 userName: {
-  fontSize: 17,
+  fontSize: s(17),
   fontWeight: "700",
   color: "#000",
 },
@@ -865,27 +875,27 @@ userName: {
 invTypeBadge: {
   backgroundColor: "#FFE6C7",
   paddingHorizontal: 10,
-  paddingVertical: 4,
+  paddingVertical: vs(4),
   borderRadius: 8,
-  marginRight: 8,
+  marginRight: s(8),
 },
 
 invTypeText: {
   color: "#C67506",
   fontWeight: "600",
-  fontSize: 12,
+  fontSize: s(12),
 },
 
 billNumber: {
   color: "#555",
-  fontSize: 13,
+  fontSize: s(13),
   alignSelf: "center",
 },
 
 twoColRow: {
   flexDirection: "row",
   justifyContent: "space-between",
-  marginTop: 25,
+  marginTop: vs(25),
 },
 
 colItem: {
@@ -894,7 +904,7 @@ colItem: {
 
 label: {
   color: "#777",
-  fontSize: 14,
+  fontSize: s(14),
   marginBottom: 5,
 },
 
@@ -904,80 +914,80 @@ rowAlign: {
 },
 
 iconSmall: {
-  width: 18,
-  height: 18,
-  marginRight: 6,
+  width: s(18),
+  height: s(18),
+  marginRight: s(6),
 },
 
 value: {
-  fontSize: 16,
+  fontSize: s(16),
   fontWeight: "600",
   color: "#000",
 },
 
 amountValue: {
-  fontSize: 16,
+  fontSize: s(16),
   fontWeight: "700",
   color: "#000",
 },
 
 dueValue: {
-  fontSize: 16,
+  fontSize: s(16),
   fontWeight: "700",
   color: "red",
 },
 
 previewBtn: {
   backgroundColor: "#1E45E1",
-  paddingVertical: 14,
+  paddingVertical: vs(14),
   borderRadius: 12,
-  marginTop: 39,
+  marginTop: vs(39),
   alignItems: "center",
 },
 
 previewText: {
   color: "#fff",
-  fontSize: 16,
+  fontSize: s(16),
   fontWeight: "700",
 },
 
 filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  option: { paddingVertical: 12, paddingHorizontal: 14 },
-  optionText: { fontSize: 15, color: "#000" },
+  option: { paddingVertical: vs(12), paddingHorizontal: 14 },
+  optionText: { fontSize: s(15), color: "#000" },
 
- filterTitle: { fontSize: 20, fontWeight: "700" },
+ filterTitle: { fontSize: s(20), fontWeight: "700" },
   resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
 
-  dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
+  dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: vs(8) },
+  dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: s(12), borderRadius: 12 },
   dateText: { color: "#111" },
-  calIcon: { width: 20, height: 20 },
+  calIcon: { width: s(20), height: s(20) },
 
-  selectWrapper: { position: "relative", width: "100%", marginTop: 8 },
+  selectWrapper: { position: "relative", width: "100%", marginTop: vs(8) },
   selectBox: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     borderWidth: 1,
     borderColor: "#E0E0E0",
-    height: 50,  
+    height: s(50),  
     paddingHorizontal: 12,
     borderRadius: 12,
   },
   sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
-  selectedText: { fontSize: 15, color: "#000", flex: 1 },
-  quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
-  quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
+  selectedText: { fontSize: s(15), color: "#000", flex: 1 },
+  quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: vs(16) },
+  quickBtn: { width: "32%", paddingVertical: vs(12), borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
- bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
-  resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
+ bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: vs(32) },
+  resetBtn: { width: "48%", paddingVertical: vs(14), borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" },
-  applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
+  applyBtn: { width: "48%", paddingVertical: vs(14), borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
   applyBtnText: { color: "#fff", fontWeight: "700" },
-  downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
+  downArrow: { width: s(18), height: s(18), tintColor: "#6F6F6F" },
   dropdownMenu: {
   position: "absolute",
-  top: 52,
+  top: vs(52),
   left: 0,
   right: 0,
   backgroundColor: "#fff",

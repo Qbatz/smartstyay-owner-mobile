@@ -325,6 +325,8 @@ const formatDate = (date) => {
   keyExtractor={(item) => item.complaintId.toString()}
   renderItem={renderItem}
   showsVerticalScrollIndicator={false}
+    style={{ flex: 1 }}
+  contentContainerStyle={{ paddingBottom: 200 }}
 />
 
 { !loading && complaintsList &&  complaintsList?.length === 0 && (
@@ -491,7 +493,13 @@ const formatDate = (date) => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 60 },
+container: { 
+  flex: 1, 
+  backgroundColor: "#fff", 
+  paddingHorizontal: 20, 
+  paddingTop: 60 
+},
+
 
  searchBox: {
     flexDirection: "row",

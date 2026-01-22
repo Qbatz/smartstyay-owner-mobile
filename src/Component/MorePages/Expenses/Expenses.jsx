@@ -368,7 +368,15 @@ export default function ExpensesScreen() {
           <Text style={styles.headerTitle}>Expenses</Text>
         </View>
 
-        <View style={styles.searchBox}>
+      
+
+
+
+        {!loading && (
+          <>
+            {expensesList && expensesList.length > 0 ? (
+  <>
+                <View style={styles.searchBox}>
           <Image source={SearchIcon} style={styles.searchIcon} />
           <TextInput
             placeholder="Search Expenses"
@@ -377,11 +385,6 @@ export default function ExpensesScreen() {
           />
         </View>
 
-
-
-        {!loading && (
-          <>
-            {expensesList && expensesList.length > 0 ? (
               <FlatList
                 data={expensesList}
                 keyExtractor={(item, index) =>
@@ -390,6 +393,8 @@ export default function ExpensesScreen() {
                 renderItem={renderExpensesItem}
                 showsVerticalScrollIndicator={false}
               />
+  </>
+            
             ) : (
               <View style={styles.centerContainer}>
                 <Image source={EmptyState} style={styles.image} />

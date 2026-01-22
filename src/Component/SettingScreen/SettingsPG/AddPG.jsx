@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext , useRef} from "react";
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   Image,
   Modal,
   TouchableWithoutFeedback,
-  BackHandler,
+  BackHandler,Keyboard , Animated
 } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
+
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { PGContext } from "../../../Context/PGContext";
 import { LoginContexts } from "../../../Context/LoginContext";
@@ -136,6 +138,32 @@ export default function AddPG({ navigation, route }) {
     });
     return () => backHandler.remove();
   }, []);
+
+
+    const sheetY = useRef(new Animated.Value(700)).current;
+
+   useEffect(() => {
+      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        Animated.timing(sheetY, {
+          toValue: -e.endCoordinates.height + 90,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      });
+  
+      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        Animated.timing(sheetY, {
+          toValue: 0,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      });
+  
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, []);
 
   const closeAll = () => {
     setStateOpen(false);
@@ -350,7 +378,12 @@ if (res?.status === 201) {
         type={modalType}
       />
    
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+   <KeyboardAvoidingView
+  style={{ flex: 1, backgroundColor: "#fff", }}
+  behavior={Platform.OS === "ios" ? "padding" : "padding"}
+  // keyboardVerticalOffset={50}  
+>
+
       <View style={styles.fixedHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={ArrowLeft} style={styles.backIcon} />
@@ -361,7 +394,9 @@ if (res?.status === 201) {
       </View>
 
       <TouchableWithoutFeedback onPress={closeAll}>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 60 }}>
+        <ScrollView style={{ flex: 1 }} 
+  keyboardShouldPersistTaps="handled" 
+        >
           <View style={styles.container}>
 
       
@@ -455,7 +490,45 @@ if (res?.status === 201) {
         {errors.hostelName && (
                                     <ErrorMessage message={errors.hostelName} type="error" />
                                 )}
-<InputField
+
+                                <View style={{ marginBottom: 6 }}>
+  <View style={{ flexDirection: "row", marginBottom: 4 }}>
+    <Text style={styles.label}>Mobile Number</Text>
+    <Text style={{ color: "red" }}> *</Text>
+  </View>
+
+  <View style={styles.mobileContainer}>
+    {/* Country Code */}
+    <View style={styles.countryBox}>
+      <Text style={styles.countryText}>+91</Text>
+    </View>
+
+    {/* Divider */}
+    <View style={styles.divider} />
+
+    {/* Mobile Input */}
+    <TextInput
+      value={mobile}
+      keyboardType="numeric"
+      placeholder="Enter Mobile Number"
+      placeholderTextColor="#A3A3A3"
+      style={styles.mobileInput}
+      maxLength={10}
+      onChangeText={(t) => {
+        const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+        setMobile(cleaned);
+        setErrors({ ...errors, mobile: "" });
+        setTopWarning("");
+      }}
+    />
+  </View>
+
+  {errors.mobile && (
+    <ErrorMessage message={errors.mobile} type="error" />
+  )}
+</View>
+
+{/* <InputField
   label="Mobile Number *"
   value={mobile}
   keyboardType="numeric"
@@ -470,7 +543,7 @@ if (res?.status === 201) {
 
    {errors.mobile && (
                                     <ErrorMessage message={errors.mobile} type="error" />
-                                )}
+                                )} */}
 
  <InputField
   label="Email ID"
@@ -531,7 +604,7 @@ if (res?.status === 201) {
                                                                       
                                <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text> 
                              <View style={{ position: "relative", marginBottom: 6 }}>
-  <TextInput
+  {/* <TextInput
     style={styles.select}
     placeholder="Select State"
     placeholderTextColor="#9CA3AF"
@@ -544,7 +617,25 @@ if (res?.status === 201) {
       setStateQuery(t);
       setStateOpen(true);
     }}
-  />
+  /> */}
+
+  <TextInput
+  style={styles.select}
+  placeholder="Select State"
+  placeholderTextColor="#9CA3AF"
+  value={stateOpen ? stateQuery : state}
+  editable={true} 
+  onFocus={() => {
+    setStateOpen(true);
+    setStateQuery("");
+  }}
+  onChangeText={(t) => {
+    setStateQuery(t);
+    setStateOpen(true);
+  }}
+  keyboardShouldPersistTaps="handled"
+/>
+
 
   <Image source={DownArrow} style={styles.arrowIcon} />
 
@@ -553,19 +644,29 @@ if (res?.status === 201) {
       <ScrollView keyboardShouldPersistTaps="handled">
         {filteredStateList.length > 0 ? (
           filteredStateList.map((v, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.option}
-              onPress={() => {
-                setState(v.label);       // ✅ payload value
-                setStateQuery("");
-                setStateOpen(false);     // ✅ close dropdown
-                setErrors({ ...errors, state: "" });
-                setTopWarning("");
-              }}
-            >
-              <Text style={styles.optionText}>{v.label}</Text>
-            </TouchableOpacity>
+         <TouchableOpacity
+  key={index}
+  style={[
+    styles.option,
+    state === v.label && styles.selectedOption
+  ]}
+  onPress={() => {
+    setState(v.label);
+    setStateQuery("");
+    setStateOpen(false);
+    setErrors({ ...errors, state: "" });
+  }}
+>
+  <Text
+    style={[
+      styles.optionText,
+      state === v.label && styles.selectedOptionText
+    ]}
+  >
+    {v.label}
+  </Text>
+</TouchableOpacity>
+
           ))
         ) : (
           <Text style={styles.noResult}>No state found</Text>
@@ -608,7 +709,7 @@ if (res?.status === 201) {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
-    </View>
+    </KeyboardAvoidingView>
      </>
   );
 }
@@ -873,22 +974,34 @@ noResult: {
   //   zIndex: 999,
   // },
 
-    dropdownMenu: {
-        position: "absolute",
-        top: 50,
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 12,
-        zIndex: 9999,      
-        elevation: 20,    
-        maxHeight: 200,    
-    },
+ dropdownMenu: {
+  position: "absolute",
+  bottom: 52,        // 🔥 TOP side
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 9999,
+  elevation: 20,
+
+  minHeight: 150,    // ✅ 3 items minimum
+  maxHeight: 200,
+},
+
 
   option: { padding: 12 },
   optionText: { fontSize: 15 },
+
+  selectedOption: {
+  backgroundColor: "#E3EEFF",
+},
+selectedOptionText: {
+  color: "#2D6CDF",
+  fontWeight: "700",
+},
+
 
   imgBox: {
     width: 86,
@@ -976,6 +1089,40 @@ absoluteCenter: {
  marginLeft:90,
   marginTop: 10,   
 
+},
+mobileContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  height: 48,
+  borderWidth: 1,
+  borderColor: "#E6E9F0",
+  borderRadius: 12,
+  backgroundColor: "#fff",
+},
+
+countryBox: {
+  paddingHorizontal: 14,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+countryText: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#111827",
+},
+
+divider: {
+  width: 1,
+  height: "60%",
+  backgroundColor: "#E5E7EB",
+},
+
+mobileInput: {
+  flex: 1,
+  paddingHorizontal: 12,
+  fontSize: 14,
+  color: "#111827",
 },
 
 
