@@ -1,6 +1,6 @@
-import React, { createContext, useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
-import { retriveData } from "../Utils/Storage";
+import React, { createContext, useState, useContext } from "react";
+import AxiosConfig, { getAxios } from "../Config/AxiosConfig";
+import { CommonContexts } from "../Context/CommonContext";
 
 export const VendorContext = createContext();
 
@@ -8,22 +8,19 @@ export default function VendorProvider({ children }) {
   const [vendorList, setVendorList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-
   const getErrorMessage = (err) =>
     err?.response?.data?.message ||
     err?.response?.data ||
+    err?.message ||
     "Something went wrong";
 
- 
   const getVendorList = async (hostelId) => {
     setLoading(true);
     setVendorList([]);
 
     try {
       const axios = getAxios();
-      const res = await axios.get(
-        `/v2/vendors/all-vendors/${hostelId}`
-      );
+      const res = await axios.get(`/v2/vendors/all-vendors/${hostelId}`);
 
       if (res.status === 200) {
         setVendorList(res.data || []);
@@ -32,15 +29,15 @@ export default function VendorProvider({ children }) {
 
       return { success: false };
     } catch (err) {
-      console.log("Vendor list error:", err);
+      console.log("Vendor list error:", err?.response?.data || err);
       return { success: false, message: getErrorMessage(err) };
     } finally {
       setLoading(false);
     }
   };
 
- 
-const addVendor = async ({ profilePic, payLoads, hostelId }) => {
+  // ✅ ADD VENDOR
+ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
   setLoading(true);
 
   try {
@@ -52,70 +49,66 @@ const addVendor = async ({ profilePic, payLoads, hostelId }) => {
       name: "blob",
     });
 
-    if (profilePic) {
-      formData.append("profilePic", profilePic);
+    if (profilePic?.uri) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        name: profilePic.fileName || "vendor.jpg",
+        type: profilePic.type || "image/jpeg",
+      });
     }
 
     const res = await AxiosConfig.post("/v2/vendors", formData);
 
     if (res.status === 200 || res.status === 201) {
       await getVendorList(hostelId);
-      return { success: true, message: res.data };
+      return { success: true, data: res.data };
     }
 
-    return { success: false };
+    return { success: false, message: "Failed" };
   } catch (err) {
-    console.log("ADD VENDOR ERROR 👉", err?.response?.data);
-    return { success: false, message: getErrorMessage(err) };
+    console.log("ADD VENDOR ERROR 👉", err?.response?.data || err);
+    return { success: false, message: err?.response?.data?.message || "Something went wrong" };
   } finally {
     setLoading(false);
   }
 };
 
 
+  // ✅ UPDATE VENDOR
+  const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
+    setLoading(true);
 
+    try {
+      const formData = new FormData();
 
+      formData.append("updateVendor", JSON.stringify(updateVendor));
 
+      if (profilePic?.uri) {
+        formData.append("profilePic", {
+          uri: profilePic.uri,
+          name: profilePic.fileName || "vendor.jpg",
+          type: profilePic.type || "image/jpeg",
+        });
+      }
 
+      const res = await AxiosConfig.put(
+        `/v2/vendors/${updateVendor.vendorId}`,
+        formData
+      ); // ✅ no headers
 
- 
- 
-const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
-  setLoading(true);
+      if (res.status === 200) {
+        await getVendorList(hostelId);
+        return { success: true, data: res.data };
+      }
 
-  try {
-    const formData = new FormData();
-
-    formData.append("updateVendor", {
-      string: JSON.stringify(updateVendor),
-      type: "application/json",
-      name: "blob",
-    });
-
-    if (profilePic) {
-      formData.append("profilePic", profilePic);
+      return { success: false, message: "Failed to update vendor" };
+    } catch (err) {
+      console.log("UPDATE VENDOR ERROR 👉", err?.response?.data || err);
+      return { success: false, message: getErrorMessage(err) };
+    } finally {
+      setLoading(false);
     }
-
-    const res = await AxiosConfig.put(
-      `/v2/vendors/${updateVendor.vendorId}`,
-      formData
-    );
-
-    if (res.status === 200) {
-      await getVendorList(hostelId);
-      return { success: true, message: res.data };
-    }
-
-    return { success: false };
-  } catch (err) {
-    console.log("UPDATE VENDOR ERROR 👉", err?.response?.data);
-    return { success: false, message: getErrorMessage(err) };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   const deleteVendor = async (vendorId, hostelId) => {
     setLoading(true);
@@ -126,10 +119,7 @@ const updateVendor = async ({ profilePic, updateVendor, hostelId }) => {
 
       if (res.status === 200) {
         await getVendorList(hostelId);
-        return {
-          success: true,
-          message: "Vendor deleted successfully",
-        };
+        return { success: true, message: "Vendor deleted successfully" };
       }
 
       return { success: false, message: "Failed to delete vendor" };
