@@ -744,43 +744,42 @@ const addVendor = async (payloads, profilePic = null) => {
   try {
     setLoading(true);
     setErrorMsg("");
- 
+
     const token = await retriveData("token");
+    const axios = getAxios();
+
     const formData = new FormData();
- 
-    // ✅ payload JSON (IMPORTANT: key name = payLoads)
+
+    // ✅ payload JSON (IMPORTANT)
     formData.append("payLoads", {
       string: JSON.stringify(payloads),
       type: "application/json",
+      name: "blob",
     });
- 
-    // ✅ profile image
+
+    // ✅ optional profile image
     if (profilePic?.uri) {
       formData.append("profilePic", {
         uri: profilePic.uri,
         type: profilePic.type || "image/jpeg",
-        name: profilePic.fileName || "profile.jpg",
+        name: profilePic.fileName || "vendor.jpg",
       });
     }
-    const axios = getAxios();
-    const res = await axios.post(
-      "/v2/vendors",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
- 
+
+    const res = await axios.post("/v2/vendors", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
     if (res.status === 201 || res.status === 200) {
       return { success: true, data: res.data };
     }
- 
+
     return { success: false, message: "Vendor creation failed" };
   } catch (error) {
-    console.log("ADD VENDOR ERROR 👉", error?.response?.data);
+    console.log("ADD VENDOR ERROR 👉", error?.response?.data || error);
     return {
       success: false,
       message:
@@ -792,6 +791,58 @@ const addVendor = async (payloads, profilePic = null) => {
     setLoading(false);
   }
 };
+const updateVendor = async (vendorId, payloads, profilePic = null) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    // ✅ payload JSON
+    formData.append("updateVendor", {
+      string: JSON.stringify(payloads),
+      type: "application/json",
+      name: "blob",
+    });
+
+    // ✅ optional profile image
+    if (profilePic?.uri) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        type: profilePic.type || "image/jpeg",
+        name: profilePic.fileName || "vendor.jpg",
+      });
+    }
+
+    const res = await axios.put(`/v2/vendors/${vendorId}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Vendor update failed" };
+  } catch (error) {
+    console.log("UPDATE VENDOR ERROR 👉", error?.response?.data || error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 const editJoiningDate = async (hostelId, bookingId, payload) => {
   try {
@@ -975,6 +1026,8 @@ const initializeCancelCheckout = async (hostelId, customerId) => {
 };
 
 
+
+
   return (
     <CustomerContext.Provider
       value={{
@@ -992,7 +1045,7 @@ const initializeCancelCheckout = async (hostelId, customerId) => {
          getCustomerDetails,
          moveToNoticePeriod,
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
-         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,updateVendor
       }}
     >
       {children}

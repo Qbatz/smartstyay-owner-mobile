@@ -20,12 +20,13 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import { launchImageLibrary } from 'react-native-image-picker';
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useCustomer } from "../../../Context/CustomerContext";
 
 export default function AddVendorSheet({ onClose, vendorData }) {
 
 
-  // const {  addVendor } = useContext(CustomerContext);
-  const {addVendor,   updateVendor } = useContext(VendorContext);
+  const {  addVendor,updateVendor } = useContext(CustomerContext);
+  const {     getVendorList } = useContext(VendorContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const translateY = useRef(new Animated.Value(0)).current;
@@ -74,7 +75,7 @@ const [countryOpen, setCountryOpen] = useState(false);
       setLandmark(vendorData.landMark || "");
       setCity(vendorData.city || "");
       setStateName(vendorData.state || "");
-      setCountry(vendorData?.country || "");
+     setCountry(vendorData?.countryId || "");
       setPinCode(vendorData.pinCode ? String(vendorData.pinCode) : "");
 
       if (vendorData.profilePic) {
@@ -167,93 +168,232 @@ const [countryOpen, setCountryOpen] = useState(false);
       }
     });
   };
-
-
-
- const handleSubmit = async () => {
+  const handleSubmit = async () => {
   if (!validate()) return;
 
   setLoading(true);
 
-const payload = {
-  firstName,
-  lastName,
-  mobile: `91${mobile}`,
-  mailId: email,
-  businessName,
-  country: Number(country),
-  houseNo,
-  pinCode,
-  area: street,
-  landmark,
-  city,
-  state: stateName,
-};
-
+  const payload = {
+    hostelId: activeHostelId,
+    firstName,
+    lastName,
+    mobile: `91${mobile}`,
+    mailId: email,
+    businessName,
+    country: Number(country), 
+    houseNo,
+    pinCode,
+    area: street,
+    landmark,
+    city,
+    state: stateName,
+  };
 
   let res;
 
-  if (vendorData) {
-    // EDIT
-    res = await updateVendor({
-      profilePic: selectedImage?.uri
-        ? {
-            uri: selectedImage.uri,
-            name: "vendor.jpg",
-            type: "image/jpeg",
-          }
-        : null,
-      updateVendor: {
-        ...payload,
-        vendorId: vendorData.id,
-      },
-      hostelId: activeHostelId,
-    });
-  } else {
-    // ADD
-    res = await addVendor({
-      profilePic: selectedImage?.uri
-        ? {
-            uri: selectedImage.uri,
-            name: "vendor.jpg",
-            type: "image/jpeg",
-          }
-        : null,
-      payLoads: {
-        ...payload,
-        hostelId: activeHostelId,
-      },
-      hostelId: activeHostelId,
-    });
+  try {
+    if (vendorData) {
+      // ✅ UPDATE
+      res = await updateVendor(vendorData.id, payload, selectedImage);
+    } else {
+      // ✅ ADD
+      res = await addVendor(payload, selectedImage);
+    }
+  } catch (err) {
+    console.log("❌ API ERROR 👉", err?.response?.data || err);
+    res = { success: false, message: "Something went wrong" };
   }
 
   setLoading(false);
 
-  console.log("response", res);
-  
-
   if (res?.success) {
     setModalType("success");
-    setModalMessage(
-      vendorData
-        ? "Vendor Updated Successfully"
-        : "Vendor Added Successfully"
-    );
+    setModalMessage(vendorData ? "Vendor Updated Successfully" : "Vendor Added Successfully");
     setShowSuccessModal(true);
+     await getVendorList(activeHostelId);
 
     setTimeout(() => {
       setShowSuccessModal(false);
       onClose();
     }, 1500);
   } else {
+   
     setModalType("error");
-    setModalMessage("Something went wrong");
+    setModalMessage(res?.message || "Something went wrong");
     setShowSuccessModal(true);
-      setTimeout(() => {
+
+    setTimeout(() => {
       setShowSuccessModal(false);
     }, 1500);
   }
 };
+
+// const handleSubmit = async () => {
+//   if (!validate()) return;
+
+//   setLoading(true);
+
+//   const payload = {
+//     hostelId: activeHostelId,
+//     firstName,
+//     lastName,
+//     mobile: `91${mobile}`,
+//     mailId: email,
+//     businessName,
+//     country: Number(country),
+//     houseNo,
+//     pinCode,
+//     area: street,
+//     landmark,
+//     city,
+//     state: stateName,
+//   };
+
+//   let res;
+
+//   try {
+//     if (vendorData) {
+      
+//     res = await updateVendor(vendorData.id, payload, selectedImage);
+
+//     } else {
+     
+//       res = await addVendor(payload, selectedImage);
+//     }
+
+    
+//   } catch (err) {
+//     console.log("❌ API ERROR 👉", err?.response?.data || err);
+//     res = { success: false, message: "Something went wrong" };
+//   }
+
+//   setLoading(false);
+
+//   if (res?.success) {
+//     setModalType("success");
+//     setModalMessage(vendorData ? "Vendor Updated Successfully" : "Vendor Added Successfully");
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => {
+//       setShowSuccessModal(false);
+//       onClose();
+//     }, 1500);
+//   } else {
+//     console.log("❌ API FAIL RESPONSE:", res);
+//     setModalType("error");
+//     setModalMessage(res?.message || "Something went wrong");
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => {
+//       setShowSuccessModal(false);
+//     }, 1500);
+//   }
+// };
+
+
+
+//  const handleSubmit = async () => {
+//   if (!validate()) return;
+
+//   setLoading(true);
+
+// const payload = {
+//   firstName,
+//   lastName,
+//   mobile: `91${mobile}`,
+//   mailId: email,
+//   businessName,
+//   country: Number(country),
+//   houseNo,
+//   pinCode,
+//   area: street,
+//   landmark,
+//   city,
+//   state: stateName,
+// };
+
+
+//   let res;
+
+//   if (vendorData) {
+//     // EDIT
+//     // res = await updateVendor({
+//     //   profilePic: selectedImage?.uri
+//     //     ? {
+//     //         uri: selectedImage.uri,
+//     //         name: "vendor.jpg",
+//     //         type: "image/jpeg",
+//     //       }
+//     //     : null,
+//     //   updateVendor: {
+//     //     ...payload,
+//     //     vendorId: vendorData.id,
+//     //   },
+//     //   hostelId: activeHostelId,
+//     // });
+//     res = await updateVendor({
+//   profilePic: imageFile,
+//   updateVendor: {
+//     ...payload,
+//     vendorId: vendorData.id,
+//   },
+//   hostelId: activeHostelId,
+// });
+
+//   } else {
+//     // ADD
+//     // res = await addVendor({
+//     //   profilePic: selectedImage?.uri
+//     //     ? {
+//     //         uri: selectedImage.uri,
+//     //         name: "vendor.jpg",
+//     //         type: "image/jpeg",
+//     //       }
+//     //     : null,
+//     //   payLoads: {
+//     //     ...payload,
+//     //     hostelId: activeHostelId,
+//     //   },
+//     //   hostelId: activeHostelId,
+//     // });
+//     res = await addVendor({
+//   profilePic: imageFile,
+//   payLoads: {
+//     ...payload,
+//     hostelId: activeHostelId,
+//   },
+//   hostelId: activeHostelId,
+// });
+
+//   }
+
+//   setLoading(false);
+
+//   console.log("response", res);
+  
+
+//   if (res?.success) {
+//     setModalType("success");
+//     setModalMessage(
+//       vendorData
+//         ? "Vendor Updated Successfully"
+//         : "Vendor Added Successfully"
+//     );
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => {
+//       setShowSuccessModal(false);
+//       onClose();
+//     }, 1500);
+//   } else {
+//     setModalType("error");
+//     setModalMessage("Something went wrong");
+//     setShowSuccessModal(true);
+//       setTimeout(() => {
+//       setShowSuccessModal(false);
+//     }, 1500);
+//   }
+// };
 
 
 
@@ -569,11 +709,10 @@ const payload = {
     <View style={styles.dropdownMenu}>
       <TouchableOpacity
         style={styles.option}
-        onPress={() => {
-          setCountry(1);
-          setCountryOpen(false);
-          setErrors({ ...errors, country: "" });
-        }}
+       onPress={() => {
+  setCountry(1);   // ✅ number
+  setCountryOpen(false);
+}}
       >
         <Text style={styles.optionText}>India</Text>
       </TouchableOpacity>
