@@ -307,7 +307,7 @@ const handleBookToCheckin=()=>{
 
               <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
-                <Text style={styles.menuText}>Generate FS</Text>
+                <Text style={styles.menuText}>Generate</Text>
               </TouchableOpacity>
             </>
                             )}

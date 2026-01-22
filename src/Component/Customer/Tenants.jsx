@@ -981,15 +981,15 @@ const handleShowFinalSettlementNotice = (item)=>{
                 onPress={handleShowFinalSettlement}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Final Settlement</Text>
+                <Text style={styles.popupText}>Generate</Text>
               </TouchableOpacity>
- <TouchableOpacity
+ {/* <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowFinalNew}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Generate New</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowCancelNotice}
@@ -1093,15 +1093,15 @@ const handleShowFinalSettlementNotice = (item)=>{
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
                           />
-                          <Text style={styles.popupText}>Final Settlemnent</Text>
+                          <Text style={styles.popupText}>Generate</Text>
                         </TouchableOpacity>
-                         <TouchableOpacity
+                         {/* <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowFinalNew}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Generate New</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
                         <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
                           <Image
