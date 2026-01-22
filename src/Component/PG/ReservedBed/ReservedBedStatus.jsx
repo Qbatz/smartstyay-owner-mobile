@@ -160,7 +160,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
   <View key={index}>
    
 
-   <View style={styles.reservedRow}>
+   {/* <View style={styles.reservedRow}>
   <Text style={styles.sub}>Reserved by</Text>
 
   <View style={{ position: "relative" }}>
@@ -169,6 +169,8 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
     </TouchableOpacity>
 
     {menuOpen === index && (
+         <TouchableWithoutFeedback onPress={() => setMenuOpen(null)}>
+    <View style={styles.menuOverlay}>
       <View style={styles.dotMenu}>
         <TouchableOpacity onPress={()=>handleCheckIn(item)} style={styles.menuItem}>
           <Image source={Checkin} style={styles.menuIcon} />
@@ -203,9 +205,64 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
           <Text style={styles.menuText}>Edit</Text>
         </TouchableOpacity>
       </View>
+      </View>
+      </TouchableWithoutFeedback>
     )}
   </View>
+</View> */}
+<View style={styles.reservedRow}>
+  <Text style={styles.sub}>Reserved by</Text>
+
+  <TouchableOpacity
+    onPress={() => setMenuOpen(menuOpen === index ? null : index)}
+  >
+    <Image source={Dots} style={styles.dots} />
+  </TouchableOpacity>
 </View>
+
+{/* ✅ FULL SCREEN OUTSIDE CLICK CLOSE */}
+{menuOpen === index && (
+  <TouchableWithoutFeedback onPress={() => setMenuOpen(null)}>
+    <View style={styles.menuOverlay}>
+      {/* ✅ MENU BOX INSIDE CLICK PREVENT CLOSE */}
+      <TouchableWithoutFeedback>
+        <View style={styles.dotMenu}>
+          <TouchableOpacity
+            onPress={() => handleCheckIn(item)}
+            style={styles.menuItem}
+          >
+            <Image source={Checkin} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Check-In</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuOpen(null);
+              handleMakeUsInActive(item);
+              onClose();
+            }}
+          >
+            <Image source={MakeUs} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Make as Inactive</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuOpen(null);
+              handleEdit();
+            }}
+          >
+            <Image source={Checkin} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Edit</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </TouchableWithoutFeedback>
+)}
+
 
 
     <View style={styles.userRow}>
@@ -457,8 +514,8 @@ const styles = StyleSheet.create({
 },
 dotMenu: {
   position: "absolute",
-  top: 36,            // 👈 dot keela
-  right: 0,
+  top: 50,      
+  right: 20,
   backgroundColor: "#fff",
   borderRadius: 12,
   paddingVertical: 6,
@@ -467,7 +524,6 @@ dotMenu: {
   shadowColor: "#000",
   shadowOpacity: 0.15,
   shadowRadius: 10,
-  zIndex: 999,
 },
 menuItem: {
   flexDirection: "row",
@@ -486,6 +542,15 @@ menuText: {
   fontSize: 14,
   color: "#000",
 },
+menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 999,
+},
+
 
 
 

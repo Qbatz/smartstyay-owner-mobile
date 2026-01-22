@@ -304,6 +304,11 @@ const closeSheet = () => {
                 </Text>
                           </View>
                            {showReservedMenu === index && (
+                            <>
+                                <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>
+      <View style={StyleSheet.absoluteFillObject} />
+    </TouchableWithoutFeedback>
+
                     <View style={styles.inlineMenu}>
                       <TouchableOpacity
                         style={styles.menuItem}
@@ -331,6 +336,7 @@ const closeSheet = () => {
                         <Text style={styles.menuText}>Make as Inactive</Text>
                       </TouchableOpacity>
                     </View>
+                    </>
                   )}
                           
                 </View>

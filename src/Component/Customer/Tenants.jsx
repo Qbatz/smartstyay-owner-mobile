@@ -738,7 +738,7 @@ const handleShowFinalSettlementNotice = (item)=>{
 
               ))}
 
-              {!loading && customers.length === 0 &&
+              {!loading && customers?.listCustomers?.length === 0 &&
                 <View style={styles.emptyContainer}>
                   <Image source={EmptyState} style={styles.emptyImage} />
                   <Text style={styles.emptyText}>No Data Found</Text>
