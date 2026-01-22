@@ -46,6 +46,21 @@ export default function ComplaintDetails({
        const { activeHostelId } = useContext(CommonContexts);
 
        console.log("selectedComplaint", selectedComplaint);
+
+        const getInitialsFromName = (name = "") => {
+  if (!name) return "";
+
+  const words = name.trim().split(" ").filter(Boolean);
+
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  return (
+    words[0].charAt(0).toUpperCase() +
+    words[words.length - 1].charAt(0).toUpperCase()
+  );
+};
        
   const panResponder = useRef(
     PanResponder.create({
@@ -180,7 +195,22 @@ console.log("comments", complaint);
         <Text style={styles.sectionTitle}>Complaint from</Text>
 
         <View style={styles.userRow}>
-          <Image source={Profile} style={styles.avatar} />
+          {/* <Image source={Profile} style={styles.avatar} /> */}
+
+                  {complaint?.customerProfile ? (
+            <Image
+              source={{ uri: item.customerProfile }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.initialCircle}>
+              <Text style={styles.initialText}>
+                {complaint?.initials
+                  ? complaint.initials
+                  : getInitialsFromName(complaint?.customerName)}
+              </Text>
+            </View>
+          )}
 
           <View>
             <Text style={styles.userName}>
@@ -351,7 +381,28 @@ const styles = StyleSheet.create({
   },
 
   userRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
-  avatar: { width: 45, height: 45, borderRadius: 30, marginRight: 12 },
+   avatar: {
+  width: 30,
+  height: 30,
+  borderRadius: 15,
+  marginRight: 6,
+},
+
+initialCircle: {
+  width: 30,
+  height: 30,
+  borderRadius: 15,
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight: 6,
+},
+
+initialText: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#4B5563",
+},
 
   userName: { fontSize: 16, fontWeight: "600" },
 

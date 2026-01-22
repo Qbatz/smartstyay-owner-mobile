@@ -89,6 +89,23 @@ export default function Complaints({ route }) {
   };
 
   console.log("users", users);
+
+
+  const getInitialsFromName = (name = "") => {
+  if (!name) return "";
+
+  const words = name.trim().split(" ").filter(Boolean);
+
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  return (
+    words[0].charAt(0).toUpperCase() +
+    words[words.length - 1].charAt(0).toUpperCase()
+  );
+};
+
   
    
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -260,7 +277,21 @@ const formatDate = (date) => {
         </Text>
 
         <View style={styles.row}>
-          <Image source={Profile} style={styles.userIcon} />
+        {item?.customerProfile ? (
+  <Image
+    source={{ uri: item.customerProfile }}
+    style={styles.avatar}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {item?.initials
+        ? item.initials
+        : getInitialsFromName(item?.customerName)}
+    </Text>
+  </View>
+)}
+
           <Text style={styles.user}>{userText}</Text>
         </View>
       </TouchableOpacity>
@@ -758,7 +789,29 @@ dropdownItemText: {
     fontSize: 15,
     fontWeight: "600",
   },
-  
+  avatar: {
+  width: 30,
+  height: 30,
+  borderRadius: 15,
+  marginRight: 6,
+},
+
+initialCircle: {
+  width: 30,
+  height: 30,
+  borderRadius: 15,
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight: 6,
+},
+
+initialText: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#4B5563",
+},
+
 
 
 });
