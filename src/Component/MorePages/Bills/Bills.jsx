@@ -1423,7 +1423,7 @@ navigation.navigate("CancelNotice")
         <Image source={EmptyFloor} style={styles.image} />
         <Text style={styles.noFloorText}>No bills are there!</Text>
 
-        <TouchableOpacity style={styles.addFloorBtn}>
+        <TouchableOpacity style={styles.addFloorBtn} onPress={handleCreateBill}>
           <Text style={styles.addFloorText}>+ Add Bill</Text>
         </TouchableOpacity>
       </View>
