@@ -209,10 +209,30 @@ const handleBookToCheckin=()=>{
 
           <View style={styles.headerRow}>
             <View style={styles.personRow}>
-              <Image
+              {/* <Image
                 source={require("../../../Assets/Images/Avatar.png")}
                 style={styles.avatar}
-              />
+              /> */}
+              {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
+  <Image
+    source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
+    style={styles.avatar}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {selectedBed?.currentTenantInfo?.[0]?.initials ||
+        selectedBed?.currentTenantInfo?.[0]?.tenantFullName
+          ?.split(" ")
+          ?.map(w => w[0])
+          ?.join("")
+          ?.slice(0, 2)
+          ?.toUpperCase() ||
+        "--"}
+    </Text>
+  </View>
+)}
+
               <View>
                 <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
                 <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
@@ -316,10 +336,28 @@ const handleBookToCheckin=()=>{
 <View style={{ position: "relative" }}  key={index}>
  <View style={styles.headerRow}>
             <View style={styles.personRow}>
-              <Image
+              {/* <Image
                 source={require("../../../Assets/Images/profile.png")}
                 style={styles.avatar}
-              />
+              /> */}
+              {item?.profilePic ? (
+  <Image
+    source={{ uri: item.profilePic }}
+    style={styles.avatar}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {item?.tenantFullName
+        ?.split(" ")
+        ?.map(w => w[0])
+        ?.join("")
+        ?.slice(0, 2)
+        ?.toUpperCase() || "--"}
+    </Text>
+  </View>
+)}
+
               <View>
                 <Text style={styles.name}>{item.tenantFullName}</Text>
                 <Text style={styles.phone}>+91 {item.mobile}</Text>
@@ -595,5 +633,21 @@ menuTextDisabled: {
     backgroundColor: "transparent",
     zIndex: 1,
   },
+  initialCircle: {
+  width: 42,
+  height: 42,
+  borderRadius: 21,
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight:5
+},
+
+initialText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#374151", // dark grey ✅
+},
+
 
 });
