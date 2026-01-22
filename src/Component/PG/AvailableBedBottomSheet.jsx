@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     top: 0, bottom: 0, left: 0, right: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-    marginBottom: 30
+   
   },
   overlayTouch: { flex: 1 },
   sheet: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    paddingBottom: 30,
+    paddingBottom: 50,
   },
   handle: {
     width: 60, height: 5,
