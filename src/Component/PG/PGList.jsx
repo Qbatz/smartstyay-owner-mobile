@@ -1241,6 +1241,7 @@ useFocusEffect(
         selectTap={route?.params?.setShowTabBar}
         handleEditBed={handleEditBed}
         selectedBed={selectedBed}
+        onBedAdded={handleBedAdded}
       />
 
       <OccupiedBedSheet

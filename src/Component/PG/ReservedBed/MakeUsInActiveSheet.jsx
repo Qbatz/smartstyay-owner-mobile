@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useContext } from "react";
+import React, { useRef, useEffect, useState, useContext,useCallback } from "react";
 import {
   View,
   Text,
@@ -15,16 +15,19 @@ import dayjs from "dayjs";
 import { useCustomer } from "../../../Context/CustomerContext";
 import CalendarImage from "../../../Assets/Images/calendar.png";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useFloor } from "../../../Context/PayingGuestContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
-export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems }) {
+export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems ,onBedAdded}) {
   const translateY = useRef(new Animated.Value(400)).current;
   const [joiningDate, setJoiningDate] = useState(null);
   const [bookingDetails, setBookingDetails] = useState("")
   const [comments, setComments] = useState("");
   const { activeHostelId } = useContext(CommonContexts);
-  const { cancelCheckout, initializeCheckIn, initializeCancelBooking, cancelBooking } = useCustomer();
+   const { getAllBedsByRoom } = useFloor();
+  const { cancelCheckout, initializeCheckIn, initializeCancelBooking, cancelBooking,getCustomersByHostel } = useCustomer();
   const [openJoinDatePic, setOpenJoinDatePic] = useState("");
   const [bankdetails, setBankDetails] = useState("")
   const [commentError, setCommentError] = useState("")
@@ -32,8 +35,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  console.log("bookedItems", bookedItems)
+  console.log("bookingDetails", bookingDetails)
   const today = dayjs().format("YYYY-MM-DD");
+  const [customers, setCustomers] = useState([]);
 
   const minDate = bookingDetails?.bookedDate
     ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
@@ -54,7 +58,27 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
     initCheckIn();
   }, [activeHostelId, customerId]);
+
+    useFocusEffect(
+      useCallback(() => {
+        if (activeHostelId) {
+          fetchCustomers();
+        }
+      }, [activeHostelId])
+    );
+  
+  
+  
+    const fetchCustomers = async () => {
+      const data = await getCustomersByHostel(activeHostelId);
+      setCustomers(data.listCustomers || []);
+    };
   console.log("setBookingDetails", bookingDetails)
+  const matchedCustomer = customers?.find(
+  (c) => String(c.customerId) === String(bookedItems?.tenetId)
+);
+
+console.log("✅ matchedCustomer", matchedCustomer);
 
   useEffect(() => {
     if (!customerId) return;
@@ -85,7 +109,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
     onClose();
   };
 
-  console.log("selectedBed", selectedBed)
+  console.log("selectedBedcustomers", customers)
   console.log("selectedItempr", selectedItem)
   useEffect(() => {
     Animated.timing(translateY, {
@@ -115,7 +139,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
     }).start();
   }, [visible]);
 
-  if (!visible) return null;
+  if (!visible && !showSuccess) return null;
   const handleConfirmCancel = async () => {
     let valid = true;
     if (!joiningDate) {
@@ -148,6 +172,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
       setMessage(res.data);
       setShowSuccess(true);
       onSuccess && onSuccess();
+     onBedAdded && onBedAdded(matchedCustomer?.roomId);
 
       setTimeout(() => {
         setShowSuccess(false);
