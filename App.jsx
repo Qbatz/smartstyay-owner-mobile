@@ -112,10 +112,20 @@ import { retriveData } from './src/Utils/Storage';
 import { LOGGEDIN, USER_ID } from './src/Utils/Constant';
 import SuccessFlow from './src/SuccessFlow'
 import { initBaseUrl } from './src/Utils/Constant';
+import { Text, TextInput } from "react-native";
+
+
+
 
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+
+  Text.defaultProps = Text.defaultProps || {};
+Text.defaultProps.allowFontScaling = false;
+
+TextInput.defaultProps = TextInput.defaultProps || {};
+TextInput.defaultProps.allowFontScaling = false;
 
   const { CommonModule } = NativeModules;
 
@@ -180,6 +190,8 @@ function AppContent(props) {
   const Navigation = createStackNavigator();
   const [isLoggedIn,setIsLoggedIn]=useState()
   const [pinVerify, setPinVerify] = useState()
+
+
 
   console.log(isLoggedIn)
 

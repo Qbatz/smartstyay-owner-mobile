@@ -7,8 +7,10 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  BackHandler,Modal , TouchableWithoutFeedback
+  BackHandler,Modal , TouchableWithoutFeedback , Animated , Keyboard
 } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
+
 import { useNavigation, useRoute , useFocusEffect } from "@react-navigation/native";
 import { CommonContexts } from "../../Context/CommonContext";
 import { ComplaintContext } from "../../Context/ComplaintContext";
@@ -25,6 +27,11 @@ import DownArrow from "../../Assets/Images/direction-down.png";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+
+const ITEM_HEIGHT = 14;
+const MIN_ITEMS = 3;
+const MAX_ITEMS = 6;
+
 
 export default function AddComplaint() {
 
@@ -48,11 +55,14 @@ export default function AddComplaint() {
       const [selectedCustomer, setSelectedCustomer] = useState(null);
       
     const [CustomerOptions , setCustomerOptions] = useState([])
+
+
+
+
+
     
 
-  const [floor] = useState("Ground");
-  const [room] = useState("10-A");
-  const [bed] = useState("A1");
+
 
   const [date, setDate] = useState(new Date());
   const [showDate, setShowDate] = useState(false);
@@ -75,6 +85,8 @@ const [initialEditState, setInitialEditState] = useState(null);
   const [complaintType, setComplaintType] = useState(null);
 
   const [description, setDescription] = useState("");
+  const [isDescFocused, setIsDescFocused] = useState(false);
+
 
     const blockedStatus = [
   "Vacated",
@@ -82,6 +94,32 @@ const [initialEditState, setInitialEditState] = useState(null);
   "Inactive",
   "Settlement Generated",
 ];
+
+ const sheetY = useRef(new Animated.Value(0)).current;
+
+
+    useEffect(() => {
+      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        Animated.timing(sheetY, {
+          toValue: -e.endCoordinates.height + 20,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      });
+  
+      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        Animated.timing(sheetY, {
+          toValue: 0,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      });
+  
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, []);
 
   const closeAll = () => {
     setCustomerOpen(false);
@@ -488,6 +526,7 @@ const handleSubmitComplaint = async () => {
    
    
 
+  <TouchableWithoutFeedback onPress={closeAll}>
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -507,25 +546,8 @@ const handleSubmitComplaint = async () => {
       >
    
 
-         <Text style={styles.label}>
-  Customer <Text style={{ color: "red" }}>*</Text>
-</Text>
 
-<TouchableOpacity
-  style={styles.selectBox}
-  disabled={mode === "edit"}
-  onPress={() => {
-    setCustomerOpen(!customerOpen);
-    setCtypeOpen(false);
-  }}
->
-  <Text style={styles.selectedText}>
-    {selectedCustomer?.fullName || "Select Customer"}
-  </Text>
-  <Text style={styles.arrow}>⌄</Text>
-</TouchableOpacity>
-
-{customerOpen && (
+{/* {customerOpen && (
   <View style={styles.dropdownMenu}>
     <ScrollView nestedScrollEnabled>
      {CustomerOptions.map((item) => {
@@ -559,73 +581,158 @@ const handleSubmitComplaint = async () => {
 
     </ScrollView>
   </View>
-)}
+)} */}
+
+<View style={{ position: "relative", zIndex: 20 }}>
+  <Text style={styles.label}>
+    Customer <Text style={{ color: "red" }}>*</Text>
+  </Text>
+
+  <TouchableOpacity
+    style={styles.selectBox}
+    disabled={mode === "edit"}
+    onPress={() => {
+      setCustomerOpen(!customerOpen);
+      setCtypeOpen(false);
+    }}
+  >
+    <Text style={styles.selectedText}>
+      {selectedCustomer?.fullName || "Select Customer"}
+    </Text>
+    <Text style={styles.arrow}>⌄</Text>
+  </TouchableOpacity>
+
+  {customerOpen && (
+    <View
+      style={[
+        styles.dropdownMenu,
+        {
+          top: 54,
+          minHeight: ITEM_HEIGHT * MIN_ITEMS,
+          maxHeight: ITEM_HEIGHT * MAX_ITEMS,
+        },
+      ]}
+    >
+      <ScrollView keyboardShouldPersistTaps="handled">
+        {CustomerOptions.length > 0 ? (
+          CustomerOptions.map((item) => (
+            <TouchableOpacity
+              key={item.customerId}
+              style={[
+                styles.dropdownOption,
+                selectedCustomer?.customerId === item.customerId &&
+                  styles.dropdownOptionSelected,
+              ]}
+              onPress={() => {
+                setSelectedCustomer(item);
+                setCustomerOpen(false);
+                setUserErrmsg("");
+              }}
+            >
+              <Text
+                style={[
+                  styles.optionText,
+                  selectedCustomer?.customerId === item.customerId &&
+                    styles.optionTextSelected,
+                ]}
+              >
+                {item.fullName}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>No customer available</Text>
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  )}
+</View>
 
 {userErrmsg && <ErrorMessage message={userErrmsg} type="error" />}
 
 
+
       
-      <Text style={styles.label}>
-  Complaint Type <Text style={{ color: "red" }}>*</Text>
-</Text>
-
-<TouchableOpacity
-  style={styles.selectBox}
-  disabled={mode === "edit"}
-  onPress={() => {
-    setCtypeOpen(!ctypeOpen);
-    setCustomerOpen(false);
-  }}
->
-  <Text style={styles.selectedText}>
-    {selectedComplaintType?.raw?.complaintTypeName || "Select Complaint Type"}
+<View style={{ position: "relative", zIndex: 15 }}>
+  <Text style={styles.label}>
+    Complaint Type <Text style={{ color: "red" }}>*</Text>
   </Text>
-  <Text style={styles.arrow}>⌄</Text>
-</TouchableOpacity>
 
-{ctypeOpen && (
-  <View style={styles.dropdownMenu}>
-    <ScrollView nestedScrollEnabled>
-     {complaintTypes.map((item) => {
-  const isSelected =
-    selectedComplaintType?.raw?.complaintTypeId ===
-    item.raw.complaintTypeId;
+  <TouchableOpacity
+    style={styles.selectBox}
+    disabled={mode === "edit"}
+    onPress={() => {
+      setCtypeOpen(!ctypeOpen);
+      setCustomerOpen(false);
+    }}
+  >
+    <Text style={styles.selectedText}>
+      {selectedComplaintType?.raw?.complaintTypeName ||
+        "Select Complaint Type"}
+    </Text>
+    <Text style={styles.arrow}>⌄</Text>
+  </TouchableOpacity>
 
-  return (
-    <TouchableOpacity
-      key={item.raw.complaintTypeId}
+  {ctypeOpen && (
+    <View
       style={[
-        styles.dropdownOption,
-        isSelected && styles.dropdownOptionSelected,
+        styles.dropdownMenu,
+        {
+          top: 54,
+          minHeight: ITEM_HEIGHT * MIN_ITEMS,
+          maxHeight: ITEM_HEIGHT * MAX_ITEMS,
+        },
       ]}
-      onPress={() => {
-        setSelectedComplaintType(item);
-        setCtypeOpen(false);
-        setComplaintTypeErrmsg("");
-      }}
     >
-      <Text
-        style={[
-          styles.optionText,
-          isSelected && styles.optionTextSelected,
-        ]}
-      >
-        {item.raw.complaintTypeName}
-      </Text>
-    </TouchableOpacity>
-  );
-})}
-
-    </ScrollView>
-  </View>
-)}
+      <ScrollView keyboardShouldPersistTaps="handled">
+        {complaintTypes.length > 0 ? (
+          complaintTypes.map((item) => (
+            <TouchableOpacity
+              key={item.raw.complaintTypeId}
+              style={[
+                styles.dropdownOption,
+                selectedComplaintType?.raw?.complaintTypeId ===
+                  item.raw.complaintTypeId &&
+                  styles.dropdownOptionSelected,
+              ]}
+              onPress={() => {
+                setSelectedComplaintType(item);
+                setCtypeOpen(false);
+                setComplaintTypeErrmsg("");
+              }}
+            >
+              <Text
+                style={[
+                  styles.optionText,
+                  selectedComplaintType?.raw?.complaintTypeId ===
+                    item.raw.complaintTypeId &&
+                    styles.optionTextSelected,
+                ]}
+              >
+                {item.raw.complaintTypeName}
+              </Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>
+              No complaint type available
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  )}
+</View>
 
 {complaintTypeErrmsg && (
   <ErrorMessage message={complaintTypeErrmsg} type="error" />
 )}
 
 
-<Text style={styles.label}>Floor </Text>
+<Text style={styles.label}>Floor<Text style={{ color: "red" }}> *</Text></Text>
 <TextInput
   style={styles.inputBox}
   value={selectedCustomer?.floorName || ""}
@@ -633,7 +740,7 @@ const handleSubmitComplaint = async () => {
   placeholder="Select Floor"
 />
 
-<Text style={styles.label}>Room </Text>
+<Text style={styles.label}>Room<Text style={{ color: "red" }}> *</Text></Text>
 <TextInput
   style={styles.inputBox}
   value={selectedCustomer?.roomName || ""}
@@ -641,7 +748,7 @@ const handleSubmitComplaint = async () => {
   placeholder="Select Room"
 />
 
-<Text style={styles.label}>Bed </Text>
+<Text style={styles.label}>Bed<Text style={{ color: "red" }}> *</Text></Text>
 <TextInput
   style={styles.inputBox}
   value={selectedCustomer?.bedName || ""}
@@ -683,7 +790,115 @@ const handleSubmitComplaint = async () => {
 {dateErrmsg && <ErrorMessage message={dateErrmsg} type="error" />}
 
 
- {openComplaintDatePic && (
+ 
+  {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
+
+
+
+
+<Animated.View
+  style={{
+    transform: [{ translateY: sheetY }], zIndex: 20,
+  }}
+>
+  <Text style={styles.label}>Description</Text>
+{/* 
+  <TextInput
+    style={styles.descriptionBox}
+    placeholder="Enter Description"
+    placeholderTextColor="#C3C3C3"
+    multiline
+    textAlignVertical="top"
+    value={description}
+    onChangeText={handleDescriptionChange}
+  /> */}
+
+  <TextInput
+  style={styles.descriptionBox}
+  placeholder="Enter Description"
+  placeholderTextColor="#C3C3C3"
+  multiline
+  textAlignVertical="top"
+  value={description}
+  onChangeText={handleDescriptionChange}
+  onFocus={() => setIsDescFocused(true)}
+  onBlur={() => setIsDescFocused(false)}
+/>
+
+  <View style={styles.footer}>
+    <TouchableOpacity
+      style={styles.submitBtn}
+      onPress={handleSubmitComplaint}
+    >
+      <Text style={styles.submitText}>
+        {mode === "edit" ? "Update Complaint" : "Add Complaint"}
+      </Text>
+    </TouchableOpacity>
+  </View>
+</Animated.View>
+
+
+      {/* <Text style={styles.label}>Description</Text>
+
+<TextInput
+  style={styles.descriptionBox}
+  placeholder="Enter Description"
+  placeholderTextColor="#C3C3C3"
+  multiline
+  textAlignVertical="top"
+  value={description}
+  onChangeText={handleDescriptionChange}
+/>
+
+
+        <View style={{ height: 160 }} /> */}
+      </ScrollView>
+
+      {/* <View style={styles.footer}>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmitComplaint }>
+          <Text style={styles.submitText}>
+            {mode === "edit" ? "Update Complaint" : "Add Complaint"}
+          </Text>
+        </TouchableOpacity>
+      </View> */}
+
+ 
+
+    </View>
+
+    </TouchableWithoutFeedback>
+
+         <Modal
+  transparent
+  visible={openDate}
+  animationType="fade"
+  onRequestClose={() => setOpenDate(false)}
+>
+  <View style={styles.datePickerOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenDate(false)}
+    />
+
+    <View style={styles.datePickerBox}>
+      <TouchableWithoutFeedback>
+        <View>
+          <DatePicker
+            mode="single"
+            date={complaintDate}
+            onChange={(d) => {
+              setComplaintDate(d.date);
+              setOpenDate(false);
+            }}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </View>
+</Modal>
+
+{openComplaintDatePic && (
   <View style={styles.dateOverlay}>
     <TouchableWithoutFeedback onPress={() => setComplaintDatePic(false)}>
       <View style={styles.overlayBg} />
@@ -725,64 +940,6 @@ const handleSubmitComplaint = async () => {
   </View>
 )}
  
-  {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
-
-
-
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={styles.descriptionBox}
-          placeholder="Enter Description"
-          placeholderTextColor="#C3C3C3"
-          multiline
-          value={description}
-           onChangeText={handleDescriptionChange}
-        />
-
-        <View style={{ height: 120 }} />
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmitComplaint }>
-          <Text style={styles.submitText}>
-            {mode === "edit" ? "Update Complaint" : "Add Complaint"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
- 
-
-    </View>
-
-         <Modal
-  transparent
-  visible={openDate}
-  animationType="fade"
-  onRequestClose={() => setOpenDate(false)}
->
-  <View style={styles.datePickerOverlay}>
-    <TouchableOpacity
-      style={styles.outsideTouch}
-      activeOpacity={1}
-      onPress={() => setOpenDate(false)}
-    />
-
-    <View style={styles.datePickerBox}>
-      <TouchableWithoutFeedback>
-        <View>
-          <DatePicker
-            mode="single"
-            date={complaintDate}
-            onChange={(d) => {
-              setComplaintDate(d.date);
-              setOpenDate(false);
-            }}
-          />
-        </View>
-      </TouchableWithoutFeedback>
-    </View>
-  </View>
-</Modal>
      </>
   );
 }
@@ -824,17 +981,17 @@ const styles = StyleSheet.create({
 
   downArrow: { width: 18, height: 18, tintColor: "#5E5E5E" },
 
-  dropdownMenu: {
-    position: "absolute",
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 10,
-    zIndex: 999,
-  },
+  // dropdownMenu: {
+  //   position: "absolute",
+  //   top: 52,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: "#fff",
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   borderRadius: 10,
+  //   zIndex: 999,
+  // },
 
   option: { padding: 14 },
   optionText: { fontSize: 15, color: "#000" },
@@ -844,19 +1001,19 @@ const styles = StyleSheet.create({
 
   arrow: { fontSize: 18, color: "#666" },
 
-  dropdownMenu: {
-    position: "absolute",
-    top: 54,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: "#DDDDDD",
-    elevation: 10,
-    zIndex: 999,
-    overflow: "hidden",
-  },
+  // dropdownMenu: {
+  //   position: "absolute",
+  //   top: 54,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: "#fff",
+  //   borderWidth: 1,
+  //   borderRadius: 12,
+  //   borderColor: "#DDDDDD",
+  //   elevation: 10,
+  //   zIndex: 999,
+  //   overflow: "hidden",
+  // },
 
   dropdownOption: {
     paddingVertical: 12,
@@ -906,12 +1063,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  footer: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
+footer: {
+  backgroundColor:'#fff',
+  marginTop: 16,
+  marginBottom: 20,
+},
+
+dimOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.35)",
+  zIndex: 8,
+},
 
   submitBtn: {
     backgroundColor: "#1D5BEE",
@@ -1003,6 +1165,31 @@ calendarIcon: {
   height: 20,
   tintColor: "#6B7280",
 },
+
+emptyBox: {
+  height: ITEM_HEIGHT * MIN_ITEMS,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+emptyText: {
+  color: "#9CA3AF",
+  fontSize: 14,
+},
+
+dropdownMenu: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 12,
+  elevation: 10,
+  zIndex: 9999,
+  overflow: "hidden",
+},
+
 
 newDropdownMenu: {
   position: "absolute",

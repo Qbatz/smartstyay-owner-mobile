@@ -71,18 +71,22 @@ export default function SettingsScreen({ navigation }) {
 useFocusEffect(
   useCallback(() => {
     const onBackPress = () => {
-      navigation.navigate("MoreDesign");
-      return true;
+      if (navigation.canGoBack()) {
+        navigation.goBack()
+        return true;
+      }
+      return false;
     };
 
-    const subscription = BackHandler.addEventListener(
+    const sub = BackHandler.addEventListener(
       "hardwareBackPress",
       onBackPress
     );
 
-    return () => subscription.remove(); 
+    return () => sub.remove();
   }, [navigation])
 );
+
 
 
 
@@ -107,21 +111,22 @@ const renderItem = (item) => (
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-       <TouchableOpacity onPress={() => navigation.navigate("MoreDesign")}>
-          <Image
-            source={BackArrow}
-            style={styles.backIcon}
-          />
-        </TouchableOpacity>
+   <View style={styles.header}>
+  {/* LEFT SIDE */}
+  <View style={styles.headerLeft}>
+    <TouchableOpacity onPress={() => navigation.goBack()}>
+      <Image source={BackArrow} style={styles.backIcon} />
+    </TouchableOpacity>
 
-        <Text style={styles.headerText}>Settings</Text>
+    <Text style={styles.headerText}>Settings</Text>
+  </View>
 
-        <Image
-          source={FilterIcon}
-          style={styles.settingsIcon}
-        />
-      </View>
+  {/* RIGHT SIDE */}
+  <TouchableOpacity>
+    <Image source={FilterIcon} style={styles.settingsIcon} />
+  </TouchableOpacity>
+</View>
+
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Search box */}
@@ -157,33 +162,38 @@ const styles = StyleSheet.create({
   paddingTop:40,
   marginBottom:30
 },
+header: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 16,
+  height: 60,
+},
 
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    height: 60,
-  },
+headerLeft: {
+  flexDirection: "row",
+  alignItems: "center",
+},
 
-  backIcon: {
-    width: 22,
-    height: 22,
-    tintColor: "#000",
-  },
+headerText: {
+  marginLeft: 12,
+  fontSize: 18,
+  fontWeight: "600",
+  color: "#000",
+},
 
-  headerText: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000",
-  },
+backIcon: {
+  width: 22,
+  height: 22,
+  tintColor: "#000",
+},
 
-  settingsIcon: {
-    width: 22,
-    height: 22,
-    tintColor: "#000",
-  },
+settingsIcon: {
+  width: 22,
+  height: 22,
+  tintColor: "#000",
+},
+
 
   searchBox: {
     backgroundColor: "#fff",

@@ -1066,7 +1066,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (refundInitDetails?.refundableAmount != null) {
-    setRefundBalance(refundInitDetails.refundableAmount);
+    setRefundBalance(refundInitDetails?.pendingRefund);
     setRefundAmount("");
   }
 }, [refundInitDetails]);
@@ -2440,7 +2440,7 @@ navigation.navigate("CancelNotice")
     let num = Number(val);
     if (isNaN(num)) num = 0;
 
-    const max = refundInitDetails?.refundableAmount || 0;
+    const max = refundInitDetails?.pendingRefund || 0;
 
     // ❌ block more than refundable
     if (num > max) num = max;
@@ -3341,26 +3341,19 @@ dropdownText: {
   fontSize: 15,
 },
 transactiondropdown: {
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#E6E6E6",
+  position: "absolute",
+  bottom: 52,        // 🔥 TOP side
+  left: 0,
+  right: 0,
   backgroundColor: "#fff",
-  marginTop: 2,
-  overflow: "hidden",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 9999,
+  elevation: 20,
 
-  // default → multiple items ku
-  // minHeight: 130,
-  maxHeight: 130,
-
-  ...Platform.select({
-    ios: {
-      shadowColor: "#000",
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
-    },
-    android: { elevation: 3 },
-  }),
+  minHeight: 150,    // ✅ 3 items minimum
+  maxHeight: 200,
 },
 
 
