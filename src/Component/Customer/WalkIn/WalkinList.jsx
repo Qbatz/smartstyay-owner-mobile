@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
-export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, navigation }) {
+export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, navigation,searchText }) {
   const { getCustomersByHostel, deleteCustomer, loading } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
 
@@ -137,7 +137,13 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   }, [showFilter]);
 
 
-
+const filteredWalkins = walkinCustomers.filter((item) => {
+  const search = searchText.trim().toLowerCase();
+  return (
+    item?.fullName?.toLowerCase().includes(search) ||
+    item?.mobile?.toString().includes(search)
+  );
+});
   useFocusEffect(
     useCallback(() => {
       fetchWalkinCustomers();
@@ -181,8 +187,31 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
       {loading && <Loader />}
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
+       {
+        walkinCustomers?.length > 0 &&
+         <Text style={styles.monthHeading}>This Month</Text>
+       }
+        
+{!loading && walkinCustomers.length === 0 &&
+            <View style={styles.emptyContainer}>
+              <Image source={EmptyState} style={styles.emptyImage} />
+            <Text style={styles.emptyText}>
+  Add new tenants to start tracking{"\n"}
+  bookings and check-ins.
+</Text>
 
-        <Text style={styles.monthHeading}>This Month</Text>
+               <TouchableOpacity style={styles.addBtnAdd} onPress={() =>
+          navigation.navigate("AddTenant", {
+            refreshWalkins: walkinCustomers,
+          })
+        }>
+                    <Text style={styles.addBtnText}>
+                    + Add Tenant
+                    </Text>
+                  </TouchableOpacity>
+            </View>
+          }
+       
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -191,7 +220,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
 
 
 
-          {walkinCustomers.map((item) => (
+          {filteredWalkins.map((item) => (
             <View key={item.customerId} style={styles.row}>
               <View style={styles.avatarBox}>
                 <Image source={UserIcon} style={styles.avatar} />
@@ -215,14 +244,10 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
               </View>
             </View>
           ))}
-          {!loading && walkinCustomers.length === 0 &&
-            <View style={styles.emptyContainer}>
-              <Image source={EmptyState} style={styles.emptyImage} />
-              <Text style={styles.emptyText}>No Data Found</Text>
-            </View>
-          }
+         
 
         </ScrollView>
+         
         {menuVisible && (
           <TouchableOpacity
             activeOpacity={1}
@@ -256,7 +281,8 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
           </TouchableOpacity>
         )}
 
-
+ {walkinCustomers?.length > 0 &&
+<>
         <TouchableOpacity style={styles.filterBtn} onPress={handleWalkinFilter}>
           <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
         </TouchableOpacity>
@@ -269,7 +295,8 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
         }>
           <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
         </TouchableOpacity>
-
+</>
+}
 
 
         {showFilter && (
@@ -872,7 +899,9 @@ addBtn: {
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 150,
+    paddingTop:60
+   
+   
   },
 
   emptyImage: {
@@ -883,10 +912,27 @@ addBtn: {
   },
 
   emptyText: {
-    marginTop: 14,
-    fontSize: 16,
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#6B7280",
+  textAlign: "center",
+  lineHeight: 20,
+  marginTop: 10,
+  marginBottom: 20,
+},
+
+  addBtnAdd: {
+  backgroundColor: "#1E45E1",
+  paddingVertical: 15,
+  paddingHorizontal:15,
+  borderRadius: 12,
+  marginBottom: 10,    // 🔥 reduced
+},
+
+  addBtnText: {
+    textAlign: "center",
+    color: "#fff",
     fontWeight: "600",
-    color: "#777",
   },
 
 });
