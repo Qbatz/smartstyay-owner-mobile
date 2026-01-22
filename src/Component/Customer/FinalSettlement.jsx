@@ -470,7 +470,26 @@ const selectType = (id, type) => {
 
           <View style={styles.card}>
             <View style={styles.row}>
-              <Image source={Profile} style={styles.profileImg} />
+              {/* <Image source={Profile} style={styles.profileImg} /> */}
+              {settlementDetails?.customerInfo?.profilePic ? (
+  <Image
+    source={{ uri: settlementDetails.customerInfo.profilePic }}
+    style={styles.profileImg}
+  />
+) : (
+  <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
+    <Text style={styles.initialText}>
+      {settlementDetails?.customerInfo?.initials ||
+        settlementDetails?.customerInfo?.fullName
+          ?.split(" ")
+          ?.map(w => w[0])
+          ?.join("")
+          ?.slice(0, 2)
+          ?.toUpperCase() || "--"}
+    </Text>
+  </View>
+)}
+
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.name}>{settlementDetails?.customerInfo?.fullName}</Text>
                 {
@@ -1466,6 +1485,18 @@ outsideTouch: {
   right: 0,
   bottom: 0,
 },
+initialCircle: {
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+initialText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#374151",
+},
+
 
 
 
