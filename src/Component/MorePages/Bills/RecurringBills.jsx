@@ -262,10 +262,24 @@ const handleToggleRecurring = async (item) => {
     setSelectedBill(item);  
     setShowBillDetails(true);
   }}>
-        <Image
+        {/* <Image
           source={item.profilePic ? { uri: item.profilePic } : ProfileImage}
           style={styles.avatar}
-        />
+        /> */}
+
+        {item.profilePic ? (
+  <Image
+    source={{ uri: item.profilePic }}
+    style={styles.avatar}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {item.initials}
+    </Text>
+  </View>
+)}
+
       </TouchableOpacity>
 
       <View style={{ flex: 1 }}>
@@ -441,15 +455,19 @@ const handleToggleRecurring = async (item) => {
           </View>
         
           <View style={styles.userRow}>
-           <Image
-  source={
-    selectedBill?.profilePic
-      ? { uri: selectedBill.profilePic }
-      : ProfileImage
-  }
-  style={styles.userImg}
-/>
-
+ 
+        {selectedBill.profilePic ? (
+  <Image
+    source={{ uri: selectedBill.profilePic }}
+    style={styles.avatar}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {selectedBill.initials}
+    </Text>
+  </View>
+)}
 
 
         
@@ -699,6 +717,23 @@ marginBottom: vs(10),
   backgroundColor: "#fff",
 },
 
+initialCircle: {
+  width: s(40),
+  height: s(40),
+  borderRadius: 25,
+  backgroundColor: "#E5E7EB",  
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight: s(12),
+},
+
+initialText: {
+  fontSize: s(16),
+  fontWeight: "700",
+  color: "#4B5563",   
+},
+
+
 dropButtonText: {
   fontSize: s(14),
   color: "#000",
@@ -746,8 +781,8 @@ optionText: {
   },
 
   avatar: {
-    width: s(50),
-    height: s(50),
+    width: s(40),
+    height: s(40),
     borderRadius: 30,
     marginRight: s(12),
   },
