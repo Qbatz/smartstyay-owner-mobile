@@ -25,6 +25,7 @@ import Dots from "../../../Assets/Images/3dots.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import TrashIcon from "../../../Assets/Images/trash.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 
 
@@ -87,6 +88,7 @@ const {
   const [deleteSubId, setDeleteSubId] = useState(null);
 
   const [showMenuId, setShowMenuId] = useState(null);
+  const [expenseError,setExpenseError] = useState("")
     const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
 
@@ -168,23 +170,23 @@ useEffect(() => {
   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
     const keyboardHeight = e.endCoordinates.height;
 
+    const moveUp = keyboardHeight * 0.45; // ✅ half keyboard height only
+
     if (showSubAddSheet) {
       Animated.timing(subAddSheetY, {
-        toValue: -keyboardHeight -30, 
+        toValue: -moveUp,
         duration: 180,
         useNativeDriver: true,
       }).start();
-    } 
-    else if (showSubSheet) {
+    } else if (showSubSheet) {
       Animated.timing(subSheetY, {
-        toValue: -keyboardHeight  -20,
+        toValue: -moveUp,
         duration: 180,
         useNativeDriver: true,
       }).start();
-    } 
-    else if (showExpenseSheet) {
+    } else if (showExpenseSheet) {
       Animated.timing(expenseSheetY, {
-        toValue: -keyboardHeight -20,
+        toValue: -moveUp,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -192,9 +194,23 @@ useEffect(() => {
   });
 
   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    Animated.timing(subAddSheetY, { toValue: 0, duration: 160, useNativeDriver: true }).start();
-    Animated.timing(subSheetY, { toValue: 0, duration: 160, useNativeDriver: true }).start();
-    Animated.timing(expenseSheetY, { toValue: 0, duration: 160, useNativeDriver: true }).start();
+    Animated.timing(subAddSheetY, {
+      toValue: 0,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+
+    Animated.timing(subSheetY, {
+      toValue: 0,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+
+    Animated.timing(expenseSheetY, {
+      toValue: 0,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
   });
 
   return () => {
@@ -202,6 +218,7 @@ useEffect(() => {
     hideSub.remove();
   };
 }, [showExpenseSheet, showSubSheet, showSubAddSheet]);
+
 
 
      useEffect(() => {
@@ -313,8 +330,13 @@ useEffect(() => {
 
 const saveExpense = async () => {
   const value = expenseText.trim();
-  if (!value) return;
 
+  if (!value) {
+    setExpenseError("Please enter expense name");
+    return;
+  }
+
+  
   const res = await addExpenseCategory({
     hostelId: activeHostelId,
     categoryName: value,
@@ -536,10 +558,17 @@ const saveExpense = async () => {
                   Expense Name <Text style={{ color: "red" }}>*</Text>
                 </Text>
 
-                <TextInput style={styles.inputBox} placeholder="Enter" value={expenseText} onChangeText={setExpenseText} />
+                <TextInput style={styles.inputBox} placeholder="Enter" value={expenseText}  onChangeText={(t) => {
+    const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, ""); // ✅ emoji remove
+    setExpenseText(cleanText);
+    setExpenseError(""); 
+  }}/>
+  {expenseError ? (
+  <ErrorMessage message={expenseError} type="error" />
+) : null}
               </ScrollView>
 
-              <TouchableOpacity style={[styles.addTypeBtn, { opacity: expenseText.trim() ? 1 : 0.4 }]} disabled={!expenseText.trim()} onPress={saveExpense}>
+              <TouchableOpacity style={styles.addTypeBtn}  onPress={saveExpense}>
                 <Text style={styles.addTypeText}>{isExpenseEdit ? "Save Changes" : "Save"}</Text>
               </TouchableOpacity>
 
@@ -820,14 +849,24 @@ const styles = StyleSheet.create({
   },
   dimLayer: { flex: 1, backgroundColor: "transparent" },
 
+  // sheet: {
+  //   width: "100%",
+  //   backgroundColor: "#fff",
+  //   padding: 20,
+  //   borderTopLeftRadius: 22,
+  //   borderTopRightRadius: 22,
+  //   overflow: "hidden",
+  // },
   sheet: {
-    width: "100%",
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    overflow: "hidden",
-  },
+  width: "100%",
+  backgroundColor: "#fff",
+  padding: 20,
+  paddingBottom: 30,   // ✅ add this
+  borderTopLeftRadius: 22,
+  borderTopRightRadius: 22,
+  overflow: "hidden",
+},
+
 
   handleWrapper: { alignItems: "center", paddingVertical: 12 },
   sheetHandle: { width: 50, height: 5, borderRadius: 8, backgroundColor: "#ccc" },
