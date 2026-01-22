@@ -253,7 +253,7 @@ console.log("matchedCustomer",matchedCustomer)
                       source={require("../../../Assets/Images/receipttext.png")}
                       style={styles.menuIcon}
                     />
-                    <Text style={styles.menuText}>Generate FS</Text>
+                    <Text style={styles.menuText}>Generate</Text>
                   </TouchableOpacity>
 
 
