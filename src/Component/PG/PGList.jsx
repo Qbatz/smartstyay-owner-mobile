@@ -1242,6 +1242,7 @@ useFocusEffect(
         handleEditBed={handleEditBed}
         selectedBed={selectedBed}
         onBedAdded={handleBedAdded}
+         handleMakeUsInActive={handleMakeUsInActive}
       />
 
       <OccupiedBedSheet
@@ -1339,7 +1340,9 @@ useFocusEffect(
         visible={showInactiveSheet}
         onClose={() => setShowInactiveSheet(false)}
         selectedBed={selectedBed}
-        bookedItems={inactiveTenant}
+        bookedItems={inactiveTenant} 
+        onBedAdded={handleBedAdded}  
+        
 
       />
       <Modal
@@ -1600,6 +1603,7 @@ title: {
     flex: 3,
     alignItems: "center",
     justifyContent: "center",
+    
   },
 
   image: {

@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "flex-end",
-    paddingBottom:20
+    // paddingBottom:20
   },
 
 sheet: {
@@ -297,7 +297,8 @@ sheet: {
   padding: 20,
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
-  maxHeight: "85%",    // 🔥 prevents big empty space
+  maxHeight: "85%",
+  paddingBottom:40   
 },
 
   handle: {

@@ -18,7 +18,7 @@ import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useNavigation } from "@react-navigation/native";
 
 
-export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed,onBedAdded }) {
+export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed,onBedAdded,handleMakeUsInActive }) {
     const navigation = useNavigation();
     console.log("selectedBedTHIFDGDGFG",selectedBed)
     const translateY = useRef(new Animated.Value(300)).current;
@@ -99,6 +99,10 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
         onClose()
         setMenuOpen(false)
     }
+    const handlemake=()=>{
+        handleMakeUsInActive()
+        onClose()
+    }
     const handleCheckIn = (details) => {
         setMenuOpen(false)
         onClose()
@@ -171,18 +175,22 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
           <Text style={styles.menuText}>Check-In</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => {
-            setMenuOpen(null);
-            onClose();
-            setBookedItems(item)
-            setTimeout(() => setShowInactiveSheet(true), 250);
-          }}
-        >
-          <Image source={MakeUs} style={styles.menuIcon} />
-          <Text style={styles.menuText}>Make as Inactive</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+  style={styles.menuItem}
+  onPress={() => {
+    setMenuOpen(null);
+
+    // ✅ send item to PGPageFull
+    handleMakeUsInActive(item);
+
+    // ✅ close reserved sheet
+    onClose();
+  }}
+>
+  <Image source={MakeUs} style={styles.menuIcon} />
+  <Text style={styles.menuText}>Make as Inactive</Text>
+</TouchableOpacity>
+
 
         <TouchableOpacity
           style={styles.menuItem}

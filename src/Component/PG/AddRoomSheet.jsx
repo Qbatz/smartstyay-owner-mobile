@@ -231,6 +231,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    paddingBottom:30
   },
   handle: {
     width: 45,
