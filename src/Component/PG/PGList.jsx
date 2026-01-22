@@ -862,6 +862,8 @@ useFocusEffect(
           </TouchableOpacity>
         </View>
         {showFloorMenu && (
+          <TouchableWithoutFeedback onPress={() => setShowFloorMenu(false)}>
+<View style={styles.menuOverlay}>
           <View style={styles.menuBox1}>
             <TouchableOpacity
               style={styles.menuItem}
@@ -886,6 +888,8 @@ useFocusEffect(
               </Text>
             </TouchableOpacity>
           </View>
+          </View>
+          </TouchableWithoutFeedback>
         )}
 
 
@@ -1024,6 +1028,8 @@ useFocusEffect(
               </TouchableOpacity>
 
               {openMenuRoomId === item.id && (
+                 <TouchableWithoutFeedback onPress={() => setOpenMenuRoomId(null)}>
+    <View style={styles.menuOverlay}>
                 <View style={styles.menuBox}>
                   <TouchableOpacity
                     style={styles.menuItem}
@@ -1048,6 +1054,8 @@ useFocusEffect(
                     </Text>
                   </TouchableOpacity>
                 </View>
+                </View>
+                </TouchableWithoutFeedback>
               )}
 
 
@@ -1942,6 +1950,14 @@ title: {
   },
   addBedHead: {
     marginTop: "-4"
-  }
+  },menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 999,
+},
+
 
 });
