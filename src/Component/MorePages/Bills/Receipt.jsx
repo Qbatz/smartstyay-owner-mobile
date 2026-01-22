@@ -312,7 +312,7 @@ const handleDeleteReceipt = async () => {
 const renderItem = ({ item }) => {
   return (
     <View style={styles.row}>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => {handleViewReceiptDetails(item)}}
       >
         <Image
@@ -323,7 +323,19 @@ const renderItem = ({ item }) => {
           }
           style={styles.avatar}
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
+  {item?.profilePic ? (
+    <Image source={{ uri: item.profilePic }} style={styles.avatar} />
+  ) : (
+    <View style={styles.initialCircle}>
+      <Text style={styles.initialText}>
+        {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
+
 
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{item.fullName}</Text>
@@ -1192,4 +1204,20 @@ deleteBtnText: {
   fontWeight: "600",
   color: "#fff",
 },
+initialCircle: {
+  width:40,
+  height:40,
+  borderRadius: 20,
+  backgroundColor: "#E5E7EB",  
+  alignItems: "center",
+  justifyContent: "center",
+   marginRight:5
+},
+
+initialText: {
+  fontSize: 13,
+  fontWeight: "700",
+  color: "#374151",  // dark grey
+},
+
 });

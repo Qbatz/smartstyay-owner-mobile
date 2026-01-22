@@ -657,11 +657,30 @@ const handleShowFinalSettlementNotice = (item)=>{
 <View key={item.customerId} style={styles.tenantRow}>
 
   {/* 1️⃣ PROFILE CLICK */}
-  <TouchableOpacity
+  {/* <TouchableOpacity
     activeOpacity={0.7}
     onPress={() => openCustomerDetails(item)}
   >
     <Image source={Profile} style={styles.profileImg} />
+  </TouchableOpacity> */}
+  <TouchableOpacity
+    activeOpacity={0.7}
+    onPress={() => openCustomerDetails(item)}
+  >
+    {item?.profilePic ? (
+      <Image
+        source={{ uri: item.profilePic }}
+        style={styles.profileImg}
+      />
+    ) : (
+      <View style={styles.initialCircle}>
+        <Text style={styles.initialText}>
+          {item?.initials ||
+            item?.fullName?.slice(0, 2)?.toUpperCase() ||
+            "--"}
+        </Text>
+      </View>
+    )}
   </TouchableOpacity>
 
   {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
@@ -795,7 +814,22 @@ const handleShowFinalSettlementNotice = (item)=>{
 
 
                 <View style={styles.modalProfileRow}>
-                  <Image source={Profile} style={styles.modalProfileImg} />
+                  {/* <Image source={Profile} style={styles.modalProfileImg} /> */}
+                  {selectedCustomer?.profilePic ? (
+  <Image
+    source={{ uri: selectedCustomer.profilePic }}
+    style={styles.modalProfileImg}
+  />
+) : (
+  <View style={styles.modalInitialCircle}>
+    <Text style={styles.modalInitialText}>
+      {selectedCustomer?.initials ||
+        `${selectedCustomer?.firstName?.[0] || ""}${selectedCustomer?.lastName?.[0] || ""}`.toUpperCase() ||
+        "--"}
+    </Text>
+  </View>
+)}
+
 
                   <View style={{ marginLeft: 12 }}>
                     <Text style={styles.modalName}>{selectedCustomer?.firstName} {selectedCustomer?.lastName}</Text>
@@ -2068,6 +2102,36 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#777",
   },
+
+initialCircle: {
+  width: 45,
+  height: 45,
+  borderRadius: 22.5,
+  backgroundColor: "#E5E7EB", 
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight:5
+},
+
+initialText: {
+  fontSize: 13,
+  fontWeight: "700",
+  color: "#374151", 
+},
+modalInitialCircle: {
+  width: 50,
+  height: 50,
+  borderRadius: 25,
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+modalInitialText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#374151",
+},
 
 
 

@@ -1368,12 +1368,26 @@ navigation.navigate("CancelNotice")
 
     {BillDetails?.listInvoices?.map((item) => (
       <View key={item.invoiceId} style={styles.tenantRow}>
-        <TouchableOpacity onPress={() => openBillDetails(item)}>
+        {/* <TouchableOpacity onPress={() => openBillDetails(item)}>
           <Image
             source={item.profilePic ? { uri: item.profilePic } : ProfileImage}
             style={styles.profileImg}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TouchableOpacity onPress={() => openBillDetails(item)}>
+  {item?.profilePic ? (
+    <Image
+      source={{ uri: item.profilePic }}
+      style={styles.profileImg}
+    />
+  ) : (
+    <View style={styles.initialCircle}>
+      <Text style={styles.initialText}>
+        {item?.initials?.toUpperCase() || "NA"}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
 
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{item.fullName}</Text>
@@ -1502,13 +1516,26 @@ navigation.navigate("CancelNotice")
 
   {/* USER SECTION */}
   <View style={styles.userRow}>
-    <Image 
+    {/* <Image 
       source={
          selectedBill?.profilePic
            ? { uri: selectedBill.profilePic }
            : ProfileImage
        }
-    style={styles.userImg} />
+    style={styles.userImg} /> */}
+    {selectedBill?.profilePic ? (
+  <Image
+    source={{ uri: selectedBill.profilePic }}
+    style={styles.userImg}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
+    </Text>
+  </View>
+)}
+
 
     <View style={{ flex: 1, marginLeft: 12 }}>
       <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
@@ -1646,7 +1673,21 @@ navigation.navigate("CancelNotice")
 
         
           <View style={styles.userRow}>
-            <Image source={ProfileImage} style={styles.userImg} />
+            {/* <Image source={ProfileImage} style={styles.userImg} /> */}
+             {selectedReceipt?.profilePic ? (
+    <Image
+      source={{ uri: selectedReceipt.profilePic }}
+      style={styles.userImg}
+    />
+  ) : (
+    <View style={styles.initialCircle}>
+      <Text style={styles.initialText}>
+        {selectedReceipt?.initials ||
+          selectedReceipt?.fullName?.slice(0, 2)?.toUpperCase() ||
+          "--"}
+      </Text>
+    </View>
+  )}
         
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.userName}>  {selectedReceipt?.fullName || "--"}</Text>
@@ -3881,5 +3922,22 @@ chip: {
     fontSize: 13,
     marginRight: 6,
   },
+initialCircle: {
+  width: 40,
+  height: 40,
+  borderRadius: 21,
+  backgroundColor: "#E5E7EB",   
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight:5
+},
+
+initialText: {
+  fontSize: 13,
+  fontWeight: "700",
+   color: "#4B5563", 
+},
+
+
 
 });

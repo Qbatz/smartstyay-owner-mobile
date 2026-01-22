@@ -268,7 +268,25 @@ console.log("matchedCustomer",matchedCustomer)
           <Text style={styles.label}>Occupied by</Text>
 
           <View style={styles.profileRow}>
-            <Image source={Profile} style={styles.profileImg} />
+            {/* <Image source={Profile} style={styles.profileImg} /> */}
+            {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
+  <Image
+    source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
+    style={styles.profileImg}
+  />
+) : (
+  <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
+    <Text style={styles.initialText}>
+      {selectedBed?.currentTenantInfo?.[0]?.tenantFullName
+        ?.split(" ")
+        ?.map(w => w[0])
+        ?.join("")
+        ?.slice(0, 2)
+        ?.toUpperCase() || "--"}
+    </Text>
+  </View>
+)}
+
             <View>
               <Text style={styles.tenantName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
               <Text style={styles.tenantPhone}>+91{selectedBed.currentTenantInfo[0]?.mobile}</Text>
@@ -432,4 +450,17 @@ const styles = StyleSheet.create({
   },
 
   noticeText: { color: "#D9534F", fontSize: 15, fontWeight: "700" },
+  initialCircle: {
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight:5
+},
+
+initialText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#374151",
+},
+
 });
