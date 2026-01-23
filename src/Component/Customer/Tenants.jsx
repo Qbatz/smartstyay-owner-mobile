@@ -60,6 +60,7 @@ export default function TenantsScreen({ route }) {
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
    const [showDetailModal, setShowDetailModal] = useState(false);
    const [overviewScreen,setOverviewScreen] = useState(false)
+   const [searchText, setSearchText] = useState("");
 
 
 const sheetTranslateY = useRef(
@@ -449,6 +450,17 @@ const handleShowFinalSettlementNotice = (item)=>{
       selectedItem: selectedItem,
     });
   };
+const filteredTenants = customers?.listCustomers?.filter((item) => {
+  const search = searchText.trim().toLowerCase();
+
+  return (
+    item?.fullName?.toLowerCase().includes(search) ||
+    item?.mobile?.toString().includes(search) ||
+    item?.roomName?.toLowerCase().includes(search) ||
+    item?.bedName?.toLowerCase().includes(search)
+  );
+});
+
 
   const customerList = [
     {
@@ -467,15 +479,28 @@ const handleShowFinalSettlementNotice = (item)=>{
   return (
     <>
       {loading && <Loader />}
+      
       <SafeAreaView style={styles.container}>
+        
         {/* 🔍 Search Bar */}
         <View style={styles.searchContainer}>
           <Image source={SearchIcon} style={styles.searchIcon} />
-          <TextInput
+          {/* <TextInput
             style={styles.searchInput}
             placeholder="Search Customers"
             placeholderTextColor="#9CA3AF"
-          />
+          /> */}
+          <TextInput
+  style={styles.searchInput}
+  placeholder="Search Customers"
+  placeholderTextColor="#9CA3AF"
+  value={searchText}
+  onChangeText={(t) => {
+    // ✅ emoji remove + only normal text
+    const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+    setSearchText(cleanText);
+  }}
+/>
         </View>
 
 
@@ -484,7 +509,10 @@ const handleShowFinalSettlementNotice = (item)=>{
             <TouchableOpacity
               key={tab.key}
               style={[styles.tab, activeTab === tab.key && styles.activeTab]}
-              onPress={() => setActiveTab(tab.key)}
+              onPress={() => {
+  setActiveTab(tab.key);
+  setSearchText("");  
+}}
             >
               <View style={styles.tabContent}>
                 <Image
@@ -506,11 +534,24 @@ const handleShowFinalSettlementNotice = (item)=>{
 
         {activeTab === "Tenants" && (
           <View style={{ flex: 1 }}>
+              {!loading && customers?.listCustomers?.length === 0 &&
+                <View style={styles.emptyContainer}>
+                  <Image source={EmptyState} style={styles.emptyImage} />
+                   <Text style={styles.emptyText}>
+                    No Tenant available{"\n"}
+                    There are no tenant added.
+                  </Text>
+                </View>
+              }
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 50 }}
             >
-              <Text style={styles.sectionTitle}>This Month</Text>
+              {
+                customers?.listCustomers?.length > 0 &&
+                <Text style={styles.sectionTitle}>This Month</Text>
+              }
+              
               {/* {
           customers.map((item)=>{
 <View style={styles.tenantRow}>
@@ -549,7 +590,7 @@ const handleShowFinalSettlementNotice = (item)=>{
         </View>
           })
         } */}
-              {customers?.listCustomers?.map((item) => (
+              {filteredTenants?.map((item) => (
                 // <View key={item.customerId} style={styles.tenantRow}>
 
                 //   <TouchableOpacity onPress={() => openCustomerDetails(item)}>
@@ -738,21 +779,17 @@ const handleShowFinalSettlementNotice = (item)=>{
 
               ))}
 
-              {!loading && customers.length === 0 &&
-                <View style={styles.emptyContainer}>
-                  <Image source={EmptyState} style={styles.emptyImage} />
-                  <Text style={styles.emptyText}>No Data Found</Text>
-                </View>
-              }
+             
 
             </ScrollView>
+           
 
 
-
+  {customers?.listCustomers?.length >0 &&
             <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
               <Image source={Filter} style={{ width: 30, height: 30 }} />
             </TouchableOpacity>
-
+}
 
             {/* <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddTenant")}>
               <Image source={TenAntAdd} style={{ width: 60, height: 60 }} />
@@ -761,11 +798,11 @@ const handleShowFinalSettlementNotice = (item)=>{
         )}
 
         {activeTab === "Checkout" && (
-          <CheckoutList />
+          <CheckoutList  searchText={searchText}/>
         )}
         {activeTab === "Walkin" && (
           <WalkinScreen setShowTabBar={setShowTabBar} navigation={navigation}
-            handleWalkinFilter={handleWalkinFilter} />
+            handleWalkinFilter={handleWalkinFilter} searchText={searchText}/>
         )}
 
         {showDetailModal && (
@@ -2086,7 +2123,8 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 150,
+     paddingTop:60
+    
   },
 
   emptyImage: {
@@ -2095,14 +2133,15 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     opacity: 0.8
   },
-
   emptyText: {
-    marginTop: 14,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#777",
-  },
-
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#6B7280",
+  textAlign: "center",
+  lineHeight: 20,
+  marginTop: 10,
+  marginBottom: 20,
+},
 initialCircle: {
   width: 45,
   height: 45,

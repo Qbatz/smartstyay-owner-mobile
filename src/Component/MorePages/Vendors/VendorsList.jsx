@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
-import { VendorContext } from "../../../Context/VendorContext";
+// import { VendorContext } from "../../../Context/VendorContext";
+import { CustomerContext } from "../../../Context/CustomerContext";
 import Loader from "../../../Component/Loader/Loader"
 import SuccessModal from "../../../ToastFile/ToastPage";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
@@ -30,15 +31,20 @@ import CalendarIcon from "../../../Assets/Images/calendar.png";
 
 export default function VendorsList({ navigation }) {
 
-  const {
-    vendorList,
-    loading,
-    getVendorList,
-    addVendor,
-    updateVendor,
-    deleteVendor,
-  } = useContext(VendorContext);
+  // const {
+  //   vendorList,
+  //   loading,
+  //   getVendorList,
+  //   addVendor,
+  //   updateVendor,
+  //   deleteVendor,
+  // } = useContext(VendorContext);
+
+    const { vendorList, loading ,  getVendorList , deleteVendor} = useContext(CustomerContext);;
+
   const { activeHostelId } = useContext(CommonContexts)
+
+
 
   console.log("vendorList", vendorList);
 
@@ -167,6 +173,27 @@ export default function VendorsList({ navigation }) {
   }
 
 
+const getVendorInitials = (firstName = "", lastName = "") => {
+  const f = firstName?.trim();
+  const l = lastName?.trim();
+
+  if (f && l) {
+    return (
+      f.charAt(0).toUpperCase() +
+      l.charAt(0).toUpperCase()
+    );
+  }
+
+  if (f) {
+    return f.charAt(0).toUpperCase();
+  }
+
+  if (l) {
+    return l.charAt(0).toUpperCase();
+  }
+
+  return "";
+};
 
 
 
@@ -194,14 +221,19 @@ export default function VendorsList({ navigation }) {
         <View style={styles.card}>
           <View style={styles.cardTop}>
             <View style={styles.leftRow}>
-              <Image
-                source={
-                  item.profilePic
-                    ? { uri: item.profilePic }
-                    : AvatarPlaceholder
-                }
-                style={styles.avatar}
-              />
+             {item.profilePic && item.profilePic.trim() !== "" ? (
+  <Image
+    source={{ uri: item.profilePic }}
+    style={styles.avatar}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {getVendorInitials(item.firstName, item.lastName)}
+    </Text>
+  </View>
+)}
+
 
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.vendorName}>
@@ -320,14 +352,7 @@ export default function VendorsList({ navigation }) {
           <Text style={styles.headerTitle}>Vendors</Text>
         </View>
 
-        <View style={styles.searchWrapper}>
-          <Image source={SearchIcon} style={styles.searchIcon} />
-          <TextInput
-            placeholder="Search"
-            placeholderTextColor="#9CA3AF"
-            style={styles.searchInput}
-          />
-        </View>
+
 
         {!loading && vendorList?.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -336,10 +361,25 @@ export default function VendorsList({ navigation }) {
               style={styles.emptyImage}
             />
             <Text style={styles.emptyText}>
-              No vendors found
+              No vendors are there!
             </Text>
+            
+                    <TouchableOpacity style={styles.addVendorBtn}   onPress={() => setShowAddVendor(true)}>
+                      <Text style={styles.addVendorText}>+ Add Vendor</Text>
+                    </TouchableOpacity>
           </View>
         ) : (
+
+          <>
+                  <View style={styles.searchWrapper}>
+          <Image source={SearchIcon} style={styles.searchIcon} />
+          <TextInput
+            placeholder="Search"
+            placeholderTextColor="#9CA3AF"
+            style={styles.searchInput}
+          />
+        </View>
+         
           <FlatList
             data={vendorList}
             keyExtractor={(item) => item?.id.toString()}
@@ -351,10 +391,15 @@ export default function VendorsList({ navigation }) {
             ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
             showsVerticalScrollIndicator={false}
           />
+
+
+          
+           </>
         )}
 
 
-
+      {!loading && vendorList?.length > 0 && (
+        <>
         <TouchableOpacity style={styles.filterFab} onPress={() => setShowFilter(true)}>
           <Image source={FilterIcon} style={styles.filterIcon} />
         </TouchableOpacity>
@@ -365,6 +410,10 @@ export default function VendorsList({ navigation }) {
         >
           <Image source={AddIcon} style={styles.addIcon} />
         </TouchableOpacity>
+        </>
+      )}
+
+
       </View>
       {showFilter && (
         <View style={styles.sheetOverlay}>
@@ -571,11 +620,10 @@ export default function VendorsList({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  container: { flex: 1, backgroundColor: "#FFFFFF",  paddingTop: Platform.OS === "ios" ? 50 : 60, },
 
   header: {
-    paddingTop: Platform.OS === "ios" ? 50 : 40,
-    paddingBottom: 12,
+    // paddingBottom: 12,
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
@@ -603,6 +651,7 @@ const styles = StyleSheet.create({
 
   searchWrapper: {
     margin: 16,
+    marginBottom:6,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FAFAFA",
@@ -631,7 +680,29 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   leftRow: { flexDirection: "row", alignItems: "center", flex: 1 },
 
-  avatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 1, borderColor: "#fff" },
+avatar: {
+  width: 52,
+  height: 52,
+  borderRadius: 26,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
+
+initialCircle: {
+  width: 52,
+  height: 52,
+  borderRadius: 26,
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+initialText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#4B5563",
+},
+
 
   vendorName: { fontSize: 16, fontWeight: "700", color: "#111" },
   companyBadge: {
@@ -645,7 +716,7 @@ const styles = StyleSheet.create({
   companyText: { color: "#A47E00", fontSize: 12, fontWeight: "600" },
 
   dotsTouchable: { padding: 6, marginLeft: 8 },
-  dotsIcon: { width: 20, height: 20, tintColor: "#9CA3AF" },
+  dotsIcon: { width: 25, height: 25, },
 
   infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 14 },
   infoCol: { flex: 1 },
@@ -654,7 +725,7 @@ const styles = StyleSheet.create({
 
   filterFab: {
     position: "absolute",
-    bottom: 120,
+    bottom: 127,
     right: 25,
     width: 50,
     height: 50,
@@ -675,7 +746,7 @@ const styles = StyleSheet.create({
   addFab: {
     position: "absolute",
     right: 20,
-    bottom: 48,
+    bottom: 68,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -687,8 +758,8 @@ const styles = StyleSheet.create({
   addIcon: { width: 60, height: 60, },
   menuBox: {
     position: "absolute",
-    top: 40,
-    right: 10,
+    top: 30,
+    right: 55,
     backgroundColor: "#fff",
     padding: 12,
     width: 150,
@@ -883,11 +954,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 80,
+    marginTop: 10,
   },
   emptyImage: {
-    width: 220,
-    height: 160,
+    width: 250,
+    height: 180,
     resizeMode: "contain",
     opacity: 0.9,
   },
@@ -910,6 +981,19 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 22,
     paddingHorizontal: 18,
+  },
+    addVendorBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+
+  addVendorText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
   },
 
 

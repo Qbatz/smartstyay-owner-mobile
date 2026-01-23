@@ -137,7 +137,7 @@ const openComments = async () => {
 
   if (res?.success) {
     handleCloseSheet();
-    onOpenCommentSheet();
+    onOpenCommentSheet(complaint);
   }
 };
 
@@ -382,16 +382,16 @@ const styles = StyleSheet.create({
 
   userRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
    avatar: {
-  width: 30,
-  height: 30,
+  width: 50,
+  height: 50,
   borderRadius: 15,
   marginRight: 6,
 },
 
 initialCircle: {
-  width: 30,
-  height: 30,
-  borderRadius: 15,
+  width: 50,
+  height: 50,
+  borderRadius: 25,
   backgroundColor: "#E5E7EB",
   alignItems: "center",
   justifyContent: "center",
@@ -399,7 +399,7 @@ initialCircle: {
 },
 
 initialText: {
-  fontSize: 12,
+  fontSize: 15,
   fontWeight: "700",
   color: "#4B5563",
 },

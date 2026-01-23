@@ -271,6 +271,8 @@ const handleBookToCheckin=()=>{
     <View style={styles.menuOverlay} />
   </TouchableWithoutFeedback>
 )}    */}
+<TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
+    <View style={styles.fullMenuOverlay}>
             <View style={styles.menuCard}>
  <TouchableOpacity
                                               style={styles.menuItem}
@@ -319,6 +321,8 @@ const handleBookToCheckin=()=>{
 } */}
 
             </View>
+            </View>
+            </TouchableWithoutFeedback>
             </>
           )}
         </View>
@@ -403,6 +407,9 @@ const handleBookToCheckin=()=>{
 </Text>
           </View>
            {showReservedMenu === index && (
+            
+             <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>
+    <View style={styles.fullMenuOverlay}>
     <View style={styles.inlineMenu}>
       <TouchableOpacity
       
@@ -438,6 +445,8 @@ const handleBookToCheckin=()=>{
         <Text style={styles.menuText}>Make as Inactive</Text>
       </TouchableOpacity>
     </View>
+    </View>
+    </TouchableWithoutFeedback>
   )}
           
 </View>
@@ -647,6 +656,15 @@ initialText: {
   fontSize: 16,
   fontWeight: "700",
   color: "#374151", // dark grey ✅
+},
+fullMenuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 9999,
+  backgroundColor: "transparent",
 },
 
 

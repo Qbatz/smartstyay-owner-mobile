@@ -82,10 +82,16 @@ hasError = true;
       }, 1200);
 
     } else {
-      setModalType("error");
-      setMessage(res.data?.message || "Save Failed");
-      setShowSuccess(true);
-    }
+  setModalType("error");
+  console.log("res",res)
+  setMessage(res.data);
+  setShowSuccess(true);
+
+  setTimeout(() => {
+    setShowSuccess(false);  
+        
+  }, 1500);
+}
   };
 
 

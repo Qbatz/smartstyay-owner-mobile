@@ -24,7 +24,7 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 
-export default function CheckoutList() {
+export default function CheckoutList({searchText }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { getCheckoutCustomersByHostel, loading } = useCustomer();
 
@@ -48,24 +48,36 @@ export default function CheckoutList() {
     setSelectedCustomer(item);
     setShowCustomerModal(true);
   };
-
+ const filteredCheckout = checkoutCustomer.filter((item) => {
+    const search = searchText.trim().toLowerCase();
+    return (
+      item?.firstName?.toLowerCase().includes(search) ||
+      item?.mobile?.toString().includes(search) ||
+      item?.roomName?.toLowerCase().includes(search) ||
+      item?.bedName?.toLowerCase().includes(search)
+    );
+  });
   return (
     <>
       {loading && <Loader />}
+       {!loading && checkoutCustomer.length === 0 && (
+         <View style={styles.emptyContainer}>
+                          <Image source={EmptyState} style={styles.emptyImage} />
+                          <Text style={styles.emptyText}>
+                          No Checkout Tenant available{"\n"}
+                          There are no checkout tenant added
+                         </Text>
+                        </View>
+        )}
     <TouchableWithoutFeedback onPress={() => setMenuVisibleId(null)}>
       <View style={{ flex: 1 }}>
 
       
 
-        {!loading && checkoutCustomer.length === 0 && (
-         <View style={styles.emptyContainer}>
-                          <Image source={EmptyState} style={styles.emptyImage} />
-                          <Text style={styles.emptyText}>No Data Found</Text>
-                        </View>
-        )}
+       
 
         <ScrollView>
-          {checkoutCustomer.map((item) => {
+          {filteredCheckout?.map((item) => {
             const isMenuVisible = menuVisibleId === item.customerId;
 
             return (
@@ -358,7 +370,8 @@ const styles = StyleSheet.create({
      emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 150,
+    paddingTop:60
+   
   },
 
   emptyImage: {
@@ -369,12 +382,14 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
-    marginTop: 14,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#777",
-  },
-
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#6B7280",
+  textAlign: "center",
+  lineHeight: 20,
+  marginTop: 10,
+  marginBottom: 20,
+},
 
 
 });

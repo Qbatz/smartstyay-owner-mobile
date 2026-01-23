@@ -200,6 +200,10 @@ console.log("matchedCustomer",matchedCustomer)
     <View style={styles.menuOverlay} />
   </TouchableWithoutFeedback>
 )} */}
+  <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+      <View style={StyleSheet.absoluteFillObject} />
+    </TouchableWithoutFeedback>
+   
             <View style={styles.dropdown}>
 
   <TouchableOpacity
@@ -261,6 +265,8 @@ console.log("matchedCustomer",matchedCustomer)
               )}
             
             </View>
+         
+           
             </>
           )}
 
@@ -382,29 +388,30 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     padding: 6,
   },
-  menuOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "transparent",
-    zIndex: 1,
-  },
+ menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 999,
+},
 
-  dropdown: {
-    position: "absolute",
-    right: 20,
-    top: 105,
-    backgroundColor: "#fff",
-    width: 190,
-    borderRadius: 12,
-    paddingVertical: 8,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
+ dropdown: {
+  position: "absolute",
+  right: 20,
+  top: 105,
+  backgroundColor: "#fff",
+  width: 190,
+  borderRadius: 12,
+  paddingVertical: 8,
+  elevation: 10,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  zIndex: 999,
+},
+
 
   menuItem: {
     flexDirection: "row",

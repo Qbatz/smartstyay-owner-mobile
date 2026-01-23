@@ -44,6 +44,7 @@ export default function AssignBottomSheet({
          const [showSuccessModal, setShowSuccessModal] = useState(false);
          const [modalMessage, setModalMessage] = useState("");
          const [modalType, setModalType] = useState("success");
+
   //  const [selectedUser, setSelectedUser] = useState(null);
 
 
@@ -188,13 +189,7 @@ const handleAssign = async (userId) => {
       onClose();
     }, 800);
   } else {
-    setModalType("warning");
-    setModalMessage(res?.message || "Something went wrong");
-    setShowSuccessModal(true);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 800);
+    setUserError(res?.message || "Something went wrong")
   }
 };
 
