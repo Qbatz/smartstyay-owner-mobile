@@ -21,12 +21,17 @@ import Comments from "../../Assets/Images/send.png";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
-export default function CommentBottomSheet({ visible, onClose }) {
+export default function CommentBottomSheet({ visible, onClose  , complaint}) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
+    console.log("complaint", complaint);
+    
 
   const { selectedComplaint, addComplaintComment, commentsLoading } =
   useContext(ComplaintContext);
+
+  // Prefer parent complaint, fallback to context
+const complaintData = complaint || selectedComplaint;
+
 
       const [commentText, setCommentText] = useState("");
       const [commentError, setCommentError] = useState("");
@@ -115,6 +120,62 @@ const handleSendComment = async () => {
 };
 
 
+      const getInitialsFromName = (name = "") => {
+  if (!name) return "";
+
+  const words = name.trim().split(" ").filter(Boolean);
+
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  return (
+    words[0].charAt(0).toUpperCase() +
+    words[words.length - 1].charAt(0).toUpperCase()
+  );
+};
+
+const renderAvatar = ({ profile, initials, name, size = 50 }) => {
+  if (profile) {
+    return (
+      <Image
+        source={{ uri: profile }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          marginRight: 6,
+        }}
+      />
+    );
+  }
+
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: "#E5E7EB",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 6,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: size / 3,
+          fontWeight: "700",
+          color: "#4B5563",
+        }}
+      >
+        {initials || getInitialsFromName(name)}
+      </Text>
+    </View>
+  );
+};
+
+
 
   return (
     <>
@@ -138,23 +199,33 @@ const handleSendComment = async () => {
 
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.commentsTitle}>Comments</Text>
+<View style={styles.mainUserRow}>
+  {renderAvatar({
+    profile: complaintData?.customerProfile,
+    initials: complaintData?.initials,
+    name: complaintData?.customerName,
+  })}
 
-          <View style={styles.mainUserRow}>
-            <Image source={Profile} style={styles.mainUserImg} />
-            <View>
-             <Text style={styles.mainUserName}>{selectedComplaint?.customerName}</Text>
-             <Text style={styles.mainUserDate}>{selectedComplaint?.complaintDate}</Text>
+  <View>
+    <Text style={styles.mainUserName}>
+      {complaintData?.customerName || "N/A"}
+    </Text>
+    <Text style={styles.mainUserDate}>
+      {complaintData?.complaintDate || "-"}
+    </Text>
+  </View>
+</View>
 
-            </View>
-          </View>
 
           <View style={styles.separator} />
 {selectedComplaint?.comments?.map((item) => (
   <View key={item.commentId} style={styles.msgRow}>
-    <Image
-      source={item.profilePic ? { uri: item.profilePic } : Profile}
-      style={styles.msgUserImg}
-    />
+    {renderAvatar({
+      profile: item.profilePic,
+      initials: item.initials,
+      name: item.commentedBy,
+      size: 42,
+    })}
 
     <View style={{ flex: 1 }}>
       <View style={styles.msgHeader}>
@@ -166,6 +237,7 @@ const handleSendComment = async () => {
     </View>
   </View>
 ))}
+
 
 {selectedComplaint?.comments?.length === 0 && (
   <Text style={{ textAlign: "center", color: "#999" }}>
@@ -262,6 +334,7 @@ const styles = StyleSheet.create({
   mainUserDate: {
     color: "#666",
     marginTop: 2,
+    // marginLeft:2
   },
 
   separator: {
@@ -336,4 +409,27 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
   },
+
+     avatar: {
+  width: 50,
+  height: 50,
+  borderRadius: 15,
+  marginRight: 6,
+},
+
+initialCircle: {
+  width: 50,
+  height: 50,
+  borderRadius: 25,
+  backgroundColor: "#E5E7EB",
+  alignItems: "center",
+  justifyContent: "center",
+  marginRight: 6,
+},
+
+initialText: {
+  fontSize: 15,
+  fontWeight: "700",
+  color: "#4B5563",
+},
 });

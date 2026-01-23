@@ -132,10 +132,10 @@ const handleDeleteAsset = async () => {
 
 
 const EmptyState = () => (
-  <View style={{ alignItems: "center", marginTop: 120 }}>
+  <View style={{ alignItems: "center", marginTop: 180 }}>
     <Image
       source={EmptyStateImage}
-      style={{ width: 90, height: 160, }}
+      style={{ width: 250, height: 180, }}
     />
     <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
       No assets found
@@ -446,7 +446,8 @@ const handleAssignAsset = async () => {
         <View style={{ width: 30 }} />
       </View>
 
-
+      {
+        !loading && assetList?.length > 0 && (
       <View style={styles.searchBox}>
         <Image source={SearchIcon} style={styles.searchIcon} />
         <TextInput
@@ -455,6 +456,7 @@ const handleAssignAsset = async () => {
           style={styles.searchInput}
         />
       </View>
+        )}
 
 
     <ScrollView

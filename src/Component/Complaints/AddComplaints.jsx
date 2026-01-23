@@ -524,7 +524,15 @@ const handleSubmitComplaint = async () => {
   type={modalType}
 />
    
-   
+    <KeyboardAvoidingView
+     style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={0}
+     >
+       <ScrollView
+         showsVerticalScrollIndicator={false}
+         keyboardShouldPersistTaps="handled"
+       >
 
   <TouchableWithoutFeedback onPress={closeAll}>
     <View style={styles.container}>
@@ -796,11 +804,7 @@ const handleSubmitComplaint = async () => {
 
 
 
-<Animated.View
-  style={{
-    transform: [{ translateY: sheetY }], zIndex: 20,
-  }}
->
+
   <Text style={styles.label}>Description</Text>
 {/* 
   <TextInput
@@ -835,7 +839,6 @@ const handleSubmitComplaint = async () => {
       </Text>
     </TouchableOpacity>
   </View>
-</Animated.View>
 
 
       {/* <Text style={styles.label}>Description</Text>
@@ -868,6 +871,8 @@ const handleSubmitComplaint = async () => {
 
     </TouchableWithoutFeedback>
 
+    </ScrollView>
+ </KeyboardAvoidingView>
          <Modal
   transparent
   visible={openDate}
@@ -1060,14 +1065,15 @@ const styles = StyleSheet.create({
     padding: 15,
     height: 120,
     textAlignVertical: "top",
-    marginTop: 10,
+    marginTop: 5,
   },
 
 footer: {
-  backgroundColor:'#fff',
-  marginTop: 16,
-  marginBottom: 20,
+  marginTop: 10,
+  marginBottom: 30,
+  backgroundColor: "#fff",
 },
+
 
 dimOverlay: {
   ...StyleSheet.absoluteFillObject,

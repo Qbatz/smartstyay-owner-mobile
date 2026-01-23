@@ -40,7 +40,7 @@ export default function VendorsList({ navigation }) {
   //   deleteVendor,
   // } = useContext(VendorContext);
 
-    const { vendorList, loading ,  getVendorList } = useContext(CustomerContext);;
+    const { vendorList, loading ,  getVendorList , deleteVendor} = useContext(CustomerContext);;
 
   const { activeHostelId } = useContext(CommonContexts)
 
@@ -391,11 +391,15 @@ const getVendorInitials = (firstName = "", lastName = "") => {
             ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
             showsVerticalScrollIndicator={false}
           />
+
+
+          
            </>
         )}
 
 
-
+      {!loading && vendorList?.length > 0 && (
+        <>
         <TouchableOpacity style={styles.filterFab} onPress={() => setShowFilter(true)}>
           <Image source={FilterIcon} style={styles.filterIcon} />
         </TouchableOpacity>
@@ -406,6 +410,10 @@ const getVendorInitials = (firstName = "", lastName = "") => {
         >
           <Image source={AddIcon} style={styles.addIcon} />
         </TouchableOpacity>
+        </>
+      )}
+
+
       </View>
       {showFilter && (
         <View style={styles.sheetOverlay}>
@@ -946,11 +954,11 @@ initialText: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 80,
+    marginTop: 10,
   },
   emptyImage: {
-    width: 220,
-    height: 160,
+    width: 250,
+    height: 180,
     resizeMode: "contain",
     opacity: 0.9,
   },

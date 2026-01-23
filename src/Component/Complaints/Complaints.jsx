@@ -157,18 +157,30 @@ useEffect(() => {
   }
 }, [showFilter]);
 
-  const getStatusColor = (assigneeName) => {
-  switch (assigneeName) {
-    case "PENDING":
-      return "#D17800";
-    case "RESOLVED":
-      return "#2BAE66";
-    case "ASSIGNED":
-      return "#1D5DFF";
-    default:
-      return "#6B7280";
-  }
+ const getStatusColor = (status) => {
+  if (status === "PENDING") return "#F59E0B";   
+  if (status === "RESOLVED") return "#22C55E";  
+  if (status === "ASSIGNED") return "grey"; 
+  return "#1D5DFF"; 
 };
+
+const getStatusText = (item) => {
+  if (item?.status === "PENDING") return "Pending";
+  if (item?.status === "RESOLVED") return "Resolved";
+  if (item?.status === "ASSIGNED") return "Assigned";
+  if (item?.assigneeName === "") return "+ Assign";
+
+  // return item?.assigneeName;
+};
+
+
+const isAssignEnabled = (item) => {
+  return item?.assigneeName === "" &&
+         item?.status !== "PENDING" &&
+         item?.status !== "RESOLVED" &&
+         item?.status !== "ASSIGNED"
+};
+
 
 const formatDate = (date) => {
   if (!date) return "";
@@ -301,7 +313,7 @@ const formatDate = (date) => {
           {formatDate(item?.complaintDate)}
         </Text>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => {
             setSelectedComplaint(item);
             setShowAssignSheet(true);
@@ -316,7 +328,33 @@ const formatDate = (date) => {
           >
             {item?.assigneeName === "" ? "+ Assign" : item?.assigneeName}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+
+   <TouchableOpacity
+  disabled={!isAssignEnabled(item)}
+  activeOpacity={isAssignEnabled(item) ? 0.7 : 1}
+  onPress={() => {
+    if (!isAssignEnabled(item)) return;
+
+    setSelectedComplaint(item);
+    setShowAssignSheet(true);
+    setShowSheet(false);
+  }}
+>
+  <Text
+    style={[
+      styles.status,
+      {
+        color: getStatusColor(item?.status),
+        // opacity: isAssignEnabled(item) ? 1 : 0.6, 
+      },
+    ]}
+  >
+    {getStatusText(item)}
+  </Text>
+</TouchableOpacity>
+
+
       </View>
     </View>
   );
@@ -333,9 +371,23 @@ const formatDate = (date) => {
       />
      { loading && <Loader />}
     <View style={styles.container}>
+
+      {/* Header */}
+<View style={styles.headerRow}>
+  <Text style={styles.headerTitle}>Complaints</Text>
+ {!loading &&  complaintsList && complaintsList?.length > 0 && (
+ <TouchableOpacity onPress={() => setShowFilter(true)}>
+    <Image source={FilterIcon} style={styles.headerFilterIcon} />
+  </TouchableOpacity>
+ )}
+ 
+</View>
+
       
       {/* Search Box */}
-      <View style={styles.searchBox}>
+
+       {!loading &&  complaintsList && complaintsList?.length > 0 &&
+ <View style={styles.searchBox}>
         <Image
           source={{
             uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png",
@@ -349,8 +401,9 @@ const formatDate = (date) => {
           style={styles.searchInput}
         />
       </View>
-
-      {/* Listing */}
+}
+     
+{ !loading && complaintsList &&  complaintsList?.length > 0 && (
      <FlatList
   data={complaintsList}
   keyExtractor={(item) => item.complaintId.toString()}
@@ -358,13 +411,13 @@ const formatDate = (date) => {
   showsVerticalScrollIndicator={false}
     style={{ flex: 1 }}
   contentContainerStyle={{ paddingBottom: 200 }}
-/>
+/>)}
 
 { !loading && complaintsList &&  complaintsList?.length === 0 && (
    <View style={styles.centerContainer}>
                <Image source={EmptyState} style={styles.image} />
-               <Text style={styles.nodataText}>No Complaints are there!</Text>
-           <TouchableOpacity style={styles.addcomplaintBtn}     onPress={handleAddComplaint}>
+               <Text style={styles.nodataText}>Complaints from tenants will appear here.</Text>
+           <TouchableOpacity style={styles.addcomplaintBtn}  onPress={handleAddComplaint}>
                     <Text style={styles.addComplaintText}>+ Add Complaint</Text>
                   </TouchableOpacity>
 
@@ -402,7 +455,11 @@ const formatDate = (date) => {
         onClose={() => setShowSheet(false)}
         complaint={selectedComplaint}
         onOpenAssignSheet={() => setShowAssignSheet(true)}
-        onOpenCommentSheet={() => setShowCommentSheet(true)}
+      onOpenCommentSheet={(complaint) => {
+  setSelectedComplaint(complaint); 
+  setShowCommentSheet(true);
+}}
+
          onOpenStatusSheet={(complaint) => {
          setSelectedComplaint(complaint);
          setShowStatusSheet(true);
@@ -429,6 +486,7 @@ const formatDate = (date) => {
       <CommentBottomSheet
         visible={showCommentSheet}
         onClose={() => setShowCommentSheet(false)}
+          complaint={selectedComplaint}   
       />
 
       {/* Status Sheet */}
@@ -530,6 +588,25 @@ container: {
   paddingHorizontal: 20, 
   paddingTop: 60 
 },
+headerRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 14,
+},
+
+headerTitle: {
+  fontSize: 22,
+  fontWeight: "700",
+  color: "#111827",
+},
+
+headerFilterIcon: {
+  width: 22,
+  height: 22,
+  tintColor: "#111827",
+},
+
 
 
  searchBox: {
@@ -554,10 +631,10 @@ container: {
     justifyContent: "space-between",
   },
 
-  title: { fontSize: 16, fontWeight: "600" },
+  title: { fontSize: 16, fontWeight: "700" },
   row: { flexDirection: "row", alignItems: "center", marginTop: 5 },
   userIcon: { width: 20, height: 20, marginRight: 6 },
-  user: { color: "#555" },
+  user: { color: "grey" , fontWeight:400},
 
   rightSection: { alignItems: "flex-end", justifyContent: "space-between" },
   time: { fontSize: 12, color: "#999" },
