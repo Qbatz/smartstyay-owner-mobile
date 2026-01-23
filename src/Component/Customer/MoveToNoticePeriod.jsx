@@ -28,7 +28,7 @@ export default function MoveNoticeSheet({
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   console.log("customercustomer",customer)
- if (!visible && !showSuccess) return null;
+
 
 
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
@@ -148,6 +148,7 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
       setShowSuccess(true);
       onBedAdded && onBedAdded(roomId || customer.roomId);
      onSuccess && onSuccess()
+    
       
 
       // setTimeout(() => {
@@ -155,13 +156,12 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
       //   onClose();
       // }, 800);
         setTimeout(() => {
+            onClose();
     setShowSuccess(false);
   }, 800);
 
   // ✅ next sheet close
-  setTimeout(() => {
-    onClose();
-  }, 900);
+ 
     } else {
       alert(res.message || "Move to notice failed");
     }
