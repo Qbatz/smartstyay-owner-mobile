@@ -1498,7 +1498,7 @@ const filteredTenants = customers?.listCustomers?.filter((item) => {
           <MoveNoticeSheet
             visible={showNotice}
             onClose={() => setShowNotice(false)}
-            customer={selectedCustomer}
+            customer={selectedItem}
             onSuccess={handleCheckoutSuccess}
             
 
