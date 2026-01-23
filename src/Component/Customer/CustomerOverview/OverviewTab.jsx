@@ -68,7 +68,14 @@ const hasGuardianDetails = false;
 const isDisabled = true;
 // later API vandha -> customerDetails?.guardianInfo
 
-
+const disableAssignBtn = [
+  "BOOKED",
+  "INACTIVE",
+  "VACATED",
+  "SETTLEMENT_GENERATED",
+  "NOTICE",
+].includes(customerDetails?.hostelInfo?.currentStatus);
+console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
   return (
     <>
 
@@ -790,10 +797,16 @@ const isDisabled = true;
             {/* HEADER */}
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Amenities provided</Text>
-
-              <TouchableOpacity style={styles.assignBtn} onPress={handleShowAmenities}>
-                <Text style={styles.assignText}>＋ Assign</Text>
-              </TouchableOpacity>
+<TouchableOpacity
+  style={[
+    styles.assignBtn,
+    disableAssignBtn && { opacity: 0.5 }
+  ]}
+  onPress={handleShowAmenities}
+  disabled={disableAssignBtn}
+>
+  <Text style={styles.assignText}>＋ Assign</Text>
+</TouchableOpacity>
             </View>
 
       {Array.isArray(customerDetails?.assignedAmenities) &&

@@ -99,7 +99,7 @@ export default function LoginDesign() {
     else if (response?.status === 400) {
       setModalType("error");
       setModalMessage(
-        response?.data?.message || response?.message || "Bad Request"
+        response?.data?.message || response?.message || "Invalid email or password"
       );
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
