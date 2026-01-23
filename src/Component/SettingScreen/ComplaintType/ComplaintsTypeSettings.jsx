@@ -385,31 +385,32 @@ const openSheet = (edit = false, item = null) => {
           <Text style={styles.headerTitle}>Complaints</Text>
         </View>
 
-        <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
-          <View style={{ flex: 1 }}>
-     {!loading &&  complaints.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <Image source={EmptyComplaint} style={styles.emptyImg} />
-                <Text style={styles.emptyTitle}>No Complaints are there!</Text>
+        <View style={{ flex: 1 }}>
+  {!loading && complaints.length === 0 ? (
+    <View style={styles.emptyContainer}>
+      <Image source={EmptyComplaint} style={styles.emptyImg} />
+      <Text style={styles.emptyTitle}>No Complaints are there!</Text>
 
-                <TouchableOpacity
-                  style={styles.addButtonEmpty}
-                  onPress={() => openSheet(false)}
-                >
-                  <Text style={styles.addBtnText}>+ Complaints</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              
-              <FlatList
-                data={complaints}
-                renderItem={renderComplaint}
-                keyExtractor={(i) => i.id.toString()}
-                contentContainerStyle={{ paddingBottom: 90 }}
-              />
-            )}
-          </View>
-        </TouchableWithoutFeedback>
+      <TouchableOpacity
+        style={styles.addButtonEmpty}
+        onPress={() => openSheet(false)}
+      >
+        <Text style={styles.addBtnText}>+ Complaints</Text>
+      </TouchableOpacity>
+    </View>
+  ) : (
+    <FlatList
+      data={complaints}
+      renderItem={renderComplaint}
+      keyExtractor={(i) => i.id.toString()}
+      contentContainerStyle={{ paddingBottom: 140 }}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    />
+  )}
+</View>
+
+    
 
         { !loading && complaints.length > 0 && (
           <TouchableOpacity style={styles.addBtn} onPress={() => openSheet(false)}>
@@ -516,9 +517,12 @@ const openSheet = (edit = false, item = null) => {
 
         <TextInput
           style={styles.inputBox}
-          placeholder="Enter"
+          placeholder="Enter Complaint Type"
           value={complaintText}
-          onChangeText={setComplaintText}
+             onChangeText={(t) =>  {
+              setComplaintText(t.replace(/[^a-zA-Z\s]/g, ""))
+            }
+            }
         />
       </ScrollView>
 
@@ -531,7 +535,7 @@ const openSheet = (edit = false, item = null) => {
         onPress={handleSave}
       >
         <Text style={styles.addTypeText}>
-          {isEdit ? "Update Type" : "Add Type"}
+          {isEdit ? "Update Complaint  Type" : "Add Complaint  Type"}
         </Text>
       </TouchableOpacity>
 
@@ -624,8 +628,8 @@ popupMenu: {
 
   addBtn: {
     position: "absolute",
-    bottom: 40,
-    right: 20,
+    bottom: 90,
+    right: 40,
     width: 55,
     height: 55,
     borderRadius: 30,

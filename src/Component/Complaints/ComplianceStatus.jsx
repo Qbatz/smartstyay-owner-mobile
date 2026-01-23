@@ -161,7 +161,14 @@ const handleStatusUpdate = async () => {
     }
   }, [visible]);
 
+  const isSelected = (item) => {
+  return selectedStatus?.value === item.value;
+};
+
+
   if (!visible) return null;
+
+
 
   return (
     <>
@@ -214,19 +221,34 @@ const handleStatusUpdate = async () => {
                 nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
               >
-       {STATUS_OPTIONS.map((item) => (
-  <TouchableOpacity
-    key={item.value}
-    style={styles.option}
-    onPress={() => {
-      setSelectedStatus(item);
-      setDropdownVisible(false);
-      setStatusError(""); 
-    }}
-  >
-    <Text style={styles.optionText}>{item.label}</Text>
-  </TouchableOpacity>
-))}
+   {STATUS_OPTIONS.map((item) => {
+  const active = isSelected(item);
+
+  return (
+    <TouchableOpacity
+      key={item.value}
+      style={[
+        styles.option,
+        active && styles.optionActive, // ✅ blue bg
+      ]}
+      onPress={() => {
+        setSelectedStatus(item);
+        setDropdownVisible(false);
+        setStatusError("");
+      }}
+    >
+      <Text
+        style={[
+          styles.optionText,
+          active && styles.optionTextActive, // ✅ white text
+        ]}
+      >
+        {item.label}
+      </Text>
+    </TouchableOpacity>
+  );
+})}
+
 
 
               </ScrollView>
@@ -275,7 +297,7 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: "#fff",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 60,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -292,7 +314,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 25,
+    marginBottom: 15,
     alignItems: "center",
   },
 
@@ -356,4 +378,17 @@ const styles = StyleSheet.create({
 
   cancelText: { fontSize: 16, fontWeight: "500", color: "#333" },
   updateText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+  optionActive: {
+  backgroundColor: "#1D5DFF",
+},
+
+optionTextActive: {
+  color: "#fff",
+  fontWeight: "600",
+},
+option: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
 });

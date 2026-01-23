@@ -254,7 +254,7 @@ const deleteComplaint = async (complaintId, hostelId) => {
 };
 
 const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
-  setLoading(true);
+  // setLoading(true);
 
   try {
     const axios = getAxios();
@@ -283,7 +283,7 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
 
  const assignComplaint = async ({ complaintId, userId }) => {
     try {
-      setLoading(true);
+      // setLoading(true);
       setAssignError("");
       const axios = getAxios();
       const res = await axios.put(
@@ -314,7 +314,7 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   };
 
  const getParticularComplaint = async (hostelId, complaintId) => {
-  setLoading(true);
+  // setLoading(true);
   try {
 
     const res = await AxiosConfig.get(
@@ -339,7 +339,7 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
 
 
 const addComplaintComment = async ({ complaintId, message }) => {
-  setCommentsLoading(true);
+  // setCommentsLoading(true);
 
   try {
     const axios = getAxios();

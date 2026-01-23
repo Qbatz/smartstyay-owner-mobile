@@ -604,20 +604,7 @@ if (res?.status === 201) {
                                                                       
                                <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text> 
                              <View style={{ position: "relative", marginBottom: 6 }}>
-  {/* <TextInput
-    style={styles.select}
-    placeholder="Select State"
-    placeholderTextColor="#9CA3AF"
-    value={stateOpen ? stateQuery : state}
-    onFocus={() => {
-      setStateOpen(true);
-      setStateQuery("");
-    }}
-    onChangeText={(t) => {
-      setStateQuery(t);
-      setStateOpen(true);
-    }}
-  /> */}
+ 
 
   <TextInput
   style={styles.select}
