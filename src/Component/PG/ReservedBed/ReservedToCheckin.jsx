@@ -489,7 +489,7 @@ const bookingDateObj = bookingDetails?.bookedDate
                 isAssignDisabled && { backgroundColor: "#9CA3AF" }
               ]}
               onPress={onSave} disabled={isAssignDisabled}>
-              <Text style={styles.checkText}>Check In</Text>
+              <Text style={styles.checkText}>Check-In</Text>
             </TouchableOpacity>
           </View>
 

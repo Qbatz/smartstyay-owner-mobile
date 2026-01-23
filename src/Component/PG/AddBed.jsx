@@ -74,6 +74,7 @@ const [initialAmount, setInitialAmount] = useState("");
         setBedName("");
         setAmount("");
         setBedNameError("")
+        setAmountError("")
       });
     }
   }, [visible]);
@@ -113,7 +114,8 @@ const [initialAmount, setInitialAmount] = useState("");
   let valid = true;
 
   const trimmedBedName = bedName.trim();
-  const trimmedAmount = amount.trim();
+  // const trimmedAmount = amount.trim();
+   const trimmedAmount = amount?.toString().trim();
 
   if (!trimmedBedName) {
     setBedNameError("Bed name is required");
@@ -122,12 +124,23 @@ const [initialAmount, setInitialAmount] = useState("");
     setBedNameError("");
   }
 
-  if (!trimmedAmount) {
-    setAmountError("Amount is required");
-    valid = false;
-  } else {
-    setAmountError("");
-  }
+  // if (!trimmedAmount) {
+  //   setAmountError("Amount is required");
+  //   valid = false;
+  // } else {
+  //   setAmountError("");
+  // }
+ 
+
+if (!trimmedAmount) {
+  setAmountError("Amount is required");
+  valid = false;
+} else if (Number(trimmedAmount) <= 0) {
+  setAmountError("Amount must be greater than 0");
+  valid = false;
+} else {
+  setAmountError("");
+}
 
   if (!valid) return;
 
