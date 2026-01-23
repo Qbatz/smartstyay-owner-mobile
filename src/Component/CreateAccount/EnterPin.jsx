@@ -9,6 +9,7 @@ import LottieView from "lottie-react-native";
 
 import WaveIcon from "../../Assets/Images/login_Rectangle.png";
 import { updateFcmToken } from "../../Action/LoginAction";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 
 
 const EnterMPin = (props) => {
@@ -34,6 +35,7 @@ const EnterMPin = (props) => {
     const translateY = useRef(new Animated.Value(80)).current;
     const BOTTOM_IMAGE_HEIGHT = 200;
     const [fcmToken, setFcmToken] = useState();
+    const [enterPinError, setEnterPinError] = useState()
 
     const showSuccessPopup = () => {
         setShowPopup(true);
@@ -149,7 +151,22 @@ const EnterMPin = (props) => {
         }
     };
 
+     const validateForm=()=>{
+        let valid=true;
+
+        setEnterPinError("")
+
+        const isValid = createMpin.every(digit => digit !== "");
+
+        if (!isValid) {
+            setEnterPinError("Please enter a valid 4-digit MPIN");
+            return false;
+        }
+        return valid;        
+    }
+
     const enterPinClick = async () => {
+        if(!validateForm()) return;
         const res = await verifyMpin(Number(mPinNumber));
         console.log(res)
 
@@ -235,6 +252,7 @@ const EnterMPin = (props) => {
                     />
                 ))}
             </View>
+            {enterPinError && <ErrorMessage message={enterPinError} type="error"/>}
             <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
                 <TouchableOpacity onPress={forgotMpinClick}
                 >

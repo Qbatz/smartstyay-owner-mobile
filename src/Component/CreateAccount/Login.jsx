@@ -83,6 +83,7 @@ export default function LoginDesign() {
       if (pinSetup === false) {
         // loginContext.updatePinSetupStatus(true)
         loginContext?.updateUserId(response.data.userId)
+        storeData(USER_ID, response.data.userId)
         navigation.navigate("CreateMpin");
 
       } else {
