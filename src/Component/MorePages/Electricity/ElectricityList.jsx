@@ -9,6 +9,8 @@ import {
   ScrollView, Modal,
   PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
@@ -82,6 +84,7 @@ console.log("roomdata", roomData);
     const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
      const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+     const [showAddSheet, setShowAddSheet] = useState(false);
 
        const [showDeleteModal, setShowDeleteModal] = useState(false);
        const [deleteData, setDeleteData] = useState(null);
@@ -143,25 +146,53 @@ console.log("roomdata", roomData);
   }
 }, [activeHostelId]);
 
- useEffect(() => {
-  const onBackPress = () => {
-    if (showFilter) {
-      setShowFilter(false);   
+useFocusEffect(
+  React.useCallback(() => {
+    const onBackPress = () => {
+      if (showFilter) {
+        setShowFilter(false);
+        return true;
+      }
+
+      if (showAddSheet) {
+        closeSheet();
+        return true;
+      }
+
+      navigation.goBack();
       return true;
-    }
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+    return () => subscription.remove();
+  }, [showFilter, showAddSheet, navigation])
+);
+
+
+
+//  useEffect(() => {
+//   const onBackPress = () => {
+//     if (showFilter) {
+//       setShowFilter(false);   
+//       return true;
+//     }
 
  
-    navigation.navigate("MoreDesign");
-    return true;
-  };
+//     navigation.navigate("MoreDesign");
+//     return true;
+//   };
 
-  const backHandler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    onBackPress
-  );
+//   const backHandler = BackHandler.addEventListener(
+//     "hardwareBackPress",
+//     onBackPress
+//   );
 
-  return () => backHandler.remove();
-}, [showFilter]);
+//   return () => backHandler.remove();
+// }, [showFilter]);
 
 useEffect(() => {
   if (hostelElectricityDetails?.hostelReadings?.length > 0) {
@@ -180,7 +211,7 @@ useEffect(() => {
 
 
   // ⭐ Bottom Sheet State
-const [showAddSheet, setShowAddSheet] = useState(false);
+
 
 // ⭐ Animated value for swipe sheet
 // const translateX = useRef(new Animated.Value(500)).current;
