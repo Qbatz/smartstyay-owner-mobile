@@ -243,6 +243,7 @@ export default function EditBasicDetailsSheet({
                             <TextInput
                                 style={styles.input}
                                 value={lastName}
+                                placeholder="Enter LastName"
                                 onChangeText={setLastName}
                             />
 
