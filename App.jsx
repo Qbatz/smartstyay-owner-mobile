@@ -130,11 +130,20 @@ TextInput.defaultProps.allowFontScaling = false;
   const { CommonModule } = NativeModules;
 
   const [userId, setUserId] = useState();
+  const [isLoginIn,setIsLoginIn]=useState()
 
   useEffect(() => {
-     retriveData(USER_ID).then(result => {
-     setUserId(result)
+    retriveData(LOGGEDIN).then(r=>{
+      setIsLoginIn(r)
     })
+
+    //  retriveData(USER_ID).then(result => {
+    //   setUserId(result)
+    //   if(isLoginIn === "true"){
+    //       setUserId(result)
+    //   }
+   
+    // })
 
     CommonModule.fetchBaseUrl().then(baseUrl => {
       initBaseUrl(baseUrl)
@@ -162,7 +171,7 @@ TextInput.defaultProps.allowFontScaling = false;
                                 <VendorProvider>
                                   <UIProvider >
                                     <AssetProvider>
-                                <AppContent userId={userId}/>
+                                <AppContent userId={userId} isLoginIn={isLoginIn}/>
                                 </AssetProvider>
                                 </UIProvider >
                                 </VendorProvider>
@@ -199,17 +208,39 @@ function AppContent(props) {
     retriveData(LOGGEDIN).then(r=>{
         setIsLoggedIn(r)
         console.log(r)
+        if(r === "true"){
+             loginContext?.updateUserId(props.userId)
+        }
+        // else{
+        //   loginContext?.updateUserId("")
+        // }
+       
     })
 
    
   },[])
+  useEffect(()=>{
+    console.log(props.isLoginIn)
+    if(props.isLoginIn === "true"){
+        loginContext?.updateUserId(props.userId)
+    }
+
+    retriveData(USER_ID).then(result => {
+      console.log(result)
+      loginContext?.updateUserId(result)
+    })
+      
+
+  },[props.isLoginIn,props.userId])
 
   useEffect(() => {
      if (props.userId) {
   console.log("props userId", props.userId)
   console.log("login context", loginContext)
+  if(isLoggedIn === "true")
       loginContext?.updateUserId(props.userId)
     }
+    
   }, [props.userId, loginContext])
 
 
