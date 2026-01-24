@@ -247,7 +247,7 @@ const getPermissionCount = (role) => {
 
       </ScrollView>
 
-    {!loading && (
+    {!loading &&  roleList?.length > 0 &&(
 //       <TouchableOpacity style={styles.addButton} onPress={() => { 
 //   setShowAddSheet(true); 
 //   setEditData(null); 
