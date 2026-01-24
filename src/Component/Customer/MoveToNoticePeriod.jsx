@@ -27,7 +27,7 @@ export default function MoveNoticeSheet({
   const [outDateError, setOutDateError] = useState("");
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
-  console.log("customercustomer",customer)
+  console.log("customercustomer",roomId)
 
 
 
@@ -175,7 +175,7 @@ if (res.success) {
   }, 600);
 
   setTimeout(() => {
-    onBedAdded && onBedAdded(roomId || customer.roomId);  // ✅ after sheet closed
+    onBedAdded && onBedAdded(selectedBed?.roomId || customer?.roomId); 
     onSuccess && onSuccess();
   }, 900);
 
