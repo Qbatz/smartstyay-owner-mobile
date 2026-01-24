@@ -138,7 +138,7 @@ const panResponder = useRef(
         </View>
 
         <View style={styles.rightCol}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() =>
               setMenuVisibleId(isMenuVisible ? null : item.customerId)
             }
@@ -151,7 +151,7 @@ const panResponder = useRef(
                 transform: [{ rotate: "90deg" }],
               }}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <Text style={styles.date}>{item.checkoutDate}</Text>
 

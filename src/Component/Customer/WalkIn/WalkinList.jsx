@@ -179,6 +179,20 @@ const filteredWalkins = walkinCustomers.filter((item) => {
     return () => handler.remove();
   }, [showFilter]);
 
+const handleAddTenant = () => {
+  if (!activeHostelId) {
+    setModalType("warning");
+    setMessage("Please add a hostel first");
+    setShowSuccess(true);
+
+    setTimeout(() => setShowSuccess(false), 2000);
+    return;
+  }
+
+  navigation.navigate("AddTenant", {
+    refreshWalkins: walkinCustomers,
+  });
+};
 
 
 
@@ -200,11 +214,7 @@ const filteredWalkins = walkinCustomers.filter((item) => {
   bookings and check-ins.
 </Text>
 
-               <TouchableOpacity style={styles.addBtnAdd} onPress={() =>
-          navigation.navigate("AddTenant", {
-            refreshWalkins: walkinCustomers,
-          })
-        }>
+               <TouchableOpacity style={styles.addBtnAdd} onPress={handleAddTenant}>
                     <Text style={styles.addBtnText}>
                     + Add Tenant
                     </Text>
@@ -265,7 +275,7 @@ const filteredWalkins = walkinCustomers.filter((item) => {
             >
               <TouchableOpacity style={styles.menuRow} onPress={handleShowTennantCheckin}>
                 <Image source={CalendarIcon} style={styles.menuIcon} />
-                <Text style={styles.menuText}>Check In</Text>
+                <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuRow} onPress={handleShowAddBooking}>

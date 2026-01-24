@@ -801,19 +801,22 @@ const moveUpSelected = async () => {
               <Text style={styles.inputLabel}>
                 Amenity <Text style={{ color: "red" }}>*</Text>
               </Text>
-    <TextInput
-  style={[
-    styles.inputBox,
-  ]}
+ 
+<TextInput
+  style={[styles.inputBox]}
   placeholder="Enter Amenity"
   value={amenityName}
   onChangeText={(t) => {
-    setAmenityName(t);
-    if (amenityError) 
-      setAmenityError("");
+    
+    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+
+    setAmenityName(onlyLetters);
+
+    if (amenityError) setAmenityError("");
     setNoChangeError("");
   }}
 />
+
 
 
 

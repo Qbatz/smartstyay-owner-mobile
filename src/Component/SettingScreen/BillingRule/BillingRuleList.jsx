@@ -14,6 +14,7 @@ import Confiqure from "../../../Assets/Images/arrow-transfer.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { UseSetting } from "../../../Context/SettingContext";
 import { useFocusEffect } from "@react-navigation/native";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 export default function BillingRuleScreen({ navigation }) {
 
@@ -23,8 +24,9 @@ export default function BillingRuleScreen({ navigation }) {
 
   const [showEditSheet, setShowEditSheet] = useState(false)
   const [billingData,setBillingData] = useState("")
-  const editY = useRef(new Animated.Value(700)).current;
 
+  const editY = useRef(new Animated.Value(700)).current;
+console.log("billingData",billingData)
 
 useEffect(() => {
   if (activeHostelId) {
@@ -142,6 +144,7 @@ const closeEditSheet = () => {
     style={{ flex: 1 }}
     behavior={Platform.OS === "ios" ? "padding" : "height"}
   >
+    
     <View style={styles.container}>
      
       <View style={styles.headerRow}>
@@ -155,7 +158,19 @@ const closeEditSheet = () => {
        
       </View>
 
-   
+    {billingData?.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Image
+                  source={EmptyState}
+                  style={styles.emptyImage}
+                />
+                <Text style={styles.emptyText}>
+                  You do not have access to view Billing Rule
+                </Text>
+                
+                      
+              </View>
+            ) }
       {billingData && (
         <View style={styles.card}>
        
@@ -389,7 +404,37 @@ infoValue: {
   fontWeight: "600",
   color: "#000",
 },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
 
+ruleBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
 
+  addruleText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
 });

@@ -802,7 +802,7 @@ useFocusEffect(
       />
       <View style={styles.container} pointerEvents={isAnySheetOpen ? "none" : "auto"}>
 
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <View style={styles.headerLeft}>
             <TouchableOpacity
               onPress={() => navigation.navigate("SettingsPG")}
@@ -818,49 +818,97 @@ useFocusEffect(
           >
             <Text style={styles.floorButtonText}>+ Floor</Text>
           </TouchableOpacity>
+        </View> */}
+{/* {!activeHostelId && (
+  <View style={styles.header}>
+    <View style={styles.headerLeft}>
+      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+        <Image source={HostelImg} style={styles.HostelImg} />
+      </TouchableOpacity>
+
+      <Text style={styles.title}>{activeHostelName}</Text>
+    </View>
+
+    <TouchableOpacity
+      style={styles.floorButton}
+      onPress={() => setShowAddFloor(true)}
+    >
+      <Text style={styles.floorButtonText}>+ Floor</Text>
+    </TouchableOpacity>
+  </View>
+)} */}
+<View style={styles.header}>
+ 
+  {!!activeHostelId && (
+    <View style={styles.headerLeft}>
+      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+        <Image source={HostelImg} style={styles.HostelImg} />
+      </TouchableOpacity>
+
+      <Text style={styles.title}>{activeHostelName}</Text>
+    </View>
+  )}
+
+  
+  {!!activeHostelId && floors?.length > 0 && (
+    <TouchableOpacity
+      style={styles.floorButton}
+      onPress={() => setShowAddFloor(true)}
+    >
+      <Text style={styles.floorButtonText}>+ Floor</Text>
+    </TouchableOpacity>
+  )}
+</View>
+
+
+{activeHostelId && floors?.length > 0 && (
+  <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 13 }}>
+
+    {/* ✅ Filters only when rooms exist */}
+    {rooms?.length > 0 && (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}  // ✅ keep same alignment
+      >
+        <View style={styles.filterItem}>
+          <View style={styles.availableDot} />
+          <Text style={styles.filterText}>Available</Text>
         </View>
 
-
-        <View style={{ flexDirection: "row", marginLeft: 13 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScroll}
-            
-          >
-            <View style={styles.filterItem}>
-              <View style={styles.availableDot} />
-              <Text style={styles.filterText}>Available</Text>
-            </View>
-
-            <View style={styles.filterItem}>
-              <View style={styles.occupiedDot} />
-              <Text style={styles.filterText}>Occupied</Text>
-            </View>
-
-            <View style={styles.filterItem}>
-              <Image source={IconCalendar} style={styles.filterIcon} />
-              <Text style={styles.filterText}>Reserved</Text>
-            </View>
-
-            <View style={styles.filterItem}>
-              <Image source={IconRupee} style={styles.filterIcon} />
-              <Text style={styles.filterText}>Overdue</Text>
-            </View>
-
-            <View style={styles.filterItem}>
-              <Image source={IconNotice} style={styles.filterIcon} />
-              <Text style={styles.filterText}>Notice Period</Text>
-            </View>
-
-          </ScrollView>
-          <TouchableOpacity
-            style={styles.addRoomBtn}
-            onPress={() => setShowFloorMenu(!showFloorMenu)}
-          >
-            <Image source={Dots} style={{ width: 22, height: 22 }} />
-          </TouchableOpacity>
+        <View style={styles.filterItem}>
+          <View style={styles.occupiedDot} />
+          <Text style={styles.filterText}>Occupied</Text>
         </View>
+
+        <View style={styles.filterItem}>
+          <Image source={IconCalendar} style={styles.filterIcon} />
+          <Text style={styles.filterText}>Reserved</Text>
+        </View>
+
+        <View style={styles.filterItem}>
+          <Image source={IconRupee} style={styles.filterIcon} />
+          <Text style={styles.filterText}>Overdue</Text>
+        </View>
+
+        <View style={styles.filterItem}>
+          <Image source={IconNotice} style={styles.filterIcon} />
+          <Text style={styles.filterText}>Notice Period</Text>
+        </View>
+      </ScrollView>
+    )}
+
+    {/* ✅ Dots RIGHT END (no layout change) */}
+    <TouchableOpacity
+      style={[styles.addRoomBtn, { marginLeft: "auto" }]}  // ✅ magic line
+      onPress={() => setShowFloorMenu(!showFloorMenu)}
+    >
+      <Image source={Dots} style={{ width: 22, height: 22 }} />
+    </TouchableOpacity>
+
+  </View>
+)}
+
         {showFloorMenu && (
           <TouchableWithoutFeedback onPress={() => setShowFloorMenu(false)}>
 <View style={styles.menuOverlay}>
@@ -960,19 +1008,30 @@ useFocusEffect(
         </View>
 
 
-      {!loading && floors.length === 0 && (
-          <View style={styles.centerContainer}>
-            <Image source={EmptyFloor} style={styles.image} />
-            <Text style={styles.noFloorText}>No floors are there!</Text>
+     {!loading && floors.length === 0 && (
+  <View style={styles.centerContainer}>
+    <Image source={EmptyFloor} style={styles.image} />
+    <Text style={styles.noFloorText}>No floors are there!</Text>
 
-            <TouchableOpacity
-              style={styles.addFloorBtn}
-              onPress={() => setShowAddFloor(true)}
-            >
-              <Text style={styles.addFloorText}>+ Add Floor</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+    <TouchableOpacity
+      style={styles.addFloorBtn}
+      onPress={() => {
+        if (!activeHostelId) {
+          setModalType("warning"); // or "error"
+          setMessage("Please add a hostel first");
+          setShowSuccess(true);
+
+          setTimeout(() => setShowSuccess(false), 1500);
+          return;
+        }
+
+        setShowAddFloor(true);
+      }}
+    >
+      <Text style={styles.addFloorText}>+ Add Floor</Text>
+    </TouchableOpacity>
+  </View>
+)}
 
 
        {!loading && floors.length > 0 && rooms.length === 0 && (

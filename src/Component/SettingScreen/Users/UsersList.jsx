@@ -203,7 +203,7 @@ export default function UsersScreen({ navigation }) {
             </View>
 
           ))}
-          {!loading && users && Array.isArray(users)?.length === 0 &&
+          {/* {!loading && users && Array.isArray(users)?.length === 0 &&
             <View style={styles.emptyContainer}>
               <Image source={EmptyState} style={styles.emptyImage} />
               <Text style={styles.emptyText}>No Users Found</Text>
@@ -212,10 +212,26 @@ export default function UsersScreen({ navigation }) {
                         <Text style={styles.addUserText}>+ Add User</Text>
                         </TouchableOpacity>
             </View>
-          }
+          } */}
+          {!loading &&
+  (!activeHostelId || users?.length === 0) && (
+    <View style={styles.emptyContainer}>
+      <Image source={EmptyState} style={styles.emptyImage} />
+      <Text style={styles.emptyText}>No Users Found</Text>
+
+      <TouchableOpacity
+        style={styles.addUserBtn}
+        onPress={handleShowAddUser} 
+      >
+        <Text style={styles.addUserText}>+ Add User</Text>
+      </TouchableOpacity>
+    </View>
+  )
+}
+
         </ScrollView>
 
-        {!loading && (
+        {!loading && users?.length > 0 &&(
           <TouchableOpacity  style={styles.addBtn} onPress={handleShowAddUser} >
             <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>

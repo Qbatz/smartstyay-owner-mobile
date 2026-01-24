@@ -196,6 +196,18 @@ const getVendorInitials = (firstName = "", lastName = "") => {
 };
 
 
+const handleAddVendorClick = () => {
+  if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please add a hostel first");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+  setShowAddVendor(true);
+};
 
 
   const renderVendor = ({ item }) => {
@@ -364,7 +376,7 @@ const getVendorInitials = (firstName = "", lastName = "") => {
               No vendors are there!
             </Text>
             
-                    <TouchableOpacity style={styles.addVendorBtn}   onPress={() => setShowAddVendor(true)}>
+                    <TouchableOpacity style={styles.addVendorBtn} onPress={handleAddVendorClick}>
                       <Text style={styles.addVendorText}>+ Add Vendor</Text>
                     </TouchableOpacity>
           </View>
