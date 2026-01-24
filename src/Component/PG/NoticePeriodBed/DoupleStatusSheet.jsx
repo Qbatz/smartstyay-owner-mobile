@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 40,
+    paddingBottom: 50,
     maxHeight: SCREEN_HEIGHT * 0.92,
   },
 

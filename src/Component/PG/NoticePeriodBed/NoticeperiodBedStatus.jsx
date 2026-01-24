@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: "#fff",
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 50,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },

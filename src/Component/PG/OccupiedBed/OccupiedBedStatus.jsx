@@ -373,7 +373,7 @@ const closeSheet = () => {
 
 const styles = StyleSheet.create({
     overlay: {
-        position: "absolute", left: 0, right: 0, top: 0, bottom: 25,
+        position: "absolute", left: 0, right: 0, top: 0, bottom:0,
         backgroundColor: "rgba(0,0,0,0.4)",
         justifyContent: "flex-end",
     },
@@ -383,6 +383,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: 20,
+        paddingBottom:50
     },
 
     handle: {

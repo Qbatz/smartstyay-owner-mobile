@@ -691,23 +691,39 @@ onChangeText={(t) => {
     </TouchableOpacity>
 
     {showPaymentMode && (
-      <View style={styles.transactiondropdown}>
-        <ScrollView nestedScrollEnabled>
-          {transactionOptions.map((opt) => (
-            <TouchableOpacity
-              key={opt.value}
-              onPress={() => {
-                setSelectedMode(opt.value);
-                setShowPaymentMode(false);
-                   clearApiError();
-              }}
-            >
-              <Text>{opt.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    )}
+  <View style={styles.transactiondropdown}>
+    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+      {transactionOptions.map((opt) => {
+        const isSelected = selectedMode === opt.value;
+
+        return (
+          <TouchableOpacity
+            key={opt.value}
+            style={[
+              styles.dropdownRow,
+              isSelected && styles.dropdownRowSelected,
+            ]}
+            activeOpacity={0.8}
+            onPress={() => {
+              setSelectedMode(opt.value);
+              setShowPaymentMode(false);
+              clearApiError();
+              setErrors((prev) => ({ ...prev, paymentMode: "" }));
+            }}
+          >
+            <View style={styles.dropdownRowInner}>
+              <Text style={isSelected ? styles.dropdownTextSelected : styles.dropdownText}>
+                {opt.label}
+              </Text>
+
+             
+            </View>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  </View>
+)}
 
     {errors.paymentMode && (
       <ErrorMessage message={errors.paymentMode} type="error" />
@@ -973,47 +989,47 @@ inputBox: {
     justifyContent: "space-between",
   },
 transactiondropdown: {
-  borderRadius: 12,
+  borderRadius: 14,
   borderWidth: 1,
-  borderColor: "#E6E6E6",
+  borderColor: "#E5E7EB",
   backgroundColor: "#fff",
-  marginTop: 2,
+  marginTop: 6,
   overflow: "hidden",
-
-  // default → multiple items ku
-  // minHeight: 130,
-  maxHeight: 130,
+  maxHeight: 180,
 
   ...Platform.select({
     ios: {
       shadowColor: "#000",
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
+      shadowOpacity: 0.10,
+      shadowRadius: 10,
       shadowOffset: { width: 0, height: 4 },
     },
-    android: { elevation: 3 },
+    android: {
+      elevation: 6,
+    },
   }),
 },
-
 
 dropdownRow: {
   paddingVertical: 12,
   paddingHorizontal: 14,
+  borderBottomWidth: 1,
+  borderBottomColor: "#F3F4F6",
 },
 
 dropdownRowSelected: {
-  backgroundColor: "#1E45E1", 
+  backgroundColor: "#2563EB",
 },
 
 dropdownText: {
-  color: "#111",
   fontSize: 15,
+  color: "#111827",
 },
 
 dropdownTextSelected: {
-  color: "#fff",
   fontSize: 15,
-  fontWeight: "600",
+  color: "#fff",
+  fontWeight: "700",
 },
 
 
@@ -1085,5 +1101,17 @@ calendarContainer: {
   width: "85%",
   elevation: 10,
 },
+dropdownRowInner: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+checkMark: {
+  color: "#fff",
+  fontWeight: "800",
+  fontSize: 16,
+},
+
 
 });
