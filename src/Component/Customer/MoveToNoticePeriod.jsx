@@ -27,7 +27,8 @@ export default function MoveNoticeSheet({
   const [outDateError, setOutDateError] = useState("");
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
- if (!visible && !showSuccess) return null;
+  console.log("customercustomer",customer)
+
 
 
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
@@ -147,6 +148,7 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
       setShowSuccess(true);
       onBedAdded && onBedAdded(roomId || customer.roomId);
      onSuccess && onSuccess()
+    
       
 
       // setTimeout(() => {
@@ -154,13 +156,12 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
       //   onClose();
       // }, 800);
         setTimeout(() => {
+            onClose();
     setShowSuccess(false);
   }, 800);
 
   // ✅ next sheet close
-  setTimeout(() => {
-    onClose();
-  }, 900);
+ 
     } else {
       alert(res.message || "Move to notice failed");
     }
@@ -305,16 +306,16 @@ for (let i = -90; i <= 90; i++) {
             <Image source={Profile} style={styles.profileImg} />
 
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.name}>{customer?.fullName || selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+              <Text style={styles.name}>{customer?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
 
               <View style={styles.badgeRow}>
                 <View style={styles.badgeYellow}>
-                  <Text style={styles.badgeText}>{customer?.floorName || selectedBed.floorName}</Text>
+                  <Text style={styles.badgeText}>{customer?.floorName || selectedBed?.floorName}</Text>
                 </View>
 
                 <View style={styles.badgeRed}>
                   <Text style={styles.badgeText}>
-                    {customer?.roomName || selectedBed?.roomName} - {customer?.bedName || selectedBed.bedName}
+                    {customer?.roomName || selectedBed?.roomName} - {customer?.bedName || selectedBed?.bedName}
                   </Text>
                 </View>
               </View>

@@ -11,13 +11,15 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated ,
   PanResponder,
-  BackHandler
+  BackHandler , Keyboard
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react"; 
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
+import { Calendar } from "react-native-calendars";
+
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
@@ -497,6 +499,53 @@ const refundPan = useRef(
     },
   })
 ).current;
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(refundSheetY, {
+        toValue: -e.endCoordinates.height + 30,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(refundSheetY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(recordSheetY, {
+        toValue: -e.endCoordinates.height + 90,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(recordSheetY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
 
@@ -1042,6 +1091,90 @@ const resetRefundForm = () => {
 };
 
 
+const today = dayjs();
+
+
+const invoiceDate = dayjs(selectedBill?.invoiceDate, "DD-MM-YYYY");
+
+
+const getInvoiceDate = () => {
+  if (!selectedBill?.invoiceDate) return null;
+  return dayjs(selectedBill.invoiceDate, "DD/MM/YYYY").startOf("day");
+};
+
+const isDisabledPaidDate = (d) => {
+  if (!d) return false;
+
+  if (invoiceDate && d.isBefore(invoiceDate, "day")) return true;
+  if (d.isAfter(today, "day")) return true;
+
+  return false;
+};
+
+
+const paidMarkedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledPaidDate(d)) {
+    paidMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+
+
+
+
+const isDisabledRefundDate = (d) => {
+  if (!d) return false;
+
+  if (invoiceDate && d.isBefore(invoiceDate, "day")) return true;
+  if (d.isAfter(today, "day")) return true;
+
+  return false;
+};
+
+
+const refundMarkedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledRefundDate(d)) {
+    refundMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+
 
 
 const handleShowRefundPayment = () => {
@@ -1073,11 +1206,11 @@ useEffect(() => {
 
 
 
-const today = dayjs().startOf("day");
+// const today = dayjs().startOf("day");
 
-const invoiceDate = selectedBill?.invoiceDate
-  ? dayjs(selectedBill.invoiceDate, "DD/MM/YYYY").startOf("day")
-  : null;
+// const invoiceDate = selectedBill?.invoiceDate
+//   ? dayjs(selectedBill.invoiceDate, "DD/MM/YYYY").startOf("day")
+//   : null;
 
 
   const normalizeDate = (value) => {
@@ -2243,7 +2376,10 @@ navigation.navigate("CancelNotice")
                     <ErrorMessage message={dateError} type="error" />
                                 )}
 
-<Modal
+ 
+
+
+{/* <Modal
   visible={openPaidDate}
   transparent
   animationType="fade"
@@ -2253,40 +2389,27 @@ navigation.navigate("CancelNotice")
     <View style={styles.dateModalOverlay}>
       <TouchableWithoutFeedback>
         <View style={styles.dateModalBox}>
+
           <DatePicker
-            mode="single"
-            date={paidDate || new Date()}
-            onChange={(v) => {
-              const selected = v.date;
-              if (!selected) return;
+  mode="single"
+  date={paidDate || new Date()}
+  minDate={getInvoiceDate()?.toDate()}   
+  maxDate={today.toDate()}              
+  onChange={(v) => {
+    if (!v?.date) return;
 
-              const invoiceDate = selectedBill?.invoiceDate
-                ? dayjs(selectedBill.invoiceDate, "DD/MM/YYYY").startOf("day")
-                : null;
+    setPaidDate(v.date);
+    setDateError("");
+    setOpenPaidDate(false);
+  }}
+/>
 
-              const pickedDate = dayjs(selected).startOf("day");
-              const today = dayjs().startOf("day");
-
-              if (invoiceDate && pickedDate.isBefore(invoiceDate)) {
-                setDateError("Paid date should not be before Bill date");
-                return;
-              }
-
-              if (pickedDate.isAfter(today)) {
-                setDateError("Paid date cannot be a future date");
-                return;
-              }
-
-              setDateError("");
-              setPaidDate(selected);
-              setOpenPaidDate(false);
-            }}
-          />
+        
         </View>
       </TouchableWithoutFeedback>
     </View>
   </TouchableWithoutFeedback>
-</Modal>
+</Modal> */}
 
 {/* {dateError ? (
   <Text style={{ color: "red", marginTop: 4, fontSize: 13 }}>
@@ -2310,7 +2433,7 @@ navigation.navigate("CancelNotice")
   <Text style={{ fontSize: 15 }}>
     {selectedMode
       ? transactionOptions.find(o => o.value === selectedMode)?.label
-      : "Select mode"}
+      : "Please Select"}
   </Text>
 
   <Image
@@ -2379,7 +2502,14 @@ navigation.navigate("CancelNotice")
                     <ErrorMessage message={modeError} type="error" />
                                 )}
 
-
+        <Text style={styles.label}>Transaction ID</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Transaction ID"
+          // keyboardType="numeric"
+          value={transactionId}
+          onChangeText={setTransactionId}
+        />
 
 
 
@@ -2532,66 +2662,41 @@ navigation.navigate("CancelNotice")
 {/* ERROR MESSAGE */}
 
 
+
  {refundDateError && (
                     <ErrorMessage message={refundDateError} type="error" />
                                 )}
 
 
-
+{/* 
  <Modal
   visible={openRefundDate}
   transparent
   animationType="fade"
   onRequestClose={() => setOpenRefundDate(false)}
 >
-  {/* OUTSIDE TAP CLOSE */}
   <TouchableWithoutFeedback onPress={() => setOpenRefundDate(false)}>
     <View style={styles.dateModalOverlay}>
       
-      {/* PREVENT CLOSE WHEN CLICKING INSIDE */}
       <TouchableWithoutFeedback>
         <View style={styles.dateModalBox}>
- <DatePicker
+
+
+
+
+<DatePicker
   mode="single"
   date={refundDate || new Date()}
+  minDate={getInvoiceDate()?.toDate()}
+  maxDate={today.toDate()}
   onChange={(v) => {
     if (!v?.date) return;
 
-    const pickedDate = normalizeDate(v.date);
-    if (!pickedDate) return;
-
-    const invoiceDate = normalizeDate(selectedBill?.invoiceDate);
-    const today = dayjs().startOf("day");
-
-    console.log(
-      "Invoice:",
-      invoiceDate?.format("DD/MM/YYYY"),
-      "Selected:",
-      pickedDate.format("DD/MM/YYYY")
-    );
-
-    // ❌ BEFORE INVOICE DATE
-    if (invoiceDate && pickedDate.isBefore(invoiceDate)) {
-      setRefundDateError("Refund date should not be before Invoice date");
-      return;
-    }
-
-    // ❌ FUTURE DATE
-    if (pickedDate.isAfter(today)) {
-      setRefundDateError("Refund date cannot be a future date");
-      return;
-    }
-
-    // ✅ VALID
-    setRefundDate(pickedDate.toDate());
+    setRefundDate(v.date);
     setRefundDateError("");
     setOpenRefundDate(false);
   }}
 />
-
-
-
-
 
 
 
@@ -2600,15 +2705,20 @@ navigation.navigate("CancelNotice")
 
     </View>
   </TouchableWithoutFeedback>
-</Modal>
+</Modal> */}
 
 
         {/* REFUND FROM */}
-        <Text style={styles.label}>Refund From <Text style={{ color: "red" , fontSize:16}}>*</Text></Text>
+    <Text style={styles.label}>
+  Refund From <Text style={{ color: "red" }}>*</Text>
+</Text>
 
 <TouchableOpacity
   style={styles.inputBox}
-  onPress={() => setShowRefundFrom((v) => !v)}
+  onPress={() => {
+    setRefundFromError("");
+    setShowRefundFrom((v) => !v);
+  }}
 >
   <Text style={{ fontSize: 15 }}>
     {refundFrom
@@ -2616,27 +2726,58 @@ navigation.navigate("CancelNotice")
       : "Select bank"}
   </Text>
 
-  <Image source={DownArrow} style={{ width: 18, height: 18 }} />
+  <Image
+    source={DownArrow}
+    style={{ width: 18, height: 18, tintColor: "#555" }}
+  />
 </TouchableOpacity>
 
 
-       {showRefundFrom && (
-  <View style={styles.transactiondropdown}>
-    <ScrollView>
+
+  {showRefundFrom && (
+  <View
+    style={[
+      styles.transactiondropdown,
+      refundBankOptions.length <= 1 && {
+        minHeight: undefined,
+        maxHeight: undefined,
+      },
+    ]}
+  >
+    <ScrollView
+      nestedScrollEnabled
+      showsVerticalScrollIndicator={false}
+      scrollEnabled={refundBankOptions.length > 2}
+    >
       {refundBankOptions.length > 0 ? (
-        refundBankOptions.map((opt) => (
-          <TouchableOpacity
-            key={opt.value}
-            style={{ padding: 12 }}
-            onPress={() => {
-              setRefundFrom(opt.value);   
-              setShowRefundFrom(false);
-              setRefundFromError("")
-            }}
-          >
-            <Text style={{ fontSize: 15 }}>{opt.label}</Text>
-          </TouchableOpacity>
-        ))
+        refundBankOptions.map((opt) => {
+          const isSelected = refundFrom === opt.value;
+
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.dropdownRow,
+                isSelected && styles.dropdownRowSelected,
+              ]}
+              onPress={() => {
+                setRefundFrom(opt.value);
+                setShowRefundFrom(false);
+                setRefundFromError("");
+              }}
+            >
+              <Text
+                style={
+                  isSelected
+                    ? styles.dropdownTextSelected
+                    : styles.dropdownText
+                }
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })
       ) : (
         <Text style={{ padding: 12, color: "#777" }}>
           No banks available
@@ -2661,7 +2802,7 @@ navigation.navigate("CancelNotice")
         <TextInput
           style={styles.input}
           placeholder="Enter transaction ID"
-          keyboardType="numeric"
+          // keyboardType="numeric"
           value={transactionId}
           onChangeText={setTransactionId}
         />
@@ -2895,6 +3036,66 @@ navigation.navigate("CancelNotice")
 
   </View>
 </Modal>
+
+                               {openPaidDate && (
+  <View style={styles.dateOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenPaidDate(false)}>
+      <View style={styles.overlayBg} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={paidMarkedDates}
+        current={
+          paidDate
+            ? paidDate.format("YYYY-MM-DD")
+            : today.format("YYYY-MM-DD")
+        }
+        onDayPress={(day) => {
+          if (paidMarkedDates[day.dateString]?.disabled) return;
+
+          setPaidDate(dayjs(day.dateString));
+          setOpenPaidDate(false);
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          selectedDayBackgroundColor: "#2563EB",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)}
+
+{openRefundDate && (
+  <View style={styles.dateOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenRefundDate(false)}>
+      <View style={styles.overlayBg} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={refundMarkedDates}
+        current={
+          refundDate
+            ? refundDate.format("YYYY-MM-DD")
+            : today.format("YYYY-MM-DD")
+        }
+        onDayPress={(day) => {
+          if (refundMarkedDates[day.dateString]?.disabled) return;
+
+          setRefundDate(dayjs(day.dateString));
+          setOpenRefundDate(false);
+        }}
+      />
+    </View>
+  </View>
+)}
+
 
 
 {deleteTenants && (
@@ -3393,8 +3594,8 @@ transactiondropdown: {
   zIndex: 9999,
   elevation: 20,
 
-  minHeight: 150,    // ✅ 3 items minimum
-  maxHeight: 200,
+  minHeight: 60,    // ✅ 3 items minimum
+  maxHeight: 140,
 },
 
 
@@ -3938,6 +4139,29 @@ initialText: {
    color: "#4B5563", 
 },
 
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
 
 
 });

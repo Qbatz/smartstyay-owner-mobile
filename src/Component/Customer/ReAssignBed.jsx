@@ -72,6 +72,10 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
       fetchCustomerDetails();
     }
   }, [visible, customer]);
+  const toggleDropdown = (type) => {
+  setOpenDropdown((prev) => (prev === type ? null : type));
+};
+
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId);
@@ -489,12 +493,14 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 20}
         >
-          <ScrollView ref={scrollRef}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            contentContainerStyle={{ paddingBottom: 40 }}
-          >
+         <ScrollView
+  ref={scrollRef}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  scrollEnabled={!disableSheetScroll}   // ✅ important
+  contentContainerStyle={{ paddingBottom: 40 }}
+>
+
             <Text style={styles.title}>Change Bed</Text>
 
             <Text style={styles.label}>Current Floor</Text>
@@ -548,25 +554,32 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
-              <TouchableOpacity
-                style={[
-                  styles.select,
-                  isFloorDisabled && styles.disabledSelect
-                ]}
-                disabled={isFloorDisabled}
-                onPress={() => setOpenDropdown("floor")}
-              >
-                <Text style={styles.selectText}>
-                  {floorSelected ? floorSelected.name : "Select a Floor"}
-                </Text>
-                <Image source={DownArrow} style={styles.arrow} />
-              </TouchableOpacity>
+             <TouchableOpacity
+  style={[styles.select, isFloorDisabled && styles.disabledSelect]}
+  disabled={isFloorDisabled}
+  onPress={() => toggleDropdown("floor")}
+>
+  <Text style={styles.selectText}>
+    {floorSelected ? floorSelected.name : "Select a Floor"}
+  </Text>
+  <Image source={DownArrow} style={styles.arrow} />
+</TouchableOpacity>
 
 
 
               {openDropdown === "floor" && (
                 <View style={styles.dropdownMenu}>
-                  <ScrollView style={{ maxHeight: 160 }}>
+                  {openDropdown && (
+  <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
+    <View style={styles.dropdownOverlay} />
+  </TouchableWithoutFeedback>
+)}
+                   <ScrollView
+      style={{ maxHeight: 160 }}
+      nestedScrollEnabled={true}          // ✅ Android fix
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
                     {floors.map((f) => (
                       <TouchableOpacity
                         key={f.id}
@@ -600,24 +613,33 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={[
-                  styles.select,
-                  isRoomDisabled && styles.disabledSelect
-                ]}
-                disabled={isRoomDisabled}
-                onPress={() => setOpenDropdown("room")}
-              >
-                <Text>
-                  {roomSelected ? roomSelected.name : "Select a Room"}
-                </Text>
-                <Image source={DownArrow} style={styles.arrow} />
-              </TouchableOpacity>
+  style={[styles.select, isRoomDisabled && styles.disabledSelect]}
+  disabled={isRoomDisabled}
+  onPress={() => toggleDropdown("room")}
+>
+  <Text style={styles.selectText}>
+    {roomSelected ? roomSelected.name : "Select a Room"}
+  </Text>
+  <Image source={DownArrow} style={styles.arrow} />
+</TouchableOpacity>
+
 
 
 
               {openDropdown === "room" && (
                 <View style={styles.dropdownMenu}>
-                  <ScrollView style={{ maxHeight: 160 }}>
+                  {openDropdown && (
+  <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
+    <View style={styles.dropdownOverlay} />
+  </TouchableWithoutFeedback>
+)}
+
+                  <ScrollView
+      style={{ maxHeight: 160 }}
+      nestedScrollEnabled={true}          // ✅ Android fix
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
 
                     {!hasRooms ? (
                       <View style={styles.emptyOption}>
@@ -651,24 +673,33 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
-              <TouchableOpacity
-                style={[
-                  styles.select,
-                  isBedDisabled && styles.disabledSelect
-                ]}
-                disabled={isBedDisabled}
-                onPress={() => setOpenDropdown("bed")}
-              >
-                <Text style={styles.selectText}>
-                  {bedSelected ? bedSelected.bedName : "Select a Bed"}
-                </Text>
-                <Image source={DownArrow} style={styles.arrow} />
-              </TouchableOpacity>
+             <TouchableOpacity
+  style={[styles.select, isBedDisabled && styles.disabledSelect]}
+  disabled={isBedDisabled}
+  onPress={() => toggleDropdown("bed")}
+>
+  <Text style={styles.selectText}>
+    {bedSelected ? bedSelected.bedName : "Select a Bed"}
+  </Text>
+  <Image source={DownArrow} style={styles.arrow} />
+</TouchableOpacity>
+
 
 
               {openDropdown === "bed" && (
                 <View style={styles.dropdownMenu}>
-                  <ScrollView style={{ maxHeight: 160 }}>
+                  {openDropdown && (
+  <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
+    <View style={styles.dropdownOverlay} />
+  </TouchableWithoutFeedback>
+)}
+
+                 <ScrollView
+      style={{ maxHeight: 160 }}
+      nestedScrollEnabled={true}          // ✅ Android fix
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
 
                     {!hasBeds ? (
                       <View style={styles.emptyOption}>

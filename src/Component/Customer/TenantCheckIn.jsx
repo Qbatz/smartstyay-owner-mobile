@@ -86,6 +86,22 @@ export default function TenantCheckIn({ navigation, route }) {
       hideSub.remove();
     };
   }, []);
+const titleRefs = useRef({});
+const amountRefs = useRef({});
+
+
+
+
+const scrollToInputRef = (ref) => {
+  if (!ref || !scrollRef.current) return;
+
+  ref.measureInWindow((x, y) => {
+    scrollRef.current?.scrollTo({
+      y: y - 140,   // 🔥 gap (adjust panna 160 / 180)
+      animated: true,
+    });
+  });
+};
 
 
   console.log("selectedBed", customer)
@@ -429,14 +445,15 @@ const validateExtraCharges = () => {
           </View>
 
           <ScrollView
-            ref={scrollRef}
-            keyboardShouldPersistTaps="always"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: keyboardHeight > 0 ? keyboardHeight + 60 : 130,
-              padding: 15
-            }}
-          >
+  ref={scrollRef}
+  keyboardShouldPersistTaps="always"
+  keyboardDismissMode="none"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 150,
+    padding: 15,
+  }}
+>
 
 
 
@@ -622,7 +639,7 @@ const validateExtraCharges = () => {
 
                 <View style={styles.nonRefund}>
                   <View style={styles.extraHeader}>
-                    <Text style={styles.label}>Non Refundable Amoun</Text>
+                    <Text style={styles.label}>Non Refundable Amount</Text>
 
                     <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
                       <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
@@ -630,7 +647,11 @@ const validateExtraCharges = () => {
                   </View>
 
                   {extraCharges.map((item) => (
-                    <View key={item.id} style={styles.figmaRowWrapper}>
+ <View
+  key={item.id}
+  style={styles.figmaRowWrapper}
+ 
+>
 
                       {/* CLOSE BTN */}
                       <TouchableOpacity
@@ -659,20 +680,27 @@ const validateExtraCharges = () => {
                             <Image source={DownArrow} style={styles.arrow} />
                           </TouchableOpacity>
                         ) : item.type === "Others" ? (
-                          <TextInput
-                            style={styles.figmaLeftBox}
-                            placeholder="Enter reason"
-                            value={item.title}
-                            // onChangeText={(t) => updateTitle(item.id, t)}
-                            onFocus={() => {
-                              setOpenDropdownId(null);
-                              scrollToInput(420);
-                            }}
-                            onChangeText={(t) => {
-                              const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                              updateTitle(item.id, onlyLetters);
-                            }}
-                          />
+   <TextInput
+  ref={(r) => (titleRefs.current[item.id] = r)}
+  style={styles.figmaLeftBox}
+  placeholder="Enter reason"
+  value={item.title}
+  onFocus={() => {
+    setOpenDropdownId(null);
+
+    setTimeout(() => {
+      scrollToInputRef(titleRefs.current[item.id]);
+    }, 300);
+  }}
+  onChangeText={(t) => {
+    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+    updateTitle(item.id, onlyLetters);
+  }}
+/>
+
+
+
+
                           
                         ) : (
                           <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
@@ -686,13 +714,22 @@ const validateExtraCharges = () => {
                             <Text style={{ color: "#999" }}>Enter amount</Text>
                           </View>
                         ) : (
-                          <TextInput
-                            style={styles.figmaRightBox}
-                            placeholder="Enter amount"
-                            keyboardType="numeric"
-                            value={item.amount}
-                            onChangeText={(t) => updateAmount(item.id, t)}
-                          />
+<TextInput
+  ref={(r) => (amountRefs.current[item.id] = r)}
+  style={styles.figmaRightBox}
+  placeholder="Enter amount"
+  keyboardType="numeric"
+  value={item.amount}
+  onFocus={() => {
+    setTimeout(() => {
+      scrollToInputRef(amountRefs.current[item.id]);
+    }, 300);
+  }}
+  onChangeText={(t) => updateAmount(item.id, t)}
+/>
+
+
+
                         )}
 
                       </View>
@@ -765,34 +802,38 @@ const validateExtraCharges = () => {
         </KeyboardAvoidingView>
       </SafeAreaView>
       {openDatePicker && (
-        <View style={styles.sheetOverlay} pointerEvents="box-none">
-          <TouchableWithoutFeedback  onPress={() => navigation?.goBack?.()} >
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
+  <View style={styles.sheetOverlay}>
+    {/* ✅ OUTER CLICK CLOSE */}
+    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+      <View style={{ ...StyleSheet.absoluteFillObject }} />
+    </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
-            <DatePicker
-              mode="single"
-              date={joiningDate}
-              onChange={(p) => {
-                const selectedDate = p.date || dayjs();
-                setJoiningDate(selectedDate);
-                setOpenDatePicker(false);
+    {/* ✅ DATE PICKER BOX (INNER TOUCH STOP) */}
+    <TouchableWithoutFeedback>
+      <View style={styles.datePickerBox}>
+        <DatePicker
+          mode="single"
+          date={joiningDate}
+          onChange={(p) => {
+            const selectedDate = p.date || dayjs();
+            setJoiningDate(selectedDate);
 
-                setSelectedFloor(null);
-                setSelectedRoom(null);
-                setSelectedBed(null);
+            setOpenDatePicker(false);  // ✅ close after select
 
-                setRooms([]);
-                setBeds([]);
+            setSelectedFloor(null);
+            setSelectedRoom(null);
+            setSelectedBed(null);
+            setRooms([]);
+            setBeds([]);
 
-                loadBeds(selectedDate);
-              }}
-            />
+            loadBeds(selectedDate);
+          }}
+        />
+      </View>
+    </TouchableWithoutFeedback>
+  </View>
+)}
 
-          </View>
-        </View>
-      )}
     </>
   );
 }
@@ -1006,19 +1047,25 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
-  sheetOverlay: {
-    position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
+ sheetOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.4)",
+
+  justifyContent: "center",
+  alignItems: "center",
+},
+
   datePickerBox: {
     backgroundColor: "#fff",
     width: "80%",
 
     borderRadius: 20,
     padding: 10,
-    marginBottom: 190
+    
   },
 
   nonRefund: {

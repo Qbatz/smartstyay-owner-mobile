@@ -540,42 +540,7 @@ const saveExpense = async () => {
           </View>
         </TouchableWithoutFeedback>
 
-        {showExpenseSheet && (
-          <View style={styles.sheetOverlay}>
-            <TouchableWithoutFeedback onPress={closeExpenseSheet}>
-              <View style={styles.dimLayer} />
-            </TouchableWithoutFeedback>
-
-            <Animated.View style={[styles.sheet, { transform: [{ translateY: expenseSheetY }] }]}>
-              <View style={styles.handleWrapper} {...expensePan.panHandlers}>
-                <View style={styles.sheetHandle} />
-              </View>
-
-              <ScrollView contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-                <Text style={styles.sheetTitle}>{isExpenseEdit ? "Edit Expense" : "Add Expense"}</Text>
-
-                <Text style={styles.inputLabel}>
-                  Expense Name <Text style={{ color: "red" }}>*</Text>
-                </Text>
-
-                <TextInput style={styles.inputBox} placeholder="Enter" value={expenseText}  onChangeText={(t) => {
-    const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, ""); // ✅ emoji remove
-    setExpenseText(cleanText);
-    setExpenseError(""); 
-  }}/>
-  {expenseError ? (
-  <ErrorMessage message={expenseError} type="error" />
-) : null}
-              </ScrollView>
-
-              <TouchableOpacity style={styles.addTypeBtn}  onPress={saveExpense}>
-                <Text style={styles.addTypeText}>{isExpenseEdit ? "Save Changes" : "Save"}</Text>
-              </TouchableOpacity>
-
-              <View style={styles.bottomMask} />
-            </Animated.View>
-          </View>
-        )}
+      
 
         {showSubSheet && (
           <View style={styles.sheetOverlay}>
@@ -638,35 +603,53 @@ const saveExpense = async () => {
           </View>
         )}
 
-        {showSubAddSheet && (
-          <View style={[styles.sheetOverlay, { zIndex: 9999 }]}>
-            <TouchableWithoutFeedback onPress={closeSubAddSheet}>
-              <View style={styles.dimLayer} />
-            </TouchableWithoutFeedback>
+ {showExpenseSheet && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={closeExpenseSheet}>
+      <View style={styles.dimLayer} />
+    </TouchableWithoutFeedback>
 
-            <Animated.View style={[styles.sheet, { transform: [{ translateY: subAddSheetY }] }]}>
-              <View style={styles.handleWrapper} {...subAddPan.panHandlers}>
-                <View style={styles.sheetHandle} />
-              </View>
+    <Animated.View style={[styles.sheet, { transform: [{ translateY: expenseSheetY }] }]}>
+      <View style={styles.handleWrapper} {...expensePan.panHandlers}>
+        <View style={styles.sheetHandle} />
+      </View>
 
-              <ScrollView contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-                <Text style={styles.sheetTitle}>{isSubAddEdit ? "Edit Sub Category" : "Add Sub Category"}</Text>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 80 }}   // ✅ enough
+      >
+        <Text style={styles.sheetTitle}>
+          {isExpenseEdit ? "Edit Expense" : "Add Expense"}
+        </Text>
 
-                <Text style={styles.inputLabel}>
-                  Sub Category <Text style={{ color: "red" }}>*</Text>
-                </Text>
+        <Text style={styles.inputLabel}>
+          Expense Name <Text style={{ color: "red" }}>*</Text>
+        </Text>
 
-                <TextInput style={styles.inputBox} placeholder="Enter sub category" value={subName} onChangeText={setSubName} />
-              </ScrollView>
+        <TextInput
+          style={styles.inputBox}
+          placeholder="Enter"
+          value={expenseText}
+          onChangeText={(t) => {
+            const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+            setExpenseText(cleanText);
+            setExpenseError("");
+          }}
+        />
 
-              <TouchableOpacity style={[styles.addTypeBtn, { opacity: subName.trim() ? 1 : 0.4 }]} disabled={!subName.trim()} onPress={saveSubcategory}>
-                <Text style={styles.addTypeText}>{isSubAddEdit ? "Save Changes" : "Save"}</Text>
-              </TouchableOpacity>
+        {expenseError ? <ErrorMessage message={expenseError} type="error" /> : null}
 
-              <View style={styles.bottomMask} />
-            </Animated.View>
-          </View>
-        )}
+        <TouchableOpacity style={styles.addTypeBtn} onPress={saveExpense}>
+          <Text style={styles.addTypeText}>
+            {isExpenseEdit ? "Save Changes" : "Save"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </Animated.View>
+  </View>
+)}
+
 
         {showDeleteExpenseConfirm && (
           <Modal transparent visible animationType="fade">
@@ -861,11 +844,11 @@ const styles = StyleSheet.create({
   width: "100%",
   backgroundColor: "#fff",
   padding: 20,
-  paddingBottom: 30,   // ✅ add this
   borderTopLeftRadius: 22,
   borderTopRightRadius: 22,
-  overflow: "hidden",
+  maxHeight: "65%",  // ✅ important
 },
+
 
 
   handleWrapper: { alignItems: "center", paddingVertical: 12 },
@@ -887,7 +870,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
-    marginBottom: 20,
+    marginTop: 50,
   },
   addTypeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 

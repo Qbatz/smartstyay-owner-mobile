@@ -100,7 +100,7 @@ onBedAdded && onBedAdded(selectedBed.roomId)
             onClose();
           }}
           >
-            <Text style={styles.optionText}>Add Customer</Text>
+            <Text style={styles.optionText}>Add Tenant</Text>
             <Image source={require("../../Assets/Images/addsquare.png")} style={styles.icon} />
           </TouchableOpacity>
 
