@@ -489,13 +489,14 @@ const { line1, line2 } = formatAddressLines(activeHostel);
           }
           )}
         </ScrollView> */}
+        {console.log(mainHostel)}
 
         {mainHostel?.images?.length > 0 && (
   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
     {mainHostel.images.map((i, index) => (
       <Image
         key={`${i?.uri}-${index}`}
-        source={{ uri: i.uri }}
+        source={{ uri: i?.uri?.image}}
         style={styles.roomImg}
       />
     ))}
