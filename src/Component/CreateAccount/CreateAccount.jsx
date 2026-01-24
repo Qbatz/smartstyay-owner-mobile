@@ -470,7 +470,7 @@ export default function CreateAccount() {
             </View>
 
             {/* ✅ Mobile */}
-            <View onLayout={(e) => (mobilePos.current = e.nativeEvent.layout.y)}>
+            {/* <View onLayout={(e) => (mobilePos.current = e.nativeEvent.layout.y)}>
               <Text style={styles.label}>
                 Mobile No <Text style={styles.star}>*</Text>
               </Text>
@@ -494,7 +494,43 @@ export default function CreateAccount() {
               </View>
               {!!mobileError && <ErrorMessage message={mobileError} type="error" />}
               {!!backendMobileError && <ErrorMessage message={backendMobileError} type="error" />}
-            </View>
+            </View> */}
+            <View onLayout={(e) => (mobilePos.current = e.nativeEvent.layout.y)}>
+  <Text style={styles.label}>
+    Mobile No <Text style={styles.star}>*</Text>
+  </Text>
+
+  <View style={styles.inputBox}>
+    {/* ✅ Country Code */}
+    <Text style={styles.countryCode}>+91</Text>
+
+    {/* ✅ Divider Line */}
+    <View style={styles.dividerLine} />
+
+    <TextInput
+      ref={mobileRef}
+      placeholder="9876543210"
+      style={styles.input}
+      value={mobileNo}
+      keyboardType="numeric"
+      maxLength={10}
+      returnKeyType="next"
+      onFocus={() => scrollToY(mobilePos.current)}
+      onSubmitEditing={() => passwordRef.current?.focus()}
+      onChangeText={(text) => {
+        setMobileNo(text.replace(/\D/g, ""));
+        setMobileError("");
+        setBackendMobileError("");
+      }}
+    />
+  </View>
+
+  {!!mobileError && <ErrorMessage message={mobileError} type="error" />}
+  {!!backendMobileError && (
+    <ErrorMessage message={backendMobileError} type="error" />
+  )}
+</View>
+
 
             {/* ✅ Password */}
             <View onLayout={(e) => (passwordPos.current = e.nativeEvent.layout.y)}>
@@ -705,7 +741,21 @@ bottomWave: {
   width: "100%",
   height: 90,
   
-}
+},
+countryCode: {
+  fontSize: 15,
+  fontWeight: "600",
+  color: "#000",
+  marginRight: 8,
+},
+
+dividerLine: {
+  width: 1,
+  height: 22,
+  backgroundColor: "#CFCFCF",
+  marginRight: 10,
+},
+
 
 
 });

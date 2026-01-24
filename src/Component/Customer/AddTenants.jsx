@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useContext } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler,KeyboardAvoidingView, Platform ,TouchableWithoutFeedback} from "react-native";
+import React, { useState, useCallback, useContext,useRef } from "react";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image, BackHandler,KeyboardAvoidingView, Platform ,TouchableWithoutFeedback,Keyboard} from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Tenant_inactive.png";
@@ -28,7 +28,7 @@ export default function AddTenant() {
     const [emailError, setEmailError] = useState("")
     const [pincodeError, setPincodeError] = useState("");
     const [stateSearch, setStateSearch] = useState("");
-
+const stateInputRef = useRef(null);
 
 
 
@@ -606,7 +606,7 @@ else {
 
 <Text style={styles.label}>State</Text>
 
-                                        <View style={{ position: "relative" }}>
+                                         <View style={{ position: "relative" }}>
                                             <TextInput
                                                 style={styles.select}
                                                 placeholder="Select state"
@@ -624,11 +624,24 @@ else {
                                             />
 
 
-                                            <Image source={DownArrow} style={styles.arrowIcon} />
+                                          <TouchableOpacity
+  style={styles.arrowTouch}
+  activeOpacity={0.7}
+  onPress={() => {
+    Keyboard.dismiss();  // ✅ keyboard hide
+    setStateOpen((prev) => !prev);
+
+    // ✅ close pannumbothu query reset
+    if (stateOpen) setStateQuery("");
+  }}
+>
+  <Image source={DownArrow} style={styles.arrowIconImg} />
+</TouchableOpacity>
+
 
                                           {stateOpen && (
                                            <>
-                                           <TouchableWithoutFeedback
+        <TouchableWithoutFeedback
       onPress={() => {
         setStateOpen(false);
         setStateQuery("");
@@ -1119,6 +1132,31 @@ const styles = StyleSheet.create({
         textAlign: "center",
         color: "#6B7280",
     },
+arrowTouch: {
+  position: "absolute",
+  right: 12,
+  top: 12,
+  width: 30,
+  height: 30,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+arrowIconImg: {
+  width: 18,
+  height: 18,
+  tintColor: "#777",
+},
+dropdownOverlay: {
+  position: "absolute",
+  top: -1000,
+  left: -1000,
+  right: -1000,
+  bottom: -1000,
+  backgroundColor: "transparent",
+  zIndex: 999,
+},
+
 
 
 

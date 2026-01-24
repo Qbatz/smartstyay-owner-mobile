@@ -127,7 +127,7 @@ useEffect(() => {
 const activeHostel =
   hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
   hostelList?.[0] ??
-  null;
+  {};
 
 
   const navigation = useNavigation();
