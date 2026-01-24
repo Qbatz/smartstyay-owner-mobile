@@ -16,6 +16,7 @@ import ConfirmReassignSheet from "./ReAssignBottomSheet";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import EmptyState from "../../../Assets/Images/Empty_state.png"; 
+import Reservedimg from "../../../Assets/Images/Reservedbed.png";
 
 
 export default function ReassignBedScreen({ route, navigation }) {
@@ -29,6 +30,8 @@ export default function ReassignBedScreen({ route, navigation }) {
   const [bedsByRoom, setBedsByRoom] = useState({});
   const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id);
 const [rooms, setRooms] = useState([]);
+
+
 const [bedDetails,setBedDetails] = useState([])
 console.log("selectedBed",selectedBed)
 useEffect(() => {
@@ -80,14 +83,13 @@ const getSharingByRoom = (roomId) => {
       };
     })()
   : null;
-console.log("selectedDetails",selectedNewBed)
+
 const getSharingCount = (roomId) => {
   return bedsByRoom?.[roomId]?.length || 0;
 };
-
+console.log("bedsByRoom",bedsByRoom)
 const isAvailableBed = (b) =>
   !b.isOccupied &&
-  !b.isBooked &&
   !b.onNotice &&
   !b.overDue;
 
@@ -189,37 +191,52 @@ const selectedFloorRooms = rooms.filter(
 
 
    <View style={styles.bedsRow}>
-  {(bedsByRoom?.[room.id] || [])
-  .filter(isAvailableBed)
-    .map((b) => (
+ <View style={styles.bedsRow}>
+{(bedsByRoom?.[room.id] || [])
+  .filter((b) => !b.isOccupied)
+  .map((b) => {
+    const isSelectable = isAvailableBed(b);  // ✅ booked bed also selectable
+
+    return (
       <TouchableOpacity
         key={b.id}
-        onPress={() =>
+        activeOpacity={0.7}
+        onPress={() => {
+          if (!isSelectable) return;
+
           setSelectedNewBed({
             floorId: floors[selectedFloor].id,
             roomId: room.id,
             bedId: b.id,
-             bed: b,   
-         
-          })
-          
-        }
-        style={{ alignItems: "center" }}
+            bed: b,
+          });
+        }}
+        style={{ alignItems: "center", opacity: isSelectable ? 1 : 0.5 }}
       >
         <View style={{ position: "relative", alignItems: "center" }}>
           <Image source={BedEmpty} style={styles.bedImg} />
 
+          {/* ✅ isBooked = reserved icon */}
+          {b.isBooked && (
+            <Image source={Reservedimg} style={styles.reservedIcon} />
+          )}
+
+          {/* ✅ tick */}
           {selectedNewBed?.roomId === room.id &&
             selectedNewBed?.bedId === b.id && (
               <View style={styles.tickBadge}>
                 <Image source={Tick} style={styles.tickText} />
               </View>
-          )}
+            )}
         </View>
 
         <Text>{b.bedName || b.label}</Text>
       </TouchableOpacity>
-    ))}
+    );
+  })}
+
+</View>
+
     {(bedsByRoom?.[room.id] || []).filter(isAvailableBed).length === 0 && (
   <Text style={{ color: "#999", marginTop: 8 }}>
     No available beds
@@ -491,6 +508,15 @@ centerContainer: {
 
  
 },
+reservedIcon: {
+  width: 18,
+  height: 18,
+  position: "absolute",
+  top: -4,
+  right: -5,
+  resizeMode: "contain",
+},
+
 
 
 

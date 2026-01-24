@@ -142,7 +142,15 @@ export default function ConfirmReassignSheet({
 
 
     } else {
-      alert(res.message || "Change bed failed");
+      // alert(res.message || "Change bed failed");
+       setModalType("error");
+      setMessage(res.message);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+       
+      }, 800);
     }
   };
 
