@@ -142,27 +142,47 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
 
     const res = await moveToNoticePeriod(activeHostelId, payload);
 
-    if (res.success) {
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-      onBedAdded && onBedAdded(roomId || customer.roomId);
-     onSuccess && onSuccess()
+//     if (res.success) {
+//       setModalType("success");
+//       setMessage(res.data);
+//       setShowSuccess(true);
+//       onBedAdded && onBedAdded(roomId || customer.roomId);
+//      onSuccess && onSuccess()
     
       
 
-      // setTimeout(() => {
-      //   setShowSuccess(false);
-      //   onClose();
-      // }, 800);
-        setTimeout(() => {
-            onClose();
-    setShowSuccess(false);
-  }, 800);
+//       // setTimeout(() => {
+//       //   setShowSuccess(false);
+//       //   onClose();
+//       // }, 800);
+//     setTimeout(() => {
+//   setShowSuccess(false);   // ✅ first modal close
+//   onClose();               // ✅ then sheet close
+// }, 800);
 
-  // ✅ next sheet close
+
+//   // ✅ next sheet close
  
-    } else {
+//     } 
+if (res.success) {
+  setModalType("success");
+  setMessage(res.data);
+  setShowSuccess(true);
+
+  setTimeout(() => {
+    setShowSuccess(false);
+    onClose(); 
+  }, 600);
+
+  setTimeout(() => {
+    onBedAdded && onBedAdded(roomId || customer.roomId);  // ✅ after sheet closed
+    onSuccess && onSuccess();
+  }, 900);
+
+  return;
+}
+
+    else {
       alert(res.message || "Move to notice failed");
     }
   };
