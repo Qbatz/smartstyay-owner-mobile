@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import MenuIcon from "../../../Assets/Images/3dots.png";
-import PlusIcon from "../../../Assets/Images/TenantAddBlue.png";
+import PlusIcon from "../../../Assets/Images/add-circle.png";
 import { useFocusEffect } from '@react-navigation/native';
 import BackArrow from "../../../Assets/Images/Arrow_left.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
@@ -49,6 +49,19 @@ export default function UsersScreen({ navigation }) {
     }
   };
 
+  const handleShowAddUser = () => {
+      if (!activeHostelId) {
+    setModalType("warning")
+    setMessage("Please add a hostel first")
+    setShowSuccess(true)
+    setTimeout(() => setShowSuccess(false), 1500)
+    return
+  }
+    setEditData(null)
+    setShowAddSheet(true)
+    setOpenMenuId(null)
+  }
+
 
   const handleDelete = (userId) => {
     setDeletePopup(true)
@@ -72,7 +85,13 @@ export default function UsersScreen({ navigation }) {
         loadUsers();
       }, 800);
     } else {
-      alert(res.message);
+      setModalType("error");
+      setMessage(res?.message || "Failed to delete user");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+      setShowSuccess(false);
+      }, 1200);
     }
   };
 
@@ -120,7 +139,7 @@ export default function UsersScreen({ navigation }) {
         </View>
 
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-          {Array.isArray(users) && users.map((u, i) => (
+          {!loading && Array.isArray(users) && users.map((u, i) => (
             <View key={i} style={styles.card}>
 
               {/* Top row */}
@@ -184,25 +203,21 @@ export default function UsersScreen({ navigation }) {
             </View>
 
           ))}
-          {!loading && users.length === 0 &&
+          {!loading && users && Array.isArray(users)?.length === 0 &&
             <View style={styles.emptyContainer}>
               <Image source={EmptyState} style={styles.emptyImage} />
-              <Text style={styles.emptyText}>No Data Found</Text>
+              <Text style={styles.emptyText}>No Users Found</Text>
+                    <TouchableOpacity style={styles.addUserBtn}
+                         onPress={handleShowAddUser} >
+                        <Text style={styles.addUserText}>+ Add User</Text>
+                        </TouchableOpacity>
             </View>
           }
         </ScrollView>
 
         {!loading && (
-          <TouchableOpacity
-            style={styles.fab}
-
-            onPress={() => {
-              setEditData(null)
-              setShowAddSheet(true);
-              setOpenMenuId(null);
-            }}
-          >
-            <Image source={PlusIcon} style={styles.fabIcon} />
+          <TouchableOpacity  style={styles.addBtn} onPress={handleShowAddUser} >
+            <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
         )}
 
@@ -352,6 +367,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
   },
+     addBtn: {
+    position: "absolute",
+    bottom: 80,
+    right: 20,
+    backgroundColor: "#1D5DFF",
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+  },
 
   fabIcon: {
     width: 44,
@@ -484,5 +511,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#777",
+  },
+   addUserBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+
+  addUserText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
