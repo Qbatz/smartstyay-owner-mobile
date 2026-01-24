@@ -602,9 +602,9 @@ const styles = StyleSheet.create({
 
   headerFixed: {
     paddingHorizontal: 25,
-    paddingTop: 25,
     paddingBottom: 10,
     backgroundColor: "#fff",
+    paddingTop:60
   },
 
   content: {
@@ -662,14 +662,12 @@ const styles = StyleSheet.create({
     height: 22,
   },
 
-  bottomFixed: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 80, // ✅ figma like gap
-    paddingHorizontal: 25,
-    backgroundColor: "transparent",
-  },
+ bottomFixed: {
+  paddingHorizontal: 25,
+  paddingBottom: 15,
+  backgroundColor: "transparent",
+},
+
 
   button: {
     backgroundColor: "#1D5DFF",
@@ -697,11 +695,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  bottomWave: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    height: 90,
-    zIndex: -1,
-  },
+bottomWave: {
+  position: "absolute",
+  bottom: 0,
+  width: "100%",
+  height: 90,
+}
+
+
 });

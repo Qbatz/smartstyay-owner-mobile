@@ -419,9 +419,9 @@ const styles = StyleSheet.create({
     },
 
     popupMenu: {
-        marginTop: 60,
+        marginTop: 70,
         marginRight: 10,
-        width: 200,
+        width: 220,
         backgroundColor: "#fff",
         borderRadius: 12,
         padding: 10,
