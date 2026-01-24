@@ -210,6 +210,7 @@ function AppContent(props) {
         console.log(r)
         if(r === "true"){
              loginContext?.updateUserId(props.userId)
+              
         }
         // else{
         //   loginContext?.updateUserId("")
@@ -219,6 +220,13 @@ function AppContent(props) {
 
    
   },[])
+  useEffect(()=>{
+    retriveData(LOGGEDIN).then(r=>{
+      if(r === "true"){
+        loginContext.updateRoute("null")
+      }
+    })
+  },[loginContext.LoggedIN])
   useEffect(()=>{
     console.log(props.isLoginIn)
     if(props.isLoginIn === "true"){
