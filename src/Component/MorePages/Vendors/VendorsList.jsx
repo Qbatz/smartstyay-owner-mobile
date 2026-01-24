@@ -371,7 +371,8 @@ const getVendorInitials = (firstName = "", lastName = "") => {
         ) : (
 
           <>
-                  <View style={styles.searchWrapper}>
+          {!loading && vendorList?.length > 0 &&
+             <View style={styles.searchWrapper}>
           <Image source={SearchIcon} style={styles.searchIcon} />
           <TextInput
             placeholder="Search"
@@ -379,6 +380,8 @@ const getVendorInitials = (firstName = "", lastName = "") => {
             style={styles.searchInput}
           />
         </View>
+          }
+               
          
           <FlatList
             data={vendorList}

@@ -869,8 +869,8 @@ optionText: {
 
    filterButton: {
     position: "absolute",
-    bottom: 90,
-    right: 15,
+    bottom: 124,
+    right: 50,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
@@ -1089,8 +1089,8 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
   
    addBtn: {
     position: "absolute",
-    bottom: 20,
-    right: 10,
+    bottom: 60,
+    right: 45,
     backgroundColor: "#1D5DFF",
     width: 55,
     height: 55,

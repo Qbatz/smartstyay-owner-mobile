@@ -3166,7 +3166,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingVertical:60
+    paddingTop:60
+    // paddingVertical:60
   },
 searchContainer: {
   flexDirection: "row",
@@ -3378,8 +3379,8 @@ activeText: {
 //   },
    FilterButton: {
    position: "absolute",
-    bottom: 120,
-    right: 15,
+    bottom: 125,
+    right: 35,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
@@ -3388,8 +3389,8 @@ activeText: {
 
    addBtn: {
     position: "absolute",
-    bottom: 50,
-    right: 10,
+    bottom: 60,
+    right: 30,
     backgroundColor: "#1D5DFF",
     width: 55,
     height: 55,
