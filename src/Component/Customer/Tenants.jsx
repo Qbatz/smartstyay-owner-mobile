@@ -61,7 +61,7 @@ export default function TenantsScreen({ route }) {
    const [showDetailModal, setShowDetailModal] = useState(false);
    const [overviewScreen,setOverviewScreen] = useState(false)
    const [searchText, setSearchText] = useState("");
-
+console.log("activeHostelId",activeHostelId)
 
 const sheetTranslateY = useRef(
   new Animated.Value(SHEET_HEIGHT)
@@ -73,6 +73,8 @@ const handleOverViewScrren=(item)=>{
   customer: item,
 });
 }
+
+
 useEffect(() => {
   if (showDetailModal) {
     sheetTranslateY.setValue(SHEET_HEIGHT);
@@ -310,7 +312,7 @@ useLayoutEffect(() => {
     }
 
     // ✅ 2) Tab navigation back order
-    if (activeTab === "Walkin") {
+    if (activeTab === "Walk-In") {
       setActiveTab("Checkout");
       return true;
     }
@@ -382,7 +384,7 @@ useLayoutEffect(() => {
   const tabs = [
     { key: "Tenants", active: Profile, inactive: InProfile },
     { key: "Checkout", active: ActiveCheckout, inactive: CheckoutIcon },
-    { key: "Walkin", active: ActiveWalkin, inactive: WalkinIcon },
+    { key: "Walk-In", active: ActiveWalkin, inactive: WalkinIcon },
   ];
 
 
@@ -534,15 +536,16 @@ const filteredTenants = customers?.listCustomers?.filter((item) => {
 
         {activeTab === "Tenants" && (
           <View style={{ flex: 1 }}>
-              {!loading && customers?.listCustomers?.length === 0 &&
-                <View style={styles.emptyContainer}>
-                  <Image source={EmptyState} style={styles.emptyImage} />
-                   <Text style={styles.emptyText}>
-                    No Tenant available{"\n"}
-                    There are no tenant added.
-                  </Text>
-                </View>
-              }
+             {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyState} style={styles.emptyImage} />
+    <Text style={styles.emptyText}>
+      No Tenant available{"\n"}
+      There are no tenant added.
+    </Text>
+  </View>
+)}
+
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 50 }}
@@ -800,7 +803,7 @@ const filteredTenants = customers?.listCustomers?.filter((item) => {
         {activeTab === "Checkout" && (
           <CheckoutList  searchText={searchText}/>
         )}
-        {activeTab === "Walkin" && (
+        {activeTab === "Walk-In" && (
           <WalkinScreen setShowTabBar={setShowTabBar} navigation={navigation}
             handleWalkinFilter={handleWalkinFilter} searchText={searchText}/>
         )}

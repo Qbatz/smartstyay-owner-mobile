@@ -18,7 +18,7 @@ import dayjs from "dayjs";
 import AddCircle from "../../Assets/Images/add-circle.png";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
-import Calendar from "../../Assets/Images/calendar.png";
+import CalendarImage from "../../Assets/Images/calendar.png";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
@@ -26,6 +26,8 @@ import Delete from "../../Assets/Images/remove.png";
 import ErrorMessage from '../ErrorMessagr/Errormessagestyle';
 import SuccessModal from '../../ToastFile/ToastPage';
 import { useFocusEffect } from "@react-navigation/native";
+import { Calendar } from "react-native-calendars";
+
 
 export default function TenantCheckIn({ navigation, route }) {
   const { customerId, customer } = route.params || {};
@@ -59,7 +61,7 @@ export default function TenantCheckIn({ navigation, route }) {
   const [rentalAmount, setRentalAmount] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [extraCharges, setExtraCharges] = useState([]);
-
+const [openCalendar, setOpenCalendar] = useState(false);
   const scrollRef = React.useRef(null);
   const scrollToInput = (y = 200) => {
     setTimeout(() => {
@@ -462,15 +464,16 @@ const validateExtraCharges = () => {
               <View>
                 <Text style={styles.label}>Joining Date</Text>
 
-                <TouchableOpacity
-                  style={styles.dateBox}
-                  onPress={() => setOpenDatePicker(true)}
-                >
-                  <Text style={styles.placeholder}>
-                    {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                  </Text>
-                  <Image source={Calendar} style={styles.calendarIcon} />
-                </TouchableOpacity>
+               <TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => setOpenCalendar(true)}
+>
+  <Text style={styles.placeholder}>
+    {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+  </Text>
+  <Image source={CalendarImage} style={styles.calendarIcon} />
+</TouchableOpacity>
+
                 <Text style={styles.label}>Floor</Text>
 
                 <View style={{ position: "relative" }}>
@@ -788,7 +791,7 @@ const validateExtraCharges = () => {
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
-                    <Text style={styles.submitText}>Assign Bed</Text>
+                    <Text style={styles.submitText}>Check-In</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -801,38 +804,45 @@ const validateExtraCharges = () => {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-      {openDatePicker && (
+{openCalendar && (
   <View style={styles.sheetOverlay}>
-    {/* ✅ OUTER CLICK CLOSE */}
-    <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
+    
+    {/* outside click close */}
+    <TouchableWithoutFeedback onPress={() => setOpenCalendar(false)}>
       <View style={{ ...StyleSheet.absoluteFillObject }} />
     </TouchableWithoutFeedback>
 
-    {/* ✅ DATE PICKER BOX (INNER TOUCH STOP) */}
-    <TouchableWithoutFeedback>
-      <View style={styles.datePickerBox}>
-        <DatePicker
-          mode="single"
-          date={joiningDate}
-          onChange={(p) => {
-            const selectedDate = p.date || dayjs();
-            setJoiningDate(selectedDate);
+    {/* calendar box */}
+    <View style={styles.calendarBox}>
+      <Calendar
+        current={dayjs(joiningDate).format("YYYY-MM-DD")}
+        maxDate={dayjs().format("YYYY-MM-DD")}   // ✅ future date block
+        onDayPress={(day) => {
+          const selected = dayjs(day.dateString).toDate();
+          setJoiningDate(selected);
 
-            setOpenDatePicker(false);  // ✅ close after select
+          setOpenCalendar(false);
 
-            setSelectedFloor(null);
-            setSelectedRoom(null);
-            setSelectedBed(null);
-            setRooms([]);
-            setBeds([]);
+          // ✅ reset selection after date change (same as ur logic)
+          setSelectedFloor(null);
+          setSelectedRoom(null);
+          setSelectedBed(null);
+          setRooms([]);
+          setBeds([]);
 
-            loadBeds(selectedDate);
-          }}
-        />
-      </View>
-    </TouchableWithoutFeedback>
+          loadBeds(selected);
+        }}
+        markedDates={{
+          [dayjs(joiningDate).format("YYYY-MM-DD")]: {
+            selected: true,
+            selectedColor: "#2B6CF6",
+          },
+        }}
+      />
+    </View>
   </View>
 )}
+
 
     </>
   );
@@ -1164,6 +1174,14 @@ const styles = StyleSheet.create({
     zIndex: 20,
     elevation: 10,
   },
+  calendarBox: {
+  width: "90%",
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  padding: 10,
+  elevation: 10,
+},
+
 
 
 });

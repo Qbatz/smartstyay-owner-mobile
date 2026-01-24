@@ -391,12 +391,12 @@ export default function CreateAccount() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
         {/* ✅ FORM SCROLL ONLY */}
-        <ScrollView
-          ref={scrollRef}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        >
+      <ScrollView
+  ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 30 }} // ✅ wave+button space
+>
           <View style={styles.content}>
             {/* ✅ First Name */}
             <View onLayout={(e) => (firstNamePos.current = e.nativeEvent.layout.y)}>
@@ -570,7 +570,9 @@ export default function CreateAccount() {
         </ScrollView>
 
         {/* ✅ BOTTOM FIXED */}
-        <View style={styles.bottomFixed}>
+       
+      </KeyboardAvoidingView>
+ <View style={styles.bottomFixed}>
           <TouchableOpacity onPress={createAccountClick} style={styles.button}>
             <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
@@ -585,10 +587,9 @@ export default function CreateAccount() {
             </Text>
           </Text>
         </View>
-      </KeyboardAvoidingView>
-
       {/* ✅ WAVE BACKGROUND */}
-      <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover" />
+      <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover"
+  pointerEvents="none" />
     </View>
   );
 }
@@ -664,9 +665,12 @@ const styles = StyleSheet.create({
 
  bottomFixed: {
   paddingHorizontal: 25,
-  paddingBottom: 15,
-  backgroundColor: "transparent",
+  paddingBottom: 30,
+  paddingTop: 10,
+  backgroundColor: "#fff",
+  marginBottom: 70, // ✅ WAVE HEIGHT ku equal gap
 },
+
 
 
   button: {
@@ -700,6 +704,7 @@ bottomWave: {
   bottom: 0,
   width: "100%",
   height: 90,
+  
 }
 
 
