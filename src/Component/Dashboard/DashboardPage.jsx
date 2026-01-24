@@ -1,4 +1,4 @@
-import React, { useState,useCallback, useEffect, useContext, } from "react";
+import React, { useState,useCallback, useEffect, useContext,useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -14,6 +14,8 @@ import {
   BackHandler,
   TouchableWithoutFeedback
 } from "react-native";
+import { Animated, Easing } from "react-native";
+
 
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -76,6 +78,45 @@ export default function DashboardScreen({initialParams}) {
   useEffect(() => {
   retriveData("token").then(t => console.log("TOKEN:", t));
 }, [])
+
+const scaleAnim = useRef(new Animated.Value(1)).current;
+const rotateAnim = useRef(new Animated.Value(0)).current;
+
+useEffect(() => {
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.05,
+        duration: 900,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 900,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ])
+  ).start();
+
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(rotateAnim, {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: true,
+      }),
+    ])
+  ).start();
+}, []);
+
 
   console.log("Hostels:", hostelList);
 
@@ -230,7 +271,9 @@ useFocusEffect(
     const { width } = Dimensions.get("window");
     // const [hostelList,setHostelList]=useState([])
 
-    console.log(hostelList , activeHostel)
+    console.log("activeHostel" , activeHostel)
+    console.log("hostelList", hostelList);
+    
 
   const months = ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024"];
   const advance = [100000, 150000, 23000, 31000, 28000];
@@ -423,6 +466,34 @@ useEffect(() => {
     { color: "#3B82F6", text: "Others 6   12" },
   ];
 
+  const hasHostel = hostelList && hostelList?.length > 0
+
+  const hasHostelProfile = !!activeHostel?.mainImage
+
+const getProfileInitial = () => {
+  if (!hasHostel) return "PG";
+
+  const name = activeHostel?.name?.trim();
+  if (!name) return "PG";
+
+  const words = name.split(" ").filter(Boolean);
+
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+
+  if (words[0].length >= 2) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+
+  return words[0][0].toUpperCase();
+};
+
+
+console.log("profile", getProfileInitial);
+
+
+
 
 
   return (
@@ -462,7 +533,7 @@ useEffect(() => {
         </View> */}
 
 <View style={styles.headerTop}>
-  <View style={styles.hostelRow}>
+  {/* <View style={styles.hostelRow}>
     <Image source={PgImg} style={{ width: 38, height: 38 }} />
 
     <View style={{ marginLeft: 12, flex: 1 }}>
@@ -474,7 +545,112 @@ useEffect(() => {
         <Text style={styles.changeText}>Change Hostel →</Text>
       </TouchableOpacity>
     </View>
-  </View>
+  </View> */}
+
+  {/* <View style={styles.hostelRow}>
+  {hasHostel ? (
+    <>
+
+    <TouchableOpacity
+        style={styles.hostelAvatar}
+        activeOpacity={0.8}
+      >
+        {hasHostelProfile ? (
+          <Image
+            source={{ uri: activeHostel?.mainImage }}
+            style={styles.hostelAvatarImg}
+          />
+        ) : (
+          <Text style={styles.hostelAvatarText}>
+            {getProfileInitial()}
+          </Text>
+        )}
+      </TouchableOpacity>
+
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text style={styles.hostelTitle}>
+          {activeHostel?.name}
+        </Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+          <Text style={styles.changeText}>Change Hostel →</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  ) : (
+    <TouchableOpacity
+      onPress={() => navigation.navigate("AddPG")}
+    >
+      <Text style={[styles.hostelTitle, { color: "#2F80ED" }]}>
+        + Add PG
+      </Text>
+    </TouchableOpacity>
+  )}
+</View> */}
+
+<View style={styles.hostelRow}>
+  <TouchableOpacity style={styles.hostelAvatar}>
+    {hasHostelProfile ? (
+      <Image
+        source={{ uri: activeHostel?.mainImage }}
+        style={styles.hostelAvatarImg}
+      />
+    ) : (
+      <Text style={styles.hostelAvatarText}>
+        {getProfileInitial()}
+      </Text>
+    )}
+  </TouchableOpacity>
+
+  {hasHostel ? (
+    <View style={{ marginLeft: 12, flex: 1 }}>
+      <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
+      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+        <Text style={styles.changeText}>Change Hostel →</Text>
+      </TouchableOpacity>
+    </View>
+  ) : (
+   (
+  <Animated.View
+    style={[
+      styles.addPgWrapper,
+      {
+        transform: [{ scale: scaleAnim }],
+      },
+    ]}
+  >
+    <TouchableOpacity
+      activeOpacity={0.85}
+      style={styles.addPgBtn}
+      onPress={() => navigation.navigate("AddPG")}
+    >
+      <Animated.Text
+        style={[
+          styles.addPgIcon,
+          {
+            transform: [
+              {
+                rotate: rotateAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["0deg", "90deg"],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        +
+      </Animated.Text>
+
+      <Text style={styles.addPgText}>Add  PG</Text>
+    </TouchableOpacity>
+  </Animated.View>
+)
+
+  )}
+</View>
+
+
 
   <View style={styles.rightIcons}>
     <TouchableOpacity
@@ -1068,7 +1244,8 @@ rightIcons: {
 
  headerTop: {
   flexDirection: "row",
-  alignItems: "flex-start",
+  // alignItems: "flex-start",
+  alignItems: "center",
 },
 
 
@@ -1076,9 +1253,62 @@ hostelRow: {
   flexDirection: "row",
   alignItems: "center",
   flex: 1,
-  paddingRight: 30,   
+  // paddingRight: 30,   
 },
 
+hostelAvatar: {
+  width: 38,
+  height: 38,
+  borderRadius: 19,
+  backgroundColor: "#EEF2FF",
+  justifyContent: "center",
+  alignItems: "center",
+  // marginRight: 10, 
+},
+
+hostelAvatarText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "black",
+},
+
+hostelAvatarImg: {
+  width: "100%",
+  height: "100%",
+  borderRadius: 19,
+  resizeMode: "cover",
+},
+
+addPgWrapper: {
+  marginLeft: 12,
+},
+
+addPgBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#2F80ED",
+  paddingHorizontal: 8,
+  paddingVertical: 5,
+  borderRadius: 15,
+  shadowColor: "#89ec27",
+  shadowOpacity: 0.35,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 8,
+},
+
+addPgIcon: {
+  color: "#fff",
+  fontSize: 22,
+  fontWeight: "800",
+  marginRight: 8,
+},
+
+addPgText: {
+  color: "#fff",
+  fontSize: 14,
+  fontWeight: "700",
+},
 
 
 hostelTitle: {

@@ -830,7 +830,7 @@ optionText: {
    filterButton: {
     position: "absolute",
     bottom: vs(70),
-    right: s(15),
+    right: s(55),
     backgroundColor: "#fff",
     padding: s(10),
     borderRadius: 30,

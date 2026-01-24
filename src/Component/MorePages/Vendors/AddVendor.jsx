@@ -74,6 +74,10 @@ const [stateQuery, setStateQuery] = useState("");
   const countryOptions = [{ label: "India", value: "India" }];
 const [countryOpen, setCountryOpen] = useState(false);
 
+const [countryLabel, setCountryLabel] = useState("");
+const [countryValue, setCountryValue] = useState(null);
+
+
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -281,9 +285,10 @@ if (!mobile.trim()) {
     newErrors.stateName = "Please Select State";
   }
 
-  if (!country) {
-    newErrors.country = "Please Enter Country";
-  }
+  if (!countryValue) {
+  newErrors.country = "Please Select Country";
+}
+
 
   if (email && !emailRegex.test(email)) {
     newErrors.email = "Please Enter Valid Email ID";
@@ -344,7 +349,8 @@ if (!mobile.trim()) {
     mobile: `91${mobile}`,
     mailId: email,
     businessName,
-    country: Number(country), 
+    // country: Number(country), 
+    country: Number(countryValue),
     houseNo,
     pinCode,
     area: street,
@@ -959,7 +965,7 @@ if (!mobile.trim()) {
 
 
 
-        <Text style={styles.label}>Country <Text style={{ color: "red" }}>*</Text></Text>
+        {/* <Text style={styles.label}>Country <Text style={{ color: "red" }}>*</Text></Text>
 
 <View style={{ position: "relative" }}>
   <TouchableOpacity
@@ -989,7 +995,45 @@ if (!mobile.trim()) {
   )}
 </View>
 
-{errors.country && <ErrorMessage message={errors.country} type="error" />}
+{errors.country && <ErrorMessage message={errors.country} type="error" />} */}
+
+<Text style={styles.label}>
+  Country <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<View style={{ position: "relative" }}>
+  <TouchableOpacity
+    style={styles.select}
+    onPress={() => setCountryOpen(!countryOpen)}
+  >
+    <Text style={styles.selectText}>
+      {countryLabel || "Select Country"}
+    </Text>
+    <Image source={DownArrow} style={styles.arrow} />
+  </TouchableOpacity>
+
+  {countryOpen && (
+    <View style={styles.CountrydropdownMenu}>
+      <TouchableOpacity
+        style={styles.option}
+        onPress={() => {
+          setCountryLabel("India"); // ✅ UI text
+          setCountryValue(1);       // ✅ API value
+          setCountryOpen(false);
+          setErrors({ ...errors, country: "" });
+          setNoChangeError("");
+        }}
+      >
+        <Text style={styles.optionText}>India</Text>
+      </TouchableOpacity>
+    </View>
+  )}
+</View>
+
+{errors.country && (
+  <ErrorMessage message={errors.country} type="error" />
+)}
+
 
 {noChangeError !== "" && (
   <View style={styles.noChangeWrapper}>
@@ -1246,6 +1290,20 @@ dropdownMenu: {
   elevation: 20,
   minHeight: 150,
   maxHeight: 200,
+},
+CountrydropdownMenu: {
+  position: "absolute",
+  bottom: 32,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 9999,
+  elevation: 20,
+  minHeight: 50,
+  maxHeight: 120,
 },
 
 selectedOption: {

@@ -378,38 +378,61 @@ const { line1, line2 } = formatAddressLines(activeHostel);
         <Text style={styles.headerTitle}>Manage PG</Text>
       </View>
   
-    <View style={{ flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center" }}>
-
-      <Image source={EmptyIcon} style={{ width: 180, height: 160, marginBottom: 10 }} />
-
-      <Text style={{ fontSize: 18, fontFamily: "Gilroy-Bold",   fontWeight: undefined , marginBottom: 8 }}>No PG Available</Text>
-    
-      {/* <View style={{  width: "70%", alignItems: "center", marginTop:10 }}>
-        <TouchableOpacity
-          style={styles.figAddBtn}
-          onPress={() => navigation.navigate("AddPG")}
-        >
-          <Image source={PlusIcon} style={styles.figAddIcon} />
-          <Text style={styles.figAddText}>Add New PG</Text>
-        </TouchableOpacity>
-      </View>
-       */}
-      <View
-  style={[
-    styles.fixedAddBtnWrapper,
-  ]}
+ <View
+  style={{
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  }}
 >
+  <Image
+    source={EmptyIcon}
+    style={{ width: 250, height: 160, marginBottom: 16 }}
+  />
+
+  <Text
+    style={{
+      fontSize: 18,
+      fontFamily: "Gilroy-Bold",
+      marginBottom: 20,
+    }}
+  >
+    No PG Available
+  </Text>
+
   <TouchableOpacity
-    style={styles.figAddBtn}
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "90%",
+      paddingVertical: 14,
+      backgroundColor: "#F4F7FF",
+      borderRadius: 14,
+      borderWidth: 2,
+      borderStyle: "dashed",
+      borderColor: "#2D6CDF",
+    }}
     onPress={() => navigation.navigate("AddPG")}
   >
-    <Image source={PlusIcon} style={styles.figAddIcon} />
-    <Text style={styles.figAddText}>Add New PG</Text>
+    <Image
+      source={PlusIcon}
+      style={{ width: 20, height: 20, marginRight: 8 }}
+    />
+    <Text
+      style={{
+        fontSize: 16,
+        color: "#2D6CDF",
+        fontWeight: "600",
+      }}
+    >
+      Add New PG
+    </Text>
   </TouchableOpacity>
 </View>
 
-
-    </View>
      </>
   );
 }

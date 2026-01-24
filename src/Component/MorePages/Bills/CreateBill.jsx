@@ -16,6 +16,7 @@ import { BillContext } from "../../../Context/BillsContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import DatePicker from "react-native-ui-datepicker";
+import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
@@ -68,20 +69,39 @@ const [customerErr, setCustomerErr] = useState("");
 const [itemErr, setItemErr] = useState("");
 
 
+// useEffect(() => {
+//   if (customerDetails?.customerId) {
+//     setSelectedCustomer({
+//       id: customerDetails.customerId,
+//       name: customerDetails.fullName,
+//     });
+
+//     setCustomerOpen(false);
+//     setCustomerErr("");
+
+//     setInvoiceDate(null);
+//     setDueDate(null);
+//   }
+// }, [customerDetails?.customerId]);
+
+
 useEffect(() => {
-  if (customerDetails?.customerId) {
-    setSelectedCustomer({
-      id: customerDetails.customerId,
-      name: customerDetails.fullName,
-    });
+  if (!customerDetails?.customerId) return;
 
-    setCustomerOpen(false);
-    setCustomerErr("");
+  setSelectedCustomer({
+    id: customerDetails.customerId,
+    name: customerDetails.fullName,
+  });
 
-    setInvoiceDate(null);
-    setDueDate(null);
-  }
+  setCustomerOpen(false);
+  setCustomerErr("");
+
+  setInvoiceDate(null);
+  setDueDate(null);
+  setInvoiceDateErr("");
+  setDueDateErr("");
 }, [customerDetails?.customerId]);
+
 
   const [items, setItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -131,12 +151,92 @@ useEffect(() => {
 
 console.log("selectedCustomer", selectedCustomer , ParticularcustomerDetails);
 
+const today = dayjs();
 
-
-  const getJoiningDate = () => {
+const getJoiningDate = () => {
   const jd = ParticularcustomerDetails?.hostelInfo?.joiningDate;
   return jd ? dayjs(jd, "DD/MM/YYYY") : null;
 };
+
+
+const isDisabledInvoiceDate = (d) => {
+  if (!d) return false;
+
+  const joiningDate = getJoiningDate();
+
+  if (d.isAfter(today, "day")) return true;
+  if (joiningDate && d.isBefore(joiningDate, "day")) return true;
+
+  return false;
+};
+
+
+const invoiceMarkedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledInvoiceDate(d)) {
+    invoiceMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+
+const isDisabledDueDate = (d) => {
+  if (!d) return true;
+
+  // 🔥 Invoice date mandatory
+  if (!invoiceDate) return true;
+
+  const joiningDate = getJoiningDate();
+  const inv = dayjs(invoiceDate);
+
+  if (d.isAfter(today, "day")) return true;
+  if (joiningDate && d.isBefore(joiningDate, "day")) return true;
+  if (d.isBefore(inv, "day")) return true;
+
+  return false;
+};
+
+
+const dueMarkedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDisabledDueDate(d)) {
+    dueMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
 
 
 
@@ -505,7 +605,7 @@ const handleDueDateChange = (date) => {
 
 {customerOpen && (
   <View style={styles.customerDropdownMenu}>
-    <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}>
+    <ScrollView style={{ maxHeight: 120 }} nestedScrollEnabled={true}>
       {customers.map((item) => {
         const isSelected = selectedCustomer?.id === item.customerId;
 
@@ -546,10 +646,7 @@ const handleDueDateChange = (date) => {
 {customerErr ? <ErrorMessage message={customerErr} type="error" /> : null}
 
 
-      {customerErr && (
-                    <ErrorMessage message={customerErr} type="error" />
-                                )}
-
+    
 
       <Text style={{ fontSize: 15, marginBottom: 6 , marginTop:7}}>Invoice No</Text>
       <TextInput
@@ -563,20 +660,38 @@ const handleDueDateChange = (date) => {
   Invoice Date <Text style={{ color: "red" }}>*</Text>
 </Text>
 
-<TouchableOpacity
+{/* <TouchableOpacity
   style={styles.dateBox}
   onPress={() => setOpenInvoiceDate(true)}
 >
  <Text style={styles.inputText}>
   {invoiceDate
     ? dayjs(invoiceDate).format("DD-MM-YYYY")
-    : "Select a date"}
+    : "DD/MM/YYYY"}
 </Text>
+
+  <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+</TouchableOpacity> */}
+
+<TouchableOpacity
+  style={[
+    styles.dateBox,
+    !selectedCustomer && { opacity: 0.5 },
+  ]}
+  disabled={!selectedCustomer}
+  onPress={() => setOpenInvoiceDate(true)}
+>
+  <Text style={styles.inputText}>
+    {invoiceDate
+      ? dayjs(invoiceDate).format("DD-MM-YYYY")
+      : "DD/MM/YYYY"}
+  </Text>
 
   <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
 </TouchableOpacity>
 
-<Modal
+
+{/* <Modal
   transparent
   visible={openInvoiceDate}
   animationType="fade"
@@ -602,7 +717,7 @@ const handleDueDateChange = (date) => {
 
     </View>
   </View>
-</Modal>
+</Modal> */}
 
 
 
@@ -623,13 +738,13 @@ const handleDueDateChange = (date) => {
 <Text style={styles.inputText}>
   {dueDate
     ? dayjs(dueDate).format("DD-MM-YYYY")
-    : "Select a date"}
+    : "DD/MM/YYYY"}
 </Text>
 
   <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
 </TouchableOpacity>
 
-<Modal
+{/* <Modal
   transparent
   visible={openDueDate}
   animationType="fade"
@@ -653,7 +768,7 @@ const handleDueDateChange = (date) => {
       />
     </View>
   </View>
-</Modal>
+</Modal> */}
 
 
 
@@ -769,6 +884,92 @@ const handleDueDateChange = (date) => {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+
+    {openInvoiceDate && (
+  <View style={styles.dateOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      onPress={() => setOpenInvoiceDate(false)}
+    />
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={invoiceMarkedDates}
+        current={
+          invoiceDate
+            ? dayjs(invoiceDate).format("YYYY-MM-DD")
+            : today.format("YYYY-MM-DD")
+        }
+        onDayPress={(day) => {
+          if (invoiceMarkedDates[day.dateString]?.disabled) return;
+
+          setInvoiceDate(dayjs(day.dateString));
+          setInvoiceDateErr("");
+          setDueDate(null); // 🔥 reset due date
+          setOpenInvoiceDate(false);
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          selectedDayBackgroundColor: "#2563EB",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)}
+
+
+{openDueDate && (
+  <View style={styles.dateOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      onPress={() => setOpenDueDate(false)}
+    />
+
+    <View style={styles.calendarContainer}>
+     <Calendar
+  markingType="custom"
+  markedDates={dueMarkedDates}
+  current={
+    (dueDate
+      ? dayjs(dueDate)
+      : invoiceDate
+      ? dayjs(invoiceDate)
+      : dayjs()
+    ).format("YYYY-MM-DD")
+  }
+  onDayPress={(day) => {
+    if (dueMarkedDates[day.dateString]?.disabled) return;
+
+    setDueDate(dayjs(day.dateString));
+    setDueDateErr("");
+    setOpenDueDate(false);
+  }}
+/>
+
+    </View>
+  </View>
+)}
+
+{/* <TouchableOpacity
+  style={[
+    styles.dateBox,
+    !invoiceDate && { opacity: 0.5 },
+  ]}
+  disabled={!invoiceDate}
+  onPress={() => setOpenDueDate(true)}
+>
+  <Text style={styles.inputText}>
+    {dueDate
+      ? dayjs(dueDate).format("DD-MM-YYYY")
+      : "Select a date"}
+  </Text>
+  <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+</TouchableOpacity> */}
+
     </>
   );
 }
@@ -1108,5 +1309,28 @@ datePickerBox: {
   elevation: 10,
 },
 
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
   
 });
