@@ -15,11 +15,12 @@ import RoleProfile from "../../../Assets/Images/Avatar.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import editIcon from "../../../Assets/Images/editIcon.png";
 import Trash from "../../../Assets/Images/trash.png";
-import TenantAddBlue from "../../../Assets/Images/TenantAddBlue.png";
+import TenantAddBlue from "../../../Assets/Images/add-circle.png";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function RolesScreen({ navigation }) {
    const {activeHostelId } = useContext(CommonContexts);
@@ -31,6 +32,9 @@ export default function RolesScreen({ navigation }) {
   const [roleList,setRolesList] = useState([])
  
 const [selectedRoleId, setSelectedRoleId] = useState(null);
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
 
     useEffect(() => {
@@ -73,6 +77,20 @@ const loadRoles = async () => {
            }, [ navigation])
          );
 
+
+         
+  const handleShowAddRole = () => {
+      if (!activeHostelId) {
+    setModalType("warning")
+    setMessage("Please add a hostel first")
+    setShowSuccess(true)
+    setTimeout(() => setShowSuccess(false), 1500)
+    return
+  }
+  setShowAddSheet(true); 
+  setEditData(null);
+  }
+
  
 const handleDelete = (roleId) => {
   setSelectedRoleId(roleId);
@@ -87,11 +105,24 @@ const handleDelete = (roleId) => {
   if (res.success) {
     setDeletePopup(false);
     setSelectedRoleId(null);
+      setModalType("success");
+      setMessage(res.data?.message || "Deleted Successfully");
+      setShowSuccess(true);
 
-    // 🔁 refresh role list
-    loadRoles();
+      setTimeout(() => {
+      setShowSuccess(false);
+      loadRoles();
+      }, 1200);
+
+
   } else {
-    alert(res.data?.message || "Failed to delete role");
+       setModalType("error");
+      setMessage(res.data?.message || "Failed to delete role");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+      setShowSuccess(false);
+      }, 1200);
   }
 };
 
@@ -105,6 +136,12 @@ const getPermissionCount = (role) => {
 
   return (
     <>
+     <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+      />
+
     <View style={styles.container}>
 
    
@@ -119,10 +156,15 @@ const getPermissionCount = (role) => {
       </View>
 
   { loading && <Loader />}
-    { !loading && roleList.length === 0 &&
+    { !loading && roleList?.length === 0 &&
       <View style={styles.emptyContainer}>
         <Image source={EmptyState} style={styles.emptyImage} />
-        <Text style={styles.emptyText}>No Data Found</Text>
+        <Text style={styles.emptyText}>No Roles Found</Text>
+        
+          <TouchableOpacity style={styles.addRoleBtn}
+           onPress={handleShowAddRole}>
+          <Text style={styles.addRoleText}>+ Add Role</Text>
+          </TouchableOpacity>
       </View>
      }
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
@@ -206,13 +248,17 @@ const getPermissionCount = (role) => {
       </ScrollView>
 
     {!loading && (
-      <TouchableOpacity style={styles.addButton} onPress={() => { 
-  setShowAddSheet(true); 
-  setEditData(null); 
-}}
-  >
-  <Image source={TenantAddBlue} style={styles.addIcon} />
-</TouchableOpacity>
+//       <TouchableOpacity style={styles.addButton} onPress={() => { 
+//   setShowAddSheet(true); 
+//   setEditData(null); 
+// }}
+//   >
+//   <Image source={TenantAddBlue} style={styles.addIcon} />
+// </TouchableOpacity>
+
+    <TouchableOpacity style={styles.addBtn}onPress={handleShowAddRole}>
+      <Image source={TenantAddBlue} style={{ width: 25, height: 25 }} />
+    </TouchableOpacity>
     )}
     </View>
 
@@ -470,6 +516,33 @@ deleteOverlay: {
   justifyContent: "center",
   marginTop: 150,
 },
+
+  addRoleBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+
+  addRoleText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+   addBtn: {
+    position: "absolute",
+    bottom: 80,
+    right: 20,
+    backgroundColor: "#1D5DFF",
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+  },
 
 emptyImage: {
   width: 180,
