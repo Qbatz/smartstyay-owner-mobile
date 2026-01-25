@@ -16,6 +16,9 @@ import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import { useCustomer } from "../../Context/CustomerContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import AddRoomReadingSheet from "../Customer/AddRoomReadingSheet";
+
+
 
 export default function FinalSettlementScreen({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
@@ -27,6 +30,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [settlementDetails, setSettlementDetails] = useState("");
+  const [showRoomReadingSheet, setShowRoomReadingSheet] = useState(false);
+
 
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
@@ -339,10 +344,41 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 Pending invoices
               </Text>
 
-              <View style={styles.pendingRow}>
+              {/* <View style={styles.pendingRow}>
                 <Text style={{ flex: 1 }}>First Floor | F002 - B01</Text>
                 <Text style={styles.addText}>+ Add</Text>
-              </View>
+              </View> */}
+    
+
+  {/* <TouchableOpacity
+    onPress={() => {
+      navigation.navigate("RoomDetails", {
+        roomData: {
+          roomId: "YOUR_ROOM_ID",
+          roomName: "F002",
+          floorId: "YOUR_FLOOR_ID",
+          floorName: "First Floor",
+          currentReading: 0,
+          previousReading: 0,
+          consumption: 0,
+          noOfTenants: 0,
+          totalPrice: 0,
+        },
+        openAddSheet: true, // ✅ this is important
+      });
+    }}
+  >
+    <Text style={styles.addText}>+ Add</Text>
+  </TouchableOpacity> */}
+  <View style={styles.pendingRow}>
+  <Text style={{ flex: 1 }}>First Floor | F002 - B01</Text>
+
+  <TouchableOpacity onPress={() => setShowRoomReadingSheet(true)}>
+    <Text style={styles.addText}>+ Add</Text>
+  </TouchableOpacity>
+</View>
+
+
             </View>
           )}
         </View>
@@ -467,6 +503,23 @@ export default function FinalSettlementScreen({ navigation, route }) {
           <Text style={styles.generateTxt}>Generate Bill</Text>
         </TouchableOpacity>
       </View>
+      <AddRoomReadingSheet
+  visible={showRoomReadingSheet}
+  onClose={() => setShowRoomReadingSheet(false)}
+  roomInfo={{
+    roomId: "F002_ID",
+    floorId: "FIRST_FLOOR_ID",
+    roomName: "F002",
+    floorName: "First Floor",
+  }}
+  onSubmit={(payload) => {
+    console.log("Submit Payload =>", payload);
+
+  
+    setShowRoomReadingSheet(false);
+  }}
+/>
+
     </SafeAreaView>
   );
 }

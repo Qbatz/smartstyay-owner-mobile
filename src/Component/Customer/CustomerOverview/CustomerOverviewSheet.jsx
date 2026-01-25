@@ -26,7 +26,7 @@ import RoomIcon from "../../../Assets/Images/profile.png";
 import BedIcon from "../../../Assets/Images/profile.png";
 
 export default function CustomerOverviewScreen({ route, navigation }) {
-  const { customer } = route.params || {};
+  const { customer,customerId } = route.params || {};
 const { activeHostelId } = useContext(CommonContexts);
  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
   console.log("customer",customer)
@@ -39,10 +39,10 @@ const { activeHostelId } = useContext(CommonContexts);
     const [showEditAdvance,setShowEditAdvance] = useState(false)
     const [showAssignAmenities,setShowAssignAmenities] = useState(false)
  useEffect(() => {
-    if (customer?.customerId) {
+    if (customer?.customerId || customerId) {
       fetchCustomerDetails();
     }
-  }, [customer]);
+  }, [customer,customerId]);
   const handleEditBasicDetails = ()=>{
     setShowEdit(true)
   }
@@ -66,7 +66,7 @@ const closeEditMonthlyRent = () => {
 };
 
   const fetchCustomerDetails = async () => {
-    const res = await getCustomerDetails(customer.customerId);
+    const res = await getCustomerDetails(customer.customerId || customerId);
     console.log("fetchCustomerDetails", res)
     if (res.success) {
      setCustomerDetails(res.data)
