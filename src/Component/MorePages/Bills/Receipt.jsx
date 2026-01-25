@@ -338,7 +338,17 @@ const renderItem = ({ item }) => {
 
 
       <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{item.fullName}</Text>
+        {/* <Text style={styles.name}>{item.fullName}</Text> */}
+         <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("CustomerOverviewScreen", {
+              customerId: item.customerId,  
+              customer: item,             
+            })
+          }
+        >
+          <Text style={styles.name}>{item.fullName}</Text>
+        </TouchableOpacity>
 
         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
           <View style={styles.tagBox}>

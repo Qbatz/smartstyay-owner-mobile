@@ -1032,13 +1032,13 @@ const filteredTenants = customers?.listCustomers?.filter((item) => {
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Generate</Text>
               </TouchableOpacity>
- {/* <TouchableOpacity
+ <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowFinalNew}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Generate New</Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowCancelNotice}
@@ -1144,13 +1144,13 @@ const filteredTenants = customers?.listCustomers?.filter((item) => {
                           />
                           <Text style={styles.popupText}>Generate</Text>
                         </TouchableOpacity>
-                         {/* <TouchableOpacity
+                         <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleShowFinalNew}
               >
                 <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Generate New</Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
 
                         <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
                           <Image

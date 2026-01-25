@@ -369,6 +369,7 @@ const handleEditRoomReading = (data) => {
 //   setShowActionMenu(false);
 // };
 
+
 const handleDeleteRoomReading = (data) => {
 
   console.log("data", data);
@@ -1218,7 +1219,7 @@ sheetContainer: {
   padding: 20,
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
- paddingBottom: 20,
+ paddingBottom: 60,
 },
 
 sheetHandle: {
