@@ -462,7 +462,7 @@ const validateExtraCharges = () => {
 
             {tab === "long" && (
               <View>
-                <Text style={styles.label}>Joining Date</Text>
+                <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
 
                <TouchableOpacity
   style={styles.dateBox}
@@ -474,7 +474,7 @@ const validateExtraCharges = () => {
   <Image source={CalendarImage} style={styles.calendarIcon} />
 </TouchableOpacity>
 
-                <Text style={styles.label}>Floor</Text>
+                <Text style={styles.label}>Floor  <Text style={{color:"red"}}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -518,7 +518,7 @@ const validateExtraCharges = () => {
                 )}
 
 
-                <Text style={styles.label}>Room</Text>
+                <Text style={styles.label}>Room  <Text style={{color:"red"}}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -555,7 +555,7 @@ const validateExtraCharges = () => {
                 {roomError && (
                   <ErrorMessage message={roomError} type="error" />
                 )}
-                <Text style={styles.label}>Bed</Text>
+                <Text style={styles.label}>Bed  <Text style={{color:"red"}}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -600,7 +600,7 @@ const validateExtraCharges = () => {
 
 
                 <View style={styles.field}>
-                  <Text style={styles.label}>Advance Amount *</Text>
+                  <Text style={styles.label}>Advance Amount  <Text style={{color:"red"}}>*</Text></Text>
                   <TextInput
                     style={styles.input}
                     keyboardType="numeric"
@@ -618,7 +618,7 @@ const validateExtraCharges = () => {
                 )}
 
                 <View style={styles.field}>
-                  <Text style={styles.label}>Rental Amount *</Text>
+                  <Text style={styles.label}>Rental Amount  <Text style={{color:"red"}}>*</Text></Text>
                   <TextInput
                     style={styles.input}
                     keyboardType="numeric"

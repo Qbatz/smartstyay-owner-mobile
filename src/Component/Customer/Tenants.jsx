@@ -41,7 +41,9 @@ import { useCustomer } from "../../Context/CustomerContext";
 import EmptyState from "../../Assets/Images/Empty_state.png";
 import Loader from "../Loader/Loader";
 import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet";
-import CustomerOverviewScreen from "./CustomerOverview/CustomerOverviewSheet"
+import CustomerOverviewScreen from "./CustomerOverview/CustomerOverviewSheet";
+import moment from "moment";
+
 
  const SCREEN_HEIGHT = Dimensions.get("window").height;
  const SHEET_HEIGHT = SCREEN_HEIGHT * 0.55;
@@ -774,7 +776,14 @@ const filteredTenants = customers?.listCustomers?.filter((item) => {
     </TouchableOpacity>
 
     <Text style={styles.dateText}>
-      {item.bookedAt || "--"}
+       {item?.actualJoining && item.actualJoining !== "0000-00-00"
+                                          ? moment(item.actualJoining, "DD/MM/YYYY").format("D MMMM YYYY")
+                                          : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
+                                            ? moment(item.expectedJoiningDate, "DD/MM/YYYY").format("D MMMM YYYY")
+                                            : item?.RecheckIn_Date && item.RecheckIn_Date !== "0000-00-00"
+                                              ? moment(item.RecheckIn_Date).format("D MMMM YYYY")
+                                              : "-"
+                                        }
     </Text>
   </View>
 </View>

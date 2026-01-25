@@ -326,29 +326,27 @@ const selectType = (id, type) => {
   const finalTotalDeductions = apiDeductions + userEnteredDeductionsTotal;
   const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + settlementDetails?.currentMonthRentInfo?.currentPayableRent
 
-  useEffect(() => {
-    if (settlementDetails?.settlementInfo) {
-      const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+ useEffect(() => {
+  if (!settlementDetails?.settlementInfo) return;
+
+  const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+
+  let finalAmount = 0;
+
+  if (amountTobePaid < 0) {
+    finalAmount = isRefundable
+      ? amountTobePaid + userEnteredDeductionsTotal
+      : amountTobePaid - userEnteredDeductionsTotal;
+  } else {
+    finalAmount = isRefundable
+      ? amountTobePaid - userEnteredDeductionsTotal
+      : amountTobePaid + userEnteredDeductionsTotal;
+  }
+
+  setReturnAmount(finalAmount);
+}, [settlementDetails, userEnteredDeductionsTotal]); 
 
 
-
-
-
-
-      let finalAmount = 0;
-      if (amountTobePaid < 0) {
-        finalAmount = isRefundable
-          ? amountTobePaid + userEnteredDeductionsTotal
-          : amountTobePaid - userEnteredDeductionsTotal;
-      } else {
-        finalAmount = isRefundable
-          ? amountTobePaid - userEnteredDeductionsTotal
-          : amountTobePaid + userEnteredDeductionsTotal;
-      }
-
-      setReturnAmount(finalAmount);
-    }
-  }, [settlementDetails]);
   const isNegative = Number(ReturnAmount) < 0;
 
   const extraDeductionsPayload = extraCharges

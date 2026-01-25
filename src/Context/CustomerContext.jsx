@@ -247,7 +247,7 @@ export const CustomerProvider = ({ children }) => {
       return {
         success: false,
         message:
-          error?.response?.data?.message || "Change bed failed",
+          error?.response?.data || "Change bed failed",
       };
     }
   };
