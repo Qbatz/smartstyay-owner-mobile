@@ -107,23 +107,49 @@ const isChanged = () => {
 
 const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
+// useEffect(() => {
+//   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+//     setKeyboardHeight(e.endCoordinates.height);
+//   });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
+//   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+//     setKeyboardHeight(0);
+//   });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
+//   return () => {
+//     showSub.remove();
+//     hideSub.remove();
+//   };
+// }, []);
+
+    const translateY = useRef(new Animated.Value(0)).current;
+
+ useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height + 40,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
 
       
-    const translateY = useRef(new Animated.Value(0)).current;
+
     const vendors = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5"];
     const [vendorOpen, setVendorOpen] = useState(false);
     const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
@@ -885,9 +911,11 @@ const styles = StyleSheet.create({
 
     footerBtnRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 15,
-        marginBottom: 10
+  justifyContent: "flex-end",
+  alignItems: "center",
+  marginTop: 20,
+  marginBottom: 10,
+  gap: 20,  
     },
 
     cancel: {

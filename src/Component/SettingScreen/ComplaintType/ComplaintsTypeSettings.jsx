@@ -361,7 +361,7 @@ const openSheet = (edit = false, item = null) => {
 
   return (
     <>
-
+ { loading && <Loader />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -544,7 +544,7 @@ const openSheet = (edit = false, item = null) => {
 
   </View>
 )}
- { loading && <Loader />}
+
     </>
   );
 }

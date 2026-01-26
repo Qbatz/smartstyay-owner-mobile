@@ -21,6 +21,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import EmptyStateImage from "../../../Assets/Images/Empty_state.png"
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import AddBankingDesign from "./AddBanking"
@@ -806,6 +807,18 @@ const handleEditBanking = (item) => {
              </TouchableOpacity>
         ))}
 
+        {mappedTransactions && mappedTransactions?.length === 0 &&
+           <View style={{ alignItems: "center", marginTop: 70 }}>
+              <Image
+                source={EmptyStateImage}
+                style={{ width: 250, height: 180, }}
+              />
+              <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+                No Transaction Found
+              </Text>
+              </View>
+        }
+
       </Animated.ScrollView>
 
 
@@ -1462,7 +1475,7 @@ changeText: {
   filterBtn: {
     position: "absolute",
     bottom: 140,
-    right: 20,
+    right: 25,
     backgroundColor: "#fff",
     padding: 12,
     borderRadius: 30,
@@ -1773,7 +1786,7 @@ downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
- bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
+ bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 42, marginBottom:25 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },

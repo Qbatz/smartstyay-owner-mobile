@@ -444,7 +444,7 @@ const handleAddVendorClick = () => {
 
             <View style={styles.filterHeaderRow} >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
+                <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
                 <Text style={styles.filterTitle}>  Filter by</Text>
               </View>
             </View>
@@ -917,7 +917,7 @@ initialText: {
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
-  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
+  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 52, marginBottom:20 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" }, applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
   applyBtnText: { color: "#fff", fontWeight: "700" },

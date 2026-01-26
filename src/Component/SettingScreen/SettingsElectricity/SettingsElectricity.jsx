@@ -15,10 +15,11 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle"
 import SuccessModal from "../../../ToastFile/ToastPage";
+import Loader from "../../../Component/Loader/Loader"
 
 export default function ElectricitySettings({ navigation }) {
   const {activeHostelId } = useContext(CommonContexts);
-  const { getElectricity, updateElectricity, changeRoomHostelElectricity } = UseSetting();
+  const { getElectricity, updateElectricity, changeRoomHostelElectricity ,loading} = UseSetting();
   const [ebunitList, setEbUnitList] = useState("")
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -343,6 +344,8 @@ useEffect(() => {
         type={modalType}
 
       />
+
+      { loading && <Loader />}
       {/* <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -365,7 +368,7 @@ useEffect(() => {
           </View>
 
 
-          {!ebunitList ? (
+          {!ebunitList  && !loading ? (
             <View style={styles.EmptyView}>
               <Image source={EmptyState} style={styles.EmptyIcon} />
               <Text style={{ marginTop: 12, fontSize: 16, color: "#777", fontFamily: "Gilroy-Medium" }}>

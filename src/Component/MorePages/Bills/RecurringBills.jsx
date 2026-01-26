@@ -32,7 +32,7 @@ import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png";
-import EmptyFloor from "../../../Assets/Images/Empty_floor.png"
+import EmptyFloor from "../../../Assets/Images/Empty_state.png"
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import Download from "../../../Assets/Images/download.png";
@@ -253,6 +253,20 @@ const handleToggleRecurring = async (item) => {
 };
 ;
 
+const EmptyRecurringState = () => (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={EmptyFloor}
+      style={styles.emptyImage}
+      resizeMode="contain"
+    />
+    <Text style={styles.emptyText}>
+      No Recurring Bills Found
+    </Text>
+  </View>
+);
+
+
   const renderItem = ({ item }) => {
   const isActive = item.currentStatus;
 
@@ -390,24 +404,20 @@ const handleToggleRecurring = async (item) => {
 
       </View>
 
-     <FlatList
+ <FlatList
   data={recurringBills?.customers || []}
   renderItem={renderItem}
   keyExtractor={(item) => item.customerId}
-    showsVerticalScrollIndicator={false}
+  showsVerticalScrollIndicator={false}
   overScrollMode="never"
-   contentContainerStyle={{ paddingBottom: vs(120) }}
+  contentContainerStyle={{
+    flexGrow: 1,              // 🔥 KEY LINE
+    paddingBottom: vs(120),
+  }}
+  ListEmptyComponent={!loading && <EmptyRecurringState />}
 />
 
-{(!recurringBills?.customers ||
-  recurringBills.customers.length === 0) && (
-  <View style={{ alignItems: "center", marginTop: vs(80) }}>
-    <Image source={EmptyFloor} style={{ width: 120, height: 120 }} />
-    <Text style={{ marginTop: vs(10), color: "#777" }}>
-      No Recurring Bills Found
-    </Text>
-  </View>
-)}
+
 
 
       <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
@@ -825,6 +835,22 @@ optionText: {
     fontSize: s(11),
     color: "#878787",
   },
+emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+emptyImage: {
+  width: s(250),
+  height: vs(180),
+},
+
+emptyText: {
+  marginTop: vs(12),
+  fontSize: s(14),
+  color: "#777",
+},
 
 
    filterButton: {

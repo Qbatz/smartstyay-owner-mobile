@@ -15,11 +15,12 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { UseSetting } from "../../../Context/SettingContext";
 import { useFocusEffect } from "@react-navigation/native";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
+import Loader from "../../../Component/Loader/Loader"
 
 export default function BillingRuleScreen({ navigation }) {
 
  const {activeHostelId } = useContext(CommonContexts);
-  const {getBillingConfig} = UseSetting();
+  const {getBillingConfig , loading} = UseSetting();
  
 
   const [showEditSheet, setShowEditSheet] = useState(false)
@@ -27,6 +28,9 @@ export default function BillingRuleScreen({ navigation }) {
 
   const editY = useRef(new Animated.Value(700)).current;
 console.log("billingData",billingData)
+
+console.log("loading", loading);
+
 
 useEffect(() => {
   if (activeHostelId) {
@@ -140,6 +144,10 @@ const closeEditSheet = () => {
   
 
   return (
+<>
+{ loading && <Loader />}
+
+
      <KeyboardAvoidingView
     style={{ flex: 1 }}
     behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -158,7 +166,7 @@ const closeEditSheet = () => {
        
       </View>
 
-    {billingData?.length === 0 && (
+    {!loading && billingData?.length === 0 && (
               <View style={styles.emptyContainer}>
                 <Image
                   source={EmptyState}
@@ -238,6 +246,7 @@ const closeEditSheet = () => {
 
     </View>
     </KeyboardAvoidingView>
+    </>
   )
 }
 
