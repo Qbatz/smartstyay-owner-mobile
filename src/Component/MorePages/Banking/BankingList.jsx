@@ -763,7 +763,7 @@ const handleEditBanking = (item) => {
        
         {mappedTransactions && mappedTransactions.length > 0 &&  mappedTransactions?.map((t) => (
             <TouchableOpacity  key={t.id} onPress={()=>handleshowTransaction(t)}>
-          <View style={styles.transCard}>
+          {/* <View style={styles.transCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View
                 style={[
@@ -803,9 +803,52 @@ const handleEditBanking = (item) => {
                 {t.amount}
               </Text>
             </View>
-          </View>
+          </View> */}
+
+          <View style={styles.transCard}>
+  {/* LEFT SIDE */}
+  <View style={styles.transLeft}>
+    <View
+      style={[
+        styles.iconArrow,
+        {
+          backgroundColor:
+            t.type === "income"
+              ? "#E4FFE8"
+              : "#FFE8E8",
+        },
+      ]}
+    >
+      <Image source={t.ArrowImage} style={{ height: 19, width: 19 }} />
+    </View>
+
+    <View style={styles.transTextWrap}>
+      <Text style={styles.transTitle} numberOfLines={0}>
+        {t.Accountholder}
+      </Text>
+      <Text style={styles.category}>{t.category}</Text>
+    </View>
+  </View>
+
+  {/* RIGHT SIDE */}
+  <View style={styles.transRight}>
+    <Text style={styles.date}>{t.date}</Text>
+    <Text
+      style={[
+        styles.amount,
+        { color: t.type === "income" ? "green" : "red" },
+      ]}
+    >
+      {t.amount}
+    </Text>
+  </View>
+</View>
+
              </TouchableOpacity>
         ))}
+
+
+
 
         {mappedTransactions && mappedTransactions?.length === 0 &&
            <View style={{ alignItems: "center", marginTop: 70 }}>
@@ -859,7 +902,9 @@ const handleEditBanking = (item) => {
     >
       <View style={styles.sheetHandle} />
 
-      <Text style={styles.sheetTitle}>Transaction Details</Text>
+      <Text style={{  fontSize: 18,
+  fontWeight: "700",
+  marginBottom: 10,}}>Transaction Details</Text>
 
       {/* TOP ROW */}
       <View style={{flexDirection: "row",
@@ -896,7 +941,9 @@ const handleEditBanking = (item) => {
       <View style={styles.fromToRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>From</Text>
-          <Text style={styles.valueText}> {selectedTransaction?.raw?.accountHolder}</Text>
+          <Text style={{  fontSize: 14,
+  color: "#000",
+  fontWeight: "600",marginLeft:-3}}> {selectedTransaction?.raw?.accountHolder}</Text>
         </View>
 
         <View style={{ flex: 1 }}>
@@ -1456,6 +1503,34 @@ changeText: {
     marginBottom: 12,
    
   },
+transLeft: {
+  flexDirection: "row",
+  alignItems: "center",
+  flex: 1,              // 🔥 IMPORTANT
+},
+
+transTextWrap: {
+  flex: 1,              // 🔥 allows wrapping
+  paddingRight: 8,
+},
+
+transTitle: {
+  fontSize: 16,
+  fontWeight: "600",
+  flexShrink: 1,        // 🔥 MUST
+  flexWrap: "wrap",
+},
+
+category: {
+  fontSize: 13,
+  color: "#666",
+  marginTop: 2,
+},
+
+transRight: {
+  alignItems: "flex-end",
+  marginLeft: 8,
+},
 
   iconArrow: {
     height: 36,
