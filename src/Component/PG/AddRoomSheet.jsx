@@ -186,17 +186,22 @@ useEffect(() => {
       Room Name / No <Text style={{ color: "red" }}>*</Text>
     </Text>
 
-    <TextInput
-      style={styles.input}
-      placeholder="Enter Room Name"
-      value={roomName}
-      returnKeyType="done"
-      onSubmitEditing={handleAddRoom}   // ✔ keyboard save
-      onChangeText={(t) => {
-        setRoomName(t);
-        setRoomError("");
-      }}
-    />
+  <TextInput
+  style={styles.input}
+  placeholder="Enter Room Name"
+  value={roomName}
+  returnKeyType="done"
+  onSubmitEditing={handleAddRoom}
+  onChangeText={(t) => {
+    const cleaned = t
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // ✅ emoji remove
+      .replace(/\s{2,}/g, " "); // extra space remove
+
+    setRoomName(cleaned);
+    setRoomError("");
+  }}
+/>
+
 
     {roomError && <ErrorMessage message={roomError} type="error" />}
   </ScrollView>

@@ -243,10 +243,16 @@ if (!trimmedAmount) {
   returnKeyType="next"
   onSubmitEditing={() => amountRef.current?.focus()}
   onChangeText={(t) => {
-    setBedName(t);
+    // ✅ Emoji remove + normal text மட்டும் allow
+    const cleaned = t
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // emoji remove
+      .replace(/\s{2,}/g, " "); // extra spaces remove
+
+    setBedName(cleaned);
     setBedNameError("");
   }}
 />
+
     {bedNameError && <ErrorMessage message={bedNameError} type="error" />}
 
     <Text style={styles.label}>Amount <Text style={{color:"red"}}>*</Text></Text>

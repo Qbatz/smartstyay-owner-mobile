@@ -8,7 +8,7 @@ import {
   Animated,
   PanResponder,
   Keyboard,
-  TouchableWithoutFeedback, KeyboardAvoidingView, Platform
+  TouchableWithoutFeedback, KeyboardAvoidingView, Platform,ScrollView
 } from "react-native";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useFloor } from "../../Context/PayingGuestContext";
@@ -46,6 +46,7 @@ const safeKeyboardHeight =
   const [floorNameError, setFloorNameError] = useState("");
 
   const inputRef = useRef(null);
+  const scrollRef = useRef(null)
   const { activeHostelId } = useContext(CommonContexts);
   const {addFloor,updateFloor } = useFloor();
     const [modalType, setModalType] = useState("success");
@@ -224,6 +225,12 @@ const sheetContent = (
   ]}
 >
     <View style={styles.handle} />
+     <ScrollView
+    ref={scrollRef}
+    keyboardShouldPersistTaps="handled"
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ paddingBottom: 30 }}
+  >
 
     <Text style={styles.title}>
       {isEdit ? "Edit Floor" : "Add Floor"}
@@ -233,18 +240,29 @@ const sheetContent = (
       Floor Name or No <Text style={{ color: "red" }}>*</Text>
     </Text>
 
-    <TextInput
-      ref={inputRef}
-      placeholder="Enter floor Name or No"
-      style={styles.input}
-      value={floorName}
-      returnKeyType="done"
-      onSubmitEditing={handleAddFloor}   // ✅ keyboard ✔ save
-      onChangeText={(text) => {
-        setFloorName(text);
-        setFloorNameError("");
-      }}
-    />
+  <TextInput
+  ref={inputRef}
+  placeholder="Enter floor Name or No"
+  style={styles.input}
+  value={floorName}
+  returnKeyType="done"
+  blurOnSubmit={true}
+  onSubmitEditing={handleAddFloor}
+  onFocus={() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: 100, animated: true });
+    }, 200);
+  }}
+  onChangeText={(text) => {
+    const cleaned = text
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+      .replace(/[^a-zA-Z0-9 _-]/g, "");
+
+    setFloorName(cleaned);
+    setFloorNameError("");
+  }}
+/>
+
 
   <View style={{padding:10}}>
       {floorNameError && (
@@ -258,6 +276,7 @@ const sheetContent = (
         {isEdit ? "Update Floor" : "Add Floor"}
       </Text>
     </TouchableOpacity>
+    </ScrollView>
   </Animated.View>
 );
 

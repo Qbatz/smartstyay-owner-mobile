@@ -24,7 +24,7 @@ import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export default function NewBookingSheet({ visible, onClose, room, bed, selectedBed, onBedAdded }) {
-  const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer } = useCustomer();
+  const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer,getCustomerDetails } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext);
   const translateY = useRef(new Animated.Value(500)).current;
@@ -53,6 +53,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   const [joiningDateError, setJoiningDateError] = useState("")
   const [BookingAmountError, setBookingAmountError] = useState("")
   const [bankIdError, setBankIdError] = useState("")
+   const [customerDetails,setCustomerDetails] = useState("")
   const scrollRef = useRef(null);
 const containerRef = useRef(null);
 const amountRef = useRef(null);
@@ -60,6 +61,31 @@ const txnRef = useRef(null);
 const txnWrapRef = useRef(null);
 
 const [keyboardHeight, setKeyboardHeight] = useState(0);
+useEffect(() => {
+    if (selectedBed) {
+      fetchCustomerDetails();
+    }
+  }, [selectedBed]);
+
+ const fetchCustomerDetails = async () => {
+    const res = await getCustomerDetails(selectedBed?.currentTenantInfo[0]?.tenetId);
+    console.log("fetchCustomerDetails", res)
+    if (res.success) {
+     setCustomerDetails(res.data)
+
+    } else {
+      alert(res.message);
+    }
+  };
+console.log("customerDetails",customerDetails)
+ const CustomerOverView = customerDetails?.checkoutInfo?.noticeDate;
+ console.log("CustomerOverView",CustomerOverView)
+ const today = dayjs().startOf("day");
+
+const minBookingDate = CustomerOverView
+  ? dayjs(CustomerOverView, ["DD-MM-YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]).startOf("day")
+  : null;
+
 
 useEffect(() => {
   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -250,7 +276,7 @@ const scrollToInput = (wrapRef) => {
   };
 
 
-
+console.log("selectedBed",selectedBed)
   const handleBooking = async () => {
     if (!validateForm()) return;
 
@@ -522,41 +548,52 @@ const scrollToInput = (wrapRef) => {
       </View>
 
 
-      {showDatePicker && (
-        <View style={styles.datePickerOverlay}>
-          <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
+     {showDatePicker && (
+  <View style={styles.datePickerOverlay}>
+    <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
+    <View style={styles.datePickerBox}>
+      <Calendar
+        // ✅ minDate = noticeDate (CustomerOverView)
+        minDate={minBookingDate ? minBookingDate.format("YYYY-MM-DD") : undefined}
 
-            <Calendar
-              maxDate={dayjs().format("YYYY-MM-DD")}
-              onDayPress={(day) => {
-                const selected = dayjs(day.dateString);
-                setBookingDate(selected);
-                setBookingDateError("");
-                setShowDatePicker(false);
+        // ✅ maxDate = today (no future)
+        maxDate={today.format("YYYY-MM-DD")}
 
+        onDayPress={(day) => {
+          const selected = dayjs(day.dateString);
 
-                if (joiningDate && joiningDate.isBefore(selected)) {
-                  setJoiningDate(selected);
-                }
-              }}
-              markedDates={
-                bookingDate
-                  ? {
-                    [bookingDate.format("YYYY-MM-DD")]: {
-                      selected: true,
-                      selectedColor: "#1D5DFF",
-                    },
-                  }
-                  : {}
+          // ✅ extra safety check
+          if (minBookingDate && selected.isBefore(minBookingDate, "day")) return;
+          if (selected.isAfter(today, "day")) return;
+
+          setBookingDate(selected);
+          setBookingDateError("");
+          setShowDatePicker(false);
+
+          // ✅ joining date auto adjust if needed
+          if (joiningDate && joiningDate.isBefore(selected)) {
+            setJoiningDate(selected);
+          }
+        }}
+
+        markedDates={
+          bookingDate
+            ? {
+                [bookingDate.format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#1D5DFF",
+                },
               }
-            />
-          </View>
-        </View>
-      )}
+            : {}
+        }
+      />
+    </View>
+  </View>
+)}
+
 
       {showJoinDatePicker && (
         <View style={styles.datePickerOverlay}>
