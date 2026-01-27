@@ -52,7 +52,7 @@ import dateImg from "../../../Assets/Images/home-link.png";
 import room from "../../../Assets/Images/PG_active.png";
 import Bed from "../../../Assets/Images/bed.png";
 import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png";
-import EmptyFloor from "../../../Assets/Images/Empty_floor.png"
+import EmptyFloor from "../../../Assets/Images/Empty_state.png"
 
 import ArrowUp from "../../../Assets/Images/arrow-up.png";
 import ArrowDown from "../../../Assets/Images/arrow-down.png";

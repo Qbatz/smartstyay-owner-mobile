@@ -11,6 +11,7 @@ export const SettingProvider = ({ children }) => {
 const [loading, setLoading] = useState(false);
 const getElectricity = async (hostelId) => {
   try {
+    setLoading(true)
     const token = await retriveData("token");
 console.log("token",token , hostelId)
 const axios = getAxios();
@@ -28,6 +29,9 @@ const axios = getAxios();
 
   } catch (err) {
     return { success: false, data: err.response?.data || err.message };
+  }
+  finally{
+     setLoading(false)
   }
 };
 
@@ -92,6 +96,7 @@ const changeRoomHostelElectricity = async (payload) => {
 
 const getBillingConfig = async (hostelId) => {
     try {
+      setLoading(true);
       const token = await retriveData("token");
       const axios = getAxios();
       const res = await axios.get(
@@ -103,6 +108,9 @@ const getBillingConfig = async (hostelId) => {
 
     } catch (err) {
       return { success: false, data: err.response?.data || err.message };
+    }
+    finally{
+      setLoading(false);
     }
   };
 

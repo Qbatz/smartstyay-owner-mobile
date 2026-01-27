@@ -14,6 +14,7 @@ import {
   PanResponder, Animated
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
+import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import { AssetContext } from "../../../Context/AssetContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -46,6 +47,7 @@ export default function Assets({ navigation }) {
         const [rooms, setRooms] = useState([]);
         const [floorError, setFloorError] = useState("")
         const [roomError, setRoomError] = useState("")
+        const [assigndateError, setAssignDateError] = useState("")
         const [floorOpen, setFloorOpen] = useState(false);
         const [selectedFloor, setSelectedFloor] = useState(null);
         const [roomOpen, setRoomOpen] = useState(false);
@@ -93,7 +95,7 @@ const [modalType, setModalType] = useState("success");
 
   const [showFilter, setShowFilter] = useState(false);
   const [showAssignSheet, setShowAssignSheet] = useState(false);
-  const [assignDate, setAssignDate] = useState(dayjs());
+  const [assignDate, setAssignDate] = useState(null);
   const [openAssignDate, setOpenAssignDate] = useState(false);
 
   // const floorOptions = ["Ground Floor", "1st Floor", "2nd Floor", "3rd Floor"];
@@ -255,6 +257,7 @@ useFocusEffect(
             duration: 200,
             useNativeDriver: true,
           }).start(() => {
+              resetAssignState();
             setShowAssignSheet(false);
             assignTranslateY.setValue(0);
           });
@@ -300,29 +303,92 @@ useFocusEffect(
 const roomOptions = [  { id: 1, name: "Room 101" },
   { id: 2, name: "Room 102"},]
 
+
+const isAssignDateDisabled = (dateString) => {
+  const current = dayjs(dateString);
+  const today = dayjs().endOf("day");
+
+  if (current.isAfter(today, "day")) return true;
+
+  if (selectedAsset?.purchaseDate) {
+    const purchaseDate = dayjs(
+      selectedAsset.purchaseDate,
+      "DD/MM/YYYY"
+    );
+
+    if (current.isBefore(purchaseDate, "day")) return true;
+  }
+
+  return false;
+};
+
+
+
+const assignMarkedDates = {};
+
+for (let i = -365; i <= 365; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isAssignDateDisabled(key)) {
+    assignMarkedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+const selectedAssignDate = assignDate
+  ? dayjs(assignDate).format("YYYY-MM-DD")
+  : null;
+
+  const resetAssignState = () => {
+  setSelectedFloor(null);
+  setSelectedRoom(null);
+  setRooms([]);
+  setFloorOpen(false);
+  setRoomOpen(false);
+  setAssignDate(null);
+  setFloorError("");
+  setRoomError("");
+  setAssignDateError("")
+};
+
+
+
+
+
 const handleAssignAsset = async () => {
   if (!selectedAsset?.assetId) return;
 
   setFloorError("");
   setRoomError("");
+  setAssignDateError("")
 
   let valid = true;
 
   if (!selectedFloor) {
-    setFloorError("Please select a floor");
+    setFloorError("Please Select Floor");
     valid = false;
   }
 
   if (!selectedRoom) {
-    setRoomError("Please select a room");
+    setRoomError("Please Select Room");
     valid = false;
   }
 
   if (!assignDate) {
-    setModalType("error");
-    setModalMessage("Please select assign date");
-    setShowSuccessModal(true);
-    return;
+    setAssignDateError("Please select date");
+    valid = false;
   }
 
   if (!valid) return;
@@ -330,9 +396,10 @@ const handleAssignAsset = async () => {
   const payload = {
     assetId: selectedAsset.assetId,
     hostelId: activeHostelId,
-    floorId: selectedFloor.id,   // ✅ FIXED
-    roomId: selectedRoom.id,     // ✅ FIXED
+    floorId: selectedFloor.id, 
+    roomId: selectedRoom.id,  
     assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
+    
   };
 
   const res = await assignAsset(payload);
@@ -656,7 +723,7 @@ const handleAssignAsset = async () => {
 
             <View style={styles.filterHeaderRow}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image source={FilterIcon} style={{ width: 50, height: 50 }} />
+                <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
                 <Text style={styles.filterTitle}>  Filter by</Text>
               </View>
             </View>
@@ -796,7 +863,10 @@ const handleAssignAsset = async () => {
       )}
       {showAssignSheet && (
         <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setShowAssignSheet(false)}>
+          <TouchableWithoutFeedback   onPress={() => {
+    resetAssignState();
+    setShowAssignSheet(false);
+  }}>
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
 
@@ -811,7 +881,7 @@ const handleAssignAsset = async () => {
 
           <Text style={styles.label}>Floor <Text style={styles.star}>*</Text></Text>
 
-          <View style={{ position: "relative" }}>
+      
             <TouchableOpacity
               style={styles.select}
               onPress={() => setFloorOpen(!floorOpen)}
@@ -825,7 +895,7 @@ const handleAssignAsset = async () => {
 
             {floorOpen && (
               <View style={styles.dropdownMenu}>
-                <ScrollView style={{ maxHeight: 160 }}>
+                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
                   {floors.map((v) => (
 
                     <TouchableOpacity
@@ -846,12 +916,12 @@ const handleAssignAsset = async () => {
                 </ScrollView>
               </View>
             )}
-          </View>
+          
           {floorError && <ErrorMessage message={floorError} type="error" />}
 
           <Text style={styles.label}>Room <Text style={styles.star}>*</Text></Text>
 
-          <View style={{ position: "relative" }}>
+       
             <TouchableOpacity
               style={styles.select}
               onPress={() => setRoomOpen(!roomOpen)}
@@ -866,7 +936,7 @@ const handleAssignAsset = async () => {
 
             {roomOpen && rooms.length > 0 && (
               <View style={styles.dropdownMenu}>
-                <ScrollView style={{ maxHeight: 160 }}>
+                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
                   {rooms.map((r) => (
                     <TouchableOpacity
                       key={r.id}
@@ -883,18 +953,27 @@ const handleAssignAsset = async () => {
                 </ScrollView>
               </View>
             )}
-          </View>
+        
           {roomError && <ErrorMessage message={roomError} type="error" />}
 
-            <Text style={[styles.label, { marginTop: 15 }]}>Date *</Text>
+            <Text style={[styles.label, { marginTop: 15 }]}>Date <Text style={styles.star}>*</Text></Text>
             <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
-              <Text style={styles.selectedText}>{dayjs(assignDate).format("DD-MM-YYYY")}</Text>
+             <Text style={!assignDate && styles.placeholderText}>
+  {assignDate
+    ? dayjs(assignDate).format("DD-MM-YYYY")
+    : "Select Date"}
+</Text>
               <Image source={CalendarIcon} style={styles.calIcon} />
             </TouchableOpacity>
 
+                {assigndateError && <ErrorMessage message={assigndateError} type="error" />}
+
 
             <View style={styles.assignButtonRow}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAssignSheet(false)}>
+              <TouchableOpacity style={styles.cancelBtn}   onPress={() => {
+    resetAssignState();
+    setShowAssignSheet(false);
+  }}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -905,24 +984,91 @@ const handleAssignAsset = async () => {
           </Animated.View>
         </View>
       )}
-      {openAssignDate && (
-        <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setOpenAssignDate(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
-            <DatePicker
-              mode="single"
-              date={assignDate}
-              onChange={(p) => {
-                setAssignDate(p.date || dayjs());
-                setOpenAssignDate(false);
-              }}
-            />
-          </View>
-        </View>
-      )}
+{openAssignDate && (
+  <View style={styles.dateOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenAssignDate(false)}>
+      <View style={styles.overlayBg} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.calendarContainer}>
+      <Calendar
+        markingType="custom"
+        markedDates={{
+          ...assignMarkedDates,
+          ...(selectedAssignDate && {
+            [selectedAssignDate]: {
+              selected: true,
+              customStyles: {
+                container: {
+                  backgroundColor: "#2563EB",
+                  borderRadius: 8,
+                },
+                text: {
+                  color: "#FFFFFF",
+                  fontWeight: "700",
+                },
+              },
+            },
+          }),
+        }}
+        current={dayjs().format("YYYY-MM-DD")}  // scroll only
+        onDayPress={(day) => {
+          if (assignMarkedDates[day.dateString]?.disabled) return;
+
+          setAssignDate(day.dateString); // ✅ user selection
+          setOpenAssignDate(false);
+          setAssignDateError("")
+        }}
+        theme={{
+          todayTextColor: "#2563EB",
+          arrowColor: "#111827",
+          textDisabledColor: "#9CA3AF",
+        }}
+      />
+    </View>
+  </View>
+)}
+
+
+
+      {/* {openAssignDate && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={() => setOpenAssignDate(false)}>
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
+
+    <View style={styles.datePickerBox}>
+      <DatePicker
+        mode="single"
+        date={assignDate}
+        markingType="custom"
+        markedDates={assignMarkedDates}
+        current={
+          assignDate
+            ? dayjs(assignDate).format("YYYY-MM-DD")
+            : dayjs().format("YYYY-MM-DD")
+        }
+        onChange={(p) => {
+          if (!p?.date) return;
+
+          // ❌ double safety
+          if (isAssignDateDisabled(p.date)) return;
+
+          setAssignDate(p.date);
+          setOpenAssignDate(false);
+        }}
+        theme={{
+          todayTextColor: "#1E45E1",
+          selectedDayBackgroundColor: "#1E45E1",
+          selectedDayTextColor: "#FFFFFF",
+          textDisabledColor: "#9CA3AF",
+          arrowColor: "#111827",
+        }}
+      />
+    </View>
+  </View>
+)} */}
 
 {showDeletePopup && (
   <View style={styles.popupOverlay}>
@@ -1017,7 +1163,7 @@ width: 60, height: 60
   label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6 },
   value: { fontSize: 15, fontWeight: "600", color: "#000" },
 
-  assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20 },
+  assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20, marginBottom:30 },
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
   assignText: { color: "#fff", fontSize: 16, fontWeight: "700" },
    star: {
@@ -1067,17 +1213,14 @@ width: 60, height: 60
   },
 
   dropdownMenu: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderRadius: 12,
+   marginTop: 4,
     borderWidth: 1,
-    borderColor: "#D9D9D9",
-    elevation: 15,
-    zIndex: 1000,
-    paddingVertical: 8,
-    height: 100
+    borderColor: "#DDDDDD",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    elevation: 6,
+    zIndex: 999,
   },
 
   option: { paddingVertical: 12, paddingHorizontal: 14 },
@@ -1087,7 +1230,7 @@ width: 60, height: 60
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
 
-  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
+  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 42 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
@@ -1233,6 +1376,30 @@ cancelText: {
   fontWeight: "600"
 },
 
+
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
 deleteBtn: {
   width: "48%",
   backgroundColor: "#1E45E1",

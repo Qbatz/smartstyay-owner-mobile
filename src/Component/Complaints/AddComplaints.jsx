@@ -591,7 +591,7 @@ const handleSubmitComplaint = async () => {
   </View>
 )} */}
 
-<View style={{ position: "relative", zIndex: 20 }}>
+
   <Text style={styles.label}>
     Customer <Text style={{ color: "red" }}>*</Text>
   </Text>
@@ -614,14 +614,10 @@ const handleSubmitComplaint = async () => {
     <View
       style={[
         styles.dropdownMenu,
-        {
-          top: 54,
-          minHeight: ITEM_HEIGHT * MIN_ITEMS,
-          maxHeight: ITEM_HEIGHT * MAX_ITEMS,
-        },
+       
       ]}
     >
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
         {CustomerOptions.length > 0 ? (
           CustomerOptions.map((item) => (
             <TouchableOpacity
@@ -656,14 +652,16 @@ const handleSubmitComplaint = async () => {
       </ScrollView>
     </View>
   )}
-</View>
+
+
+
 
 {userErrmsg && <ErrorMessage message={userErrmsg} type="error" />}
 
 
 
       
-<View style={{ position: "relative", zIndex: 15 }}>
+
   <Text style={styles.label}>
     Complaint Type <Text style={{ color: "red" }}>*</Text>
   </Text>
@@ -687,14 +685,10 @@ const handleSubmitComplaint = async () => {
     <View
       style={[
         styles.dropdownMenu,
-        {
-          top: 54,
-          minHeight: ITEM_HEIGHT * MIN_ITEMS,
-          maxHeight: ITEM_HEIGHT * MAX_ITEMS,
-        },
+
       ]}
     >
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
         {complaintTypes.length > 0 ? (
           complaintTypes.map((item) => (
             <TouchableOpacity
@@ -733,7 +727,7 @@ const handleSubmitComplaint = async () => {
       </ScrollView>
     </View>
   )}
-</View>
+
 
 {complaintTypeErrmsg && (
   <ErrorMessage message={complaintTypeErrmsg} type="error" />
@@ -1036,6 +1030,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+
+  
+
   inputBox: {
     height: 52,
     borderWidth: 1,
@@ -1184,16 +1181,14 @@ emptyText: {
 },
 
 dropdownMenu: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#DDDDDD",
-  borderRadius: 12,
-  elevation: 10,
-  zIndex: 9999,
-  overflow: "hidden",
+  marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    elevation: 6,
+    zIndex: 999,
 },
 
 

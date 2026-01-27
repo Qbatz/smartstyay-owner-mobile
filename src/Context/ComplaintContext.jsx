@@ -34,9 +34,10 @@ const [commentsLoading, setCommentsLoading] = useState(false);
 const fetchComplaintTypes = async (hostelId) => {
 
   setComplaintTypes([]);  
-  setLoading(true);       
+     
 
   try {
+      setLoading(true);  
     const axios = getAxios();
     const res = await axios.get(
       `/v2/ComplaintType/all-complaintTypes/${hostelId}`
@@ -62,9 +63,7 @@ const fetchComplaintTypes = async (hostelId) => {
     return { success: false, data: [] };
 
   } finally {
-       setTimeout(() => {
              setLoading(false);
-        }, 1000);    
   }
 };
 

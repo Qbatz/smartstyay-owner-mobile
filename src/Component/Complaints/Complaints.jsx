@@ -837,7 +837,7 @@ dropdownItemText: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: 250,
+    paddingBottom: 120,
   },
 
   image: {

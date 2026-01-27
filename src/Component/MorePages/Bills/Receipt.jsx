@@ -28,7 +28,7 @@ import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png";
-import EmptyFloor from "../../../Assets/Images/Empty_floor.png"
+import EmptyFloor from "../../../Assets/Images/Empty_state.png"
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import Download from "../../../Assets/Images/download.png";
@@ -309,6 +309,20 @@ const handleDeleteReceipt = async () => {
     );
   };
 
+  const EmptyReceiptState = () => (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={EmptyFloor}
+      style={styles.emptyImage}
+      resizeMode="contain"
+    />
+    <Text style={styles.emptyText}>
+      No Receipts Found
+    </Text>
+  </View>
+);
+
+
 const renderItem = ({ item }) => {
   return (
     <View style={styles.row}>
@@ -404,21 +418,21 @@ const renderItem = ({ item }) => {
    
       </View>
 
-  <FlatList
+ <FlatList
   data={receiptsList || []}
   renderItem={renderItem}
   keyExtractor={(item) => item.transactionId}
   showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    flexGrow: 1,        
+    paddingBottom: 120,
+  }}
+  ListEmptyComponent={
+    !loading && <EmptyReceiptState />
+  }
 />
 
-{(!receiptsList || receiptsList.length === 0) && !loading && (
-  <View style={{ alignItems: "center", marginTop: 80 }}>
-    <Image source={EmptyFloor} style={{ width: 120, height: 120 }} />
-    <Text style={{ marginTop: 10, color: "#777" }}>
-      No Receipts Found
-    </Text>
-  </View>
-)}
+
 
 
       <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
@@ -1229,5 +1243,22 @@ initialText: {
   fontWeight: "700",
   color: "#374151",  // dark grey
 },
+emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+emptyImage: {
+  width: 250,
+  height: 180,
+},
+
+emptyText: {
+  marginTop: 12,
+  fontSize: 14,
+  color: "#777",
+},
+
 
 });
