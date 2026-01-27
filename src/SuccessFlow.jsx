@@ -67,6 +67,9 @@ import ConfirmMPin from "../src/Component/CreateAccount/ConfirmPin";
 import CustomerOverviewScreen from "../src/Component/Customer/CustomerOverview/CustomerOverviewSheet"
 import Reports from  "../src/Component/MorePages/Reports/Reports";
 import FinalSettlementScreen from "../src/Component/Customer/FinalSettlementNew"
+import InvoiceRegister from "../src/Component/MorePages/Reports/InvoiceRegister"
+import TenantRegister from "../src/Component/MorePages/Reports/TenantRegister"
+import ExpenseRegister from "../src/Component/MorePages/Reports/ExpenseRegister"
 
 const SuccessFlow = (props) => {
 
@@ -152,6 +155,9 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="BookingCheckIn" component={BookingCheckIn} />
                     <Navigation.Screen name="PG" component={PGPageFull} />
                     <Navigation.Screen name="Reports" component={Reports} />
+                    <Navigation.Screen name="InvoiceRegister" component={InvoiceRegister} />
+                    <Navigation.Screen name="TenantRegister" component={TenantRegister} />
+                    <Navigation.Screen name="ExpenseRegister" component={ExpenseRegister} />
                      <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
                       <Navigation.Screen name="FinalSettlementScreen" component={FinalSettlementScreen} />
 
