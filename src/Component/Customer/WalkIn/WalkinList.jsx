@@ -232,9 +232,24 @@ const handleAddTenant = () => {
 
           {filteredWalkins.map((item) => (
             <View key={item.customerId} style={styles.row}>
-              <View style={styles.avatarBox}>
+              {/* <View style={styles.avatarBox}>
                 <Image source={UserIcon} style={styles.avatar} />
-              </View>
+              </View> */}
+              <View style={styles.avatarBox}>
+  {item?.profilePic ? (
+    <Image
+      source={{ uri: item.profilePic }}
+      style={styles.avatarImage}
+    />
+  ) : (
+    <View style={styles.initialCircle}>
+      <Text style={styles.initialText}>
+        {item?.initials || item?.fullName?.charAt(0)}
+      </Text>
+    </View>
+  )}
+</View>
+
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.fullName}</Text>
@@ -944,5 +959,37 @@ addBtn: {
     color: "#fff",
     fontWeight: "600",
   },
+  avatarBox: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: "#E5E7EB",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+  overflow: "hidden",
+},
+
+avatarImage: {
+  width: "100%",
+  height: "100%",
+  borderRadius: 24,
+},
+
+initialCircle: {
+  width: "100%",
+  height: "100%",
+  borderRadius: 24,
+  backgroundColor: "#2563EB",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+initialText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700",
+},
+
 
 });

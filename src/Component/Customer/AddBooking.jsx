@@ -7,7 +7,7 @@ import {
   ScrollView,
   TextInput,
   Image,
-  Platform, TouchableWithoutFeedback,KeyboardAvoidingView,BackHandler
+  Platform, TouchableWithoutFeedback,KeyboardAvoidingView,BackHandler,Keyboard
 } from "react-native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
@@ -298,11 +298,15 @@ const [datePickerTop, setDatePickerTop] = useState(0);
         <TouchableOpacity
   ref={bookingDateRef}
   onPress={() => {
+  Keyboard.dismiss();           // ✅ CLOSE KEYBOARD
+  setTimeout(() => {            // ✅ wait keyboard animation
     bookingDateRef.current.measureInWindow((x, y, width, height) => {
-      setDatePickerTop(y + height + 8);   // ✅ CORRECT
+      setDatePickerTop(y + height + 8);
       setShowDatePicker(true);
     });
-  }}
+  }, 150);
+}}
+
   style={styles.inputBox}
 >
 
@@ -342,12 +346,16 @@ const [datePickerTop, setDatePickerTop] = useState(0);
           > */}
        <TouchableOpacity
   ref={joiningDateRef}
-  onPress={() => {
+onPress={() => {
+  Keyboard.dismiss();           // ✅ CLOSE KEYBOARD
+  setTimeout(() => {
     joiningDateRef.current.measureInWindow((x, y, width, height) => {
-      setDatePickerTop(y + height + 8);   // ✅ CORRECT
+      setDatePickerTop(y + height + 8);
       setShowJoinDatePicker(true);
     });
-  }}
+  }, 150);
+}}
+
   style={styles.inputBox}
 >
 

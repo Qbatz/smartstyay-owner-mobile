@@ -42,16 +42,25 @@ const stateInputRef = useRef(null);
             quality: 0.7,
         };
 
-        launchImageLibrary(options, (response) => {
-            if (response.didCancel) {
-                console.log('User cancelled');
-            } else if (response.errorMessage) {
-                console.log('Error:', response.errorMessage);
-            } else {
-                const source = { uri: response.assets[0].uri };
-                setSelectedImage(source);
-            }
-        });
+       launchImageLibrary(options, (response) => {
+  if (response.didCancel) return;
+
+  if (response.errorCode) {
+    console.log("ImagePicker Error:", response.errorMessage);
+    return;
+  }
+
+  if (response.assets && response.assets.length > 0) {
+    const asset = response.assets[0];
+
+    setSelectedImage({
+      uri: asset.uri,
+      type: asset.type,
+      name: asset.fileName || "profile.jpg",
+    });
+  }
+});
+
     };
 
     useFocusEffect(
@@ -371,10 +380,10 @@ else {
 
 
                                 <View style={styles.profileWrapper}>
-                                    <Image
-                                        source={selectedImage ? selectedImage : Profile}
-                                        style={styles.profileImage}
-                                    />
+                                  <Image
+  source={selectedImage?.uri ? { uri: selectedImage.uri } : Profile}
+  style={styles.profileImage}
+/>
 
 
                                     {/* <TouchableOpacity style={styles.editIconWrapper}>
