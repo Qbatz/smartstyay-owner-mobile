@@ -875,7 +875,7 @@ const TabButton = ({ title }) => {
            keyboardShouldPersistTaps="always"
              keyboardDismissMode="none"
       >
-        <RenderForm />
+        {RenderForm()} 
       </ScrollView>
 
       {errors.common && (
