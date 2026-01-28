@@ -3054,17 +3054,16 @@ navigation.navigate("CancelNotice")
         markingType="custom"
         markedDates={paidMarkedDates}
         current={
-          paidDate
-            ? paidDate.format("YYYY-MM-DD")
-            : today.format("YYYY-MM-DD")
-        }
-        onDayPress={(day) => {
-          if (paidMarkedDates[day.dateString]?.disabled) return;
+    paidDate
+      ? dayjs(paidDate).format("YYYY-MM-DD")
+      : today.format("YYYY-MM-DD")
+  }
+      onDayPress={(day) => {
+    if (paidMarkedDates[day.dateString]?.disabled) return;
 
-          // setPaidDate(dayjs(day.dateString));
-           setPaidDate(new Date(day.dateString)); 
-          setOpenPaidDate(false);
-        }}
+    setPaidDate(new Date(day.dateString))
+    setOpenPaidDate(false);
+  }}
         theme={{
           todayTextColor: "#2563EB",
           selectedDayBackgroundColor: "#2563EB",
@@ -3092,15 +3091,17 @@ navigation.navigate("CancelNotice")
         //     ? refundDate.format("YYYY-MM-DD")
         //     : today.format("YYYY-MM-DD")
         // }
-        current={
-         refundDate? dayjs(refundDate).format("YYYY-MM-DD") : today.format("YYYY-MM-DD")
-            }
+      current={
+  refundDate
+    ? dayjs(refundDate).format("YYYY-MM-DD")
+    : today.format("YYYY-MM-DD")
+}
 
         onDayPress={(day) => {
           if (refundMarkedDates[day.dateString]?.disabled) return;
 
           // setRefundDate(dayjs(day.dateString));
-          setRefundDate(new Date(day.dateString));
+        setRefundDate(new Date(day.dateString)); 
           setOpenRefundDate(false);
         }}
       />

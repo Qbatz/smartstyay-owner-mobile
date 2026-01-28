@@ -55,7 +55,7 @@ export default function RoomDetails({route, navigation }) {
       ]
     : null;
 
-    console.log("currentreading", currentReadingData );
+    console.log("currentreading", roomData );
     
 
 
@@ -250,12 +250,15 @@ const handleEditRoomReading = (data) => {
   setIsEditMode(true);
   setEditReadingData(data);
 
+  console.log("editdata", data);
+  
+
   setInitialValues({
-    reading: data.reading,
+    reading: roomData?.currentReading,
     date: data.entryDate,
   });
 
-  setCurrentReading(String(data.reading));
+  setCurrentReading(String(roomData?.currentReading));
 
   setReadingDate(
     dayjs(data.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
@@ -1027,7 +1030,7 @@ const handleConfirmReadingDelete = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45},
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45 ,  fontFamily:'Gilroy-Semibold'},
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
@@ -1110,7 +1113,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  monthText: { fontSize: 15, fontWeight: "700" },
+  monthText: { fontSize: 15, fontWeight: "700",  fontFamily:'sans-serif' },
   unitTag: {
     backgroundColor: "#FFF4D7",
     alignSelf: "flex-start",
@@ -1496,6 +1499,7 @@ deleteTitle: {
   fontWeight: "700",
   color: "#111",
   marginBottom: 10,
+  fontFamily:'Gilroy-Semibold'
 },
 
 deleteSub: {

@@ -44,7 +44,7 @@ const updateElectricity = async (hostelId, unitPrice) => {
 
       const body = { unitPrice };
       const axios = getAxios();
-      const res = await getAxios.put(
+      const res = await AxiosConfig.put(
         `/v2/hostel/electricity/${hostelId}`,
         body,
         {
@@ -55,11 +55,14 @@ const updateElectricity = async (hostelId, unitPrice) => {
         }
       );
 
+      console.log("res", res);
+      
+
       console.log("UPDATE EB SUCCESS →", res.data);
       return { success: true, data: res.data };
 
     } catch (err) {
-      console.log("UPDATE EB ERROR →", err.response?.data);
+      console.log("UPDATE EB ERROR →", err);
       return { success: false, data: err.response?.data };
     }
   };
