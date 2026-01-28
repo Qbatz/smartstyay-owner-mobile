@@ -503,7 +503,7 @@ const refundPan = useRef(
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       Animated.timing(refundSheetY, {
-        toValue: -e.endCoordinates.height + 30,
+        toValue: -e.endCoordinates.height + 50,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -527,7 +527,7 @@ const refundPan = useRef(
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       Animated.timing(recordSheetY, {
-        toValue: -e.endCoordinates.height + 90,
+        toValue: -e.endCoordinates.height + 60,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -861,15 +861,10 @@ const handlePaidAmountChange = (value) => {
 const formatDateForPayload = (date) => {
   if (!date) return null;
 
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60000);
-
-  const day = String(localDate.getDate()).padStart(2, "0");
-  const month = String(localDate.getMonth() + 1).padStart(2, "0");
-  const year = localDate.getFullYear();
-
-  return `${day}-${month}-${year}`;
+  // works for dayjs & Date
+  return dayjs(date).format("DD-MM-YYYY");
 };
+
 
 const handleSaveRecordPayment = async () => {
   let isValid = true;
@@ -3066,7 +3061,8 @@ navigation.navigate("CancelNotice")
         onDayPress={(day) => {
           if (paidMarkedDates[day.dateString]?.disabled) return;
 
-          setPaidDate(dayjs(day.dateString));
+          // setPaidDate(dayjs(day.dateString));
+           setPaidDate(new Date(day.dateString)); 
           setOpenPaidDate(false);
         }}
         theme={{
@@ -3091,15 +3087,20 @@ navigation.navigate("CancelNotice")
       <Calendar
         markingType="custom"
         markedDates={refundMarkedDates}
+        // current={
+        //   refundDate
+        //     ? refundDate.format("YYYY-MM-DD")
+        //     : today.format("YYYY-MM-DD")
+        // }
         current={
-          refundDate
-            ? refundDate.format("YYYY-MM-DD")
-            : today.format("YYYY-MM-DD")
-        }
+         refundDate? dayjs(refundDate).format("YYYY-MM-DD") : today.format("YYYY-MM-DD")
+            }
+
         onDayPress={(day) => {
           if (refundMarkedDates[day.dateString]?.disabled) return;
 
-          setRefundDate(dayjs(day.dateString));
+          // setRefundDate(dayjs(day.dateString));
+          setRefundDate(new Date(day.dateString));
           setOpenRefundDate(false);
         }}
       />
