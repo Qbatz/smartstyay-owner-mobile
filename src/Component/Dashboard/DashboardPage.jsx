@@ -15,8 +15,7 @@ import {
   TouchableWithoutFeedback
 } from "react-native";
 import { Animated, Easing } from "react-native";
-
-
+import SubscriptionBanner from "./SubscriptionBannerAlert"
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import PgImg from '../../Assets/Images/PgImg.png'
@@ -45,6 +44,7 @@ import UpdatesScreen from '../Dashboard/Update';
 import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
 import { CommonContexts } from "../../Context/CommonContext";
 import { LoginContexts } from "../../Context/LoginContext";
+import { PGContext } from "../../Context/PGContext";
 import ProfileDrawer from "./ProfileClickScreen";
 import AddTenant from "../Customer/AddTenants";
 
@@ -74,6 +74,16 @@ export default function DashboardScreen({initialParams}) {
   
  const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
   const login = useContext(LoginContexts);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+
+useEffect(() => {
+  if(activeHostelId){
+  getParticularHostelDetails(activeHostelId);
+  }
+}, [activeHostelId]);
+
+console.log("PGdetails", PGDetails);
+
 
   useEffect(() => {
   retriveData("token").then(t => console.log("TOKEN:", t));
@@ -81,6 +91,92 @@ export default function DashboardScreen({initialParams}) {
 
 const scaleAnim = useRef(new Animated.Value(1)).current;
 const rotateAnim = useRef(new Animated.Value(0)).current;
+
+
+const [bannerText, setBannerText] = useState("");
+
+const [showBanner, setShowBanner] = useState(false);
+const [bannerColor, setBannerColor] = useState("");
+const bannerDismissedRef = useRef(false);
+
+
+useEffect(() => {
+  if (!PGDetails) return;
+
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+  if (bannerDismissedRef.current) return;
+  setShowBanner(false);
+
+  // 🔴 EXPIRED
+  if (!isSubscriptionActive || remainingDaysLeft <= 0) {
+    setShowBanner(true);
+    setBannerColor("#DC2626"); // RED
+    setBannerText(
+      "⚠️ Subscription expired. Renew now to continue using SmartStay."
+    );
+    return;
+  }
+
+  // 🔴 1 DAY LEFT
+  if (remainingDaysLeft === 1) {
+    setShowBanner(true);
+    setBannerColor("#DC2626"); // RED
+    setBannerText(
+      "⚠️  Subscription expires tomorrow. Renew immediately to avoid interruption."
+    );
+    return;
+  }
+
+  // 🟠 2–7 DAYS LEFT
+  if (remainingDaysLeft <= 7) {
+    setShowBanner(true);
+    setBannerColor("#F59E0B"); // ORANGE
+    setBannerText(
+      `⏰ Subscription expires in ${remainingDaysLeft} days. Renew soon.`
+    );
+  }
+}, [PGDetails]);
+
+const getSubscriptionCopy = (PGDetails) => {
+  if (!PGDetails) return null;   // ✅ guard
+
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+  if (!isSubscriptionActive || remainingDaysLeft <= 0) {
+    return {
+      title: "Subscription Expired",
+      subtitle:
+        "Your SmartStay subscription has expired. Please renew now to continue using all features without interruption.",
+    };
+  }
+
+  if (remainingDaysLeft === 1) {
+    return {
+      title: "Subscription Expiring Tomorrow",
+      subtitle:
+        "Your SmartStay subscription will expire tomorrow. Renew now to avoid service disruption.",
+    };
+  }
+
+  if (remainingDaysLeft <= 7) {
+    return {
+      title: "Subscription Expiring Soon",
+      subtitle:
+        `Your SmartStay subscription will expire in ${remainingDaysLeft} days. Renew soon to ensure uninterrupted service.`,
+    };
+  }
+
+  return null;
+};
+
+const copy = getSubscriptionCopy(PGDetails);
+
+const handleCloseBanner = () => {
+  bannerDismissedRef.current = true; 
+  setShowBanner(false);
+};
+
+
 
 useEffect(() => {
   Animated.loop(
@@ -497,6 +593,9 @@ console.log("profile", getProfileInitial);
 
 
   return (
+    <>
+    
+   
     <View style={[styles.safe, { paddingTop: insets.top }]}>
 
       <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
@@ -1220,6 +1319,28 @@ console.log("profile", getProfileInitial);
       />
 
     </View>
+
+
+
+
+
+<SubscriptionBanner
+  visible={showBanner && !!copy}   // ✅ important
+  title={copy?.title}
+  subtitle={copy?.subtitle}
+  primaryText="Renew now"
+  onClose={handleCloseBanner}
+/>
+
+
+{/* {showBanner && (
+  <SubscriptionBanner
+    text={bannerText}
+    bgColor="#DC2626" // Red
+  />
+)} */}
+
+ </>
   );
 }
 
