@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect,useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Animated,
   TextInput,
   Image,
-  SafeAreaView,
+  SafeAreaView,BackHandler,Modal,Platform,KeyboardAvoidingView,
 } from "react-native";
 import Delete from "../../Assets/Images/remove.png";
 import dayjs from "dayjs";
@@ -17,28 +17,113 @@ import DownArrow from "../../Assets/Images/direction-down.png";
 import { useCustomer } from "../../Context/CustomerContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import AddRoomReadingSheet from "../Customer/AddRoomReadingSheet";
+import { useFocusEffect } from '@react-navigation/native';
+import RoomIcon from "../../Assets/Images/Room_Icon.png";
+import BedIcon from "../../Assets/Images/Bed_Icon.png";
+import EditIcon from "../../Assets/Images/edit.png";
+import { Calendar } from "react-native-calendars";
+import SuccessModal from "../../ToastFile/ToastPage";
+
 
 
 
 export default function FinalSettlementScreen({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
-
+ const { getSettlementByCustomerId,submitSettlement } = useCustomer();
   const [openUnpaid, setOpenUnpaid] = useState(true);
   const [openRefundRent, setOpenRefundRent] = useState(false);
   const [openEBill, setOpenEBill] = useState(true);
-
+const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [settlementDetails, setSettlementDetails] = useState("");
   const [showRoomReadingSheet, setShowRoomReadingSheet] = useState(false);
+  const [openCheckoutCalendar, setOpenCheckoutCalendar] = useState(false);
+  const [showCheckoutPicker, setShowCheckoutPicker] = useState(false);
+  const [selectedPendingEb,setSelectedPendingEb] = useState("")
+   const [ReturnAmount, setReturnAmount] = useState('')
+   const [showDetails, setShowDetails] = useState(false);
+   const [showRefundpay,setShowRefundpay] = useState(false)
+const scrollRef = useRef(null);
 
+
+  //    useEffect(() => {
+  //    if (!selectedItem && !selectedBed) return;
+   
+  //    const fetchSettlement = async () => {
+  //      const customerId =
+  //        selectedItem?.customerId || selectedBed?.currentTenantInfo[0]?.tenetId;
+   
+  //      const leavingDate = actualCheckoutDate || dayjs().format("DD-MM-YYYY"); // ✅
+   
+  //      const res = await getSettlementByCustomerId(customerId, leavingDate);
+   
+  //      if (res.success) {
+  //        setSettlementDetails(res.data);
+  //      } else {
+  //   setModalType("error");
+  //   setMessage(res.message || "Failed to load settlement");
+  //   setShowSuccess(true);
+  //   setTimeout(() => setShowSuccess(false), 800);
+  // }
+  //    };
+   
+  //    fetchSettlement();
+  //  }, [selectedItem, selectedBed, actualCheckoutDate]);
+
+
+
+ 
+const fetchSettlement = async (date = actualCheckoutDate) => {
+  if (!selectedItem && !selectedBed) return;
+
+  const customerId =
+    selectedItem?.customerId ||
+    selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+  const leavingDate = date || dayjs().format("DD-MM-YYYY");
+
+  const res = await getSettlementByCustomerId(customerId, leavingDate);
+
+  if (res.success) {
+    setSettlementDetails(res.data);
+  } else {
+    setModalType("error");
+    setMessage(res.message || "Failed to load settlement");
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 800);
+  }
+};
+useEffect(() => {
+  if (selectedItem || selectedBed) {
+    fetchSettlement();
+  }
+}, [selectedItem, selectedBed, actualCheckoutDate]);
+
+
+
+
+ 
+
+
+  console.log('selectedBed',selectedBed)
+  console.log("selectedItem",selectedItem)
 
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
   );
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
-  const { getSettlementByCustomerId } = useCustomer();
+ 
+  const onCheckoutDatePick = (event, selected) => {
+    if (Platform.OS === "android") setShowCheckoutPicker(false);
+    if (selected) {
+      const formatted = dayjs(selected).format("DD/MM/YYYY");
+      setCheckoutDate(formatted);
+    }
+  };
 
   const maintenanceAlreadyUsed = extraCharges.some(
     (c) => c.type === "Maintenance" && c.isDefault === false
@@ -89,26 +174,33 @@ export default function FinalSettlementScreen({ navigation, route }) {
   });
 
   // ✅ API CALL (Same as your code)
+  
+const userEnteredDeductionsTotal = extraCharges
+    .filter(item => !item.isDefault)
+    .reduce((sum, item) => {
+      const amt = Number(item.amount);
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
   useEffect(() => {
-    if (!selectedItem && !selectedBed) return;
-
-    const fetchSettlement = async () => {
-      const customerId =
-        selectedItem?.customerId || selectedBed?.currentTenantInfo?.[0]?.tenetId;
-
-      const leavingDate = actualCheckoutDate || dayjs().format("DD-MM-YYYY");
-
-      const res = await getSettlementByCustomerId(customerId, leavingDate);
-
-      if (res.success) {
-        setSettlementDetails(res.data);
-      } else {
-        alert(res.message || "Failed to load settlement");
-      }
-    };
-
-    fetchSettlement();
-  }, [selectedItem, selectedBed, actualCheckoutDate]);
+    if (!settlementDetails?.settlementInfo) return;
+  
+    const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+  
+    let finalAmount = 0;
+  
+    if (amountTobePaid < 0) {
+      finalAmount = isRefundable
+        ? amountTobePaid + userEnteredDeductionsTotal
+        : amountTobePaid - userEnteredDeductionsTotal;
+    } else {
+      finalAmount = isRefundable
+        ? amountTobePaid - userEnteredDeductionsTotal
+        : amountTobePaid + userEnteredDeductionsTotal;
+    }
+  
+    setReturnAmount(finalAmount);
+  }, [settlementDetails, userEnteredDeductionsTotal]); 
+   const isNegative = Number(ReturnAmount) < 0;
 
   // ✅ Map default deductions
   useEffect(() => {
@@ -130,6 +222,27 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
     setExtraCharges(mappedCharges);
   }, [settlementDetails]);
+    useFocusEffect(
+      useCallback(() => {
+        const onBackPress = () => {
+  
+  
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+            return true;
+          }
+  
+          return false;
+        };
+  
+        const subscription = BackHandler.addEventListener(
+          "hardwareBackPress",
+          onBackPress
+        );
+  
+        return () => subscription.remove();
+      }, [navigation])
+    );
 
   // ✅ Add Non Refund charge
   const addCharge = () => {
@@ -177,8 +290,114 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
     setOpenDropdownId(null);
   };
+    const validateExtraCharges = () => {
+  let valid = true;
+
+  const updated = extraCharges.map((e) => {
+    let titleError = "";
+    let amountError = "";
+
+    const titleFilled = e.title?.trim()?.length > 0;
+    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+    const amt = Number(e.amount);
+
+   
+    if (!e.type) {
+      return { ...e, titleError: "", amountError: "" };
+    }
+
+   
+    if (e.type === "Maintenance") {
+      if (!amountFilled) {
+        amountError = "Please enter maintenance amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError: "", amountError };
+    }
+
+  
+    if (e.type === "Others") {
+    
+      if (!titleFilled && !amountFilled) {
+        return { ...e, titleError: "", amountError: "" };
+      }
+
+      if (!titleFilled) {
+        titleError = "Please enter reason";
+        valid = false;
+      }
+
+      if (!amountFilled) {
+        amountError = "Please enter amount";
+        valid = false;
+      } else if (isNaN(amt) || amt <= 0) {
+        amountError = "Amount must be greater than 0";
+        valid = false;
+      }
+
+      return { ...e, titleError, amountError };
+    }
+
+    return { ...e, titleError: "", amountError: "" };
+  });
+
+  setExtraCharges(updated);
+  return valid;
+};
+
+ const extraDeductionsPayload = extraCharges
+    .filter(item => !item.isDefault && Number(item.amount) > 0)
+    .map(item => ({
+      item: item.type === "Others"
+        ? item.title?.trim()
+        : item.type,        // 👈 Maintenance / DueAmount
+      amount: Number(item.amount),
+    }));
+  const handleGenerate = async () => {
+     const chargeValid = validateExtraCharges();
+  if (!chargeValid) return;
+    const customerId =
+      selectedItem?.customerId ||
+      selectedBed?.currentTenantInfo[0]?.tenetId;
+
+
+    const payload = extraDeductionsPayload;
+
+
+
+    const res = await submitSettlement(customerId, payload);
+
+    if (res.success) {
+
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      navigation.goBack();
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1000);
+
+    } else {
+
+      setModalType("warning");
+      setMessage(res.message);
+      setShowSuccess(true);
+    }
+  };
 
   return (
+    <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+>
     <SafeAreaView style={styles.safeArea}>
       {/* ✅ HEADER */}
       <View style={styles.topHeader}>
@@ -188,53 +407,97 @@ export default function FinalSettlementScreen({ navigation, route }) {
         <Text style={styles.headerTitle}>Final Settlement</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 160 }}>
+    <ScrollView
+    ref={scrollRef}
+  contentContainerStyle={{ paddingBottom: 250 }}
+  keyboardShouldPersistTaps="handled"
+>
         {/* ✅ TOP CUSTOMER CARD */}
         <View style={styles.customerCard}>
-          <Text style={styles.customerName}>Rajesh Kumar</Text>
+          <Text style={styles.customerName}>{settlementDetails?.customerInfo?.fullName}</Text>
+ 
 
+                    <View style={styles.smallRow} >
+                                           <View style={styles.badge}>
+                                             <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed.floorName}</Text>
+                                           </View>
+                   
+                                           <Image source={RoomIcon} style={styles.smallIcon} />
+                                           <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
+                   
+                                           <Image source={BedIcon} style={styles.smallIcon} />
+                                           <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text>
+                                         </View>
+
+                   
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.smallLabel}>Joined Date</Text>
-              <Text style={styles.value}>22/10/2024</Text>
+              <Text style={styles.value}>{settlementDetails?.customerInfo?.joiningDate}</Text>
             </View>
             <View>
               <Text style={styles.smallLabel}>Req Checkout Date</Text>
-              <Text style={styles.value}>24/08/2025</Text>
+              <Text style={styles.value}>{settlementDetails?.stayInfo?.noticeDate}</Text>
             </View>
           </View>
 
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.smallLabel}>Advance Amount</Text>
-              <Text style={styles.value}>₹ 8,000</Text>
+              <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.advanceAmount}</Text>
             </View>
             <View>
               <Text style={styles.smallLabel}>Monthly Rent</Text>
-              <Text style={styles.value}>₹ 4,000</Text>
+              <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.rentAmount}</Text>
             </View>
           </View>
 
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.smallLabel}>Booking Amount</Text>
-              <Text style={styles.value}>₹ 500</Text>
+              <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.bookingAmount}</Text>
             </View>
             <View>
               <Text style={styles.smallLabel}>Advance paid</Text>
-              <Text style={styles.value}>₹ 6,000</Text>
+              <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.advancePaidAmount}</Text>
             </View>
           </View>
 
           <View style={styles.rowBetween}>
-            <View>
+            {/* <View>
               <Text style={styles.smallLabel}>Actual Checkout Date</Text>
               <Text style={styles.value}>30/11/2025</Text>
+            </View> */}
+                        <View style={styles.gridCol}>
+              <Text style={styles.gridLabel}>Actual Checkout Date</Text>
+            
+              <View style={styles.checkoutRow}>
+                <Text style={styles.gridValue}>
+                  {actualCheckoutDate || "DD-MM-YYYY"}
+                </Text>
+            
+                <TouchableOpacity
+                  style={styles.editBtn}
+                  onPress={() => setOpenCheckoutCalendar(true)}
+                  activeOpacity={0.7}
+                >
+                  <Image source={EditIcon} style={styles.editIcon} />
+                </TouchableOpacity>
+              </View>
             </View>
-            <View>
-              <Text style={styles.smallLabel}>Status</Text>
-              <Text style={styles.refundText}>Refund</Text>
-            </View>
+             <View style={[styles.gridCol, { marginLeft: 30 }]}>
+                              <Text style={styles.gridLabel}>Status</Text>
+                              <Text
+                                style={[
+                                  styles.gridValue,
+                                  { color: ReturnAmount > 0 ? "red" : "#038C3D" },
+                                ]}
+                                // style={styles.gridValue}
+                                //  style={{ color: ReturnAmount > 0 ? "red" : "#038C3D", fontSize: "0.875rem", fontFamily: "Gilroy", fontWeight: 400, textAlign: "center" }}
+                              >
+                               {ReturnAmount > 0 ? "Pending" : "Refund"}
+                              </Text>
+                            </View>
           </View>
         </View>
 
@@ -250,68 +513,162 @@ export default function FinalSettlementScreen({ navigation, route }) {
               style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
             />
             <Text style={styles.cardTitle}>Unpaid Invoices</Text>
-            <Text style={styles.amountText}>₹ 1,200</Text>
+            <Text style={styles.amountText}>  ₹{
+                                            settlementDetails?.unpaidInvoices?.reduce(
+                                                (sum, inv) => sum + Number(inv.payableAmount || 0),
+                                                0
+                                            ) || 0
+                                        }</Text>
           </TouchableOpacity>
 
           {openUnpaid && (
+           
             <View style={styles.accordionBody}>
-              <View style={styles.tableHeader}>
-                <Text style={[styles.th, { flex: 1 }]}>INVOICE.NO</Text>
-                <Text style={[styles.th, { flex: 1 }]}>TYPE</Text>
-                <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                  INVOICE AMOUNT
-                </Text>
-              </View>
 
-              <View style={styles.invoiceRow}>
-                <Text style={[styles.invText, { flex: 1, color: "#1D4ED8" }]}>
-                  INV001
-                </Text>
-                <Text style={[styles.invText, { flex: 1 }]}>Manual</Text>
-                <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                  ₹ 500.00
-                </Text>
-              </View>
+  <View style={styles.tableHeader}>
+  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+  <Text style={[styles.th, { flex: 1 }]}>Type</Text>
+  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+    Invoice Amount
+  </Text>
+</View>
 
-              <View style={styles.invoiceRow}>
-                <Text style={[styles.invText, { flex: 1, color: "#1D4ED8" }]}>
-                  INV654
-                </Text>
-                <Text style={[styles.invText, { flex: 1 }]}>Manual</Text>
-                <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                  ₹ 700.00
-                </Text>
-              </View>
-            </View>
+
+  {/* ✅ DATA EXISTS */}
+  {Array.isArray(settlementDetails?.unpaidInvoices) &&
+  settlementDetails.unpaidInvoices.length > 0 ? (
+    <>
+      {settlementDetails.unpaidInvoices.map((item, index) => (
+        <View key={index} style={styles.invoiceRow}>
+          <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+            {item.invoiceNumber}
+          </Text>
+          <Text style={[styles.invText, { flex: 1 }]}>
+            {item.type}
+          </Text>
+          <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
+            ₹ {item.payableAmount}
+          </Text>
+        </View>
+      ))}
+    </>
+  ) : (
+    /* ❌ NO DATA (EMPTY STATE) */
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyText}>No pending invoices</Text>
+    </View>
+  )}
+
+  {/* TOTAL ROW (always show) */}
+  <View style={styles.totalInvoiceRow}>
+    <Text style={styles.totalText}>Total</Text>
+    <Text style={styles.totalAmount}>
+      ₹{" "}
+      {Array.isArray(settlementDetails?.unpaidInvoices)
+        ? settlementDetails.unpaidInvoices.reduce(
+            (sum, i) => sum + Number(i.payableAmount || 0),
+            0
+          )
+        : 0}
+    </Text>
+  </View>
+</View>
+
           )}
         </View>
 
         {/* ✅ REFUNDABLE RENT (INLINE ACCORDION) */}
-        <View style={styles.accordionCard}>
-          <TouchableOpacity
-            style={styles.accordionHeader}
-            onPress={() => setOpenRefundRent(!openRefundRent)}
-            activeOpacity={0.8}
-          >
-            <Animated.Image
-              source={DownArrow}
-              style={[styles.arrowImg, { transform: [{ rotate: rentArrow }] }]}
-            />
-            <Text style={styles.cardTitle}>Refundable Rent</Text>
-            <Text style={styles.amountText}>₹ 3,200</Text>
-          </TouchableOpacity>
+          <View style={styles.refundCard}>
 
-          {openRefundRent && (
-            <View style={styles.accordionBody}>
-              <Text style={styles.sectionLabel}>Rent Details</Text>
-              <Text style={styles.descText}>
-                Refundable rent amount calculated.
-              </Text>
-            </View>
-          )}
+  {/* HEADER */}
+  <TouchableOpacity
+    style={styles.refundHeader}
+    onPress={() => setOpenRefundRent(!openRefundRent)}
+    activeOpacity={0.7}
+  >
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Image
+        source={DownArrow}
+        style={[
+          styles.arrow,
+          openRefundRent && { transform: [{ rotate: "180deg" }] },
+        ]}
+      />
+      <Text style={styles.refundTitle}>Refundable Rent</Text>
+    </View>
+
+    <Text style={styles.refundAmount}>
+      ₹{" "}
+      {Number(
+        settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
+      ).toLocaleString("en-IN")}
+    </Text>
+  </TouchableOpacity>
+
+  {openRefundRent && (
+    <View style={styles.refundBody}>
+
+      {/* LAST RENT */}
+      <View style={styles.rowBetween}>
+        <Text style={styles.descText}>
+          Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
+        </Text>
+
+        <Text style={styles.amountText}>
+          ₹{" "}
+          {Number(
+            settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
+          ).toLocaleString("en-IN")}
+        </Text>
+      </View>
+
+      {/* ACTUAL STAY */}
+      <TouchableOpacity
+        style={styles.rowBetween}
+        onPress={() => setShowDetails(!showDetails)}
+        activeOpacity={0.7}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={styles.descText}>
+            Actual Stay Days (Rent) ({settlementDetails?.currentMonthRentInfo?.stayDays} days)
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={[
+              styles.arrowSmall,
+              showDetails && { transform: [{ rotate: "180deg" }] },
+            ]}
+          />
         </View>
 
-        {/* ✅ ELECTRICITY BILL (INLINE ACCORDION) */}
+        <Text style={styles.amountText}>
+          ₹{" "}
+          {Number(
+            settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
+          ).toLocaleString("en-IN")}
+        </Text>
+      </TouchableOpacity>
+
+      {/* DETAILS */}
+      {showDetails &&
+        settlementDetails?.currentMonthRentInfo?.rentLists?.map(
+          (item, index) => (
+            <View key={index} style={styles.detailCard}>
+              <Text style={styles.linkText}>
+                {item.floorName} | {item.roomName} - {item.bedName}
+              </Text>
+
+              <Text style={styles.rightMuted}>
+                ({item.noOfDays} days × ₹{item.rent})
+              </Text>
+            </View>
+          )
+        )}
+    </View>
+  )}
+</View>
+       
         <View style={styles.accordionCard}>
           <TouchableOpacity
             style={styles.accordionHeader}
@@ -323,12 +680,12 @@ export default function FinalSettlementScreen({ navigation, route }) {
               style={[styles.arrowImg, { transform: [{ rotate: ebArrow }] }]}
             />
             <Text style={styles.cardTitle}>Electricity Bill</Text>
-            <Text style={styles.amountText}>₹ 300</Text>
+            <Text style={styles.amountText}>₹ {settlementDetails?.ebInfo?.pendingEbAmount}</Text>
           </TouchableOpacity>
 
           {openEBill && (
             <View style={styles.accordionBody}>
-              <Text style={styles.sectionLabel}>Missed Electricity</Text>
+              {/* <Text style={styles.sectionLabel}>Missed Electricity</Text>
 
               <View style={styles.ebRow}>
                 <Text style={styles.ebLeft}>Ground Floor | G005 - B03</Text>
@@ -338,52 +695,148 @@ export default function FinalSettlementScreen({ navigation, route }) {
               <View style={styles.ebRow}>
                 <Text style={styles.ebLeft}>First Floor | F002 - B01</Text>
                 <Text style={styles.ebRight}>₹ 130</Text>
-              </View>
-
-              <Text style={[styles.sectionLabel, { marginTop: 12 }]}>
-                Pending invoices
-              </Text>
-
-              {/* <View style={styles.pendingRow}>
-                <Text style={{ flex: 1 }}>First Floor | F002 - B01</Text>
-                <Text style={styles.addText}>+ Add</Text>
               </View> */}
+              {/* ✅ MISSED ELECTRICITY */}
+{settlementDetails?.ebInfo?.missedEb?.length > 0 && (
+  <Text style={styles.sectionLabel}>Missed Electricity</Text>
+)}
+
+
+{settlementDetails?.ebInfo?.missedEb?.map((item, index) => (
+  <View key={index} style={styles.ebRowWeb}>
     
+    {/* Left Info */}
+    <View style={{ flex: 1 }}>
+      <Text style={styles.ebText}>
+        {item.floorName} | {item.roomName} - {item.bedName}
+      </Text>
 
-  {/* <TouchableOpacity
-    onPress={() => {
-      navigation.navigate("RoomDetails", {
-        roomData: {
-          roomId: "YOUR_ROOM_ID",
-          roomName: "F002",
-          floorId: "YOUR_FLOOR_ID",
-          floorName: "First Floor",
-          currentReading: 0,
-          previousReading: 0,
-          consumption: 0,
-          noOfTenants: 0,
-          totalPrice: 0,
-        },
-        openAddSheet: true, // ✅ this is important
-      });
-    }}
-  >
-    <Text style={styles.addText}>+ Add</Text>
-  </TouchableOpacity> */}
-  <View style={styles.pendingRow}>
-  <Text style={{ flex: 1 }}>First Floor | F002 - B01</Text>
+      <View style={styles.dateChip}>
+        <Text style={styles.dateChipText}>
+          {item.fromDate} - {item.toDate}
+        </Text>
+      </View>
+    </View>
 
-  <TouchableOpacity onPress={() => setShowRoomReadingSheet(true)}>
-    <Text style={styles.addText}>+ Add</Text>
-  </TouchableOpacity>
-</View>
+    {/* Add Button */}
+    <TouchableOpacity
+        onPress={() => {
+          setShowRoomReadingSheet(true);
+          setSelectedPendingEb(item); // 👈 optional if needed
+        }}
+      >
+        <Text style={styles.addText}>+ Add</Text>
+      </TouchableOpacity>
+  </View>
+))}
+
+
+   <Text style={styles.sectionLabel}>Pending Invoices</Text>
+
+{settlementDetails?.ebInfo?.pendingEb?.map((item, index) => (
+  <View key={index} style={styles.ebRowWeb}>
+
+    {/* Left Info */}
+    <View style={{ flex: 1 }}>
+      <Text style={styles.ebText}>
+        {item.floorName} | {item.roomName} - {item.bedName}
+      </Text>
+
+      <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
+        <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
+          {item.fromDate} - {item.toDate}
+        </Text>
+      </View>
+    </View>
+
+    {/* Units & Amount */}
+    <View style={styles.ebRightBox}>
+      <Text style={styles.unitText}>
+        ({item.units} Units)
+      </Text>
+      <Text style={styles.amountText}>₹ {item.amount}</Text>
+    </View>
+
+  </View>
+))}
+
 
 
             </View>
           )}
         </View>
+ <View style={styles.accordionCard}>
+          <TouchableOpacity
+            style={styles.accordionHeader}
+            onPress={() => setShowRefundpay(!showRefundpay)}
+            activeOpacity={0.8}
+          >
+            <Animated.Image
+              source={DownArrow}
+              style={[styles.arrowImg, { transform: [{ rotate: ebArrow }] }]}
+            />
+            <Text style={styles.cardTitle}>Refund Payable to Tenant</Text>
+           
+          </TouchableOpacity>
 
-        {/* ✅ NON REFUNDABLE AMOUNT */}
+         {showRefundpay && (
+  <View style={styles.accordionBody}>
+
+    {/* Final Settlement Title */}
+    <Text style={styles.sectionTitle}>Final Settlement</Text>
+
+    {/* Refundable Rent */}
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Refundable Rent</Text>
+      <Text style={styles.value}>
+        ₹{" "}
+          {settlementDetails?.settlementInfo?.refundableRent}
+      </Text>
+    </View>
+
+    {/* Refundable Advance */}
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Refundable Advance</Text>
+      <Text style={styles.value}>
+        ₹ {Number(
+          settlementDetails?.settlementInfo?.refundableAdvance || 0
+        ).toFixed(2)}
+      </Text>
+    </View>
+
+    {/* Total Deductions */}
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Total Deductions</Text>
+      <Text style={styles.negative}>
+        - ₹ {Number(
+          settlementDetails?.settlementInfo?.totalDeductions || 0
+        ).toFixed(2)}
+      </Text>
+    </View>
+
+    {/* Electricity */}
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Electricity</Text>
+      <Text style={styles.negative}>
+      ₹{" " + settlementDetails?.settlementInfo?.electricityAmount}
+      </Text>
+    </View>
+
+    {/* Unpaid Invoices */}
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Unpaid Invoices</Text>
+      <Text style={styles.negative}>
+        ₹ {Number(
+          settlementDetails?.settlementInfo?.unpaidInvoiceAmount || 0
+        ).toFixed(2)}
+      </Text>
+    </View>
+
+  </View>
+)}
+
+        </View>
+        
         <View style={styles.nonRefund}>
           <View style={styles.extraHeader}>
             <Text style={styles.label}>Non Refundable Amount</Text>
@@ -425,6 +878,14 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     placeholder="Enter reason"
                     value={item.title}
                     onChangeText={(t) => updateTitle(item.id, t)}
+                    onFocus={() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: 900,   // 👈 adjust if needed
+        animated: true,
+      });
+    }, 200);
+  }}
                   />
                 ) : (
                   <View
@@ -442,17 +903,23 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     <Text style={{ color: "#999" }}>Enter amount</Text>
                   </View>
                 ) : (
-                  <TextInput
-                    editable={!item.isDefault}
-                    style={[
-                      styles.figmaRightBox,
-                      item.isDefault && { backgroundColor: "#F1F1F1" },
-                    ]}
-                    value={item.amount}
-                    placeholder="Enter Amount"
-                    keyboardType="numeric"
-                    onChangeText={(t) => updateAmount(item.id, t)}
-                  />
+                 <TextInput
+  editable={!item.isDefault}
+  style={styles.figmaRightBox}
+  value={item.amount}
+  placeholder="Enter Amount"
+  keyboardType="numeric"
+  onChangeText={(t) => updateAmount(item.id, t)}
+  onFocus={() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: 900,   // 👈 adjust if needed
+        animated: true,
+      });
+    }, 200);
+  }}
+/>
+
                 )}
               </View>
 
@@ -486,23 +953,42 @@ export default function FinalSettlementScreen({ navigation, route }) {
           ))}
         </View>
 
-        {/* ✅ TOTAL REFUND */}
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total Refund Payable</Text>
-          <Text style={styles.totalValue}>₹ 6,300</Text>
-        </View>
+
+
+
+
+
+
       </ScrollView>
 
-      {/* ✅ FIXED BOTTOM BUTTONS */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.cancelBtn}>
-          <Text style={styles.cancelTxt}>Cancel</Text>
-        </TouchableOpacity>
+    
+      <View style={styles.bottomFixed}>
+ 
+  <View style={styles.totalContainer}>
+    <Text style={styles.totalLabel}>Total Refund Payable</Text>
+    <Text
+      style={[
+        styles.totalAmount,
+        { color: isNegative ? "#D70000" : "#16A34A" },
+      ]}
+    >
+      {isNegative ? "-" : ""}₹{" "}
+      {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
+    </Text>
+  </View>
 
-        <TouchableOpacity style={styles.generateBtn}>
-          <Text style={styles.generateTxt}>Generate Bill</Text>
-        </TouchableOpacity>
-      </View>
+  {/* Buttons */}
+  <View style={styles.buttonRow}>
+    <TouchableOpacity style={styles.cancelBtn}>
+      <Text style={styles.cancelTxt}>Cancel</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.generateBtn} onPress={handleGenerate}>
+      <Text style={styles.generateTxt}>Generate Bill</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+
       <AddRoomReadingSheet
   visible={showRoomReadingSheet}
   onClose={() => setShowRoomReadingSheet(false)}
@@ -518,9 +1004,82 @@ export default function FinalSettlementScreen({ navigation, route }) {
   
     setShowRoomReadingSheet(false);
   }}
+  selectedPendingEb = {selectedPendingEb} 
+  settlementDetails = {settlementDetails}
+  selectedItem = {selectedItem}
+  selectedBed = {selectedBed}
+  fetchSettlement={fetchSettlement}
 />
-
+ {showCheckoutPicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="date"
+            display="default"
+            onChange={onCheckoutDatePick}
+          />
+        )}
+ 
     </SafeAreaView>
+    </KeyboardAvoidingView>
+      <Modal
+  transparent
+  visible={openCheckoutCalendar}
+  animationType="fade"
+  onRequestClose={() => setOpenCheckoutCalendar(false)}
+>
+  <View style={styles.calendarOverlay}>
+    <TouchableOpacity
+      style={styles.outsideTouch}
+      activeOpacity={1}
+      onPress={() => setOpenCheckoutCalendar(false)}
+    />
+
+    <View style={styles.calendarBox}>
+      <Text style={styles.calendarTitle}>Select Checkout Date</Text>
+
+      <Calendar
+        maxDate={dayjs().format("YYYY-MM-DD")} // ✅ future disabled
+        markedDates={
+          actualCheckoutDate
+            ? {
+                [dayjs(actualCheckoutDate, "DD-MM-YYYY").format("YYYY-MM-DD")]:
+                  {
+                    selected: true,
+                    selectedColor: "#2B6CF6",
+                  },
+              }
+            : {}
+        }
+
+      onDayPress={(day) => {
+  const formatted = dayjs(day.dateString).format("DD-MM-YYYY");
+
+  setActualCheckoutDate(formatted);
+  setOpenCheckoutCalendar(false);
+
+  const customerId =
+    selectedItem?.customerId ||
+    selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+  // 👇 same date select pannalum call varum
+  getSettlementByCustomerId(customerId, formatted)
+    .then((res) => {
+      if (res.success) {
+        setSettlementDetails(res.data);
+      } else {
+        setModalType("error");
+        setMessage(res.message || "Failed to load settlement");
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 800);
+      }
+    });
+}}
+
+      />
+    </View>
+  </View>
+</Modal>
+    </>
   );
 }
 
@@ -553,11 +1112,7 @@ const styles = StyleSheet.create({
   },
 
   customerName: { fontSize: 16, fontWeight: "700", marginBottom: 12 },
-  rowBetween: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
+ 
   smallLabel: { fontSize: 12, color: "#6B7280" },
   value: { fontSize: 14, fontWeight: "600", marginTop: 4 },
   refundText: { fontSize: 14, fontWeight: "700", color: "green", marginTop: 4 },
@@ -590,7 +1145,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
 
-  tableHeader: { flexDirection: "row", marginBottom: 10 },
+  
   th: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
   invoiceRow: { flexDirection: "row", paddingVertical: 10 },
   invText: { fontSize: 13, color: "#111" },
@@ -612,7 +1167,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 
-  totalLabel: { fontSize: 13, color: "#6B7280" },
+ 
   totalValue: { fontSize: 18, fontWeight: "800" },
 
   bottomBar: {
@@ -623,6 +1178,42 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
   },
+bottomFixed: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "#fff",
+  paddingHorizontal: 16,
+  paddingTop: 12,
+  paddingBottom: Platform.OS === "ios" ? 28 : 16,
+  borderTopWidth: 1,
+  borderTopColor: "#E5E7EB",
+},
+
+totalContainer: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+totalLabel: {
+  fontSize: 14,
+  color: "#6B7280",
+  fontWeight: "500",
+},
+
+totalAmount: {
+  fontSize: 20,
+  fontWeight: "800",
+},
+
+buttonRow: {
+  flexDirection: "row",
+  gap: 12,
+  paddingBottom:55
+},
 
   cancelBtn: {
     flex: 1,
@@ -636,13 +1227,13 @@ const styles = StyleSheet.create({
 
   cancelTxt: { fontSize: 15, fontWeight: "600" },
 
-  generateBtn: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    backgroundColor: "#1D4ED8",
-  },
+generateBtn: {
+  flex: 1,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: "center",
+  backgroundColor: "#1D4ED8",
+},
 
   generateTxt: { fontSize: 15, fontWeight: "700", color: "#fff" },
 
@@ -745,4 +1336,242 @@ const styles = StyleSheet.create({
     zIndex: 20,
     elevation: 10,
   },
+  smallRow: { flexDirection: "row", alignItems: "center" },
+  badge: { backgroundColor: "#FFEFCF", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
+  badgeText: { color: "black", fontSize: 12 },
+  smallIcon: { width: 16, height: 16, marginHorizontal: 4 },
+  badgeLabel: { fontSize: 13 },
+  gridCol: {
+    width: "48%",
+    flexDirection: "column",
+  },
+
+  gridLabel: {
+    color: "#6B7280",
+    fontSize: 13,
+  },
+
+  gridValue: {
+    fontWeight: "700",
+    fontSize: 14,
+    marginTop: 3,
+  },
+    checkoutRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+editBtn: {
+  padding: 6,
+  borderRadius: 8,
+  marginLeft: 10,
+  backgroundColor: "#F3F4F6",
+},
+
+editIcon: {
+  width: 18,
+  height: 18,
+  tintColor: "#111827",
+},
+calendarOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.45)",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 16,
+},
+calendarBox: {
+  width: "95%",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  elevation: 12,
+},
+
+calendarTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: 10,
+  color: "#111",
+},
+
+outsideTouch: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+ebRowWeb: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 14,
+},
+
+ebText: {
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#111827",
+},
+
+dateChip: {
+  alignSelf: "flex-start",
+  backgroundColor: "#FFF7ED",
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 12,
+  marginTop: 4,
+},
+
+dateChipText: {
+  fontSize: 12,
+  color: "#EA580C",
+  fontWeight: "600",
+},
+
+addBtnCircle: {
+  width: 28,
+  height: 28,
+  borderRadius: 14,
+  backgroundColor: "#2563EB",
+  color: "#fff",
+  textAlign: "center",
+  fontSize: 20,
+  fontWeight: "700",
+  lineHeight: 28,
+},
+
+ebRightBox: {
+  alignItems: "flex-end",
+},
+
+unitText: {
+  fontSize: 12,
+  color: "#6B7280",
+  marginBottom: 2,
+},
+emptyState: {
+  paddingVertical: 20,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+emptyText: {
+  color: "#6B7280",
+  fontSize: 14,
+  fontWeight: "500",
+},
+
+totalInvoiceRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 12,
+  paddingTop: 12,
+  borderTopWidth: 1,
+  borderTopColor: "#E5E7EB",
+},
+
+totalText: {
+  fontSize: 14,
+  fontWeight: "700",
+},
+
+totalAmount: {
+  fontSize: 14,
+  fontWeight: "700",
+},
+  linkText: {
+    color: "#2563EB",
+    fontSize: 13,
+  },
+   tableRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, justifyContent: "space-between" },
+ tableHeader: {
+  flexDirection: "row",        // ✅ IMPORTANT
+  paddingVertical: 10,
+  backgroundColor: "#FBFDFF",
+},
+
+  arrow: { width: 18, height: 18, tintColor: "#444" },
+
+ tableCellLeft: { width: "33%", color: "#1E5BFF", fontSize: 11 },
+  tableCellCenter: { width: "33%", textAlign: "center", fontSize: 11 },
+  tableCellRight: { width: "33%", textAlign: "right", fontSize: 11 },
+  tabledescription: { width: "55%", color: "#1E5BFF", fontSize: 11 },
+  tableStrip: { backgroundColor: "#FCFCFD" },
+   detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    paddingLeft: 16,
+  },
+refundCard: {
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 14,
+  backgroundColor: "#fff",
+  marginHorizontal: 16,
+  marginBottom: 14,
+},
+
+refundHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: 14,
+},
+
+refundTitle: {
+  fontSize: 14,
+  fontWeight: "700",
+  marginLeft: 6,
+},
+
+refundAmount: {
+  fontSize: 16,
+  fontWeight: "700",
+},
+
+refundBody: {
+  borderTopWidth: 1,
+  borderTopColor: "#E5E7EB",
+  padding: 14,
+},
+
+rowBetween: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+
+
+
+
+
+arrowSmall: {
+  width: 16,
+  height: 16,
+  tintColor: "#2563EB",
+  marginLeft: 6,
+},
+
+detailCard: {
+  backgroundColor: "#F8FAFC",
+  borderRadius: 10,
+  padding: 12,
+  marginTop: 6,
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+
+
+rightMuted: {
+  fontSize: 12,
+  color: "#6B7280",
+},
+
+
 });

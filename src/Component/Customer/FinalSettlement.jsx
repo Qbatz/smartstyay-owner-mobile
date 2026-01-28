@@ -326,27 +326,29 @@ const selectType = (id, type) => {
   const finalTotalDeductions = apiDeductions + userEnteredDeductionsTotal;
   const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + settlementDetails?.currentMonthRentInfo?.currentPayableRent
 
- useEffect(() => {
-  if (!settlementDetails?.settlementInfo) return;
-
-  const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
-
-  let finalAmount = 0;
-
-  if (amountTobePaid < 0) {
-    finalAmount = isRefundable
-      ? amountTobePaid + userEnteredDeductionsTotal
-      : amountTobePaid - userEnteredDeductionsTotal;
-  } else {
-    finalAmount = isRefundable
-      ? amountTobePaid - userEnteredDeductionsTotal
-      : amountTobePaid + userEnteredDeductionsTotal;
-  }
-
-  setReturnAmount(finalAmount);
-}, [settlementDetails, userEnteredDeductionsTotal]); 
+  useEffect(() => {
+    if (settlementDetails?.settlementInfo) {
+      const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
 
 
+
+
+
+
+      let finalAmount = 0;
+      if (amountTobePaid < 0) {
+        finalAmount = isRefundable
+          ? amountTobePaid + userEnteredDeductionsTotal
+          : amountTobePaid - userEnteredDeductionsTotal;
+      } else {
+        finalAmount = isRefundable
+          ? amountTobePaid - userEnteredDeductionsTotal
+          : amountTobePaid + userEnteredDeductionsTotal;
+      }
+
+      setReturnAmount(finalAmount);
+    }
+  }, [settlementDetails]);
   const isNegative = Number(ReturnAmount) < 0;
 
   const extraDeductionsPayload = extraCharges
@@ -490,26 +492,26 @@ const selectType = (id, type) => {
 
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.name}>{settlementDetails?.customerInfo?.fullName}</Text>
-                {
+                {/* {
                   settlementDetails?.currentMonthRentInfo?.rentLists?.map((item, index) => {
-                    return (
+                    return ( */}
 
-                      <View style={styles.smallRow} key={item.bedName || index}>
+                      <View style={styles.smallRow} >
                         <View style={styles.badge}>
-                          <Text style={styles.badgeText}>{item.floorName}</Text>
+                          <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed.floorName}</Text>
                         </View>
 
                         <Image source={RoomIcon} style={styles.smallIcon} />
-                        <Text style={styles.badgeLabel}>{item.roomName}</Text>
+                        <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
 
                         <Image source={BedIcon} style={styles.smallIcon} />
-                        <Text style={styles.badgeLabel}>{item.bedName}</Text>
+                        <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text>
                       </View>
 
-                    )
+                {/* //     )
 
-                  })
-                }
+                //   })
+                // } */}
 
               </View>
             </View>

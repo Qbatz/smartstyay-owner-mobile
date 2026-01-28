@@ -455,6 +455,19 @@ useEffect(() => {
       });
     }, [rooms])
   );
+useFocusEffect(
+  useCallback(() => {
+   
+    setOpenMenuRoomId(null);
+    setShowFloorMenu(false)
+
+    return () => {
+     
+      setOpenMenuRoomId(null);
+       setShowFloorMenu(false)
+    };
+  }, [])
+);
 
 
 useFocusEffect(
