@@ -329,10 +329,7 @@ for (let i = -90; i <= 90; i++) {
 </TouchableWithoutFeedback>
 
 
-<KeyboardAvoidingView
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  style={{ width: "100%" }}
->
+
         <Animated.View
           {...panResponder.panHandlers}
           style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -369,12 +366,12 @@ for (let i = -90; i <= 90; i++) {
   ref={scrollRef}
   showsVerticalScrollIndicator={false}
   keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="interactive"
+  keyboardDismissMode="on-drag"
   contentContainerStyle={{
-    paddingBottom: 70,
-    flexGrow: 1,
+    paddingBottom: keyboardOpen ? 260 : 60,
   }}
 >
+
 
 
             <Text style={styles.label}>Request Date <Text style={{color:"red"}}>*</Text></Text>
@@ -446,7 +443,7 @@ for (let i = -90; i <= 90; i++) {
 
           </View>
         </Animated.View>
-       </KeyboardAvoidingView>
+      
        
       </View>
       <Modal
