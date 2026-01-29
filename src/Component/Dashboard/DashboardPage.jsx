@@ -93,52 +93,33 @@ const scaleAnim = useRef(new Animated.Value(1)).current;
 const rotateAnim = useRef(new Animated.Value(0)).current;
 
 
-const [bannerText, setBannerText] = useState("");
 
 const [showBanner, setShowBanner] = useState(false);
-const [bannerColor, setBannerColor] = useState("");
 const bannerDismissedRef = useRef(false);
 
 
 useEffect(() => {
   if (!PGDetails) return;
 
-  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
   if (bannerDismissedRef.current) return;
-  setShowBanner(false);
 
-  // 🔴 EXPIRED
-  if (!isSubscriptionActive || remainingDaysLeft <= 0) {
-    setShowBanner(true);
-    setBannerColor("#DC2626"); // RED
-    setBannerText(
-      "⚠️ Subscription expired. Renew now to continue using SmartStay."
-    );
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+  // ❌ 8+ days → NEVER show
+  if (remainingDaysLeft > 7 && isSubscriptionActive) {
+    setShowBanner(false);
     return;
   }
 
-  // 🔴 1 DAY LEFT
-  if (remainingDaysLeft === 1) {
+  // ✅ 7 days or less OR expired
+  if (!isSubscriptionActive || remainingDaysLeft <= 7) {
     setShowBanner(true);
-    setBannerColor("#DC2626"); // RED
-    setBannerText(
-      "⚠️  Subscription expires tomorrow. Renew immediately to avoid interruption."
-    );
-    return;
-  }
-
-  // 🟠 2–7 DAYS LEFT
-  if (remainingDaysLeft <= 7) {
-    setShowBanner(true);
-    setBannerColor("#F59E0B"); // ORANGE
-    setBannerText(
-      `⏰ Subscription expires in ${remainingDaysLeft} days. Renew soon.`
-    );
   }
 }, [PGDetails]);
+;
 
 const getSubscriptionCopy = (PGDetails) => {
-  if (!PGDetails) return null;   // ✅ guard
+  if (!PGDetails) return null;
 
   const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
 
@@ -169,12 +150,36 @@ const getSubscriptionCopy = (PGDetails) => {
   return null;
 };
 
+
+const shouldShowBanner = (() => {
+  if (!PGDetails) return false;
+
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+  if (bannerDismissedRef.current) return false;
+
+  if (!isSubscriptionActive || remainingDaysLeft <= 0) return true;
+  if (remainingDaysLeft === 1) return true;
+  if (remainingDaysLeft <= 7) return true;
+
+  return false; // ⛔ 8+ days → NEVER SHOW
+})();
+
+
+// useEffect(() => {
+//   if (!PGDetails) return;
+
+//   setShowBanner(shouldShowBanner);
+// }, [PGDetails]);
+
+
 const copy = getSubscriptionCopy(PGDetails);
 
 const handleCloseBanner = () => {
-  bannerDismissedRef.current = true; 
+  bannerDismissedRef.current = true; // this login only
   setShowBanner(false);
 };
+
 
 
 
@@ -1324,13 +1329,17 @@ console.log("profile", getProfileInitial);
 
 
 
-<SubscriptionBanner
-  visible={showBanner && !!copy}   // ✅ important
-  title={copy?.title}
-  subtitle={copy?.subtitle}
-  primaryText="Renew now"
-  onClose={handleCloseBanner}
-/>
+
+{/* {showBanner && (
+  <SubscriptionBanner
+    visible={true}
+    title={copy?.title}
+    subtitle={copy?.subtitle}
+    primaryText="Renew now"
+    onClose={handleCloseBanner}
+  />
+)} */}
+
 
 
 {/* {showBanner && (
