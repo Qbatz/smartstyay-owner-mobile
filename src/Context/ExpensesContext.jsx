@@ -200,6 +200,82 @@ const GetInitializeExpense = async (hostelId) => {
   }
 };
 
+const UpdateExpenseCategory = async ({
+  hostelId,
+  categoryId,
+  newCategoryName,
+}) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const axios = getAxios();
+
+    await axios.put(
+      `/v2/expense/category/${hostelId}/${categoryId}`,
+      { newCategoryName }
+    );
+
+    // refresh category list
+    await fetchExpenses(hostelId);
+
+    return { success: true };
+  } catch (err) {
+    if (err?.response?.status === 400) {
+      return {
+        success: false,
+        message:
+          err.response.data?.message || "Category name already exists",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update category",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const UpdateExpenseSubCategory = async ({
+  hostelId,
+  subCategoryId,
+  newSubCategoryName,
+}) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const axios = getAxios();
+
+    await axios.put(
+      `/v2/expense/subCategory/${hostelId}/${subCategoryId}`,
+      { newSubCategoryName }
+    );
+
+    // refresh category list
+    await fetchExpenses(hostelId);
+
+    return { success: true };
+  } catch (err) {
+    if (err?.response?.status === 400) {
+      return {
+        success: false,
+        message:
+          err.response.data?.message || "Sub category already exists",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update sub category",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   return (
@@ -216,7 +292,9 @@ const GetInitializeExpense = async (hostelId) => {
         setExpenses, 
         GetExpenseList,
         AddExpense,
-        GetInitializeExpense
+        GetInitializeExpense ,
+        UpdateExpenseCategory,
+        UpdateExpenseSubCategory,
       }}
     >
       {children}
