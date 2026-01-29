@@ -372,7 +372,7 @@ const onClose = () => {
 
               <View style={{ alignItems: "flex-end" }}>
                 <Text style={styles.time}>
-                  {curr.fromNow()}
+                  2m ...
                 </Text>
               </View>
             </View>
@@ -382,7 +382,7 @@ const onClose = () => {
                 style={styles.reviewBtn}
                  onPress={() =>
       navigation.navigate("HistoryAndComments", {
-        notificationId: item.notificationId,
+        notificationId: item.requestId,
         item: item,
       })
     }

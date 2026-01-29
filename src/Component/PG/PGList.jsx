@@ -12,7 +12,7 @@ import {
   BackHandler,
   Animated,
   PanResponder,
-  Modal, TouchableWithoutFeedback,Keyboard
+  Modal, TouchableWithoutFeedback,Keyboard,Pressable
 } from "react-native";
 import SuccessModal from "../../ToastFile/ToastPage";
 import AddFloorSheet from "./AddFloorSheet";
@@ -455,20 +455,11 @@ useEffect(() => {
       });
     }, [rooms])
   );
-useFocusEffect(
-  useCallback(() => {
-   
-    setOpenMenuRoomId(null);
-    setShowFloorMenu(false)
 
-    return () => {
-     
-      setOpenMenuRoomId(null);
-       setShowFloorMenu(false)
-    };
-  }, [])
-);
 
+useEffect(() => {
+  setShowFloorMenu(false);
+}, [activeFloorIndex, selectedFloorId]);
 
 useFocusEffect(
   useCallback(() => {
@@ -590,36 +581,71 @@ useFocusEffect(
   });
 
 
-  useEffect(() => {
-    if (route?.params?.setShowTabBar) {
-      route.params.setShowTabBar(
-        !showAddFloor &&
-        !showActionSheet &&
-        !showAddRoom &&
-        !showAddBed &&
-        !showManageBed &&
-        !showReservedSheet &&
-        !showOccupiedSheet &&
-        !showNoticePeriodSheet &&
-        !showNewBooking &&
-        !showDoubleStatus &&
-        !showInactiveSheet &&
-        !showNotice &&
-        !showCheckout
-      );
-    }
-  }, [
-    showAddFloor,
-    showActionSheet,
-    showAddRoom,
-    showAddBed,
-    showManageBed,
-    showReservedSheet,
-    showOccupiedSheet,
-    showNoticePeriodSheet,
-    showNewBooking, showDoubleStatus,
-    route, showInactiveSheet,showNotice,showCheckout
-  ]);
+  // useEffect(() => {
+  //   if (route?.params?.setShowTabBar) {
+  //     route.params.setShowTabBar(
+  //       !showAddFloor &&
+  //       !showActionSheet &&
+  //       !showAddRoom &&
+  //       !showAddBed &&
+  //       !showManageBed &&
+  //       !showReservedSheet &&
+  //       !showOccupiedSheet &&
+  //       !showNoticePeriodSheet &&
+  //       !showNewBooking &&
+  //       !showDoubleStatus &&
+  //       !showInactiveSheet &&
+  //       !showNotice &&
+  //       !showCheckout
+  //     );
+  //   }
+  // }, [
+  //   showAddFloor,
+  //   showActionSheet,
+  //   showAddRoom,
+  //   showAddBed,
+  //   showManageBed,
+  //   showReservedSheet,
+  //   showOccupiedSheet,
+  //   showNoticePeriodSheet,
+  //   showNewBooking, showDoubleStatus,
+  //   route, showInactiveSheet,showNotice,showCheckout
+  // ]);
+useEffect(() => {
+  if (route?.params?.setShowTabBar) {
+    route.params.setShowTabBar(
+      !isKeyboardOpen &&   // ✅ IMPORTANT
+      !showAddFloor &&
+      !showActionSheet &&
+      !showAddRoom &&
+      !showAddBed &&
+      !showManageBed &&
+      !showReservedSheet &&
+      !showOccupiedSheet &&
+      !showNoticePeriodSheet &&
+      !showNewBooking &&
+      !showDoubleStatus &&
+      !showInactiveSheet &&
+      !showNotice &&
+      !showCheckout
+    );
+  }
+}, [
+  isKeyboardOpen,          // ✅ ADD THIS
+  showAddFloor,
+  showActionSheet,
+  showAddRoom,
+  showAddBed,
+  showManageBed,
+  showReservedSheet,
+  showOccupiedSheet,
+  showNoticePeriodSheet,
+  showNewBooking,
+  showDoubleStatus,
+  showInactiveSheet,
+  showNotice,
+  showCheckout
+]);
 
 
   useEffect(() => {
@@ -923,35 +949,41 @@ useFocusEffect(
 )}
 
         {showFloorMenu && (
-          <TouchableWithoutFeedback onPress={() => setShowFloorMenu(false)}>
-<View style={styles.menuOverlay}>
-          <View style={styles.menuBox1}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                setShowFloorMenu(false);
-                setEditFloorData(activeFloor);
-                setShowAddFloor(true);
-              }}
-            >
-              <Text style={styles.menuText}>Edit</Text>
-            </TouchableOpacity>
+  <View style={StyleSheet.absoluteFill}>
 
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                setShowFloorMenu(false);
-                handleFloorDelete(activeFloor.id);
-              }}
-            >
-              <Text style={[styles.menuText, { color: "red" }]}>
-                Delete
-              </Text>
-            </TouchableOpacity>
-          </View>
-          </View>
-          </TouchableWithoutFeedback>
-        )}
+    {/* 🔴 BACKDROP – only for closing */}
+    <Pressable
+      style={StyleSheet.absoluteFill}
+      onPress={() => setShowFloorMenu(false)}
+    />
+
+    {/* 🟢 MENU – fully clickable */}
+    <View style={styles.menuBox1} pointerEvents="auto">
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => {
+          setShowFloorMenu(false);
+          setEditFloorData(activeFloor);
+          setShowAddFloor(true);
+        }}
+      >
+        <Text style={styles.menuText}>Edit</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => {
+          setShowFloorMenu(false);
+          handleFloorDelete(activeFloor.id);
+        }}
+      >
+        <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+
+  </View>
+)}
+
 
 
         <View style={{ paddingVertical: 12 }}>
@@ -976,12 +1008,22 @@ useFocusEffect(
                   styles.floorTab,
                   activeFloorIndex === i && styles.floorTabActive,
                 ]}
-                onPress={() => {
-                  setActiveFloorIndex(i);
-                  setSelectedFloorId(f.id);
+                // onPress={() => {
+                //   setActiveFloorIndex(i);
+                //   setSelectedFloorId(f.id);
+                //    setOpenMenuRoomId(null);
 
 
-                }}
+                // }}
+                 onPressIn={() => {
+    setShowFloorMenu(false);   // 👈 menu close immediately
+  }}
+  onPress={() => {
+    setActiveFloorIndex(i);
+    setSelectedFloorId(f.id);
+    setOpenMenuRoomId(null)
+    
+  }}
               >
                 <View
                   style={{
@@ -2022,7 +2064,8 @@ title: {
   },
   addBedHead: {
     marginTop: "-4"
-  },menuOverlay: {
+  },
+ menuOverlay: {
   position: "absolute",
   top: 0,
   left: 0,
@@ -2030,6 +2073,7 @@ title: {
   bottom: 0,
   zIndex: 999,
 },
+
 
 
 });

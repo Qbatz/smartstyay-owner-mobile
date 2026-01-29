@@ -9,7 +9,7 @@ import {
     TouchableWithoutFeedback,
     PanResponder
 } from "react-native";
-import MoveNoticeSheet from '../Customer/MoveToNoticePeriod';
+
 import { useNavigation } from "@react-navigation/native";
 
 import Profile from "../../Assets/Images/Avatar.png";

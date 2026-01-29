@@ -350,7 +350,7 @@ const addComplaintComment = async ({ complaintId, message }) => {
 
     if (res.status === 201 || res.status === 200) {
       await getParticularComplaint(complaintId);
-
+console.log("rescomment",res)
       return {
         success: true,
         message: res.data || "Comment added successfully",

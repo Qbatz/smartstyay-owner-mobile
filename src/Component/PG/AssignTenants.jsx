@@ -767,13 +767,20 @@ export default function AssignTenant({ navigation, route }) {
                 <View ref={bookingDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                    onPress={() => {
-                      bookingDateRef.current.measureInWindow((x, y, w, h) => {
-                        setDatePickerTop(getSafeCalendarTop(y, h));
-                        setActiveDateField("booking");
-                        setShowCalendar(true);
-                      });
-                    }}
+                   onPress={() => {
+  Keyboard.dismiss();   // 🔥 keyboard close
+  setOpenDropdownId(null);
+  setCheckinTenantsopen(false);
+
+  setTimeout(() => {
+    bookingDateRef.current.measureInWindow((x, y, w, h) => {
+      setDatePickerTop(getSafeCalendarTop(y, h));
+      setActiveDateField("booking");
+      setShowCalendar(true);
+    });
+  }, 150); // 🔥 keyboard animation wait
+}}
+
                   >
                     <Text style={styles.placeholder}>
                       {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -804,13 +811,19 @@ export default function AssignTenant({ navigation, route }) {
                 <View ref={joiningDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                    onPress={() => {
-                      joiningDateRef.current.measureInWindow((x, y, w, h) => {
-                        setDatePickerTop(getSafeCalendarTop(y, h));
-                        setActiveDateField("joining");
-                        setShowCalendar(true);
-                      });
-                    }}
+                   onPress={() => {
+  Keyboard.dismiss();        // 🔥 keyboard close
+  setOpenDropdownId(null);
+  setCheckinTenantsopen(false);
+
+  setTimeout(() => {
+    joiningDateRef.current.measureInWindow((x, y, w, h) => {
+      setDatePickerTop(getSafeCalendarTop(y, h));
+      setActiveDateField("joining");
+      setShowCalendar(true);
+    });
+  }, 150);                  // 🔥 wait for keyboard animation
+}}
                   >
                     <Text style={styles.placeholder}>
                       {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -1028,13 +1041,20 @@ export default function AssignTenant({ navigation, route }) {
                 <View ref={checkinDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                    onPress={() => {
-                      checkinDateRef.current.measureInWindow((x, y, w, h) => {
-                        setDatePickerTop(getSafeCalendarTop(y, h));
-                        setActiveDateField("checkin");
-                        setShowCalendar(true);
-                      });
-                    }}
+                   onPress={() => {
+  Keyboard.dismiss();        // 🔥 close keyboard
+  setOpenDropdownId(null);
+  setCheckinTenantsopen(false);
+
+  setTimeout(() => {
+    checkinDateRef.current.measureInWindow((x, y, w, h) => {
+      setDatePickerTop(getSafeCalendarTop(y, h));
+      setActiveDateField("checkin");
+      setShowCalendar(true);
+    });
+  }, 150);
+}}
+
                   >
                     <Text style={styles.placeholder}>
                       {checkJoiningDate
