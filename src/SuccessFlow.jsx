@@ -69,7 +69,8 @@ import Reports from  "../src/Component/MorePages/Reports/Reports";
 import FinalSettlementScreen from "../src/Component/Customer/FinalSettlementNew"
 import InvoiceRegister from "../src/Component/MorePages/Reports/InvoiceRegister"
 import TenantRegister from "../src/Component/MorePages/Reports/TenantRegister"
-import ExpenseRegister from "../src/Component/MorePages/Reports/ExpenseRegister"
+import ExpenseRegister from "../src/Component/MorePages/Reports/ExpenseRegister";
+import HistoryAndComments from "../src/Component/Dashboard/HistoryAndComments"
 
 const SuccessFlow = (props) => {
 
@@ -160,6 +161,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ExpenseRegister" component={ExpenseRegister} />
                      <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
                       <Navigation.Screen name="FinalSettlementScreen" component={FinalSettlementScreen} />
+                      <Navigation.Screen name="HistoryAndComments" component={HistoryAndComments} />
 
                 </Navigation.Navigator>
             </NavigationContainer>

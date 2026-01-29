@@ -47,6 +47,8 @@ import { LoginContexts } from "../../Context/LoginContext";
 import { PGContext } from "../../Context/PGContext";
 import ProfileDrawer from "./ProfileClickScreen";
 import AddTenant from "../Customer/AddTenants";
+import { NotificationContext } from "../../Context/NotificationContext";
+
 
 
 import {
@@ -75,7 +77,26 @@ export default function DashboardScreen({initialParams}) {
  const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
   const login = useContext(LoginContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { getNotificationsByHostel } = useContext(NotificationContext);
+const [unreadCount, setUnreadCount] = useState(0);
 
+
+
+     const fetchCustomers = async () => {
+   const res = await getNotificationsByHostel(activeHostelId);
+ 
+  
+   setUnreadCount(res?.data?.unreadCount);
+ };
+ console.log("unreadCount",unreadCount)
+ 
+         useFocusEffect(
+         useCallback(() => {
+           if (activeHostelId) {
+             fetchCustomers();
+           }
+         }, [activeHostelId])
+       );
 useEffect(() => {
   if(activeHostelId){
   getParticularHostelDetails(activeHostelId);
@@ -757,12 +778,27 @@ console.log("profile", getProfileInitial);
 
 
   <View style={styles.rightIcons}>
-    <TouchableOpacity
+    {/* <TouchableOpacity
       style={styles.iconCircle}
       onPress={() => navigation.navigate("NotificationDetails")}
     >
-      <Image source={Bell} style={{ width: 40, height: 40 }} />
-    </TouchableOpacity>
+      <Image source={Bell} style={{ width: 28, height: 28 }} />
+    </TouchableOpacity> */}
+    <TouchableOpacity
+  style={styles.iconCirclenoti}
+  onPress={() => navigation.navigate("NotificationDetails")}
+>
+  <Image source={Bell} style={{ width: 28, height: 28 }} />
+
+  {unreadCount > 0 && (
+    <View style={styles.badge}>
+      <Text style={styles.badgeText}>
+        {unreadCount > 99 ? "99+" : unreadCount}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
+
 
     <TouchableOpacity
       style={[styles.iconCircle, { marginLeft: 10 }]}
@@ -1460,6 +1496,11 @@ hostelTitle: {
     alignItems: "center",
 
   },
+  iconCirclenoti: {
+  position: "relative",
+  padding: 6,
+  
+},
 
   tabsRow: { flexDirection: "row", marginTop: 18 },
 
@@ -1970,6 +2011,26 @@ hostelTitle: {
     fontSize: 13,
     color: "#1E293B",
   },
+
+
+badge: {
+  position: "absolute",
+  top: 2,          // 👈 IMPORTANT
+  right: 2,
+  minWidth: 16,
+  height: 16,
+  borderRadius: 8,
+  backgroundColor: "red",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+
+badgeText: {
+  color: "#fff",
+  fontSize: 10,
+  fontWeight: "700",
+},
 
 
 
