@@ -370,6 +370,7 @@ for (let i = -90; i <= 90; i++) {
   contentContainerStyle={{
     paddingBottom: keyboardOpen ? 260 : 60,
   }}
+  
 >
 
 
