@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback, useContext } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, BackHandler, TouchableWithoutFeedback, Animated,
-  PanResponder,
+  PanResponder, KeyboardAvoidingView, Platform,Keyboard 
 
 } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -27,6 +27,9 @@ export default function MoveNoticeSheet({
   const [outDateError, setOutDateError] = useState("");
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
+  const scrollRef = useRef(null);
+  const reasonRef = useRef(null);
+
   console.log("customercustomer",roomId)
 
 
@@ -45,6 +48,22 @@ const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
   const [message, setMessage] = useState("");
   console.log("customer", customer)
   console.log("selectedBed", selectedBed)
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+useEffect(() => {
+  const show = Keyboard.addListener("keyboardDidShow", () =>
+    setKeyboardOpen(true)
+  );
+  const hide = Keyboard.addListener("keyboardDidHide", () =>
+    setKeyboardOpen(false)
+  );
+
+  return () => {
+    show.remove();
+    hide.remove();
+  };
+}, []);
+
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -305,9 +324,10 @@ for (let i = -90; i <= 90; i++) {
       <View style={styles.overlay}>
 
 
-        <TouchableWithoutFeedback onPress={onClose}>
-          <View style={{ flex: 1 }} />
-        </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+  <View style={{ flex: 1 }} />
+</TouchableWithoutFeedback>
+
 
 
         <Animated.View
@@ -342,7 +362,18 @@ for (let i = -90; i <= 90; i++) {
             </View>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+<ScrollView
+  ref={scrollRef}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
+  contentContainerStyle={{
+    paddingBottom: keyboardOpen ? 260 : 60,
+  }}
+  
+>
+
+
 
             <Text style={styles.label}>Request Date <Text style={{color:"red"}}>*</Text></Text>
             <TouchableOpacity
@@ -374,13 +405,29 @@ for (let i = -90; i <= 90; i++) {
             )}
 
             <Text style={styles.label}>Reason (Comments)</Text>
-            <TextInput
-              style={styles.textArea}
-              value={reason}
-              onChangeText={setReason}
-              placeholder="Enter Reason"
-              multiline
-            />
+      <TextInput
+  ref={reasonRef}
+  style={styles.textArea}
+  value={reason}
+  onChangeText={setReason}
+  placeholder="Enter Reason"
+  multiline
+  onFocus={() => {
+    setTimeout(() => {
+      reasonRef.current?.measureLayout(
+        scrollRef.current,
+        (x, y) => {
+          scrollRef.current?.scrollTo({
+            y: y - 20,
+            animated: true,
+          });
+        },
+        () => {}
+      );
+    }, 200);
+  }}
+/>
+
           </ScrollView>
 
           <View style={styles.footer}>
@@ -397,6 +444,8 @@ for (let i = -90; i <= 90; i++) {
 
           </View>
         </Animated.View>
+      
+       
       </View>
       <Modal
         visible={openRequestPicker}
@@ -541,17 +590,17 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
 
-  sheet: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    maxHeight: "82%",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+ sheet: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+ flexShrink: 1,
+ paddingBottom:50
+ 
+},
+
+
 
   handle: {
     width: 60,
@@ -612,7 +661,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 20,
-    paddingBottom: 50,
+  
   },
 
 

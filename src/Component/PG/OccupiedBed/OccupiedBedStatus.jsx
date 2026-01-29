@@ -9,7 +9,7 @@ import {
     TouchableWithoutFeedback,
     PanResponder
 } from "react-native";
-import MoveNoticeSheet from '../../Customer/MoveToNoticePeriod';
+
 import { useNavigation } from "@react-navigation/native";
 
 import Profile from "../../../Assets/Images/Avatar.png";
@@ -232,8 +232,9 @@ const closeSheet = () => {
                 </View>
 
 
-
-                 <View style={[styles.section, { borderBottomWidth: 0 }]}>
+{
+   selectedBed.newTenantInfo >0 &&
+<View style={[styles.section, { borderBottomWidth: 0 }]}>
                           <Text style={styles.sectionTitle}>Reserved by</Text>
                 
                           {
@@ -348,6 +349,8 @@ const closeSheet = () => {
                 
                          
                         </View>
+}
+                 
                     </ScrollView>    
 
                 <TouchableOpacity style={styles.statusBtn}>
