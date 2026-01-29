@@ -628,7 +628,7 @@ if (res?.status === 201) {
 
   {stateOpen && (
     <View style={styles.dropdownMenu}>
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <ScrollView    keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
         {filteredStateList.length > 0 ? (
           filteredStateList.map((v, index) => (
          <TouchableOpacity
@@ -963,7 +963,7 @@ noResult: {
 
  dropdownMenu: {
   position: "absolute",
-  bottom: 52,        // 🔥 TOP side
+  top: 52,                // ✅ IMPORTANT
   left: 0,
   right: 0,
   backgroundColor: "#fff",
@@ -972,10 +972,9 @@ noResult: {
   borderRadius: 12,
   zIndex: 9999,
   elevation: 20,
-
-  minHeight: 150,    // ✅ 3 items minimum
-  maxHeight: 200,
+  maxHeight: 220,         // 👈 must
 },
+
 
 
   option: { padding: 12 },
