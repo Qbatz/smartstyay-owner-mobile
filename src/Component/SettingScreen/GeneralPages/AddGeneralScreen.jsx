@@ -160,7 +160,17 @@ export default function AddGeneralScreen({ navigation, route }) {
     let newErrors = {};
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
-    if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    // if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    if (!mobile.trim()) {
+  newErrors.mobile = "Please Enter Mobile Number";
+} 
+else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+  newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
+}
+else if (/^(\d)\1+$/.test(mobile.trim())) {
+  newErrors.mobile = "Invalid Mobile Number";
+}
+
     if (!email.trim()) {
       newErrors.email = "Please Enter Email ID";
     } else if (!emailRegex.test(email.trim())) {
@@ -311,23 +321,46 @@ export default function AddGeneralScreen({ navigation, route }) {
 
 
   // };
-  const hasChanges = () => {
-    if (!editData) return true;
+  // const hasChanges = () => {
+  //   if (!editData) return true;
 
-    return !(
-      editData.firstName === firstName &&
-      editData.lastName === lastName &&
-      editData.mobileNo == mobile &&                 // ✔ fixed
-      editData.mailId === email &&
-      editData.houseNo === flat &&
-      editData.street === street &&
-      editData.landmark === landmark &&
-      editData.city === city &&
-      String(editData.pincode) === String(pincode) &&
-      editData.state === selectedState &&            // ✔ matches your API
-      !selectedImage                                 // image unchanged
-    );
-  };
+  //   return !(
+  //     editData.firstName === firstName &&
+  //     editData.lastName === lastName &&
+  //     editData.mobileNo == mobile &&                 // ✔ fixed
+  //     editData.mailId === email &&
+  //     editData.houseNo === flat &&
+  //     editData.street === street &&
+  //     editData.landmark === landmark &&
+  //     editData.city === city &&
+  //     String(editData.pincode) === String(pincode) &&
+  //     editData.state === selectedState &&            // ✔ matches your API
+  //     !selectedImage                                 // image unchanged
+  //   );
+  // };
+  const hasChanges = () => {
+  if (!editData) return true;
+
+  const imageChanged =
+    selectedImage &&
+    selectedImage.uri &&
+    selectedImage.uri !== editData.profilePic;
+
+  return !(
+    editData.firstName === firstName &&
+    editData.lastName === lastName &&
+    String(editData.mobileNo) === String(mobile) &&
+    editData.mailId === email &&
+    editData.houseNo === flat &&
+    editData.street === street &&
+    editData.landmark === landmark &&
+    editData.city === city &&
+    String(editData.pincode) === String(pincode) &&
+    editData.state === selectedState &&
+    !imageChanged
+  );
+};
+
   const [topWarning, setTopWarning] = useState("");
 
 
@@ -335,8 +368,23 @@ export default function AddGeneralScreen({ navigation, route }) {
     let newErrors = {};
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
-    if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
-    if (!email.trim()) newErrors.email = "Please Enter Email ID";
+    // if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    // if (!email.trim()) newErrors.email = "Please Enter Email ID";
+      if (!mobile.trim()) {
+  newErrors.mobile = "Please Enter Mobile Number";
+} 
+else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+  newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
+}
+else if (/^(\d)\1+$/.test(mobile.trim())) {
+  newErrors.mobile = "Invalid Mobile Number";
+}
+
+    if (!email.trim()) {
+      newErrors.email = "Please Enter Email ID";
+    } else if (!emailRegex.test(email.trim())) {
+      newErrors.email = "Please Enter Valid Email ID";
+    }
     if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     if (!city.trim()) newErrors.city = "Please Enter City";
     if (selectedState === "Select State") newErrors.state = "Please Select State";
@@ -348,9 +396,11 @@ export default function AddGeneralScreen({ navigation, route }) {
 
 
     if (!hasChanges()) {
-      setTopWarning("No Changes Detected");
+      setModalMessage("No Changes Detected");
       setModalType("warning");
-
+//  setModalMessage("General Updated Successfully");
+      // setModalType("success");
+      setShowSuccessModal(true);
 
 
       setTimeout(() => {
@@ -690,7 +740,6 @@ export default function AddGeneralScreen({ navigation, route }) {
               //   setErrors({ ...errors, firstName: "" });
               // }} 
               onChangeText={(t) => {
-                // ✅ Only letters + space allowed
                 const cleaned = t.replace(/[^A-Za-z\s]/g, "");
 
                 setFirstName(cleaned);
@@ -795,15 +844,30 @@ export default function AddGeneralScreen({ navigation, route }) {
             )}
             <Text style={styles.label}>Flat, House no, Building...</Text>
             <TextInput style={styles.input} placeholder="Enter House No" value={flat}
-              onChangeText={setFlat} />
+              // onChangeText={setFlat} 
+              onChangeText={(t) => {
+    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+    setFlat(cleaned);
+  }}
+              />
 
             <Text style={styles.label}>Area, Street, Sector...</Text>
             <TextInput style={styles.input} placeholder="Enter Street" value={street}
-              onChangeText={setStreet} />
+              // onChangeText={setStreet} 
+              onChangeText={(t) => {
+    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+    setStreet(cleaned);
+  }}
+              />
 
             <Text style={styles.label}>Landmark</Text>
             <TextInput style={styles.input} placeholder="Eg: Near SBI" value={landmark}
-              onChangeText={setLandmark} />
+              // onChangeText={setLandmark} 
+              onChangeText={(t) => {
+    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+    setLandmark(cleaned);
+  }}
+              />
 
             <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
@@ -822,10 +886,16 @@ export default function AddGeneralScreen({ navigation, route }) {
 
             <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter City" value={city}
+              // onChangeText={(t) => {
+              //   setCity(t);
+              //   setErrors({ ...errors, city: "" });
+              // }} 
               onChangeText={(t) => {
-                setCity(t);
-                setErrors({ ...errors, city: "" });
-              }} />
+  const cleaned = t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
+  setCity(cleaned);
+  setErrors({ ...errors, city: "" });
+}}
+              />
             {/* {errors.city && (
             <Text style={styles.errText}>{errors.city}</Text>
           )} */}
