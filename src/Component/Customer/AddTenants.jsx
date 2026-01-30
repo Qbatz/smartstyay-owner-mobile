@@ -470,18 +470,25 @@ else {
                                     placeholder="Enter Email ID"
                                     placeholderTextColor="#A1A1A1"
                                     value={basicDetails.email}
-                                    onChangeText={(t) => {
-    const lowerEmail = t.toLowerCase();   
-    setBasicDetails({ ...basicDetails, email: lowerEmail });
+                                   onChangeText={(t) => {
+    // Remove emojis & invalid characters
+    const cleaned = t
+      .replace(/[^\x00-\x7F]/g, "")   // remove emojis & unicode symbols
+      .toLowerCase();
 
-    if (!lowerEmail) {
+    setBasicDetails({ ...basicDetails, email: cleaned });
+
+    if (!cleaned) {
       setEmailError("");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lowerEmail)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleaned)) {
       setEmailError("Enter a valid email address");
     } else {
       setEmailError("");
     }
   }}
+  keyboardType="email-address"
+  autoCapitalize="none"
+  autoCorrect={false}
 
 
                                 />
@@ -544,9 +551,13 @@ else {
                                             placeholder="Enter Flat, House no., Building..."
                                             placeholderTextColor="#9CA3AF"
                                             value={addressDetails.flat}
-                                            onChangeText={(t) =>
-                                                setAddressDetails({ ...addressDetails, flat: t })
-                                            }
+                                            // onChangeText={(t) =>
+                                            //     setAddressDetails({ ...addressDetails, flat: t })
+                                            // }
+                                            onChangeText={(t) => {
+  const cleaned = t.replace(/[^\x00-\x7F]/g, ""); // remove emojis & unicode
+  setAddressDetails({ ...addressDetails, flat: cleaned });
+}}
                                         />
                                         <Text style={styles.label}>Area , Street , Sector , Village</Text>
                                         <TextInput
@@ -554,9 +565,11 @@ else {
                                             placeholder="Enter Area"
                                             placeholderTextColor="#9CA3AF"
                                             value={addressDetails.area}
-                                            onChangeText={(t) =>
-                                                setAddressDetails({ ...addressDetails, area: t })
-                                            }
+                                           onChangeText={(t) => {
+  const cleaned = t.replace(/[^\x00-\x7F]/g, "");
+  setAddressDetails({ ...addressDetails, area: cleaned });
+}}
+
                                         />
 
                                         
@@ -566,9 +579,11 @@ else {
                                             placeholder="Ex : Near SBI Bank"
                                             placeholderTextColor="#9CA3AF"
                                             value={addressDetails.landmark}
-                                            onChangeText={(t) =>
-                                                setAddressDetails({ ...addressDetails, landmark: t })
-                                            }
+                                           onChangeText={(t) => {
+  const cleaned = t.replace(/[^\x00-\x7F]/g, "");
+  setAddressDetails({ ...addressDetails, landmark: cleaned });
+}}
+
                                         />
 
                                         <Text style={styles.label}>Pincode</Text>
@@ -608,9 +623,11 @@ else {
                                             placeholder="Enter Your City Name"
                                             placeholderTextColor="#9CA3AF"
                                             value={addressDetails.city}
-                                            onChangeText={(t) =>
-                                                setAddressDetails({ ...addressDetails, city: t })
-                                            }
+                                           onChangeText={(t) => {
+  const cleaned = t.replace(/[^a-zA-Z\s]/g, "");
+  setAddressDetails({ ...addressDetails, city: cleaned });
+}}
+
                                         />
 
 <Text style={styles.label}>State</Text>
