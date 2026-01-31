@@ -7,7 +7,7 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  TextInput, Keyboard, PanResponder, KeyboardAvoidingView
+  TextInput, Keyboard, PanResponder, KeyboardAvoidingView,ScrollView
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -48,7 +48,8 @@ export default function ConfirmReassignSheet({
   const [message, setMessage] = useState("");
   const [dateError, setDateError] = useState("")
   const [rentError, setRentError] = useState("")
-
+ const scrollRef = useRef(null);
+  const reasonRef = useRef(null);
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
@@ -58,16 +59,122 @@ export default function ConfirmReassignSheet({
     if (sameAsCurrent) {
       setRentAmount(String(selectedBed?.rentAmount || ""));
     }
-  }, [sameAsCurrent]);
-  const today = dayjs().format("YYYY-MM-DD");
+  }, [sameAsCurrent]);const joiningDateRaw = selectedBed?.currentTenantInfo?.[0]?.joiningDate;
 
+const joiningDate = joiningDateRaw
+  ? dayjs(joiningDateRaw, ["DD/MM/YYYY", "DD-MM-YYYY", "YYYY-MM-DD"])
+  : null;
+
+const today = dayjs().startOf("day");
+const isDateDisabled = (date) => {
+  if (!date) return false;
+
+  const d = dayjs(date);
+
+  // ❌ before joining date
+  if (joiningDate && d.isBefore(joiningDate, "day")) return true;
+
+  // ❌ future date
+  if (d.isAfter(today, "day")) return true;
+
+  return false;
+};
+const markedDates = {};
+
+for (let i = -180; i <= 180; i++) {
+  const d = dayjs().add(i, "day");
+  const key = d.format("YYYY-MM-DD");
+
+  if (isDateDisabled(d)) {
+    markedDates[key] = {
+      disabled: true,
+      disableTouchEvent: true,
+      customStyles: {
+        container: {
+          backgroundColor: "#F3F4F6",
+          opacity: 0.4,
+          borderRadius: 8,
+        },
+        text: {
+          color: "#9CA3AF",
+        },
+      },
+    };
+  }
+}
+
+// selected highlight
+if (selectedDate) {
+  markedDates[dayjs(selectedDate).format("YYYY-MM-DD")] = {
+    selected: true,
+    selectedColor: "#1E45E1",
+  };
+}
+// const keyboardHeight = useRef(new Animated.Value(0)).current;
+
+// useEffect(() => {
+//   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+//     Animated.timing(keyboardHeight, {
+//       toValue: e.endCoordinates.height,
+//       duration: 250,
+//       useNativeDriver: false,
+//     }).start();
+//   });
+
+//   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+//     Animated.timing(keyboardHeight, {
+//       toValue: 0,
+//       duration: 250,
+//       useNativeDriver: false,
+//     }).start();
+//   });
+
+//   return () => {
+//     showSub.remove();
+//     hideSub.remove();
+//   };
+// }, []);
+const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+useEffect(() => {
+  const show = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hide = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    show.remove();
+    hide.remove();
+  };
+}, []);
+
+
+// const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+// useEffect(() => {
+//   const show = Keyboard.addListener("keyboardDidShow", () =>
+//     setKeyboardOpen(true)
+//   );
+//   const hide = Keyboard.addListener("keyboardDidHide", () =>
+//     setKeyboardOpen(false)
+//   );
+
+//   return () => {
+//     show.remove();
+//     hide.remove();
+//   };
+// }, []);
 
   useEffect(() => {
-    Animated.timing(translateY, {
-      toValue: visible ? 0 : 500,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
+  Animated.timing(translateY, {
+  toValue: visible ? 0 : 500,
+  duration: 250,
+  useNativeDriver: false,
+}).start();
+
   }, [visible]);
 
 
@@ -81,10 +188,11 @@ export default function ConfirmReassignSheet({
     onPanResponderRelease: (_, g) => {
       if (g.dy > 150) onClose();
       else
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
+      Animated.spring(translateY, {
+  toValue: 0,
+  useNativeDriver: false,
+}).start();
+
     },
   });
 
@@ -163,16 +271,36 @@ export default function ConfirmReassignSheet({
         type={modalType}
 
       />
-      <View style={styles.overlay}>
+     <View
+  style={styles.overlay}
+
+>
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
-        <Animated.View
-          style={[styles.sheet, { transform: [{ translateY }] }]}
-          {...panResponder.panHandlers}
-        >
+
+ <Animated.View
+           {...panResponder.panHandlers}
+ style={[
+  styles.sheet,
+  {
+    transform: [{ translateY }],
+  },
+]}
+
+         >
           <View style={styles.handle} />
+ <ScrollView
+  ref={scrollRef}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight + 40,
+    flexGrow: 1,
+  }}
+>
 
           <Text style={styles.title}>Confirm Change Bed</Text>
 
@@ -262,9 +390,7 @@ export default function ConfirmReassignSheet({
             </TouchableOpacity>
 
           </View>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
+         
             <View style={styles.inputBox} >
               <TextInput
                 style={styles.inputField}
@@ -282,7 +408,7 @@ export default function ConfirmReassignSheet({
             {rentError && (
               <ErrorMessage message={rentError} type="error" />
             )}
-          </KeyboardAvoidingView>
+         
           <View style={styles.footer}>
             <TouchableOpacity onPress={onClose}>
               <Text style={styles.cancel}>Cancel</Text>
@@ -297,7 +423,9 @@ export default function ConfirmReassignSheet({
             </TouchableOpacity>
 
           </View>
+          </ScrollView>
         </Animated.View>
+      
       </View>
       {showDatePicker && (
         <View style={styles.datePickerOverlay}>
@@ -308,7 +436,7 @@ export default function ConfirmReassignSheet({
           </TouchableWithoutFeedback>
 
           <View style={styles.datePickerBox}>
-            <Calendar
+            {/* <Calendar
               current={today}
               maxDate={today}
               onDayPress={(day) => {
@@ -332,7 +460,27 @@ export default function ConfirmReassignSheet({
                 arrowColor: "#1E45E1",
                 textDisabledColor: "#9CA3AF",
               }}
-            />
+            /> */}
+            <Calendar
+  current={today.format("YYYY-MM-DD")}
+  maxDate={today.format("YYYY-MM-DD")} // ❌ future block
+  markingType="custom"
+  markedDates={markedDates}
+  onDayPress={(day) => {
+    if (isDateDisabled(day.dateString)) return;
+
+    setSelectedDate(dayjs(day.dateString, "YYYY-MM-DD"));
+    setShowDatePicker(false);
+    setDateError("");
+  }}
+  theme={{
+    todayTextColor: "#1E45E1",
+    selectedDayBackgroundColor: "#1E45E1",
+    arrowColor: "#1E45E1",
+    textDisabledColor: "#9CA3AF",
+  }}
+/>
+
 
 
           </View>
@@ -355,12 +503,17 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
 
-  sheet: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
+//  sheet: { backgroundColor: "#fff", paddingHorizontal: 20, paddingTop: 20, borderTopLeftRadius: 25, borderTopRightRadius: 25, maxHeight: "90%", },
+
+sheet: {
+  backgroundColor: "#fff",
+  paddingHorizontal: 20,
+  paddingTop: 20,
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  maxHeight: "90%",
+  paddingBottom: 30,
+},
 
   handle: {
     width: 50,
