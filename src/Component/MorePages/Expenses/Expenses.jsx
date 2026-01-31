@@ -401,6 +401,11 @@ export default function ExpensesScreen() {
                 <Text style={styles.noexpensesText}>
                   No Expenses are there!
                 </Text>
+
+                <TouchableOpacity style={styles.addExpenseBtn} onPress={handleShowAddExpense}>
+                          <Text style={styles.addExpenseText}>+ Add Expense</Text>
+                        </TouchableOpacity>
+          
               </View>
             )}
           </>
@@ -414,7 +419,12 @@ export default function ExpensesScreen() {
         {/* <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)}  accessibilityLabel="Open filters">
                 <Image source={FilterIcon} style={styles.fabIcon} />
               </TouchableOpacity> */}
-        <TouchableOpacity
+
+
+              {expensesList && expensesList.length > 0 && 
+              (
+                <>
+                      <TouchableOpacity
           style={[
             styles.Filterfab,
             loading && { opacity: 0.4 }
@@ -431,6 +441,9 @@ export default function ExpensesScreen() {
         >
           <Image source={AddIcon} style={styles.fabIconAdd} />
         </TouchableOpacity>
+                </>
+              )}
+  
 
 
 
@@ -610,8 +623,15 @@ export default function ExpensesScreen() {
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.saveBtn}>
-                  <Text style={styles.saveText}>Save Changes</Text>
+                <TouchableOpacity  style={[
+    styles.saveBtn,
+    { opacity:0.5 }, // disabled color
+  ]}
+  disabled={true}
+  activeOpacity={1}>
+                  <Text style={styles.saveText}> Coming soon
+                    {/* Save Changes */}
+                    </Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>
@@ -719,6 +739,20 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 16,
+    fontWeight: "600",
+  },
+
+    addExpenseBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+
+  addExpenseText: {
+    color: "#fff",
+    fontSize: 15,
     fontWeight: "600",
   },
 
@@ -891,7 +925,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: "50%",
+    height: "47%",
   },
 
   detailsTitle: { fontSize: 20, fontWeight: "700", marginBottom: 4 },
@@ -920,7 +954,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: "33%",
+    height: "38%",
   },
 
   tagAssetHeader: {
@@ -955,6 +989,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 30,
+    marginBottom:70
   },
 
   cancelBtn: {

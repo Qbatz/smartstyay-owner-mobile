@@ -18,6 +18,7 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { Calendar } from "react-native-calendars";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 
@@ -131,6 +132,40 @@ export default function AddExpenses({ navigation, route }) {
     setModePaymentOpen(false);
     setOpenDatePicker(false);
   };
+
+
+  const today = dayjs();
+  
+  const isDisabledDate = (d) => {
+    if (!d) return false;
+    return d.isAfter(today, "day")
+  };
+  
+        
+        
+       const markedDates = {};
+  
+  for (let i = -365; i <= 365; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
+  
+    if (isDisabledDate(d)) {
+      markedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
+        },
+      };
+    }
+  }
 
   const renderSelectField = (label, selected, open, setOpen, list, onSelect) => (
     <View style={{ marginBottom: 6 }}>
@@ -432,27 +467,27 @@ export default function AddExpenses({ navigation, route }) {
           <Text style={styles.label}>
             Purchase Date <Text style={{ color: "red" }}>*</Text>
           </Text>
-
           <TouchableOpacity
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             onPress={() => setOpenPurchaseDate(true)}
           >
             <View style={styles.dateInputWrapper}>
               <TextInput
                 style={styles.dateInput}
                 placeholder="DD-MM-YYYY"
-                value={
-                  purchaseDate
-                    ? dayjs(purchaseDate).format("DD-MM-YYYY")
-                    : ""        
-                }
-                editable={false}
+                value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
+                editable={false}  
                 pointerEvents="none"
               />
-
-              <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+          
+              <Image
+                source={require("../../../Assets/Images/calendar.png")}
+                style={styles.calendarIcon}
+              />
             </View>
           </TouchableOpacity>
+
+        
 
           {dateErr && <ErrorMessage message={dateErr} type="error" />}
 
@@ -590,7 +625,9 @@ export default function AddExpenses({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          <Modal
+         
+
+          {/* <Modal
             transparent
             visible={openPurchaseDate}
             animationType="fade"
@@ -623,10 +660,55 @@ export default function AddExpenses({ navigation, route }) {
                 </TouchableWithoutFeedback>
               </View>
             </View>
-          </Modal>
+          </Modal> */}
 
         </ScrollView>
       </SafeAreaView>
+       {openPurchaseDate && (
+            <View style={styles.dateOverlay}>
+              <TouchableWithoutFeedback onPress={() => setOpenPurchaseDate(false)}>
+                <View style={styles.overlayBg} />
+              </TouchableWithoutFeedback>
+          
+              <View style={styles.calendarContainer}>
+                <Calendar
+                  markingType="custom"
+                  markedDates={{
+                    ...markedDates,
+                    ...(purchaseDate && {
+                      [purchaseDate]: {
+                        selected: true,
+                        selectedColor: "#2563EB",
+                        customStyles: {
+                          container: {
+                            backgroundColor: "#2563EB",
+                            borderRadius: 8,
+                          },
+                          text: {
+                            color: "#FFFFFF",
+                          },
+                        },
+                      },
+                    }),
+                  }}
+                  current={purchaseDate || dayjs().format("YYYY-MM-DD")}
+                  onDayPress={(day) => {
+                    // 🚫 STOP FUTURE DATE CLICK
+                    if (markedDates[day.dateString]?.disabled) return;
+          
+                    setPurchaseDate(day.dateString);
+                    setOpenPurchaseDate(false);
+                     setDateErr("");
+                  }}
+                  theme={{
+                    todayTextColor: "#2563EB",
+                    arrowColor: "#111827",
+                    textDisabledColor: "#9CA3AF",
+                  }}
+                />
+              </View>
+            </View>
+          )}
     </>
   );
 }
@@ -855,4 +937,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
+  
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
 });
