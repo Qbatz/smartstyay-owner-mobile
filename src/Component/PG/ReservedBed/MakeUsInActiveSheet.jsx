@@ -281,10 +281,16 @@ useEffect(() => {
           Joining Date <Text style={{ color: "red" }}>*</Text>
         </Text>
 
-        <TouchableOpacity
-          style={styles.dateBox}
-          onPress={() => setOpenJoinDatePic(true)}
-        >
+       <TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => {
+    Keyboard.dismiss();      // ✅ close keyboard first
+    setTimeout(() => {
+      setOpenJoinDatePic(true);
+    }, 100);                 // small delay for smooth close
+  }}
+>
+
           <Text style={styles.placeholder}>
             {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
           </Text>
@@ -334,36 +340,44 @@ useEffect(() => {
  
 </View>
 
-      {openJoinDatePic && (
-        <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
-
-          <View style={styles.datePickerBox}>
-            <Calendar
-              minDate={minDate}
-              maxDate={today}
-              markedDates={
-                joiningDate
-                  ? {
+    {openJoinDatePic && (
+  <TouchableWithoutFeedback
+    onPress={() => {
+      Keyboard.dismiss();
+      setOpenJoinDatePic(false);
+    }}
+  >
+    <View style={styles.sheetOverlay}>
+      
+      <TouchableWithoutFeedback onPress={() => {}}>
+        <View style={styles.datePickerBox}>
+          <Calendar
+            minDate={minDate}
+            maxDate={today}
+            markedDates={
+              joiningDate
+                ? {
                     [dayjs(joiningDate).format("YYYY-MM-DD")]: {
                       selected: true,
                       selectedColor: "#1E45E1",
                     },
                   }
-                  : {}
-              }
-              onDayPress={(day) => {
-                setJoiningDate(day.dateString);
-                setOpenJoinDatePic(false);
-                setJoiningDateError("")
-              }}
-            />
-
-          </View>
+                : {}
+            }
+            onDayPress={(day) => {
+              Keyboard.dismiss();
+              setJoiningDate(day.dateString);
+              setOpenJoinDatePic(false);
+              setJoiningDateError("");
+            }}
+          />
         </View>
-      )}
+      </TouchableWithoutFeedback>
+
+    </View>
+  </TouchableWithoutFeedback>
+)}
+
     </>
   );
 }
