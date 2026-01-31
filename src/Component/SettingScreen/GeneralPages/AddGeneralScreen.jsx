@@ -155,6 +155,12 @@ export default function AddGeneralScreen({ navigation, route }) {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const validatePincode = (pin) => {
+  if (!pin.trim()) return "Please Enter Pincode";
+  if (!/^[1-9][0-9]{5}$/.test(pin.trim()))
+    return "Please Enter Valid 6-digit Pincode";
+  return "";
+};
 
   const handleSubmit = async () => {
     let newErrors = {};
@@ -184,9 +190,16 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
         "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character";
     }
 
-    if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+    // if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+    const pinError = validatePincode(pincode);
+if (pinError) newErrors.pincode = pinError;
+
     if (!city.trim()) newErrors.city = "Please Enter City";
-    if (selectedState === "Select State") newErrors.state = "Please Select State";
+    // if (selectedState === "Select State") newErrors.selectedState = "Please Select State";
+    if (!selectedState || selectedState === "Select State") {
+  newErrors.selectedState = "Please Select State";
+}
+
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -364,6 +377,7 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
   const [topWarning, setTopWarning] = useState("");
 
 
+
   const handleUpdate = async () => {
     let newErrors = {};
 
@@ -385,7 +399,12 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
     } else if (!emailRegex.test(email.trim())) {
       newErrors.email = "Please Enter Valid Email ID";
     }
-    if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+    // if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+ const pinError = validatePincode(pincode);
+if (pinError) newErrors.pincode = pinError;
+
+
+
     if (!city.trim()) newErrors.city = "Please Enter City";
     if (selectedState === "Select State") newErrors.state = "Please Select State";
 
@@ -759,14 +778,36 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
               }}
             />
 
-            <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            {/* <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" value={mobile}
               onChangeText={(t) => {
                 const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
                 setMobile(cleaned);
                 setErrors({ ...errors, mobile: "" });
                 setPhoneError("")
-              }} />
+              }} /> */}
+              <Text style={styles.label}>
+  Mobile Number <Text style={{ color: "red", fontWeight: "700" }}>*</Text>
+</Text>
+
+<View style={styles.phoneContainer}>
+  <Text style={styles.countryCode}>+91</Text>
+
+  <TextInput
+    style={styles.phoneInput}
+    placeholder="Enter mobile number"
+    keyboardType="number-pad"
+    value={mobile}
+    maxLength={10}
+    onChangeText={(t) => {
+      const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+      setMobile(cleaned);
+      setErrors({ ...errors, mobile: "" });
+      setPhoneError("");
+    }}
+  />
+</View>
+
             {/* {errors.mobile && (
             <Text style={styles.errText}>{errors.mobile}</Text>
           )} */}
@@ -1005,6 +1046,7 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
                               setSelectedState(v.label);
                               setStateQuery("");
                               setStateOpen(false);
+                              setErrors({ ...errors, selectedState: "" });
                             }}
                           >
                             <Text style={styles.optionText}>{v.label}</Text>
@@ -1014,21 +1056,8 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
                         <Text style={styles.noResult}>No state found</Text>
                       )}
 
-                      {/* 🔴 CLEAR OPTION */}
-                      {selectedState && (
-                        <TouchableOpacity
-                          style={{ padding: 12, alignItems: "center" }}
-                          onPress={() => {
-                            setSelectedState("");
-                            setStateQuery("");
-                            setStateOpen(false);
-                          }}
-                        >
-                          <Text style={{ color: "red", fontWeight: "600" }}>
-                            Clear selection
-                          </Text>
-                        </TouchableOpacity>
-                      )}
+                      
+                     
                     </ScrollView>
                   </View>
                 </>
@@ -1038,8 +1067,8 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
             {/* {errors.state && (
             <Text style={styles.errText}>{errors.state}</Text>
           )} */}
-            {errors.state && (
-              <ErrorMessage message={errors.state} type="error" />
+            {errors.selectedState && (
+              <ErrorMessage message={errors.selectedState} type="error" />
             )}
 
 
@@ -1324,6 +1353,28 @@ const styles = StyleSheet.create({
     // padding: 10,   // ✅ easy click area
     zIndex: 2000,
   },
+  phoneContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  height: 50,
+},
+
+countryCode: {
+  fontSize: 15,
+  color: "#000",
+  marginRight: 8,
+},
+
+phoneInput: {
+  flex: 1,
+  fontSize: 15,
+  color: "#000",
+},
+
 
 
 
