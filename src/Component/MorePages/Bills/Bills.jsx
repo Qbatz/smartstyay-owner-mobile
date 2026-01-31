@@ -2323,7 +2323,7 @@ navigation.navigate("CancelNotice")
     <Animated.View
       style={[
         styles.transactionSheet,
-        { height: "80%", transform: [{ translateY: recordSheetY }] }
+        { height: "90%", transform: [{ translateY: recordSheetY }] }
       ]}
       {...recordPan.panHandlers}
     >
@@ -2473,7 +2473,7 @@ navigation.navigate("CancelNotice")
 ) : null} */}
 
 
-
+ {/* <View style={{ position: "relative" }}>
       <Text style={styles.label}>
   Transaction Mode <Text style={{ color: "red" }}>*</Text>
 </Text>
@@ -2551,11 +2551,78 @@ navigation.navigate("CancelNotice")
     </ScrollView>
   </View>
 )}
+</View> */}
+
+<View style={{ position: "relative" }}>
+  <Text style={styles.label}>
+    Transaction Mode <Text style={{ color: "red" }}>*</Text>
+  </Text>
+
+  {/* INPUT */}
+  <TouchableOpacity
+    style={styles.inputBox}
+    onPress={() => {
+      setModeError("");
+      setShowPaymentMode(v => !v);
+    }}
+  >
+    <Text style={{ fontSize: 15 }}>
+      {selectedMode
+        ? transactionOptions.find(o => o.value === selectedMode)?.label
+        : "Select payment mode"}
+    </Text>
+
+    <Image
+      source={DownArrow}
+      style={{ width: 18, height: 18, tintColor: "#555" }}
+    />
+  </TouchableOpacity>
+
+  {/* DROPDOWN */}
+  {showPaymentMode && (
+    <View style={styles.transactiondropdown}>
+      <ScrollView
+        nestedScrollEnabled
+        scrollEnabled={transactionOptions.length > 3}
+        showsVerticalScrollIndicator={false}
+      >
+        {transactionOptions.map(opt => {
+          const isSelected = selectedMode === opt.value;
+
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.dropdownRow,
+                isSelected && styles.dropdownRowSelected,
+              ]}
+              onPress={() => {
+                setSelectedMode(opt.value);
+                setShowPaymentMode(false);
+                setModeError("");
+              }}
+            >
+              <Text
+                style={
+                  isSelected
+                    ? styles.dropdownTextSelected
+                    : styles.dropdownText
+                }
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  )}
+
+  {modeError && <ErrorMessage message={modeError} type="error" />}
+</View>
 
 
- {modeError && (
-                    <ErrorMessage message={modeError} type="error" />
-                                )}
+
 
         <Text style={styles.label}>Transaction ID</Text>
         <TextInput
