@@ -298,7 +298,7 @@ export default function AddTenant() {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Add Tenant</Text>
+                    <Text style={styles.headerTitle}>Add New Tenant</Text>
                 </View>
 
 
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#fff",
         paddingHorizontal: 16,
-        paddingTop: 50,
+        paddingTop:30,
         paddingBottom: 10
     },
     container1: {
@@ -804,7 +804,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginVertical: 15,
+        marginVertical:6,
         paddingHorizontal: 10,
         backgroundColor: "#F4F8FF",
         padding: 13,
@@ -856,8 +856,8 @@ const styles = StyleSheet.create({
     profileSection: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 15,
-        marginBottom: 25,
+        marginTop: 5,
+        marginBottom: 5,
     },
 
     profileWrapper: {
@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     form: {
-        marginBottom: 10,
+        marginBottom:0,
     },
     label: {
         fontSize: 14,
@@ -959,7 +959,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "flex-end",   // ← centers the buttons
         alignItems: "center",
-        marginTop: 20,
+        marginTop: 15,
         marginBottom: 40,
     },
 

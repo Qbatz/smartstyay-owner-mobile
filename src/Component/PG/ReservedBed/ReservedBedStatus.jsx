@@ -265,14 +265,34 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
 
 
-    <View style={styles.userRow}>
+    {/* <View style={styles.userRow}>
       <Image source={Profile} style={styles.userImg} />
 
       <View>
         <Text style={styles.userName}>{item.tenantFullName}</Text>
         <Text style={styles.phone}>+91 {item.mobile}</Text>
       </View>
+    </View> */}
+    <View style={styles.userRow}>
+  {item.profilePic ? (
+    <Image
+      source={{ uri: item.profilePic }}
+      style={styles.userImg}
+    />
+  ) : (
+    <View style={styles.initialsCircle}>
+      <Text style={styles.initialsText}>
+        {item.tenantInitials || item.tenantFullName?.charAt(0)}
+      </Text>
     </View>
+  )}
+
+  <View>
+    <Text style={styles.userName}>{item.tenantFullName}</Text>
+    <Text style={styles.phone}>+91 {item.mobile}</Text>
+  </View>
+</View>
+
 
     <View style={{ marginTop: 15 }}>
       <Text style={styles.infoLabel}>Booked Date</Text>
@@ -550,6 +570,21 @@ menuOverlay: {
   bottom: 0,
   zIndex: 999,
 },
+initialsCircle: {
+  width: 50,
+  height: 50,
+  borderRadius: 25,
+   backgroundColor: "#E5E7EB",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+initialsText: {
+   color: "#374151", 
+  fontSize: 18,
+  fontWeight: "700",
+},
+
 
 
 

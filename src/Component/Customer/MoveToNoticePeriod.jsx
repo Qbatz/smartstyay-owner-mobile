@@ -43,6 +43,8 @@ export default function MoveNoticeSheet({
 
   const [reason, setReason] = useState("");
 const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
+const [keyboardHeight, setKeyboardHeight] = useState(0);
+
 
 
   const [message, setMessage] = useState("");
@@ -124,6 +126,22 @@ useEffect(() => {
     const res = await getAllBedsByRoom(customer.roomId);
 
   };
+
+  useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+
 
   const handleMoveNotice = async () => {
     let hasError = false;
@@ -321,19 +339,12 @@ for (let i = -90; i <= 90; i++) {
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-      <View style={styles.overlay}>
+ <View style={styles.overlay}>
 
-
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-  <View style={{ flex: 1 }} />
-</TouchableWithoutFeedback>
-
-
-
-        <Animated.View
-          {...panResponder.panHandlers}
-          style={[styles.sheet, { transform: [{ translateY }] }]}
-        >
+    <Animated.View
+      style={[styles.sheet, { transform: [{ translateY }] }]}
+      {...panResponder.panHandlers}
+    >
           <View style={styles.handle} />
 
           <Text style={styles.title}>Move to Notice Period?</Text>
@@ -368,10 +379,10 @@ for (let i = -90; i <= 90; i++) {
   keyboardShouldPersistTaps="handled"
   keyboardDismissMode="on-drag"
   contentContainerStyle={{
-    paddingBottom: keyboardOpen ? 260 : 60,
+    paddingBottom: keyboardHeight + 5,  
   }}
-  
 >
+
 
 
 
@@ -390,7 +401,7 @@ for (let i = -90; i <= 90; i++) {
             )}
 
 
-            <Text style={styles.label}>Checkout Date <Text style={{color:"red"}}>*</Text></Text>
+            <Text style={styles.label}>Check-Out Date  <Text style={{color:"red"}}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBox}
               onPress={() => setOpenCheckoutPicker(true)}
@@ -412,20 +423,21 @@ for (let i = -90; i <= 90; i++) {
   onChangeText={setReason}
   placeholder="Enter Reason"
   multiline
-  onFocus={() => {
-    setTimeout(() => {
-      reasonRef.current?.measureLayout(
-        scrollRef.current,
-        (x, y) => {
-          scrollRef.current?.scrollTo({
-            y: y - 20,
-            animated: true,
-          });
-        },
-        () => {}
-      );
-    }, 200);
-  }}
+ onFocus={() => {
+  setTimeout(() => {
+    reasonRef.current?.measureLayout(
+      scrollRef.current,
+      (x, y) => {
+        scrollRef.current?.scrollTo({
+          y: y - 20,
+          animated: true,
+        });
+      },
+      () => {}
+    );
+  }, 200);
+}}
+
 />
 
           </ScrollView>
@@ -444,7 +456,7 @@ for (let i = -90; i <= 90; i++) {
 
           </View>
         </Animated.View>
-      
+      {/* </KeyboardAvoidingView> */}
        
       </View>
       <Modal
@@ -583,22 +595,25 @@ for (let i = -90; i <= 90; i++) {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
+overlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "flex-end",
+},
 
- sheet: {
+
+sheet: {
   backgroundColor: "#fff",
   padding: 20,
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
- flexShrink: 1,
- paddingBottom:50
- 
+  maxHeight: "85%",
 },
+
 
 
 

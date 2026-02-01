@@ -15,7 +15,7 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 
 const { height } = Dimensions.get("window");
-const SHEET_HEIGHT = height * 0.45;
+const SHEET_HEIGHT = height * 0.50;
 
 export default function EditBasicDetailsSheet({
     visible,
@@ -233,10 +233,17 @@ export default function EditBasicDetailsSheet({
                                 style={styles.input}
                                 placeholder="Enter FirstName"
                                 value={firstName}
-                                onChangeText={(text) => {
-                                    setFirstName(text);
-                                    setFirstNameError("");
-                                }}
+                                // onChangeText={(text) => {
+                                //     setFirstName(text);
+                                //     setFirstNameError("");
+                                // }}
+onChangeText={(text) => {
+  const cleanText = text.replace(/[^a-zA-Z ]/g, "");
+  setFirstName(cleanText);
+  setFirstNameError("");
+}}
+
+
                             />
                             {firstNameError && <ErrorMessage message={firstNameError} type="error" />}
                             <Text style={styles.label}>Last Name </Text>
@@ -244,7 +251,12 @@ export default function EditBasicDetailsSheet({
                                 style={styles.input}
                                 value={lastName}
                                 placeholder="Enter LastName"
-                                onChangeText={setLastName}
+                                // onChangeText={setLastName}
+                                onChangeText={(text) => {
+  const cleanText = text.replace(/[^a-zA-Z ]/g, "");
+  setLastName(cleanText);
+ 
+}}
                             />
 
                             {/* <Text style={styles.label}>Mobile Number *</Text>
@@ -264,10 +276,15 @@ export default function EditBasicDetailsSheet({
                                 style={styles.input}
                                 placeholder="Enter Email Id"
                                 value={email}
-                                onChangeText={(text) => {
-                                    setEmail(text.toLowerCase());
-                                    setEmailError("");
-                                }}
+                               onChangeText={(text) => {
+  const cleanText = text
+    .replace(/[^a-zA-Z0-9@._-]/g, "")
+    .toLowerCase();
+
+  setEmail(cleanText);
+  setEmailError("");
+}}
+
                             />
                             {emailError && <ErrorMessage message={emailError} type="error" />}
 
@@ -334,7 +351,8 @@ const styles = StyleSheet.create({
     footer: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginTop: 20,
+        marginTop: 10,
+        
     },
     cancel: { fontSize: 14, color: "#374151" },
     updateBtn: {
