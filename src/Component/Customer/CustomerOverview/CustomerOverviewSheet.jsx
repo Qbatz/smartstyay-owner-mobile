@@ -24,6 +24,7 @@ import ProfileImg from "../../../Assets/Images/profile.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import RoomIcon from "../../../Assets/Images/profile.png";
 import BedIcon from "../../../Assets/Images/profile.png";
+import StayHistorySheet from "./StayHistory"
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer,customerId } = route.params || {};
@@ -38,6 +39,7 @@ const { activeHostelId } = useContext(CommonContexts);
     const [showEditRent, setShowEditRent] = useState(false);
     const [showEditAdvance,setShowEditAdvance] = useState(false)
     const [showAssignAmenities,setShowAssignAmenities] = useState(false)
+    const [showStayHistory,setShowStayHistory] =useState(false)
  useEffect(() => {
     if (customer?.customerId || customerId) {
       fetchCustomerDetails();
@@ -127,7 +129,10 @@ useEffect(() => {
       setActiveTab("Overview");
       return true;
     }
-
+if (showStayHistory) {
+  setShowStayHistory(false);
+  return true;
+}
     // ✅ 3) Overview வந்தா மட்டும் goBack()
     navigation.goBack();
     return true;
@@ -146,10 +151,10 @@ useEffect(() => {
   showEditJoiningDate,
   showEditRent,
   showEditAdvance,
-  showAssignAmenities,
+  showAssignAmenities,showStayHistory
 ]);
 
-  console.log("customre",customerDetails)
+  console.log("customerDetails",customerDetails)
   const renderTab = () => {
     switch (activeTab) {
       case "EB Reading":
@@ -177,13 +182,18 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
       </View>
 
       {/* PROFILE CARD */}
-      <View style={styles.profileCard}>
+      {/* <View style={styles.profileCard}>
         <Image source={ProfileImg} style={styles.avatar} />
 
         <View style={{ flex: 1 }}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{customerDetails?.fullName}</Text>
             <Text style={styles.verified}>✔</Text>
+            <TouchableOpacity onPress={() => setShowStayHistory(true)}>
+  <Text style={[styles.verified, { color: "#2563EB" }]}>
+    Stay
+  </Text>
+</TouchableOpacity>
           </View>
 
           <View style={styles.metaRow}>
@@ -199,13 +209,57 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
           </View>
         </View>
 
-        {/* <TouchableOpacity>
-          <Image
-            source={Dots}
-            style={{ width: 22, height: 22, transform: [{ rotate: "90deg" }] }}
-          />
-        </TouchableOpacity> */}
-      </View>
+        
+      </View> */}
+  <View style={styles.profileCard}>
+
+  {/* PROFILE IMAGE */}
+  <Image source={ProfileImg} style={styles.avatar} />
+
+  {/* NAME */}
+  <View style={styles.nameRowCenter}>
+    <Text style={styles.name}>
+      {customerDetails?.fullName}
+    </Text>
+    <Text style={styles.verified}>✔</Text>
+  </View>
+
+  {/* ROOM DETAILS */}
+  <View style={styles.metaRowCenter}>
+    <View style={styles.floorBadge}>
+      <Text style={styles.floorText}>
+        {customerDetails?.hostelInfo?.floorName}
+      </Text>
+    </View>
+
+    <Image source={RoomIcon} style={styles.icon} />
+    <Text style={styles.metaText}>
+      {customerDetails?.hostelInfo?.roomName}
+    </Text>
+
+    <Image source={BedIcon} style={styles.icon} />
+    <Text style={styles.metaText}>
+      {customerDetails?.hostelInfo?.bedName}
+    </Text>
+  </View>
+
+  {/* BUTTON ROW */}
+  <View style={styles.actionRow}>
+    <TouchableOpacity style={styles.walletBtn}>
+      <Text style={styles.walletText}>Wallet</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.stayBtn}
+      onPress={() => setShowStayHistory(true)}
+    >
+      <Text style={styles.stayText}>Stay History</Text>
+    </TouchableOpacity>
+  </View>
+
+</View>
+
+
 
       {/* TABS */}
       <View style={styles.tabRow}>
@@ -271,6 +325,11 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
   customerDetails={customerDetails}
    onSuccess={fetchCustomerDetails}
 />
+<StayHistorySheet
+  visible={showStayHistory}
+  onClose={() => setShowStayHistory(false)}
+  customerDetails={customerDetails}
+/>
     </>
   );
 }
@@ -296,22 +355,48 @@ const styles = StyleSheet.create({
     backgroundColor: "red",
   },
 
-  profileCard: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 14,
-    elevation: 3,
-    marginBottom: 14,
-    alignItems: "center",
-  },
+profileCard: {
+  flexDirection: "column",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 16,
+  marginBottom: 14,
+  alignItems: "center",
 
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 12,
-  },
+  // ✅ Border
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+
+  // ✅ Shadow (iOS)
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 8,
+
+  // ✅ Shadow (Android)
+  elevation: 3,
+},
+
+
+avatar: {
+  width: 90,
+  height: 90,
+  borderRadius: 45,
+  marginBottom: 12,
+},
+nameRowCenter: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  marginBottom: 10,
+},
+metaRowCenter: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  marginBottom: 18,
+},
+
 
   nameRow: {
     flexDirection: "row",
@@ -367,4 +452,38 @@ const styles = StyleSheet.create({
     marginTop: 6,
     borderRadius: 10,
   },
+  actionRow: {
+  flexDirection: "row",
+  marginTop: 12,
+  gap: 10,
+},
+
+walletBtn: {
+ flex: 1,
+  backgroundColor: "#E6F4EA",
+  paddingVertical: 12,
+  borderRadius: 12,
+  alignItems: "center",
+},
+
+walletText: {
+  color: "#1B873F",
+  fontSize: 13,
+  fontWeight: "600",
+},
+
+stayBtn: {
+ flex: 1,
+  backgroundColor: "#E6ECFF",
+  paddingVertical: 12,
+  borderRadius: 12,
+  alignItems: "center",
+},
+
+stayText: {
+  color: "#2563EB",
+  fontSize: 13,
+  fontWeight: "600",
+},
+
 });

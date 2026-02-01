@@ -344,7 +344,13 @@ useEffect(() => {
 
           <Text style={styles.sectionLabel}>Date <Text style={{color:"red"}}>*</Text></Text>
           <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
+            // onPress={() => setShowDatePicker(true)}
+            onPress={() => {
+  Keyboard.dismiss();          
+  setTimeout(() => {
+    setShowDatePicker(true);  
+  }, 150);
+}}
             style={styles.inputBoxDate}
           >
             <Text style={{ color: selectedDate ? "#000" : "#999" }}>
