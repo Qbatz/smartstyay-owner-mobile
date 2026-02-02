@@ -127,7 +127,7 @@ const [keyboardHeight, setKeyboardHeight] = useState(0);
  useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       Animated.timing(translateY, {
-        toValue: -e.endCoordinates.height + 40,
+        toValue: -e.endCoordinates.height + 90,
         duration: 180,
         useNativeDriver: true,
       }).start();

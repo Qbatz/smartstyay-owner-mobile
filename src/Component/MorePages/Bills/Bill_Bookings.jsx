@@ -40,7 +40,7 @@ import DeleteIcon from  "../../../Assets/Images/trash.png"
 import EditIcon from  "../../../Assets/Images/editIcon.png"  
 import TickIcon from  "../../../Assets/Images/tick-circle.png" 
 
-const Receipt = ({onSelectReceipt}) => {
+const BillBookings = ({onSelectReceipt}) => {
 
   const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
       UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt , getReceiptPdfDetails} = useContext(BillContext);
@@ -317,7 +317,7 @@ const handleDeleteReceipt = async () => {
       resizeMode="contain"
     />
     <Text style={styles.emptyText}>
-      No Receipts Found
+      No Bookings Found
     </Text>
   </View>
 );
@@ -338,19 +338,7 @@ const renderItem = ({ item }) => {
           style={styles.avatar}
         />
       </TouchableOpacity> */}
-      {/* <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
-  {item?.profilePic ? (
-    <Image source={{ uri: item.profilePic }} style={styles.avatar} />
-  ) : (
-    <View style={styles.initialCircle}>
-      <Text style={styles.initialText}>
-        {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
-      </Text>
-    </View>
-  )}
-</TouchableOpacity> */}
-
- <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
+ <TouchableOpacity >
   <View style={styles.avatarWrapper}>
     {item?.profilePic ? (
       <Image source={{ uri: item.profilePic }} style={styles.avatar} />
@@ -370,6 +358,7 @@ const renderItem = ({ item }) => {
 </TouchableOpacity>
 
 
+
       <View style={{ flex: 1 }}>
         {/* <Text style={styles.name}>{item.fullName}</Text> */}
          <TouchableOpacity
@@ -384,9 +373,9 @@ const renderItem = ({ item }) => {
         </TouchableOpacity>
 
         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-          <View style={styles.tagBox}>
+          {/* <View style={styles.tagBox}>
             <Text style={styles.tag}>{item.invoiceType}</Text>
-          </View>
+          </View> */}
 
           <Image
             source={Bills_Black_Icon}
@@ -398,7 +387,7 @@ const renderItem = ({ item }) => {
       </View>
 
       <View style={styles.rightSection}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           ref={(r) => (dotsRefs.current[item.transactionId] = r)}
           onPress={() => openMenu(item, item.transactionId)}
         >
@@ -406,7 +395,9 @@ const renderItem = ({ item }) => {
             source={Dots}
             style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+
+        <Text>₹ 1500</Text>
 
         <Text style={styles.dateText}>
           {formatApiDate(item.paidAt)}
@@ -438,7 +429,7 @@ const renderItem = ({ item }) => {
       </View>
 
  <FlatList
-  data={receiptsList || []}
+  data={[]}
   renderItem={renderItem}
   keyExtractor={(item) => item.transactionId}
   showsVerticalScrollIndicator={false}
@@ -454,11 +445,11 @@ const renderItem = ({ item }) => {
 
 
 
-      <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
+      <TouchableOpacity style={styles.filterButton} >
           <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
 
-         <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
+         <TouchableOpacity style={styles.addBtn} >
               <Image source={AddIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
 
@@ -784,7 +775,7 @@ const renderItem = ({ item }) => {
   );
 };
 
-export default Receipt;
+export default BillBookings;
 
 const styles = StyleSheet.create({
 container: {
@@ -863,24 +854,6 @@ optionText: {
     borderBottomColor: "#F0F0F0",
   },
 
-  avatarWrapper: {
-  position: "relative",
-  marginRight: 12,
-},
-
-tickWrapper: {
-  position: "absolute",
-  top: -2,
-  right: -1,
-  backgroundColor: "#fff",   // white border effect
-  borderRadius: 10,
-  padding: 1,
-},
-
-tickIcon: {
-  width: 16,
-  height: 16,
-},
   avatar: {
     width: 40,
     height: 40,
@@ -994,6 +967,25 @@ userRow: {
   alignItems: "center",
   marginTop: 15,
 },
+avatarWrapper: {
+  position: "relative",
+  marginRight: 12,
+},
+
+tickWrapper: {
+  position: "absolute",
+  top: -2,
+  right: -1,
+  backgroundColor: "#fff",   // white border effect
+  borderRadius: 10,
+  padding: 1,
+},
+
+tickIcon: {
+  width: 16,
+  height: 16,
+},
+
 
 userImg: {
   width: 55,

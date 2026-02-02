@@ -23,6 +23,8 @@ import userImg from "../../Assets/Images/userImg.png";
 import Exchange from "../../Assets/Images/exchange.png";
 import room from "../../Assets/Images/Room_Icon.png";
 import Bed from "../../Assets/Images/bed.png";
+import Complaint_InprogressIcon from "../../Assets/Images/Complaint_Inprogress.png";
+
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -42,7 +44,7 @@ export default function ComplaintDetails({
  
   console.log("complaint", complaint);
   
-    const { getParticularComplaint , selectedComplaint } = useContext(ComplaintContext);
+    const { getParticularComplaint , selectedComplaint , complaintsViewUpdates } = useContext(ComplaintContext);
        const { activeHostelId } = useContext(CommonContexts);
 
        console.log("selectedComplaint", selectedComplaint);
@@ -141,8 +143,24 @@ const openComments = async () => {
   }
 };
 
+const isAssigned = !!complaint?.assigneeName?.trim();
+
 
 console.log("comments", complaint);
+
+
+const openUpdates = async () => {
+
+await  complaintsViewUpdates({
+    hostelId: activeHostelId,
+    complaintsId: complaint?.complaintId,
+  });
+  handleCloseSheet();
+  navigation.navigate("ComplaintUpdates", {
+    selectedComplaint,
+  });
+};
+
 
 
 
@@ -199,7 +217,7 @@ console.log("comments", complaint);
 
                   {complaint?.customerProfile ? (
             <Image
-              source={{ uri: item.customerProfile }}
+              source={{ uri: complaint.customerProfile }}
               style={styles.avatar}
             />
           ) : (
@@ -259,6 +277,29 @@ console.log("comments", complaint);
         <Text style={styles.value}>
           {complaint?.description}
         </Text>
+
+        {isAssigned && (
+  <View style={styles.assignedCard}>
+    <View style={styles.assignedHeader}>
+      <Text style={styles.assignedTitle}>Complaint Assigned</Text>
+
+      <View style={styles.statusPill}>
+        <Image source={Complaint_InprogressIcon} style={{height:13, width:13, marginTop:2}} />
+        <Text style={styles.statustext}>
+           In Progress
+        </Text>
+      </View>
+    </View>
+
+    <TouchableOpacity
+      style={styles.updateBtn}
+      onPress={openUpdates}  
+    >
+      <Text style={styles.updateBtnText}>See all updates</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
 
         {/* Comment */}
        <View style={styles.commentBox}>
@@ -449,6 +490,7 @@ initialText: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 25,
+    marginBottom:25
   },
 
   assignBtn: {
@@ -475,4 +517,55 @@ initialText: {
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
   assignText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   statusText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  assignedCard: {
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 14,
+  padding: 14,
+  marginTop: 16,
+  backgroundColor: "#fff",
+},
+
+assignedHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+assignedTitle: {
+  fontSize: 15,
+  fontWeight: "700",
+  color: "#000",
+},
+
+statusPill: {
+  display:'flex',
+  flexDirection:'row',
+  backgroundColor: "#FFF4E5",
+  paddingHorizontal: 12,
+  paddingVertical: 4,
+  borderRadius: 20,
+},
+
+statustext: {
+  marginLeft:5,
+  fontSize: 12,
+  fontWeight: "600",
+  color: "#FF8A00",
+},
+
+updateBtn: {
+  backgroundColor: "#1D5DFF",
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: "center",
+},
+
+updateBtnText: {
+  color: "#fff",
+  fontSize: 15,
+  fontWeight: "700",
+},
+
 });

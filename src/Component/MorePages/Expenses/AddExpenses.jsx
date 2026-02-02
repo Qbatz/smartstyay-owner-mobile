@@ -79,6 +79,7 @@ export default function AddExpenses({ navigation, route }) {
   const [subCategoryErr, setSubCategoryErr] = useState("");
   const [dateErr, setDateErr] = useState("");
   const [amountErr, setAmountErr] = useState("");
+  const [unitcountErr , setUnitCountErr] = useState("")
   const [modeErr, setModeErr] = useState("");
 
   const paymentOptions =
@@ -220,6 +221,14 @@ export default function AddExpenses({ navigation, route }) {
     </View>
   );
 
+
+  const isValidPositiveNumber = (val) => {
+  if (!val) return false;
+  const num = Number(val);
+  return !isNaN(num) && num > 0;
+};
+
+
   const handleSaveExpense = async () => {
     let hasError = false;
 
@@ -227,6 +236,7 @@ export default function AddExpenses({ navigation, route }) {
     setSubCategoryErr("");
     setDateErr("");
     setAmountErr("");
+    setUnitCountErr("")
     setModeErr("");
 
     if (!selectedCategory) {
@@ -248,6 +258,17 @@ export default function AddExpenses({ navigation, route }) {
       setAmountErr("Enter Valid Amount");
       hasError = true;
     }
+
+    if (!isValidPositiveNumber(purchaseAmount)) {
+  setAmountErr("Amount must be greater than 0");
+  hasError = true;
+}
+
+// UNIT COUNT VALIDATION
+if (unitCount && !isValidPositiveNumber(unitCount)) {
+  setUnitCountErr("Unit count must be greater than 0");
+  hasError = true;
+}
 
     if (!selectedMode) {
       setModeErr("Please Select Mode of Transaction");
@@ -512,10 +533,14 @@ export default function AddExpenses({ navigation, route }) {
             style={styles.inputBox}
             keyboardType="numeric"
             value={unitCount}
-            onChangeText={(v) => setUnitCount(v)}
+            onChangeText={(v) => {
+              setUnitCount(v)
+              setUnitCountErr("")
+            }
+            }
             placeholder="Enter unit count"
           />
-
+      {unitcountErr ? <ErrorMessage message={unitcountErr} type="error" /> : null}
 
 
 
