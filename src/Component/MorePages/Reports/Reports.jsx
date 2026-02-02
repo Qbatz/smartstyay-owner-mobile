@@ -29,6 +29,7 @@ import ExpensesIcon from "../../../Assets/Images/Expenses_Register.png";
 import ElectricityIcon from "../../../Assets/Images/Electricity_Bills.png";
 import FinalSettlementIcon from "../../../Assets/Images/Rupees.png";
 import BankIcon from "../../../Assets/Images/Bank_Transaction.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.42;
@@ -70,7 +71,28 @@ useEffect(() => {
     }
   };
   fetchReports();
-}, []);
+}, [])
+
+
+if (!activeHostelId && !loading) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Operational Reports</Text>
+        </View>
+      </View>
+
+      <View style={styles.emptyContainer}>
+        <Image source={EmptyState} style={styles.emptyImage} />
+        <Text style={styles.emptyText}>No Reports are there!</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
 
 
 const handleSwipe = () => {
@@ -97,6 +119,11 @@ const handleSwipe = () => {
        {loading && <Loader />}
     <SafeAreaView style={styles.container}>
       {/* 🔒 FIXED HEADER (NO ANIMATION) */}
+
+    
+     
+
+
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <TouchableOpacity  onPress={() => {navigation.goBack()}}>
@@ -371,5 +398,23 @@ const styles = StyleSheet.create({
   fontWeight: "500",
   color: "#374151",
 },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
 
 });

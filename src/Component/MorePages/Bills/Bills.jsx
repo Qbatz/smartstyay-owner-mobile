@@ -395,7 +395,7 @@ const payload = {
   endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
 };
 
-console.log("datepayload", payload);
+console.log("BillDetails", BillDetails);
 
 
     const [showBillDetails, setShowBillDetails] = useState(false);
@@ -820,6 +820,15 @@ const handleShowRecordPayment = () => {
 // }
 
 const handleCreateBill = () => {
+
+ if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
 navigation.navigate("CreateBills" , {mode: "add"})
 }
 
@@ -1423,6 +1432,8 @@ navigation.navigate("CancelNotice")
 //   },
 // ];
 
+
+
   return (
 
     <>
@@ -1606,7 +1617,7 @@ navigation.navigate("CancelNotice")
 ) }
 
 {( 
-   !loading && BillDetails?.listInvoices && BillDetails.listInvoices.length === 0 &&
+   !loading && BillDetails && ( BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0 ) &&
       <View style={styles.centerContainer}>
         <Image source={EmptyFloor} style={styles.image} />
         <Text style={styles.noFloorText}>No bills are there!</Text>

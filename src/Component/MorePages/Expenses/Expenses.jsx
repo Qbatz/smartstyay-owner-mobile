@@ -33,7 +33,7 @@ import FilterIcon from "../../../Assets/Images/filter.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CloseIcon from "../../../Assets/Images/remove.png";
 import { useFocusEffect } from '@react-navigation/native';
-
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function ExpensesScreen() {
   const navigation = useNavigation();
@@ -68,6 +68,9 @@ export default function ExpensesScreen() {
   const [showTagAsset, setShowTagAsset] = useState(false);
   const [deleteshow, setDeleteShow] = useState(false)
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
   const amountOptions = [
     "Low to High (Lowest First)",
@@ -295,6 +298,13 @@ export default function ExpensesScreen() {
   };
 
   const handleShowAddExpense = () => {
+      if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
     navigation.navigate("AddExpenses")
   }
 
@@ -357,6 +367,12 @@ export default function ExpensesScreen() {
   return (
     <>
       {loading && <Loader />}
+           <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/> 
 
       <View style={styles.container}>
 

@@ -14,7 +14,7 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder, KeyboardAvoidingView ,Keyboard
+  PanResponder, KeyboardAvoidingView ,Keyboard , SafeAreaView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
@@ -622,6 +622,25 @@ const handleEditBanking = (item) => {
  }
 
  
+if (!activeHostelId && !loading) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Banking</Text>
+        </View>
+      </View>
+
+      <View style={styles.emptyContainer}>
+        <Image source={EmptyStateImage} style={styles.emptyImage} />
+        <Text style={styles.emptyText}>No Banks are there!</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
 
 
   return (
@@ -1738,6 +1757,26 @@ sheetTitle: {
 
   topActions: { flexDirection: "row", alignItems: "center" },
   headerIcon: { width: 20, height: 20, marginLeft: 12 },
+   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    zIndex: 100,
+  },
+
+  headerRow: {
+    height: 50,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  backIcon: { width: 22, height: 22, marginRight: 10 },
+
+  title: { fontSize: 18, fontWeight: "700" },
 
   divider: { height: 1, backgroundColor: "#E8E8E8", marginVertical: 12 },
 
@@ -1916,6 +1955,23 @@ addBalanceBtnText: {
   fontWeight: "700",
 },
 
-
+ emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
 
 });

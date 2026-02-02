@@ -104,6 +104,20 @@ const [modalType, setModalType] = useState("success");
   const [isEdit, setIsEdit] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
 
+  const handleAddAsset = () => {
+     if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+    setIsEdit(false);
+    setSelectedAsset(null);
+    setShowAddAsset(true);
+  }
+
   
 const handleDeleteAsset = async () => {
   if (!selectedAsset?.assetId) return;
@@ -146,11 +160,7 @@ const EmptyState = () => (
     
           <TouchableOpacity
   style={styles.emptystateBtn}
-  onPress={() => {
-    setIsEdit(false);
-    setSelectedAsset(null);
-    setShowAddAsset(true);
-  }}
+  onPress={handleAddAsset}
 >
   <Text style={styles.emptystateText}>
     + Add Asset

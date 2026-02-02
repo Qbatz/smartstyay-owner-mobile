@@ -216,6 +216,17 @@ const openSheet = (edit = false, item = null) => {
   }).start();
 };
 
+const handleShowAmenity = () => {
+      if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+  openSheet(false)
+}
+
 
   const closeSheet = () => {
     Animated.timing(sheetY, { toValue: 700, duration: 200, useNativeDriver: true }).start(() => {
@@ -692,11 +703,11 @@ const moveUpSelected = async () => {
               <Image source={EmptyAmenity} style={styles.emptyImg} />
               <Text style={styles.emptyTitle}>No Amenities are there!</Text>
 
-              <TouchableOpacity style={styles.addButtonEmpty} onPress={() => openSheet(false)}>
+              <TouchableOpacity style={styles.addButtonEmpty} onPress={handleShowAmenity}>
                 <Text style={styles.addBtnText}>+  Add Amenity</Text>
               </TouchableOpacity>
             </View>
-          ) : (
+          ) : (  
             <FlatList
               data={amenities}
               keyExtractor={(i) => i.id}
