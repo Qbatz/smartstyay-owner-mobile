@@ -1,7 +1,8 @@
 import React,{useState,useEffect,useCallback,useRef,useContext} from "react";
-import { View, Text, StyleSheet,ScrollView } from "react-native";
+import { View, Text, StyleSheet,ScrollView ,Image} from "react-native";
 import { ElectricityContext } from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 const EB_DATA = [
   {
@@ -64,9 +65,14 @@ const customerId = customerDetails.customerDetails?.customerId
   contentContainerStyle={{ paddingBottom: 16 }}
 >
   {historyList.length === 0 ? (
-    <Text style={{ textAlign: "center", marginTop: 20, color: "#6B7280" }}>
+  
+     <View style={styles.emptyContainer}>
+    <Image source={EmptyState} style={styles.image} resizeMode="contain" />
+    <Text style={styles.emptyText}>
       No EB readings found
     </Text>
+  </View>
+   
   ) : (
     historyList.map((item, index) => {
       const getMonthYear = (dateStr) => {
@@ -186,4 +192,21 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: 6,
   },
+    image: {
+    width: 180,
+    height: 180,
+  },
+  emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingVertical: 80, // little push to center nicely
+},
+
+emptyText: {
+  marginTop: 20,
+  fontSize: 15,
+  color: "#6B7280",
+},
+
 });
