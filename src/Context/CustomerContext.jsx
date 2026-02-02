@@ -1074,6 +1074,45 @@ const initializeCancelCheckout = async (hostelId, customerId) => {
 };
 
 
+const getDashboardByHostel = async (hostelId) => {
+  if (!hostelId) {
+    return { success: false, message: "HostelId missing" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/dashboard/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Dashboard fetch failed" };
+
+  } catch (error) {
+    console.log("DASHBOARD ERROR 👉", error?.response?.data);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Unable to fetch dashboard data",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -1094,7 +1133,7 @@ const initializeCancelCheckout = async (hostelId, customerId) => {
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
-        getVendorList, deleteVendor,
+        getVendorList, deleteVendor,getDashboardByHostel
       }}
     >
       {children}

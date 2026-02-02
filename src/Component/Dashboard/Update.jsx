@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView,Image,TouchableOpacity } from "react-native";
+import ComingSoomImage from "../../Assets/Images/Coming_soon.png";
 
-export default function UpdatesScreen() {
+export default function UpdatesScreen({onGoBack}) {
   const updates = [
     {
       id: 1,
@@ -23,111 +24,175 @@ export default function UpdatesScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {updates.map((item, index) => (
-        <View key={item.id} style={styles.row}>
-          {/* Timeline Column */}
-          <View style={styles.timelineColumn}>
-            <View
-              style={[
-                styles.dot,
-                {
-                  backgroundColor: item.active ? "#3B82F6" : "#fff",
-                  borderWidth: item.active ? 0 : 2,
-                },
-              ]}
-            />
-            {index < updates.length - 1 && <View style={styles.line} />}
-          </View>
+//     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+//       {updates.map((item, index) => (
+//         <View key={item.id} style={styles.row}>
+          
+//           <View style={styles.timelineColumn}>
+//             <View
+//               style={[
+//                 styles.dot,
+//                 {
+//                   backgroundColor: item.active ? "#3B82F6" : "#fff",
+//                   borderWidth: item.active ? 0 : 2,
+//                 },
+//               ]}
+//             />
+//             {index < updates.length - 1 && <View style={styles.line} />}
+//           </View>
 
-          {/* Content */}
-          <View style={styles.card}>
-            <Text style={styles.date}>{item.date}</Text>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.desc}>{item.desc}</Text>
+       
+//           <View style={styles.card}>
+//             <Text style={styles.date}>{item.date}</Text>
+//             <Text style={styles.title}>{item.title}</Text>
+//             <Text style={styles.desc}>{item.desc}</Text>
 
             
             
-                <View style={styles.imageRow}>
-  <View style={styles.imagePlaceholder} />
-  <View style={styles.imagePlaceholder} />
-</View>
-              </View>
+//                 <View style={styles.imageRow}>
+//   <View style={styles.imagePlaceholder} />
+//   <View style={styles.imagePlaceholder} />
+// </View>
+//               </View>
           
        
+//         </View>
+//       ))}
+//     </ScrollView>
+<View style={styles.container}>
+          <Image
+            source={ComingSoomImage}
+            style={styles.image}
+            resizeMode="contain"
+          />
+    
+          <Text style={styles.title}>
+            We’re still working on this feature!
+          </Text>
+    
+          <Text style={styles.subtitle}>
+            Our team is building something helpful for you.
+            {"\n"}Check back again shortly.
+          </Text>
+    
+          <TouchableOpacity
+  style={styles.button}
+  onPress={onGoBack}
+>
+            <Text style={styles.buttonText}>← Go Back</Text>
+          </TouchableOpacity>
         </View>
-      ))}
-    </ScrollView>
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: "#F9FAFF",
+//     paddingHorizontal: 12,
+//     paddingTop:5,
+//     marginBottom:20
+//   },
+//   row: {
+//     flexDirection: "row",
+//     marginBottom: 30,
+//   },
+//   timelineColumn: {
+//     width: 25,
+//     alignItems: "center",
+//   },
+//   dot: {
+//     width: 12,
+//     height: 12,
+//     borderRadius: 6,
+//     borderColor: "#3B82F6",
+//     marginTop: 5,
+//   },
+//   line: {
+//     width: 1,
+//     flex: 1,
+//     backgroundColor: "#E5E7EB",
+//     marginTop: 2,
+//   },
+//   card: {
+//     flex: 1,
+//     backgroundColor: "#fff",
+//     borderRadius: 12,
+//     padding: 14,
+//     borderWidth: 1,
+//     borderColor: "#E5E7EB",
+//     elevation: 1,
+//     shadowColor: "#000",
+//     shadowOffset: { width: 0, height: 1 },
+//     shadowOpacity: 0.1,
+//     shadowRadius: 2,
+//   },
+//   date: {
+//     fontSize: 12,
+//     color: "#6B7280",
+//     marginBottom: 6,
+//   },
+//   title: {
+//     fontSize: 15,
+//     fontWeight: "700",
+//     color: "#111827",
+//     marginBottom: 8,
+//   },
+//   desc: {
+//     fontSize: 13,
+//     color: "#374151",
+//     lineHeight: 20,
+//   },
+//   imageRow: {
+//     flexDirection: "row",
+//     marginTop: 12,
+//   },
+//   imagePlaceholder: {
+//     width: 70,
+//     height: 55,
+//     backgroundColor: "#E7F1FF",
+//     borderRadius: 8,
+//     marginRight: 8,
+//   },
+// });
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFF",
-    paddingHorizontal: 12,
-    paddingTop:5,
-    marginBottom:20
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
   },
-  row: {
-    flexDirection: "row",
+  image: {
+    width: "100%",
+    height: 230,
     marginBottom: 30,
   },
-  timelineColumn: {
-    width: 25,
-    alignItems: "center",
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderColor: "#3B82F6",
-    marginTop: 5,
-  },
-  line: {
-    width: 1,
-    flex: 1,
-    backgroundColor: "#E5E7EB",
-    marginTop: 2,
-  },
-  card: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  date: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginBottom: 6,
-  },
   title: {
-    fontSize: 15,
+    fontSize: 24,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 8,
+    textAlign: "center",
+    marginBottom: 10,
   },
-  desc: {
-    fontSize: 13,
-    color: "#374151",
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
     lineHeight: 20,
+    marginBottom: 30,
   },
-  imageRow: {
-    flexDirection: "row",
-    marginTop: 12,
+  button: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    width: "100%",
+    alignItems: "center",
   },
-  imagePlaceholder: {
-    width: 70,
-    height: 55,
-    backgroundColor: "#E7F1FF",
-    borderRadius: 8,
-    marginRight: 8,
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
