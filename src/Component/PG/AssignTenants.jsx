@@ -686,8 +686,6 @@ const scrollInputIntoView = (refOrNode) => {
   keyboardDismissMode="on-drag"
   showsVerticalScrollIndicator={false}
   scrollEnabled={!checkinTenantsOpen}
-  onStartShouldSetResponder={() => checkinTenantsOpen}  
-  onMoveShouldSetResponder={() => checkinTenantsOpen}    
   contentContainerStyle={{
     paddingBottom: keyboardHeight + 80,
   }}
