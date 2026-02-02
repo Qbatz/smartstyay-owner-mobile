@@ -25,11 +25,15 @@ import Dots from "../../../Assets/Images/3dots.png";
 import RoomIcon from "../../../Assets/Images/profile.png";
 import BedIcon from "../../../Assets/Images/profile.png";
 import StayHistorySheet from "./StayHistory"
+import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { Alert } from "react-native";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer,customerId } = route.params || {};
 const { activeHostelId } = useContext(CommonContexts);
- const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
+ const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails,editBasicDetails } = useCustomer();
   console.log("customer",customer)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails,setCustomerDetails] = useState("")
@@ -40,6 +44,13 @@ const { activeHostelId } = useContext(CommonContexts);
     const [showEditAdvance,setShowEditAdvance] = useState(false)
     const [showAssignAmenities,setShowAssignAmenities] = useState(false)
     const [showStayHistory,setShowStayHistory] =useState(false)
+    const [profileImage, setProfileImage] = useState(null);
+    const [modalType, setModalType] = useState("success");
+        const [showSuccess, setShowSuccess] = useState(false);
+        const [message, setMessage] = useState("");
+
+
+    console.log("customerDetails",customerDetails)
  useEffect(() => {
     if (customer?.customerId || customerId) {
       fetchCustomerDetails();
@@ -77,13 +88,132 @@ const closeEditMonthlyRent = () => {
       alert(res.message);
     }
   };
+const handleProfilePress = () => {
+  Alert.alert(
+    "Change Profile Picture",
+    "Choose an option",
+    [
+      {
+        text: "Camera",
+        onPress: () => openCamera(),
+      },
+      {
+        text: "Gallery",
+        onPress: () => openGallery(),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]
+  );
+};
 
- 
+const openCamera = () => {
+  launchCamera(
+    {
+      mediaType: "photo",
+      quality: 0.7,
+    },
+    (response) => {
+      if (response.didCancel) return;
+      if (response.assets && response.assets.length > 0) {
+        setProfileImage(response.assets[0]);
+      }
+    }
+  );
+};
+const openGallery = () => {
+  launchImageLibrary(
+    { mediaType: "photo", quality: 0.7 },
+    async (response) => {
+      if (response.didCancel) return;
+
+      if (response.assets?.length > 0) {
+        const image = response.assets[0];
+
+        setProfileImage(image); // UI update
+
+        // ✅ Send existing details as payload
+        const res = await editBasicDetails(
+          customerDetails.customerId,
+          {
+            firstName: customerDetails?.firstName || "",
+            lastName: customerDetails?.lastName || "",
+            mailId: customerDetails?.emailId || "",
+            phoneNumber: customerDetails?.phoneNumber || "",
+          },
+          image
+        );
+
+        if (res.success) {
+           setModalType("success");
+            setMessage(res.data);
+            setShowSuccess(true);
+
+          
+            setTimeout(() => {
+                setShowSuccess(false);
+
+            }, 800);
+          fetchCustomerDetails();
+        } else {
+          alert(res.message);
+        }
+      }
+    }
+  );
+};
+
+
+// const openGallery = () => {
+//   launchImageLibrary(
+//     {
+//       mediaType: "photo",
+//       quality: 0.7,
+//     },
+//     (response) => {
+//       if (response.didCancel) return;
+//       if (response.assets && response.assets.length > 0) {
+//         setProfileImage(response.assets[0]);
+//       }
+//     }
+//   );
+// };
+
+//  const openGallery = () => {
+//   launchImageLibrary(
+//     { mediaType: "photo", quality: 0.7 },
+//     async (response) => {
+//       if (response.didCancel) return;
+
+//       if (response.assets?.length > 0) {
+//         const image = response.assets[0];
+
+//         setProfileImage(image); // UI update
+
+//         // 🔥 CALL API IMMEDIATELY
+//         const res = await editBasicDetails(
+//           customerDetails.customerId,
+//           {},              // no other payload change
+//           image            // send image
+//         );
+
+//         if (res.success) {
+//           fetchCustomerDetails(); // refresh profile
+//         } else {
+//           alert(res.message);
+//         }
+//       }
+//     }
+//   );
+// };
+
 
 useEffect(() => {
   const backAction = () => {
 
-    // ✅ 1) First close bottom sheets if open
+    
     if (showEdit) {
       setShowEdit(false);
       return true;
@@ -114,7 +244,7 @@ useEffect(() => {
       return true;
     }
 
-    // ✅ 2) Tab Back Order
+ 
     if (activeTab === "Complaints") {
       setActiveTab("Bill");
       return true;
@@ -133,7 +263,7 @@ if (showStayHistory) {
   setShowStayHistory(false);
   return true;
 }
-    // ✅ 3) Overview வந்தா மட்டும் goBack()
+    
     navigation.goBack();
     return true;
   };
@@ -154,6 +284,9 @@ if (showStayHistory) {
   showAssignAmenities,showStayHistory
 ]);
 
+
+
+
   console.log("customerDetails",customerDetails)
   const renderTab = () => {
     switch (activeTab) {
@@ -171,6 +304,7 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
   return (
     <>
+     <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
@@ -214,7 +348,31 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
   <View style={styles.profileCard}>
 
   {/* PROFILE IMAGE */}
-  <Image source={ProfileImg} style={styles.avatar} />
+  {/* <Image source={ProfileImg} style={styles.avatar} /> */}
+  {/* <TouchableOpacity onPress={handleProfilePress}>
+  <Image
+    source={
+      profileImage?.uri
+        ? { uri: profileImage.uri }
+        : ProfileImg
+    }
+    style={styles.avatar}
+  />
+</TouchableOpacity> */}
+<TouchableOpacity onPress={handleProfilePress}>
+  <Image
+    source={
+      profileImage?.uri
+        ? { uri: profileImage.uri }                  
+        : customerDetails?.profilePic
+        ? { uri: customerDetails.profilePic }    
+        : ProfileImg                               
+    }
+    style={styles.avatar}
+  />
+</TouchableOpacity>
+
+
 
   {/* NAME */}
   <View style={styles.nameRowCenter}>
