@@ -403,9 +403,9 @@ const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
   {/* BUTTON ROW */}
   <View style={styles.actionRow}>
-    <TouchableOpacity style={styles.walletBtn}>
+    {/* <TouchableOpacity style={styles.walletBtn}>
       <Text style={styles.walletText}>Wallet</Text>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
 
     <TouchableOpacity
       style={styles.stayBtn}

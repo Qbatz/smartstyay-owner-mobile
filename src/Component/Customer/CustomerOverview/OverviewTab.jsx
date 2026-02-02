@@ -349,7 +349,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 
          <View style={styles.cardHeader}>
   <Text style={styles.cardTitle}>Stay Details</Text>
-  <Image source={EditIcon} style={styles.editIcon} />
+  {/* <Image source={EditIcon} style={styles.editIcon} /> */}
 </View>
 
 {/* ROW 1 : Floor + Room */}

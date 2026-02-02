@@ -5,9 +5,11 @@ import {
   Animated,
   PanResponder,
   TouchableOpacity,
-  StyleSheet,
+  StyleSheet,Image,
   ScrollView,
 } from "react-native";
+import Chat from "../../../Assets/Images/chat-notification.png"
+
 
 export default function StayHistorySheet({ visible, onClose, customerDetails = [] }) {
 
@@ -81,7 +83,8 @@ export default function StayHistorySheet({ visible, onClose, customerDetails = [
 
       {/* LEFT TIMELINE */}
       <View style={styles.timelineContainer}>
-        <View style={styles.circle} />
+        {/* <View style={styles.circle} /> */}
+       <Image source={Chat} style={styles.chatimg}/>
         {index !== customerDetails.bedHistory.length - 1 && (
           <View style={styles.verticalLine} />
         )}
@@ -179,6 +182,10 @@ circle: {
   backgroundColor: "#EEF2FF",
   borderWidth: 1,
   borderColor: "#DCE3FF",
+},
+chatimg:{
+ width: 30,
+  height: 30,
 },
 
 verticalLine: {
