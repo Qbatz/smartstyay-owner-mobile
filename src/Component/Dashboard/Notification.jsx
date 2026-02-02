@@ -180,7 +180,7 @@ const onClose = () => {
   </View>
 
   {/* RIGHT SIDE → Filter Icon */}
- <TouchableOpacity
+ {/* <TouchableOpacity
   onPress={() => {
     setShowFilter(true);
     translateY.setValue(SCREEN_HEIGHT); // RESET
@@ -192,7 +192,7 @@ const onClose = () => {
   }}
 >
   <Image source={FilterIcon} style={{ width: 22, height: 22 }} />
-</TouchableOpacity>
+</TouchableOpacity> */}
 
 </View>
 
