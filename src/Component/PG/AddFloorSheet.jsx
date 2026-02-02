@@ -264,7 +264,7 @@ const sheetContent = (
 />
 
 
-  <View style={{padding:10}}>
+  <View style={{paddingBottom:24}}>
       {floorNameError && (
       <ErrorMessage message={floorNameError} type="error" />
     )}

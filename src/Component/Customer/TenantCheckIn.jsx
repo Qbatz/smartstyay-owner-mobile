@@ -523,6 +523,7 @@ const validateExtraCharges = () => {
                               setSelectedBed(null);
                               setRooms([]);
                               loadRooms(v.id);
+                              setFloorError("")
                             }}
                           >
                             <Text style={styles.optionText}>{v.name}</Text>
@@ -562,7 +563,9 @@ const validateExtraCharges = () => {
                             onPress={() => {
                               setSelectedRoom(r);
                               setRoomOpen(false);
+                               setRoomError("")
                             }}
+                           
                           >
                             <Text style={styles.optionText}>{r.name}</Text>
                           </TouchableOpacity>
@@ -600,6 +603,7 @@ const validateExtraCharges = () => {
                             onPress={() => {
                               setSelectedBed(b);
                               setBedOpen(false);
+                              setBedError("")
                               //  setRentalAmount(String(b.rentAmount));
                             }}
                           >
@@ -1155,7 +1159,7 @@ const styles = StyleSheet.create({
 
   figmaCloseBtn: {
     position: "absolute",
-    right: 5,
+    right: 8,
     top: -10,
     width: 28,
     height: 28,
