@@ -966,7 +966,7 @@ const handleAssignAsset = async () => {
         
           {roomError && <ErrorMessage message={roomError} type="error" />}
 
-            <Text style={[styles.label, { marginTop: 15 }]}>Date <Text style={styles.star}>*</Text></Text>
+            <Text style={[styles.label, { marginTop: 5 }]}>Date <Text style={styles.star}>*</Text></Text>
             <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
              <Text style={!assignDate && styles.placeholderText}>
   {assignDate
@@ -1296,7 +1296,7 @@ width: 60, height: 60
   assignButtonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 40,
+    marginTop: 10,
   },
   selectBox: {
     flexDirection: "row",

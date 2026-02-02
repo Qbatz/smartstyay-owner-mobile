@@ -46,6 +46,7 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import RecurringBills from "./RecurringBills"
 import Receipt from './Receipt'
+import Bookings from "./Bill_Bookings"
 import Call from "../../../Assets/Images/call.png";
 import Sms from "../../../Assets/Images/sms.png";
 import dateImg from "../../../Assets/Images/home-link.png";
@@ -65,6 +66,7 @@ import MoneyCheckIcon from "../../../Assets/Images/money_check.png";
 import PreviewIcon from "../../../Assets/Images/View_Icon.png";
 import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
 import { Dimensions } from "react-native";
+import BillBookings from "./Bill_Bookings";
 
 
 
@@ -271,12 +273,20 @@ useEffect(() => {
     }
 
     // ✅ 2) Tab navigation back order
+
+
+
+
     if (activeTab === "Receipt") {
       setActiveTab("RecurringBills");
       return true;
     }
 
     if (activeTab === "RecurringBills") {
+      setActiveTab("Bookings");
+      return true;
+    }
+     if (activeTab === "Bookings") {
       setActiveTab("All Bills");
       return true;
     }
@@ -777,6 +787,7 @@ const writeoffPan = useRef(
   
   const tabs = [
     { key: "All Bills", active: Profile, inactive: InProfile },
+     { key: "Bookings", active: ActiveWalkin, inactive: WalkinIcon },
     { key: "RecurringBills", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
@@ -1644,7 +1655,9 @@ navigation.navigate("CancelNotice")
 
   </View>
 )}
-
+{activeTab === "Bookings" && (
+   <BillBookings   />
+  )}
 
 {activeTab === "RecurringBills" && (
    <RecurringBills />

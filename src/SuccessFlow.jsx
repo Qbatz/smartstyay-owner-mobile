@@ -71,6 +71,7 @@ import InvoiceRegister from "../src/Component/MorePages/Reports/InvoiceRegister"
 import TenantRegister from "../src/Component/MorePages/Reports/TenantRegister"
 import ExpenseRegister from "../src/Component/MorePages/Reports/ExpenseRegister";
 import HistoryAndComments from "../src/Component/Dashboard/HistoryAndComments"
+import ComplaintUpdates from "../src/Component/Complaints/ComplaintCommentUpdates"
 
 const SuccessFlow = (props) => {
 
@@ -162,6 +163,7 @@ const SuccessFlow = (props) => {
                      <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
                       <Navigation.Screen name="FinalSettlementScreen" component={FinalSettlementScreen} />
                       <Navigation.Screen name="HistoryAndComments" component={HistoryAndComments} />
+                     <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
 
                 </Navigation.Navigator>
             </NavigationContainer>
