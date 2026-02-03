@@ -542,7 +542,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
           />
       {unitcountErr ? <ErrorMessage message={unitcountErr} type="error" /> : null}
 
-
+ 
 
           {/* Per Unit */}
           <Text style={styles.label}>Per Unit Amount</Text>
@@ -737,11 +737,6 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
     </>
   );
 }
-
-/* ============================= STYLES ============================= */
-
-
-
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff", paddingTop: 30 },

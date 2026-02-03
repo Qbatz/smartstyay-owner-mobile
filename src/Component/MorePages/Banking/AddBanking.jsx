@@ -67,6 +67,7 @@ export default function AddBankingModal({ visible, onClose, mode, editTab }) {
     const sheetY = useRef(new Animated.Value(700)).current;
 
     const [isInputFocused, setIsInputFocused] = useState(false);
+const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
 
 
 
@@ -257,28 +258,33 @@ onMoveShouldSetPanResponder: (_, g) => {
   ).current;
   
 
-   useEffect(() => {
-      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-        Animated.timing(translateY, {
-          toValue: -e.endCoordinates.height + 60,
-          duration: 180,
-          useNativeDriver: true,
-        }).start();
-      });
-  
-      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 180,
-          useNativeDriver: true,
-        }).start();
-      });
-  
-      return () => {
-        showSub.remove();
-        hideSub.remove();
-      };
-    }, []);
+  useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    if (!isDescriptionFocused) return; // 🔥 IMPORTANT
+
+    Animated.timing(translateY, {
+      toValue: -e.endCoordinates.height + 80,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+
+    setIsDescriptionFocused(false);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, [isDescriptionFocused]);
+
   
 
   const Dropdown = ({ label, selected, open, setOpen, list, onSelect, error }) => (
@@ -584,7 +590,7 @@ const TabButton = ({ title }) => {
   onBlur={() => setIsInputFocused(false)}
   // autoFocus
   onChangeText={(v) => {
-    setBeneficiary(v);
+     setBeneficiary(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors({ ...errors, beneficiary: "" , common: ""});
   }}
 />
@@ -616,8 +622,14 @@ const TabButton = ({ title }) => {
     setAccountNo(onlyNum);
     setErrors({ ...errors, accountNo: "" , common: "" });
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+//  onFocus={() => {
+//     setIsInputFocused(true);
+//     setIsDescriptionFocused(true);   
+//   }}
+//   onBlur={() => {
+//     setIsInputFocused(false);
+//     setIsDescriptionFocused(false);
+//   }}
 />
 
 {errors.accountNo && <ErrorMessage message={errors.accountNo} type="error" />}
@@ -632,8 +644,14 @@ const TabButton = ({ title }) => {
     setIfsc(v);
     setErrors(prev => ({ ...prev, ifsc: "", common: "" }));
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+ onFocus={() => {
+    setIsInputFocused(true);
+    setIsDescriptionFocused(true);   // ✅ ONLY HERE
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+    setIsDescriptionFocused(false);
+  }}
 />
 
             <Text style={styles.label}>Description</Text>
@@ -643,11 +661,18 @@ const TabButton = ({ title }) => {
   value={description}
   // onChangeText={setDescription}
        onChangeText={(v) => {
-    setDescription(v);
+    // setDescription(v);
+        setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, description: "", common: "" }));
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+  onFocus={() => {
+    setIsInputFocused(true);
+    setIsDescriptionFocused(true);   // ✅ ONLY HERE
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+    setIsDescriptionFocused(false);
+  }}
 />
           </>
         );
@@ -699,11 +724,17 @@ const TabButton = ({ title }) => {
   placeholder="Enter Description"
   value={description}
      onChangeText={(v) => {
-    setDescription(v);
+    setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, description: "", common: "" }));
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+ onFocus={() => {
+    setIsInputFocused(true);
+    setIsDescriptionFocused(true);   // ✅ ONLY HERE
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+    setIsDescriptionFocused(false);
+  }}
 />
           </>
         );
@@ -748,15 +779,21 @@ const TabButton = ({ title }) => {
     <TextInput
       style={styles.input}
       keyboardType="numeric"
-      placeholder="XXXX XXXX XXXX"
+      placeholder="Enter Card Number"
       value={cardNo}
       onChangeText={(v) => {
     setCardNo(v);
     setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
   }}
       
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+ onFocus={() => {
+    setIsInputFocused(true);
+    setIsDescriptionFocused(true);   // ✅ ONLY HERE
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+    setIsDescriptionFocused(false);
+  }}
     />
   </>
 )}
@@ -768,11 +805,17 @@ const TabButton = ({ title }) => {
   placeholder="Enter Description"
   value={description}
     onChangeText={(v)=> {
-    setDescription(v)
+    setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev,  common: "" }))
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+ onFocus={() => {
+    setIsInputFocused(true);
+    setIsDescriptionFocused(true);   // ✅ ONLY HERE
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+    setIsDescriptionFocused(false);
+  }}
 />
           </>
         );
@@ -786,7 +829,7 @@ const TabButton = ({ title }) => {
   placeholder="Enter Beneficiary Name"
   value={cashName}
   onChangeText={(v) => {
-    setCashName(v);
+    setCashName(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, cashName: "", common: "" }));
   }}
   onFocus={() => setIsInputFocused(true)}
@@ -805,7 +848,7 @@ const TabButton = ({ title }) => {
   placeholder="Enter Description"
   value={description}
   onChangeText={(v)=> {
-    setDescription(v)
+    setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev,  common: "" }))
   }}
   
