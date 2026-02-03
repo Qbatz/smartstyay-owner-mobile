@@ -692,7 +692,7 @@ if (!activeHostelId && !loading) {
     justifyContent: "space-between",
     paddingHorizontal:16,
     alignItems: "center",
-    marginTop: 23,marginBottom:10}}>
+    marginTop: 33,marginBottom:10}}>
             <Text style={styles.sectionTitle}>Bank List</Text>
 
             <TouchableOpacity style={styles.addBankBtn} onPress={handleAddBanking}>
