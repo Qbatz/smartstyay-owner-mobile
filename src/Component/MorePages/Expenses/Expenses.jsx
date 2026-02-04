@@ -666,9 +666,9 @@ export default function ExpensesScreen() {
               <View style={styles.deleteOverlay}>
                 <View style={styles.deleteBox}>
 
-                  <Text style={styles.deleteTitle}>Delete Bank ?</Text>
+                  <Text style={styles.deleteTitle}>Delete Expense ?</Text>
                   <Text style={styles.deleteSub}>
-                    Are you sure you want to delete this Bank ?
+                    Are you sure you want to delete this Expense ?
                   </Text>
 
                   <View style={styles.deleteBtnRow}>
@@ -682,8 +682,9 @@ export default function ExpensesScreen() {
                     <TouchableOpacity
                       style={styles.deleteBtn}
                       onPress={handleCloseDeleteShow}
+                      disabled
                     >
-                      <Text style={styles.deleteBtnText}>Delete</Text>
+                      <Text style={styles.deleteBtnText}>Coming soon</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -1094,6 +1095,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#2D6CDF",
     alignItems: "center",
+    opacity:0.7
   },
 
   deleteBtnText: {

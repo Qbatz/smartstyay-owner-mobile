@@ -10,6 +10,7 @@ export const UseSetting = () => useContext(ElectricityContext);
 export const SettingProvider = ({ children }) => {
 const [loading, setLoading] = useState(false);
   const [Reportsdetails , setReportsDetails] = useState(null)
+  const [invoiceReports, setInvoiceReports] = useState(null);
 const getElectricity = async (hostelId) => {
   try {
     setLoading(true)
@@ -418,10 +419,50 @@ const getReportsByHostel = async (hostelId) => {
   }
 };
 
+const GetInvoiceReports = async (hostelId) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/reports/invoice/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setInvoiceReports(res?.data);
+
+    console.log("INVOICE REPORTS SUCCESS →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+  } catch (err) {
+    console.log(
+      "INVOICE REPORTS ERROR →",
+      err.response?.data || err.message
+    );
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports}}>
       {children}
     </ElectricityContext.Provider>
   );

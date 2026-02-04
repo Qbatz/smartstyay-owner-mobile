@@ -31,7 +31,8 @@ export default function AddExpenses({ navigation, route }) {
 
   const editData = route?.params?.editData || null;
 
-  console.log("IntializeexpensesList", IntializeexpensesList);
+  console.log("IntializeexpensesList", editData);
+const isEditMode = !!editData;
 
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -42,12 +43,12 @@ export default function AddExpenses({ navigation, route }) {
   const [purchaseDate, setPurchaseDate] = useState(null);
 
 
-  const [category, setCategory] = useState(editData?.category || "");
-  const [unitCount, setUnitCount] = useState(editData?.unitCount || "");
+  const [category, setCategory] = useState("");
+  const [unitCount, setUnitCount] = useState("");
 
-  const [perUnit, setPerUnit] = useState(editData?.perUnit || "");
-  const [purchaseAmount, setPurchaseAmount] = useState(editData?.amount || "");
-  const [description, setDescription] = useState(editData?.description || "");
+  const [perUnit, setPerUnit] = useState("");
+  const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [description, setDescription] = useState("");
 
 
 
@@ -102,7 +103,53 @@ export default function AddExpenses({ navigation, route }) {
       GetInitializeExpense(activeHostelId)
     }
 
-  }, [activeHostelId]);
+  }, [activeHostelId])
+
+
+  useEffect(() => {
+  if (!editData || !IntializeexpensesList) return;
+
+  // ✅ CATEGORY
+  const cat = IntializeexpensesList?.listExpenses?.find(
+    (c) => c.categoryId === editData.categoryId
+  );
+  setSelectedCategory(cat || null);
+
+  // ✅ SUB CATEGORY
+  if (cat && editData.subCategoryId) {
+    const sub = cat.subCategories?.find(
+      (s) => s.subCategoryId === editData.subCategoryId
+    );
+    setSelectedSubCategory(sub || null);
+  }
+
+  // ✅ DATE
+  if (editData.transactionDate) {
+    setPurchaseDate(
+      dayjs(editData.transactionDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+    );
+  }
+
+  // ✅ AMOUNTS
+  setPurchaseAmount(String(editData.totalAmount || ""));
+  setUnitCount(String(editData.itemsCount || ""));
+  setPerUnit(String(editData.unitPrice || ""));
+
+  // ✅ DESCRIPTION
+  setDescription(editData.description || "");
+
+  // ✅ MODE OF PAYMENT
+  const mode = IntializeexpensesList?.banks?.find(
+    (b) => b.bankId === editData.bankId
+  );
+  if (mode) {
+    setSelectedMode({
+      id: mode.bankId,
+      name: `${mode.holderName} - ${mode.bankName}`,
+    });
+  }
+}, [editData, IntializeexpensesList]);
+
 
   useEffect(() => {
     const amount = Number(purchaseAmount);
@@ -490,7 +537,10 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
           </Text>
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => setOpenPurchaseDate(true)}
+            disabled={isEditMode}
+  onPress={() => {
+    if (!isEditMode) setOpenPurchaseDate(true);
+  }}
           >
             <View style={styles.dateInputWrapper}>
               <TextInput
@@ -643,11 +693,18 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.saveBtn}
-              onPress={handleSaveExpense}
-            >
-              <Text style={styles.saveText}>{editData ? "Update" : "Save"}</Text>
-            </TouchableOpacity>
+  style={[
+    styles.saveBtn,
+    isEditMode && {opacity:0.7} // grey
+  ]}
+  disabled={isEditMode}
+  onPress={handleSaveExpense}
+>
+  <Text style={styles.saveText}>
+    {isEditMode ? "Coming Soon" : "Save"}
+  </Text>
+</TouchableOpacity>
+
           </View>
 
          

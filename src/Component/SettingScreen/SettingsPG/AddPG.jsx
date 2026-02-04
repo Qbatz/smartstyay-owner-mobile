@@ -235,6 +235,13 @@ const validatePincode = (value) => {
   return ""; 
 };
 
+const removeEmojis = (text) =>
+  text.replace(
+    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF])/g,
+    ""
+  );
+
+
 
   
      const handleSubmit = async () => {
@@ -554,7 +561,8 @@ if (res?.status === 201) {
   label="Email ID"
   value={email}
   onChangeText={(t) => {
-    setEmail(t);
+     const cleaned = removeEmojis(t);  
+    setEmail(cleaned);
     setErrors({ ...errors, email: "" });
     setTopWarning("");
   }}

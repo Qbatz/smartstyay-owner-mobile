@@ -82,7 +82,27 @@ export default function AddAssetSheet({ onClose, title = "Add Assets",  asset: c
         : null,
     });
   }
-}, [currentItem]);
+}, [currentItem])
+
+const validatePrice = (value) => {
+  if (!value || value.trim() === "") {
+    return "Please Enter Price";
+  }
+
+  // remove leading zeros like 000, 00
+  const num = Number(value);
+
+  if (isNaN(num)) {
+    return "Price must be a number";
+  }
+
+  if (num <= 0) {
+    return "Price must be greater than 0";
+  }
+
+  return "";
+};
+
 
 
 const isChanged = () => {
@@ -123,29 +143,36 @@ const [keyboardHeight, setKeyboardHeight] = useState(0);
 // }, []);
 
     const translateY = useRef(new Animated.Value(0)).current;
+    const [isInputFocused, setIsInputFocused] = useState(false);
 
- useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      Animated.timing(translateY, {
-        toValue: -e.endCoordinates.height + 90,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
+       useEffect(() => {
+        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+          if (!isInputFocused) return; 
+      
+          Animated.timing(translateY, {
+            toValue: -e.endCoordinates.height + 80,
+            duration: 180,
+            useNativeDriver: true,
+          }).start();
+        });
+      
+        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: 180,
+            useNativeDriver: true,
+          }).start();
+      
+          setIsInputFocused(false);
+        });
+      
+        return () => {
+          showSub.remove();
+          hideSub.remove();
+        };
+      }, [isInputFocused]);
 
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
 
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
 
       
@@ -249,11 +276,11 @@ const validateForm = () => {
     newErrors.purchaseDate = "Please Select Purchase date"
   }
 
-  if (!price.trim()) {
-    newErrors.price = "Please Enter Price"
-  } else if (isNaN(price)) {
-    newErrors.price = "Price must be a number"
-  }
+ const priceError = validatePrice(price);
+if (priceError) {
+  newErrors.price = priceError;
+}
+
 
  if (!isEdit && !selectedMode) {
   newErrors.paymentMode = "Please Select Transaction mode";
@@ -612,6 +639,12 @@ onChangeText={(t) => {
   setBrandName(cleaned);
   clearApiError();
 }}
+              onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
 />
 
 
@@ -626,6 +659,12 @@ onChangeText={(t) => {
   setSerialNumber(cleaned);
   clearApiError();
 }}
+              onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
 />
 
 
@@ -677,11 +716,17 @@ onChangeText={(t) => {
   placeholder="Enter price"
   keyboardType="numeric"
   value={price}
-  onChangeText={(t) => {
-    const cleaned = removeEmoji(t);
+    onChangeText={(t) => {
+    const cleaned = t.replace(/[^0-9]/g, "");
     setPrice(cleaned);
-    setErrors({ ...errors, price: "" });
-     clearApiError();
+    setErrors((prev) => ({ ...prev, price: "" }));
+    clearApiError();
+  }}
+                onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
   }}
 />
   {errors.price && (

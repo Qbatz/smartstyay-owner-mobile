@@ -1,4 +1,4 @@
-import React, { useState , useEffect , useContext} from "react";
+import React, { useState , useEffect , useContext , useRef} from "react";
 import {
    View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
- Dimensions , BackHandler , Modal
+ Dimensions , BackHandler , Modal , KeyboardAvoidingView
 } from "react-native";
 import {  useRoute} from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -41,6 +41,27 @@ export default function CreateBill({navigation}) {
   // errorMsg: billError,
 } = useContext(BillContext);
 
+const scrollRef = useRef(null);
+const inputRefs = useRef([]);
+
+
+const scrollToInput = (ref) => {
+  if (!ref?.current || !scrollRef.current) return;
+
+  ref.current.measureLayout(
+    scrollRef.current.getInnerViewNode(),
+    (x, y) => {
+      scrollRef.current.scrollTo({
+        y: y - 20, // 🔥 small top gap
+        animated: true,
+      });
+    },
+    () => {}
+  );
+};
+
+
+
   const itemOptions = ["Room rent", "EB", "Others"];
 
     const route = useRoute();
@@ -67,6 +88,13 @@ const [invoiceDateErr, setInvoiceDateErr] = useState("");
 const [dueDateErr, setDueDateErr] = useState("");
 const [customerErr, setCustomerErr] = useState("");
 const [itemErr, setItemErr] = useState("");
+
+const removeEmojis = (text) =>
+  text.replace(
+    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF])/g,
+    ""
+  );
+
 
 
 // useEffect(() => {
@@ -519,7 +547,11 @@ const handleDueDateChange = (date) => {
   message={modalMessage}
   type={modalType}
 />
-
+ <KeyboardAvoidingView
+    style={{ flex: 1, backgroundColor: "#fff",  }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    >
  <View style={styles.topHeader}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                           <Image source={ArrowLeft} style={styles.backIcon} />
@@ -529,7 +561,18 @@ const handleDueDateChange = (date) => {
 
 
 
-    <ScrollView style={styles.container}   scrollEnabled={!customerOpen}   >
+   
+    <ScrollView
+    style={styles.container}   scrollEnabled={!customerOpen} 
+  ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: 120,   // 🔥 keyboard space
+    flexGrow: 1,
+  }}
+>
+
     
   {/* <Text style={styles.label}>Customer <Text style={{color:'red'}}>*</Text></Text>
 
@@ -653,7 +696,10 @@ const handleDueDateChange = (date) => {
         style={styles.input}
         placeholder="Enter Invoice Number"
         value={invoiceNo}
-        onChangeText={setInvoiceNo}
+  onChangeText={(text) => {
+    const cleaned = removeEmojis(text); 
+    setInvoiceNo(cleaned);
+  }}
       />
 
       <Text style={styles.label}>
@@ -836,16 +882,28 @@ const handleDueDateChange = (date) => {
             style={styles.input}
             value={item.description}
             editable={item.type === "Others"}
-            onChangeText={(txt) => updateCard(index, "description", txt)}
+            // onChangeText={(txt) => updateCard(index, "description", txt)}
+             onChangeText={(txt) => {
+    const cleanedText = removeEmojis(txt);
+    updateCard(index, "description", cleanedText);
+  }}
+    ref={(r) => (inputRefs.current[`desc-${index}`] = r)}
+      onFocus={() => scrollToInput(inputRefs.current[`desc-${index}`])}
+            placeholder="Enter Description"
+
           />
 
-          <Text style={styles.smallLabel}>Total amount</Text>
+          <Text style={styles.smallLabel}>Total Amount</Text>
           <TextInput
             style={styles.input}
             keyboardType="numeric"
             value={item.amount}
+            placeholder="Enter Amount"
             // editable={item.type !== "Room rent"} 
             onChangeText={(txt) => updateCard(index, "amount", txt)}
+            ref={(r) => (inputRefs.current[`amt-${index}`] = r)}
+            onFocus={() => scrollToInput(inputRefs.current[`amt-${index}`])}
+
           />
         </View>
       ))}
@@ -953,6 +1011,7 @@ const handleDueDateChange = (date) => {
     </View>
   </View>
 )}
+</KeyboardAvoidingView>
 
 {/* <TouchableOpacity
   style={[
@@ -986,7 +1045,7 @@ const styles = StyleSheet.create({
 
   backIcon: { width: 20, height: 20, marginRight: 12, tintColor: "#222" },
   headerTitle: { fontSize: 20, fontWeight: "700", color: "#111" },
-  container: { padding: 20 , backgroundColor:'white'},
+  container: { padding: 20 , backgroundColor:'white',   flex: 1, },
   header: { fontSize: 22, fontWeight: "700", marginBottom: 25 },
 
   label: { fontSize: 15, marginBottom: 6 },
