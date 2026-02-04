@@ -46,6 +46,7 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import RecurringBills from "./RecurringBills"
 import Receipt from './Receipt'
+import Bookings from "./Bill_Bookings"
 import Call from "../../../Assets/Images/call.png";
 import Sms from "../../../Assets/Images/sms.png";
 import dateImg from "../../../Assets/Images/home-link.png";
@@ -65,6 +66,7 @@ import MoneyCheckIcon from "../../../Assets/Images/money_check.png";
 import PreviewIcon from "../../../Assets/Images/View_Icon.png";
 import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
 import { Dimensions } from "react-native";
+import BillBookings from "./Bill_Bookings";
 
 
 
@@ -271,12 +273,20 @@ useEffect(() => {
     }
 
     // ✅ 2) Tab navigation back order
+
+
+
+
     if (activeTab === "Receipt") {
       setActiveTab("RecurringBills");
       return true;
     }
 
     if (activeTab === "RecurringBills") {
+      setActiveTab("Bookings");
+      return true;
+    }
+     if (activeTab === "Bookings") {
       setActiveTab("All Bills");
       return true;
     }
@@ -395,7 +405,7 @@ const payload = {
   endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
 };
 
-console.log("datepayload", payload);
+console.log("BillDetails", BillDetails);
 
 
     const [showBillDetails, setShowBillDetails] = useState(false);
@@ -474,6 +484,8 @@ const recordPan = useRef(
   })
 ).current;
 
+const maxRefund = Number(refundInitDetails?.pendingRefund || 0);
+
 
 const refundSheetY = useRef(new Animated.Value(0)).current;
 
@@ -503,7 +515,7 @@ const refundPan = useRef(
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       Animated.timing(refundSheetY, {
-        toValue: -e.endCoordinates.height + 30,
+        toValue: -e.endCoordinates.height + 70,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -527,7 +539,7 @@ const refundPan = useRef(
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       Animated.timing(recordSheetY, {
-        toValue: -e.endCoordinates.height + 90,
+        toValue: -e.endCoordinates.height + 60,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -775,6 +787,7 @@ const writeoffPan = useRef(
   
   const tabs = [
     { key: "All Bills", active: Profile, inactive: InProfile },
+     { key: "Bookings", active: ActiveWalkin, inactive: WalkinIcon },
     { key: "RecurringBills", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
@@ -818,6 +831,15 @@ const handleShowRecordPayment = () => {
 // }
 
 const handleCreateBill = () => {
+
+ if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
 navigation.navigate("CreateBills" , {mode: "add"})
 }
 
@@ -861,15 +883,10 @@ const handlePaidAmountChange = (value) => {
 const formatDateForPayload = (date) => {
   if (!date) return null;
 
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60000);
-
-  const day = String(localDate.getDate()).padStart(2, "0");
-  const month = String(localDate.getMonth() + 1).padStart(2, "0");
-  const year = localDate.getFullYear();
-
-  return `${day}-${month}-${year}`;
+  // works for dayjs & Date
+  return dayjs(date).format("DD-MM-YYYY");
 };
+
 
 const handleSaveRecordPayment = async () => {
   let isValid = true;
@@ -1182,7 +1199,7 @@ const handleShowRefundPayment = () => {
   resetRefundForm();         
   setShowMenu(false);
   setShowRefundPayment(true);
-
+  setShowRefundFrom(false);
 
 }
 
@@ -1197,12 +1214,22 @@ useEffect(() => {
 }, [showRefundPayment, selectedBill?.invoiceId, activeHostelId]);
 
 
+// useEffect(() => {
+//   if (refundInitDetails?.pendingRefund != null) {
+//     setRefundAmount("");
+//     setRefundBalance(
+//       Number(refundInitDetails.pendingRefund)
+//     );
+//   }
+// }, [refundInitDetails]);
+
 useEffect(() => {
   if (refundInitDetails?.refundableAmount != null) {
     setRefundBalance(refundInitDetails?.pendingRefund);
     setRefundAmount("");
   }
 }, [refundInitDetails]);
+
 
 
 
@@ -1262,6 +1289,42 @@ useEffect(() => {
   }
 }, [selectedBill]);
 
+const handleRefundAmountChange = (val) => {
+  const value = val.trim();
+
+  // allow empty
+  if (value === "") {
+    const max = Math.abs(Number(refundInitDetails?.pendingRefund || 0));
+    setRefundAmount("");
+    setRefundBalance(max);
+    setRefundAmountError("");
+    return;
+  }
+
+  // numbers only (allow typing)
+  if (!/^\d*$/.test(value)) return;
+
+  const num = Number(value);
+  const max = Math.abs(Number(refundInitDetails?.pendingRefund || 0));
+
+  // block exceed
+  if (num > max) {
+    setRefundAmountError(`Amount cannot exceed ₹${max}`);
+    return;
+  }
+
+  setRefundAmount(value);
+  setRefundBalance(max - num);
+  setRefundAmountError("");
+};
+
+
+const balanceDue =
+  Math.abs(Number(refundInitDetails?.pendingRefund || 0)) -
+  (Number(refundAmount) || 0);
+
+  console.log("balancedue",refundInitDetails );
+  
 
 
 
@@ -1283,6 +1346,7 @@ const handleSaveRefund = async () => {
     valid = false;
   }
  
+  
   if (!refundDate) {
     setRefundDateError("Please Select Refund Date");
     valid = false;
@@ -1378,6 +1442,8 @@ navigation.navigate("CancelNotice")
 //     joinDate: "10 July 2025",
 //   },
 // ];
+
+
 
   return (
 
@@ -1562,7 +1628,7 @@ navigation.navigate("CancelNotice")
 ) }
 
 {( 
-   !loading && BillDetails?.listInvoices && BillDetails.listInvoices.length === 0 &&
+   !loading && BillDetails && ( BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0 ) &&
       <View style={styles.centerContainer}>
         <Image source={EmptyFloor} style={styles.image} />
         <Text style={styles.noFloorText}>No bills are there!</Text>
@@ -1589,7 +1655,9 @@ navigation.navigate("CancelNotice")
 
   </View>
 )}
-
+{activeTab === "Bookings" && (
+   <BillBookings   />
+  )}
 
 {activeTab === "RecurringBills" && (
    <RecurringBills />
@@ -2279,7 +2347,7 @@ navigation.navigate("CancelNotice")
     <Animated.View
       style={[
         styles.transactionSheet,
-        { height: "80%", transform: [{ translateY: recordSheetY }] }
+        { height: "90%", transform: [{ translateY: recordSheetY }] }
       ]}
       {...recordPan.panHandlers}
     >
@@ -2429,7 +2497,7 @@ navigation.navigate("CancelNotice")
 ) : null} */}
 
 
-
+ {/* <View style={{ position: "relative" }}>
       <Text style={styles.label}>
   Transaction Mode <Text style={{ color: "red" }}>*</Text>
 </Text>
@@ -2507,11 +2575,78 @@ navigation.navigate("CancelNotice")
     </ScrollView>
   </View>
 )}
+</View> */}
+
+<View style={{ position: "relative" }}>
+  <Text style={styles.label}>
+    Transaction Mode <Text style={{ color: "red" }}>*</Text>
+  </Text>
+
+  {/* INPUT */}
+  <TouchableOpacity
+    style={styles.inputBox}
+    onPress={() => {
+      setModeError("");
+      setShowPaymentMode(v => !v);
+    }}
+  >
+    <Text style={{ fontSize: 15 }}>
+      {selectedMode
+        ? transactionOptions.find(o => o.value === selectedMode)?.label
+        : "Select payment mode"}
+    </Text>
+
+    <Image
+      source={DownArrow}
+      style={{ width: 18, height: 18, tintColor: "#555" }}
+    />
+  </TouchableOpacity>
+
+  {/* DROPDOWN */}
+  {showPaymentMode && (
+    <View style={styles.transactiondropdown}>
+      <ScrollView
+        nestedScrollEnabled
+        scrollEnabled={transactionOptions.length > 3}
+        showsVerticalScrollIndicator={false}
+      >
+        {transactionOptions.map(opt => {
+          const isSelected = selectedMode === opt.value;
+
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.dropdownRow,
+                isSelected && styles.dropdownRowSelected,
+              ]}
+              onPress={() => {
+                setSelectedMode(opt.value);
+                setShowPaymentMode(false);
+                setModeError("");
+              }}
+            >
+              <Text
+                style={
+                  isSelected
+                    ? styles.dropdownTextSelected
+                    : styles.dropdownText
+                }
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  )}
+
+  {modeError && <ErrorMessage message={modeError} type="error" />}
+</View>
 
 
- {modeError && (
-                    <ErrorMessage message={modeError} type="error" />
-                                )}
+
 
         <Text style={styles.label}>Transaction ID</Text>
         <TextInput
@@ -2552,7 +2687,7 @@ navigation.navigate("CancelNotice")
     <Animated.View
       style={[
         styles.transactionSheet,
-        { height: "93%", transform: [{ translateY: refundSheetY }] }
+        { height: "85%", transform: [{ translateY: refundSheetY }] }
       ]}
       {...refundPan.panHandlers}
     >
@@ -2615,21 +2750,25 @@ navigation.navigate("CancelNotice")
         </Text>
    <TextInput
   style={styles.input}
-  placeholder="₹ 0.00"
+  placeholder="Enter Amount"
   keyboardType="numeric"
   value={refundAmount}
   onChangeText={(val) => {
-    let num = Number(val);
-    if (isNaN(num)) num = 0;
+    // if (!/^\d*$/.test(val)) return;
 
-    const max = refundInitDetails?.pendingRefund || 0;
+    const max = Math.abs(
+      Number(refundInitDetails?.pendingRefund || 0)
+    );
 
-    // ❌ block more than refundable
-    if (num > max) num = max;
+    const num = Number(val || 0);
 
-    setRefundAmount(String(num));
-    setRefundBalance(max - num);  
-    setRefundAmountError("") 
+    if (num > max) {
+      setRefundAmountError(`Amount cannot exceed ₹${max}`);
+      return;
+    }
+
+    setRefundAmount(val);
+    setRefundAmountError("");
   }}
 />
 
@@ -2646,7 +2785,7 @@ navigation.navigate("CancelNotice")
        <Text style={styles.label}>Balance Due <Text style={{ color: "red" , fontSize:16}}>*</Text></Text>
 <View style={styles.inputBox}>
  <Text style={{ fontSize: 16 }}>
-    ₹ {refundBalance}
+       ₹ {Math.max(0, balanceDue)}
   </Text>
 </View>
 
@@ -2720,7 +2859,9 @@ navigation.navigate("CancelNotice")
 
 
         {/* REFUND FROM */}
-    <Text style={styles.label}>
+
+
+    {/* <Text style={styles.label}>
   Refund From <Text style={{ color: "red" }}>*</Text>
 </Text>
 
@@ -2758,7 +2899,7 @@ navigation.navigate("CancelNotice")
     <ScrollView
       nestedScrollEnabled
       showsVerticalScrollIndicator={false}
-      scrollEnabled={refundBankOptions.length > 2}
+      scrollEnabled={refundBankOptions.length > 3}
     >
       {refundBankOptions.length > 0 ? (
         refundBankOptions.map((opt) => {
@@ -2802,8 +2943,77 @@ navigation.navigate("CancelNotice")
 
  {refundFromError && (
                     <ErrorMessage message={refundFromError} type="error" />
-                                )}
+                                )} */}
 
+                                <View style={{ position: "relative" }}>
+
+                                  <Text style={styles.label}>
+  Refund From <Text style={{ color: "red" }}>*</Text>
+</Text>
+  {/* INPUT */}
+  <TouchableOpacity
+    style={styles.inputBox}
+    onPress={() => {
+      setRefundFromError("");
+      setShowRefundFrom(v => !v);
+    }}
+  >
+    <Text style={{ fontSize: 15 }}>
+      {refundFrom
+        ? refundBankOptions.find(o => o.value === refundFrom)?.label
+        : "Select bank"}
+    </Text>
+
+    <Image
+      source={DownArrow}
+      style={{ width: 18, height: 18, tintColor: "#555" }}
+    />
+  </TouchableOpacity>
+
+  {/* DROPDOWN */}
+  {showRefundFrom && (
+    <View style={styles.transactiondropdown}>
+      <ScrollView
+        nestedScrollEnabled
+        scrollEnabled={refundBankOptions.length > 3}
+        showsVerticalScrollIndicator={false}
+      >
+        {refundBankOptions.map(opt => {
+          const isSelected = refundFrom === opt.value;
+
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.dropdownRow,
+                isSelected && styles.dropdownRowSelected,
+              ]}
+              onPress={() => {
+                setRefundFrom(opt.value);
+                setShowRefundFrom(false);
+                setRefundFromError("");
+              }}
+            >
+              <Text
+                style={
+                  isSelected
+                    ? styles.dropdownTextSelected
+                    : styles.dropdownText
+                }
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  )}
+</View>
+
+ {refundFromError && (
+                    <ErrorMessage message={refundFromError} type="error" />
+                                )}
 
 
       
@@ -3059,16 +3269,16 @@ navigation.navigate("CancelNotice")
         markingType="custom"
         markedDates={paidMarkedDates}
         current={
-          paidDate
-            ? paidDate.format("YYYY-MM-DD")
-            : today.format("YYYY-MM-DD")
-        }
-        onDayPress={(day) => {
-          if (paidMarkedDates[day.dateString]?.disabled) return;
+    paidDate
+      ? dayjs(paidDate).format("YYYY-MM-DD")
+      : today.format("YYYY-MM-DD")
+  }
+      onDayPress={(day) => {
+    if (paidMarkedDates[day.dateString]?.disabled) return;
 
-          setPaidDate(dayjs(day.dateString));
-          setOpenPaidDate(false);
-        }}
+    setPaidDate(new Date(day.dateString))
+    setOpenPaidDate(false);
+  }}
         theme={{
           todayTextColor: "#2563EB",
           selectedDayBackgroundColor: "#2563EB",
@@ -3091,15 +3301,22 @@ navigation.navigate("CancelNotice")
       <Calendar
         markingType="custom"
         markedDates={refundMarkedDates}
-        current={
-          refundDate
-            ? refundDate.format("YYYY-MM-DD")
-            : today.format("YYYY-MM-DD")
-        }
+        // current={
+        //   refundDate
+        //     ? refundDate.format("YYYY-MM-DD")
+        //     : today.format("YYYY-MM-DD")
+        // }
+      current={
+  refundDate
+    ? dayjs(refundDate).format("YYYY-MM-DD")
+    : today.format("YYYY-MM-DD")
+}
+
         onDayPress={(day) => {
           if (refundMarkedDates[day.dateString]?.disabled) return;
 
-          setRefundDate(dayjs(day.dateString));
+          // setRefundDate(dayjs(day.dateString));
+        setRefundDate(new Date(day.dateString)); 
           setOpenRefundDate(false);
         }}
       />
@@ -3596,9 +3813,10 @@ dropdownText: {
 },
 transactiondropdown: {
   position: "absolute",
-  bottom: 52,        // 🔥 TOP side
+  top: 77,          // 👈 input height
   left: 0,
   right: 0,
+
   backgroundColor: "#fff",
   borderWidth: 1,
   borderColor: "#ddd",
@@ -3606,9 +3824,10 @@ transactiondropdown: {
   zIndex: 9999,
   elevation: 20,
 
-  minHeight: 60,    // ✅ 3 items minimum
-  maxHeight: 140,
+  maxHeight: 160,
 },
+
+
 
 
 dropdownContent: {
@@ -4078,7 +4297,7 @@ inputBox: {
     paddingHorizontal: 14,
     backgroundColor: "#fff",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: 5,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -4091,7 +4310,7 @@ inputBox: {
     backgroundColor: "#fff",
     paddingHorizontal: 14,
     fontSize: 15,
-    marginBottom: 12,
+    marginBottom: 5,
   },
 //   dateModalOverlay: {
 //   flex: 1,

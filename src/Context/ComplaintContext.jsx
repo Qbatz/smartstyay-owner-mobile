@@ -16,7 +16,7 @@ export default function ComplaintProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 const [commentsLoading, setCommentsLoading] = useState(false);
-
+const [complaintUpdates, setComplaintUpdates] = useState([]);
 
 
   const getErrorMessage = (err) => {
@@ -350,7 +350,7 @@ const addComplaintComment = async ({ complaintId, message }) => {
 
     if (res.status === 201 || res.status === 200) {
       await getParticularComplaint(complaintId);
-
+console.log("rescomment",res)
       return {
         success: true,
         message: res.data || "Comment added successfully",
@@ -365,6 +365,31 @@ const addComplaintComment = async ({ complaintId, message }) => {
   }
 };
 
+const complaintsViewUpdates = async ({ hostelId, complaintsId }) => {
+  setLoading(true);
+  setComplaintUpdates([]);
+
+  try {
+    const axios = getAxios();
+    const res = await axios.get(
+      `/v2/complaint/updates/${hostelId}/${complaintsId}`
+    );
+
+    if (res?.status === 200) {
+      const data = Array.isArray(res?.data?.complaintUpdates) ? res?.data?.complaintUpdates : [];
+      setComplaintUpdates(data);
+      return { success: true, data };
+    }
+
+    return { success: false, data: [] };
+  } catch (err) {
+    return { success: false, message: getErrorMessage(err) };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
   return (
@@ -375,6 +400,7 @@ const addComplaintComment = async ({ complaintId, message }) => {
         complaintsList,
         complaintListOtherDetails,
         selectedComplaint,
+        complaintUpdates,
         fetchComplaintTypes,
         addComplaintType,
         editComplaintType,
@@ -386,7 +412,8 @@ const addComplaintComment = async ({ complaintId, message }) => {
         changeComplaintStatus,
         assignComplaint,
         getParticularComplaint,  
-        addComplaintComment,  
+        addComplaintComment,
+        complaintsViewUpdates  
       }}
     >
       {children}

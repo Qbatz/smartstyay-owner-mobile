@@ -7,7 +7,7 @@ import {
   ScrollView,
   TextInput,
   Image,
-  Platform, TouchableWithoutFeedback,KeyboardAvoidingView,BackHandler
+  Platform, TouchableWithoutFeedback,KeyboardAvoidingView,BackHandler,Keyboard
 } from "react-native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
@@ -267,10 +267,25 @@ const [datePickerTop, setDatePickerTop] = useState(0);
           <View style={{ width: 30 }} />
         </View>
 
-        <View style={styles.userRow}>
-          <Image source={UserImage} style={styles.userImg} />
-          <Text style={styles.userName}>{selectedItem?.fullName}</Text>
-        </View>
+       <View style={styles.userRow}>
+  {selectedItem?.profilePic ? (
+    <Image
+      source={{ uri: selectedItem.profilePic }}
+      style={styles.userImg}
+    />
+  ) : (
+    <View style={styles.initialCircle}>
+      <Text style={styles.initialText}>
+        {selectedItem?.initials || "?"}
+      </Text>
+    </View>
+  )}
+
+  <Text style={styles.userName}>
+    {selectedItem?.fullName}
+  </Text>
+</View>
+
 
         {/* <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}> */}
 <ScrollView
@@ -298,11 +313,15 @@ const [datePickerTop, setDatePickerTop] = useState(0);
         <TouchableOpacity
   ref={bookingDateRef}
   onPress={() => {
+  Keyboard.dismiss();           // ✅ CLOSE KEYBOARD
+  setTimeout(() => {            // ✅ wait keyboard animation
     bookingDateRef.current.measureInWindow((x, y, width, height) => {
-      setDatePickerTop(y + height + 8);   // ✅ CORRECT
+      setDatePickerTop(y + height + 8);
       setShowDatePicker(true);
     });
-  }}
+  }, 150);
+}}
+
   style={styles.inputBox}
 >
 
@@ -342,12 +361,16 @@ const [datePickerTop, setDatePickerTop] = useState(0);
           > */}
        <TouchableOpacity
   ref={joiningDateRef}
-  onPress={() => {
+onPress={() => {
+  Keyboard.dismiss();           // ✅ CLOSE KEYBOARD
+  setTimeout(() => {
     joiningDateRef.current.measureInWindow((x, y, width, height) => {
-      setDatePickerTop(y + height + 8);   // ✅ CORRECT
+      setDatePickerTop(y + height + 8);
       setShowJoinDatePicker(true);
     });
-  }}
+  }, 150);
+}}
+
   style={styles.inputBox}
 >
 
@@ -794,6 +817,22 @@ datePickerBox: {
   backgroundColor: "#fff", 
   paddingTop:30,
   paddingBottom:30  
-}
+},
+initialCircle: {
+  width: 45,
+  height: 45,
+  borderRadius: 22.5,
+backgroundColor: "#E5E7EB",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+initialText: {
+  color: "#374151",
+  fontSize: 18,
+  fontWeight: "700",
+},
+
 
 });

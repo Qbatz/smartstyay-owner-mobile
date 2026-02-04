@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useRef , useContext , useCallback} from "react";
+import React, { useState,useEffect,useRef , useContext , useCallback , useMemo} from "react";
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   Image,
   ScrollView, Modal,
-  Animated,PanResponder, TextInput , BackHandler , TouchableWithoutFeedback
+  Animated,PanResponder, TextInput , BackHandler , TouchableWithoutFeedback , Keyboard
 } from "react-native";
 import {ElectricityContext} from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import AddRoomReadingForm from "./AddRoomReading"
+import Loader from "../../../Component/Loader/Loader"
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
@@ -42,7 +44,11 @@ export default function RoomDetails({route, navigation }) {
             AddRoomReading,   UpdateRoomReading,
             DeleteRoomReading,} = useContext(ElectricityContext);
 
+                const { roomData } = route.params || {};
+
      console.log("particular_EbRoomReading", particular_EbRoomReading);
+     console.log("EbRoomReading", EbRoomReading);
+     
      
 
   //    const currentReadingData =
@@ -55,13 +61,30 @@ export default function RoomDetails({route, navigation }) {
       ]
     : null;
 
-    console.log("currentreading", currentReadingData );
+    console.log("currentreading", roomData );
+
+const matchedRoomData = useMemo(() => {
+  if (!Array.isArray(EbRoomReading) || EbRoomReading.length === 0 || !roomData) {
+    return null;
+  }
+
+  return EbRoomReading.find(
+    (item) =>
+      item.hostelId === roomData.hostelId &&
+      item.floorId === roomData.floorId &&
+      item.roomId === roomData.roomId
+  );
+}, [EbRoomReading, roomData]);
+
+
+console.log("matchedRoom:", matchedRoomData);
+
     
 
 
     const [activeTab, setActiveTab] = useState("Previous Reading");
     const [underlineWidth, setUnderlineWidth] = useState(0);
-    const { roomData } = route.params || {};
+
     const [isEditMode, setIsEditMode] = useState(false);
     const [editReadingData, setEditReadingData] = useState(null);
 
@@ -151,6 +174,9 @@ const translateY = useRef(new Animated.Value(500)).current;
 // ⭐ Animate open
 const openSheet = () => {
   setShowAddSheet(true);
+  setIsEditMode(false);
+  setCurrentReading("");
+  setReadingDate(null);
   Animated.timing(translateY, {
     toValue: 0,
     duration: 200,
@@ -166,6 +192,7 @@ const closeSheet = () => {
    setReadingError("")
    setApiError("")
    setReadingDateError("")
+    setIsEditMode(false);
 
   Animated.timing(translateY, {
     toValue: 500,
@@ -217,6 +244,28 @@ const panResponder = useRef(
   }, [openReadingDatePic, showAddSheet])
 );
 
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height + 60,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
 // const handleEditRoomReading = (data) => {
@@ -239,30 +288,72 @@ const panResponder = useRef(
 //   openSheet();
 // };
 
+const [showSheet, setShowSheet] = useState(false);
+// const [isEditMode, setIsEditMode] = useState(false);
+// const [currentReading, setCurrentReading] = useState("");
+// const [readingDate, setReadingDate] = useState(null);
+
+
+const openAdd = () => {
+  setIsEditMode(false);
+  setCurrentReading("");
+  setReadingDate(null);
+  setShowSheet(true);
+};
 
 
 const handleEditRoomReading = (data) => {
-  if (!data?.ebId) {
-    console.log("Edit failed  invalid reading", data);
-    return;
-  }
+  // setIsEditMode(true);
+  // setCurrentReading(String(data.currentReading));
+  // setReadingDate(data.entryDate);
 
   setIsEditMode(true);
-  setEditReadingData(data);
+  setEditReadingData(matchedRoomData);
+
+  console.log("editdata", data);
+  
 
   setInitialValues({
-    reading: data.reading,
-    date: data.entryDate,
+    reading: matchedRoomData?.currentReading,
+    date: matchedRoomData.entryDate,
   });
 
-  setCurrentReading(String(data.reading));
+  setCurrentReading(String(matchedRoomData?.currentReading));
 
   setReadingDate(
-    dayjs(data.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
+    dayjs(matchedRoomData.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
   );
 
-  openSheet();
+  setShowAddSheet(true);
 };
+
+
+
+// const handleEditRoomReading = (data) => {
+//   if (!data?.ebId) {
+//     console.log("Edit failed  invalid reading", data);
+//     return;
+//   }
+
+//   setIsEditMode(true);
+//   setEditReadingData(matchedRoomData);
+
+//   console.log("editdata", data);
+  
+
+//   setInitialValues({
+//     reading: matchedRoomData?.currentReading,
+//     date: matchedRoomData.entryDate,
+//   });
+
+//   setCurrentReading(String(matchedRoomData?.currentReading));
+
+//   setReadingDate(
+//     dayjs(matchedRoomData.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
+//   );
+
+//   openSheet();
+// };
 
 
 
@@ -511,7 +602,7 @@ const handleConfirmReadingDelete = async () => {
 
   return (
     <>
-
+ { loading && <Loader />}
      <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.container}>
 
@@ -605,7 +696,7 @@ const handleConfirmReadingDelete = async () => {
             style={styles.popupRow}
             onPress={() => {
               setShowActionMenu(false);
-              handleEditRoomReading(currentReadingData);
+              handleEditRoomReading(matchedRoomData);
             }}
           >
             <Image source={EditIcon} style={styles.popupIcon} />
@@ -708,17 +799,17 @@ const handleConfirmReadingDelete = async () => {
         <View style={styles.detailsRow}>
           <View>
             <Text style={styles.label}>Previous</Text>
-            <Text style={styles.value}>{roomData?.previousReading}</Text>
+            <Text style={styles.value}>{matchedRoomData?.previousReading}</Text>
           </View>
 
           <View>
             <Text style={styles.label}>Current</Text>
-            <Text style={styles.value}>{roomData?.currentReading}</Text>
+            <Text style={styles.value}>{matchedRoomData?.currentReading}</Text>
           </View>
 
           <View>
             <Text style={styles.label}>Total Units</Text>
-            <Text style={styles.value}>{roomData?.consumption}</Text>
+            <Text style={styles.value}>{matchedRoomData?.consumption}</Text>
           </View>
 
          
@@ -734,20 +825,20 @@ const handleConfirmReadingDelete = async () => {
     {/* People Count box */}
     <View style={styles.peopleBox}>
       <Image source={UserProfile} style={styles.peopleIcon} />
-      <Text style={styles.peopleText}>{roomData?.noOfTenants}</Text>
+      <Text style={styles.peopleText}>{matchedRoomData?.noOfTenants}</Text>
     </View>
 
     {/* Month Box */}
     <View style={styles.monthBox}>
       <Image source={calendarCheck} style={styles.calendarIcon} />
-      <Text style={styles.monthText}>Aug</Text>
+      <Text style={styles.monthText}> {formatApiMonth(matchedRoomData?.entryDate)}</Text>
     </View>
 
   </View>
 
  
   <View>
-    <Text style={styles.value}>₹ {roomData?.totalPrice}</Text>
+    <Text style={styles.value}>₹ {matchedRoomData?.totalPrice}</Text>
   </View>
 </View>
 
@@ -875,13 +966,13 @@ const handleConfirmReadingDelete = async () => {
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
     </View>
-    {showAddSheet && (
+
+    
+    {/* {showAddSheet && (
   <View style={styles.sheetOverlay}>
     
-    {/* Outside Tap Close */}
     <TouchableOpacity style={styles.overlayTouchable} onPress={closeSheet} />
 
-    {/* Bottom Sheet */}
     <Animated.View
       style={[styles.sheetContainer, { transform: [{ translateY }] }]}
       {...panResponder.panHandlers}
@@ -891,7 +982,6 @@ const handleConfirmReadingDelete = async () => {
       <Text style={styles.sheetTitle}>{isEditMode ? "Edit Room Reading" : "Add Room Reading"}</Text>
       
 
-      {/* ROOM CARD */}
       <View style={styles.sheetRoomRow}>
         <Image source={RoomIcon} style={styles.sheetRoomIcon} />
         <View>
@@ -899,10 +989,7 @@ const handleConfirmReadingDelete = async () => {
           <Text style={styles.sheetFloor}>{particular_EbRoomReading?.roomInfo?.floorName}</Text>
         </View>
 
-        <View style={{ marginLeft: "auto" }}>
-          <Text style={styles.sheetDateLabel}>Date</Text>
-          <Text style={styles.sheetDateValue}>{dayjs().format("DD-MM-YYYY")}</Text>
-        </View>
+       
       </View>
 
   
@@ -984,7 +1071,6 @@ const handleConfirmReadingDelete = async () => {
   </TouchableOpacity>
 </View>
 
-{/* Input */}
 <TextInput
   placeholder="0"
   style={styles.sheetInput}
@@ -1007,7 +1093,6 @@ const handleConfirmReadingDelete = async () => {
 
 
 
-      {/* Buttons */}
       <View style={styles.sheetBtnRow}>
         <TouchableOpacity style={styles.sheetCancel} onPress={closeSheet}>
           <Text style={styles.sheetCancelTxt}>Cancel</Text>
@@ -1020,14 +1105,33 @@ const handleConfirmReadingDelete = async () => {
 
     </Animated.View>
   </View>
-)}
+)} */}
+
+<AddRoomReadingForm
+  visible={showAddSheet}
+  onClose={() => setShowAddSheet(false)}
+  isEditMode={isEditMode}
+  roomInfo={{
+    roomName: roomData?.roomName,
+    floorName: roomData?.floorName,
+  }}
+  reading={currentReading}
+  setReading={setCurrentReading}
+  readingDate={readingDate}
+  setReadingDate={setReadingDate}
+  readingError={readingError}
+  dateError={readingDateError}
+  apiError={apiError}
+  setApiError={setApiError}
+  initialValues = {matchedRoomData}
+/>
 
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45},
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45 ,  fontFamily:'Gilroy-Semibold'},
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
@@ -1110,7 +1214,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  monthText: { fontSize: 15, fontWeight: "700" },
+  monthText: { fontSize: 15, fontWeight: "700",  fontFamily:'sans-serif' },
   unitTag: {
     backgroundColor: "#FFF4D7",
     alignSelf: "flex-start",
@@ -1496,6 +1600,7 @@ deleteTitle: {
   fontWeight: "700",
   color: "#111",
   marginBottom: 10,
+  fontFamily:'Gilroy-Semibold'
 },
 
 deleteSub: {

@@ -33,7 +33,7 @@ import FilterIcon from "../../../Assets/Images/filter.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CloseIcon from "../../../Assets/Images/remove.png";
 import { useFocusEffect } from '@react-navigation/native';
-
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function ExpensesScreen() {
   const navigation = useNavigation();
@@ -68,6 +68,9 @@ export default function ExpensesScreen() {
   const [showTagAsset, setShowTagAsset] = useState(false);
   const [deleteshow, setDeleteShow] = useState(false)
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
   const amountOptions = [
     "Low to High (Lowest First)",
@@ -295,6 +298,13 @@ export default function ExpensesScreen() {
   };
 
   const handleShowAddExpense = () => {
+      if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
     navigation.navigate("AddExpenses")
   }
 
@@ -357,6 +367,12 @@ export default function ExpensesScreen() {
   return (
     <>
       {loading && <Loader />}
+           <SuccessModal
+  visible={showSuccessModal}
+  onClose={() => setShowSuccessModal(false)}
+  message={modalMessage}
+  type={modalType}
+/> 
 
       <View style={styles.container}>
 
@@ -401,6 +417,11 @@ export default function ExpensesScreen() {
                 <Text style={styles.noexpensesText}>
                   No Expenses are there!
                 </Text>
+
+                <TouchableOpacity style={styles.addExpenseBtn} onPress={handleShowAddExpense}>
+                          <Text style={styles.addExpenseText}>+ Add Expense</Text>
+                        </TouchableOpacity>
+          
               </View>
             )}
           </>
@@ -414,7 +435,12 @@ export default function ExpensesScreen() {
         {/* <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)}  accessibilityLabel="Open filters">
                 <Image source={FilterIcon} style={styles.fabIcon} />
               </TouchableOpacity> */}
-        <TouchableOpacity
+
+
+              {expensesList && expensesList.length > 0 && 
+              (
+                <>
+                      <TouchableOpacity
           style={[
             styles.Filterfab,
             loading && { opacity: 0.4 }
@@ -431,6 +457,9 @@ export default function ExpensesScreen() {
         >
           <Image source={AddIcon} style={styles.fabIconAdd} />
         </TouchableOpacity>
+                </>
+              )}
+  
 
 
 
@@ -610,8 +639,15 @@ export default function ExpensesScreen() {
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.saveBtn}>
-                  <Text style={styles.saveText}>Save Changes</Text>
+                <TouchableOpacity  style={[
+    styles.saveBtn,
+    { opacity:0.5 }, // disabled color
+  ]}
+  disabled={true}
+  activeOpacity={1}>
+                  <Text style={styles.saveText}> Coming soon
+                    {/* Save Changes */}
+                    </Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>
@@ -630,9 +666,9 @@ export default function ExpensesScreen() {
               <View style={styles.deleteOverlay}>
                 <View style={styles.deleteBox}>
 
-                  <Text style={styles.deleteTitle}>Delete Bank ?</Text>
+                  <Text style={styles.deleteTitle}>Delete Expense ?</Text>
                   <Text style={styles.deleteSub}>
-                    Are you sure you want to delete this Bank ?
+                    Are you sure you want to delete this Expense ?
                   </Text>
 
                   <View style={styles.deleteBtnRow}>
@@ -646,8 +682,9 @@ export default function ExpensesScreen() {
                     <TouchableOpacity
                       style={styles.deleteBtn}
                       onPress={handleCloseDeleteShow}
+                      disabled
                     >
-                      <Text style={styles.deleteBtnText}>Delete</Text>
+                      <Text style={styles.deleteBtnText}>Coming soon</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -719,6 +756,20 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 16,
+    fontWeight: "600",
+  },
+
+    addExpenseBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+
+  addExpenseText: {
+    color: "#fff",
+    fontSize: 15,
     fontWeight: "600",
   },
 
@@ -891,7 +942,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: "50%",
+    height: "47%",
   },
 
   detailsTitle: { fontSize: 20, fontWeight: "700", marginBottom: 4 },
@@ -920,7 +971,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: "33%",
+    height: "38%",
   },
 
   tagAssetHeader: {
@@ -955,6 +1006,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 30,
+    marginBottom:70
   },
 
   cancelBtn: {
@@ -1043,6 +1095,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#2D6CDF",
     alignItems: "center",
+    opacity:0.7
   },
 
   deleteBtnText: {

@@ -15,8 +15,7 @@ import {
   TouchableWithoutFeedback
 } from "react-native";
 import { Animated, Easing } from "react-native";
-
-
+import SubscriptionBanner from "./SubscriptionBannerAlert"
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import PgImg from '../../Assets/Images/PgImg.png'
@@ -45,8 +44,12 @@ import UpdatesScreen from '../Dashboard/Update';
 import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
 import { CommonContexts } from "../../Context/CommonContext";
 import { LoginContexts } from "../../Context/LoginContext";
+import { PGContext } from "../../Context/PGContext";
 import ProfileDrawer from "./ProfileClickScreen";
 import AddTenant from "../Customer/AddTenants";
+import { useCustomer } from "../../Context/CustomerContext";
+import { NotificationContext } from "../../Context/NotificationContext";
+
 
 
 import {
@@ -68,12 +71,58 @@ export default function DashboardScreen({initialParams}) {
   console.log("initialParams", initialParams);
   
   const insets = useSafeAreaInsets();
-
+const { getDashboardByHostel, loading } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
   
  const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
   const login = useContext(LoginContexts);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { getNotificationsByHostel } = useContext(NotificationContext);
+const [unreadCount, setUnreadCount] = useState(0);
+const [dashboardList,setDashboardList] = useState([])
+
+useEffect(() => {
+  if (!activeHostelId) return;
+
+  const loadDashboard = async () => {
+    const res = await getDashboardByHostel(activeHostelId);
+
+    console.log("Dashboard API Response 👉", res);
+
+    if (res.success) {
+      setDashboardList(res.data);
+
+    }
+  };
+
+  loadDashboard();
+}, [activeHostelId]);
+
+console.log("dashboardjd",dashboardList)
+     const fetchCustomers = async () => {
+   const res = await getNotificationsByHostel(activeHostelId);
+ 
+  
+   setUnreadCount(res?.data?.unreadCount);
+ };
+ console.log("unreadCount",unreadCount)
+ 
+         useFocusEffect(
+         useCallback(() => {
+           if (activeHostelId) {
+             fetchCustomers();
+           }
+         }, [activeHostelId])
+       );
+useEffect(() => {
+  if(activeHostelId){
+  getParticularHostelDetails(activeHostelId);
+  }
+}, [activeHostelId]);
+
+console.log("PGdetails", PGDetails);
+
 
   useEffect(() => {
   retriveData("token").then(t => console.log("TOKEN:", t));
@@ -81,6 +130,97 @@ export default function DashboardScreen({initialParams}) {
 
 const scaleAnim = useRef(new Animated.Value(1)).current;
 const rotateAnim = useRef(new Animated.Value(0)).current;
+
+
+
+const [showBanner, setShowBanner] = useState(false);
+const bannerDismissedRef = useRef(false);
+
+
+useEffect(() => {
+  if (!PGDetails) return;
+
+  if (bannerDismissedRef.current) return;
+
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+  // ❌ 8+ days → NEVER show
+  if (remainingDaysLeft > 7 && isSubscriptionActive) {
+    setShowBanner(false);
+    return;
+  }
+
+  // ✅ 7 days or less OR expired
+  if (!isSubscriptionActive || remainingDaysLeft <= 7) {
+    setShowBanner(true);
+  }
+}, [PGDetails]);
+;
+
+const getSubscriptionCopy = (PGDetails) => {
+  if (!PGDetails) return null;
+
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+  if (!isSubscriptionActive || remainingDaysLeft <= 0) {
+    return {
+      title: "Subscription Expired",
+      subtitle:
+        "Your SmartStay subscription has expired. Please renew now to continue using all features without interruption.",
+    };
+  }
+
+  if (remainingDaysLeft === 1) {
+    return {
+      title: "Subscription Expiring Tomorrow",
+      subtitle:
+        "Your SmartStay subscription will expire tomorrow. Renew now to avoid service disruption.",
+    };
+  }
+
+  if (remainingDaysLeft <= 7) {
+    return {
+      title: "Subscription Expiring Soon",
+      subtitle:
+        `Your SmartStay subscription will expire in ${remainingDaysLeft} days. Renew soon to ensure uninterrupted service.`,
+    };
+  }
+
+  return null;
+};
+
+
+const shouldShowBanner = (() => {
+  if (!PGDetails) return false;
+
+  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+  if (bannerDismissedRef.current) return false;
+
+  if (!isSubscriptionActive || remainingDaysLeft <= 0) return true;
+  if (remainingDaysLeft === 1) return true;
+  if (remainingDaysLeft <= 7) return true;
+
+  return false; // ⛔ 8+ days → NEVER SHOW
+})();
+
+
+// useEffect(() => {
+//   if (!PGDetails) return;
+
+//   setShowBanner(shouldShowBanner);
+// }, [PGDetails]);
+
+
+const copy = getSubscriptionCopy(PGDetails);
+
+const handleCloseBanner = () => {
+  bannerDismissedRef.current = true; // this login only
+  setShowBanner(false);
+};
+
+
+
 
 useEffect(() => {
   Animated.loop(
@@ -497,6 +637,9 @@ console.log("profile", getProfileInitial);
 
 
   return (
+    <>
+    
+   
     <View style={[styles.safe, { paddingTop: insets.top }]}>
 
       <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
@@ -653,12 +796,27 @@ console.log("profile", getProfileInitial);
 
 
   <View style={styles.rightIcons}>
-    <TouchableOpacity
+    {/* <TouchableOpacity
       style={styles.iconCircle}
       onPress={() => navigation.navigate("NotificationDetails")}
     >
-      <Image source={Bell} style={{ width: 40, height: 40 }} />
-    </TouchableOpacity>
+      <Image source={Bell} style={{ width: 28, height: 28 }} />
+    </TouchableOpacity> */}
+    <TouchableOpacity
+  style={styles.iconCirclenoti}
+  onPress={() => navigation.navigate("NotificationDetails")}
+>
+  <Image source={Bell} style={{ width: 28, height: 28 }} />
+
+  {unreadCount > 0 && (
+    <View style={styles.badge}>
+      <Text style={styles.badgeText}>
+        {unreadCount > 99 ? "99+" : unreadCount}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
+
 
     <TouchableOpacity
       style={[styles.iconCircle, { marginLeft: 10 }]}
@@ -743,7 +901,7 @@ console.log("profile", getProfileInitial);
                 />
               </View>
               <Text style={styles.cardLabel}>Total Rooms</Text>
-              <Text style={styles.cardValue}>20</Text>
+              <Text style={styles.cardValue}>{dashboardList?.totalRooms}</Text>
             </View>
 
             <View style={styles.sideColumn}>
@@ -752,7 +910,7 @@ console.log("profile", getProfileInitial);
                 <View style={styles.smallCardContent}>
                   <View>
                     <Text style={styles.smallLabel}>Total Beds</Text>
-                    <Text style={styles.smallValue}>74</Text>
+                    <Text style={styles.smallValue}>{dashboardList?.totalBeds}</Text>
                   </View>
 
                   <View >
@@ -770,7 +928,7 @@ console.log("profile", getProfileInitial);
                 <View style={styles.smallCardContent}>
                   <View>
                     <Text style={styles.smallLabel}>Free Bed</Text>
-                    <Text style={styles.smallValue}>21</Text>
+                    <Text style={styles.smallValue}>{dashboardList?.freeBeds}</Text>
                   </View>
 
                   <View >
@@ -793,7 +951,7 @@ console.log("profile", getProfileInitial);
     { label: "Add Customers", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
     { label: "Add Expense", icon: ExpenseImg, color: "#EF4444", route: "AddExpenses" },
     { label: "Create Bills", icon: CrateBill, color: "#F59E0B", route: "CreateBills" },
-    { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA", route: "AddWalkin" },
+    // { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA", route: "AddWalkin" },
     { label: "Make agreement", icon: AgreementImg, color: "#10B981", route: "Agreement" },
   ].map((x, i) => (
     <TouchableOpacity
@@ -814,7 +972,7 @@ console.log("profile", getProfileInitial);
 </View>
 
 
-
+{/* 
           <View style={{ backgroundColor: "#F3F5FF" }}>
             <View style={styles.statsGrid}>
               {[
@@ -838,9 +996,44 @@ console.log("profile", getProfileInitial);
               <Text style={[styles.statValue, { fontSize: 22 }]}>₹ 14,550</Text>
             </View>
 
-          </View>
+          </View> */}
 
-      
+       <View style={{ backgroundColor: "#F3F5FF" }}>
+            <View style={styles.statsGrid}>
+              {/* {[
+                { title: "Occupied Bed", value: "53" },
+                { title: "Next Month Projection", value: "16" },
+                { title: "Total Customer", value: "378" },
+                { title: "EB Amount", value: "₹ 24,000" },
+              ].map((item, i) => ( */}
+                <View style={[styles.statBox, { width: width * 0.42 }]}>
+                  <Text style={styles.statTitle}>Occupied Bed</Text>
+                  <Text style={styles.statValue}>{dashboardList?.occupiedBeds}</Text>
+                </View>
+                 <View style={[styles.statBox, { width: width * 0.42 }]}>
+                  <Text style={styles.statTitle}>Next Month Projection</Text>
+                  <Text style={styles.statValue}>{dashboardList?.nextMonthProjection}</Text>
+                </View>
+                  <View style={[styles.statBox, { width: width * 0.42 }]}>
+                  <Text style={styles.statTitle}>Total Customer</Text>
+                  <Text style={styles.statValue}>{dashboardList?.totalCustomers}</Text>
+                </View>
+                 <View style={[styles.statBox, { width: width * 0.42 }]}>
+                  <Text style={styles.statTitle}>EB Amount</Text>
+                  <Text style={styles.statValue}>{dashboardList?.electricityAmount}</Text>
+                </View>
+              {/* ))} */}
+            </View>
+
+
+
+
+            <View style={[styles.statBoxOne, { marginHorizontal: 16 }]}>
+              <Text style={styles.statTitle}>Total Asset Value</Text>
+              <Text style={[styles.statValue, { fontSize: 22 }]}>₹ {dashboardList?.totalAssetsValue}</Text>
+            </View>
+
+          </View>
 
           <View style={styles.cardBlue}>
             <View style={styles.row}>
@@ -848,7 +1041,7 @@ console.log("profile", getProfileInitial);
               <Image source={AdvanceHand} style={{ width: 25, height: 25 }} />
               <Text style={styles.cardTitle}>Advance in Hand</Text>
             </View>
-            <Text style={styles.cardValue}>₹ 32,500</Text>
+            <Text style={styles.cardValue}>₹ {dashboardList?.advances}</Text>
           </View>
 
 
@@ -856,9 +1049,9 @@ console.log("profile", getProfileInitial);
             <View style={styles.row}>
 
               <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
-              <Text style={styles.cardTitle}>Active Complaint</Text>
+              <Text style={styles.cardTitle}>New Booking</Text>
             </View>
-            <Text style={styles.cardValue}>153</Text>
+            <Text style={styles.cardValue}>{dashboardList?.bookedBeds}</Text>
           </View>
 
           
@@ -867,13 +1060,28 @@ console.log("profile", getProfileInitial);
               <Image source={MonthProfit} style={{ width: 25, height: 25 }} />
               <Text style={styles.cardTitle}>Current Month Profit</Text>
             </View>
-            <Text style={styles.cardValue}>₹ 84,550</Text>
+            <Text style={styles.cardValue}>₹ {dashboardList?.currentMonthProfit}</Text>
+          </View>
+ <View style={styles.cardWhite}>
+            <View style={styles.row}>
+
+              <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
+              <Text style={styles.cardTitle}>Pending Invoice Count</Text>
+            </View>
+            <Text style={styles.cardValue}>{dashboardList?.pendingInvoiceCount}</Text>
+          </View>
+          
+<View style={styles.cardWhite}>
+            <View style={styles.row}>
+
+              <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
+              <Text style={styles.cardTitle}>Other Profit</Text>
+            </View>
+            <Text style={styles.cardValue}>{dashboardList?.otherProfit}</Text>
           </View>
 
 
-
-
-          <View style={styles.chartCard}>
+          {/* <View style={styles.chartCard}>
 
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Expenses Vs Revenue</Text>
@@ -926,7 +1134,7 @@ console.log("profile", getProfileInitial);
 
 
 
-                {/* X Axis */}
+                
                 <XAxis
                   style={{ marginTop: 12 }}
                   data={[0, 1, 2, 3, 4]}
@@ -940,7 +1148,7 @@ console.log("profile", getProfileInitial);
               </View>
             </View>
 
-            {/* Legend */}
+       
             <View style={styles.legendRow}>
               <View style={styles.legendItem}>
                 <View style={[styles.dot, { backgroundColor: "#EF4444" }]} />
@@ -953,11 +1161,11 @@ console.log("profile", getProfileInitial);
               </View>
             </View>
 
-          </View>
+          </View> */}
 
 
 
-          <View style={styles.card}>
+          {/* <View style={styles.card}>
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Advance VS Advance Return</Text>
 
@@ -1069,9 +1277,9 @@ console.log("profile", getProfileInitial);
                 <Text>Advance Return</Text>
               </View>
             </View>
-          </View>
+          </View> */}
 
-          <View style={styles.card}>
+          {/* <View style={styles.card}>
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Total Cashback</Text>
 
@@ -1133,11 +1341,11 @@ console.log("profile", getProfileInitial);
                 </View>
               </View>
             </View>
-          </View>
+          </View> */}
 
 
 
-          <View style={styles.chartCard}>
+          {/* <View style={styles.chartCard}>
 
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Expenses</Text>
@@ -1205,14 +1413,17 @@ console.log("profile", getProfileInitial);
               ))}
             </View>
 
-          </View>
+          </View> */}
 
 
           <View style={{ height: 50 }} />
         </ScrollView>
       )}
-      {activeTab === "Announcement" && <AnnouncementScreen />}
-      {activeTab === "Updates" && <UpdatesScreen />}
+      {/* {activeTab === "Announcement" && <AnnouncementScreen />} */}
+      {activeTab === "Announcement" && (
+  <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
+)}
+      {activeTab === "Updates" && <UpdatesScreen onGoBack={() => setActiveTab("Announcement")}/>}
 
       <ProfileDrawer
         visible={drawerVisible}
@@ -1220,6 +1431,32 @@ console.log("profile", getProfileInitial);
       />
 
     </View>
+
+
+
+
+
+
+{/* {showBanner && (
+  <SubscriptionBanner
+    visible={true}
+    title={copy?.title}
+    subtitle={copy?.subtitle}
+    primaryText="Renew now"
+    onClose={handleCloseBanner}
+  />
+)} */}
+
+
+
+{/* {showBanner && (
+  <SubscriptionBanner
+    text={bannerText}
+    bgColor="#DC2626" // Red
+  />
+)} */}
+
+ </>
   );
 }
 
@@ -1330,6 +1567,11 @@ hostelTitle: {
     alignItems: "center",
 
   },
+  iconCirclenoti: {
+  position: "relative",
+  padding: 6,
+  
+},
 
   tabsRow: { flexDirection: "row", marginTop: 18 },
 
@@ -1840,6 +2082,26 @@ hostelTitle: {
     fontSize: 13,
     color: "#1E293B",
   },
+
+
+badge: {
+  position: "absolute",
+  top: 2,          // 👈 IMPORTANT
+  right: 2,
+  minWidth: 16,
+  height: 16,
+  borderRadius: 8,
+  backgroundColor: "red",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+
+badgeText: {
+  color: "#fff",
+  fontSize: 10,
+  fontWeight: "700",
+},
 
 
 

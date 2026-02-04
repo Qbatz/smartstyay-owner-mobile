@@ -71,6 +71,8 @@ export default function AssignTenant({ navigation, route }) {
   const CALENDAR_HEIGHT = 340;
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
   const scrollRef = useRef(null);
+  const transactionRef = useRef(null);
+
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
  useEffect(() => {
@@ -99,23 +101,41 @@ export default function AssignTenant({ navigation, route }) {
     }, 120);
   };
  
-  const scrollInputIntoView = (ref) => {
-    if (!ref?.current) return;
+//  const scrollInputIntoView = (ref) => {
+//   if (!ref?.current || !scrollRef?.current) return;
 
-    setTimeout(() => {
-      ref.current.measureInWindow((x, y, w, h) => {
-        const visibleArea = SCREEN_HEIGHT - keyboardHeight;
-        const inputBottom = y + h;
+//   setTimeout(() => {
+//     ref.current.focus();
 
-        if (inputBottom > visibleArea - 20) {
-          scrollRef.current?.scrollTo({
-            y: inputBottom - visibleArea + 40,
-            animated: true,
-          });
-        }
-      });
-    }, 80);
-  };
+//     scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+//       ref.current,
+//       200,   // extra offset above keyboard
+//       true
+//     );
+//   }, 150);
+// };
+
+const scrollInputIntoView = (refOrNode) => {
+  if (!scrollRef?.current) return;
+
+  // 🔥 detect if ref object or direct node
+  const input =
+    refOrNode?.current ? refOrNode.current : refOrNode;
+
+  if (!input || typeof input.focus !== "function") return;
+
+  setTimeout(() => {
+    input.focus();
+
+    scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+      input,
+      200,
+      true
+    );
+  }, 150);
+};
+
+
 
   const inputRefs = useRef({});
   const getSafeCalendarTop = (y, h) => {
@@ -606,7 +626,7 @@ export default function AssignTenant({ navigation, route }) {
           <Text style={styles.backArrow}>← Assign Tenant</Text>
         </TouchableOpacity>
 
-        <Text style={styles.roomText}>Room No :{selectedBed?.roomName} | Bed : {selectedBed?.bedName}</Text>
+        <Text style={styles.roomText}> Floor :{selectedBed?.floorName} | Room No :{selectedBed?.roomName} | Bed : {selectedBed?.bedName}</Text>
 
 
         <View style={styles.tabRow}>
@@ -663,13 +683,16 @@ export default function AssignTenant({ navigation, route }) {
 <ScrollView
   ref={scrollRef}
   keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
   showsVerticalScrollIndicator={false}
-  scrollEnabled={!checkinTenantsOpen}   // ✅ dropdown open = parent scroll OFF
-  nestedScrollEnabled={true}
+  scrollEnabled={!checkinTenantsOpen}
   contentContainerStyle={{
     paddingBottom: keyboardHeight + 80,
   }}
 >
+
+
+
 
             {activeTab === "Booking" && (
               <>
@@ -718,12 +741,14 @@ export default function AssignTenant({ navigation, route }) {
 )} */}
 {checkinTenantsOpen && (
   <View style={styles.dropdownMenuone}>
-    <ScrollView
-      nestedScrollEnabled={true}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      style={{ maxHeight: 160 }}
-    >
+  <ScrollView
+  nestedScrollEnabled
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator
+  style={{ maxHeight: 160 }}
+  contentContainerStyle={{ paddingBottom: 5 }}
+>
+
       {CheckinTenants.map((v, index) => (
         <TouchableOpacity
           key={index}
@@ -767,13 +792,20 @@ export default function AssignTenant({ navigation, route }) {
                 <View ref={bookingDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                    onPress={() => {
-                      bookingDateRef.current.measureInWindow((x, y, w, h) => {
-                        setDatePickerTop(getSafeCalendarTop(y, h));
-                        setActiveDateField("booking");
-                        setShowCalendar(true);
-                      });
-                    }}
+                   onPress={() => {
+  Keyboard.dismiss();   // 🔥 keyboard close
+  setOpenDropdownId(null);
+  setCheckinTenantsopen(false);
+
+  setTimeout(() => {
+    bookingDateRef.current.measureInWindow((x, y, w, h) => {
+      setDatePickerTop(getSafeCalendarTop(y, h));
+      setActiveDateField("booking");
+      setShowCalendar(true);
+    });
+  }, 150); // 🔥 keyboard animation wait
+}}
+
                   >
                     <Text style={styles.placeholder}>
                       {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -804,13 +836,19 @@ export default function AssignTenant({ navigation, route }) {
                 <View ref={joiningDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                    onPress={() => {
-                      joiningDateRef.current.measureInWindow((x, y, w, h) => {
-                        setDatePickerTop(getSafeCalendarTop(y, h));
-                        setActiveDateField("joining");
-                        setShowCalendar(true);
-                      });
-                    }}
+                   onPress={() => {
+  Keyboard.dismiss();        // 🔥 keyboard close
+  setOpenDropdownId(null);
+  setCheckinTenantsopen(false);
+
+  setTimeout(() => {
+    joiningDateRef.current.measureInWindow((x, y, w, h) => {
+      setDatePickerTop(getSafeCalendarTop(y, h));
+      setActiveDateField("joining");
+      setShowCalendar(true);
+    });
+  }, 150);                  // 🔥 wait for keyboard animation
+}}
                   >
                     <Text style={styles.placeholder}>
                       {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -861,13 +899,36 @@ export default function AssignTenant({ navigation, route }) {
                     </View>
                   )}
                   <Text style={styles.label}>Transaction Id</Text>
-                  <TextInput
-                    placeholder="Enter Transaction Id"
-                    placeholderTextColor="#999"
-                    onChangeText={setReferenceNumber}
-                    value={referenceNumber}
-                    style={styles.inputBox}
-                  />
+               {/* <TextInput
+  ref={transactionRef}
+  placeholder="Enter Transaction Id"
+  placeholderTextColor="#999"
+  value={referenceNumber}
+  style={styles.inputBox}
+  onFocus={() => {
+    scrollInputIntoView(transactionRef);
+  }}
+  onChangeText={setReferenceNumber}
+/> */}
+<TextInput
+  ref={transactionRef}
+  style={styles.inputBox}
+  placeholder="Enter Transaction Id"
+  value={referenceNumber}
+ onFocus={() => scrollInputIntoView(transactionRef)}
+
+  onChangeText={(text) => {
+    
+    const cleaned = text.replace(
+      /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Emoji}\u200d]+/gu,
+      ""
+    );
+
+    setReferenceNumber(cleaned);
+  }}
+/>
+
+
                 </View>
 
 
@@ -902,11 +963,12 @@ export default function AssignTenant({ navigation, route }) {
 {checkinTenantsOpen && (
   <View style={styles.dropdownMenuone}>
     <ScrollView
-      nestedScrollEnabled={true}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      style={{ maxHeight: 160 }}
-    >
+  nestedScrollEnabled
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator
+  style={{ maxHeight: 160 }}
+  contentContainerStyle={{ paddingBottom: 5 }}
+>
       {CheckinTenants.map((v, index) => (
         <TouchableOpacity
           key={index}
@@ -1028,13 +1090,20 @@ export default function AssignTenant({ navigation, route }) {
                 <View ref={checkinDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                    onPress={() => {
-                      checkinDateRef.current.measureInWindow((x, y, w, h) => {
-                        setDatePickerTop(getSafeCalendarTop(y, h));
-                        setActiveDateField("checkin");
-                        setShowCalendar(true);
-                      });
-                    }}
+                   onPress={() => {
+  Keyboard.dismiss();        // 🔥 close keyboard
+  setOpenDropdownId(null);
+  setCheckinTenantsopen(false);
+
+  setTimeout(() => {
+    checkinDateRef.current.measureInWindow((x, y, w, h) => {
+      setDatePickerTop(getSafeCalendarTop(y, h));
+      setActiveDateField("checkin");
+      setShowCalendar(true);
+    });
+  }, 150);
+}}
+
                   >
                     <Text style={styles.placeholder}>
                       {checkJoiningDate
@@ -1100,10 +1169,10 @@ export default function AssignTenant({ navigation, route }) {
                           placeholder="Enter reason"
 
                           value={item.title}
-                          onFocus={() => {
-    setOpenDropdownId(null);
-    scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-  }}
+                        onFocus={() => {
+  setOpenDropdownId(null);
+  scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+}}
 
                           // onChangeText={(t) => updateTitle(item.id, t)}
                           onChangeText={(t) => {
@@ -1131,10 +1200,11 @@ export default function AssignTenant({ navigation, route }) {
                           placeholder="Enter amount"
                           keyboardType="numeric"
                           value={item.amount}
-                          onFocus={() => {
-    setOpenDropdownId(null);
-    scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-  }}
+                       onFocus={() => {
+  setOpenDropdownId(null);
+  scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+}}
+
                           onChangeText={(t) => updateAmount(item.id, t)}
                         />
                       )}

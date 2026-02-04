@@ -247,7 +247,12 @@ const EnterMPin = (props) => {
                         style={style.pinBox}
                         maxLength={1}
                         value={digit}
-                        onChangeText={(text) => handlePinChange(text, index)}
+                        
+                        onChangeText={(text) => {
+  handlePinChange(text, index);
+  setEnterPinError("");
+}}
+
                         onKeyPress={(e) => handleKeyPress(e, index)}
                     />
                 ))}

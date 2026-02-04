@@ -155,12 +155,28 @@ export default function AddGeneralScreen({ navigation, route }) {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const validatePincode = (pin) => {
+  if (!pin.trim()) return "Please Enter Pincode";
+  if (!/^[1-9][0-9]{5}$/.test(pin.trim()))
+    return "Please Enter Valid 6-digit Pincode";
+  return "";
+};
 
   const handleSubmit = async () => {
     let newErrors = {};
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
-    if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    // if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    if (!mobile.trim()) {
+  newErrors.mobile = "Please Enter Mobile Number";
+} 
+else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+  newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
+}
+else if (/^(\d)\1+$/.test(mobile.trim())) {
+  newErrors.mobile = "Invalid Mobile Number";
+}
+
     if (!email.trim()) {
       newErrors.email = "Please Enter Email ID";
     } else if (!emailRegex.test(email.trim())) {
@@ -174,9 +190,16 @@ export default function AddGeneralScreen({ navigation, route }) {
         "Password must be 8 chars, include A-Z, a-z, 0-9 & a special character";
     }
 
-    if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+    // if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+    const pinError = validatePincode(pincode);
+if (pinError) newErrors.pincode = pinError;
+
     if (!city.trim()) newErrors.city = "Please Enter City";
-    if (selectedState === "Select State") newErrors.state = "Please Select State";
+    // if (selectedState === "Select State") newErrors.selectedState = "Please Select State";
+    if (!selectedState || selectedState === "Select State") {
+  newErrors.selectedState = "Please Select State";
+}
+
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -311,33 +334,77 @@ export default function AddGeneralScreen({ navigation, route }) {
 
 
   // };
-  const hasChanges = () => {
-    if (!editData) return true;
+  // const hasChanges = () => {
+  //   if (!editData) return true;
 
-    return !(
-      editData.firstName === firstName &&
-      editData.lastName === lastName &&
-      editData.mobileNo == mobile &&                 // ✔ fixed
-      editData.mailId === email &&
-      editData.houseNo === flat &&
-      editData.street === street &&
-      editData.landmark === landmark &&
-      editData.city === city &&
-      String(editData.pincode) === String(pincode) &&
-      editData.state === selectedState &&            // ✔ matches your API
-      !selectedImage                                 // image unchanged
-    );
-  };
+  //   return !(
+  //     editData.firstName === firstName &&
+  //     editData.lastName === lastName &&
+  //     editData.mobileNo == mobile &&                 // ✔ fixed
+  //     editData.mailId === email &&
+  //     editData.houseNo === flat &&
+  //     editData.street === street &&
+  //     editData.landmark === landmark &&
+  //     editData.city === city &&
+  //     String(editData.pincode) === String(pincode) &&
+  //     editData.state === selectedState &&            // ✔ matches your API
+  //     !selectedImage                                 // image unchanged
+  //   );
+  // };
+  const hasChanges = () => {
+  if (!editData) return true;
+
+  const imageChanged =
+    selectedImage &&
+    selectedImage.uri &&
+    selectedImage.uri !== editData.profilePic;
+
+  return !(
+    editData.firstName === firstName &&
+    editData.lastName === lastName &&
+    String(editData.mobileNo) === String(mobile) &&
+    editData.mailId === email &&
+    editData.houseNo === flat &&
+    editData.street === street &&
+    editData.landmark === landmark &&
+    editData.city === city &&
+    String(editData.pincode) === String(pincode) &&
+    editData.state === selectedState &&
+    !imageChanged
+  );
+};
+
   const [topWarning, setTopWarning] = useState("");
+
 
 
   const handleUpdate = async () => {
     let newErrors = {};
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
-    if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
-    if (!email.trim()) newErrors.email = "Please Enter Email ID";
-    if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+    // if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
+    // if (!email.trim()) newErrors.email = "Please Enter Email ID";
+      if (!mobile.trim()) {
+  newErrors.mobile = "Please Enter Mobile Number";
+} 
+else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+  newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
+}
+else if (/^(\d)\1+$/.test(mobile.trim())) {
+  newErrors.mobile = "Invalid Mobile Number";
+}
+
+    if (!email.trim()) {
+      newErrors.email = "Please Enter Email ID";
+    } else if (!emailRegex.test(email.trim())) {
+      newErrors.email = "Please Enter Valid Email ID";
+    }
+    // if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
+ const pinError = validatePincode(pincode);
+if (pinError) newErrors.pincode = pinError;
+
+
+
     if (!city.trim()) newErrors.city = "Please Enter City";
     if (selectedState === "Select State") newErrors.state = "Please Select State";
 
@@ -348,9 +415,11 @@ export default function AddGeneralScreen({ navigation, route }) {
 
 
     if (!hasChanges()) {
-      setTopWarning("No Changes Detected");
+      setModalMessage("No Changes Detected");
       setModalType("warning");
-
+//  setModalMessage("General Updated Successfully");
+      // setModalType("success");
+      setShowSuccessModal(true);
 
 
       setTimeout(() => {
@@ -690,7 +759,6 @@ export default function AddGeneralScreen({ navigation, route }) {
               //   setErrors({ ...errors, firstName: "" });
               // }} 
               onChangeText={(t) => {
-                // ✅ Only letters + space allowed
                 const cleaned = t.replace(/[^A-Za-z\s]/g, "");
 
                 setFirstName(cleaned);
@@ -710,14 +778,36 @@ export default function AddGeneralScreen({ navigation, route }) {
               }}
             />
 
-            <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
+            {/* <Text style={styles.label}>Mobile Number  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="+91" keyboardType="numeric" value={mobile}
               onChangeText={(t) => {
                 const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
                 setMobile(cleaned);
                 setErrors({ ...errors, mobile: "" });
                 setPhoneError("")
-              }} />
+              }} /> */}
+              <Text style={styles.label}>
+  Mobile Number <Text style={{ color: "red", fontWeight: "700" }}>*</Text>
+</Text>
+
+<View style={styles.phoneContainer}>
+  <Text style={styles.countryCode}>+91</Text>
+
+  <TextInput
+    style={styles.phoneInput}
+    placeholder="Enter mobile number"
+    keyboardType="number-pad"
+    value={mobile}
+    maxLength={10}
+    onChangeText={(t) => {
+      const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+      setMobile(cleaned);
+      setErrors({ ...errors, mobile: "" });
+      setPhoneError("");
+    }}
+  />
+</View>
+
             {/* {errors.mobile && (
             <Text style={styles.errText}>{errors.mobile}</Text>
           )} */}
@@ -795,15 +885,30 @@ export default function AddGeneralScreen({ navigation, route }) {
             )}
             <Text style={styles.label}>Flat, House no, Building...</Text>
             <TextInput style={styles.input} placeholder="Enter House No" value={flat}
-              onChangeText={setFlat} />
+              // onChangeText={setFlat} 
+              onChangeText={(t) => {
+    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+    setFlat(cleaned);
+  }}
+              />
 
             <Text style={styles.label}>Area, Street, Sector...</Text>
             <TextInput style={styles.input} placeholder="Enter Street" value={street}
-              onChangeText={setStreet} />
+              // onChangeText={setStreet} 
+              onChangeText={(t) => {
+    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+    setStreet(cleaned);
+  }}
+              />
 
             <Text style={styles.label}>Landmark</Text>
             <TextInput style={styles.input} placeholder="Eg: Near SBI" value={landmark}
-              onChangeText={setLandmark} />
+              // onChangeText={setLandmark} 
+              onChangeText={(t) => {
+    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+    setLandmark(cleaned);
+  }}
+              />
 
             <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
@@ -822,10 +927,16 @@ export default function AddGeneralScreen({ navigation, route }) {
 
             <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter City" value={city}
+              // onChangeText={(t) => {
+              //   setCity(t);
+              //   setErrors({ ...errors, city: "" });
+              // }} 
               onChangeText={(t) => {
-                setCity(t);
-                setErrors({ ...errors, city: "" });
-              }} />
+  const cleaned = t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
+  setCity(cleaned);
+  setErrors({ ...errors, city: "" });
+}}
+              />
             {/* {errors.city && (
             <Text style={styles.errText}>{errors.city}</Text>
           )} */}
@@ -935,6 +1046,7 @@ export default function AddGeneralScreen({ navigation, route }) {
                               setSelectedState(v.label);
                               setStateQuery("");
                               setStateOpen(false);
+                              setErrors({ ...errors, selectedState: "" });
                             }}
                           >
                             <Text style={styles.optionText}>{v.label}</Text>
@@ -944,21 +1056,8 @@ export default function AddGeneralScreen({ navigation, route }) {
                         <Text style={styles.noResult}>No state found</Text>
                       )}
 
-                      {/* 🔴 CLEAR OPTION */}
-                      {selectedState && (
-                        <TouchableOpacity
-                          style={{ padding: 12, alignItems: "center" }}
-                          onPress={() => {
-                            setSelectedState("");
-                            setStateQuery("");
-                            setStateOpen(false);
-                          }}
-                        >
-                          <Text style={{ color: "red", fontWeight: "600" }}>
-                            Clear selection
-                          </Text>
-                        </TouchableOpacity>
-                      )}
+                      
+                     
                     </ScrollView>
                   </View>
                 </>
@@ -968,8 +1067,8 @@ export default function AddGeneralScreen({ navigation, route }) {
             {/* {errors.state && (
             <Text style={styles.errText}>{errors.state}</Text>
           )} */}
-            {errors.state && (
-              <ErrorMessage message={errors.state} type="error" />
+            {errors.selectedState && (
+              <ErrorMessage message={errors.selectedState} type="error" />
             )}
 
 
@@ -1254,6 +1353,28 @@ const styles = StyleSheet.create({
     // padding: 10,   // ✅ easy click area
     zIndex: 2000,
   },
+  phoneContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  height: 50,
+},
+
+countryCode: {
+  fontSize: 15,
+  color: "#000",
+  marginRight: 8,
+},
+
+phoneInput: {
+  flex: 1,
+  fontSize: 15,
+  color: "#000",
+},
+
 
 
 

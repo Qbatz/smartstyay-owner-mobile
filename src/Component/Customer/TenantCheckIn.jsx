@@ -244,6 +244,17 @@ const scrollToInputRef = (ref) => {
   );
   };
 
+useEffect(() => {
+  if (openCalendar) {
+    Keyboard.dismiss();
+  }
+}, [openCalendar]);
+const blurAllInputs = () => {
+  Object.values(titleRefs.current).forEach(ref => ref?.blur?.());
+  Object.values(amountRefs.current).forEach(ref => ref?.blur?.());
+};
+const advanceRef = useRef(null);
+const rentalRef = useRef(null);
 
 
   const onFloorChange = (v) => {
@@ -464,9 +475,17 @@ const validateExtraCharges = () => {
               <View>
                 <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
 
-               <TouchableOpacity
+              <TouchableOpacity
   style={styles.dateBox}
-  onPress={() => setOpenCalendar(true)}
+  onPress={() => {
+  Keyboard.dismiss();     // 1️⃣ close keyboard
+  blurAllInputs();        // 2️⃣ blur all focused inputs
+
+  setTimeout(() => {
+    setOpenCalendar(true);  // 3️⃣ open calendar
+  }, 180);                 // small delay
+}}
+
 >
   <Text style={styles.placeholder}>
     {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -504,6 +523,7 @@ const validateExtraCharges = () => {
                               setSelectedBed(null);
                               setRooms([]);
                               loadRooms(v.id);
+                              setFloorError("")
                             }}
                           >
                             <Text style={styles.optionText}>{v.name}</Text>
@@ -518,7 +538,7 @@ const validateExtraCharges = () => {
                 )}
 
 
-                <Text style={styles.label}>Room  <Text style={{color:"red"}}>*</Text></Text>
+                <Text style={styles.label}>Room <Text style={{color:"red"}}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -543,7 +563,9 @@ const validateExtraCharges = () => {
                             onPress={() => {
                               setSelectedRoom(r);
                               setRoomOpen(false);
+                               setRoomError("")
                             }}
+                           
                           >
                             <Text style={styles.optionText}>{r.name}</Text>
                           </TouchableOpacity>
@@ -581,6 +603,7 @@ const validateExtraCharges = () => {
                             onPress={() => {
                               setSelectedBed(b);
                               setBedOpen(false);
+                              setBedError("")
                               //  setRentalAmount(String(b.rentAmount));
                             }}
                           >
@@ -601,17 +624,18 @@ const validateExtraCharges = () => {
 
                 <View style={styles.field}>
                   <Text style={styles.label}>Advance Amount  <Text style={{color:"red"}}>*</Text></Text>
-                  <TextInput
-                    style={styles.input}
-                    keyboardType="numeric"
-                    value={advanceAmount}
-                    placeholder='Enter AdvanceAmount'
-                    onChangeText={(text) => {
-                      setAdvanceAmount(text);
-                      setAdvanceError("");
-                    }}
+                <TextInput
+  ref={advanceRef}
+  style={styles.input}
+  keyboardType="numeric"
+  value={advanceAmount}
+  placeholder="Enter AdvanceAmount"
+  onChangeText={(text) => {
+    setAdvanceAmount(text);
+    setAdvanceError("");
+  }}
+/>
 
-                  />
                 </View>
                 {advanceError && (
                   <ErrorMessage message={advanceError} type="error" />
@@ -619,21 +643,22 @@ const validateExtraCharges = () => {
 
                 <View style={styles.field}>
                   <Text style={styles.label}>Rental Amount  <Text style={{color:"red"}}>*</Text></Text>
-                  <TextInput
-                    style={styles.input}
-                    keyboardType="numeric"
-                    value={rentalAmount}
-                    placeholder={
-                      selectedBed?.rentAmount
-                        ? String(selectedBed.rentAmount)
-                        : "Enter Rental Amount"
-                    }
-                    placeholderTextColor="#9CA3AF"
-                    onChangeText={(text) => {
-                      setRentalAmount(text);
-                      setRentError("");
-                    }}
-                  />
+                 <TextInput
+  ref={rentalRef}
+  style={styles.input}
+  keyboardType="numeric"
+  value={rentalAmount}
+  placeholder={
+    selectedBed?.rentAmount
+      ? String(selectedBed.rentAmount)
+      : "Enter Rental Amount"
+  }
+  onChangeText={(text) => {
+    setRentalAmount(text);
+    setRentError("");
+  }}
+/>
+
 
                 </View>
                 {rentError && (
@@ -1134,7 +1159,7 @@ const styles = StyleSheet.create({
 
   figmaCloseBtn: {
     position: "absolute",
-    right: 5,
+    right: 8,
     top: -10,
     width: 28,
     height: 28,

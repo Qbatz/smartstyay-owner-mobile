@@ -235,6 +235,13 @@ const validatePincode = (value) => {
   return ""; 
 };
 
+const removeEmojis = (text) =>
+  text.replace(
+    /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF])/g,
+    ""
+  );
+
+
 
   
      const handleSubmit = async () => {
@@ -246,7 +253,12 @@ if (!hostelName.trim())
 if (!mobile.trim()) {
   errors.mobile = "Please Enter Mobile Number";
 } else if (mobile.length !== 10) {
-  errors.mobile = "Mobile number must be 10 digits";
+  errors.mobile = "Mobile Number Must Be 10 Digits";
+}
+else if (mobile[0] === "0") {
+  errors.mobile = "Mobile Number Cannot Start With 0";
+} else if (/^0+$/.test(mobile)) {
+  errors.mobile = "Mobile Number Cannot Be All Zeros";
 }
 
 
@@ -478,11 +490,11 @@ if (res?.status === 201) {
 <InputField
   label="Hostel Name *"
   value={hostelName}
-  onChangeText={(text) => {
-    setHostelName(text);
+  onChangeText={(t) => {
+    setHostelName(t.replace(/[^a-zA-Z\s]/g, ""));
     setTopWarning("");             
     setErrors({ ...errors, hostelName: "" }); 
-  }}
+          }}
   placeholder="Enter Hostel Name"
 />
 
@@ -549,7 +561,8 @@ if (res?.status === 201) {
   label="Email ID"
   value={email}
   onChangeText={(t) => {
-    setEmail(t);
+     const cleaned = removeEmojis(t);  
+    setEmail(cleaned);
     setErrors({ ...errors, email: "" });
     setTopWarning("");
   }}
@@ -561,9 +574,27 @@ if (res?.status === 201) {
                                     <ErrorMessage message={errors.email} type="error" />
                                 )}
 
-            <InputField label="Flat / House No / Apartment" value={houseNo} onChangeText={setHouseNo} placeholder="Enter House No" />
-            <InputField label="Area / Street" value={street} onChangeText={setStreet} placeholder="Enter Street" />
-            <InputField label="Landmark" value={landmark} onChangeText={setLandmark} placeholder="Near SBI" />
+            <InputField label="Flat / House No / Apartment" value={houseNo} 
+             onChangeText={(t) => {
+    setHouseNo(t.replace(/[^a-zA-Z\s]/g, ""));
+    setTopWarning("");             
+    setErrors({ ...errors, houseNo: "" }); 
+          }}
+            placeholder="Enter House No" />
+            <InputField label="Area / Street" value={street}
+                      onChangeText={(t) => {
+    setStreet(t.replace(/[^a-zA-Z\s]/g, ""));
+    setTopWarning("");             
+    setErrors({ ...errors, street: "" }); 
+          }}
+           placeholder="Enter Street" />
+            <InputField label="Landmark" value={landmark} 
+                            onChangeText={(t) => {
+    setLandmark(t.replace(/[^a-zA-Z\s]/g, ""));
+    setTopWarning("");             
+    setErrors({ ...errors, landmark: "" }); 
+          }}
+         placeholder="Near SBI" />
 <InputField
   label="Pincode *"
   value={pincode}
@@ -588,10 +619,12 @@ if (res?.status === 201) {
   label="Town/City *"
   value={city}
   onChangeText={(text) => {
-    setCity(text);
+     setCity(text.replace(/[^a-zA-Z\s]/g, ""));
     setTopWarning("");             
     setErrors({ ...errors, city: "" });
   }}
+
+    
   placeholder="Enter City"
 />
 
@@ -619,6 +652,8 @@ if (res?.status === 201) {
   onChangeText={(t) => {
     setStateQuery(t);
     setStateOpen(true);
+    setErrors({ ...errors, state: "" });
+       setTopWarning("");  
   }}
   keyboardShouldPersistTaps="handled"
 />
@@ -628,11 +663,12 @@ if (res?.status === 201) {
 
   {stateOpen && (
     <View style={styles.dropdownMenu}>
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <ScrollView    keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
+        style={{ flex: 1 }}
+      >
         {filteredStateList.length > 0 ? (
           filteredStateList.map((v, index) => (
-         <TouchableOpacity
-  key={index}
+         <TouchableOpacity key={index}
   style={[
     styles.option,
     state === v.label && styles.selectedOption
@@ -642,6 +678,7 @@ if (res?.status === 201) {
     setStateQuery("");
     setStateOpen(false);
     setErrors({ ...errors, state: "" });
+       setTopWarning("");  
   }}
 >
   <Text
@@ -961,21 +998,36 @@ noResult: {
   //   zIndex: 999,
   // },
 
- dropdownMenu: {
+//  dropdownMenu: {
+//   position: "absolute",
+//   top: 52,            
+//   left: 0,
+//   right: 0,
+//   backgroundColor: "#fff",
+//   borderWidth: 1,
+//   borderColor: "#ddd",
+//   borderRadius: 12,
+//   zIndex: 9999,
+//   elevation: 20,
+//   maxHeight: 220,      
+// },
+
+dropdownMenu: {
   position: "absolute",
-  bottom: 52,        // 🔥 TOP side
+  top: 52,
   left: 0,
   right: 0,
-  backgroundColor: "#fff",
+  backgroundColor: "#fff",   // ✅ must
   borderWidth: 1,
   borderColor: "#ddd",
   borderRadius: 12,
   zIndex: 9999,
-  elevation: 20,
-
-  minHeight: 150,    // ✅ 3 items minimum
-  maxHeight: 200,
+  elevation: 25,             // Android fix
+  maxHeight: 220,
+  overflow: "hidden",        // ✅ VERY IMPORTANT
 },
+
+
 
 
   option: { padding: 12 },
@@ -1016,6 +1068,7 @@ selectedOptionText: {
 
   submitBtn: {
     marginTop: 25,
+    marginBottom: 55,
     backgroundColor: "#2D6CDF",
     paddingVertical: 14,
     borderRadius: 12,

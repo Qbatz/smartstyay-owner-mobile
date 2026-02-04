@@ -104,6 +104,20 @@ const [modalType, setModalType] = useState("success");
   const [isEdit, setIsEdit] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
 
+  const handleAddAsset = () => {
+     if (!activeHostelId) {
+    setModalType("warning");
+    setModalMessage("Please Add a Hostel First");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+    setIsEdit(false);
+    setSelectedAsset(null);
+    setShowAddAsset(true);
+  }
+
   
 const handleDeleteAsset = async () => {
   if (!selectedAsset?.assetId) return;
@@ -146,11 +160,7 @@ const EmptyState = () => (
     
           <TouchableOpacity
   style={styles.emptystateBtn}
-  onPress={() => {
-    setIsEdit(false);
-    setSelectedAsset(null);
-    setShowAddAsset(true);
-  }}
+  onPress={handleAddAsset}
 >
   <Text style={styles.emptystateText}>
     + Add Asset
@@ -956,7 +966,7 @@ const handleAssignAsset = async () => {
         
           {roomError && <ErrorMessage message={roomError} type="error" />}
 
-            <Text style={[styles.label, { marginTop: 15 }]}>Date <Text style={styles.star}>*</Text></Text>
+            <Text style={[styles.label, { marginTop: 5 }]}>Date <Text style={styles.star}>*</Text></Text>
             <TouchableOpacity style={styles.selectBox} onPress={() => setOpenAssignDate(true)}>
              <Text style={!assignDate && styles.placeholderText}>
   {assignDate
@@ -1286,7 +1296,7 @@ width: 60, height: 60
   assignButtonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 40,
+    marginTop: 10,
   },
   selectBox: {
     flexDirection: "row",

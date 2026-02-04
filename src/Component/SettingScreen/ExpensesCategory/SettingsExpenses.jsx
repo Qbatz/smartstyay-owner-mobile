@@ -38,7 +38,8 @@ const {
   fetchExpenses,
   addExpenseCategory,
   addSubCategory,
-  setExpenses,
+  setExpenses, UpdateExpenseCategory,
+  UpdateExpenseSubCategory,
 } = useContext(ExpensesContext);
 
 
@@ -86,6 +87,10 @@ const {
 
   const [showDeleteSubConfirm, setShowDeleteSubConfirm] = useState(false);
   const [deleteSubId, setDeleteSubId] = useState(null);
+
+  const [originalExpenseName, setOriginalExpenseName] = useState("");
+  const [originalSubName, setOriginalSubName] = useState("");
+
 
   const [showMenuId, setShowMenuId] = useState(null);
   const [expenseError,setExpenseError] = useState("")
@@ -245,9 +250,11 @@ useEffect(() => {
     setIsExpenseEdit(edit);
     if (edit && item) {
       setExpenseText(item.title);
+      setOriginalExpenseName(item.title); 
       setEditingExpenseId(item.id);
     } else {
       setExpenseText("");
+      setEditingExpenseId(null);
       setEditingExpenseId(null);
     }
     setShowExpenseSheet(true);
@@ -285,6 +292,7 @@ useEffect(() => {
     }).start();
   };
 
+
   const closeSubSheet = () => {
     Animated.timing(subSheetY, {
       toValue: 700,
@@ -297,23 +305,77 @@ useEffect(() => {
     });
   };
 
-  const openSubAddSheet = (edit = false, subItem = null) => {
-    subAddSheetY.setValue(700);
-    setIsSubAddEdit(edit);
-    if (edit && subItem) {
-      setSubName(subItem.name);
-      setEditingSubId(subItem.id);
-    } else {
-      setSubName("");
-      setEditingSubId(null);
-    }
-    setShowSubAddSheet(true);
-    Animated.timing(subAddSheetY, {
-      toValue: 0,
-      duration: 220,
-      useNativeDriver: true,
-    }).start();
-  };
+  // const openSubAddSheet = (edit = false, subItem = null) => {
+  //   subAddSheetY.setValue(700);
+  //   setIsSubAddEdit(edit);
+  //   if (edit && subItem) {
+  //     setSubName(subItem.name);
+  //     setEditingSubId(subItem.id);
+  //   } else {
+  //     setSubName("");
+  //     setEditingSubId(null);
+  //   }
+  //   setShowSubAddSheet(true);
+  //   Animated.timing(subAddSheetY, {
+  //     toValue: 0,
+  //     duration: 220,
+  //     useNativeDriver: true,
+  //   }).start();
+  // };
+
+//     const openSubAddSheet = (edit = false, subItem = null) => {
+//   subAddSheetY.setValue(700);
+//   setIsSubAddEdit(edit);
+
+//   if (edit && subItem) {
+//     setSubName(subItem.name);
+//     setOriginalSubName(subItem.name);   
+//     setEditingSubId(subItem.id);
+//   } else {
+//     setSubName("");
+//     setOriginalSubName("");
+//     setEditingSubId(null);
+//   }
+
+//   setShowSubAddSheet(true);
+//   Animated.timing(subAddSheetY, {
+//     toValue: 0,
+//     duration: 220,
+//     useNativeDriver: true,
+//   }).start();
+// };
+
+const openSubAddSheet = (
+  edit = false,
+  subItem = null,
+  expenseId = null
+) => {
+  subAddSheetY.setValue(700);
+  setIsSubAddEdit(edit);
+
+  if (expenseId) {
+    setSelectedExpenseId(expenseId); // ✅ ensure parent is set
+  }
+
+  if (edit && subItem) {
+    setSubName(subItem.name);
+    setOriginalSubName(subItem.name);
+    setEditingSubId(subItem.id);
+  } else {
+    setSubName("");
+    setOriginalSubName("");
+    setEditingSubId(null);
+  }
+
+  setShowSubAddSheet(true);
+  Animated.timing(subAddSheetY, {
+    toValue: 0,
+    duration: 220,
+    useNativeDriver: true,
+  }).start();
+};
+
+
 
   const closeSubAddSheet = () => {
     Animated.timing(subAddSheetY, {
@@ -328,6 +390,34 @@ useEffect(() => {
     });
   };
 
+// const saveExpense = async () => {
+//   const value = expenseText.trim();
+
+//   if (!value) {
+//     setExpenseError("Please enter expense name");
+//     return;
+//   }
+
+  
+//   const res = await addExpenseCategory({
+//     hostelId: activeHostelId,
+//     categoryName: value,
+//   });
+
+//   if (!res.success) {
+//     setModalMessage(res.message || "Failed to add category");
+//     setModalType("error");
+//     setShowSuccessModal(true);
+//     return;
+//   }
+
+//   setModalMessage("Expense category added successfully");
+//   setModalType("success");
+//   setShowSuccessModal(true);
+
+//   closeExpenseSheet();
+// };
+
 const saveExpense = async () => {
   const value = expenseText.trim();
 
@@ -336,26 +426,49 @@ const saveExpense = async () => {
     return;
   }
 
-  
-  const res = await addExpenseCategory({
-    hostelId: activeHostelId,
-    categoryName: value,
-  });
+  // 🚫 NO CHANGE DETECTED
+  if (
+    isExpenseEdit &&
+    value.toLowerCase() === originalExpenseName.trim().toLowerCase()
+  ) {
+    setModalMessage("No changes detected");
+    setModalType("warning");
+    setShowSuccessModal(true);
+    return;
+  }
+
+  let res;
+
+  if (isExpenseEdit && editingExpenseId) {
+    res = await UpdateExpenseCategory({
+      hostelId: activeHostelId,
+      categoryId: editingExpenseId,
+      newCategoryName: value,
+    });
+  } else {
+    res = await addExpenseCategory({
+      hostelId: activeHostelId,
+      categoryName: value,
+    });
+  }
 
   if (!res.success) {
-    setModalMessage(res.message || "Failed to add category");
+    setModalMessage(res.message || "Operation failed");
     setModalType("error");
     setShowSuccessModal(true);
     return;
   }
 
-  setModalMessage("Expense category added successfully");
+  setModalMessage(
+    isExpenseEdit
+      ? "Expense category updated successfully"
+      : "Expense category added successfully"
+  );
   setModalType("success");
   setShowSuccessModal(true);
 
   closeExpenseSheet();
 };
-
 
 
   const confirmDeleteExpense = (id) => {
@@ -371,29 +484,80 @@ const saveExpense = async () => {
 
   const getSelectedExpense = () => expenses.find((e) => e.id === selectedExpenseId) || null;
 
-  const saveSubcategory = async () => {
+//   const saveSubcategory = async () => {
+//   const value = subName.trim();
+//   if (!value || !selectedExpenseId) return;
+
+//   const res = await addSubCategory({
+//     hostelId: activeHostelId,
+//     categoryId: selectedExpenseId,
+//     subCategory: value,
+//   });
+
+//   if (!res.success) {
+//     setModalMessage(res.message || "Failed to add sub category");
+//     setModalType("error");
+//     setShowSuccessModal(true);
+//     return;
+//   }
+
+//   setModalMessage("Sub category added successfully");
+//   setModalType("success");
+//   setShowSuccessModal(true);
+
+//   closeSubAddSheet();
+// };
+
+
+const saveSubcategory = async () => {
   const value = subName.trim();
   if (!value || !selectedExpenseId) return;
 
-  const res = await addSubCategory({
-    hostelId: activeHostelId,
-    categoryId: selectedExpenseId,
-    subCategory: value,
-  });
+  // 🚫 NO CHANGE DETECTED
+  if (
+    isSubAddEdit &&
+    value.toLowerCase() === originalSubName.trim().toLowerCase()
+  ) {
+    setModalMessage("No changes detected");
+    setModalType("warning");
+    setShowSuccessModal(true);
+    return;
+  }
+
+  let res;
+
+  if (isSubAddEdit && editingSubId) {
+    res = await UpdateExpenseSubCategory({
+      hostelId: activeHostelId,
+      subCategoryId: editingSubId,
+      newSubCategoryName: value,
+    });
+  } else {
+    res = await addSubCategory({
+      hostelId: activeHostelId,
+      categoryId: selectedExpenseId,
+      subCategory: value,
+    });
+  }
 
   if (!res.success) {
-    setModalMessage(res.message || "Failed to add sub category");
+    setModalMessage(res.message || "Operation failed");
     setModalType("error");
     setShowSuccessModal(true);
     return;
   }
 
-  setModalMessage("Sub category added successfully");
+  setModalMessage(
+    isSubAddEdit
+      ? "Sub category updated successfully"
+      : "Sub category added successfully"
+  );
   setModalType("success");
   setShowSuccessModal(true);
 
   closeSubAddSheet();
 };
+
 
   const confirmDeleteSub = (subId) => {
     setDeleteSubId(subId);
@@ -455,7 +619,8 @@ const saveExpense = async () => {
             setSubName(item.name);
             setIsSubAddEdit(true);
             setEditingSubId(item.id);
-            openSubAddSheet(true, item);
+            openSubAddSheet(true, item, selectedExpenseId);
+
           }}
           style={styles.iconBtn}
         >
@@ -540,6 +705,8 @@ const saveExpense = async () => {
           </View>
         </TouchableWithoutFeedback>
 
+
+
       
 
         {showSubSheet && (
@@ -560,14 +727,12 @@ const saveExpense = async () => {
                 </View>
                    {getSelectedExpense() && getSelectedExpense().subcategories && getSelectedExpense().subcategories.length > 0 && 
                 <TouchableOpacity
-                  style={styles.subAddBtn}
-                  onPress={() => {
-                    setSubName("");
-                    setIsSubAddEdit(false);
-                    setEditingSubId(null);
-                    openSubAddSheet(false, null);
-                  }}
-                >
+  style={styles.subAddBtn}
+  onPress={() => {
+    openSubAddSheet(false, null, selectedExpenseId);
+  }}
+>
+
                   <Text style={styles.subAddText}>Add +</Text>
                 </TouchableOpacity>
 }
@@ -590,7 +755,11 @@ const saveExpense = async () => {
 
     <TouchableOpacity
       style={styles.addButtonEmpty}
-      onPress={() => openSubAddSheet(false, null)}
+
+onPress={() => {
+  openSubAddSheet(false, null, selectedExpenseId);
+}}
+
     >
       <Text style={styles.addBtnText}>Add +</Text>
     </TouchableOpacity>
@@ -602,6 +771,53 @@ const saveExpense = async () => {
             </Animated.View>
           </View>
         )}
+        {showSubAddSheet && (
+  <View style={styles.sheetOverlay}>
+    <TouchableWithoutFeedback onPress={closeSubAddSheet}>
+      <View style={styles.dimLayer} />
+    </TouchableWithoutFeedback>
+
+    <Animated.View
+      style={[styles.sheet, { transform: [{ translateY: subAddSheetY }] }]}
+    >
+      <View style={styles.handleWrapper} {...subAddPan.panHandlers}>
+        <View style={styles.sheetHandle} />
+      </View>
+
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 80 }}
+      >
+        <Text style={styles.sheetTitle}>
+          {isSubAddEdit ? "Edit Sub Category" : "Add Sub Category"}
+        </Text>
+
+        <Text style={styles.inputLabel}>
+          Sub Category Name <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        <TextInput
+          style={styles.inputBox}
+          placeholder="Enter"
+          value={subName}
+             onChangeText={(t) =>  {
+              setSubName(t.replace(/[^a-zA-Z\s]/g, ""))
+            }}
+        />
+
+        <TouchableOpacity
+          style={styles.addTypeBtn}
+          onPress={saveSubcategory}
+        >
+          <Text style={styles.addTypeText}>
+            {isSubAddEdit ? "Save Changes" : "Save"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </Animated.View>
+  </View>
+)}
 
  {showExpenseSheet && (
   <View style={styles.sheetOverlay}>

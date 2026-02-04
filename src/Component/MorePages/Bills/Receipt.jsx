@@ -38,7 +38,7 @@ import Payment from "../../../Assets/Images/payment.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import DeleteIcon from  "../../../Assets/Images/trash.png"
 import EditIcon from  "../../../Assets/Images/editIcon.png"  
-
+import TickIcon from  "../../../Assets/Images/tick-circle.png" 
 
 const Receipt = ({onSelectReceipt}) => {
 
@@ -338,7 +338,7 @@ const renderItem = ({ item }) => {
           style={styles.avatar}
         />
       </TouchableOpacity> */}
-      <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
+      {/* <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
   {item?.profilePic ? (
     <Image source={{ uri: item.profilePic }} style={styles.avatar} />
   ) : (
@@ -348,6 +348,25 @@ const renderItem = ({ item }) => {
       </Text>
     </View>
   )}
+</TouchableOpacity> */}
+
+ <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
+  <View style={styles.avatarWrapper}>
+    {item?.profilePic ? (
+      <Image source={{ uri: item.profilePic }} style={styles.avatar} />
+    ) : (
+      <View style={styles.initialCircle}>
+        <Text style={styles.initialText}>
+          {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
+        </Text>
+      </View>
+    )}
+
+    {/* ✅ TICK ICON */}
+    <View style={styles.tickWrapper}>
+      <Image source={TickIcon} style={styles.tickIcon} />
+    </View>
+  </View>
 </TouchableOpacity>
 
 
@@ -844,11 +863,29 @@ optionText: {
     borderBottomColor: "#F0F0F0",
   },
 
+  avatarWrapper: {
+  position: "relative",
+  marginRight: 12,
+},
+
+tickWrapper: {
+  position: "absolute",
+  top: -2,
+  right: -1,
+  backgroundColor: "#fff",   // white border effect
+  borderRadius: 10,
+  padding: 1,
+},
+
+tickIcon: {
+  width: 16,
+  height: 16,
+},
   avatar: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderRadius: 30,
-    marginRight: 12,
+    marginRight: 6,
   },
 
   name: { fontSize: 16, fontWeight: "700", color: "#000" },

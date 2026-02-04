@@ -76,6 +76,8 @@ const [countryOpen, setCountryOpen] = useState(false);
 
 const [countryLabel, setCountryLabel] = useState("");
 const [countryValue, setCountryValue] = useState(null);
+const [countryCode, setCountryCode] = useState("+91");
+const [countryCodeOpen, setCountryCodeOpen] = useState(false);
 
 
 
@@ -110,6 +112,10 @@ useEffect(() => {
     country: vendorData.countryId || "",
     pinCode: vendorData.pinCode ? String(vendorData.pinCode) : "",
   };
+   if (vendorData.countryId === 1) {
+    setCountryLabel("India");   // UI
+    setCountryValue(1);         // API
+  }
 
   // set form values
   setFirstName(snapshot.firstName);
@@ -575,7 +581,7 @@ if (!mobile.trim()) {
   const [vendorOpen, setVendorOpen] = useState(false);
   const [vendorSelected, setVendorSelected] = useState("Select a Vendor");
  
-
+   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -605,28 +611,55 @@ if (!mobile.trim()) {
   ).current;
 
 
-  useEffect(() => {
+    useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      if (!isInputFocused) return; 
+  
       Animated.timing(translateY, {
-        toValue: -e.endCoordinates.height + 60,
+        toValue: -e.endCoordinates.height + 80,
         duration: 180,
         useNativeDriver: true,
       }).start();
     });
-
+  
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       Animated.timing(translateY, {
         toValue: 0,
         duration: 180,
         useNativeDriver: true,
       }).start();
+  
+      setIsInputFocused(false);
     });
-
+  
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [isInputFocused]);
+
+  // useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     Animated.timing(translateY, {
+  //       toValue: -e.endCoordinates.height + 60,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
+
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     Animated.timing(translateY, {
+  //       toValue: 0,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
+
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, []);
 
 
 
@@ -738,7 +771,7 @@ if (!mobile.trim()) {
             placeholder="Enter last Name"
           />
 
-          <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
+          {/* <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
        <TextInput
   value={mobile}
   keyboardType="numeric"
@@ -754,7 +787,54 @@ if (!mobile.trim()) {
 
           {errors.mobile && (
   <ErrorMessage message={errors.mobile} type="error" />
-)}
+)} */}
+
+<Text style={styles.label}>
+  Mobile Number <Text style={{ color: "red" }}>*</Text>
+</Text>
+
+<View style={styles.mobileWrapper}>
+
+  {/* COUNTRY CODE */}
+  <TouchableOpacity
+    style={styles.countryCodeBox}
+    onPress={() => setCountryCodeOpen(!countryCodeOpen)}
+  >
+    <Text style={styles.countryCodeText}>{countryCode}</Text>
+    <Image source={DownArrow} style={styles.countryArrow} />
+  </TouchableOpacity>
+
+  {/* MOBILE INPUT */}
+  <TextInput
+    style={styles.mobileInput}
+    keyboardType="numeric"
+    placeholder="Enter Mobile Number"
+    value={mobile}
+    onChangeText={(t) => {
+      const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+      setMobile(cleaned);
+      setErrors({ ...errors, mobile: "" });
+      setNoChangeError("");
+    }}
+  />
+  {/* {countryCodeOpen && (
+  <View style={styles.countryDropdown}>
+    <TouchableOpacity
+      style={styles.option}
+      onPress={() => {
+        setCountryCode("+91");
+        setCountryCodeOpen(false);
+      }}
+    >
+      <Text style={styles.optionText}>🇮🇳 +91</Text>
+    </TouchableOpacity>
+  </View>
+)} */}
+</View>
+
+{/* COUNTRY DROPDOWN */}
+
+
 
           <Text style={styles.label}>Email ID</Text>
         <TextInput
@@ -766,6 +846,12 @@ if (!mobile.trim()) {
   }}
   style={styles.input}
   placeholder="Enter Email"
+    onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
 />
 
 
@@ -779,7 +865,12 @@ if (!mobile.trim()) {
           }}
             style={styles.input}
             placeholder="Enter Business Name"
-            
+                onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
           />
 
           {errors.businessName && (
@@ -796,6 +887,12 @@ if (!mobile.trim()) {
   }}
   style={styles.input}
   placeholder="Enter Street"
+      onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
 />
 
 
@@ -806,10 +903,15 @@ if (!mobile.trim()) {
             onChangeText={(t) =>{
             setLandmark(t.replace(/[^a-zA-Z\s]/g, ""))
             setNoChangeError("")
-            }
-              }
+            }}
             style={styles.input}
             placeholder="Enter Landmark"
+                onFocus={() => {
+              setIsInputFocused(true);
+                 }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
           />
 
           <Text style={styles.label}>Town/City <Text style={{ color: "red" }}>*</Text></Text>
@@ -822,6 +924,12 @@ if (!mobile.trim()) {
           }}
             style={styles.input}
             placeholder="Enter City"
+                onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
           />
           {errors.city && (
   <ErrorMessage message={errors.city} type="error" />
@@ -842,6 +950,12 @@ if (!mobile.trim()) {
   }}
   style={styles.input}
   placeholder="Enter Pincode"
+      onFocus={() => {
+    setIsInputFocused(true);
+  }}
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
 />
 
 {errors.pinCode && (
@@ -907,11 +1021,16 @@ if (!mobile.trim()) {
     onFocus={() => {
       setStateOpen(true);
       setStateQuery("");
+       setIsInputFocused(true);
     }}
     onChangeText={(t) => {
       setStateQuery(t);
       setStateOpen(true);
     }}
+  
+  onBlur={() => {
+    setIsInputFocused(false);
+  }}
   />
 
   <Image source={DownArrow} style={styles.arrowIcon} />
@@ -1017,12 +1136,13 @@ if (!mobile.trim()) {
       <TouchableOpacity
         style={styles.option}
         onPress={() => {
-          setCountryLabel("India"); // ✅ UI text
-          setCountryValue(1);       // ✅ API value
+          setCountryLabel("India"); 
+          setCountryValue(1);     
           setCountryOpen(false);
           setErrors({ ...errors, country: "" });
           setNoChangeError("");
         }}
+        
       >
         <Text style={styles.optionText}>India</Text>
       </TouchableOpacity>
@@ -1332,5 +1452,50 @@ noResult: {
     color: "#000",
   },
 
+mobileWrapper: {
+  flexDirection: "row",
+  borderWidth: 1,
+  borderColor: "#e1e1e1",
+  borderRadius: 12,
+  height: 48,
+  overflow: "hidden",
+},
+
+countryCodeBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 12,
+  borderRightWidth: 1,
+  borderRightColor: "#e1e1e1",
+  // backgroundColor: "#F9FAFB",
+},
+
+countryCodeText: {
+  fontSize: 14,
+  fontWeight: "600",
+},
+
+countryArrow: {
+  width: 14,
+  height: 14,
+  marginLeft: 6,
+  tintColor: "#555",
+},
+
+mobileInput: {
+  flex: 1,
+  paddingHorizontal: 12,
+  fontSize: 14,
+},
+
+countryDropdown: {
+  position: "absolute",
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 10,
+  marginTop: 10,
+  zIndex: 9999,
+},
 
 });

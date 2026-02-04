@@ -177,10 +177,7 @@ useEffect(() => {
       setJoiningDateError("Please select joining date");
       valid = false;
     }
-    if (!comments) {
-      setCommentError("Please enter reason");
-      valid = false;
-    }
+   
 
     if (!valid) return;
 
@@ -278,13 +275,19 @@ useEffect(() => {
 
         {/* Joining Date */}
         <Text style={styles.label}>
-          Joining Date <Text style={{ color: "red" }}>*</Text>
+        Date <Text style={{ color: "red" }}>*</Text>
         </Text>
 
-        <TouchableOpacity
-          style={styles.dateBox}
-          onPress={() => setOpenJoinDatePic(true)}
-        >
+       <TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => {
+    Keyboard.dismiss();      // ✅ close keyboard first
+    setTimeout(() => {
+      setOpenJoinDatePic(true);
+    }, 100);                 // small delay for smooth close
+  }}
+>
+
           <Text style={styles.placeholder}>
             {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
           </Text>
@@ -297,7 +300,7 @@ useEffect(() => {
 
         {/* Reason */}
         <Text style={[styles.label, { marginTop: 12 }]}>
-          Reason (Comments) <Text style={{ color: "red" }}>*</Text>
+          Reason (Comments)
         </Text>
 
        <TextInput
@@ -334,36 +337,44 @@ useEffect(() => {
  
 </View>
 
-      {openJoinDatePic && (
-        <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setOpenJoinDatePic(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
-
-          <View style={styles.datePickerBox}>
-            <Calendar
-              minDate={minDate}
-              maxDate={today}
-              markedDates={
-                joiningDate
-                  ? {
+    {openJoinDatePic && (
+  <TouchableWithoutFeedback
+    onPress={() => {
+      Keyboard.dismiss();
+      setOpenJoinDatePic(false);
+    }}
+  >
+    <View style={styles.sheetOverlay}>
+      
+      <TouchableWithoutFeedback onPress={() => {}}>
+        <View style={styles.datePickerBox}>
+          <Calendar
+            minDate={minDate}
+            maxDate={today}
+            markedDates={
+              joiningDate
+                ? {
                     [dayjs(joiningDate).format("YYYY-MM-DD")]: {
                       selected: true,
                       selectedColor: "#1E45E1",
                     },
                   }
-                  : {}
-              }
-              onDayPress={(day) => {
-                setJoiningDate(day.dateString);
-                setOpenJoinDatePic(false);
-                setJoiningDateError("")
-              }}
-            />
-
-          </View>
+                : {}
+            }
+            onDayPress={(day) => {
+              Keyboard.dismiss();
+              setJoiningDate(day.dateString);
+              setOpenJoinDatePic(false);
+              setJoiningDateError("");
+            }}
+          />
         </View>
-      )}
+      </TouchableWithoutFeedback>
+
+    </View>
+  </TouchableWithoutFeedback>
+)}
+
     </>
   );
 }
@@ -389,9 +400,10 @@ const styles = StyleSheet.create({
   left: 0,
   right: 0,
   bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
+  // backgroundColor: "rgba(0,0,0,0.4)",
   justifyContent: "flex-end",
   alignItems: "center",
+  
 },
 
 
@@ -478,7 +490,9 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: "center",
     elevation: 6,
-    marginBottom: 120
+    marginBottom: 120,
+     borderWidth: 1,
+    borderColor: "#5555",
   },
 
 

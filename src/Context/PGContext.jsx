@@ -8,6 +8,8 @@ export const PGContext = createContext();
 export default function PGProvider({ children }) {
   const [pgLoading, setPgLoading] = useState(false);
   const [pgError, setPgError] = useState(null);
+  const [PGDetails, setPgDetails] = useState(null);
+
 
 const convertToBase64File = (json) => {
   const jsonString = JSON.stringify(json);
@@ -116,10 +118,31 @@ const convertToBase64File = (json) => {
   }
 };
 
+const getParticularHostelDetails = async (hostelId) => {
+  try {
+    setPgLoading(true);
+    setPgError(null);
+
+    const axios = getAxios();
+    const response = await axios.get(`/v2/hostel/${hostelId}`);
+
+    setPgDetails(response?.data);
+
+    return response;
+  } catch (error) {
+    console.log("GET PG DETAILS ERROR:", error?.response || error);
+    setPgError(error);
+    return error?.response || error;
+  } finally {
+    setPgLoading(false);
+  }
+};
+
+
 
 
   return (
-    <PGContext.Provider value={{ addPG, editPG,deletePG , pgLoading, pgError }}>
+    <PGContext.Provider value={{ addPG, editPG,deletePG ,getParticularHostelDetails,PGDetails, pgLoading, pgError }}>
       {children}
     </PGContext.Provider>
   );

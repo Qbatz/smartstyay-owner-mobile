@@ -18,6 +18,7 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import { Calendar } from "react-native-calendars";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 
@@ -30,7 +31,8 @@ export default function AddExpenses({ navigation, route }) {
 
   const editData = route?.params?.editData || null;
 
-  console.log("IntializeexpensesList", IntializeexpensesList);
+  console.log("IntializeexpensesList", editData);
+const isEditMode = !!editData;
 
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -41,12 +43,12 @@ export default function AddExpenses({ navigation, route }) {
   const [purchaseDate, setPurchaseDate] = useState(null);
 
 
-  const [category, setCategory] = useState(editData?.category || "");
-  const [unitCount, setUnitCount] = useState(editData?.unitCount || "");
+  const [category, setCategory] = useState("");
+  const [unitCount, setUnitCount] = useState("");
 
-  const [perUnit, setPerUnit] = useState(editData?.perUnit || "");
-  const [purchaseAmount, setPurchaseAmount] = useState(editData?.amount || "");
-  const [description, setDescription] = useState(editData?.description || "");
+  const [perUnit, setPerUnit] = useState("");
+  const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [description, setDescription] = useState("");
 
 
 
@@ -78,6 +80,7 @@ export default function AddExpenses({ navigation, route }) {
   const [subCategoryErr, setSubCategoryErr] = useState("");
   const [dateErr, setDateErr] = useState("");
   const [amountErr, setAmountErr] = useState("");
+  const [unitcountErr , setUnitCountErr] = useState("")
   const [modeErr, setModeErr] = useState("");
 
   const paymentOptions =
@@ -100,7 +103,53 @@ export default function AddExpenses({ navigation, route }) {
       GetInitializeExpense(activeHostelId)
     }
 
-  }, [activeHostelId]);
+  }, [activeHostelId])
+
+
+  useEffect(() => {
+  if (!editData || !IntializeexpensesList) return;
+
+  // ✅ CATEGORY
+  const cat = IntializeexpensesList?.listExpenses?.find(
+    (c) => c.categoryId === editData.categoryId
+  );
+  setSelectedCategory(cat || null);
+
+  // ✅ SUB CATEGORY
+  if (cat && editData.subCategoryId) {
+    const sub = cat.subCategories?.find(
+      (s) => s.subCategoryId === editData.subCategoryId
+    );
+    setSelectedSubCategory(sub || null);
+  }
+
+  // ✅ DATE
+  if (editData.transactionDate) {
+    setPurchaseDate(
+      dayjs(editData.transactionDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+    );
+  }
+
+  // ✅ AMOUNTS
+  setPurchaseAmount(String(editData.totalAmount || ""));
+  setUnitCount(String(editData.itemsCount || ""));
+  setPerUnit(String(editData.unitPrice || ""));
+
+  // ✅ DESCRIPTION
+  setDescription(editData.description || "");
+
+  // ✅ MODE OF PAYMENT
+  const mode = IntializeexpensesList?.banks?.find(
+    (b) => b.bankId === editData.bankId
+  );
+  if (mode) {
+    setSelectedMode({
+      id: mode.bankId,
+      name: `${mode.holderName} - ${mode.bankName}`,
+    });
+  }
+}, [editData, IntializeexpensesList]);
+
 
   useEffect(() => {
     const amount = Number(purchaseAmount);
@@ -131,6 +180,40 @@ export default function AddExpenses({ navigation, route }) {
     setModePaymentOpen(false);
     setOpenDatePicker(false);
   };
+
+
+  const today = dayjs();
+  
+  const isDisabledDate = (d) => {
+    if (!d) return false;
+    return d.isAfter(today, "day")
+  };
+  
+        
+        
+       const markedDates = {};
+  
+  for (let i = -365; i <= 365; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
+  
+    if (isDisabledDate(d)) {
+      markedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
+        },
+      };
+    }
+  }
 
   const renderSelectField = (label, selected, open, setOpen, list, onSelect) => (
     <View style={{ marginBottom: 6 }}>
@@ -185,6 +268,14 @@ export default function AddExpenses({ navigation, route }) {
     </View>
   );
 
+
+  const isValidPositiveNumber = (val) => {
+  if (!val) return false;
+  const num = Number(val);
+  return !isNaN(num) && num > 0;
+};
+
+
   const handleSaveExpense = async () => {
     let hasError = false;
 
@@ -192,6 +283,7 @@ export default function AddExpenses({ navigation, route }) {
     setSubCategoryErr("");
     setDateErr("");
     setAmountErr("");
+    setUnitCountErr("")
     setModeErr("");
 
     if (!selectedCategory) {
@@ -213,6 +305,17 @@ export default function AddExpenses({ navigation, route }) {
       setAmountErr("Enter Valid Amount");
       hasError = true;
     }
+
+    if (!isValidPositiveNumber(purchaseAmount)) {
+  setAmountErr("Amount must be greater than 0");
+  hasError = true;
+}
+
+// UNIT COUNT VALIDATION
+if (unitCount && !isValidPositiveNumber(unitCount)) {
+  setUnitCountErr("Unit count must be greater than 0");
+  hasError = true;
+}
 
     if (!selectedMode) {
       setModeErr("Please Select Mode of Transaction");
@@ -432,27 +535,30 @@ export default function AddExpenses({ navigation, route }) {
           <Text style={styles.label}>
             Purchase Date <Text style={{ color: "red" }}>*</Text>
           </Text>
-
           <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setOpenPurchaseDate(true)}
+            activeOpacity={0.7}
+            disabled={isEditMode}
+  onPress={() => {
+    if (!isEditMode) setOpenPurchaseDate(true);
+  }}
           >
             <View style={styles.dateInputWrapper}>
               <TextInput
                 style={styles.dateInput}
                 placeholder="DD-MM-YYYY"
-                value={
-                  purchaseDate
-                    ? dayjs(purchaseDate).format("DD-MM-YYYY")
-                    : ""        
-                }
-                editable={false}
+                value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
+                editable={false}  
                 pointerEvents="none"
               />
-
-              <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
+          
+              <Image
+                source={require("../../../Assets/Images/calendar.png")}
+                style={styles.calendarIcon}
+              />
             </View>
           </TouchableOpacity>
+
+        
 
           {dateErr && <ErrorMessage message={dateErr} type="error" />}
 
@@ -477,12 +583,16 @@ export default function AddExpenses({ navigation, route }) {
             style={styles.inputBox}
             keyboardType="numeric"
             value={unitCount}
-            onChangeText={(v) => setUnitCount(v)}
+            onChangeText={(v) => {
+              setUnitCount(v)
+              setUnitCountErr("")
+            }
+            }
             placeholder="Enter unit count"
           />
+      {unitcountErr ? <ErrorMessage message={unitcountErr} type="error" /> : null}
 
-
-
+ 
 
           {/* Per Unit */}
           <Text style={styles.label}>Per Unit Amount</Text>
@@ -583,14 +693,23 @@ export default function AddExpenses({ navigation, route }) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.saveBtn}
-              onPress={handleSaveExpense}
-            >
-              <Text style={styles.saveText}>{editData ? "Update" : "Save"}</Text>
-            </TouchableOpacity>
+  style={[
+    styles.saveBtn,
+    isEditMode && {opacity:0.7} // grey
+  ]}
+  disabled={isEditMode}
+  onPress={handleSaveExpense}
+>
+  <Text style={styles.saveText}>
+    {isEditMode ? "Coming Soon" : "Save"}
+  </Text>
+</TouchableOpacity>
+
           </View>
 
-          <Modal
+         
+
+          {/* <Modal
             transparent
             visible={openPurchaseDate}
             animationType="fade"
@@ -623,18 +742,58 @@ export default function AddExpenses({ navigation, route }) {
                 </TouchableWithoutFeedback>
               </View>
             </View>
-          </Modal>
+          </Modal> */}
 
         </ScrollView>
       </SafeAreaView>
+       {openPurchaseDate && (
+            <View style={styles.dateOverlay}>
+              <TouchableWithoutFeedback onPress={() => setOpenPurchaseDate(false)}>
+                <View style={styles.overlayBg} />
+              </TouchableWithoutFeedback>
+          
+              <View style={styles.calendarContainer}>
+                <Calendar
+                  markingType="custom"
+                  markedDates={{
+                    ...markedDates,
+                    ...(purchaseDate && {
+                      [purchaseDate]: {
+                        selected: true,
+                        selectedColor: "#2563EB",
+                        customStyles: {
+                          container: {
+                            backgroundColor: "#2563EB",
+                            borderRadius: 8,
+                          },
+                          text: {
+                            color: "#FFFFFF",
+                          },
+                        },
+                      },
+                    }),
+                  }}
+                  current={purchaseDate || dayjs().format("YYYY-MM-DD")}
+                  onDayPress={(day) => {
+                    // 🚫 STOP FUTURE DATE CLICK
+                    if (markedDates[day.dateString]?.disabled) return;
+          
+                    setPurchaseDate(day.dateString);
+                    setOpenPurchaseDate(false);
+                     setDateErr("");
+                  }}
+                  theme={{
+                    todayTextColor: "#2563EB",
+                    arrowColor: "#111827",
+                    textDisabledColor: "#9CA3AF",
+                  }}
+                />
+              </View>
+            </View>
+          )}
     </>
   );
 }
-
-/* ============================= STYLES ============================= */
-
-
-
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff", paddingTop: 30 },
@@ -855,4 +1014,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
+  
+dateOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+},
+
+overlayBg: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+
+calendarContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 10,
+  width: "85%",
+  elevation: 10,
+},
 });

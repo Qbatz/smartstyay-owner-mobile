@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 footer: {
-  borderTopWidth: 1,
-  borderColor: "#eee",
+  // borderTopWidth: 1,
+  // borderColor: "#eee",
   paddingTop: 10,
   paddingBottom: 20,
   backgroundColor: "#fff",

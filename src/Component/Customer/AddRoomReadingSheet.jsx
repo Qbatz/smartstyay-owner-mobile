@@ -16,6 +16,9 @@ import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import { ElectricityContext } from "../../Context/ElectricityContext";
+import { CommonContexts } from "../../Context/CommonContext";
+import SuccessModal from "../../ToastFile/ToastPage";
+
 
 
 
@@ -24,18 +27,25 @@ export default function AddRoomReadingSheet({
   onClose,
   onSubmit,
   roomInfo,
+  selectedPendingEb,settlementDetails,selectedItem,selectedBed,fetchSettlement
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
 
-  const [readingDate, setReadingDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const [readingDate, setReadingDate] = useState("");
 
   const [currentReading, setCurrentReading] = useState("");
   const [readingError, setReadingError] = useState("");
   const [openReadingDatePic, setOpenReadingDatePic] = useState(false);
 const [readingDateError, setReadingDateError] = useState("");
  const { AddRoomReading,} = useContext(ElectricityContext);
+ const { activeHostelId } = useContext(CommonContexts);
+ const [modalType, setModalType] = useState("success");
+     const [showSuccess, setShowSuccess] = useState(false);
+     const [message, setMessage] = useState("");
 
- 
+ console.log("selectedPendingEb",selectedPendingEb)
+ console.log("settlementDetails",settlementDetails)
+ console.log("selectedItem",selectedItem)
   React.useEffect(() => {
     if (visible) {
       Animated.timing(translateY, {
@@ -69,18 +79,33 @@ const [readingDateError, setReadingDateError] = useState("");
     })
   ).current;
   const today = dayjs();
+  const lastEntryDate = selectedPendingEb?.lastEntryDate
+  ? dayjs(selectedPendingEb.lastEntryDate, "DD/MM/YYYY")
+  : null;
 
-const isDisabledReadingDate = (d) => {
-  if (!d) return false;
+const minSelectableDate = lastEntryDate
+  ? lastEntryDate.add(1, "day")   // ✅ start from next day
+  : null;
 
-  // ❌ future dates மட்டும் disable
-  if (d.isAfter(today, "day")) return true;
+const isDisabledReadingDate = (date) => {
+  if (!date) return false;
+
+  // ❌ before min date
+  if (minSelectableDate && date.isBefore(minSelectableDate, "day")) {
+    return true;
+  }
+
+  // ❌ future date
+  if (date.isAfter(today, "day")) {
+    return true;
+  }
 
   return false;
 };
+
 const readingMarkedDates = {};
 
-for (let i = -180; i <= 180; i++) {
+for (let i = -365; i <= 365; i++) {
   const d = dayjs().add(i, "day");
   const key = d.format("YYYY-MM-DD");
 
@@ -103,7 +128,33 @@ for (let i = -180; i <= 180; i++) {
 }
 
 
-  const handleSubmit = () => {
+
+
+
+//   const handleSubmit = () => {
+//   setReadingError("");
+//   setReadingDateError("");
+
+//   if (!readingDate) {
+//     setReadingDateError("Please Select Reading Date");
+//     return;
+//   }
+
+//   if (!currentReading || Number(currentReading) <= 0) {
+//     setReadingError("Please Enter Valid Current Reading");
+//     return;
+//   }
+
+//   onSubmit({
+//     reading: Number(currentReading),
+//     readingDate: dayjs(readingDate).format("DD-MM-YYYY"), // ✅ final format
+//     roomId: roomInfo?.roomId,
+//     floorId: roomInfo?.floorId,
+//   });
+// };
+  const customerId =
+        selectedItem?.customerId || selectedBed?.currentTenantInfo?.[0]?.tenetId;
+const handleSubmit = async () => {
   setReadingError("");
   setReadingDateError("");
 
@@ -117,12 +168,45 @@ for (let i = -180; i <= 180; i++) {
     return;
   }
 
-  onSubmit({
+  const payload = {
+    hostelId: activeHostelId, // OR pass hostelId as prop
     reading: Number(currentReading),
-    readingDate: dayjs(readingDate).format("DD-MM-YYYY"), // ✅ final format
-    roomId: roomInfo?.roomId,
-    floorId: roomInfo?.floorId,
-  });
+    readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+    roomId: selectedItem?.roomId,
+    floorId: selectedItem?.floorId,
+  };
+
+  const res = await AddRoomReading(payload);
+
+  // if (res?.success) {
+  //   onClose();               // ✅ close sheet
+  //   setCurrentReading("");
+  //   setReadingDate(
+  //     minSelectableDate
+  //       ? minSelectableDate.format("YYYY-MM-DD")
+  //       : dayjs().format("YYYY-MM-DD")
+  //   );
+  // } 
+   if (res.success) {
+ setCurrentReading("");
+   setReadingDate(""); 
+  
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+      // onSuccess && onSuccess();
+      await fetchSettlement(customerId);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+
+      }, 800);
+
+
+    } 
+  else {
+    setReadingError(res?.message || "Something went wrong");
+  }
 };
 
   if (!visible) return null;
@@ -146,16 +230,11 @@ for (let i = -180; i <= 180; i++) {
             style={styles.sheetRoomIcon}
           />
           <View>
-            <Text style={styles.sheetRoomName}>{roomInfo?.roomName}</Text>
-            <Text style={styles.sheetFloor}>{roomInfo?.floorName}</Text>
+            <Text style={styles.sheetRoomName}>{selectedPendingEb?.roomName}</Text>
+            <Text style={styles.sheetFloor}>{selectedPendingEb?.floorName}</Text>
           </View>
 
-          <View style={{ marginLeft: "auto" }}>
-            <Text style={styles.sheetDateLabel}>Date</Text>
-           <Text style={styles.sheetDateValue}>
-  {dayjs(readingDate).format("DD-MM-YYYY")}
-</Text>
-          </View>
+       
         </View>
 
         {/* Input */}
@@ -166,12 +245,11 @@ for (let i = -180; i <= 180; i++) {
 
 <View style={styles.dateInputWrapper}>
   <TextInput
-    style={styles.dateInput}
-    placeholder="DD-MM-YYYY"
- value={readingDate ? dayjs(readingDate).format("DD-MM-YYYY") : ""}
-    editable={false}
-    pointerEvents="none"
-  />
+  style={styles.dateInput}
+  placeholder="DD-MM-YYYY"
+  value={readingDate ? dayjs(readingDate).format("DD-MM-YYYY") : ""}
+  editable={false}
+/>
 
   <TouchableOpacity
     style={styles.calendarIconWrapper}
@@ -191,8 +269,8 @@ for (let i = -180; i <= 180; i++) {
 {readingDateError && <ErrorMessage message={readingDateError} type="error" />}
 
 
-        <Text style={styles.sheetLabel}>
-          Current Reading <Text style={{ color: "red" }}>*</Text>
+        {/* <Text style={styles.sheetLabel}>
+          Reading <Text style={{ color: "red" }}>*</Text>
         </Text>
 
         <TextInput
@@ -204,7 +282,28 @@ for (let i = -180; i <= 180; i++) {
             setCurrentReading(t.replace(/[^0-9]/g, ""));
             setReadingError("");
           }}
-        />
+        /> */}
+        <View style={styles.readingLabelRow}>
+  <Text style={styles.sheetLabel}>
+    Reading <Text style={{ color: "red" }}>*</Text>
+  </Text>
+
+  <Text style={styles.lastReadingText}>
+    Last Reading: <Text style={styles.lastReadingValue}>{selectedPendingEb?.lastReading}</Text>
+  </Text>
+</View>
+
+<TextInput
+  placeholder="Enter Reading"
+  style={styles.sheetInput}
+  keyboardType="numeric"
+  value={currentReading}
+  onChangeText={(t) => {
+    setCurrentReading(t.replace(/[^0-9]/g, ""));
+    setReadingError("");
+  }}
+/>
+
 
         {readingError && <ErrorMessage message={readingError} type="error" />}
 
@@ -226,29 +325,23 @@ for (let i = -180; i <= 180; i++) {
     </TouchableWithoutFeedback>
 
     <View style={styles.calendarContainer}>
-      <Calendar
-        markingType="custom"
-        markedDates={readingMarkedDates}
-        current={
-          readingDate
-            ? dayjs(readingDate, ["DD-MM-YYYY", "YYYY-MM-DD"]).format("YYYY-MM-DD")
-            : dayjs().format("YYYY-MM-DD")
-        }
-        onDayPress={(day) => {
-          if (readingMarkedDates[day.dateString]?.disabled) return;
+ <Calendar
+  markingType="custom"
+  markedDates={readingMarkedDates}
+  {...(readingDate && {
+    current: dayjs(readingDate).format("YYYY-MM-DD"),
+  })}
+  onDayPress={(day) => {
+    if (readingMarkedDates[day.dateString]?.disabled) return;
 
-          setReadingDate(day.dateString);
-          setOpenReadingDatePic(false);
-          setReadingDateError("");
-        }}
-        theme={{
-          todayTextColor: "#2563EB",
-          selectedDayBackgroundColor: "#2563EB",
-          selectedDayTextColor: "#FFFFFF",
-          textDisabledColor: "#9CA3AF",
-          arrowColor: "#111827",
-        }}
-      />
+    setReadingDate(day.dateString);
+    setOpenReadingDatePic(false);
+    setReadingDateError("");
+  }}
+/>
+
+
+
     </View>
   </View>
 )}
@@ -401,6 +494,24 @@ calendarContainer: {
   padding: 10,
   width: "85%",
   elevation: 10,
+},
+readingLabelRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 6,
+},
+
+
+
+lastReadingText: {
+  fontSize: 13,
+  color: "#6B7280",
+},
+
+lastReadingValue: {
+  fontWeight: "700",
+  color: "#2563EB",
 },
 
 });

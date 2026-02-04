@@ -9,6 +9,8 @@ export const UseSetting = () => useContext(ElectricityContext);
 
 export const SettingProvider = ({ children }) => {
 const [loading, setLoading] = useState(false);
+  const [Reportsdetails , setReportsDetails] = useState(null)
+  const [invoiceReports, setInvoiceReports] = useState(null);
 const getElectricity = async (hostelId) => {
   try {
     setLoading(true)
@@ -43,7 +45,7 @@ const updateElectricity = async (hostelId, unitPrice) => {
 
       const body = { unitPrice };
       const axios = getAxios();
-      const res = await getAxios.put(
+      const res = await AxiosConfig.put(
         `/v2/hostel/electricity/${hostelId}`,
         body,
         {
@@ -54,11 +56,14 @@ const updateElectricity = async (hostelId, unitPrice) => {
         }
       );
 
+      console.log("res", res);
+      
+
       console.log("UPDATE EB SUCCESS →", res.data);
       return { success: true, data: res.data };
 
     } catch (err) {
-      console.log("UPDATE EB ERROR →", err.response?.data);
+      console.log("UPDATE EB ERROR →", err);
       return { success: false, data: err.response?.data };
     }
   };
@@ -384,9 +389,80 @@ const deleteUser = async (userId) => {
   }
 };
 
+const getReportsByHostel = async (hostelId) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/reports/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setReportsDetails(res?.data)
+    console.log("REPORTS SUCCESS →", res.data);
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    console.log("REPORTS ERROR →", err.response?.data || err.message);
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetInvoiceReports = async (hostelId) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/reports/invoice/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setInvoiceReports(res?.data);
+
+    console.log("INVOICE REPORTS SUCCESS →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+  } catch (err) {
+    console.log(
+      "INVOICE REPORTS ERROR →",
+      err.response?.data || err.message
+    );
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports}}>
       {children}
     </ElectricityContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React,{useState,useRef,useCallback} from "react";
+import React,{useState,useRef,useCallback, useContext} from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Dimensions,
   TouchableWithoutFeedback,BackHandler
 } from "react-native";
+import { NotificationContext } from "../../Context/NotificationContext";
+import { CommonContexts } from "../../Context/CommonContext";
 import { useNavigation,useFocusEffect} from "@react-navigation/native";
 
 
@@ -27,6 +29,8 @@ import dayjs from "dayjs";
 
 export default function NotificationDetails() {
   const navigation = useNavigation();
+  const { getNotificationsByHostel,readNotificationsByHostel } = useContext(NotificationContext);
+  const { activeHostelId } = useContext(CommonContexts);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const [showFilter, setShowFilter] = useState(false);
    const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -35,7 +39,64 @@ export default function NotificationDetails() {
      const [openFrom, setOpenFrom] = useState(false);
      const [openTo, setOpenTo] = useState(false);
      const [openUpward, setOpenUpward] = useState(false);
+     const [notifications, setNotifications] = useState([]);
+     const [unReadcomments,setUnReadComments] = useState("")
       const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+
+
+    
+    
+    
+    
+    const fetchCustomers = async () => {
+  const res = await getNotificationsByHostel(activeHostelId);
+
+  // ✅ correct array extraction
+  setNotifications(res?.data?.listOfNotifications || []);
+  setUnReadComments(res.data.unreadCount)
+  console.log("res.data",res.data)
+};
+
+
+
+useFocusEffect(
+  useCallback(() => {
+    let timer;
+
+    if (activeHostelId) {
+      // 1️⃣ initial fetch
+      fetchCustomers();
+
+      // 2️⃣ unread irundha mattum delayed read
+      if (unReadcomments > 0) {
+        timer = setTimeout(async () => {
+          await readNotificationsByHostel(activeHostelId);
+
+          // ✅ 3️⃣ read API success apram REFRESH
+          fetchCustomers();
+        }, 5000);
+      }
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [activeHostelId, unReadcomments])
+);
+
+
+//       useFocusEffect(
+//   useCallback(() => {
+//     if (activeHostelId) {
+//       // fetch list
+//       fetchCustomers();
+
+//       // 🔔 mark all as read
+//       readNotificationsByHostel(activeHostelId);
+//     }
+//   }, [activeHostelId])
+// );
+      console.log("setNotifications",notifications)
       useFocusEffect(
   useCallback(() => {
     const onBackPress = () => {
@@ -119,7 +180,7 @@ const onClose = () => {
   </View>
 
   {/* RIGHT SIDE → Filter Icon */}
- <TouchableOpacity
+ {/* <TouchableOpacity
   onPress={() => {
     setShowFilter(true);
     translateY.setValue(SCREEN_HEIGHT); // RESET
@@ -131,12 +192,12 @@ const onClose = () => {
   }}
 >
   <Image source={FilterIcon} style={{ width: 22, height: 22 }} />
-</TouchableOpacity>
+</TouchableOpacity> */}
 
 </View>
 
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      {/* <ScrollView showsVerticalScrollIndicator={false}>
 
       
         <Text style={styles.sectionTitle}>Today</Text>
@@ -249,7 +310,100 @@ const onClose = () => {
         ))}
 
         <View style={{ height: 40 }} />
-      </ScrollView>
+      </ScrollView> */}
+      <ScrollView showsVerticalScrollIndicator={false}>
+  {notifications
+    .sort(
+      (a, b) =>
+        dayjs(b.requestedAt, "DD/MM/YYYY").valueOf() -
+        dayjs(a.requestedAt, "DD/MM/YYYY").valueOf()
+    )
+    .map((item, index, arr) => {
+      const curr = dayjs(item.requestedAt, "DD/MM/YYYY");
+      const prev =
+        index > 0
+          ? dayjs(arr[index - 1].requestedAt, "DD/MM/YYYY")
+          : null;
+
+      const showHeader =
+        !prev || !curr.isSame(prev, "day");
+
+      let label = "";
+      if (curr.isSame(dayjs(), "day")) label = "Today";
+      else if (
+        curr.isSame(dayjs().subtract(1, "day"), "day")
+      )
+        label = "Yesterday";
+      else label = curr.format("DD MMM YYYY");
+
+      return (
+        <View key={item.notificationId}>
+          {/* 🔹 DATE HEADER */}
+          {showHeader && (
+            <Text style={styles.sectionTitle}>
+              {label}
+            </Text>
+          )}
+
+          {/* 🔹 CARD */}
+          <View
+            style={[
+              styles.card,
+              !item.isRead && styles.activeCard,
+            ]}
+          >
+            {!item.isRead && <View style={styles.dot} />}
+
+            <View style={styles.row}>
+              <View style={styles.profileCircle}>
+                <Text style={styles.profileInitial}>
+                  {item.requestedUser?.[0] || "NA"}
+                </Text>
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>
+                  {item.notificationTitle}
+                </Text>
+                <Text style={styles.desc}>
+                  {item.notificationDescription}
+                </Text>
+              </View>
+
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={styles.time}>
+                  2m ...
+                </Text>
+              </View>
+            </View>
+
+            {item.typeCode === 4 && (
+              <TouchableOpacity
+                style={styles.reviewBtn}
+                 onPress={() =>
+      navigation.navigate("HistoryAndComments", {
+        notificationId: item.requestId,
+        item: item,
+      })
+    }
+              >
+                <Text style={styles.reviewText}>
+                  Review
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      );
+    })}
+
+  {notifications.length === 0 && (
+    <Text style={styles.sectionTitle}>
+      No notifications available
+    </Text>
+  )}
+</ScrollView>
+
     </SafeAreaView>
 
     {

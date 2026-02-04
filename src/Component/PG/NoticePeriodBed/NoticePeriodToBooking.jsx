@@ -62,10 +62,10 @@ const txnWrapRef = useRef(null);
 
 const [keyboardHeight, setKeyboardHeight] = useState(0);
 useEffect(() => {
-    if (selectedBed) {
+    if (selectedBed?.currentTenantInfo[0]?.tenetId) {
       fetchCustomerDetails();
     }
-  }, [selectedBed]);
+  }, [selectedBed?.currentTenantInfo[0]?.tenetId]);
 
  const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(selectedBed?.currentTenantInfo[0]?.tenetId);

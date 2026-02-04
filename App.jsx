@@ -113,6 +113,7 @@ import { LOGGEDIN, USER_ID } from './src/Utils/Constant';
 import SuccessFlow from './src/SuccessFlow'
 import { initBaseUrl } from './src/Utils/Constant';
 import { Text, TextInput } from "react-native";
+import {NotificationProvider} from "./src/Context/NotificationContext";
 
 
 
@@ -171,9 +172,13 @@ TextInput.defaultProps.allowFontScaling = false;
                               <ElectricityProvider>
                                 <VendorProvider>
                                   <UIProvider >
+                                     <NotificationProvider>
                                     <AssetProvider>
+                                     
                                 <AppContent userId={userId} isLoginIn={isLoginIn}/>
+                               
                                 </AssetProvider>
+                                 </NotificationProvider>
                                 </UIProvider >
                                 </VendorProvider>
                               </ElectricityProvider>
