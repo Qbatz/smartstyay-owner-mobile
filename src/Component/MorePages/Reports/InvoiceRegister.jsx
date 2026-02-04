@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext , useEffect} from "react";
 import {
   View,
   Text,
@@ -6,19 +6,32 @@ import {
   ScrollView,
   TouchableOpacity,Image
 } from "react-native";
+import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
-import { UseSetting } from "../../../Context/SettingContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
-
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 
 const InvoiceRegister = ({navigation}) => {
  
-     const {  Reportsdetails} = UseSetting();
+     const {loading,  Reportsdetails , GetInvoiceReports  , invoiceReports} = UseSetting();
+    const { activeHostelId } = useContext(CommonContexts);
+
+     useEffect(() => {
+  if (activeHostelId) {
+    GetInvoiceReports(activeHostelId);
+  }
+}, [activeHostelId]);
+
+console.log("invoiceReports", invoiceReports);
+
 
   return (
          <>
+          {loading && <Loader />}
 <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
          <View style={styles.container}>
              {/* <View style={styles.headerRow}>
@@ -50,17 +63,17 @@ const InvoiceRegister = ({navigation}) => {
 >
   <View style={styles.row}>
     <Text style={styles.label}>Total Amount</Text>
-    <Text style={styles.totalValue}>₹ {Reportsdetails?.invoices?.totalAmount}</Text>
+    <Text style={styles.totalValue}>₹ {invoiceReports?.totalAmount || 0}</Text>
   </View>
 <View style={styles.divider} />
   <View style={styles.row}>
     <Text style={styles.label}>Paid</Text>
-    <Text style={styles.value}>₹19,500</Text>
+    <Text style={styles.value}>₹ {invoiceReports?.paidAmount || 0}</Text>
   </View>
 
   <View style={styles.row}>
     <Text style={styles.label}>Outstanding</Text>
-    <Text style={styles.value}>₹42,000</Text>
+    <Text style={styles.value}>₹ {invoiceReports?.outStandingAmount || 0}</Text>
   </View>
 </LinearGradient>
 
@@ -86,26 +99,23 @@ const InvoiceRegister = ({navigation}) => {
     
 
       {/* LIST */}
-      {[
-        "Wilson Calzoni",
-        "Nolan Calzoni",
-        "Alfredo Press",
-        "Ram Kumar",
-        "Vikram",
-        "Wilson Calzoni",
-        "Nolan Calzoni",
-        "Alfredo Press",
-        "Ram Kumar",
-        "Vikram",
-      ].map((name, index) => (
-        <View key={index} style={styles.listItem}>
+     {!loading && invoiceReports?.invoiceList?.map((item, index) => (
+        <View key={item?.invoiceId || index} style={styles.listItem}>
           <View>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.sub}>INV-002</Text>
+            <Text style={styles.name}>  {item.fullName?.trim() || item.firstName}</Text>
+            <Text style={styles.sub}>{item.invoiceNumber}</Text>
           </View>
-          <Text style={styles.amount}>₹ 5,100</Text>
+          <Text style={styles.amount}>₹ {item.invoiceAmount}</Text>
         </View>
       ))}
+
+      {!loading && invoiceReports && invoiceReports?.invoiceList?.length === 0 && (
+  <View style={styles.emptyContainer}>
+          <Image source={EmptyState} style={styles.emptyImage} />
+          <Text style={styles.emptyText}>No Invoices are there!</Text>
+        </View>
+)}
+
 
       {/* EXPORT */}
     
@@ -263,11 +273,30 @@ totalValue: {
     fontSize: 12,
     color: "#6B7280",
     marginTop: 2,
+    marginLeft:8
   },
 
   amount: {
     fontSize: 14,
     fontWeight: "600",
+  },
+   emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
   },
 
   /* EXPORT */
@@ -278,7 +307,7 @@ exportWrapper: {
   left: 0,
   right: 0,
   paddingHorizontal: 16,
-  paddingBottom: 20, // 🔥 Android navigation bar safe
+  paddingBottom: 45, // 🔥 Android navigation bar safe
   backgroundColor: "#fff",
 },
 

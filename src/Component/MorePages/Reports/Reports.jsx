@@ -30,6 +30,7 @@ import ElectricityIcon from "../../../Assets/Images/Electricity_Bills.png";
 import FinalSettlementIcon from "../../../Assets/Images/Rupees.png";
 import BankIcon from "../../../Assets/Images/Bank_Transaction.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
+import DirectionImage from "../../../Assets/Images/direction-down.png"
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.42;
@@ -52,6 +53,18 @@ const Reports = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 const [isForward, setIsForward] = useState(true);
+
+const [reportFilterOpen, setReportFilterOpen] = useState(false);
+const [selectedFilter, setSelectedFilter] = useState("This Month");
+
+const FILTER_OPTIONS = [
+  "Today",
+  "This Week",
+  "This Month",
+  "Last Month",
+  "Last 3 Months",
+];
+
 
 const TOTAL_CARDS = 4;
 const CARDS_PER_PAGE = 2;
@@ -125,13 +138,70 @@ const handleSwipe = () => {
 
 
       <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity  onPress={() => {navigation.goBack()}}>
-            <Image source={ArrowLeft} style={styles.backIcon} />
-          </TouchableOpacity>
-          <Text style={styles.title}>  Operational Reports
+<View style={styles.headerRow}>
+  {/* LEFT */}
+  <TouchableOpacity onPress={() => navigation.goBack()}>
+    <Image source={ArrowLeft} style={styles.backIcon} />
+  </TouchableOpacity>
+
+  {/* CENTER TITLE */}
+  <Text style={styles.title} numberOfLines={1}>
+    Operational Reports
   </Text>
-        </View>
+
+  {/* RIGHT FILTER */}
+  <TouchableOpacity
+    style={styles.filterBtn}
+    onPress={() => setReportFilterOpen(!reportFilterOpen)}
+    activeOpacity={0.7}
+  >
+    <Text style={styles.filterText}>{selectedFilter}</Text>
+    {/* <Text style={styles.filterArrow}>⌄</Text> */}
+    <Image source={DirectionImage} style={{   marginLeft: 6,
+  height:15, width:15 , transform: reportFilterOpen ? "rotate(180deg)": "rotate(0deg)"}}/>
+  </TouchableOpacity>
+</View>
+
+{reportFilterOpen && (
+  <TouchableOpacity
+    activeOpacity={1}
+    style={styles.overlay}
+    onPress={() => setReportFilterOpen(false)}
+  />
+)}
+
+{reportFilterOpen && (
+  <View style={styles.dropdown}>
+    {FILTER_OPTIONS.map((item) => {
+      const active = selectedFilter === item;
+
+      return (
+        <TouchableOpacity
+          key={item}
+          style={[
+            styles.dropdownItem,
+            active && styles.dropdownItemActive,
+          ]}
+          onPress={() => {
+            setSelectedFilter(item);
+            setReportFilterOpen(false);
+            // 🔥 here you can call API based on filter
+          }}
+        >
+          <Text
+            style={[
+              styles.dropdownText,
+              active && styles.dropdownTextActive,
+            ]}
+          >
+            {item}
+          </Text>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+)}
+
 
         <View style={styles.searchBox}>
           <Image
@@ -305,15 +375,15 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
 
-  headerRow: {
-    height: 50,
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  // headerRow: {
+  //   height: 50,
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  // },
 
   backIcon: { width: 22, height: 22, marginRight: 10 },
 
-  title: { fontSize: 18, fontWeight: "700" },
+  // title: { fontSize: 18, fontWeight: "700" },
 
   searchBox: {
     height: 46,
@@ -416,5 +486,83 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontWeight: "500",
   },
+headerRow: {
+  height: 50,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between", // ✅ key line
+},
+
+title: {
+  flex: 1,                         // ✅ center control
+  fontSize: 18,
+  fontWeight: "700",
+  // textAlign: "center",
+  marginHorizontal: 5,
+},
+
+filterBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  backgroundColor: "#fff",
+},
+
+filterText: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#111827",
+},
+
+filterArrow: {
+  marginLeft: 6,
+  height:15, width:15
+},
+
+overlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 99,
+},
+
+dropdown: {
+  position: "absolute",
+  top: 90,              // adjust based on header
+  right: 16,
+  width: 160,
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  elevation: 6,
+  zIndex: 100,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
+
+dropdownItem: {
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+},
+
+dropdownItemActive: {
+  backgroundColor: "#F3F4F6",
+},
+
+dropdownText: {
+  fontSize: 13,
+  color: "#374151",
+},
+
+dropdownTextActive: {
+  fontWeight: "700",
+  color: "#111827",
+},
+
 
 });
