@@ -7,6 +7,8 @@ export default function ExpensesProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
   const [expensesList, setExpensesList] = useState([])
   const [IntializeexpensesList, setIntializeExpensesList] = useState(null)
+  const [rolePermission, setRolePermission] = useState(null);
+   const [profileDetails, setProfileDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -276,6 +278,59 @@ const UpdateExpenseSubCategory = async ({
   }
 };
 
+ const GetProfileDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const axios = getAxios();
+      const res = await axios.get("/v2/profile");
+
+      if (res?.status === 200) {
+        setProfileDetails(res?.data);
+        return { success: true, data: res?.data };
+      }
+
+      return { success: false };
+    } catch (err) {
+      setError("Failed to load profile");
+      setProfileDetails(null);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+const GetRoleBasedPermission = async (roleId) => {
+  if (!roleId) {
+    setRolePermission(null);
+    return { success: true, empty: true };
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    const axios = getAxios();
+    const res = await axios.get(`/v2/role/${roleId}`);
+
+    if (res?.status === 200) {
+      setRolePermission(res.data);
+      return { success: true, data: res.data };
+    }
+
+    return { success: false };
+  } catch (err) {
+    setError("Failed to load role permission");
+    setRolePermission(null);
+    return { success: false };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
   return (
@@ -284,6 +339,8 @@ const UpdateExpenseSubCategory = async ({
         expenses,
         expensesList,
         IntializeexpensesList,
+        rolePermission,
+        profileDetails,
         loading,
         error,
         fetchExpenses,
@@ -295,6 +352,8 @@ const UpdateExpenseSubCategory = async ({
         GetInitializeExpense ,
         UpdateExpenseCategory,
         UpdateExpenseSubCategory,
+        GetRoleBasedPermission,
+        GetProfileDetails,
       }}
     >
       {children}

@@ -793,7 +793,7 @@ const handleSubmitComplaint = async () => {
 
 
  
-  {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
+ 
 
 
 
@@ -822,6 +822,8 @@ const handleSubmitComplaint = async () => {
   onFocus={() => setIsDescFocused(true)}
   onBlur={() => setIsDescFocused(false)}
 />
+
+ {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
 
   <View style={styles.footer}>
     <TouchableOpacity

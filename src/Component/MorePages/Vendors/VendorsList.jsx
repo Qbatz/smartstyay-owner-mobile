@@ -28,6 +28,9 @@ import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+
+
 
 export default function VendorsList({ navigation }) {
 
@@ -44,7 +47,12 @@ export default function VendorsList({ navigation }) {
 
   const { activeHostelId } = useContext(CommonContexts)
 
-
+const {
+  canReadModule: canReadVendor,
+  canWriteModule: canWriteVendor,
+  canUpdateModule,
+  canDeleteModule,
+} = useHasPermission("Vendor");
 
   console.log("vendorList", vendorList);
 
@@ -142,12 +150,19 @@ export default function VendorsList({ navigation }) {
   ).current;
 
   const handleEdit = (vendor) => {
+     if (!canUpdateModule) return;
     setEditVendor(vendor);
     setShowAddVendor(true);
     setActiveMenu(null)
   }
 
   const handleDelete = async () => {
+      if (!canDeleteModule) {
+    setModalType("warning");
+    setModalMessage("You do not have permission to delete vendor");
+    setShowSuccessModal(true);
+    return;
+  }
     const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
     setDeletePopup(false)
     if (res?.success) {
@@ -311,7 +326,11 @@ const handleAddVendorClick = () => {
 
             <View style={styles.menuBox}>
               <TouchableOpacity
-                style={styles.menuRow}
+                 style={[
+      styles.menuRow,
+      !canUpdateModule && { opacity: 0.4 }
+    ]}
+    disabled={!canUpdateModule}
                 onPress={() => handleEdit(item)}
               >
                 <Image
@@ -322,12 +341,16 @@ const handleAddVendorClick = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.menuRow}
+                        style={[
+      styles.menuRow,
+      !canDeleteModule && { opacity: 0.4 }
+    ]}
                 onPress={() => {
                   setDeleteVendorData(item);
                   setDeletePopup(true);
                   setActiveMenu(null);
                 }}
+                 disabled={!canDeleteModule}
               >
                 <Image
                   source={require("../../../Assets/Images/trash.png")}
@@ -346,10 +369,30 @@ const handleAddVendorClick = () => {
   };
 
 
+if (!canReadVendor && !loading) {
+  return (
+<View style={styles.container}>
+      <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack?.()}>
+            <Image source={BackIcon} style={styles.backArrow} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Vendors</Text>
+        </View>
+    <View style={styles.emptyContainer}>
+      
+      <Image source={EmptyState} style={styles.emptyImage} />
+      <Text style={styles.emptyText}>
+        You do not have access to view Vendors
+      </Text>
+    </View>
+    </View>
+  );
+}
 
   return (
     <>
       {loading && <Loader />}
+      
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -376,7 +419,11 @@ const handleAddVendorClick = () => {
               No vendors are there!
             </Text>
             
-                    <TouchableOpacity style={styles.addVendorBtn} onPress={handleAddVendorClick}>
+                    <TouchableOpacity   style={[
+    styles.addVendorBtn,
+    !canWriteVendor && { opacity: 0.7 }
+  ]}
+  disabled={!canWriteVendor} onPress={handleAddVendorClick}>
                       <Text style={styles.addVendorText}>+ Add Vendor</Text>
                     </TouchableOpacity>
           </View>
@@ -389,7 +436,12 @@ const handleAddVendorClick = () => {
           <TextInput
             placeholder="Search"
             placeholderTextColor="#9CA3AF"
-            style={styles.searchInput}
+            // style={styles.searchInput}
+              style={[
+    styles.searchInput,
+    !canReadVendor && { opacity: 0.5 }
+  ]}
+  editable={canReadVendor}
           />
         </View>
           }
@@ -415,12 +467,20 @@ const handleAddVendorClick = () => {
 
       {!loading && vendorList?.length > 0 && (
         <>
-        <TouchableOpacity style={styles.filterFab} onPress={() => setShowFilter(true)}>
+        <TouchableOpacity   style={[
+    styles.filterFab,
+    !canReadVendor && { opacity: 0.4 }
+  ]}
+  disabled={!canReadVendor} onPress={() => setShowFilter(true)}>
           <Image source={FilterIcon} style={styles.filterIcon} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.addFab}
+            style={[
+    styles.addFab,
+    !canWriteVendor && { opacity: 0.7 }
+  ]}
+  disabled={!canWriteVendor}
           onPress={() => setShowAddVendor(true)}
         >
           <Image source={AddIcon} style={styles.addIcon} />

@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { ComplaintContext } from "../../Context/ComplaintContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import DeleteComplaint from "./DeleteComplaint";
+import { useHasPermission } from "../../Utils/useHasPermission";
 import Profile from "../../Assets/Images/Avatar.png";
 import Edit from "../../Assets/Images/editIcon.png";
 import Delete from "../../Assets/Images/trash.png";
@@ -39,6 +40,13 @@ export default function ComplaintDetails({
   const navigation = useNavigation();
   const [deleteshow, setDeleteShow] = useState(false);
    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+              const {
+                  canWriteModule: canWriteComplaints,
+                  canReadModule: canReadComplaints,
+                  canUpdateModule: canUpdateComplaints,
+                  canDeleteModule: canDeleteComplaints,
+              } = useHasPermission("Complaints");
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
  
@@ -193,14 +201,34 @@ await  complaintsViewUpdates({
           </View>
 
           <View style={styles.iconRow}>
-            <TouchableOpacity  onPress={() => navigation.navigate("AddComplaint", {
-  mode: "edit",
-  data: complaint,   
-})}>
+            <TouchableOpacity   disabled={!canUpdateComplaints}
+  style={!canUpdateComplaints && { opacity: 0.4 }} 
+//    onPress={() => navigation.navigate("AddComplaint", {
+//   mode: "edit",
+//   data: complaint,   
+// })}
+  onPress={() => {
+    if (!canUpdateComplaints) return;
+
+    navigation.navigate("AddComplaint", {
+      mode: "edit",
+      data: complaint,
+    });
+  }}
+
+>
               <Image source={Edit} style={styles.icon} />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setDeleteShow(true)}>
+            <TouchableOpacity  disabled={!canDeleteComplaints}
+  style={[
+    { marginLeft: 12 },
+    !canDeleteComplaints && { opacity: 0.4 }
+  ]}
+  onPress={() => {
+    if (!canDeleteComplaints) return;
+    setDeleteShow(true);
+  }}>
               <Image
                 source={Delete}
                 style={[styles.icon, { marginLeft: 12 }]}
@@ -292,8 +320,15 @@ await  complaintsViewUpdates({
     </View>
 
     <TouchableOpacity
-      style={styles.updateBtn}
-      onPress={openUpdates}  
+       style={[
+    styles.updateBtn,
+    !canReadComplaints && { opacity: 0.5 }
+  ]}
+  disabled={!canReadComplaints}
+  onPress={() => {
+    if (!canReadComplaints) return;
+    openUpdates();
+  }}
     >
       <Text style={styles.updateBtnText}>See all updates</Text>
     </TouchableOpacity>
@@ -305,9 +340,13 @@ await  complaintsViewUpdates({
        <View style={styles.commentBox}>
   {/* FAKE INPUT – ONLY FOR DISPLAY */}
   <TouchableOpacity
-    style={{ flex: 1 }}
-    activeOpacity={0.8}
-    onPress={openComments}
+   style={{ flex: 1, opacity: canReadComplaints ? 1 : 0.5 }}
+  disabled={!canReadComplaints}
+  activeOpacity={0.8}
+  onPress={() => {
+    if (!canReadComplaints) return;
+    openComments();
+  }}
   >
     <View pointerEvents="none">
       <TextInput
@@ -319,8 +358,12 @@ await  complaintsViewUpdates({
     </View>
   </TouchableOpacity>
 
-  <TouchableOpacity onPress={openComments}>
-    <Image source={CommentIcon} style={styles.commentIcon} />
+  <TouchableOpacity   disabled={!canReadComplaints}
+  onPress={openComments}>
+    <Image source={CommentIcon}  style={[
+      styles.commentIcon,
+      !canReadComplaints && { opacity: 0.4 }
+    ]} />
   </TouchableOpacity>
 
   <Text style={styles.commentCount}>
@@ -332,22 +375,36 @@ await  complaintsViewUpdates({
         {/* Buttons */}
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={styles.assignBtn}
-            onPress={() => {
-              handleCloseSheet();
-              setTimeout(onOpenAssignSheet, 200);
-            }}
+          
+
+              style={[
+    styles.assignBtn,
+    !canUpdateComplaints && { opacity: 0.5 }
+  ]}
+  disabled={!canUpdateComplaints}
+  onPress={() => {
+    if (!canUpdateComplaints) return;
+
+    handleCloseSheet();
+    setTimeout(onOpenAssignSheet, 200);
+  }}
           >
             <Image source={userImg} style={styles.assignIcon} />
             <Text style={styles.assignText}>Assign</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.statusBtn}
-             onPress={() => {
-              handleCloseSheet();
-              setTimeout(() => onOpenStatusSheet(complaint), 200)
-                }}
+            style={[
+    styles.statusBtn,
+    !canUpdateComplaints && { opacity: 0.5 }
+  ]}
+  disabled={!canUpdateComplaints}
+  onPress={() => {
+    if (!canUpdateComplaints) return;
+
+    handleCloseSheet();
+    setTimeout(() => onOpenStatusSheet(complaint), 200);
+  }}
           >
             <Image source={Exchange} style={styles.assignIcon} />
             <Text style={styles.statusText}>Change Status</Text>
