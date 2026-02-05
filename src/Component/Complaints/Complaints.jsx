@@ -17,7 +17,7 @@ import { ComplaintContext } from "../../Context/ComplaintContext";
 import { UseSetting } from "../../Context/SettingContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import Loader from "../Loader/Loader"
-
+import { useHasPermission } from "../../Utils/useHasPermission";
 import Profile from "../../Assets/Images/Avatar.png";
 import FilterIcon from "../../Assets/Images/filter.png";
 import EmptyState from "../../Assets/Images/Empty_state.png"
@@ -36,6 +36,13 @@ export default function Complaints({ route }) {
              const { getUsersByHostel, } = UseSetting();
 
            console.log("complaintsList", complaintsList);
+
+           const {
+               canWriteModule: canWriteComplaints,
+               canReadModule: canReadComplaints,
+               canUpdateModule: canUpdateComplaints,
+               canDeleteModule: canDeleteComplaints,
+           } = useHasPermission("Complaints")
            
 
   const [showSheet, setShowSheet] = useState(false);
@@ -209,6 +216,13 @@ const formatDate = (date) => {
     setTimeout(() => setShowSuccessModal(false), 1500);
     return;
   }
+    if (!canWriteComplaints) {
+    setModalType("warning");
+    setModalMessage("You do not have permission to Add complaints");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
   if(complaintTypes && complaintTypes?.length === 0){
     setModalType("warning");
     setModalMessage("Please Create Complaint Type in Settings-Complaint");
@@ -282,7 +296,10 @@ const formatDate = (date) => {
     <View style={styles.card}>
       <TouchableOpacity
         style={{ flex: 1 }}
-        onPress={() => {handleComplaintDetails(item)}}
+      onPress={() => {
+  if (!canReadComplaints) return;
+  handleComplaintDetails(item);
+}}
       >
         <Text style={styles.title}>
           {item?.complaintTypeName}
@@ -360,6 +377,24 @@ const formatDate = (date) => {
   );
 };
 
+if (!canReadComplaints && !loading) {
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>Complaints</Text>
+      </View>
+
+      <View style={styles.centerContainer}>
+        <Image source={EmptyState} style={styles.image} />
+        <Text style={styles.nodataText}>
+          You do not have access to view Complaints
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+
 
   return (
     <>
@@ -376,7 +411,8 @@ const formatDate = (date) => {
 <View style={styles.headerRow}>
   <Text style={styles.headerTitle}>Complaints</Text>
  {!loading &&  complaintsList && complaintsList?.length > 0 && (
- <TouchableOpacity onPress={() => setShowFilter(true)}>
+ <TouchableOpacity onPress={() => setShowFilter(true)}   disabled={!canReadComplaints}
+  style={!canReadComplaints && { opacity: 0.4 }}>
     <Image source={FilterIcon} style={styles.headerFilterIcon} />
   </TouchableOpacity>
  )}
@@ -398,7 +434,11 @@ const formatDate = (date) => {
         <TextInput
           placeholder="Search Complaints"
           placeholderTextColor="#A1A1A1"
-          style={styles.searchInput}
+           style={[
+    styles.searchInput,
+    !canReadComplaints && { opacity: 0.5 }
+  ]}
+   pointerEvents={canReadComplaints ? "auto" : "none"}
         />
       </View>
 }
@@ -417,7 +457,11 @@ const formatDate = (date) => {
    <View style={styles.centerContainer}>
                <Image source={EmptyState} style={styles.image} />
                <Text style={styles.nodataText}>Complaints from tenants will appear here.</Text>
-           <TouchableOpacity style={styles.addcomplaintBtn}  onPress={handleAddComplaint}>
+           <TouchableOpacity  style={[
+    styles.addcomplaintBtn,
+    !canWriteComplaints && { opacity: 0.6 }
+  ]}
+  disabled={!canWriteComplaints} onPress={handleAddComplaint}>
                     <Text style={styles.addComplaintText}>+ Add Complaint</Text>
                   </TouchableOpacity>
 
@@ -428,7 +472,10 @@ const formatDate = (date) => {
  {!loading &&  complaintsList && complaintsList?.length > 0 &&
        <>
 
-      <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
+      <TouchableOpacity  style={[
+    styles.filterBtn,
+    !canReadComplaints && { opacity: 0.4 } 
+  ]} disabled={!canReadComplaints} onPress={() => setShowFilter(true)}>
         <Image
           source={FilterIcon}
           style={{ width: 25, height: 25 }}
@@ -437,33 +484,31 @@ const formatDate = (date) => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.addBtn}
+       style={[
+    styles.addBtn,
+    !canWriteComplaints && { opacity: 0.5 }
+  ]}
+  disabled={!canWriteComplaints}
         onPress={handleAddComplaint}
       >
         <Image source={AddComplaint} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
       </>
        }
-
-     
-
- 
-
-      
+   
       <ComplaintDetails
         visible={showSheet}
         onClose={() => setShowSheet(false)}
         complaint={selectedComplaint}
         onOpenAssignSheet={() => setShowAssignSheet(true)}
-      onOpenCommentSheet={(complaint) => {
-  setSelectedComplaint(complaint); 
-  setShowCommentSheet(true);
-}}
-
+        onOpenCommentSheet={(complaint) => {
+         setSelectedComplaint(complaint); 
+         setShowCommentSheet(true);
+        }}
          onOpenStatusSheet={(complaint) => {
          setSelectedComplaint(complaint);
          setShowStatusSheet(true);
-  }}
+        }}
       />
 
       {/* Assign Sheet */}

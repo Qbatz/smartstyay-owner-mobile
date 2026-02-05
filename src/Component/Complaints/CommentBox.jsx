@@ -13,6 +13,7 @@ import {
   BackHandler,
 } from "react-native";
 import { ComplaintContext } from "../../Context/ComplaintContext";
+import { useHasPermission } from "../../Utils/useHasPermission";
 import Loader from "../Loader/Loader"
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -31,6 +32,13 @@ export default function CommentBottomSheet({ visible, onClose  , complaint}) {
 
   // Prefer parent complaint, fallback to context
 const complaintData = complaint || selectedComplaint;
+
+  const {
+                  canWriteModule: canWriteComplaints,
+                  canReadModule: canReadComplaints,
+                  canUpdateModule: canUpdateComplaints,
+                  canDeleteModule: canDeleteComplaints,
+              } = useHasPermission("Complaints");
 
 
       const [commentText, setCommentText] = useState("");
@@ -89,6 +97,10 @@ console.log("selectedComplaint", selectedComplaint);
 
 
 const handleSendComment = async () => {
+   if (!canUpdateComplaints) {
+    setCommentError("You do not have permission to add comments");
+    return;
+  }
   setCommentError("");
 
   if (!commentText.trim()) {
@@ -247,7 +259,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
 
 
 
-          <View style={styles.replyBox}>
+          <View style={[styles.replyBox  , !canUpdateComplaints && { opacity: 0.4 } ]}>
   <TextInput
   value={commentText}
   onChangeText={(text) => {
@@ -256,11 +268,19 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
   }}
   placeholder="Post your Reply Here"
   style={styles.input}
+    editable={canUpdateComplaints}
+        // pointerEvents={canUpdateComplaints ? "auto" : "none"}
 />
 
 
 
-            <TouchableOpacity style={styles.sendBtn} onPress={handleSendComment}>
+            <TouchableOpacity 
+            style={[
+      styles.sendBtn,
+      !canUpdateComplaints && { opacity: 0.4 }
+    ]}
+      disabled={!canUpdateComplaints}
+            onPress={handleSendComment}>
               <Image source={Comments} style={styles.sendIcon} />
             </TouchableOpacity>
             

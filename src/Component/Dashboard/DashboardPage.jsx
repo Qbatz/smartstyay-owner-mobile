@@ -45,12 +45,14 @@ import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
 import { CommonContexts } from "../../Context/CommonContext";
 import { LoginContexts } from "../../Context/LoginContext";
 import { PGContext } from "../../Context/PGContext";
+import { ExpensesContext } from "../../Context/ExpensesContext";
+import { useHasPermission } from "../../Utils/useHasPermission";
 import ProfileDrawer from "./ProfileClickScreen";
 import AddTenant from "../Customer/AddTenants";
 import { useCustomer } from "../../Context/CustomerContext";
 import { NotificationContext } from "../../Context/NotificationContext";
-
-
+import EmptyState from "../../Assets/Images/Empty_state.png"
+import Loader from "../Loader/Loader"
 
 import {
   BarChart,
@@ -71,7 +73,7 @@ export default function DashboardScreen({initialParams}) {
   console.log("initialParams", initialParams);
   
   const insets = useSafeAreaInsets();
-const { getDashboardByHostel, loading } = useCustomer();
+const { getDashboardByHostel,  } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
   
@@ -79,8 +81,9 @@ const { getDashboardByHostel, loading } = useCustomer();
   const login = useContext(LoginContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
-const [unreadCount, setUnreadCount] = useState(0);
-const [dashboardList,setDashboardList] = useState([])
+  const { expensesList, GetExpenseList, rolePermission ,GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [dashboardList,setDashboardList] = useState([])
 
 useEffect(() => {
   if (!activeHostelId) return;
@@ -121,7 +124,42 @@ useEffect(() => {
   }
 }, [activeHostelId]);
 
-console.log("PGdetails", PGDetails);
+console.log("profileDetails", profileDetails);
+
+
+
+useEffect(() => {
+  GetProfileDetails();
+}, []);
+
+
+useEffect(() => {
+  if (profileDetails?.roleId) {
+    GetRoleBasedPermission(profileDetails?.roleId);
+  }
+}, [profileDetails?.roleId]);
+
+
+  console.log("rolepermission", rolePermission);
+  
+  console.log("PGdetails", PGDetails);
+
+
+             const {
+                 canWriteModule: canWriteDashboard,
+                 canReadModule: canReadDashboard,
+                 canUpdateModule: canUpdateDashboard,
+                 canDeleteModule: canDeleteDashboard,
+             } = useHasPermission("Dashboard")
+
+             const {
+  canReadModule: canReadAnnouncement,
+} = useHasPermission("Announcement");
+
+const {
+  canReadModule: canReadUpdates,
+} = useHasPermission("Updates");
+
 
 
   useEffect(() => {
@@ -636,10 +674,11 @@ console.log("profile", getProfileInitial);
 
 
 
+
   return (
     <>
     
-   
+    { loading && <Loader />}
     <View style={[styles.safe, { paddingTop: insets.top }]}>
 
       <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
@@ -871,7 +910,20 @@ console.log("profile", getProfileInitial);
 
 
       </LinearGradient>
+
+
       {activeTab === "Dashboard" && (
+
+        <>
+    {!canReadDashboard && !loading ? (
+      // 🔒 Dashboard restricted EMPTY STATE
+      <View style={styles.centerContainer}>
+        <Image source={EmptyState} style={styles.image} />
+        <Text style={styles.nodataText}>
+          You do not have access to view Dashboard
+        </Text>
+      </View>
+    ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
 
 
@@ -1419,11 +1471,39 @@ console.log("profile", getProfileInitial);
           <View style={{ height: 50 }} />
         </ScrollView>
       )}
-      {/* {activeTab === "Announcement" && <AnnouncementScreen />} */}
-      {activeTab === "Announcement" && (
+       </>
+         )}
+      {/* {activeTab === "Announcement" && (
   <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
 )}
-      {activeTab === "Updates" && <UpdatesScreen onGoBack={() => setActiveTab("Announcement")}/>}
+      {activeTab === "Updates" && <UpdatesScreen onGoBack={() => setActiveTab("Announcement")}/>} */}
+
+{activeTab === "Announcement" && (
+  !canReadAnnouncement && !loading ? (
+    <View style={styles.centerContainer}>
+      <Image source={EmptyState} style={styles.image} />
+      <Text style={styles.nodataText}>
+        You do not have access to view Announcements
+      </Text>
+    </View>
+  ) : (
+    <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
+  )
+)}
+
+{activeTab === "Updates" && (
+  !canReadUpdates && !loading ? (
+    <View style={styles.centerContainer}>
+      <Image source={EmptyState} style={styles.image} />
+      <Text style={styles.nodataText}>
+        You do not have access to view Updates
+      </Text>
+    </View>
+  ) : (
+    <UpdatesScreen onGoBack={() => setActiveTab("Announcement")} />
+  )
+)}
+
 
       <ProfileDrawer
         visible={drawerVisible}
@@ -2103,6 +2183,25 @@ badgeText: {
   fontWeight: "700",
 },
 
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 120,
+  },
+
+  image: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+
+  nodataText: {
+    fontSize: 16,
+    color: "#777",
+    marginTop: 10,
+  },
 
 
 });

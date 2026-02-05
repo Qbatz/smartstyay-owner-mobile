@@ -34,6 +34,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import CloseIcon from "../../../Assets/Images/remove.png";
 import { useFocusEffect } from '@react-navigation/native';
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 export default function ExpensesScreen() {
   const navigation = useNavigation();
@@ -44,7 +45,12 @@ export default function ExpensesScreen() {
 
   console.log("expenselist", expensesList);
 
-
+  const {
+    canWriteModule: canWriteExpense,
+    canReadModule: canReadExpense,
+    canUpdateModule: canUpdateExpense,
+    canDeleteModule: canDeleteExpense,
+  } = useHasPermission("Expense");
 
   useFocusEffect(
     useCallback(() => {
@@ -309,11 +315,13 @@ export default function ExpensesScreen() {
   }
 
   const handleEditExpenses = () => {
+    if (!canUpdateExpense) return;
     navigation.navigate("AddExpenses", { editData: selectedExpense });
   };
 
 
   const handleDeleteShow = () => {
+     if (!canDeleteExpense) return;
     setDeleteShow(true)
   }
 
@@ -322,6 +330,7 @@ export default function ExpensesScreen() {
   }
 
   const handleOpenTagAsset = () => {
+      if (!canUpdateExpense) return;
     closeDetails();
 
     setTimeout(() => {
@@ -384,11 +393,60 @@ export default function ExpensesScreen() {
           <Text style={styles.headerTitle}>Expenses</Text>
         </View>
 
-      
+      {!loading && (
+  <>
+    {!canReadExpense ? (
+      <View style={styles.centerContainer}>
+        <Image source={EmptyState} style={styles.image} />
+        <Text style={styles.noexpensesText}>
+          You do not have access to view Expenses
+        </Text>
+      </View>
+    ) : expensesList && expensesList.length > 0 ? (
+      <>
+        <View style={styles.searchBox}>
+          <Image source={SearchIcon} style={styles.searchIcon} />
+          <TextInput
+            placeholder="Search Expenses"
+            placeholderTextColor="#8a8a8a"
+            style={styles.searchInput}
+          />
+        </View>
+
+        <FlatList
+          data={expensesList}
+          keyExtractor={(item, index) =>
+            item?.expenseId ? item.expenseId : index.toString()
+          }
+          renderItem={renderExpensesItem}
+          showsVerticalScrollIndicator={false}
+        />
+      </>
+    ) : (
+      <View style={styles.centerContainer}>
+        <Image source={EmptyState} style={styles.image} />
+        <Text style={styles.noexpensesText}>No Expenses are there!</Text>
+
+          <TouchableOpacity
+             style={[
+    styles.addExpenseBtn,
+    !canWriteExpense && { opacity: 0.4 }
+  ]}
+  disabled={!canWriteExpense}
+            onPress={handleShowAddExpense}
+          >
+            <Text style={styles.addExpenseText}>+ Add Expense</Text>
+          </TouchableOpacity>
+     
+      </View>
+    )}
+  </>
+)}
 
 
 
-        {!loading && (
+
+        {/* {!loading && (
           <>
             {expensesList && expensesList.length > 0 ? (
   <>
@@ -425,7 +483,7 @@ export default function ExpensesScreen() {
               </View>
             )}
           </>
-        )}
+        )} */}
 
 
 
@@ -443,9 +501,9 @@ export default function ExpensesScreen() {
                       <TouchableOpacity
           style={[
             styles.Filterfab,
-            loading && { opacity: 0.4 }
+            !canReadExpense && { opacity: 0.4 }
           ]}
-          disabled
+            disabled={!canReadExpense}
           // onPress={() => setShowFilter(true)}
           accessibilityLabel="Open filters"
         >
@@ -453,7 +511,9 @@ export default function ExpensesScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.fab} onPress={handleShowAddExpense}
+          disabled={!canWriteExpense}
+          style={[ styles.fab, !canWriteExpense && { opacity: 0.4 }]}
+          onPress={handleShowAddExpense}
         >
           <Image source={AddIcon} style={styles.fabIconAdd} />
         </TouchableOpacity>
@@ -562,10 +622,14 @@ export default function ExpensesScreen() {
                 </View>
 
                 <View style={styles.iconRow}>
-                  <TouchableOpacity onPress={handleEditExpenses}>
+                  <TouchableOpacity   disabled={!canUpdateExpense}
+          style={[ !canUpdateExpense && { opacity: 0.4 }]}
+                  onPress={handleEditExpenses}>
                     <Image source={Edit} style={styles.icon} />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleDeleteShow} >
+                  <TouchableOpacity   disabled={!canDeleteExpense}
+          style={[ !canDeleteExpense && { opacity: 0.4 }]}
+                  onPress={handleDeleteShow} >
                     <Image source={Delete} style={[styles.icon, { marginLeft: 12 }]} />
                   </TouchableOpacity>
                 </View>
@@ -595,7 +659,10 @@ export default function ExpensesScreen() {
                 </Text>
               </View>
 
-              <TouchableOpacity style={styles.tagBtn} onPress={handleOpenTagAsset}>
+              <TouchableOpacity 
+                        style={[ styles.tagBtn, !canUpdateExpense && { opacity: 0.4 }]}
+    disabled={!canUpdateExpense}
+              onPress={handleOpenTagAsset}>
                 <Image source={ButtonTag} style={{ width: 18, height: 18, tintColor: "#fff" }} />
                 <Text style={styles.tagBtnText}>Tag Asset</Text>
               </TouchableOpacity>

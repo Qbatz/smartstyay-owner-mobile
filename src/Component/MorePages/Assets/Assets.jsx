@@ -18,6 +18,7 @@ import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import { AssetContext } from "../../../Context/AssetContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -52,6 +53,13 @@ export default function Assets({ navigation }) {
         const [selectedFloor, setSelectedFloor] = useState(null);
         const [roomOpen, setRoomOpen] = useState(false);
         const [selectedRoom, setSelectedRoom] = useState(null);
+
+                   const {
+                       canWriteModule: canWriteAssets,
+                       canReadModule: canReadAssets,
+                       canUpdateModule: canUpdateAssets,
+                       canDeleteModule: canDeleteAssets,
+                   } = useHasPermission("Assets")
 
 useEffect(() => {
   if(activeHostelId){
@@ -157,15 +165,20 @@ const EmptyState = () => (
       No assets found
     </Text>
 
-    
+    {/* {canWriteAssets && ( */}
           <TouchableOpacity
-  style={styles.emptystateBtn}
+   style={[
+    styles.emptystateBtn,
+    !canWriteAssets && { opacity: 0.7 }
+  ]}
   onPress={handleAddAsset}
+   disabled={!canWriteAssets}
 >
   <Text style={styles.emptystateText}>
     + Add Asset
   </Text>
 </TouchableOpacity>
+{/* )} */}
 
   </View>
 );
@@ -378,6 +391,16 @@ const selectedAssignDate = assignDate
 
 
 const handleAssignAsset = async () => {
+  if (!canUpdateAssets) {
+    setModalType("warning");
+    setModalMessage("You do not have permission to assign assets");
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1000);
+    return;
+  }
+
   if (!selectedAsset?.assetId) return;
 
   setFloorError("");
@@ -498,7 +521,31 @@ const handleAssignAsset = async () => {
 
   const toggleAmountDropdown = () => {
     setAmountDropdownVisible((v) => !v);
-  };
+  }
+
+
+  if (!canReadAssets && !loading) {
+    return (
+       <View style={styles.container}>
+         <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={BackIcon} style={styles.backIcon} />
+        </TouchableOpacity>
+
+        <Text style={styles.pageTitle}>Assets</Text>
+
+        <View style={{ width: 30 }} />
+      </View>
+      <View style={{ alignItems: "center", marginTop: 180 }}>
+        
+        <Image source={EmptyStateImage} style={{ width: 250, height: 180, }}/>
+        <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+          You do not have access to view Assets
+        </Text>
+      </View>
+      </View>
+    )
+  }
 
   return (
 
@@ -576,8 +623,14 @@ const handleAssignAsset = async () => {
 </ScrollView>
 
       {
-        !loading && assetList?.length > 0 && (
-  <TouchableOpacity style={styles.Filterfab} onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
+        !loading && assetList?.length > 0 && canReadAssets && (
+  <TouchableOpacity 
+              style={[
+    styles.Filterfab,
+    !canReadAssets && { opacity: 0.7 }
+  ]}
+  disabled={!canReadAssets}
+   onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
         )
@@ -586,9 +639,13 @@ const handleAssignAsset = async () => {
     
 
       {
-        !loading && assetList?.length > 0 && (
+        !loading && assetList?.length > 0 && canWriteAssets && (
       <TouchableOpacity
-        style={styles.fab}
+               style={[
+    styles.fab,
+    !canWriteAssets && { opacity: 0.7 }
+  ]}
+  disabled={!canWriteAssets}
         onPress={() => {
           setIsEdit(false);          
           setSelectedAsset(null);
@@ -637,9 +694,12 @@ const handleAssignAsset = async () => {
             <View style={styles.sheetHeaderRow}>
               <Text style={styles.sheetTitle}>{selectedAsset?.assetName || "N/A"}</Text>
 
-              <View style={styles.topActions}>
+              <View style={[styles.topActions]}   >
                 <TouchableOpacity
+                disabled={!canUpdateAssets}
+                  style={!canUpdateAssets && { opacity: 0.4 }}
                   onPress={() => {
+                      if (!canUpdateAssets) return;
                     setIsEdit(true);            
                     setSelectedAsset(selectedAsset);
                     setShowAddAsset(true);
@@ -651,7 +711,12 @@ const handleAssignAsset = async () => {
 
 
 
-<TouchableOpacity onPress={() => setShowDeletePopup(true)}>
+<TouchableOpacity   disabled={!canDeleteAssets}
+  style={!canDeleteAssets && { opacity: 0.4 }}
+  onPress={() => {
+    if (!canDeleteAssets) return;
+    setShowDeletePopup(true);
+  }}>
   <Image source={TrashIcon} style={[styles.headerIcon, { marginLeft: 12 }]} />
 </TouchableOpacity>
               </View>
@@ -702,11 +767,23 @@ const handleAssignAsset = async () => {
 
 
             <TouchableOpacity
-              style={styles.assignBtn}
-              onPress={() => {
-                setShowSheet(false);
-                setShowAssignSheet(true);
-              }}
+              // style={styles.assignBtn}
+              // onPress={() => {
+              //   setShowSheet(false);
+              //   setShowAssignSheet(true);
+              // }}
+
+                style={[
+    styles.assignBtn,
+    !canUpdateAssets && { opacity: 0.5 }
+  ]}
+  disabled={!canUpdateAssets}
+  onPress={() => {
+    if (!canUpdateAssets) return;
+
+    setShowSheet(false);
+    setShowAssignSheet(true);
+  }}
             >
               <Image source={ButtonTag} style={styles.assignIcon} />
               <Text style={styles.assignText}>Assign Asset</Text>

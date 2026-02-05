@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef,useCallback, useContext } from "reac
 import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler } from "react-native";
 import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
+import { ExpensesContext } from "../../Context/ExpensesContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { removeData, storeData } from "../../Utils/Storage";
 import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../Utils/Constant";
@@ -18,6 +19,8 @@ export default function ProfileDrawer({ visible, onClose }) {
 
 
   const { logout } = useContext(LoginContexts)
+    const { expensesList, GetExpenseList, rolePermission ,
+  GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
 
   const navigation = useNavigation();
   const slideX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
@@ -28,6 +31,8 @@ export default function ProfileDrawer({ visible, onClose }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 const [modalMessage, setModalMessage] = useState("");
 const [modalType, setModalType] = useState("success");
+
+
 
 
   const [showEditPopup, setShowEditPopup] = useState(false);
@@ -122,7 +127,26 @@ const handleLogout = async () => {
   }
 };
 
+const getFullName = (profile) => {
+  if (!profile) return "";
 
+  const first = profile.firstName?.trim() || "";
+  const last = profile.lastName?.trim() || "";
+
+  return `${first} ${last}`.trim(); // "Emima"
+};
+
+const getInitials = (profile) => {
+  if (profile?.initial) return profile.initial;
+
+  const first = profile?.firstName?.[0] || "";
+  const last = profile?.lastName?.[0] || "";
+
+  return (first + last).toUpperCase();
+};
+
+
+console.log("profileDetails", profileDetails);
   if (!visible) return null;
 
   return (
@@ -172,15 +196,24 @@ const handleLogout = async () => {
               setTimeout(() => navigation.navigate("ProfileScreen"), 150);
             }}
           >
-            <Image
-              source={require("../../Assets/Images/profile.png")}
-              style={styles.profileImg}
-            />
+           <View style={styles.avatar}>
+  {profileDetails?.profileImage ? (
+    <Image
+      source={{ uri: profileDetails.profileImage }}
+      style={styles.profileImg}
+    />
+  ) : (
+    <Text style={styles.avatarText}>
+      {getInitials(profileDetails)}
+    </Text>
+  )}
+</View>
 
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.profileName}>Muthuram K</Text>
 
-              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+            <View style={{ flex: 1, marginLeft: 2 }}>
+              <Text style={styles.profileName}>  {getFullName(profileDetails)}</Text>
+
+              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 , marginLeft: 8  }}>
                 <Image
                   source={require("../../Assets/Images/Eye.png")}
                   style={styles.eyeIcon}
@@ -312,7 +345,7 @@ panel: {
   },
 
   profileImg: { width: 50, height: 50, borderRadius: 25 },
-  profileName: { fontSize: 16, fontWeight: "600", color: "#000" },
+  // profileName: { fontSize: 16, fontWeight: "600", color: "#000" },
   changePassword: { fontSize: 13, color: "#2F80ED", marginLeft: 6 },
   eyeIcon: { width: 14, height: 14, tintColor: "#2F80ED" },
   arrowIcon: { width: 18, height: 18, tintColor: "#000", marginLeft: 12 },
@@ -344,5 +377,33 @@ panel: {
     top: 0, left: 0, right: 0, bottom: 0,
   },
 
+avatar: {
+  width: 40,
+  height: 40,
+  borderRadius: 25,
+  backgroundColor: "#E5E7EB",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+avatarText: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#374151",
+},
+
+profileImg: {
+  width: 40,
+  height: 40,
+  borderRadius: 25,
+},
+
+profileName: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#000",
+  flexShrink: 1,          
+  flexWrap: "wrap",
+},
 
 });
