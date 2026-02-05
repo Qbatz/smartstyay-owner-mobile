@@ -14,7 +14,7 @@
 
 import React, { useContext, useEffect, useState } from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View, NativeModules } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, NativeModules, Platform } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -148,6 +148,7 @@ TextInput.defaultProps.allowFontScaling = false;
 
     CommonModule.fetchBaseUrl().then(baseUrl => {
       initBaseUrl(baseUrl)
+      console.log(baseUrl)
     })
 
   }, [])
@@ -204,6 +205,8 @@ function AppContent(props) {
   const Navigation = createStackNavigator();
   const [isLoggedIn,setIsLoggedIn]=useState()
   const [pinVerify, setPinVerify] = useState()
+
+  const {CommonModule}=NativeModules;
 
 
 
@@ -272,6 +275,19 @@ function AppContent(props) {
     }
     setPinVerify(false)
   }, [loginContext?.requiredPinSetup])
+
+  const checkInternet =()=>{
+     CommonModule.checkInternet().then(r=>{
+        console.log(r)
+      })
+    if(Platform.OS == "android"){
+      CommonModule.checkInternet().then(r=>{
+        console.log(r)
+      }).catch((error)=>{
+        console.log(error)
+      })
+    }
+  }
 
 
 
