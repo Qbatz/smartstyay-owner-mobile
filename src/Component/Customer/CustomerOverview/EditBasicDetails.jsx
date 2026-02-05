@@ -38,6 +38,7 @@ export default function EditBasicDetailsSheet({
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
+    const [countryCode, setCountryCode] = useState("")
 
 
 
@@ -53,13 +54,18 @@ export default function EditBasicDetailsSheet({
 
     useEffect(() => {
         if (visible && customerDetails) {
+            console.log(customerDetails)
             const f = customerDetails.firstName || "";
             const l = customerDetails.lastName || "";
             const e = customerDetails.emailId || "";
+            const m = customerDetails.mobileNo || "";
+            const c = customerDetails.countryCode || "";
 
             setFirstName(f);
             setLastName(l);
             setEmail(e);
+            setMobile(m)
+            setCountryCode(c)
 
             // 🔥 store initial values
             setInitialFirstName(f.trim());
@@ -154,6 +160,7 @@ export default function EditBasicDetailsSheet({
             firstName: firstName.trim(),
             lastName: lastName ? lastName.trim() : "",
             mailId: email ? email.trim().toLowerCase() : "",
+            mobile: mobile,
         };
 
         console.log("payload", payloads);
@@ -237,11 +244,11 @@ export default function EditBasicDetailsSheet({
                                 //     setFirstName(text);
                                 //     setFirstNameError("");
                                 // }}
-onChangeText={(text) => {
-  const cleanText = text.replace(/[^a-zA-Z ]/g, "");
-  setFirstName(cleanText);
-  setFirstNameError("");
-}}
+                                onChangeText={(text) => {
+                                    const cleanText = text.replace(/[^a-zA-Z ]/g, "");
+                                    setFirstName(cleanText);
+                                    setFirstNameError("");
+                                }}
 
 
                             />
@@ -253,37 +260,39 @@ onChangeText={(text) => {
                                 placeholder="Enter LastName"
                                 // onChangeText={setLastName}
                                 onChangeText={(text) => {
-  const cleanText = text.replace(/[^a-zA-Z ]/g, "");
-  setLastName(cleanText);
- 
-}}
+                                    const cleanText = text.replace(/[^a-zA-Z ]/g, "");
+                                    setLastName(cleanText);
+
+                                }}
                             />
 
-                            {/* <Text style={styles.label}>Mobile Number *</Text>
-        <TextInput
-          style={styles.input}
-          editable={false}
-         value={
-    countryCode
-      ? `+${countryCode} ${mobile}`
-      : mobile
-  }
-  onChangeText={setMobile}
-        /> */}
+                            <Text style={styles.label}>Mobile Number *</Text>
+                            <TextInput
+                                style={styles.input}
+                                // editable={false}
+                                value={ mobile }
+                                placeholder="Enter mobileno"
+                                keyboardType="phone-pad"
+                                maxLength={10}
+                                onChangeText={(text) => {
+                                    const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                    setMobile(onlyNumbers);
+                                }}
+                            />
 
                             <Text style={styles.label}>Email</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter Email Id"
                                 value={email}
-                               onChangeText={(text) => {
-  const cleanText = text
-    .replace(/[^a-zA-Z0-9@._-]/g, "")
-    .toLowerCase();
+                                onChangeText={(text) => {
+                                    const cleanText = text
+                                        .replace(/[^a-zA-Z0-9@._-]/g, "")
+                                        .toLowerCase();
 
-  setEmail(cleanText);
-  setEmailError("");
-}}
+                                    setEmail(cleanText);
+                                    setEmailError("");
+                                }}
 
                             />
                             {emailError && <ErrorMessage message={emailError} type="error" />}
@@ -352,7 +361,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         marginTop: 10,
-        
+
     },
     cancel: { fontSize: 14, color: "#374151" },
     updateBtn: {

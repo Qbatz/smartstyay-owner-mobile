@@ -43,24 +43,15 @@ export default function AddTenant() {
         };
 
         launchImageLibrary(options, (response) => {
-            if (response.didCancel) return;
-
-            if (response.errorCode) {
-                console.log("ImagePicker Error:", response.errorMessage);
-                return;
-            }
-
-            if (response.assets && response.assets.length > 0) {
-                const asset = response.assets[0];
-
-                setSelectedImage({
-                    uri: asset.uri,
-                    type: asset.type,
-                    name: asset.fileName || "profile.jpg",
-                });
+            if (response.didCancel) {
+                console.log('User cancelled');
+            } else if (response.errorMessage) {
+                console.log('Error:', response.errorMessage);
+            } else {
+                const source = { uri: response.assets[0].uri };
+                setSelectedImage(source);
             }
         });
-
     };
 
     useFocusEffect(
@@ -261,6 +252,7 @@ export default function AddTenant() {
         console.log("FINAL PAYLOAD 👉", payloads);
 
         const res = await addCustomer(activeHostelId, payloads, selectedImage);
+        console.log(res)
 
         if (res?.data) {
             setModalType("success");
@@ -298,7 +290,7 @@ export default function AddTenant() {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Add New Tenant</Text>
+                    <Text style={styles.headerTitle}>Add Tenant</Text>
                 </View>
 
 
@@ -381,7 +373,7 @@ export default function AddTenant() {
 
                                     <View style={styles.profileWrapper}>
                                         <Image
-                                            source={selectedImage?.uri ? { uri: selectedImage.uri } : Profile}
+                                            source={selectedImage ? selectedImage : Profile}
                                             style={styles.profileImage}
                                         />
 
@@ -471,24 +463,17 @@ export default function AddTenant() {
                                         placeholderTextColor="#A1A1A1"
                                         value={basicDetails.email}
                                         onChangeText={(t) => {
-                                            // Remove emojis & invalid characters
-                                            const cleaned = t
-                                                .replace(/[^\x00-\x7F]/g, "")   // remove emojis & unicode symbols
-                                                .toLowerCase();
+                                            const lowerEmail = t.toLowerCase();
+                                            setBasicDetails({ ...basicDetails, email: lowerEmail });
 
-                                            setBasicDetails({ ...basicDetails, email: cleaned });
-
-                                            if (!cleaned) {
+                                            if (!lowerEmail) {
                                                 setEmailError("");
-                                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleaned)) {
+                                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lowerEmail)) {
                                                 setEmailError("Enter a valid email address");
                                             } else {
                                                 setEmailError("");
                                             }
                                         }}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        autoCorrect={false}
 
 
                                     />
@@ -551,13 +536,9 @@ export default function AddTenant() {
                                                 placeholder="Enter Flat, House no., Building..."
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.flat}
-                                                // onChangeText={(t) =>
-                                                //     setAddressDetails({ ...addressDetails, flat: t })
-                                                // }
-                                                onChangeText={(t) => {
-                                                    const cleaned = t.replace(/[^\x00-\x7F]/g, ""); // remove emojis & unicode
-                                                    setAddressDetails({ ...addressDetails, flat: cleaned });
-                                                }}
+                                                onChangeText={(t) =>
+                                                    setAddressDetails({ ...addressDetails, flat: t })
+                                                }
                                             />
                                             <Text style={styles.label}>Area , Street , Sector , Village</Text>
                                             <TextInput
@@ -565,11 +546,9 @@ export default function AddTenant() {
                                                 placeholder="Enter Area"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.area}
-                                                onChangeText={(t) => {
-                                                    const cleaned = t.replace(/[^\x00-\x7F]/g, "");
-                                                    setAddressDetails({ ...addressDetails, area: cleaned });
-                                                }}
-
+                                                onChangeText={(t) =>
+                                                    setAddressDetails({ ...addressDetails, area: t })
+                                                }
                                             />
 
 
@@ -579,11 +558,9 @@ export default function AddTenant() {
                                                 placeholder="Ex : Near SBI Bank"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.landmark}
-                                                onChangeText={(t) => {
-                                                    const cleaned = t.replace(/[^\x00-\x7F]/g, "");
-                                                    setAddressDetails({ ...addressDetails, landmark: cleaned });
-                                                }}
-
+                                                onChangeText={(t) =>
+                                                    setAddressDetails({ ...addressDetails, landmark: t })
+                                                }
                                             />
 
                                             <Text style={styles.label}>Pincode</Text>
@@ -623,11 +600,9 @@ export default function AddTenant() {
                                                 placeholder="Enter Your City Name"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.city}
-                                                onChangeText={(t) => {
-                                                    const cleaned = t.replace(/[^a-zA-Z\s]/g, "");
-                                                    setAddressDetails({ ...addressDetails, city: cleaned });
-                                                }}
-
+                                                onChangeText={(t) =>
+                                                    setAddressDetails({ ...addressDetails, city: t })
+                                                }
                                             />
 
                                             <Text style={styles.label}>State</Text>
@@ -775,7 +750,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#fff",
         paddingHorizontal: 16,
-        paddingTop:30,
+        paddingTop: 50,
         paddingBottom: 10
     },
     container1: {
@@ -804,7 +779,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginVertical:6,
+        marginVertical: 15,
         paddingHorizontal: 10,
         backgroundColor: "#F4F8FF",
         padding: 13,
@@ -856,8 +831,8 @@ const styles = StyleSheet.create({
     profileSection: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 5,
-        marginBottom: 5,
+        marginTop: 15,
+        marginBottom: 25,
     },
 
     profileWrapper: {
@@ -911,7 +886,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     form: {
-        marginBottom:0,
+        marginBottom: 10,
     },
     label: {
         fontSize: 14,
@@ -959,7 +934,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "flex-end",   // ← centers the buttons
         alignItems: "center",
-        marginTop: 15,
+        marginTop: 20,
         marginBottom: 40,
     },
 
@@ -1075,17 +1050,16 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     dropdownMenu: {
-        position: "absolute",
-        top: 52,
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
+        // position: "absolute",
+
         borderWidth: 1,
         borderColor: "#ddd",
         borderRadius: 12,
         zIndex: 1000,
+        marginTop: 6,
+        maxHeight: 250,
+        backgroundColor: "#fff",
 
-        maxHeight: 100,        // 🔥 increase
     },
 
 

@@ -24,6 +24,7 @@ const convertToBase64File = (json) => {
 
 
   const addPG = async (params) => {
+    console.log(params)
     try {
       setPgLoading(true);
       setPgError(null);
