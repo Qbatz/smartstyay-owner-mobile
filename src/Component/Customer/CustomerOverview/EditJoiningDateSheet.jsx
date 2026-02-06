@@ -307,7 +307,10 @@ const maxDate = today;
                             style={styles.textArea}
                             placeholder="Enter your reason"
                             value={reason}
-                            onChangeText={setReason}
+                            onChangeText={(text)=>{
+                                setReason(text)
+                                setError("")
+                            }}
                             multiline
                         />
                         {error && (
@@ -447,12 +450,13 @@ const styles = StyleSheet.create({
         padding: 14,
         minHeight: 90,
         textAlignVertical: "top",
-        marginBottom: 20,
+        marginBottom: 5,
     },
     footer: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+        marginTop:15
     },
     cancel: {
         color: "#2563EB",

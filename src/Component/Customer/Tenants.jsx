@@ -938,14 +938,28 @@ export default function TenantsScreen({ route }) {
                   </View>
                 </View>
 
-                {/* <View style={{ marginTop: 15,}}>
-                  <Text>hii</Text>
-                </View> */}
+                {
+                  selectedCustomer?.customerCurrentStatus == "BOOKED"  && (
+                    <View style={{ marginTop: 15, }}>
+                      <Text style={{ fontSize: 13, color: "#6B7280", }}>Booking Date</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Image
+                          source={dateImg}
+                          style={{ width: 15, height: 15, marginRight: 5 }}
+                          resizeMode="contain"
+                        />
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                         {selectedCustomer?.bookingInfo?.bookingDate}
+                        </Text>
+                      </View>
+                    </View>
 
+                  )
+                }
               </View>
 
               {
-                ["CHECK_IN", "OCCUPIED"].includes(selectedCustomer?.customerCurrentStatus) && (
+                ["CHECK_IN", "OCCUPIED","NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View style={{ marginTop: 15, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>
@@ -959,13 +973,13 @@ export default function TenantsScreen({ route }) {
                           resizeMode="contain"
                         />
                         <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
-                         ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.hostelInfo?.monthlyRent)}</Text>
+                          ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.hostelInfo?.monthlyRent)}</Text>
                       </View>
                     </View>
 
                     <View style={{ marginTop: 15, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>Advance Amount</Text>
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
                           source={dateImg}
                           style={{ width: 15, height: 15, marginRight: 5 }}
@@ -973,7 +987,7 @@ export default function TenantsScreen({ route }) {
                         />
                         <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
                           ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.advanceInfo?.advanceAmount)}
-                         </Text>
+                        </Text>
                       </View>
                     </View>
 
@@ -981,24 +995,48 @@ export default function TenantsScreen({ route }) {
                 )
               }
 
+              {
+                 selectedCustomer?.customerCurrentStatus == "BOOKED" && (
+                    <View style={{ marginTop: 15, }}>
+                      <Text style={{ fontSize: 13, color: "#6B7280", }}>
+                        Booking Amount
+                        {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
+                      </Text>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Image
+                          source={RentMoney}
+                          style={{ width: 15, height: 15, marginRight: 5 }}
+                          resizeMode="contain"
+                        />
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                          ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.bookingInfo?.bookingAmount)}</Text>
+                      </View>
+                    </View>
+                 )
+              }
+
 
 
               <TouchableOpacity style={[styles.unassignBtn, {
-                backgroundColor: selectedCustomer?.hostelInfo?.currentStatus === "BOOKED" ? "#1E45E10D" :
-                selectedCustomer?.hostelInfo?.currentStatus === "CHECKIN" ?  "#00A32E0F" : 
-                selectedCustomer?.hostelInfo?.currentStatus === "NOTICE" ? "#FFF9F9" : "#FFF8EB"
+                backgroundColor: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E10D" :
+                  selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E0F" :
+                    selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FFF9F9" :
+                     selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E10D" :
+                     ["INACTIVE", "IN_ACTIVE","InActive"].includes(selectedCustomer?.customerCurrentStatus) ?  "#FFF8EB" : "#FFF9F9" 
               }]}>
                 {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
                 <Text style={[styles.unassignText, {
-                 color:  selectedCustomer?.hostelInfo?.currentStatus === "BOOKED" ? "#1E45E1" :
-                selectedCustomer?.hostelInfo?.currentStatus === "CHECKIN" ?  "#00A32E" : 
-                selectedCustomer?.hostelInfo?.currentStatus === "NOTICE" ? "#FF0000" : "#FF9500"
+                  color: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E1" :
+                    selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E" :
+                      selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FF0000" :
+                       selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E1" :
+                       ["INACTIVE", "IN_ACTIVE","InActive"].includes(selectedCustomer?.customerCurrentStatus) ?  "#FF9500" : "#FF0000"
                 }]}>
-                  {selectedCustomer?.hostelInfo?.currentStatus === "BOOKED"
-                    ? "Reserved"
-                    : selectedCustomer?.hostelInfo?.currentStatus === "CHECKIN"
-                      ? "Occupied" : selectedCustomer?.hostelInfo?.currentStatus === "NOTICE"
-                      ? "Notice Period" : "In Active"}
+                  {selectedCustomer?.customerCurrentStatus === "BOOKED"? "Reserved"
+                   : selectedCustomer?.customerCurrentStatus === "CHECK_IN"? "Occupied"
+                   : selectedCustomer?.customerCurrentStatus === "NOTICE" ? "Notice Period"
+                   : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "Settlement Generated" 
+                   : ["INACTIVE", "IN_ACTIVE","InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "InActive" : "Write_Off"}
                 </Text>
 
 
@@ -1027,7 +1065,9 @@ export default function TenantsScreen({ route }) {
                 },
               ]}
             >
-              {selectedCustomer?.currentStatus === "Checked In" &&
+              {["Checked In", "Check In", "Checkedin", "CHECK_IN"].includes(
+                selectedCustomer?.customerCurrentStatus
+              ) &&
                 <>
                   <TouchableOpacity
                     style={styles.popupRow}
@@ -1053,7 +1093,7 @@ export default function TenantsScreen({ route }) {
                 </>
               }
               {
-                selectedCustomer?.currentStatus === "Settlement Generated" &&
+                selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" &&
                 <TouchableOpacity
                   style={styles.popupRow}
                   onPress={() => {
@@ -1068,14 +1108,14 @@ export default function TenantsScreen({ route }) {
                 </TouchableOpacity>
               }
 
-              {selectedCustomer?.currentStatus === "Booked" &&
+              {selectedCustomer?.customerCurrentStatus === "BOOKED" &&
                 <>
                   <TouchableOpacity
                     style={styles.popupRow}
                     onPress={handleShowTennantCheckin}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Checked_In</Text>
+                    <Text style={styles.popupText}>Check_In</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -1083,13 +1123,13 @@ export default function TenantsScreen({ route }) {
                     onPress={handleMakeUsInActive}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Make Us InActive</Text>
+                    <Text style={styles.popupText}>Make as InActive</Text>
                   </TouchableOpacity>
                 </>
 
               }
               {
-                selectedCustomer?.currentStatus === "Notice Period" &&
+                selectedCustomer?.customerCurrentStatus === "NOTICE" &&
                 <>
                   <TouchableOpacity
                     style={styles.popupRow}

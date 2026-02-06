@@ -74,7 +74,8 @@ export default function SettingsPG({ navigation }) {
     ].filter(Boolean).join(", "),
     totalRooms: h.noOfRooms,
     availableBeds: h.noOfAvailableBeds,
-    profilePhoto: h.mainImage ? { uri: h.mainImage } : HostelImg,
+    profilePhoto: h.mainImage ? { uri: h.mainImage } : null,
+    profileIntials:h.initials,
     images: h.images?.length
       ? h.images.map((i) => ({ uri: i }))
       : [],
@@ -465,7 +466,22 @@ export default function SettingsPG({ navigation }) {
           <View style={styles.card}>
             <View style={styles.topRow}>
               <View style={{ flexDirection: "row", paddingRight: 40, flex: 1 }}>
-                <Image source={mainHostel?.profilePhoto} style={styles.hostelImg} />
+                {mainHostel?.profilePhoto ? (
+                  <Image
+                    source={mainHostel.profilePhoto}
+                    style={styles.hostelImg}
+                  />
+                ) : (
+                  <View style={{ width: 50,height: 50,borderRadius: 25,backgroundColor: "#E6EEF9",alignItems: "center",
+                              justifyContent: "center",}}>
+                    <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
+                      {mainHostel?.profileIntials}
+                    </Text>
+                  </View>
+                )}
+
+
+                {/* <Image source={mainHostel?.profilePhoto} style={styles.hostelImg} /> */}
                 <View style={{ marginLeft: 10, flex: 1 }}>
                   <Text style={styles.hostelName}>{mainHostel?.name}</Text>
                   <Text style={styles.badge}>{mainHostel?.type}</Text>
@@ -567,35 +583,36 @@ export default function SettingsPG({ navigation }) {
 
           <Text style={styles.sectionTitle}>Other Hostels</Text>
 
-          <View style={{ height: 200, marginBottom: 20 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={true}
-              scrollIndicatorInsets={{ right: 6 }}
-              style={{ paddingHorizontal: 0 }}
-              contentContainerStyle={{ paddingBottom: 20 }}
-            >
-              {otherHostels && otherHostels.filter(Boolean).map((hostel) => (
-                <View key={hostel.id} style={styles.otherCard}>
-                  <Image source={hostel.profilePhoto} style={styles.otherImg} />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={styles.otherName}>{hostel.name}</Text>
-                    <Text style={styles.otherBadge}>{hostel.type}</Text>
-                  </View>
-
-                  <TouchableOpacity onPress={() => handleSwitchHostel(hostel)}>
-                    <Image source={ActiveIcon} style={{ width: 25, height: 25 }} />
-                  </TouchableOpacity>
+          {/* <View style={{ height: 600, marginBottom: 20 }}> */}
+          <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+            scrollIndicatorInsets={{ right: 6 }}
+            style={{ paddingHorizontal: 0, maxHeight: 250, }}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
+            {otherHostels && otherHostels.filter(Boolean).map((hostel) => (
+              <View key={hostel.id} style={styles.otherCard}>
+                <Image source={hostel.profilePhoto} style={styles.otherImg} />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.otherName}>{hostel.name}</Text>
+                  <Text style={styles.otherBadge}>{hostel.type}</Text>
                 </View>
-              ))}
-            </ScrollView>
-          </View>
+
+                <TouchableOpacity onPress={() => handleSwitchHostel(hostel)}>
+                  <Image source={ActiveIcon} style={{ width: 25, height: 25 }} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+          {/* </View> */}
         </ScrollView>
 
         {hostelList && hostelList?.length > 0 &&
           (
             <View style={[
               styles.fixedAddBtnWrapper,
-              { bottom: tabBarHeight -50 }
+              { bottom: tabBarHeight - 50 }
             ]}>
               <TouchableOpacity
                 style={styles.figAddBtn}
