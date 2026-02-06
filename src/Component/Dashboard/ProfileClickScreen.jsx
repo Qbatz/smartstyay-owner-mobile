@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,B
 import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
 import { ExpensesContext } from "../../Context/ExpensesContext";
+import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { removeData, storeData } from "../../Utils/Storage";
 import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../Utils/Constant";
@@ -21,7 +22,7 @@ export default function ProfileDrawer({ visible, onClose }) {
   const { logout } = useContext(LoginContexts)
     const { expensesList, GetExpenseList, rolePermission ,
   GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
-
+ const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
   const navigation = useNavigation();
   const slideX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
 
@@ -127,6 +128,14 @@ const handleLogout = async () => {
   }
 };
 
+const activeHostel =
+  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+  hostelList?.[0] ??
+  {};
+
+  console.log("activehostel", activeHostel);
+  
+
 const getFullName = (profile) => {
   if (!profile) return "";
 
@@ -179,16 +188,19 @@ console.log("profileDetails", profileDetails);
 
         {/* HEADER */}
         <View style={styles.header}>
-          <Text style={styles.title}>Smartstay</Text>
-          <TouchableOpacity onPress={onClose}>
-            <Image source={Remove} style={styles.close} />
-          </TouchableOpacity>
-        </View>
+  <View style={styles.headerTitleWrapper}>
+    <Text style={styles.title}>
+      {activeHostel?.name || "Smartstay"}
+    </Text>
+  </View>
 
-       
-        <View style={styles.profileRow}>
+  <TouchableOpacity onPress={onClose}>
+    <Image source={Remove} style={styles.close} />
+  </TouchableOpacity>
+</View>
 
-        
+
+        <View style={styles.profileRow}> 
           <TouchableOpacity
             style={{ flexDirection: "row", flex: 1 }}
             onPress={() => {
@@ -329,12 +341,25 @@ panel: {
 
 
 
-  header: {
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  title: { fontSize: 20, fontWeight: "700" },
+header: {
+  paddingHorizontal: 20,
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+headerTitleWrapper: {
+  flex: 1,         
+  paddingRight: 12, 
+},
+
+title: {
+  fontSize: 20,
+  fontWeight: "700",
+  color: "#000",
+  flexShrink: 1,    
+  flexWrap: "wrap", 
+},
+
   close: {width:15,height:15},
 
   profileRow: {

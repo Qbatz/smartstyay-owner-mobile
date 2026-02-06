@@ -29,7 +29,7 @@ import AddTransaction from "./AddTransaction"
 import SelfTransferModal from "./SelfTransferScreen";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -86,6 +86,28 @@ const [selectedBankId, setSelectedBankId] = useState(null);
      const [showFilter, setShowFilter] = useState(false);
 
    const [selfTransferScreen,setSelfTransferScreen] = useState(false)
+
+         const {
+    canWriteModule: canWriteBanking,
+    canReadModule: canReadBanking,
+    canUpdateModule: canUpdateBanking,
+    canDeleteModule: canDeleteBanking,
+  } = useHasPermission("Banking")
+
+
+  if (!canReadBanking && !loading) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.emptyContainer}>
+            <Image source={EmptyStateImage} style={styles.emptyImage} />
+        <Text style={{ fontSize: 16, color: "#888", marginTop: 20 }}>
+          You don’t have permission to view Banking details
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
 
 
   // const bankList = [
@@ -695,7 +717,13 @@ if (!activeHostelId && !loading) {
     marginTop: 33,marginBottom:10}}>
             <Text style={styles.sectionTitle}>Bank List</Text>
 
-            <TouchableOpacity style={styles.addBankBtn} onPress={handleAddBanking}>
+            <TouchableOpacity 
+              style={[
+    styles.addBankBtn,
+    !canWriteBanking && { opacity: 0.4 }
+  ]}
+  disabled={!canWriteBanking}
+            onPress={handleAddBanking}>
               <Text style={styles.addBankText}>Add Bank</Text>
             </TouchableOpacity>
           </View>
@@ -753,8 +781,17 @@ if (!activeHostelId && !loading) {
 
  {item.balance === 0 ? (
   <Text
-    style={styles.addAmountText}
-    onPress={() => handleShowAddBalance(item)}
+    // style={styles.addAmountText}
+    // onPress={() => handleShowAddBalance(item)}
+
+     style={[
+      styles.addAmountText,
+      !canWriteBanking && { opacity: 0.4 }
+    ]}
+    onPress={() => {
+      if (!canWriteBanking) return;
+      handleShowAddBalance(item);
+    }}
   >
     + Add Amount
   </Text>
@@ -885,14 +922,27 @@ if (!activeHostelId && !loading) {
 
 
 
-      <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter(true)}>
+      <TouchableOpacity 
+           style={[
+    styles.filterBtn,
+    !canReadBanking && { opacity: 0.4 }
+  ]}
+      disabled={!canReadBanking}
+      onPress={() => setShowFilter(true)}>
         <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
       </TouchableOpacity>
 
-    
-      <TouchableOpacity style={styles.addBtn} onPress={handleShowAddTransaction}>
+  
+      {/* <TouchableOpacity 
+        style={[
+    styles.addBtn,
+    !canWriteBanking && { opacity: 0.4 }
+  ]}
+      disabled={!canWriteBanking}
+       onPress={handleShowAddTransaction}>
         <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+  
 </>
 
    )}
@@ -1193,10 +1243,21 @@ if (!activeHostelId && !loading) {
              ]}
            >
        
-            <TouchableOpacity style={styles.popupRow} onPress={() => {
-  setShowMenu(false);
-  setSelfTransferScreen(true);   // OPEN SELF TRANSFER SCREEN
-}}
+            <TouchableOpacity 
+//             style={styles.popupRow} onPress={() => {
+//   setShowMenu(false);
+//   setSelfTransferScreen(true);   
+// }}
+
+           style={[
+      styles.popupRow,
+      !canWriteBanking && { opacity: 0.4 }
+    ]}
+    onPress={() => {
+      if (!canWriteBanking) return;
+       setShowMenu(false);
+      setSelfTransferScreen(true);
+    }}
  >
                <Image
                  source={SelfTransIcon}
@@ -1205,7 +1266,19 @@ if (!activeHostelId && !loading) {
                <Text style={styles.popupText}>Self Transfer</Text>
              </TouchableOpacity>
        
-             <TouchableOpacity style={styles.popupRow}   onPress={()=>handleEditBanking(selectedItem)}>
+             <TouchableOpacity 
+            //  style={styles.popupRow} 
+              //  onPress={()=>handleEditBanking(selectedItem)}
+               
+                style={[
+      styles.popupRow,
+      !canUpdateBanking && { opacity: 0.4 }
+    ]}
+    onPress={() => {
+      if (!canUpdateBanking) return;
+      handleEditBanking(selectedItem)
+    }}
+               >
                <Image
                  source={EditIcon}
                  style={styles.popupIcon}
@@ -1220,8 +1293,17 @@ if (!activeHostelId && !loading) {
              
       
         <TouchableOpacity
-         style={styles.popupRow}
-         onPress={handleDeleteShow}
+        //  style={styles.popupRow}
+        //  onPress={handleDeleteShow}
+
+              style={[
+      styles.popupRow,
+      !canDeleteBanking && { opacity: 0.4 }
+    ]}
+    onPress={() => {
+      if (!canDeleteBanking) return;
+       handleDeleteShow()
+    }}
        >
          <Image
            source={DeleteIcon}
@@ -1621,7 +1703,7 @@ popupOverlay: {
 
 popupBox: {
   position: "absolute",
-  width: 200,
+  width: 160,
   backgroundColor: "#fff",
   borderRadius: 12,
   elevation: 20,
@@ -1643,6 +1725,7 @@ popupIcon: {
 popupText: {
   fontSize: 14,
   color: "#333",
+  marginLeft:10
 },
 
 

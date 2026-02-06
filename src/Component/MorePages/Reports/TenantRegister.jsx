@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,Image
 } from "react-native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
@@ -13,6 +14,13 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 const TenantRegister = ({navigation}) => {
 
     const {  Reportsdetails} = UseSetting();
+
+          const {
+            canWriteModule: canWriteReports,
+            canReadModule: canReadReports,
+            canUpdateModule: canUpdateReports,
+            canDeleteModule: canDeleteReports,
+          } = useHasPermission("Reports")
 
 const tenantList = [
   {

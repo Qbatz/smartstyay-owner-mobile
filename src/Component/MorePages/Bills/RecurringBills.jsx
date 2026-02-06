@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import DatePicker from "react-native-ui-datepicker";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -19,10 +20,6 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { s, vs } from "../../../Utils/rnScale";
-
-
-
-
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import DueIcon from "../../../Assets/Images/Due_Icon.png";
@@ -42,11 +39,17 @@ const RecurringBills = () => {
 
    
   const { BillDetails, loading, GetAllBillDetails , RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  ,
-     GetRecurringBills, recurringBills , UpdateTenantRecurringStatus  } = useContext(BillContext);
+  GetRecurringBills, recurringBills , UpdateTenantRecurringStatus  } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
       console.log("recurringBills", recurringBills);
 
+                    const {
+               canWriteModule: canWriteRecurringBills,
+               canReadModule: canReadRecurringBills,
+               canUpdateModule: canUpdateRecurringBills,
+               canDeleteModule: canDeleteRecurringBills,
+             } = useHasPermission("Recurring bills")
 
       // styles ==>
 
@@ -92,11 +95,21 @@ const RecurringBills = () => {
     : "--";
 
 
- useEffect(() => {
-  if (activeHostelId) {
+//  useEffect(() => {
+//   if (activeHostelId) {
+//     GetRecurringBills(activeHostelId);
+//   }
+// }, [activeHostelId]);
+
+useEffect(() => {
+  if (activeHostelId && canReadRecurringBills) {
     GetRecurringBills(activeHostelId);
   }
-}, [activeHostelId]);
+}, [activeHostelId, canReadRecurringBills]);
+
+
+console.log("canReadRecurringBills", canReadRecurringBills);
+
 
 
   useLayoutEffect(() => {
@@ -225,6 +238,7 @@ const RecurringBills = () => {
   };
 
 const handleToggleRecurring = async (item) => {
+   if (!canUpdateRecurringBills) return;
   const newStatus = !item.currentStatus;
 
   const res = await UpdateTenantRecurringStatus({
@@ -273,13 +287,11 @@ const EmptyRecurringState = () => (
   return (
     <View style={styles.row}>
       <TouchableOpacity   onPress={() => {
+    if (!canReadRecurringBills) return;
     setSelectedBill(item);  
     setShowBillDetails(true);
   }}>
-        {/* <Image
-          source={item.profilePic ? { uri: item.profilePic } : ProfileImage}
-          style={styles.avatar}
-        /> */}
+        
 
         {item.profilePic ? (
   <Image
@@ -323,6 +335,8 @@ const EmptyRecurringState = () => (
 
           <TouchableOpacity
            onPress={() => handleToggleRecurring(item)}
+           disabled={!canUpdateRecurringBills}
+           style={{ opacity: canUpdateRecurringBills ? 1 : 0.4 }}
           >
             <View
               style={[
@@ -404,23 +418,50 @@ const EmptyRecurringState = () => (
 
       </View>
 
- <FlatList
+ {/* <FlatList
   data={recurringBills?.customers || []}
   renderItem={renderItem}
   keyExtractor={(item) => item.customerId}
   showsVerticalScrollIndicator={false}
   overScrollMode="never"
   contentContainerStyle={{
-    flexGrow: 1,              // 🔥 KEY LINE
+    flexGrow: 1,              
     paddingBottom: vs(120),
   }}
   ListEmptyComponent={!loading && <EmptyRecurringState />}
-/>
+/> */}
+
+
+{!canReadRecurringBills && !loading ? (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyFloor} style={styles.emptyImage} />
+    <Text style={styles.emptyText}>
+      You don’t have permission to view recurring bills
+    </Text>
+  </View>
+) : (
+  <FlatList
+    data={recurringBills?.customers || []}
+    renderItem={ renderItem}
+    keyExtractor={(item) => item.customerId}
+    showsVerticalScrollIndicator={false}
+    overScrollMode="never"
+    contentContainerStyle={{
+      flexGrow: 1,
+      paddingBottom: vs(120),
+    }}
+    ListEmptyComponent={!loading && <EmptyRecurringState />}
+  />
+)}
 
 
 
 
-      <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
+
+      <TouchableOpacity 
+           style={[styles.filterButton,!canReadRecurringBills && { opacity: 0.4 }]}
+            disabled={!canReadRecurringBills}
+            onPress={() => setShowFilter(true)} >
           <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
 

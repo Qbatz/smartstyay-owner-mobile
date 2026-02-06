@@ -25,11 +25,11 @@ export default function TenantsList() {
             ParticularRoomReadingDetails,
             ParticularTenantReadingDetails } = useContext(ElectricityContext);
 
-   useEffect(() => {
-  if (activeHostelId) {
-    GetEBTenantReading(activeHostelId);
-  }
-}, [activeHostelId]);
+//    useEffect(() => {
+//   if (activeHostelId) {
+//     GetEBTenantReading(activeHostelId);
+//   }
+// }, [activeHostelId]);
 
   const navigation = useNavigation()
 

@@ -19,6 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react"; 
 import {ElectricityContext} from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -52,7 +53,14 @@ export default function Electricity({ navigation }) {
             console.log("EbRoomReading" , EbRoomReading);
             console.log("hostelElectricityDetails" , hostelElectricityDetails);
 
-const [activeTab, setActiveTab] = useState("Room Reading");
+const [activeTab, setActiveTab] = useState("reading");
+
+  const {
+    canWriteModule: canWriteElectricity,
+    canReadModule: canReadElectricity,
+    canUpdateModule: canUpdateElectricity,
+    canDeleteModule: canDeleteElectricity,
+  } = useHasPermission("Electricity");
 
 
   const [underlineWidth, setUnderlineWidth] = useState(0);
@@ -140,11 +148,14 @@ console.log("roomdata", roomData);
   }
 }, [activeHostelId]);
 
-   useEffect(() => {
-  if (activeHostelId) {
-    GetEBTenantReading(activeHostelId);
-  }
-}, [activeHostelId]);
+  useFocusEffect(
+  useCallback(() => {
+    if (activeHostelId) {
+      GetEBTenantReading(activeHostelId);
+    }
+  }, [activeHostelId])
+);
+
 
 useFocusEffect(
   React.useCallback(() => {
@@ -205,8 +216,9 @@ useEffect(() => {
 
 
 useEffect(() => {
-  setActiveTab(hostelBased ? "Hostel Reading" : "Room Reading");
+  setActiveTab("reading"); // ✅ always valid id
 }, [hostelBased]);
+
 
 
 
@@ -328,10 +340,29 @@ const hasReading = !!hostelElectricityDetails?.hostelReadings?.[0]?.lastReading;
      ).current;
    
 
- const tabs = [
-  { key: hostelBased ? "Hostel Reading" : "Room Reading" },
-  { key: "Tenant Reading" },
+//  const tabs = [
+//   { key: hostelBased ? "Hostel Reading" : "Room Reading" },
+//   { key: "Tenant Reading" },
+// ];
+
+const tabs = [
+  {
+    id: "reading",
+    label: hostelBased ? "Hostel Reading" : "Room Reading",
+  },
+  {
+    id: "tenant",
+    label: "Tenant Reading",
+  },
 ];
+
+
+// useEffect(() => {
+//   setUnderlineWidth(0);
+// }, [activeTab]);
+
+
+
 
 
 const HostelHeaderCard = ({ data }) => {
@@ -357,7 +388,11 @@ const HostelHeaderCard = ({ data }) => {
 
   {/* RIGHT */}
   <View style={styles.hostelActions}>
-    <TouchableOpacity style={styles.addBtn} onPress={openSheet}>
+    <TouchableOpacity 
+        style={[ styles.addBtn,
+      !canWriteElectricity && { opacity: 0.4 }]}
+      disabled={!canWriteElectricity}
+    onPress={openSheet}>
       <Image source={Add} style={styles.AddPeple} />
       <Text style={styles.addText}>Add</Text>
     </TouchableOpacity>
@@ -412,7 +447,10 @@ const HostelHeaderCard = ({ data }) => {
                   ]}
                 >
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    
+                            style={[ styles.popupRow,
+      !canUpdateElectricity && { opacity: 0.4 }]}
+      disabled={!canUpdateElectricity}
                     onPress={() => {
                       setShowActionMenu(false);
                       handleEditRoomReading(currentReadingData);
@@ -422,8 +460,9 @@ const HostelHeaderCard = ({ data }) => {
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
         
-                  <TouchableOpacity
-                    style={styles.popupRow}
+                  <TouchableOpacity 
+                    style={[ styles.popupRow, !canDeleteElectricity && { opacity: 0.4 }]}
+                    disabled={!canDeleteElectricity}
                     onPress={() => {
                       setShowActionMenu(false);
                       handleDeleteRoomReading(currentReadingData);
@@ -731,12 +770,32 @@ const handleConfirmReadingDelete = async () => {
 
 console.log("hostelBased", hostelBased);
 
+if (loading) {
+  return <Loader />;
+}
+
+
+if (!canReadElectricity && !loading) {
+    return (
+       <View style={styles.container}>
+       
+      <View style={{ alignItems: "center", marginTop: 180 }}>
+        
+        <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
+        <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+          You do not have access to view Electricity
+        </Text>
+      </View>
+      </View>
+    )
+  }
+
 
 
   return (
 
     <>
-    { loading && <Loader />}
+   
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
     <View style={styles.container}>
 
@@ -752,40 +811,45 @@ console.log("hostelBased", hostelBased);
             placeholder="Search Electricity"
             placeholderTextColor="#9CA3AF"
             style={styles.searchInput}
+            editable={canReadElectricity}
           />
         </View>
       </View>
 
       {/* TABS */}
-      <View style={styles.tabsRow}>
-        {tabs.map((t) => (
-          <TouchableOpacity
-            key={t.key}
-            style={styles.tabBtn}
-            onPress={() => setActiveTab(t.key)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === t.key && styles.tabActive,
-              ]}
-              onLayout={(event) => {
-                if (activeTab === t.key) {
-                  setUnderlineWidth(event.nativeEvent.layout.width);
-                }
-              }}
-            >
-              {t.key}
-            </Text>
+    <View style={styles.tabsRow}>
+  {tabs.map((t) => (
+    <TouchableOpacity
+      key={t.id}
+      style={styles.tabBtn}
+      onPress={() => setActiveTab(t.id)}
+    >
+      <Text
+        style={[
+    styles.tabText,
+    activeTab === t.id && styles.tabActive,
+  ]}
+  onLayout={(e) => {
+    setUnderlineWidth(e.nativeEvent.layout.width);
+  }}
+      >
+        {t.label}
+      </Text>
 
-            {activeTab === t.key && (
-              <View style={[styles.tabUnderline, { width: underlineWidth }]} />
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
+      {activeTab === t.id && (
+        <View
+          style={[
+            styles.tabUnderline,
+            { width: underlineWidth },
+          ]}
+        />
+      )}
+    </TouchableOpacity>
+  ))}
+</View>
 
-   {activeTab === "Hostel Reading" && hostelBased && (
+
+   {activeTab === "reading" && hostelBased && (
       hostelElectricityDetails?.hostelReadings?.length > 0 ? (
   <ScrollView  showsVerticalScrollIndicator={false}
     contentContainerStyle={{
@@ -834,13 +898,21 @@ console.log("hostelBased", hostelBased);
       <Text style={styles.noFloorText}>
         No Electricity Readings Found
       </Text>
-          <TouchableOpacity style={{  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#EEF2FF",
-  paddingHorizontal: 13,
-  paddingVertical: 9,
-  borderRadius: 8,
-  marginTop:10}} onPress={openSheet}>
+          <TouchableOpacity  
+           style={[
+    {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#EEF2FF",
+      paddingHorizontal: 13,
+      paddingVertical: 9,
+      borderRadius: 8,
+      marginTop: 10,
+    },
+    !canWriteElectricity && { opacity: 0.4 }
+  ]}
+      disabled={!canWriteElectricity}
+  onPress={openSheet}>
       <Image source={Add} style={styles.AddPeple} />
       <Text style={styles.addText}>Add Reading</Text>
     </TouchableOpacity>
@@ -851,7 +923,7 @@ console.log("hostelBased", hostelBased);
 
 
 
-{activeTab === "Room Reading" && !hostelBased && (
+{activeTab === "reading" && !hostelBased && (
   <ScrollView  showsVerticalScrollIndicator={false}
     contentContainerStyle={{
     flexGrow: 1,
@@ -897,7 +969,14 @@ console.log("hostelBased", hostelBased);
   {
        !loading &&  EbRoomReading && EbRoomReading.length > 0 &&
        (
-<TouchableOpacity style={styles.fab}  onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
+<TouchableOpacity 
+           style={[
+            styles.fab,
+            !canReadElectricity && { opacity: 0.4 }
+          ]}
+            disabled={!canReadElectricity}
+
+onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
        )
@@ -922,7 +1001,7 @@ console.log("hostelBased", hostelBased);
 
    
       
-  {activeTab === "Tenant Reading" &&
+  {activeTab === "tenant" &&
   <TenantsList/>}
      {showFilter && (
         <View style={styles.sheetOverlay}>
