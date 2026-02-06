@@ -290,7 +290,7 @@ export default function AddTenant() {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Add Tenant</Text>
+                    <Text style={styles.headerTitle}>Add New Tenant</Text>
                 </View>
 
 
@@ -409,7 +409,10 @@ export default function AddTenant() {
                                 <View style={styles.form}>
                                     <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
                                     <TextInput
-                                        style={styles.input}
+                                        style={{
+                                            borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, paddingHorizontal: 12,
+                                            height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 12,
+                                        }}
                                         placeholder="Enter First Name"
                                         placeholderTextColor="#A1A1A1"
                                         value={basicDetails.firstName}
@@ -420,7 +423,7 @@ export default function AddTenant() {
                                         }}
                                     />
                                     {nameError && <ErrorMessage message={nameError} type="error" />}
-                                    <Text style={styles.label}>Last Name</Text>
+                                    <Text style={[styles.label, { marginTop: 12 }]}>Last Name</Text>
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Enter Last Name"
@@ -456,27 +459,31 @@ export default function AddTenant() {
                                     {mobileError && <ErrorMessage message={mobileError} type="error" />}
 
 
-                                    <Text style={styles.label}>Email ID</Text>
+                                    <Text style={[styles.label, { marginTop: 12 }]}>Email ID</Text>
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Enter Email ID"
                                         placeholderTextColor="#A1A1A1"
                                         value={basicDetails.email}
-                                        onChangeText={(t) => {
-                                            const lowerEmail = t.toLowerCase();
-                                            setBasicDetails({ ...basicDetails, email: lowerEmail });
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        onChangeText={(text) => {
+                                            const sanitized = text
+                                                .toLowerCase()
+                                                .replace(/[^a-z0-9@._+-]/g, "");
 
-                                            if (!lowerEmail) {
+                                            setBasicDetails(prev => ({ ...prev, email: sanitized }));
+
+                                            if (!sanitized) {
                                                 setEmailError("");
-                                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lowerEmail)) {
+                                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(sanitized)) {
                                                 setEmailError("Enter a valid email address");
                                             } else {
                                                 setEmailError("");
                                             }
                                         }}
-
-
                                     />
+
                                     {emailError && <ErrorMessage message={emailError} type="error" />}
                                 </View>
 
@@ -536,9 +543,10 @@ export default function AddTenant() {
                                                 placeholder="Enter Flat, House no., Building..."
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.flat}
-                                                onChangeText={(t) =>
-                                                    setAddressDetails({ ...addressDetails, flat: t })
-                                                }
+                                                onChangeText={(t) => {
+                                                    const sanitized = t.replace(/[^a-zA-Z0-9\s\-&/]/g, "");
+                                                    setAddressDetails({ ...addressDetails, flat: sanitized });
+                                                }}
                                             />
                                             <Text style={styles.label}>Area , Street , Sector , Village</Text>
                                             <TextInput
@@ -546,9 +554,10 @@ export default function AddTenant() {
                                                 placeholder="Enter Area"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.area}
-                                                onChangeText={(t) =>
-                                                    setAddressDetails({ ...addressDetails, area: t })
-                                                }
+                                                onChangeText={(t) =>{
+                                                     const sanitized = t.replace(/[^a-zA-Z0-9\s\-/]/g, "");
+                                                     setAddressDetails({ ...addressDetails, area: sanitized })
+                                                }}
                                             />
 
 
@@ -558,9 +567,10 @@ export default function AddTenant() {
                                                 placeholder="Ex : Near SBI Bank"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.landmark}
-                                                onChangeText={(t) =>
-                                                    setAddressDetails({ ...addressDetails, landmark: t })
-                                                }
+                                                onChangeText={(t) =>{
+                                                    const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
+                                                    setAddressDetails({ ...addressDetails, landmark: sanitized })
+                                                }}
                                             />
 
                                             <Text style={styles.label}>Pincode</Text>
@@ -600,9 +610,10 @@ export default function AddTenant() {
                                                 placeholder="Enter Your City Name"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.city}
-                                                onChangeText={(t) =>
-                                                    setAddressDetails({ ...addressDetails, city: t })
-                                                }
+                                                onChangeText={(t) =>{
+                                                     const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
+                                                    setAddressDetails({ ...addressDetails, city: sanitized })
+                                                }}
                                             />
 
                                             <Text style={styles.label}>State</Text>
@@ -619,7 +630,8 @@ export default function AddTenant() {
                                                         setStateQuery("");   // 🔥 cursor focus panna fresh search
                                                     }}
                                                     onChangeText={(t) => {
-                                                        setStateQuery(t);    // 🔥 typing always search
+                                                        const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
+                                                        setStateQuery(sanitized);    // 🔥 typing always search
                                                         setStateOpen(true);
                                                     }}
                                                 />
@@ -914,7 +926,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 12,
         height: 48,
-        marginBottom: 12,
+        marginBottom: 2,
     },
 
     countryCode: {

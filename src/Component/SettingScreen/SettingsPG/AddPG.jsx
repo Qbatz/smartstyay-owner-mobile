@@ -333,6 +333,7 @@ export default function AddPG({ navigation, route }) {
       }
 
       const res = await editPG(finalPayload);
+      console.log(res)
       if (res?.status === 200 || res?.status === 201) {
         const fresh = await getHostels();
         console.log("updateddata", fresh);
@@ -822,7 +823,7 @@ function renderSelect(
 
 
 
-function renderImageBox(image, setImage) {
+function renderImageBox(image, setImage) { {console.log(image)}
   return (
     <View style={{ position: "relative" }}>
       <ScrollView horizontal showsHorizontalScrollIndicator>
@@ -835,7 +836,7 @@ function renderImageBox(image, setImage) {
           style={styles.imgBox}
         >
           {image?.uri ? (
-            <Image source={{ uri: image.uri }} style={styles.thumb} />
+            <Image source={{ uri: image.uri.image }} style={styles.thumb} />
           ) : (
             <>
               <Image source={AddImageIcon} style={styles.imgPlus} />
