@@ -1,4 +1,4 @@
-import React,{useState,useRef} from "react";
+import React,{useState,useRef , useContext} from "react";
 import {
     View,
     Text,
@@ -8,6 +8,7 @@ import {
     ScrollView,
     Dimensions,Animated,PanResponder
 } from "react-native";
+import { ExpensesContext } from "../../Context/ExpensesContext";
 import LeftArrow from "../../Assets/Images/Arrow_left.png";
 import SettingIcon from "../../Assets/Images/setting.png";
 import ThreeDots from "../../Assets/Images/3dots.png";
@@ -18,6 +19,9 @@ import ChangePasswordSheet from "../SettingScreen/GeneralPages/ChangePasswordShe
 
 
 export default function ProfileScreen({ navigation }) {
+
+      const { expensesList, GetExpenseList, rolePermission ,
+    GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
    const SCREEN_WIDTH = Dimensions.get("window").width;
     const [activeMenu, setActiveMenu] = useState(null);
     const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
@@ -66,6 +70,24 @@ const closeSheet = () => {
   }).start(() => setShowAccountSheet(false));
 };
 
+const getFullName = (profile) => {
+  if (!profile) return "";
+
+  const first = profile.firstName?.trim() || "";
+  const last = profile.lastName?.trim() || "";
+
+  return `${first} ${last}`.trim(); // "Emima"
+};
+
+const getInitials = (profile) => {
+  if (profile?.initial) return profile.initial;
+
+  const first = profile?.firstName?.[0] || "";
+  const last = profile?.lastName?.[0] || "";
+
+  return (first + last).toUpperCase();
+};
+
 
 const dotsRef = useRef(null);
     return (
@@ -91,13 +113,26 @@ const dotsRef = useRef(null);
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.card}>
                     <View style={styles.row}>
-                        <Image
-                            source={require("../../Assets/Images/profile.png")}
-                            style={styles.avatar}
-                        />
+                           <View style={styles.avatar}>
+                         {profileDetails?.profileImage ? (
+                           <Image
+                             source={{ uri: profileDetails.profileImage }}
+                             style={styles.profileImg}
+                           />
+                         ) : (
+                           <Text style={styles.avatarText}>
+                             {getInitials(profileDetails)}
+                           </Text>
+                         )}
+                       </View>
 
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.name}>Muthuram K</Text>
+                        <View style={{ flex: 1 , marginLeft:7}}>
+                           <View style={styles.nameWrapper}>
+  <Text style={styles.name}>
+    {getFullName(profileDetails)}
+  </Text>
+</View>
+
 
                             <TouchableOpacity style={styles.changePwdRow}  onPress={() => {setShowPasswordSheet(true)}}>
                                 <Image
@@ -131,7 +166,7 @@ const dotsRef = useRef(null);
                             source={require("../../Assets/Images/sms.png")}
                             style={styles.infoIcon}
                         />
-                        <Text style={styles.infoText}>rajkumar001@gmail.com</Text>
+                        <Text style={styles.infoText}>{profileDetails?.mailId || "N/A"}</Text>
                     </View>
 
                     <View style={styles.infoRow}>
@@ -139,7 +174,7 @@ const dotsRef = useRef(null);
                             source={require("../../Assets/Images/call.png")}
                             style={styles.infoIcon}
                         />
-                        <Text style={styles.infoText}>+91 98765 43210</Text>
+                        <Text style={styles.infoText}>+91 {profileDetails?.mobileNo || "N/A"}</Text>
                     </View>
 
                     <Text style={styles.addressTitle}>Address</Text>
@@ -150,11 +185,13 @@ const dotsRef = useRef(null);
                             style={styles.infoIcon}
                         />
                         <Text style={styles.infoText}>
-                            203, E block, Nivas Nagar, Chennai {"\n"}2145602
+                           {profileDetails?.countryName || "N/A"}
                         </Text>
                     </View>
 
-                 <TouchableOpacity style={styles.changeBtn} onPress={openSheet}>
+                 <TouchableOpacity style={styles.changeBtn} 
+                //  onPress={openSheet}
+                 >
   <Image
     source={require("../../Assets/Images/call.png")}
     style={styles.swapIcon}
@@ -163,7 +200,7 @@ const dotsRef = useRef(null);
 </TouchableOpacity>
                 </View>
 
-                <View style={[styles.card, { marginTop: 20 }]}>
+                {/* <View style={[styles.card, { marginTop: 20 }]}>
                     <View style={styles.row}>
                         <Image
                             source={require("../../Assets/Images/profile.png")}
@@ -198,7 +235,7 @@ const dotsRef = useRef(null);
 </TouchableOpacity>
 
                     </View>
-                </View>
+                </View> */}
 
                 <View style={{ height: 40 }} />
             </ScrollView>
@@ -341,17 +378,45 @@ const styles = StyleSheet.create({
     },
 
     avatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 10,
-        marginRight: 12,
-    },
+  width: 40,
+  height: 40,
+  borderRadius: 25,
+  backgroundColor: "#E5E7EB",
+  justifyContent: "center",
+  alignItems: "center",
+},
 
-    name: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#111",
-    },
+avatarText: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#374151",
+},
+
+profileImg: {
+  width: 40,
+  height: 40,
+  borderRadius: 25,
+},
+
+   row: {
+  flexDirection: "row",
+  alignItems: "flex-start",   
+},
+
+nameWrapper: {
+  flex: 1,                   
+  marginLeft: 4,
+  paddingRight: 10,          
+},
+
+name: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#111",
+  flexShrink: 1,             
+  flexWrap: "wrap",          
+},
+
 
     changePwdRow: {
         flexDirection: "row",

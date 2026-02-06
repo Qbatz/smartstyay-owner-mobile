@@ -18,7 +18,7 @@ import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../../ToastFile/ToastPage";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import DueIcon from "../../../Assets/Images/Due_Icon.png";
@@ -96,14 +96,20 @@ const formatApiDate = (date) =>
     ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
     : "--";
 
-
+    const {
+        canWriteModule:  canWriteReceipt,
+        canReadModule:   canReadReceipt,
+        canUpdateModule: canUpdateReceipt,
+        canDeleteModule: canDeleteReceipt,
+    } = useHasPermission("Receipt")
  
 
+
   useEffect(() => {
-  if (activeHostelId) {
+  if (activeHostelId && canReadReceipt) {
     GetReceiptsList(activeHostelId);
   }
-}, [activeHostelId]);
+}, [activeHostelId , canReadReceipt]);
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -274,7 +280,8 @@ const handleEditBill = () => {
 
 const handleDeleteReceipt = async () => {
 
-  
+      if (!canDeleteReceipt) return;
+ 
   const res = await DeleteReceipt({
     hostelId: activeHostelId,
     receiptId: selectedCustomer?.transactionId,
@@ -437,7 +444,7 @@ const renderItem = ({ item }) => {
    
       </View>
 
- <FlatList
+ {/* <FlatList
   data={receiptsList || []}
   renderItem={renderItem}
   keyExtractor={(item) => item.transactionId}
@@ -449,18 +456,44 @@ const renderItem = ({ item }) => {
   ListEmptyComponent={
     !loading && <EmptyReceiptState />
   }
-/>
+/> */}
+
+
+{!canReadReceipt && !loading ? (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyFloor} style={styles.emptyImage} />
+    <Text style={styles.emptyText}>
+      You don’t have permission to view receipts
+    </Text>
+  </View>
+) : (
+  <FlatList
+    data={receiptsList || []}
+    renderItem={renderItem}
+    keyExtractor={(item) => item.transactionId}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      flexGrow: 1,
+      paddingBottom: 120,
+    }}
+    ListEmptyComponent={!loading && <EmptyReceiptState />}
+  />
+)}
 
 
 
 
-      <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)} >
+
+      <TouchableOpacity
+            style={[styles.filterButton,!canReadReceipt && { opacity: 0.4 }]}
+            disabled={!canReadReceipt}
+       onPress={() => setShowFilter(true)} >
           <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
 
-         <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
+         {/* <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
               <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
 
            {showMenu && (
@@ -475,18 +508,26 @@ const renderItem = ({ item }) => {
         { top: popupPosition.y - 120, left: popupPosition.x - 180 },
       ]}
     >
-      <TouchableOpacity style={styles.popupRow}>
+      <TouchableOpacity 
+       style={[styles.popupRow,!canUpdateReceipt && { opacity: 0.4 }]}
+      //  disabled={!canUpdateReceipt}
+       disabled
+      >
         <Image  source={Download} style={styles.popupIcon}/>
         <Text style={styles.popupText}>Download</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.popupRow} onPress={handleEditBill}>
+      <TouchableOpacity 
+       style={[styles.popupRow,!canUpdateReceipt && { opacity: 0.4 }]}
+       disabled={!canUpdateReceipt}
+       onPress={handleEditBill}>
            <Image  source={EditIcon} style={styles.popupIcon}/>
         <Text style={styles.popupText}>Edit</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.popupRow}
+         style={[styles.popupRow,!canDeleteReceipt && { opacity: 0.4 }]}
+         disabled={!canDeleteReceipt}
         onPress={() => {setShowMenu(false)
           setDeleteReceipt(true)}
         }

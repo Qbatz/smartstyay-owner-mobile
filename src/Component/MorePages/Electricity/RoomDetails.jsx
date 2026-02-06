@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import {ElectricityContext} from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import AddRoomReadingForm from "./AddRoomReading"
 import Loader from "../../../Component/Loader/Loader"
 import DatePicker from "react-native-ui-datepicker";
@@ -50,6 +51,12 @@ export default function RoomDetails({route, navigation }) {
      console.log("EbRoomReading", EbRoomReading);
      
      
+       const {
+         canWriteModule: canWriteElectricity,
+         canReadModule: canReadElectricity,
+         canUpdateModule: canUpdateElectricity,
+         canDeleteModule: canDeleteElectricity,
+       } = useHasPermission("Electricity");
 
   //    const currentReadingData =
   // particular_EbRoomReading?.readings?.[0] ?? null;
@@ -626,7 +633,11 @@ const handleConfirmReadingDelete = async () => {
             <Text style={styles.floorText}>{roomData?.floorName}</Text>
           </View>
 
-      <TouchableOpacity style={styles.addBtn} onPress={openSheet}>
+      <TouchableOpacity 
+          style={[ styles.addBtn,
+      !canWriteElectricity && { opacity: 0.4 }]}
+      disabled={!canWriteElectricity}
+      onPress={openSheet}>
   <View style={{ flexDirection: "row", alignItems: "center" }}>
     <Image source={Add} style={styles.AddPeple} />
     <Text style={styles.addText}>Add</Text>
@@ -693,7 +704,10 @@ const handleConfirmReadingDelete = async () => {
           ]}
         >
           <TouchableOpacity
-            style={styles.popupRow}
+            // style={styles.popupRow}
+                 style={[ styles.popupRow,
+      !canUpdateElectricity && { opacity: 0.4 }]}
+      disabled={!canUpdateElectricity}
             onPress={() => {
               setShowActionMenu(false);
               handleEditRoomReading(matchedRoomData);
@@ -704,7 +718,10 @@ const handleConfirmReadingDelete = async () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.popupRow}
+            // style={styles.popupRow}
+                     style={[ styles.popupRow,
+      !canDeleteElectricity && { opacity: 0.4 }]}
+      disabled={!canDeleteElectricity}
             onPress={() => {
               setShowActionMenu(false);
               handleDeleteRoomReading(currentReadingData);
@@ -962,7 +979,11 @@ const handleConfirmReadingDelete = async () => {
 
 
       {/* Floating Button */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity 
+                    style={[ styles.fab,
+      !canReadElectricity && { opacity: 0.4 }]}
+      disabled={!canReadElectricity}
+      >
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
     </View>

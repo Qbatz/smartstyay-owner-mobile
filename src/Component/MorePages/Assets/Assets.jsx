@@ -169,7 +169,7 @@ const EmptyState = () => (
           <TouchableOpacity
    style={[
     styles.emptystateBtn,
-    !canWriteAssets && { opacity: 0.7 }
+    !canWriteAssets && { opacity: 0.4 }
   ]}
   onPress={handleAddAsset}
    disabled={!canWriteAssets}
@@ -643,7 +643,7 @@ const handleAssignAsset = async () => {
       <TouchableOpacity
                style={[
     styles.fab,
-    !canWriteAssets && { opacity: 0.7 }
+    !canWriteAssets && { opacity: 0.4 }
   ]}
   disabled={!canWriteAssets}
         onPress={() => {

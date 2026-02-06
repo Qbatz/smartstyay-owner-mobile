@@ -326,16 +326,38 @@ const selectType = (id, type) => {
   const finalTotalDeductions = apiDeductions + userEnteredDeductionsTotal;
   const grandFinalTotalDeductions = apiDeductions + userEnteredDeductionsTotal + settlementDetails?.currentMonthRentInfo?.currentPayableRent
 
-  useEffect(() => {
-    if (settlementDetails?.settlementInfo) {
+  // useEffect(() => {
+  //   if (settlementDetails?.settlementInfo) {
+  //     const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+
+
+
+
+
+
+  //     let finalAmount = 0;
+  //     if (amountTobePaid < 0) {
+  //       finalAmount = isRefundable
+  //         ? amountTobePaid + userEnteredDeductionsTotal
+  //         : amountTobePaid - userEnteredDeductionsTotal;
+  //     } else {
+  //       finalAmount = isRefundable
+  //         ? amountTobePaid - userEnteredDeductionsTotal
+  //         : amountTobePaid + userEnteredDeductionsTotal;
+  //     }
+
+  //     setReturnAmount(finalAmount);
+  //   }
+  // }, [settlementDetails])
+
+
+    useEffect(() => {
+      if (!settlementDetails?.settlementInfo) return;
+    
       const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
-
-
-
-
-
-
+    
       let finalAmount = 0;
+    
       if (amountTobePaid < 0) {
         finalAmount = isRefundable
           ? amountTobePaid + userEnteredDeductionsTotal
@@ -345,10 +367,11 @@ const selectType = (id, type) => {
           ? amountTobePaid - userEnteredDeductionsTotal
           : amountTobePaid + userEnteredDeductionsTotal;
       }
-
+    
       setReturnAmount(finalAmount);
-    }
-  }, [settlementDetails]);
+    }, [settlementDetails, userEnteredDeductionsTotal]); 
+
+
   const isNegative = Number(ReturnAmount) < 0;
 
   const extraDeductionsPayload = extraCharges
@@ -926,8 +949,8 @@ const selectType = (id, type) => {
                       { color: isNegative ? "#D70000" : "#16A34A" } // 🔴 red : 🟢 green
                     ]}
                   >
-                    {isNegative ? "-" : ""}₹{" "}
-                    {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
+                       {isNegative ? "-" : ""}₹{" "}
+      {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
                   </Text>
                 </View>
 

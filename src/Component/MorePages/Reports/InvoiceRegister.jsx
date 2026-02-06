@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import Loader from "../../../Component/Loader/Loader"
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
@@ -19,6 +20,13 @@ const InvoiceRegister = ({navigation}) => {
  
      const {loading,  Reportsdetails , GetInvoiceReports  , invoiceReports} = UseSetting();
     const { activeHostelId } = useContext(CommonContexts);
+
+      const {
+        canWriteModule: canWriteReports,
+        canReadModule: canReadReports,
+        canUpdateModule: canUpdateReports,
+        canDeleteModule: canDeleteReports,
+      } = useHasPermission("Reports")
 
      useEffect(() => {
   if (activeHostelId) {

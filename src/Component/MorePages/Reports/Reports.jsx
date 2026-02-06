@@ -15,7 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader"
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import RevenueIcon from "../../../Assets/Images/MoneyRecive.png";
 import PeopleIcon from "../../../Assets/Images/People.png";
@@ -43,7 +43,12 @@ const Reports = () => {
 
 
 
-
+  const {
+    canWriteModule: canWriteReports,
+    canReadModule: canReadReports,
+    canUpdateModule: canUpdateReports,
+    canDeleteModule: canDeleteReports,
+  } = useHasPermission("Reports");
 
 
   const navigation = useNavigation();
@@ -76,16 +81,26 @@ const [currentPage, setCurrentPage] = useState(0);
 
 
 
-useEffect(() => {
-  const fetchReports = async () => {
-    const res = await getReportsByHostel(activeHostelId);
-    if (res.success) {
-      console.log("Reports:", res.data);
-    }
-  };
-  fetchReports();
-}, [])
+// useEffect(() => {
+//   const fetchReports = async () => {
+//     const res = await getReportsByHostel(activeHostelId);
+//     if (res.success) {
+//       console.log("Reports:", res.data);
+//     }
+//   };
+//   fetchReports();
+// }, [])
 
+useEffect(() => {
+  if (activeHostelId && canReadReports) {
+    getReportsByHostel(activeHostelId);
+  }
+}, [activeHostelId, canReadReports]);
+
+
+if (loading) {
+  return <Loader />;
+}
 
 if (!activeHostelId && !loading) {
   return (
@@ -106,6 +121,29 @@ if (!activeHostelId && !loading) {
     </SafeAreaView>
   );
 }
+
+ if (!canReadReports && !loading) {
+    return (
+
+ <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Operational Reports</Text>
+        </View>
+      </View>
+
+      <View style={styles.emptyContainer}>
+        <Image source={EmptyState} style={styles.emptyImage} />
+        <Text style={styles.emptyText}> You do not have access to view Reports</Text>
+      </View>
+    </SafeAreaView>
+
+      
+    )
+  }
 
 
 const handleSwipe = () => {
@@ -129,13 +167,7 @@ const handleSwipe = () => {
 
   return (
     <>
-       {loading && <Loader />}
     <SafeAreaView style={styles.container}>
-      {/* 🔒 FIXED HEADER (NO ANIMATION) */}
-
-    
-     
-
 
       <View style={styles.header}>
 <View style={styles.headerRow}>
@@ -149,14 +181,14 @@ const handleSwipe = () => {
     Operational Reports
   </Text>
 
-  {/* RIGHT FILTER */}
   <TouchableOpacity
-    style={styles.filterBtn}
+    // style={styles.filterBtn}
     onPress={() => setReportFilterOpen(!reportFilterOpen)}
     activeOpacity={0.7}
+   style={[styles.filterBtn,!canUpdateReports && { opacity: 0.4 }]}
+    disabled={!canUpdateReports}
   >
     <Text style={styles.filterText}>{selectedFilter}</Text>
-    {/* <Text style={styles.filterArrow}>⌄</Text> */}
     <Image source={DirectionImage} style={{   marginLeft: 6,
   height:15, width:15 , transform: reportFilterOpen ? "rotate(180deg)": "rotate(0deg)"}}/>
   </TouchableOpacity>
@@ -185,7 +217,6 @@ const handleSwipe = () => {
           onPress={() => {
             setSelectedFilter(item);
             setReportFilterOpen(false);
-            // 🔥 here you can call API based on filter
           }}
         >
           <Text
@@ -214,13 +245,13 @@ const handleSwipe = () => {
             placeholder="Search Reports"
             placeholderTextColor="#9CA3AF"
             style={styles.searchInput}
+            editable={canReadReports} 
           />
         </View>
 
 
       </View>
   
-      {/* 📜 SCROLLABLE CONTENT ONLY */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -228,7 +259,6 @@ const handleSwipe = () => {
           paddingBottom: 40,
         }}
       >
-        {/* SUMMARY CARDS */}
 
      
         <ScrollView
