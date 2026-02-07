@@ -33,6 +33,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [description,setDescription]=useState("")
   const toggleAll = () => {
     const newValue = !selectAll;
 
@@ -344,7 +345,8 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
               placeholder="Enter role name"
               value={selectedRole}
               onChangeText={(text) => {
-                setSelectedRole(text);
+                const filtered = text.replace(/[^A-Za-z0-9./#@]/g, "");
+                setSelectedRole(filtered);
                 if (text.trim()) {
                   setRoleError("");
                 }
@@ -362,6 +364,15 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
               style={styles.textArea}
               placeholder="Manage all except Banking & Finance"
               multiline
+               value={description}
+              onChangeText={(text) => {
+                const filtered = text.replace(/[^A-Za-z0-9./#@!^&*()]/g, "");
+                setDescription(filtered);
+                // if (text.trim()) {
+                //   setRoleError("");
+                // }
+              }}
+              
             />
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 12 }}>
               <TickBox checked={selectAll} onPress={toggleAll} />

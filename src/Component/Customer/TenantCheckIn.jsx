@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef,useCallback } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
-  Image, TouchableWithoutFeedback, Keyboard,BackHandler
+  Image, TouchableWithoutFeedback, Keyboard, BackHandler
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -61,7 +61,7 @@ export default function TenantCheckIn({ navigation, route }) {
   const [rentalAmount, setRentalAmount] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [extraCharges, setExtraCharges] = useState([]);
-const [openCalendar, setOpenCalendar] = useState(false);
+  const [openCalendar, setOpenCalendar] = useState(false);
   const scrollRef = React.useRef(null);
   const scrollToInput = (y = 200) => {
     setTimeout(() => {
@@ -88,22 +88,22 @@ const [openCalendar, setOpenCalendar] = useState(false);
       hideSub.remove();
     };
   }, []);
-const titleRefs = useRef({});
-const amountRefs = useRef({});
+  const titleRefs = useRef({});
+  const amountRefs = useRef({});
 
 
 
 
-const scrollToInputRef = (ref) => {
-  if (!ref || !scrollRef.current) return;
+  const scrollToInputRef = (ref) => {
+    if (!ref || !scrollRef.current) return;
 
-  ref.measureInWindow((x, y) => {
-    scrollRef.current?.scrollTo({
-      y: y - 140,   // 🔥 gap (adjust panna 160 / 180)
-      animated: true,
+    ref.measureInWindow((x, y) => {
+      scrollRef.current?.scrollTo({
+        y: y - 140,   // 🔥 gap (adjust panna 160 / 180)
+        animated: true,
+      });
     });
-  });
-};
+  };
 
 
   console.log("selectedBed", customer)
@@ -134,20 +134,20 @@ const scrollToInputRef = (ref) => {
   };
 
   useFocusEffect(
-  useCallback(() => {
-    const backAction = () => {
-      navigation.goBack();  
-      return true;        
-    };
+    useCallback(() => {
+      const backAction = () => {
+        navigation.goBack();
+        return true;
+      };
 
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+      const handler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
 
-    return () => handler.remove();
-  }, [navigation])
-);
+      return () => handler.remove();
+    }, [navigation])
+  );
 
 
   useEffect(() => {
@@ -222,13 +222,13 @@ const scrollToInputRef = (ref) => {
     // setExtraCharges(prev =>
     //   prev.map(i => (i.id === id ? { ...i, title } : i))
     // );
-     setExtraCharges(prev =>
-    prev.map(i =>
-      i.id === id
-        ? { ...i, title, titleError: "" }
-        : i
-    )
-  );
+    setExtraCharges(prev =>
+      prev.map(i =>
+        i.id === id
+          ? { ...i, title, titleError: "" }
+          : i
+      )
+    );
   };
 
   const updateAmount = (id, amount) => {
@@ -236,25 +236,25 @@ const scrollToInputRef = (ref) => {
     //   prev.map(i => (i.id === id ? { ...i, amount } : i))
     // );
     setExtraCharges(prev =>
-    prev.map(i =>
-      i.id === id
-        ? { ...i, amount, amountError: "" }
-        : i
-    )
-  );
+      prev.map(i =>
+        i.id === id
+          ? { ...i, amount, amountError: "" }
+          : i
+      )
+    );
   };
 
-useEffect(() => {
-  if (openCalendar) {
-    Keyboard.dismiss();
-  }
-}, [openCalendar]);
-const blurAllInputs = () => {
-  Object.values(titleRefs.current).forEach(ref => ref?.blur?.());
-  Object.values(amountRefs.current).forEach(ref => ref?.blur?.());
-};
-const advanceRef = useRef(null);
-const rentalRef = useRef(null);
+  useEffect(() => {
+    if (openCalendar) {
+      Keyboard.dismiss();
+    }
+  }, [openCalendar]);
+  const blurAllInputs = () => {
+    Object.values(titleRefs.current).forEach(ref => ref?.blur?.());
+    Object.values(amountRefs.current).forEach(ref => ref?.blur?.());
+  };
+  const advanceRef = useRef(null);
+  const rentalRef = useRef(null);
 
 
   const onFloorChange = (v) => {
@@ -301,73 +301,73 @@ const rentalRef = useRef(null);
 
     return valid;
   };
-const validateExtraCharges = () => {
-  let valid = true;
+  const validateExtraCharges = () => {
+    let valid = true;
 
-  const updated = extraCharges.map((e) => {
-    let titleError = "";
-    let amountError = "";
+    const updated = extraCharges.map((e) => {
+      let titleError = "";
+      let amountError = "";
 
-    const titleFilled = e.title?.trim()?.length > 0;
-    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+      const titleFilled = e.title?.trim()?.length > 0;
+      const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
 
-    const amt = Number(e.amount);
+      const amt = Number(e.amount);
 
-    // ✅ CASE 1: type not selected -> ignore row (no validation)
-    if (!e.type) {
-      return { ...e, titleError: "", amountError: "" };
-    }
-
-    // ✅ CASE 2: Maintenance -> amount mandatory
-    if (e.type === "Maintenance") {
-      if (!amountFilled) {
-        amountError = "Please enter maintenance amount";
-        valid = false;
-      } else if (isNaN(amt) || amt <= 0) {
-        amountError = "Amount must be greater than 0";
-        valid = false;
-      }
-
-      return { ...e, titleError: "", amountError };
-    }
-
-    // ✅ CASE 3: Others -> reason + amount both mandatory
-    if (e.type === "Others") {
-      // both empty -> ok (optional row)
-      if (!titleFilled && !amountFilled) {
+      // ✅ CASE 1: type not selected -> ignore row (no validation)
+      if (!e.type) {
         return { ...e, titleError: "", amountError: "" };
       }
 
-      if (!titleFilled) {
-        titleError = "Please enter reason";
-        valid = false;
+      // ✅ CASE 2: Maintenance -> amount mandatory
+      if (e.type === "Maintenance") {
+        if (!amountFilled) {
+          amountError = "Please enter maintenance amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, titleError: "", amountError };
       }
 
-      if (!amountFilled) {
-        amountError = "Please enter amount";
-        valid = false;
-      } else if (isNaN(amt) || amt <= 0) {
-        amountError = "Amount must be greater than 0";
-        valid = false;
+      // ✅ CASE 3: Others -> reason + amount both mandatory
+      if (e.type === "Others") {
+        // both empty -> ok (optional row)
+        if (!titleFilled && !amountFilled) {
+          return { ...e, titleError: "", amountError: "" };
+        }
+
+        if (!titleFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        if (!amountFilled) {
+          amountError = "Please enter amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, titleError, amountError };
       }
 
-      return { ...e, titleError, amountError };
-    }
+      return { ...e, titleError: "", amountError: "" };
+    });
 
-    return { ...e, titleError: "", amountError: "" };
-  });
-
-  setExtraCharges(updated);
-  return valid;
-};
+    setExtraCharges(updated);
+    return valid;
+  };
 
 
   const submitLongStay = async () => {
     const isValid = validateLongStay();
 
     if (!isValid) return;
-     const chargeValid = validateExtraCharges();
-  if (!chargeValid) return;
+    const chargeValid = validateExtraCharges();
+    if (!chargeValid) return;
     const payload = {
       floorId: selectedFloor.id,
       roomId: selectedRoom.id,
@@ -458,42 +458,42 @@ const validateExtraCharges = () => {
           </View>
 
           <ScrollView
-  ref={scrollRef}
-  keyboardShouldPersistTaps="always"
-  keyboardDismissMode="none"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 150,
-    padding: 15,
-  }}
->
+            ref={scrollRef}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 150,
+              padding: 15,
+            }}
+          >
 
 
 
 
             {tab === "long" && (
               <View>
-                <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
+                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
-              <TouchableOpacity
-  style={styles.dateBox}
-  onPress={() => {
-  Keyboard.dismiss();     // 1️⃣ close keyboard
-  blurAllInputs();        // 2️⃣ blur all focused inputs
+                <TouchableOpacity
+                  style={styles.dateBox}
+                  onPress={() => {
+                    Keyboard.dismiss();     // 1️⃣ close keyboard
+                    blurAllInputs();        // 2️⃣ blur all focused inputs
 
-  setTimeout(() => {
-    setOpenCalendar(true);  // 3️⃣ open calendar
-  }, 180);                 // small delay
-}}
+                    setTimeout(() => {
+                      setOpenCalendar(true);  // 3️⃣ open calendar
+                    }, 180);                 // small delay
+                  }}
 
->
-  <Text style={styles.placeholder}>
-    {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-  </Text>
-  <Image source={CalendarImage} style={styles.calendarIcon} />
-</TouchableOpacity>
+                >
+                  <Text style={styles.placeholder}>
+                    {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                  </Text>
+                  <Image source={CalendarImage} style={styles.calendarIcon} />
+                </TouchableOpacity>
 
-                <Text style={styles.label}>Floor  <Text style={{color:"red"}}>*</Text></Text>
+                <Text style={styles.label}>Floor  <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -538,7 +538,7 @@ const validateExtraCharges = () => {
                 )}
 
 
-                <Text style={styles.label}>Room <Text style={{color:"red"}}>*</Text></Text>
+                <Text style={styles.label}>Room <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -563,9 +563,9 @@ const validateExtraCharges = () => {
                             onPress={() => {
                               setSelectedRoom(r);
                               setRoomOpen(false);
-                               setRoomError("")
+                              setRoomError("")
                             }}
-                           
+
                           >
                             <Text style={styles.optionText}>{r.name}</Text>
                           </TouchableOpacity>
@@ -577,7 +577,7 @@ const validateExtraCharges = () => {
                 {roomError && (
                   <ErrorMessage message={roomError} type="error" />
                 )}
-                <Text style={styles.label}>Bed  <Text style={{color:"red"}}>*</Text></Text>
+                <Text style={styles.label}>Bed  <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
@@ -623,18 +623,19 @@ const validateExtraCharges = () => {
 
 
                 <View style={styles.field}>
-                  <Text style={styles.label}>Advance Amount  <Text style={{color:"red"}}>*</Text></Text>
-                <TextInput
-  ref={advanceRef}
-  style={styles.input}
-  keyboardType="numeric"
-  value={advanceAmount}
-  placeholder="Enter AdvanceAmount"
-  onChangeText={(text) => {
-    setAdvanceAmount(text);
-    setAdvanceError("");
-  }}
-/>
+                  <Text style={styles.label}>Advance Amount  <Text style={{ color: "red" }}>*</Text></Text>
+                  <TextInput
+                    ref={advanceRef}
+                    style={styles.input}
+                    keyboardType="numeric"
+                    value={advanceAmount}
+                    placeholder="Enter AdvanceAmount"
+                    onChangeText={(text) => {
+                      const onlyNumbers = text.replace(/[^0-9]/g, "");
+                      setAdvanceAmount(onlyNumbers);
+                      setAdvanceError("");
+                    }}
+                  />
 
                 </View>
                 {advanceError && (
@@ -642,22 +643,23 @@ const validateExtraCharges = () => {
                 )}
 
                 <View style={styles.field}>
-                  <Text style={styles.label}>Rental Amount  <Text style={{color:"red"}}>*</Text></Text>
-                 <TextInput
-  ref={rentalRef}
-  style={styles.input}
-  keyboardType="numeric"
-  value={rentalAmount}
-  placeholder={
-    selectedBed?.rentAmount
-      ? String(selectedBed.rentAmount)
-      : "Enter Rental Amount"
-  }
-  onChangeText={(text) => {
-    setRentalAmount(text);
-    setRentError("");
-  }}
-/>
+                  <Text style={styles.label}>Rental Amount  <Text style={{ color: "red" }}>*</Text></Text>
+                  <TextInput
+                    ref={rentalRef}
+                    style={styles.input}
+                    keyboardType="numeric"
+                    value={rentalAmount}
+                    placeholder={
+                      selectedBed?.rentAmount
+                        ? String(selectedBed.rentAmount)
+                        : "Enter Rental Amount"
+                    }
+                    onChangeText={(text) => {
+                       const onlyNumbers = text.replace(/[^0-9]/g, "");
+                      setRentalAmount(onlyNumbers);
+                      setRentError("");
+                    }}
+                  />
 
 
                 </View>
@@ -675,11 +677,11 @@ const validateExtraCharges = () => {
                   </View>
 
                   {extraCharges.map((item) => (
- <View
-  key={item.id}
-  style={styles.figmaRowWrapper}
- 
->
+                    <View
+                      key={item.id}
+                      style={styles.figmaRowWrapper}
+
+                    >
 
                       {/* CLOSE BTN */}
                       <TouchableOpacity
@@ -708,28 +710,28 @@ const validateExtraCharges = () => {
                             <Image source={DownArrow} style={styles.arrow} />
                           </TouchableOpacity>
                         ) : item.type === "Others" ? (
-   <TextInput
-  ref={(r) => (titleRefs.current[item.id] = r)}
-  style={styles.figmaLeftBox}
-  placeholder="Enter reason"
-  value={item.title}
-  onFocus={() => {
-    setOpenDropdownId(null);
+                          <TextInput
+                            ref={(r) => (titleRefs.current[item.id] = r)}
+                            style={styles.figmaLeftBox}
+                            placeholder="Enter reason"
+                            value={item.title}
+                            onFocus={() => {
+                              setOpenDropdownId(null);
 
-    setTimeout(() => {
-      scrollToInputRef(titleRefs.current[item.id]);
-    }, 300);
-  }}
-  onChangeText={(t) => {
-    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-    updateTitle(item.id, onlyLetters);
-  }}
-/>
-
-
+                              setTimeout(() => {
+                                scrollToInputRef(titleRefs.current[item.id]);
+                              }, 300);
+                            }}
+                            onChangeText={(t) => {
+                              const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                              updateTitle(item.id, onlyLetters);
+                            }}
+                          />
 
 
-                          
+
+
+
                         ) : (
                           <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
                             <Text>Maintenance</Text>
@@ -742,41 +744,41 @@ const validateExtraCharges = () => {
                             <Text style={{ color: "#999" }}>Enter amount</Text>
                           </View>
                         ) : (
-<TextInput
-  ref={(r) => (amountRefs.current[item.id] = r)}
-  style={styles.figmaRightBox}
-  placeholder="Enter amount"
-  keyboardType="numeric"
-  value={item.amount}
-  onFocus={() => {
-    setTimeout(() => {
-      scrollToInputRef(amountRefs.current[item.id]);
-    }, 300);
-  }}
-  onChangeText={(t) => updateAmount(item.id, t)}
-/>
+                          <TextInput
+                            ref={(r) => (amountRefs.current[item.id] = r)}
+                            style={styles.figmaRightBox}
+                            placeholder="Enter amount"
+                            keyboardType="numeric"
+                            value={item.amount}
+                            onFocus={() => {
+                              setTimeout(() => {
+                                scrollToInputRef(amountRefs.current[item.id]);
+                              }, 300);
+                            }}
+                            onChangeText={(t) => updateAmount(item.id, t)}
+                          />
 
 
 
                         )}
 
                       </View>
-{/* {item.titleError ? (
+                      {/* {item.titleError ? (
   <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
     {item.titleError}
   </Text>
 ) : null} */}
- {item.titleError && (
-                  <ErrorMessage message={item.titleError} type="error" />
-                )}
-{/* {item.amountError ? (
+                      {item.titleError && (
+                        <ErrorMessage message={item.titleError} type="error" />
+                      )}
+                      {/* {item.amountError ? (
   <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
     {item.amountError}
   </Text>
 ) : null} */}
- {item.amountError && (
-                  <ErrorMessage message={item.amountError} type="error" />
-                )}
+                      {item.amountError && (
+                        <ErrorMessage message={item.amountError} type="error" />
+                      )}
 
                       {openDropdownId === item.id && item.type === "" && (
                         <View style={styles.nonRefundDropdown}>
@@ -829,44 +831,44 @@ const validateExtraCharges = () => {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-{openCalendar && (
-  <View style={styles.sheetOverlay}>
-    
-    {/* outside click close */}
-    <TouchableWithoutFeedback onPress={() => setOpenCalendar(false)}>
-      <View style={{ ...StyleSheet.absoluteFillObject }} />
-    </TouchableWithoutFeedback>
+      {openCalendar && (
+        <View style={styles.sheetOverlay}>
 
-    {/* calendar box */}
-    <View style={styles.calendarBox}>
-      <Calendar
-        current={dayjs(joiningDate).format("YYYY-MM-DD")}
-        maxDate={dayjs().format("YYYY-MM-DD")}   // ✅ future date block
-        onDayPress={(day) => {
-          const selected = dayjs(day.dateString).toDate();
-          setJoiningDate(selected);
+          {/* outside click close */}
+          <TouchableWithoutFeedback onPress={() => setOpenCalendar(false)}>
+            <View style={{ ...StyleSheet.absoluteFillObject }} />
+          </TouchableWithoutFeedback>
 
-          setOpenCalendar(false);
+          {/* calendar box */}
+          <View style={styles.calendarBox}>
+            <Calendar
+              current={dayjs(joiningDate).format("YYYY-MM-DD")}
+              maxDate={dayjs().format("YYYY-MM-DD")}   // ✅ future date block
+              onDayPress={(day) => {
+                const selected = dayjs(day.dateString).toDate();
+                setJoiningDate(selected);
 
-          // ✅ reset selection after date change (same as ur logic)
-          setSelectedFloor(null);
-          setSelectedRoom(null);
-          setSelectedBed(null);
-          setRooms([]);
-          setBeds([]);
+                setOpenCalendar(false);
 
-          loadBeds(selected);
-        }}
-        markedDates={{
-          [dayjs(joiningDate).format("YYYY-MM-DD")]: {
-            selected: true,
-            selectedColor: "#2B6CF6",
-          },
-        }}
-      />
-    </View>
-  </View>
-)}
+                // ✅ reset selection after date change (same as ur logic)
+                setSelectedFloor(null);
+                setSelectedRoom(null);
+                setSelectedBed(null);
+                setRooms([]);
+                setBeds([]);
+
+                loadBeds(selected);
+              }}
+              markedDates={{
+                [dayjs(joiningDate).format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#2B6CF6",
+                },
+              }}
+            />
+          </View>
+        </View>
+      )}
 
 
     </>
@@ -1082,17 +1084,17 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
- sheetOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
+  sheetOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
 
-  justifyContent: "center",
-  alignItems: "center",
-},
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
   datePickerBox: {
     backgroundColor: "#fff",
@@ -1100,7 +1102,7 @@ const styles = StyleSheet.create({
 
     borderRadius: 20,
     padding: 10,
-    
+
   },
 
   nonRefund: {
@@ -1200,12 +1202,12 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   calendarBox: {
-  width: "90%",
-  backgroundColor: "#fff",
-  borderRadius: 18,
-  padding: 10,
-  elevation: 10,
-},
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 10,
+    elevation: 10,
+  },
 
 
 

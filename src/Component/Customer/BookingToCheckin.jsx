@@ -214,26 +214,26 @@ export default function BookingCheckIn({ navigation, route }) {
         // setExtraCharges(prev =>
         //     prev.map(i => (i.id === id ? { ...i, title } : i))
         // );
-           setExtraCharges(prev =>
-    prev.map(i =>
-      i.id === id
-        ? { ...i, title, titleError: "" }
-        : i
-    )
-  );
+        setExtraCharges(prev =>
+            prev.map(i =>
+                i.id === id
+                    ? { ...i, title, titleError: "" }
+                    : i
+            )
+        );
     };
 
-   const updateAmount = (id, amount) => {
-  const onlyNum = amount.replace(/[^0-9]/g, "");
+    const updateAmount = (id, amount) => {
+        const onlyNum = amount.replace(/[^0-9]/g, "");
 
-  setExtraCharges((prev) =>
-    prev.map((i) =>
-      i.id === id
-        ? { ...i, amount: onlyNum, amountError: "" }
-        : i
-    )
-  );
-};
+        setExtraCharges((prev) =>
+            prev.map((i) =>
+                i.id === id
+                    ? { ...i, amount: onlyNum, amountError: "" }
+                    : i
+            )
+        );
+    };
 
     const bookedAtDate = dayjs(bookingDetails?.bookedDate, "DD/MM/YYYY");
     const today = dayjs();
@@ -318,71 +318,71 @@ export default function BookingCheckIn({ navigation, route }) {
         return valid;
     };
     const validateExtraCharges = () => {
-  let valid = true;
+        let valid = true;
 
-  const updated = extraCharges.map((e) => {
-    let titleError = "";
-    let amountError = "";
+        const updated = extraCharges.map((e) => {
+            let titleError = "";
+            let amountError = "";
 
-    const titleFilled = e.title?.trim()?.length > 0;
-    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+            const titleFilled = e.title?.trim()?.length > 0;
+            const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
 
-    const amt = Number(e.amount);
+            const amt = Number(e.amount);
 
-   
-    if (!e.type) {
-      return { ...e, titleError: "", amountError: "" };
-    }
 
-   
-    if (e.type === "Maintenance") {
-      if (!amountFilled) {
-        amountError = "Please enter maintenance amount";
-        valid = false;
-      } else if (isNaN(amt) || amt <= 0) {
-        amountError = "Amount must be greater than 0";
-        valid = false;
-      }
+            if (!e.type) {
+                return { ...e, titleError: "", amountError: "" };
+            }
 
-      return { ...e, titleError: "", amountError };
-    }
 
-    // ✅ CASE 3: Others -> reason + amount both mandatory
-    if (e.type === "Others") {
-      // both empty -> ok (optional row)
-      if (!titleFilled && !amountFilled) {
-        return { ...e, titleError: "", amountError: "" };
-      }
+            if (e.type === "Maintenance") {
+                if (!amountFilled) {
+                    amountError = "Please enter maintenance amount";
+                    valid = false;
+                } else if (isNaN(amt) || amt <= 0) {
+                    amountError = "Amount must be greater than 0";
+                    valid = false;
+                }
 
-      if (!titleFilled) {
-        titleError = "Please enter reason";
-        valid = false;
-      }
+                return { ...e, titleError: "", amountError };
+            }
 
-      if (!amountFilled) {
-        amountError = "Please enter amount";
-        valid = false;
-      } else if (isNaN(amt) || amt <= 0) {
-        amountError = "Amount must be greater than 0";
-        valid = false;
-      }
+            // ✅ CASE 3: Others -> reason + amount both mandatory
+            if (e.type === "Others") {
+                // both empty -> ok (optional row)
+                if (!titleFilled && !amountFilled) {
+                    return { ...e, titleError: "", amountError: "" };
+                }
 
-      return { ...e, titleError, amountError };
-    }
+                if (!titleFilled) {
+                    titleError = "Please enter reason";
+                    valid = false;
+                }
 
-    return { ...e, titleError: "", amountError: "" };
-  });
+                if (!amountFilled) {
+                    amountError = "Please enter amount";
+                    valid = false;
+                } else if (isNaN(amt) || amt <= 0) {
+                    amountError = "Amount must be greater than 0";
+                    valid = false;
+                }
 
-  setExtraCharges(updated);
-  return valid;
-};
+                return { ...e, titleError, amountError };
+            }
+
+            return { ...e, titleError: "", amountError: "" };
+        });
+
+        setExtraCharges(updated);
+        return valid;
+    };
 
     const submitLongStay = async () => {
         const isValid = validateLongStay();
 
         if (!isValid) return;
-         const chargeValid = validateExtraCharges();
-  if (!chargeValid) return;
+        const chargeValid = validateExtraCharges();
+        if (!chargeValid) return;
         const payload = {
             bookingId: bookingDetails?.bookingId,
             joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
@@ -433,15 +433,15 @@ export default function BookingCheckIn({ navigation, route }) {
         <>
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.safe}>
-              {/* <KeyboardAvoidingView
+                {/* <KeyboardAvoidingView
   style={{ flex: 1 }}
   behavior={Platform.OS === "ios" ? "padding" : undefined}
 > */}
-<KeyboardAvoidingView
-  style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
->
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+                >
                     <View style={styles.header}>
                         <TouchableOpacity
                             onPress={() => navigation?.goBack?.()}
@@ -482,7 +482,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         </TouchableOpacity>
                     </View>
 
-                 {/* <ScrollView
+                    {/* <ScrollView
   style={styles.container}
   keyboardShouldPersistTaps="handled"
   showsVerticalScrollIndicator={false}
@@ -490,15 +490,15 @@ export default function BookingCheckIn({ navigation, route }) {
     paddingBottom: 60,  
   }}
 > */}
-<ScrollView
-  style={styles.container}
-  keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="on-drag"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: 80, // ✅ button row height + extra space
-  }}
->
+                    <ScrollView
+                        style={styles.container}
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{
+                            paddingBottom: 80, // ✅ button row height + extra space
+                        }}
+                    >
 
 
 
@@ -655,7 +655,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                 </TouchableOpacity>
 
 
-                                <Text style={styles.label}>Joining Date <Text style={{color:"red"}}>*</Text></Text>
+                                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <TouchableOpacity
                                     style={styles.dateBox}
@@ -668,7 +668,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                 </TouchableOpacity>
 
                                 <View style={styles.field}>
-                                    <Text style={styles.label}>Advance Amount <Text style={{color:"red"}}>*</Text></Text>
+                                    <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
                                     <TextInput
                                         style={styles.input}
                                         keyboardType="numeric"
@@ -687,7 +687,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                 )}
 
                                 <View style={styles.field}>
-                                    <Text style={styles.label}>Rental Amount <Text style={{color:"red"}}>*</Text></Text>
+                                    <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
                                     <TextInput
                                         style={styles.input}
                                         keyboardType="numeric"
@@ -755,10 +755,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         placeholder="Enter reason"
                                                         value={item.title}
                                                         // onChangeText={(t) => updateTitle(item.id, t)}
-                                                                           onChangeText={(t) => {
-    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-    updateTitle(item.id, onlyLetters);
-  }}
+                                                        onChangeText={(t) => {
+                                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                                            updateTitle(item.id, onlyLetters);
+                                                        }}
                                                     />
                                                 ) : (
                                                     <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
@@ -777,17 +777,21 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         placeholder="Enter amount"
                                                         keyboardType="numeric"
                                                         value={item.amount}
-                                                        onChangeText={(t) => updateAmount(item.id, t)}
+                                                        onChangeText={(t) => {
+                                                            const onlyNumbers = t.replace(/[^0-9^\d]/g, "");
+                                                            updateAmount(item.id, onlyNumbers)}
+                                                        }
+                                                            
                                                     />
                                                 )}
-               
+
                                             </View>
-{item.titleError && (
-                  <ErrorMessage message={item.titleError} type="error" />
-                )}
-                {item.amountError && (
-                  <ErrorMessage message={item.amountError} type="error" />
-                )}
+                                            {item.titleError && (
+                                                <ErrorMessage message={item.titleError} type="error" />
+                                            )}
+                                            {item.amountError && (
+                                                <ErrorMessage message={item.amountError} type="error" />
+                                            )}
 
                                             {openDropdownId === item.id && item.type === "" && (
                                                 <View style={styles.nonRefundDropdown}>
@@ -817,14 +821,14 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
                                 </View>
-                  
+
                                 <View style={styles.centerError}>
                                     {bookingDetailsError && (
                                         <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />
                                     )}
                                 </View>
 
-                               
+
                             </View>
                         )}
 
@@ -833,28 +837,28 @@ export default function BookingCheckIn({ navigation, route }) {
                             <View><Text>Comming Soon</Text></View>
                         )}
                     </ScrollView>
-                     <View style={styles.BtnRow}>
-                                    <TouchableOpacity style={styles.CancelBtn}>
-                                        <Text style={{ color: "grey", fontWeight: "600" }}>
-                                            Cancel
-                                        </Text>
-                                    </TouchableOpacity>
+                    <View style={styles.BtnRow}>
+                        <TouchableOpacity style={styles.CancelBtn}>
+                            <Text style={{ color: "grey", fontWeight: "600" }}>
+                                Cancel
+                            </Text>
+                        </TouchableOpacity>
 
-                                    {/* <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
+                        {/* <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
                                         <Text style={styles.submitText}>Assign Bed</Text>
                                     </TouchableOpacity> */}
-                                    <TouchableOpacity
-  style={[
-    styles.submitBtn,
-    isAssignDisabled && { backgroundColor: "#9CA3AF" } 
-  ]}
-  disabled={isAssignDisabled}
-  onPress={submitLongStay}
->
-  <Text style={styles.submitText}>Check-In</Text>
-</TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.submitBtn,
+                                isAssignDisabled && { backgroundColor: "#9CA3AF" }
+                            ]}
+                            disabled={isAssignDisabled}
+                            onPress={submitLongStay}
+                        >
+                            <Text style={styles.submitText}>Check-In</Text>
+                        </TouchableOpacity>
 
-                                </View>
+                    </View>
                 </KeyboardAvoidingView>
             </SafeAreaView>
             {openDatePicker && (
@@ -877,13 +881,13 @@ export default function BookingCheckIn({ navigation, route }) {
                             //     // setCheckJoinDateError("");
                             // }}
                             onDayPress={(day) => {
-    const selected = dayjs(day.dateString);
+                                const selected = dayjs(day.dateString);
 
-    if (isDisabledJoiningDate(selected)) return;
+                                if (isDisabledJoiningDate(selected)) return;
 
-    setJoiningDate(selected.toDate()); 
-    setOpenDatePicker(false);
-  }}
+                                setJoiningDate(selected.toDate());
+                                setOpenDatePicker(false);
+                            }}
                             theme={{
                                 todayTextColor: "#2563EB",
                                 selectedDayBackgroundColor: "#2563EB",
@@ -937,7 +941,7 @@ const styles = StyleSheet.create({
 
     segmentTextActive: { color: "#fff", fontWeight: "600" },
 
-    container: { paddingHorizontal: 16,},
+    container: { paddingHorizontal: 16, },
 
     field: { marginBottom: 12 },
 
@@ -1028,16 +1032,16 @@ const styles = StyleSheet.create({
 
     addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
-  BtnRow: {
-  flexDirection: "row",
-  gap: 10,
-  padding: 16,
-  backgroundColor: "#fff",
+    BtnRow: {
+        flexDirection: "row",
+        gap: 10,
+        padding: 16,
+        backgroundColor: "#fff",
 
 
-},
+    },
 
-    
+
 
     CancelBtn: {
         flex: 1,
@@ -1121,14 +1125,14 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
     },
     datePickerBox: {
-         position: "absolute",
-    left: "10%",
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 10,
-    elevation: 10,
-    bottom:90
+        position: "absolute",
+        left: "10%",
+        width: "80%",
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        padding: 10,
+        elevation: 10,
+        bottom: 90
     },
 
     nonRefund: {

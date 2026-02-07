@@ -813,10 +813,12 @@ if (!mobile.trim()) {
     onChangeText={(t) => {
       const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
       setMobile(cleaned);
+        
       setErrors({ ...errors, mobile: "" });
       setNoChangeError("");
     }}
   />
+  
   {/* {countryCodeOpen && (
   <View style={styles.countryDropdown}>
     <TouchableOpacity
@@ -831,6 +833,7 @@ if (!mobile.trim()) {
   </View>
 )} */}
 </View>
+ <ErrorMessage message={errors.mobile} type="error" />
 
 {/* COUNTRY DROPDOWN */}
 
@@ -840,7 +843,9 @@ if (!mobile.trim()) {
         <TextInput
   value={email}
   onChangeText={(t) => {
-    setEmail(t.toLowerCase());
+    const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+
+    setEmail(sanitized);
     setErrors({ ...errors, email: "" })
      setNoChangeError("")
   }}

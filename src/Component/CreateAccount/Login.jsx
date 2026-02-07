@@ -26,7 +26,7 @@ export default function LoginDesign() {
   const { login } = useContext(LoginContexts);
   const loginContext = useContext(LoginContexts)
   const navigation = useNavigation();
-  const {NotificationModule}=NativeModules;
+  const { NotificationModule } = NativeModules;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +36,7 @@ export default function LoginDesign() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
- 
+
 
 
 
@@ -113,7 +113,7 @@ export default function LoginDesign() {
     }
   };
 
-  
+
 
 
 
@@ -146,8 +146,11 @@ export default function LoginDesign() {
                 style={styles.input}
                 value={email}
                 onChangeText={(text) => {
-                  setEmail(text.toLowerCase());
+                  const sanitized = text.toLowerCase().replace(/[^a-z0-9@._-]/g, "");
+
+                  setEmail(sanitized);
                   setEmailError("");
+
                 }}
                 autoCapitalize="none"
               />
@@ -171,7 +174,8 @@ export default function LoginDesign() {
                 placeholderTextColor="#A1A1A1"
                 value={password}
                 onChangeText={(text) => {
-                  setPassword(text);
+                  const filter = text.replace(/[^\x00-\x7F]/g, "");
+                  setPassword(filter);
                   setPasswordError("");
                 }}
               />

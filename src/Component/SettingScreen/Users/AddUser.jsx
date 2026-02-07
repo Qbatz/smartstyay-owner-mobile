@@ -137,10 +137,14 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
     if (!mobile.trim()) {
       setMobileError("Please Enter Mobile Number");
       valid = false;
-    } else if (!mobileRegex.test(mobile)) {
-      setMobileError("Enter valid mobile number");
+    } else if (mobile.length !== 10) {
+      setMobileError("Mobile number must be 10 digits");
       valid = false;
     }
+    else if (!mobileRegex.test(mobile)) {
+      setMobileError("Enter valid mobile number");
+      valid = false;
+    } 
 
     if (!selectedRole) {
       setRoleError("Please Select Role");
@@ -343,29 +347,37 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
             <Text style={styles.title}>{editData ? "Edit User" : "Add User"}</Text>
 
 
-            <Text style={styles.label}>Name <Text style={{color:'red'}}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="Enter Name" value={name} onChangeText={(text) => {
-              setName(text);
-              setNameError("");
-            }} />
+            <Text style={styles.label}>Name <Text style={{ color: 'red' }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="Enter Name" value={name}
+              onChangeText={(text) => {
+                const filtered = text.replace(/[^A-Za-z]/g, "");
+                setName(filtered);
+                setNameError("");
+              }} />
             {nameError && (
               <ErrorMessage message={nameError} type="error" />
             )}
 
-            <Text style={styles.label}>Email ID <Text style={{color:'red'}}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={(text) => {
-              setEmail(text);
-              setEmailError("");
-            }} />
+            <Text style={styles.label}>Email ID <Text style={{ color: 'red' }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="Enter Email" value={email}
+              onChangeText={(text) => {
+                const filtered = text.replace(/[^A-Za-z0-9@#./]/g, "");
+                setEmail(filtered);
+                setEmailError("");
+              }} />
             {emailError && (
               <ErrorMessage message={emailError} type="error" />
             )}
 
-            <Text style={styles.label}>Mobile Number <Text style={{color:'red'}}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="+91 98765 43210" value={mobile} onChangeText={(text) => {
-              setMobile(text);
-              setMobileError("");
-            }}
+            <Text style={styles.label}>Mobile Number <Text style={{ color: 'red' }}>*</Text></Text>
+            <TextInput style={styles.input} placeholder="+91 98765 43210" value={mobile}
+              keyboardType="numeric"
+              maxLength={10}
+              onChangeText={(text) => {
+                const filtered = text.replace(/[^0-9]/g, "");
+                setMobile(filtered);
+                setMobileError("");
+              }}
             />
             {mobilError && (
               <ErrorMessage message={mobilError} type="error" />
@@ -373,7 +385,7 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
             {!editData && (
               <>
 
-                <Text style={styles.label}>Password <Text style={{color:'red'}}>*</Text></Text>
+                <Text style={styles.label}>Password <Text style={{ color: 'red' }}>*</Text></Text>
 
                 <View style={styles.passwordWrapper}>
                   <TextInput
@@ -406,7 +418,7 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
             )}
 
 
-            <Text style={styles.label}>Role <Text style={{color:'red'}}>*</Text></Text>
+            <Text style={styles.label}>Role <Text style={{ color: 'red' }}>*</Text></Text>
 
             <TouchableOpacity
               style={styles.dropdownBox}
