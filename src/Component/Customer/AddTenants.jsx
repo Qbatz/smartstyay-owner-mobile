@@ -411,7 +411,7 @@ export default function AddTenant() {
                                     <TextInput
                                         style={{
                                             borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, paddingHorizontal: 12,
-                                            height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 12,
+                                            height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 1,
                                         }}
                                         placeholder="Enter First Name"
                                         placeholderTextColor="#A1A1A1"

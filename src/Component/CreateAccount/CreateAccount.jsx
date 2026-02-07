@@ -94,159 +94,159 @@ export default function CreateAccount() {
     setTimeout(() => ref.current?.focus(), 200);
   };
   const createAccountClick = async () => {
-  Keyboard.dismiss();
+    Keyboard.dismiss();
 
-  // reset errors
-  setFirstNameError("");
-  setEmailError("");
-  setMobileError("");
-  setPasswordError([]);
-  setConfirmPasswordError("");
-  setBothPasswordError("");
+    // reset errors
+    setFirstNameError("");
+    setEmailError("");
+    setMobileError("");
+    setPasswordError([]);
+    setConfirmPasswordError("");
+    setBothPasswordError("");
 
-  setBackendEmailError("");
-  setBackendMobileError("");
-  setBackendPasswordError("");
+    setBackendEmailError("");
+    setBackendMobileError("");
+    setBackendPasswordError("");
 
-  let hasError = false;
-  let firstErrorRef = null;
-  let firstErrorPos = null;
+    let hasError = false;
+    let firstErrorRef = null;
+    let firstErrorPos = null;
 
-  // ✅ First Name
-  if (!firstName?.trim()) {
-    setFirstNameError("Please Enter First Name");
-    if (!firstErrorRef) {
-      firstErrorRef = firstNameRef;
-      firstErrorPos = firstNamePos;
+    // ✅ First Name
+    if (!firstName?.trim()) {
+      setFirstNameError("Please Enter First Name");
+      if (!firstErrorRef) {
+        firstErrorRef = firstNameRef;
+        firstErrorPos = firstNamePos;
+      }
+      hasError = true;
     }
-    hasError = true;
-  }
 
-  // ✅ Email
-  if (!emailid?.trim()) {
-    setEmailError("Please Enter Email ID");
-    if (!firstErrorRef) {
-      firstErrorRef = emailRef;
-      firstErrorPos = emailPos;
+    // ✅ Email
+    if (!emailid?.trim()) {
+      setEmailError("Please Enter Email ID");
+      if (!firstErrorRef) {
+        firstErrorRef = emailRef;
+        firstErrorPos = emailPos;
+      }
+      hasError = true;
+    } else if (!emailRegex.test(emailid)) {
+      setEmailError("Please Enter Valid Email ID");
+      if (!firstErrorRef) {
+        firstErrorRef = emailRef;
+        firstErrorPos = emailPos;
+      }
+      hasError = true;
     }
-    hasError = true;
-  } else if (!emailRegex.test(emailid)) {
-    setEmailError("Please Enter Valid Email ID");
-    if (!firstErrorRef) {
-      firstErrorRef = emailRef;
-      firstErrorPos = emailPos;
-    }
-    hasError = true;
-  }
 
-  // ✅ Mobile
-  if (!mobileNo?.trim()) {
-    setMobileError("Please Enter Mobile No");
-    if (!firstErrorRef) {
-      firstErrorRef = mobileRef;
-      firstErrorPos = mobilePos;
+    // ✅ Mobile
+    if (!mobileNo?.trim()) {
+      setMobileError("Please Enter Mobile No");
+      if (!firstErrorRef) {
+        firstErrorRef = mobileRef;
+        firstErrorPos = mobilePos;
+      }
+      hasError = true;
+    } else if (!phoneRegex.test(mobileNo)) {
+      setMobileError("Please Enter Valid Mobile Number");
+      if (!firstErrorRef) {
+        firstErrorRef = mobileRef;
+        firstErrorPos = mobilePos;
+      }
+      hasError = true;
     }
-    hasError = true;
-  } else if (!phoneRegex.test(mobileNo)) {
-    setMobileError("Please Enter Valid Mobile Number");
-    if (!firstErrorRef) {
-      firstErrorRef = mobileRef;
-      firstErrorPos = mobilePos;
-    }
-    hasError = true;
-  }
 
-  // ✅ Password
-  if (!password?.trim()) {
-    setPasswordError(["Please Enter Password"]);
-    if (!firstErrorRef) {
-      firstErrorRef = passwordRef;
-      firstErrorPos = passwordPos;
-    }
-    hasError = true;
-  } else {
-    const pwdErrors = validatePassword(password);
-    if (pwdErrors.length > 0) {
-      setPasswordError(pwdErrors);
+    // ✅ Password
+    if (!password?.trim()) {
+      setPasswordError(["Please Enter Password"]);
       if (!firstErrorRef) {
         firstErrorRef = passwordRef;
         firstErrorPos = passwordPos;
       }
       hasError = true;
+    } else {
+      const pwdErrors = validatePassword(password);
+      if (pwdErrors.length > 0) {
+        setPasswordError(pwdErrors);
+        if (!firstErrorRef) {
+          firstErrorRef = passwordRef;
+          firstErrorPos = passwordPos;
+        }
+        hasError = true;
+      }
     }
-  }
 
-  // ✅ Confirm Password
-  if (!confirmPassword?.trim()) {
-    setConfirmPasswordError("Please Enter Confirm Password");
-    if (!firstErrorRef) {
-      firstErrorRef = confirmPasswordRef;
-      firstErrorPos = confirmPasswordPos;
+    // ✅ Confirm Password
+    if (!confirmPassword?.trim()) {
+      setConfirmPasswordError("Please Enter Confirm Password");
+      if (!firstErrorRef) {
+        firstErrorRef = confirmPasswordRef;
+        firstErrorPos = confirmPasswordPos;
+      }
+      hasError = true;
+    } else if (password?.trim() && password !== confirmPassword) {
+      setBothPasswordError("Password and Confirm Password do Not Match");
+      if (!firstErrorRef) {
+        firstErrorRef = confirmPasswordRef;
+        firstErrorPos = confirmPasswordPos;
+      }
+      hasError = true;
     }
-    hasError = true;
-  } else if (password?.trim() && password !== confirmPassword) {
-    setBothPasswordError("Password and Confirm Password do Not Match");
-    if (!firstErrorRef) {
-      firstErrorRef = confirmPasswordRef;
-      firstErrorPos = confirmPasswordPos;
+
+    // ✅ if any error -> focus first error field
+    if (hasError) {
+      focusField(firstErrorRef, firstErrorPos);
+      return;
     }
-    hasError = true;
-  }
 
-  // ✅ if any error -> focus first error field
-  if (hasError) {
-    focusField(firstErrorRef, firstErrorPos);
-    return;
-  }
+    // ✅ API Call
+    const data = {
+      firstName,
+      lastName,
+      mailId: emailid,
+      mobile: mobileNo,
+      password,
+      confirmPassword,
+    };
 
-  // ✅ API Call
-  const data = {
-    firstName,
-    lastName,
-    mailId: emailid,
-    mobile: mobileNo,
-    password,
-    confirmPassword,
+    const res = await postNewAccount(data);
+
+    if (res?.status === 201) {
+      setShowSuccessModal(true);
+      setToastMessage("Created Successfully");
+      setModelType("success");
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        navigation.replace("LoginDesign");
+      }, 1500);
+    } else {
+      // backend errors
+      if (res?.message?.emailStatus) {
+        setBackendEmailError(res.message.emailStatus);
+        focusField(emailRef, emailPos);
+        return;
+      }
+
+      if (res?.message?.mobileStatus) {
+        setBackendMobileError(res.message.mobileStatus);
+        focusField(mobileRef, mobilePos);
+        return;
+      }
+
+      if (res?.message?.passwordStatus) {
+        setBackendPasswordError(res.message.passwordStatus);
+        focusField(passwordRef, passwordPos);
+        return;
+      }
+
+      setShowSuccessModal(true);
+      setToastMessage(res?.message || "Something went wrong");
+      setModelType("error");
+
+      setTimeout(() => setShowSuccessModal(false), 2000);
+    }
   };
-
-  const res = await postNewAccount(data);
-
-  if (res?.status === 201) {
-    setShowSuccessModal(true);
-    setToastMessage("Created Successfully");
-    setModelType("success");
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-      navigation.replace("LoginDesign");
-    }, 1500);
-  } else {
-    // backend errors
-    if (res?.message?.emailStatus) {
-      setBackendEmailError(res.message.emailStatus);
-      focusField(emailRef, emailPos);
-      return;
-    }
-
-    if (res?.message?.mobileStatus) {
-      setBackendMobileError(res.message.mobileStatus);
-      focusField(mobileRef, mobilePos);
-      return;
-    }
-
-    if (res?.message?.passwordStatus) {
-      setBackendPasswordError(res.message.passwordStatus);
-      focusField(passwordRef, passwordPos);
-      return;
-    }
-
-    setShowSuccessModal(true);
-    setToastMessage(res?.message || "Something went wrong");
-    setModelType("error");
-
-    setTimeout(() => setShowSuccessModal(false), 2000);
-  }
-};
 
 
   // const createAccountClick = async () => {
@@ -391,12 +391,12 @@ export default function CreateAccount() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
         {/* ✅ FORM SCROLL ONLY */}
-      <ScrollView
-  ref={scrollRef}
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{ paddingBottom: 30 }} // ✅ wave+button space
->
+        <ScrollView
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 30 }} // ✅ wave+button space
+        >
           <View style={styles.content}>
             {/* ✅ First Name */}
             <View onLayout={(e) => (firstNamePos.current = e.nativeEvent.layout.y)}>
@@ -496,40 +496,40 @@ export default function CreateAccount() {
               {!!backendMobileError && <ErrorMessage message={backendMobileError} type="error" />}
             </View> */}
             <View onLayout={(e) => (mobilePos.current = e.nativeEvent.layout.y)}>
-  <Text style={styles.label}>
-    Mobile No <Text style={styles.star}>*</Text>
-  </Text>
+              <Text style={styles.label}>
+                Mobile No <Text style={styles.star}>*</Text>
+              </Text>
 
-  <View style={styles.inputBox}>
-    {/* ✅ Country Code */}
-    <Text style={styles.countryCode}>+91</Text>
+              <View style={styles.inputBox}>
+                {/* ✅ Country Code */}
+                <Text style={styles.countryCode}>+91</Text>
 
-    {/* ✅ Divider Line */}
-    <View style={styles.dividerLine} />
+                {/* ✅ Divider Line */}
+                <View style={styles.dividerLine} />
 
-    <TextInput
-      ref={mobileRef}
-      placeholder="9876543210"
-      style={styles.input}
-      value={mobileNo}
-      keyboardType="numeric"
-      maxLength={10}
-      returnKeyType="next"
-      onFocus={() => scrollToY(mobilePos.current)}
-      onSubmitEditing={() => passwordRef.current?.focus()}
-      onChangeText={(text) => {
-        setMobileNo(text.replace(/\D/g, ""));
-        setMobileError("");
-        setBackendMobileError("");
-      }}
-    />
-  </View>
+                <TextInput
+                  ref={mobileRef}
+                  placeholder="9876543210"
+                  style={styles.input}
+                  value={mobileNo}
+                  keyboardType="numeric"
+                  maxLength={10}
+                  returnKeyType="next"
+                  onFocus={() => scrollToY(mobilePos.current)}
+                  onSubmitEditing={() => passwordRef.current?.focus()}
+                  onChangeText={(text) => {
+                    setMobileNo(text.replace(/\D/g, ""));
+                    setMobileError("");
+                    setBackendMobileError("");
+                  }}
+                />
+              </View>
 
-  {!!mobileError && <ErrorMessage message={mobileError} type="error" />}
-  {!!backendMobileError && (
-    <ErrorMessage message={backendMobileError} type="error" />
-  )}
-</View>
+              {!!mobileError && <ErrorMessage message={mobileError} type="error" />}
+              {!!backendMobileError && (
+                <ErrorMessage message={backendMobileError} type="error" />
+              )}
+            </View>
 
 
             {/* ✅ Password */}
@@ -606,26 +606,26 @@ export default function CreateAccount() {
         </ScrollView>
 
         {/* ✅ BOTTOM FIXED */}
-       
-      </KeyboardAvoidingView>
- <View style={styles.bottomFixed}>
-          <TouchableOpacity onPress={createAccountClick} style={styles.button}>
-            <Text style={styles.buttonText}>Create Account</Text>
-          </TouchableOpacity>
 
-          <Text style={styles.footerText}>
-            Already have an account?{" "}
-            <Text
-              style={styles.signInText}
-              onPress={() => navigation.replace("LoginDesign")}
-            >
-              Sign In
-            </Text>
+      </KeyboardAvoidingView>
+      <View style={styles.bottomFixed}>
+        <TouchableOpacity onPress={createAccountClick} style={styles.button}>
+          <Text style={styles.buttonText}>Create Account</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.footerText}>
+          Already have an account?{" "}
+          <Text
+            style={styles.signInText}
+            onPress={() => navigation.replace("LoginDesign")}
+          >
+            Sign In
           </Text>
-        </View>
+        </Text>
+      </View>
       {/* ✅ WAVE BACKGROUND */}
       <Image source={WaveImage} style={styles.bottomWave} resizeMode="cover"
-  pointerEvents="none" />
+        pointerEvents="none" />
     </View>
   );
 }
@@ -634,14 +634,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-   
+
   },
 
   headerFixed: {
     paddingHorizontal: 25,
     paddingBottom: 10,
     backgroundColor: "#fff",
-    paddingTop:60
+    paddingTop: 60
   },
 
   content: {
@@ -699,13 +699,13 @@ const styles = StyleSheet.create({
     height: 22,
   },
 
- bottomFixed: {
-  paddingHorizontal: 25,
-  paddingBottom: 30,
-  paddingTop: 10,
-  backgroundColor: "#fff",
-  marginBottom: 70, // ✅ WAVE HEIGHT ku equal gap
-},
+  bottomFixed: {
+    paddingHorizontal: 25,
+    paddingBottom: 30,
+    paddingTop: 10,
+    backgroundColor: "#fff",
+    marginBottom: 70, // ✅ WAVE HEIGHT ku equal gap
+  },
 
 
 
@@ -735,26 +735,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-bottomWave: {
-  position: "absolute",
-  bottom: 0,
-  width: "100%",
-  height: 90,
-  
-},
-countryCode: {
-  fontSize: 15,
-  fontWeight: "600",
-  color: "#000",
-  marginRight: 8,
-},
+  bottomWave: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    height: 90,
 
-dividerLine: {
-  width: 1,
-  height: 22,
-  backgroundColor: "#CFCFCF",
-  marginRight: 10,
-},
+  },
+  countryCode: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#000",
+    marginRight: 8,
+  },
+
+  dividerLine: {
+    width: 1,
+    height: 22,
+    backgroundColor: "#CFCFCF",
+    marginRight: 10,
+  },
 
 
 
