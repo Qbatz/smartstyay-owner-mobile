@@ -97,7 +97,7 @@ console.log("selectedComplaint", selectedComplaint);
 
 
 const handleSendComment = async () => {
-   if (!canUpdateComplaints) {
+   if (!canWriteComplaints) {
     setCommentError("You do not have permission to add comments");
     return;
   }
@@ -259,7 +259,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
 
 
 
-          <View style={[styles.replyBox  , !canUpdateComplaints && { opacity: 0.4 } ]}>
+          <View style={[styles.replyBox  , !canWriteComplaints && { opacity: 0.4 } ]}>
   <TextInput
   value={commentText}
   onChangeText={(text) => {
@@ -268,7 +268,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
   }}
   placeholder="Post your Reply Here"
   style={styles.input}
-    editable={canUpdateComplaints}
+    editable={canWriteComplaints}
         // pointerEvents={canUpdateComplaints ? "auto" : "none"}
 />
 
@@ -277,9 +277,9 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
             <TouchableOpacity 
             style={[
       styles.sendBtn,
-      !canUpdateComplaints && { opacity: 0.4 }
+      !canWriteComplaints && { opacity: 0.4 }
     ]}
-      disabled={!canUpdateComplaints}
+      disabled={!canWriteComplaints}
             onPress={handleSendComment}>
               <Image source={Comments} style={styles.sendIcon} />
             </TouchableOpacity>

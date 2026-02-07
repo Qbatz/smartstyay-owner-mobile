@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
+import { useHasPermission } from "../../Utils/useHasPermission";
 import Profile from "../../Assets/Images/profile.png";
 import Filter from "../../Assets/Images/filter.png";
 import SearchIcon from "../../Assets/Images/Asset_search.png";
@@ -76,6 +77,13 @@ export default function TenantsScreen({ route }) {
       customer: item,
     });
   }
+
+         const {
+      canWriteModule: canWriteTenant,
+      canReadModule: canReadTenant,
+     canUpdateModule: canUpdateTenant,
+      canDeleteModule: canDeleteTenant,
+    } = useHasPermission("Customers");
 
 
   useEffect(() => {
@@ -485,6 +493,21 @@ export default function TenantsScreen({ route }) {
     },
   ];
 
+  // if (!canReadTenant && !loading) {
+  //       return (
+  //          <View style={styles.container}>
+        
+  //         <View style={{ alignItems: "center", marginTop: 180 }}>
+      
+  //           <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
+  //           <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+  //             You do not have access to view Tenant
+  //           </Text>
+  //         </View>
+  //         </View>
+  //       )
+  //     }
+
   return (
     <>
       {loading && <Loader />}
@@ -500,7 +523,9 @@ export default function TenantsScreen({ route }) {
             placeholderTextColor="#9CA3AF"
           /> */}
           <TextInput
-            style={styles.searchInput}
+            // style={styles.searchInput}
+            style={[ styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
+            disabled={!canReadTenant}
             placeholder="Search Customers"
             placeholderTextColor="#9CA3AF"
             value={searchText}
@@ -542,7 +567,22 @@ export default function TenantsScreen({ route }) {
         </View>
 
         {activeTab === "Tenants" && (
+
+
+
           <View style={{ flex: 1 }}>
+
+{!canReadTenant && !loading && (
+      <View style={styles.emptyContainer}>
+        <Image source={EmptyState} style={styles.emptyImage} />
+        <Text style={styles.emptyText}>
+          You don’t have permission to view Tenants.
+        </Text>
+      </View>
+    )}
+
+ {canReadTenant && (
+      <>
             {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
               <View style={styles.emptyContainer}>
                 <Image source={EmptyState} style={styles.emptyImage} />
@@ -552,6 +592,7 @@ export default function TenantsScreen({ route }) {
                 </Text>
               </View>
             )}
+            
 
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -800,17 +841,23 @@ export default function TenantsScreen({ route }) {
 
             </ScrollView>
 
-
+   </>
+    )}
 
             {customers?.listCustomers?.length > 0 &&
-              <TouchableOpacity style={styles.editButton} onPress={() => setShowFilter(true)}>
+              <TouchableOpacity
+                 style={[
+            styles.editButton,
+            !canReadTenant && { opacity: 0.4 }
+          ]}
+            disabled={!canReadTenant}
+                onPress={() => setShowFilter(true)}>
                 <Image source={Filter} style={{ width: 30, height: 30 }} />
               </TouchableOpacity>
             }
+            
 
-            {/* <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddTenant")}>
-              <Image source={TenAntAdd} style={{ width: 60, height: 60 }} />
-            </TouchableOpacity> */}
+            
           </View>
         )}
 
@@ -1070,7 +1117,11 @@ export default function TenantsScreen({ route }) {
               ) &&
                 <>
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                       style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={() => {
                       setShowDetailsMenu(false);
                       setShowReAssignBed(true);
@@ -1081,7 +1132,11 @@ export default function TenantsScreen({ route }) {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                       style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={() => {
                       setShowDetailsMenu(false);
                       setShowNotice(true);
@@ -1095,7 +1150,11 @@ export default function TenantsScreen({ route }) {
               {
                 selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" &&
                 <TouchableOpacity
-                  style={styles.popupRow}
+                  // style={styles.popupRow}
+                     style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                   onPress={() => {
                     setShowMenu(false);
                     setShowCheckout(true);
@@ -1111,7 +1170,11 @@ export default function TenantsScreen({ route }) {
               {selectedCustomer?.customerCurrentStatus === "BOOKED" &&
                 <>
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                       style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={handleShowTennantCheckin}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1119,7 +1182,11 @@ export default function TenantsScreen({ route }) {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                       style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={handleMakeUsInActive}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1132,21 +1199,33 @@ export default function TenantsScreen({ route }) {
                 selectedCustomer?.customerCurrentStatus === "NOTICE" &&
                 <>
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                       style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={handleShowFinalSettlement}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                     <Text style={styles.popupText}>Generate</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                       style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={handleShowFinalNew}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                     <Text style={styles.popupText}>Generate New</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.popupRow}
+                    // style={styles.popupRow}
+                        style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                     onPress={handleShowCancelNotice}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1182,7 +1261,11 @@ export default function TenantsScreen({ route }) {
                     selectedItem && selectedItem.currentStatus === "Checked In" &&
                     <>
                       <TouchableOpacity
-                        style={styles.popupRow}
+                        // style={styles.popupRow}
+                             style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                         onPress={() => {
                           setReassignCustomer(selectedItem);
                           handleShowReAssignBed();
@@ -1196,7 +1279,11 @@ export default function TenantsScreen({ route }) {
                         <Text style={styles.popupText}>Change_Bed</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={styles.popupRow}
+                        // style={styles.popupRow}
+                              style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
 
                         onPress={() => {
                           // setSelectedCustomer(selectedItem);
@@ -1219,15 +1306,22 @@ export default function TenantsScreen({ route }) {
                     selectedItem && selectedItem.currentStatus === "Booked" &&
                     <>
                       <TouchableOpacity
-                        style={styles.popupRow}
-
+                        // style={styles.popupRow}
+                           style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                         onPress={handleMakeUsInActive}
                       >
                         <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Make Us InActive</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={styles.popupRow}
+                        // style={styles.popupRow}
+                           style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                         onPress={handleShowTennantCheckin}
                       // onPress={() => {
                       //   setShowDetailsMenu(false);
@@ -1243,7 +1337,13 @@ export default function TenantsScreen({ route }) {
                     !["Checked In", "Settlement Generated", "Booked"].includes(selectedItem.currentStatus) && (
 
                       <>
-                        <TouchableOpacity style={styles.popupRow} onPress={handleShowFinalSettlement} >
+                        <TouchableOpacity 
+                        // style={styles.popupRow}
+                           style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                        onPress={handleShowFinalSettlement} >
                           <Image
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
@@ -1251,14 +1351,24 @@ export default function TenantsScreen({ route }) {
                           <Text style={styles.popupText}>Generate</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                          style={styles.popupRow}
+                          // style={styles.popupRow}
+                             style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                           onPress={handleShowFinalNew}
                         >
                           <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                           <Text style={styles.popupText}>Generate New</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.popupRow} onPress={handleShowCancelNotice} >
+                        <TouchableOpacity 
+                        // style={styles.popupRow} 
+                           style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                         onPress={handleShowCancelNotice} >
                           <Image
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
@@ -1270,7 +1380,11 @@ export default function TenantsScreen({ route }) {
                   {selectedItem &&
                     !["Checked In", "Notice Period", "Booked"].includes(selectedItem.currentStatus) && (
                       <TouchableOpacity
-                        style={styles.popupRow}
+                        // style={styles.popupRow}
+                           style={[
+                             styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
                         onPress={() => {
                           setShowMenu(false);
                           setShowCheckout(true);

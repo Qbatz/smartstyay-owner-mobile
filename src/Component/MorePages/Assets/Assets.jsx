@@ -391,7 +391,7 @@ const selectedAssignDate = assignDate
 
 
 const handleAssignAsset = async () => {
-  if (!canUpdateAssets) {
+  if (!canWriteAssets) {
     setModalType("warning");
     setModalMessage("You do not have permission to assign assets");
     setShowSuccessModal(true);
@@ -775,11 +775,11 @@ const handleAssignAsset = async () => {
 
                 style={[
     styles.assignBtn,
-    !canUpdateAssets && { opacity: 0.5 }
+    !canWriteAssets && { opacity: 0.5 }
   ]}
-  disabled={!canUpdateAssets}
+  disabled={!canWriteAssets}
   onPress={() => {
-    if (!canUpdateAssets) return;
+    if (!canWriteAssets) return;
 
     setShowSheet(false);
     setShowAssignSheet(true);

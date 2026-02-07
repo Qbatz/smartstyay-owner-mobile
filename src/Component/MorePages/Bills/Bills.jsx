@@ -2119,7 +2119,7 @@ navigation.navigate("CancelNotice")
     styles.popupRow,
     isBillLocked && styles.popupRowDisabled,
   ]}
-  disabled={isBillLocked && !canUpdateBills}
+  disabled={isBillLocked && !canWriteBills}
   onPress={() => {
     setShowMenu(false);
     setDeleteTenants(true);
@@ -2140,8 +2140,8 @@ navigation.navigate("CancelNotice")
 </TouchableOpacity>
      
         {selectedBill?.invoiceAmount < 0 && selectedBill?.paymentStatus !== "Refunded" && selectedBill?.paymentStatus !== "Cancelled" && (
-        <TouchableOpacity  style={[ styles.popupRow,  !canUpdateBills && { opacity: 0.4 } ]}
-        onPress={handleShowRefundPayment} disabled={!canUpdateBills}>
+        <TouchableOpacity  style={[ styles.popupRow,  !canWriteBills && { opacity: 0.4 } ]}
+        onPress={handleShowRefundPayment} disabled={!canWriteBills}>
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
@@ -2153,8 +2153,8 @@ navigation.navigate("CancelNotice")
      
 { (selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") &&(
     <TouchableOpacity 
-         style={[ styles.popupRow,  !canUpdateBills && { opacity: 0.4 } ]}
-    onPress={handleShowRecordPayment} disabled={!canUpdateBills}>
+         style={[ styles.popupRow,  !canWriteBills && { opacity: 0.4 } ]}
+    onPress={handleShowRecordPayment} disabled={!canWriteBills}>
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
     style={styles.popupIcon}
@@ -2169,7 +2169,7 @@ navigation.navigate("CancelNotice")
     styles.popupRow,
     isBillLocked && styles.popupRowDisabled,
   ]}
-  disabled={isBillLocked && !canUpdateBills}
+  disabled={isBillLocked && !canWriteBills}
   onPress={handleShowWriteOff}
 >
   <Image

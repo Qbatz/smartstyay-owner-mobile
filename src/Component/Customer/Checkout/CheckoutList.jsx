@@ -20,7 +20,7 @@ import CalendarIcon from "../../../Assets/Images/calendar.png";
 import AmountIcon from "../../../Assets/Images/profile.png";
 import Loader from "../../Loader/Loader";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 
@@ -32,6 +32,13 @@ export default function CheckoutList({ searchText }) {
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+  const {
+        canWriteModule: canWriteCheckout,
+        canReadModule: canReadCheckout,
+        canUpdateModule: canUpdateCheckout,
+        canDeleteModule: canDeleteCheckout,
+      } = useHasPermission("Checkout");
 
   const translateY = useRef(new Animated.Value(500)).current;
 console.log("selectedCustomer",selectedCustomer)
@@ -105,6 +112,21 @@ const panResponder = useRef(
       item?.bedName?.toLowerCase().includes(search)
     );
   });
+
+    if (!canReadCheckout && !loading) {
+      return (
+         <View style={styles.container}>
+      
+        <View style={{ alignItems: "center", marginTop: 180 }}>
+    
+          <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
+          <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+            You do not have access to view Checkout
+          </Text>
+        </View>
+        </View>
+      )
+    }
 
   const renderItem = ({ item }) => {
     const isMenuVisible = menuVisibleId === item.customerId;
