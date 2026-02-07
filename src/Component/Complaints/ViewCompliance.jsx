@@ -379,11 +379,11 @@ await  complaintsViewUpdates({
 
               style={[
     styles.assignBtn,
-    !canUpdateComplaints && { opacity: 0.5 }
+    !canWriteComplaints && { opacity: 0.5 }
   ]}
-  disabled={!canUpdateComplaints}
+  disabled={!canWriteComplaints}
   onPress={() => {
-    if (!canUpdateComplaints) return;
+    if (!canWriteComplaints) return;
 
     handleCloseSheet();
     setTimeout(onOpenAssignSheet, 200);
@@ -396,11 +396,11 @@ await  complaintsViewUpdates({
           <TouchableOpacity
             style={[
     styles.statusBtn,
-    !canUpdateComplaints && { opacity: 0.5 }
+    !canWriteComplaints && { opacity: 0.5 }
   ]}
-  disabled={!canUpdateComplaints}
+  disabled={!canWriteComplaints}
   onPress={() => {
-    if (!canUpdateComplaints) return;
+    if (!canWriteComplaints) return;
 
     handleCloseSheet();
     setTimeout(() => onOpenStatusSheet(complaint), 200);

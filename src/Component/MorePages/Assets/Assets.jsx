@@ -390,16 +390,16 @@ export default function Assets({ navigation }) {
 
 
 
-  const handleAssignAsset = async () => {
-    if (!canUpdateAssets) {
-      setModalType("warning");
-      setModalMessage("You do not have permission to assign assets");
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-      return;
-    }
+const handleAssignAsset = async () => {
+  if (!canWriteAssets) {
+    setModalType("warning");
+    setModalMessage("You do not have permission to assign assets");
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1000);
+    return;
+  }
 
     if (!selectedAsset?.assetId) return;
 
@@ -774,12 +774,12 @@ export default function Assets({ navigation }) {
                 // }}
 
                 style={[
-                  styles.assignBtn,
-                  !canUpdateAssets && { opacity: 0.5 }
-                ]}
-                disabled={!canUpdateAssets}
-                onPress={() => {
-                  if (!canUpdateAssets) return;
+    styles.assignBtn,
+    !canWriteAssets && { opacity: 0.5 }
+  ]}
+  disabled={!canWriteAssets}
+  onPress={() => {
+    if (!canWriteAssets) return;
 
                   setShowSheet(false);
                   setShowAssignSheet(true);

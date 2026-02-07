@@ -11,7 +11,7 @@ import {
   BackHandler,
   TouchableWithoutFeedback
 } from "react-native";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import PhoneIcon from "../../../Assets/Images/call.png";
 import MenuDots from "../../../Assets/Images/3dots.png";
 import UserIcon from "../../../Assets/Images/profile.png";
@@ -33,6 +33,20 @@ import { useFocusEffect } from "@react-navigation/native";
 export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, navigation,searchText }) {
   const { getCustomersByHostel, deleteCustomer, loading } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
+
+    const {
+    canWriteModule: canWriteWalkin,
+    canReadModule: canReadWalkin,
+    // canUpdateModule: canUpdateWalkin,
+    canDeleteModule: canDeleteWalkin,
+  } = useHasPermission("Walk in");
+
+           const {
+        canWriteModule: canWriteTenant,
+        canReadModule: canReadTenant,
+       canUpdateModule: canUpdateTenant,
+        canDeleteModule: canDeleteTenant,
+      } = useHasPermission("Customers");
 
   const [walkinCustomers, setWalkinCustomers] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
@@ -195,6 +209,21 @@ const handleAddTenant = () => {
 };
 
 
+  if (!canReadWalkin && !loading) {
+    return (
+       <View style={styles.container}>
+    
+      <View style={{ alignItems: "center", marginTop: 180 }}>
+  
+        <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
+        <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+          You do not have access to view Walkin
+        </Text>
+      </View>
+      </View>
+    )
+  }
+
 
   return (
     <>
@@ -214,7 +243,10 @@ const handleAddTenant = () => {
   bookings and check-ins.
 </Text>
 
-               <TouchableOpacity style={styles.addBtnAdd} onPress={handleAddTenant}>
+               <TouchableOpacity 
+               style={[ styles.addBtnAdd, !canWriteWalkin && { opacity: 0.4 }]}
+               disabled={!canWriteWalkin}
+               onPress={handleAddTenant}>
                     <Text style={styles.addBtnText}>
                     + Add Tenant
                     </Text>
@@ -288,17 +320,27 @@ const handleAddTenant = () => {
                 },
               ]}
             >
-              <TouchableOpacity style={styles.menuRow} onPress={handleShowTennantCheckin}>
+              <TouchableOpacity 
+              style={[ styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+              disabled={!canWriteWalkin}
+              onPress={handleShowTennantCheckin}>
                 <Image source={CalendarIcon} style={styles.menuIcon} />
                 <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuRow} onPress={handleShowAddBooking}>
+
+              <TouchableOpacity 
+              style={[ styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+              disabled={!canWriteWalkin}
+              onPress={handleShowAddBooking}>
                 <Image source={CalendarIcon} style={styles.menuIcon} />
                 <Text style={styles.menuText}>Add booking</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuRow} onPress={DeleteMenu}>
+              <TouchableOpacity 
+              style={[ styles.menuRow, !canDeleteWalkin && { opacity: 0.4 }]}
+              disabled={!canDeleteWalkin}
+              onPress={DeleteMenu}>
                 <Image source={require("../../../Assets/Images/trash.png")} style={styles.menuIcon} />
                 <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
               </TouchableOpacity>
@@ -308,12 +350,18 @@ const handleAddTenant = () => {
 
  {walkinCustomers?.length > 0 &&
 <>
-        <TouchableOpacity style={styles.filterBtn} onPress={handleWalkinFilter}>
+        <TouchableOpacity 
+            style={[ styles.filterBtn, !canReadWalkin && { opacity: 0.4 }]}
+            disabled={!canReadWalkin}
+        onPress={handleWalkinFilter}>
           <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
         </TouchableOpacity>
 
 
-        <TouchableOpacity style={styles.addBtn} onPress={() =>
+        <TouchableOpacity
+            style={[ styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
+            disabled={!canWriteTenant}
+        onPress={() =>
           navigation.navigate("AddTenant", {
             refreshWalkins: walkinCustomers,
           })

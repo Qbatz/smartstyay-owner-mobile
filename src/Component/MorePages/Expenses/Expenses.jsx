@@ -330,7 +330,7 @@ export default function ExpensesScreen() {
   }
 
   const handleOpenTagAsset = () => {
-      if (!canUpdateExpense) return;
+      if (!canWriteExpense) return;
     closeDetails();
 
     setTimeout(() => {
@@ -660,8 +660,8 @@ export default function ExpensesScreen() {
               </View>
 
               <TouchableOpacity 
-                        style={[ styles.tagBtn, !canUpdateExpense && { opacity: 0.4 }]}
-    disabled={!canUpdateExpense}
+                        style={[ styles.tagBtn, !canWriteExpense && { opacity: 0.4 }]}
+    disabled={!canWriteExpense}
               onPress={handleOpenTagAsset}>
                 <Image source={ButtonTag} style={{ width: 18, height: 18, tintColor: "#fff" }} />
                 <Text style={styles.tagBtnText}>Tag Asset</Text>
