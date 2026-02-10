@@ -13,6 +13,8 @@ import Profile from "../../../Assets/Images/Avatar.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useFocusEffect } from "@react-navigation/native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+
 
 
 export default function NoticePeriodBedSheet({
@@ -100,6 +102,21 @@ console.log("matchedCustomer",matchedCustomer)
     cancelNoticePeriod();
     onClose();
   };
+
+    const {
+    canWriteModule: canWriteCustomers,
+    // canReadModule: canReadPayingGuests,
+    // canUpdateModule: canUpdatePayingGuests,
+    // canDeleteModule: canDeletePayingGuests,
+  } = useHasPermission("Customers");
+
+
+
+  const {
+    canUpdateModule: canUpdatePayingGuests,
+    // canDeleteModule: canDeletePayingGuests,
+
+  } = useHasPermission("Paying Guests");
 
 
   if (!visible) return null;
@@ -207,8 +224,10 @@ console.log("matchedCustomer",matchedCustomer)
             <View style={styles.dropdown}>
 
   <TouchableOpacity
-                style={styles.menuItem}
-                onPress={handleEdit}
+                // style={styles.menuItem}
+                disabled={!canUpdatePayingGuests}
+                style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                onPress={handleEdit}    
               >
                 <Image
                   source={require("../../../Assets/Images/editIcon.png")}
@@ -217,7 +236,11 @@ console.log("matchedCustomer",matchedCustomer)
                 <Text style={styles.menuText}>Edit</Text>
               </TouchableOpacity>
               {matchedCustomer?.currentStatus === "Settlement Generated" ? (
-                <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
+                <TouchableOpacity
+                //  style={styles.menuItem}
+                  disabled={!canWriteCustomers}
+                  style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                onPress={handleCheckoutSheet}>
                   <Image
                     source={require("../../../Assets/Images/NewBook.png")}
                     style={styles.menuIcon}
@@ -228,7 +251,9 @@ console.log("matchedCustomer",matchedCustomer)
                 <>
                   {/* Normal menu items */}
                   <TouchableOpacity
-                    style={styles.menuItem}
+                    // style={styles.menuItem}
+                    disabled={!canWriteCustomers}
+                    style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                     onPress={handleNoticeToBooking}
                   >
                     <Image
@@ -239,7 +264,9 @@ console.log("matchedCustomer",matchedCustomer)
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.menuItem}
+                    // style={styles.menuItem}
+                    disabled={!canWriteCustomers}
+                    style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                     onPress={handleCancelNoticePeriod}
                   >
                     <Image
@@ -250,7 +277,9 @@ console.log("matchedCustomer",matchedCustomer)
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.menuItem}
+                    // style={styles.menuItem}
+                    disabled={!canWriteCustomers}
+                    style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                     onPress={handleFinalSettledment}
                   >
                     <Image

@@ -1,13 +1,30 @@
 import React from "react";
 import { View, Text, StyleSheet ,TouchableOpacity,Image} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useHasPermission } from "../../../Utils/useHasPermission"
 import AddIcon from "../../../Assets/Images/add-circle.png";
 
 export default function BillTab({ customerDetails }) {
   const invoiceList = customerDetails?.invoiceResponseList || [];
  const navigation = useNavigation();
   console.log("customerDetailsBillTab", invoiceList);
+
+               const {
+            canWriteModule: canWriteTenant,
+            canReadModule: canReadTenant,
+           canUpdateModule: canUpdateTenant,
+            canDeleteModule: canDeleteTenant,
+          } = useHasPermission("Customers");
+
+              const {
+                  canWriteModule: canWriteInvoice,
+                  canReadModule: canReadInvoice,
+                  canUpdateModule: canUpdateInvoice,
+                  canDeleteModule: canDeleteInvoice,
+                } = useHasPermission("Bills")
+
   const handleCreateBill = () => {
+    if(!canWriteInvoice) return ;
 navigation.navigate("CreateBills" , {mode: "add",customerDetails})
 }
 
@@ -58,7 +75,10 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
     
     </View>
 
-       <TouchableOpacity style={styles.addBtn} onPress={handleCreateBill}>
+       <TouchableOpacity 
+           style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
+             disabled={!canWriteInvoice}
+       onPress={handleCreateBill}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
            </>

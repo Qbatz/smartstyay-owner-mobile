@@ -89,10 +89,10 @@ export default function BillsDesign({ route }) {
     const [modalType, setModalType] = useState("success");
 
              const {
-        canWriteModule: canWriteBills,
-        canReadModule: canReadBills,
-        canUpdateModule: canUpdateBills,
-        canDeleteModule: canDeleteBills,
+        canWriteModule: canWriteInvoice,
+        canReadModule: canReadInvoice,
+        canUpdateModule: canUpdateInvoice,
+        canDeleteModule: canDeleteInvoice,
       } = useHasPermission("Bills")
 
 
@@ -218,10 +218,10 @@ const isBillLocked = true;
 // }, [activeHostelId])
 
 useEffect(() => {
-  if (activeHostelId && canReadBills) {
+  if (activeHostelId && canReadInvoice) {
     GetAllBillDetails(activeHostelId);
   }
-}, [activeHostelId, canReadBills]);
+}, [activeHostelId, canReadInvoice]);
 
 
     useEffect(() => {
@@ -813,7 +813,7 @@ const openCustomerDetails = (customer) => {
 };
 
 const openBillDetails = (item) => {
-   if (!canReadBills) return;
+   if (!canReadInvoice) return;
   setSelectedBill(item);
   setShowBillDetails(true);
 };
@@ -854,6 +854,7 @@ const handleCreateBill = () => {
     setTimeout(() => setShowSuccessModal(false), 1500);
     return;
   }
+  if(!canReadInvoice) return ;
 
 navigation.navigate("CreateBills" , {mode: "add"})
 }
@@ -987,7 +988,7 @@ const handleSaveRecordPayment = async () => {
 
 
 const handleSearch = async (text) => {
-    if (!canReadBills) return;
+    if (!canReadInvoice) return;
   const filters = {
     startDate: appliedFilters?.startDate || null,
     endDate: appliedFilters?.endDate || null,
@@ -1059,7 +1060,7 @@ console.log("refunddetails" , refundInitDetails , selectedBill?.invoiceDate);
 
 
 const handleApplyFilter = async () => {
-   if (!canReadBills) return;
+   if (!canReadInvoice) return;
   if (!fromDate && toDate) {
     setFilterError("Please select Start Date");
     return;
@@ -1097,7 +1098,7 @@ const handleApplyFilter = async () => {
 
 
 const handleResetFilters = async () => {
-   if (!canReadBills) return;
+   if (!canReadInvoice) return;
   setFromDate(null);
   setToDate(null);
   setBillStatus([]);
@@ -1494,7 +1495,7 @@ navigation.navigate("CancelNotice")
       setSearchText(text);
       handleSearch(text);
     }}
-      editable={canReadBills} 
+      editable={canReadInvoice} 
     />
   </View>
 
@@ -1527,7 +1528,7 @@ navigation.navigate("CancelNotice")
 {activeTab === "All Bills" && (
   <View style={{ flex: 1 }}>
 
-      {!canReadBills && (
+      {!canReadInvoice && (
       <View style={styles.centerContainer}>
         <Image source={EmptyFloor} style={styles.image} />
         <Text style={styles.noFloorText}>
@@ -1537,7 +1538,7 @@ navigation.navigate("CancelNotice")
     )} 
 
 
-   {canReadBills && (
+   {canReadInvoice && (
       <>
     {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
   <ScrollView
@@ -1667,9 +1668,9 @@ navigation.navigate("CancelNotice")
         <TouchableOpacity 
           style={[
     styles.addFloorBtn,
-    !canWriteBills && { opacity: 0.4 }
+    !canWriteInvoice && { opacity: 0.4 }
   ]}
-     disabled={!canWriteBills}
+     disabled={!canWriteInvoice}
         onPress={handleCreateBill}>
           <Text style={styles.addFloorText}>+ Add Bill</Text>
         </TouchableOpacity>
@@ -1682,8 +1683,8 @@ navigation.navigate("CancelNotice")
     {!loading && BillDetails?.listInvoices?.length > 0 && (
         <>
          <TouchableOpacity 
-            style={[styles.FilterButton,!canReadBills && { opacity: 0.4 }]}
-            disabled={!canReadBills}
+            style={[styles.FilterButton,!canReadInvoice && { opacity: 0.4 }]}
+            disabled={!canReadInvoice}
             onPress={() => setShowFilter(true)}>
       <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
     </TouchableOpacity>
@@ -1691,9 +1692,9 @@ navigation.navigate("CancelNotice")
     <TouchableOpacity 
                  style={[
     styles.addBtn,
-    !canWriteBills && { opacity: 0.4 }
+    !canWriteInvoice && { opacity: 0.4 }
   ]}
-  disabled={!canWriteBills}
+  disabled={!canWriteInvoice}
     onPress={handleCreateBill}>
       <Image source={AddIcon}
       style={{ width: 25, height: 25 }} />
@@ -2119,7 +2120,7 @@ navigation.navigate("CancelNotice")
     styles.popupRow,
     isBillLocked && styles.popupRowDisabled,
   ]}
-  disabled={isBillLocked && !canWriteBills}
+  disabled={isBillLocked && !canWriteInvoice}
   onPress={() => {
     setShowMenu(false);
     setDeleteTenants(true);
@@ -2140,8 +2141,8 @@ navigation.navigate("CancelNotice")
 </TouchableOpacity>
      
         {selectedBill?.invoiceAmount < 0 && selectedBill?.paymentStatus !== "Refunded" && selectedBill?.paymentStatus !== "Cancelled" && (
-        <TouchableOpacity  style={[ styles.popupRow,  !canWriteBills && { opacity: 0.4 } ]}
-        onPress={handleShowRefundPayment} disabled={!canWriteBills}>
+        <TouchableOpacity  style={[ styles.popupRow,  !canWriteInvoice && { opacity: 0.4 } ]}
+        onPress={handleShowRefundPayment} disabled={!canWriteInvoice}>
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
           style={styles.popupIcon}
@@ -2153,8 +2154,8 @@ navigation.navigate("CancelNotice")
      
 { (selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") &&(
     <TouchableOpacity 
-         style={[ styles.popupRow,  !canWriteBills && { opacity: 0.4 } ]}
-    onPress={handleShowRecordPayment} disabled={!canWriteBills}>
+         style={[ styles.popupRow,  !canWriteInvoice && { opacity: 0.4 } ]}
+    onPress={handleShowRecordPayment} disabled={!canWriteInvoice}>
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
     style={styles.popupIcon}
@@ -2169,7 +2170,7 @@ navigation.navigate("CancelNotice")
     styles.popupRow,
     isBillLocked && styles.popupRowDisabled,
   ]}
-  disabled={isBillLocked && !canWriteBills}
+  disabled={isBillLocked && !canWriteInvoice}
   onPress={handleShowWriteOff}
 >
   <Image
@@ -2198,8 +2199,8 @@ navigation.navigate("CancelNotice")
       
                     { (selectedBill?.invoiceMode === "Recurring" && selectedBill?.paymentStatus === "Pending") &&( 
        <TouchableOpacity 
-                      style={[ styles.popupRow,  !canUpdateBills && { opacity: 0.4 } ]}
-             disabled={!canUpdateBills}
+                      style={[ styles.popupRow,  !canUpdateInvoice && { opacity: 0.4 } ]}
+             disabled={!canUpdateInvoice}
        onPress={handleEditBill} >
         <Image
           source={require("../../../Assets/Images/ReAssign.png")}
@@ -2237,7 +2238,7 @@ navigation.navigate("CancelNotice")
     styles.popupRow,
     isBillLocked && styles.popupRowDisabled,
   ]}
-  disabled={isBillLocked && !canDeleteBills}
+  disabled={isBillLocked && !canDeleteInvoice}
   onPress={() => {
     setShowMenu(false);
     setDeleteTenants(true);
