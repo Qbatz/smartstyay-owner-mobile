@@ -22,6 +22,8 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useHasPermission } from "../../../Utils/useHasPermission"
+
 
 const SHEET_HEIGHT = 520;
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -47,6 +49,13 @@ export default function AssignAmenitiesSheet({
   const { assignAmenitiesForTenant } = useCustomer();
 
   const { activeHostelId } = useContext(CommonContexts);
+
+             const {
+          canWriteModule: canWriteTenant,
+          canReadModule: canReadTenant,
+         canUpdateModule: canUpdateTenant,
+          canDeleteModule: canDeleteTenant,
+        } = useHasPermission("Customers");
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedAmenity, setSelectedAmenity] = useState(null);
@@ -337,9 +346,8 @@ export default function AssignAmenitiesSheet({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={
-                styles.assignButton}
-             
+             style={[ styles.assignButton, !canWriteTenant && { opacity: 0.4 }]}
+             disabled={!canWriteTenant}
               onPress={handleAssignAmenity}
             >
               {loading ? (

@@ -32,11 +32,13 @@ import { useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import Dots from "../../Assets/Images/3dots.png";
+import EditIcon from "../../Assets/Images/editIcon.png";
+import DeleteIcon from "../../Assets/Images/trash.png";
 import { useFocusEffect } from "@react-navigation/native";
 import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
 import OccupiedAndReservedBedSheet from "../PG/OccupiedAndReservedStatus";
 import Loader from "../Loader/Loader";
-
+import { useHasPermission } from "../../Utils/useHasPermission";
 
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
@@ -98,6 +100,14 @@ export default function PGPageFull({ route }) {
   const [showCheckout, setShowCheckout] = useState(false);
   const [inactiveTenant, setInactiveTenant] = useState(null);
   // const [matchedBed, setMatchedBed] = useState(null);
+
+
+    const {
+    canWriteModule: canWritePayingGuests,
+    canReadModule: canReadPayingGuests,
+    canUpdateModule: canUpdatePayingGuests,
+    canDeleteModule: canDeletePayingGuests,
+  } = useHasPermission("Paying Guests");
 
 
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -824,6 +834,10 @@ export default function PGPageFull({ route }) {
   };
 
 
+  const showReadBlockedState = activeHostelId && !canReadPayingGuests;
+
+
+
   return (
     <>
       {loading && <Loader />}
@@ -891,7 +905,9 @@ export default function PGPageFull({ route }) {
 
           {!!activeHostelId && floors?.length > 0 && (
             <TouchableOpacity
-              style={styles.floorButton}
+              // style={styles.floorButton}
+              disabled={!canWritePayingGuests}
+              style={[ styles.floorButton, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() => setShowAddFloor(true)}
             >
               <Text style={styles.floorButtonText}>+ Floor</Text>
@@ -960,23 +976,30 @@ export default function PGPageFull({ route }) {
             {/* 🟢 MENU – fully clickable */}
             <View style={styles.menuBox1} pointerEvents="auto">
               <TouchableOpacity
-                style={styles.menuItem}
+                // style={styles.menuItem}
+              disabled={!canUpdatePayingGuests}
+              style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowFloorMenu(false);
                   setEditFloorData(activeFloor);
                   setShowAddFloor(true);
                 }}
               >
+
+                <Image source={EditIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
                 <Text style={styles.menuText}>Edit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.menuItem}
+                // style={styles.menuItem}
+              disabled={!canDeletePayingGuests}
+              style={[ styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowFloorMenu(false);
                   handleFloorDelete(activeFloor.id);
                 }}
               >
+                 <Image source={DeleteIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
                 <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
               </TouchableOpacity>
             </View>
@@ -1062,14 +1085,25 @@ export default function PGPageFull({ route }) {
           </ScrollView>
         </View>
 
+{showReadBlockedState && (
+  <View style={styles.centerContainer}>
+    <Image source={EmptyFloor} style={styles.image} />
+    <Text style={styles.noFloorText}>
+      You don’t have permission to view PG details
+    </Text>
+  </View>
+)}
 
-        {!loading && floors.length === 0 && (
+
+        {!loading && !showReadBlockedState && floors.length === 0 &&  (
           <View style={styles.centerContainer}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No floors are there!</Text>
 
             <TouchableOpacity
-              style={styles.addFloorBtn}
+              // style={styles.addFloorBtn}
+                disabled={!canWritePayingGuests}
+              style={[ styles.addFloorBtn, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() => {
                 if (!activeHostelId) {
                   setModalType("warning"); // or "error"
@@ -1089,13 +1123,15 @@ export default function PGPageFull({ route }) {
         )}
 
 
-        {!loading && floors.length > 0 && rooms.length === 0 && (
+      {!loading && !showReadBlockedState && floors.length > 0 && rooms.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No Rooms are there!</Text>
 
             <TouchableOpacity
-              style={styles.addFloorBtn}
+              // style={styles.addFloorBtn}
+              disabled={!canWritePayingGuests}
+              style={[ styles.addFloorBtn, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() => setShowAddRoom(true)}
             >
               <Text style={styles.addFloorText}>+ Add Rooms</Text>
@@ -1104,7 +1140,7 @@ export default function PGPageFull({ route }) {
         )}
 
 
-
+{!showReadBlockedState && (
         <FlatList
           contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
           data={rooms}
@@ -1146,8 +1182,9 @@ export default function PGPageFull({ route }) {
                     <View style={styles.menuOverlay}>
                       <View style={styles.menuBox}>
                         <TouchableOpacity
-                          style={styles.menuItem}
-
+                          // style={styles.menuItem}
+                          disabled={!canUpdatePayingGuests}
+                          style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                           onPress={() => {
                             setOpenMenuRoomId(null);
                             setEditRoomData(item);
@@ -1155,14 +1192,17 @@ export default function PGPageFull({ route }) {
                           }}
 
                         >
+                           <Image source={EditIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
                           <Text style={styles.menuText}>Edit</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          style={styles.menuItem}
-
+                          // style={styles.menuItem}
+                          disabled={!canDeletePayingGuests}
+                          style={[ styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
                           onPress={() => handleDelete(item.id)}
                         >
+                          <Image source={DeleteIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
                           <Text style={[styles.menuText, { color: "red" }]}>
                             Delete
                           </Text>
@@ -1253,12 +1293,15 @@ export default function PGPageFull({ route }) {
 
           }}
         />
+)}
       </View>
 
 
       {floors.length > 0 && (
         <TouchableOpacity
-          style={styles.addFab}
+          // style={styles.addFab}
+          disabled={!canWritePayingGuests}
+          style={[ styles.addFab, !canWritePayingGuests && { opacity: 0.4 }]}
           onPress={() => setShowActionSheet(true)}
         >
           <Image source={AddFloorIcon} style={styles.addIcon} />
@@ -1281,7 +1324,10 @@ export default function PGPageFull({ route }) {
 
             <View style={styles.sheetContent}>
               <TouchableOpacity
-                style={styles.actionItem}
+                // style={styles.actionItem}
+
+                   disabled={!canWritePayingGuests}
+          style={[ styles.actionItem, !canWritePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowAddFloor(true);
                   setShowActionSheet(false);
@@ -1297,7 +1343,9 @@ export default function PGPageFull({ route }) {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionItem}
+                // style={styles.actionItem}
+                disabled={!canWritePayingGuests}
+                style={[ styles.actionItem, !canWritePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowAddRoom(true);
                   setShowActionSheet(false);
@@ -1968,6 +2016,8 @@ const styles = StyleSheet.create({
   // },
 
   menuItem: {
+    display:'flex', 
+    flexDirection:'row',
     paddingVertical: 10,
     paddingHorizontal: 14,
   },

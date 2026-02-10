@@ -8,6 +8,7 @@ import {
     Image,
     StyleSheet, TouchableWithoutFeedback, BackHandler,ScrollView
 } from "react-native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
 import Money from "../../../Assets/Images/money.png";
@@ -70,7 +71,8 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
                 useNativeDriver: true,
             }).start();
         }
-    }, [visible]);
+    }, [visible])
+
 
 
     const panResponder = PanResponder.create({
@@ -113,6 +115,21 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
   });
     }
+
+        const {
+        canWriteModule: canWriteCustomers,
+        // canReadModule: canReadPayingGuests,
+        // canUpdateModule: canUpdatePayingGuests,
+        // canDeleteModule: canDeletePayingGuests,
+    } = useHasPermission("Customers");
+
+
+
+    const {
+        canUpdateModule: canUpdatePayingGuests,
+        // canDeleteModule: canDeletePayingGuests,
+
+    } = useHasPermission("Paying Guests");
 
     return (
         <>
@@ -229,14 +246,18 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
         <View style={styles.dotMenu}>
           <TouchableOpacity
             onPress={() => handleCheckIn(item)}
-            style={styles.menuItem}
+            // style={styles.menuItem}
+            disabled={!canWriteCustomers}
+            style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
           >
             <Image source={Checkin} style={styles.menuIcon} />
             <Text style={styles.menuText}>Check-In</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.menuItem}
+            // style={styles.menuItem}
+            disabled={!canWriteCustomers}
+            style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
             onPress={() => {
               setMenuOpen(null);
               handleMakeUsInActive(item);
@@ -248,7 +269,9 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.menuItem}
+            // style={styles.menuItem}
+            disabled={!canUpdatePayingGuests}
+            style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
             onPress={() => {
               setMenuOpen(null);
               handleEdit();

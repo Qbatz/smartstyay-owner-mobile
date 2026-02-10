@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, Animated, PanResponder, StyleSheet, Image
 import { useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import SuccessModal from "../../ToastFile/ToastPage";
+import { useHasPermission } from "../../Utils/useHasPermission";
+
 
 
 export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed,onDeleteBed,onBedAdded }) {
@@ -77,6 +79,21 @@ onBedAdded && onBedAdded(selectedBed.roomId)
   }
 };
 
+    const {
+    canWriteModule: canWritePayingGuests,
+    canReadModule: canReadPayingGuests,
+    canUpdateModule: canUpdatePayingGuests,
+    canDeleteModule: canDeletePayingGuests,
+  } = useHasPermission("Paying Guests");
+
+
+    const {
+    canWriteModule: canWriteCustomers,
+    //   canReadModule: canReadExpense,
+    // canUpdateModule: canUpdateCustomers,
+    //   canDeleteModule: canDeleteExpense,
+  } = useHasPermission("Customers");
+
 
   if (!visible) return null;
 
@@ -95,7 +112,10 @@ onBedAdded && onBedAdded(selectedBed.roomId)
           <Text style={styles.title}>Manage Bed</Text>
 
 
-          <TouchableOpacity style={styles.optionRow} onPress={() => {
+          <TouchableOpacity 
+          disabled={!canWriteCustomers}
+          style={[ styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
+          onPress={() => {
             navigation.navigate("AddTenant");
             onClose();
           }}
@@ -105,7 +125,11 @@ onBedAdded && onBedAdded(selectedBed.roomId)
           </TouchableOpacity>
 
 
-          <TouchableOpacity style={styles.optionRow} onPress={() => {
+          <TouchableOpacity
+          //  style={styles.optionRow} 
+          disabled={!canWriteCustomers}
+          style={[ styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
+           onPress={() => {
             onClose();
             navigation.navigate("AssignTenant", {
               roomNo: "101",
@@ -119,12 +143,18 @@ onBedAdded && onBedAdded(selectedBed.roomId)
             <Image source={require("../../Assets/Images/Reports.png")} style={styles.icon} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.deleteRow}
+          <TouchableOpacity 
+          // style={styles.deleteRow}
+          disabled={!canUpdatePayingGuests}
+          style={[ styles.deleteRow, !canUpdatePayingGuests && { opacity: 0.4 }]}
             onPress={handleEdit} >
             <Text style={styles.optionText}>Edit</Text>
             <Image source={require("../../Assets/Images/editIcon.png")} style={styles.deleteIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteRow} onPress={handleDelete}>
+          <TouchableOpacity 
+            disabled={!canDeletePayingGuests}
+          style={[ styles.deleteRow, !canDeletePayingGuests && { opacity: 0.4 }]}
+          onPress={handleDelete}>
             <Text style={styles.deleteText}>Delete</Text>
             <Image source={require("../../Assets/Images/trash.png")} style={styles.deleteIcon} />
           </TouchableOpacity>

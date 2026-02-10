@@ -8,6 +8,7 @@ import {
   Image, BackHandler,
 } from "react-native";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import Shield from "../../../Assets/Images/Shield.png";
 import Confiqure from "../../../Assets/Images/arrow-transfer.png";
@@ -139,7 +140,10 @@ const closeEditSheet = () => {
 };
 
 
-
+  const {
+    canWriteModule: canWriteBills,
+    canReadModule: canReadRecurring,
+  } = useHasPermission("Bills");
 
   
 
@@ -166,7 +170,7 @@ const closeEditSheet = () => {
        
       </View>
 
-    {!loading && billingData?.length === 0 && (
+       {!canReadRecurring && !loading && (
               <View style={styles.emptyContainer}>
                 <Image
                   source={EmptyState}
@@ -174,12 +178,23 @@ const closeEditSheet = () => {
                 />
                 <Text style={styles.emptyText}>
                   You do not have access to view Billing Rule
-                </Text>
-                
-                      
+                </Text>           
+              </View>
+       )}
+
+    {canReadRecurring && !loading && billingData?.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Image
+                  source={EmptyState}
+                  style={styles.emptyImage}
+                />
+                <Text style={styles.emptyText}>
+                  No Records Found
+                </Text>       
               </View>
             ) }
-      {billingData && (
+
+      {billingData && canReadRecurring  && (
         <View style={styles.card}>
        
 <View style={styles.titleRow}>
@@ -215,7 +230,11 @@ const closeEditSheet = () => {
 
           <View style={styles.row}>
            
-            <TouchableOpacity style={styles.configureBtn}  onPress={() => navigation.navigate("LongStayRecurring")}
+            <TouchableOpacity 
+            // style={styles.configureBtn}
+             style={[ styles.configureBtn, !canWriteBills && { opacity: 0.4 }]}
+             disabled={!canWriteBills}
+            onPress={() => navigation.navigate("LongStayRecurring")}
 >
   <View style={styles.configureRow}>
     <Image
