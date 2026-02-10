@@ -319,11 +319,11 @@ const maxDate = today;
                        
                         <View style={styles.footer}>
                             <TouchableOpacity onPress={resetState}>
-                                <Text style={styles.cancel}>Cancel</Text>
+                                <Text style={[styles.cancel,{marginRight:15}]}>Cancel</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={styles.updateBtn}
+                                style={[styles.updateBtn,{marginLeft:10}]}
                                 
                                 onPress={handleUpdate}
                             >
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         alignItems: "center",
         marginTop:15
     },

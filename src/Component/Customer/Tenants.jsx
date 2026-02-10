@@ -1178,7 +1178,7 @@ export default function TenantsScreen({ route }) {
                     onPress={handleShowTennantCheckin}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Check_In</Text>
+                    <Text style={styles.popupText}>CheckIn</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity

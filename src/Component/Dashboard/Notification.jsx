@@ -1,4 +1,4 @@
-import React,{useState,useRef,useCallback, useContext} from "react";
+import React, { useState, useRef, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-   Animated,
+  Animated,
   PanResponder,
   Dimensions,
-  TouchableWithoutFeedback,BackHandler
+  TouchableWithoutFeedback, BackHandler
 } from "react-native";
 import { NotificationContext } from "../../Context/NotificationContext";
 import { CommonContexts } from "../../Context/CommonContext";
-import { useNavigation,useFocusEffect} from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 
 import newTenant from "../../Assets/Images/newTenants.png";
@@ -25,102 +25,103 @@ import FilterIcon from "../../Assets/Images/filter.png";
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import NoResultFound from "../../Assets/Images/NoResultFound.png"
 
 
 export default function NotificationDetails() {
   const navigation = useNavigation();
-  const { getNotificationsByHostel,readNotificationsByHostel } = useContext(NotificationContext);
+  const { getNotificationsByHostel, readNotificationsByHostel } = useContext(NotificationContext);
   const { activeHostelId } = useContext(CommonContexts);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const [showFilter, setShowFilter] = useState(false);
-   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-   const [fromDate, setFromDate] = useState(dayjs());
-     const [toDate, setToDate] = useState(dayjs());
-     const [openFrom, setOpenFrom] = useState(false);
-     const [openTo, setOpenTo] = useState(false);
-     const [openUpward, setOpenUpward] = useState(false);
-     const [notifications, setNotifications] = useState([]);
-     const [unReadcomments,setUnReadComments] = useState("")
-      const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
-
-
-    
-    
-    
-    
-    const fetchCustomers = async () => {
-  const res = await getNotificationsByHostel(activeHostelId);
-
-  // ✅ correct array extraction
-  setNotifications(res?.data?.listOfNotifications || []);
-  setUnReadComments(res.data.unreadCount)
-  console.log("res.data",res.data)
-};
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const [fromDate, setFromDate] = useState(dayjs());
+  const [toDate, setToDate] = useState(dayjs());
+  const [openFrom, setOpenFrom] = useState(false);
+  const [openTo, setOpenTo] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unReadcomments, setUnReadComments] = useState("")
+  const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
 
-useFocusEffect(
-  useCallback(() => {
-    let timer;
-
-    if (activeHostelId) {
-      // 1️⃣ initial fetch
-      fetchCustomers();
-
-      // 2️⃣ unread irundha mattum delayed read
-      if (unReadcomments > 0) {
-        timer = setTimeout(async () => {
-          await readNotificationsByHostel(activeHostelId);
-
-          // ✅ 3️⃣ read API success apram REFRESH
-          fetchCustomers();
-        }, 5000);
-      }
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [activeHostelId, unReadcomments])
-);
 
 
-//       useFocusEffect(
-//   useCallback(() => {
-//     if (activeHostelId) {
-//       // fetch list
-//       fetchCustomers();
 
-//       // 🔔 mark all as read
-//       readNotificationsByHostel(activeHostelId);
-//     }
-//   }, [activeHostelId])
-// );
-      console.log("setNotifications",notifications)
-      useFocusEffect(
-  useCallback(() => {
-    const onBackPress = () => {
-      if (showFilter) {
-        onClose();   
-        return true;   
+  const fetchCustomers = async () => {
+    const res = await getNotificationsByHostel(activeHostelId);
+
+    // ✅ correct array extraction
+    setNotifications(res?.data?.listOfNotifications || []);
+    setUnReadComments(res.data.unreadCount)
+    console.log("res.data", res.data)
+  };
+
+
+
+  useFocusEffect(
+    useCallback(() => {
+      let timer;
+
+      if (activeHostelId) {
+        // 1️⃣ initial fetch
+        fetchCustomers();
+
+        // 2️⃣ unread irundha mattum delayed read
+        if (unReadcomments > 0) {
+          timer = setTimeout(async () => {
+            await readNotificationsByHostel(activeHostelId);
+
+            // ✅ 3️⃣ read API success apram REFRESH
+            fetchCustomers();
+          }, 5000);
+        }
       }
 
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-        return true;
-      }
+      return () => {
+        if (timer) clearTimeout(timer);
+      };
+    }, [activeHostelId, unReadcomments])
+  );
 
-      return false;
-    };
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
+  //       useFocusEffect(
+  //   useCallback(() => {
+  //     if (activeHostelId) {
+  //       // fetch list
+  //       fetchCustomers();
 
-    return () => subscription.remove();
-  }, [showFilter, navigation])
-);
+  //       // 🔔 mark all as read
+  //       readNotificationsByHostel(activeHostelId);
+  //     }
+  //   }, [activeHostelId])
+  // );
+  console.log("setNotifications", notifications)
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (showFilter) {
+          onClose();
+          return true;
+        }
+
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [showFilter, navigation])
+  );
 
 
   React.useEffect(() => {
@@ -137,50 +138,50 @@ useFocusEffect(
       onPanResponderMove: (_, g) => {
         if (g.dy > 0) translateY.setValue(g.dy);
       },
-     onPanResponderRelease: (_, g) => {
-    if (g.dy > SCREEN_HEIGHT * 0.15) {
-        Animated.timing(translateY, {
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > SCREEN_HEIGHT * 0.15) {
+          Animated.timing(translateY, {
             toValue: SCREEN_HEIGHT,
             duration: 200,
             useNativeDriver: true,
-        }).start(() => onClose());
-    } else {
-        Animated.spring(translateY, {
+          }).start(() => onClose());
+        } else {
+          Animated.spring(translateY, {
             toValue: 0,
             useNativeDriver: true,
-        }).start();
-    }
-}
+          }).start();
+        }
+      }
     })
   ).current;
-const onClose = () => {
-  Animated.timing(translateY, {
-    toValue: SCREEN_HEIGHT,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => setShowFilter(false));
-};
+  const onClose = () => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setShowFilter(false));
+  };
 
 
   return (
     <>
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      
-     
-    <View style={styles.header}>
-  
-  {/* LEFT SIDE → Arrow + Title */}
-  <View style={styles.leftRow}>
-    <TouchableOpacity onPress={() => navigation.goBack()}>
-     
-      <Image source={leftArrow} style={styles.backArrow}/>
-    </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
 
-    <Text style={styles.headerTitle}>Notifications</Text>
-  </View>
 
-  {/* RIGHT SIDE → Filter Icon */}
- {/* <TouchableOpacity
+        <View style={styles.header}>
+
+          {/* LEFT SIDE → Arrow + Title */}
+          <View style={styles.leftRow}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+
+              <Image source={leftArrow} style={styles.backArrow} />
+            </TouchableOpacity>
+
+            <Text style={styles.headerTitle}>Notifications</Text>
+          </View>
+
+          {/* RIGHT SIDE → Filter Icon */}
+          {/* <TouchableOpacity
   onPress={() => {
     setShowFilter(true);
     translateY.setValue(SCREEN_HEIGHT); // RESET
@@ -194,10 +195,10 @@ const onClose = () => {
   <Image source={FilterIcon} style={{ width: 22, height: 22 }} />
 </TouchableOpacity> */}
 
-</View>
+        </View>
 
 
-      {/* <ScrollView showsVerticalScrollIndicator={false}>
+        {/* <ScrollView showsVerticalScrollIndicator={false}>
 
       
         <Text style={styles.sectionTitle}>Today</Text>
@@ -311,131 +312,139 @@ const onClose = () => {
 
         <View style={{ height: 40 }} />
       </ScrollView> */}
-      <ScrollView showsVerticalScrollIndicator={false}>
-  {notifications
-    .sort(
-      (a, b) =>
-        dayjs(b.requestedAt, "DD/MM/YYYY").valueOf() -
-        dayjs(a.requestedAt, "DD/MM/YYYY").valueOf()
-    )
-    .map((item, index, arr) => {
-      const curr = dayjs(item.requestedAt, "DD/MM/YYYY");
-      const prev =
-        index > 0
-          ? dayjs(arr[index - 1].requestedAt, "DD/MM/YYYY")
-          : null;
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{flex:1}}>
+          {notifications
+            .sort(
+              (a, b) =>
+                dayjs(b.requestedAt, "DD/MM/YYYY").valueOf() -
+                dayjs(a.requestedAt, "DD/MM/YYYY").valueOf()
+            )
+            .map((item, index, arr) => { console.log(item)
+              const curr = dayjs(item.requestedAt, "DD/MM/YYYY");
+              const prev =
+                index > 0
+                  ? dayjs(arr[index - 1].requestedAt, "DD/MM/YYYY")
+                  : null;
 
-      const showHeader =
-        !prev || !curr.isSame(prev, "day");
+              const showHeader =
+                !prev || !curr.isSame(prev, "day");
 
-      let label = "";
-      if (curr.isSame(dayjs(), "day")) label = "Today";
-      else if (
-        curr.isSame(dayjs().subtract(1, "day"), "day")
-      )
-        label = "Yesterday";
-      else label = curr.format("DD MMM YYYY");
+              let label = "";
+              if (curr.isSame(dayjs(), "day")) label = "Today";
+              else if (
+                curr.isSame(dayjs().subtract(1, "day"), "day")
+              )
+                label = "Yesterday";
+              else label = curr.format("DD MMM YYYY");
 
-      return (
-        <View key={item.notificationId}>
-          {/* 🔹 DATE HEADER */}
-          {showHeader && (
-            <Text style={styles.sectionTitle}>
-              {label}
-            </Text>
-          )}
+              return (
+                <View key={item.notificationId}>
+                  {/* 🔹 DATE HEADER */}
+                  {showHeader && (
+                    <Text style={styles.sectionTitle}>
+                      {label}
+                    </Text>
+                  )}
 
-          {/* 🔹 CARD */}
-          <View
-            style={[
-              styles.card,
-              !item.isRead && styles.activeCard,
-            ]}
-          >
-            {!item.isRead && <View style={styles.dot} />}
+                  {/* 🔹 CARD */}
+                  <View
+                    style={[
+                      styles.card,
+                      !item.isRead && styles.activeCard,
+                    ]}
+                  >
+                    {!item.isRead && <View style={styles.dot} />}
 
-            <View style={styles.row}>
-              <View style={styles.profileCircle}>
-                <Text style={styles.profileInitial}>
-                  {item.requestedUser?.[0] || "NA"}
-                </Text>
-              </View>
+                    <View style={styles.row}>
+                      <View style={styles.profileCircle}>
+                        <Text style={styles.profileInitial}>
+                          {item.requestedUser?.[0] || "NA"}
+                        </Text>
+                      </View>
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.title}>
-                  {item.notificationTitle}
-                </Text>
-                <Text style={styles.desc}>
-                  {item.notificationDescription}
-                </Text>
-              </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.title}>
+                          {item.notificationTitle}
+                        </Text>
+                        <Text style={styles.desc}>
+                          {item.notificationDescription}
+                        </Text>
+                      </View>
 
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.time}>
-                  2m ...
-                </Text>
-              </View>
+                      <View style={{ alignItems: "flex-end" }}>
+                        <Text style={styles.time}>
+                          2m ...
+                        </Text>
+                      </View>
+                    </View>
+
+                    {item.typeCode === 4 && (
+                      <TouchableOpacity
+                        style={styles.reviewBtn}
+                        onPress={() =>
+                          navigation.navigate("HistoryAndComments", {
+                            notificationId: item.requestId,
+                            item: item,
+                          })
+                        }
+                      >
+                        <Text style={styles.reviewText}>
+                          Review
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
+
+          {notifications.length === 0 && (
+            <View style={{ flex: 1,alignItems:'center',justifyContent:'center' }}>
+              <Image source={NoResultFound} style={{ width: 310, height: 220 }} />
+              <Text style={{fontSize:20,fontWeight:600,}}>
+                No Result Found !
+              </Text>
+               <Text style={{fontSize:16,fontWeight:400,color:'#4B4B4B',paddingHorizontal:20,
+                            textAlign:'center',marginTop:10, lineHeight: 24,}}>
+                Try adjusting your search or filters to see {"\n"}more options.
+              </Text>
             </View>
 
-            {item.typeCode === 4 && (
-              <TouchableOpacity
-                style={styles.reviewBtn}
-                 onPress={() =>
-      navigation.navigate("HistoryAndComments", {
-        notificationId: item.requestId,
-        item: item,
-      })
-    }
-              >
-                <Text style={styles.reviewText}>
-                  Review
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      );
-    })}
+          )}
+        </ScrollView>
 
-  {notifications.length === 0 && (
-    <Text style={styles.sectionTitle}>
-      No notifications available
-    </Text>
-  )}
-</ScrollView>
+      </SafeAreaView>
 
-    </SafeAreaView>
-
-    {
+      {
         showFilter &&
-         <View style={styles.overlay}>
-      
-      {/* CLOSE ON BACKDROP */}
-      <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+        <View style={styles.overlay}>
 
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheet,
-          { transform: [{ translateY }] },
-        ]}
-      >
-        <View style={styles.handle} />
+          {/* CLOSE ON BACKDROP */}
+          <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          
-          {/* TITLE */}
-          <Text style={styles.heading}>Filter by</Text>
+          <Animated.View
+            {...panResponder.panHandlers}
+            style={[
+              styles.sheet,
+              { transform: [{ translateY }] },
+            ]}
+          >
+            <View style={styles.handle} />
 
-          {/* STATUS DROPDOWN (dummy design) */}
-          <Text style={styles.label}>Status</Text>
-          <View style={styles.dropBox}>
-            <Text style={styles.dropText}>All</Text>
-            <Text style={styles.arrow}>▾</Text>
-          </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
 
-          {/* DATE ROW */}
-          {/* <View style={styles.row}>
+              {/* TITLE */}
+              <Text style={styles.heading}>Filter by</Text>
+
+              {/* STATUS DROPDOWN (dummy design) */}
+              <Text style={styles.label}>Status</Text>
+              <View style={styles.dropBox}>
+                <Text style={styles.dropText}>All</Text>
+                <Text style={styles.arrow}>▾</Text>
+              </View>
+
+              {/* DATE ROW */}
+              {/* <View style={styles.row}>
           
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>From</Text>
@@ -458,41 +467,41 @@ const onClose = () => {
               />
             </View>
           </View> */}
-            <View style={styles.dateRow}>
-                        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                          <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-                          <Image source={CalendarIcon} style={styles.calIcon} />
-                        </TouchableOpacity>
-          
-                        <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                          <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-                          <Image source={CalendarIcon} style={styles.calIcon} />
-                        </TouchableOpacity>
-                      </View>
+              <View style={styles.dateRow}>
+                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+                  <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+                  <Image source={CalendarIcon} style={styles.calIcon} />
+                </TouchableOpacity>
 
-          {/* QUICK FILTER BUTTONS */}
-          <View style={styles.quickRow}>
-            <Text style={styles.quickBtn}>Today</Text>
-            <Text style={styles.quickBtn}>This Week</Text>
-            <Text style={styles.quickBtn}>This Month</Text>
-          </View>
+                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+                  <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+                  <Image source={CalendarIcon} style={styles.calIcon} />
+                </TouchableOpacity>
+              </View>
 
-          {/* RESET + APPLY */}
-          <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.resetBtn}>
-              <Text style={styles.resetText}>Reset All</Text>
-            </TouchableOpacity>
+              {/* QUICK FILTER BUTTONS */}
+              <View style={styles.quickRow}>
+                <Text style={styles.quickBtn}>Today</Text>
+                <Text style={styles.quickBtn}>This Week</Text>
+                <Text style={styles.quickBtn}>This Month</Text>
+              </View>
 
-            <TouchableOpacity style={styles.applyBtn}>
-              <Text style={styles.applyText}>Apply</Text>
-            </TouchableOpacity>
-          </View>
+              {/* RESET + APPLY */}
+              <View style={styles.actionRow}>
+                <TouchableOpacity style={styles.resetBtn}>
+                  <Text style={styles.resetText}>Reset All</Text>
+                </TouchableOpacity>
 
-        </ScrollView>
-      </Animated.View>
-    </View>
-    }
-    
+                <TouchableOpacity style={styles.applyBtn}>
+                  <Text style={styles.applyText}>Apply</Text>
+                </TouchableOpacity>
+              </View>
+
+            </ScrollView>
+          </Animated.View>
+        </View>
+      }
+
       {openFrom && (
         <View style={styles.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenFrom(false)}>
@@ -539,33 +548,33 @@ const onClose = () => {
 
 
 const styles = StyleSheet.create({
-header: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingTop:50
-},
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 50
+  },
   backArrow: {
- width:25,
- height:25
-  
-},
- headerTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  color: "#000",
-  marginLeft:4
-},
-filterIcon: {
-  width: 25,
-  height: 25,
-  tintColor: "#000", 
-},
-leftRow: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+    width: 25,
+    height: 25
+
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#000",
+    marginLeft: 4
+  },
+  filterIcon: {
+    width: 25,
+    height: 25,
+    tintColor: "#000",
+  },
+  leftRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
 
   sectionTitle: {
@@ -717,7 +726,7 @@ leftRow: {
     flexDirection: "row",
     marginTop: 24,
     justifyContent: "space-between",
-    marginBottom:40
+    marginBottom: 40
   },
   resetBtn: {
     flex: 1,
@@ -742,18 +751,18 @@ leftRow: {
     color: "#fff",
     fontWeight: "700",
   },
-   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
   dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
-   sheetOverlay: {
+  sheetOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
-    datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
+  datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
 
 
- 
+
 });

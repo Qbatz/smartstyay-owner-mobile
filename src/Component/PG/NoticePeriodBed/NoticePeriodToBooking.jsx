@@ -24,7 +24,7 @@ import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export default function NewBookingSheet({ visible, onClose, room, bed, selectedBed, onBedAdded }) {
-  const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer,getCustomerDetails } = useCustomer();
+  const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer, getCustomerDetails } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext);
   const translateY = useRef(new Animated.Value(500)).current;
@@ -53,67 +53,67 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   const [joiningDateError, setJoiningDateError] = useState("")
   const [BookingAmountError, setBookingAmountError] = useState("")
   const [bankIdError, setBankIdError] = useState("")
-   const [customerDetails,setCustomerDetails] = useState("")
+  const [customerDetails, setCustomerDetails] = useState("")
   const scrollRef = useRef(null);
-const containerRef = useRef(null);
-const amountRef = useRef(null);
-const txnRef = useRef(null);
-const txnWrapRef = useRef(null);
+  const containerRef = useRef(null);
+  const amountRef = useRef(null);
+  const txnRef = useRef(null);
+  const txnWrapRef = useRef(null);
 
-const [keyboardHeight, setKeyboardHeight] = useState(0);
-useEffect(() => {
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  useEffect(() => {
     if (selectedBed?.currentTenantInfo[0]?.tenetId) {
       fetchCustomerDetails();
     }
   }, [selectedBed?.currentTenantInfo[0]?.tenetId]);
 
- const fetchCustomerDetails = async () => {
+  const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(selectedBed?.currentTenantInfo[0]?.tenetId);
     console.log("fetchCustomerDetails", res)
     if (res.success) {
-     setCustomerDetails(res.data)
+      setCustomerDetails(res.data)
 
     } else {
       alert(res.message);
     }
   };
-console.log("customerDetails",customerDetails)
- const CustomerOverView = customerDetails?.checkoutInfo?.noticeDate;
- console.log("CustomerOverView",CustomerOverView)
- const today = dayjs().startOf("day");
+  console.log("customerDetails", customerDetails)
+  const CustomerOverView = customerDetails?.checkoutInfo?.noticeDate;
+  console.log("CustomerOverView", CustomerOverView)
+  const today = dayjs().startOf("day");
 
-const minBookingDate = CustomerOverView
-  ? dayjs(CustomerOverView, ["DD-MM-YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]).startOf("day")
-  : null;
+  const minBookingDate = CustomerOverView
+    ? dayjs(CustomerOverView, ["DD-MM-YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]).startOf("day")
+    : null;
 
 
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
-
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
-
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
-
-const scrollToInput = (wrapRef) => {
-  if (!wrapRef?.current || !scrollRef.current) return;
-
-  wrapRef.current.measure((fx, fy, width, height, px, py) => {
-    // py = screen Y position
-    // ✅ convert screenY -> scroll position by subtracting some offset
-    scrollRef.current.scrollTo({
-      y: Math.max(0, py - 250),
-      animated: true,
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
     });
-  });
-};
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const scrollToInput = (wrapRef) => {
+    if (!wrapRef?.current || !scrollRef.current) return;
+
+    wrapRef.current.measure((fx, fy, width, height, px, py) => {
+      // py = screen Y position
+      // ✅ convert screenY -> scroll position by subtracting some offset
+      scrollRef.current.scrollTo({
+        y: Math.max(0, py - 250),
+        animated: true,
+      });
+    });
+  };
 
 
 
@@ -276,7 +276,7 @@ const scrollToInput = (wrapRef) => {
   };
 
 
-console.log("selectedBed",selectedBed)
+  console.log("selectedBed", selectedBed)
   const handleBooking = async () => {
     if (!validateForm()) return;
 
@@ -337,262 +337,262 @@ console.log("selectedBed",selectedBed)
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
-       <Animated.View
-  style={[styles.sheet, { transform: [{ translateY }] }]}
-  {...panResponder.panHandlers}
->
-  {/* HANDLE */}
-  <View style={styles.handle} />
-
-  {/* HEADER */}
-  <Text style={styles.title}>Tenant Booking</Text>
-  <Text style={styles.subTitle}>
-    Room No :{selectedBed?.roomName} | {selectedBed?.bedName}
-  </Text>
-
-  {/* ✅ FORM SCROLL AREA */}
-  <View style={{ flex: 1 }}>
-  
-<ScrollView
-  ref={scrollRef}
-  keyboardShouldPersistTaps="always"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight, 
-  }}
->
-      
-      <Text style={styles.label}>
-        Select Tenant <Text style={{ color: "red" }}>*</Text>
-      </Text>
-
-      <View style={{ position: "relative" }}>
-        <TouchableOpacity
-          style={styles.select}
-          onPress={() => setBookingTenantsopen(!BookingTenantsOpen)}
+        <Animated.View
+          style={[styles.sheet, { transform: [{ translateY }] }]}
+          {...panResponder.panHandlers}
         >
-          <Text style={styles.selectText}>
-            {BookingTenantsSelected?.fullName || "Select Tenant"}
+          {/* HANDLE */}
+          <View style={styles.handle} />
+
+          {/* HEADER */}
+          <Text style={styles.title}>Tenant Booking</Text>
+          <Text style={styles.subTitle}>
+            Room No :{selectedBed?.roomName} | {selectedBed?.bedName}
           </Text>
-          <Image source={DownArrow} style={styles.arrow} />
-        </TouchableOpacity>
 
-        {tenentsError && <ErrorMessage message={tenentsError} type="error" />}
+          {/* ✅ FORM SCROLL AREA */}
+          <View style={{ flex: 1 }}>
 
-        {BookingTenantsOpen && (
-          <View style={styles.dropdownMenu}>
             <ScrollView
-      style={{ maxHeight: 160 }}
-      nestedScrollEnabled={true}   // ✅ Android
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-              {BookingTenants.map((v, i) => (
+              ref={scrollRef}
+              keyboardShouldPersistTaps="always"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingBottom: keyboardHeight,
+              }}
+            >
+
+              <Text style={styles.label}>
+                Select Tenant <Text style={{ color: "red" }}>*</Text>
+              </Text>
+
+              <View style={{ position: "relative" }}>
                 <TouchableOpacity
-                  key={i}
-                  style={styles.option}
-                  onPress={() => {
-                    setBookTenantsSelected(v);
-                    setBookingTenantsopen(false);
-                    setTenantsError("");
-                  }}
+                  style={styles.select}
+                  onPress={() => setBookingTenantsopen(!BookingTenantsOpen)}
                 >
-                  <Text style={styles.optionText}>{v.fullName}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-
-      {/* Booking Date */}
-      <Text style={styles.label}>
-        Booking Date <Text style={{ color: "red" }}>*</Text>
-      </Text>
-      <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
-        style={styles.inputBox}
-      >
-        <Text style={{ color: bookingDate ? "#000" : "#999" }}>
-          {bookingDate ? bookingDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
-        </Text>
-        <Image
-          source={require("../../../Assets/Images/calendar.png")}
-          style={styles.icon}
-        />
-      </TouchableOpacity>
-      {bookingDateError && <ErrorMessage message={bookingDateError} type="error" />}
-
-      {/* Booking Amount */}
-      <Text style={styles.label}>
-        Booking Amount <Text style={{ color: "red" }}>*</Text>
-      </Text>
- <TextInput
-  placeholder="Enter Amount"
-  placeholderTextColor="#999"
-  value={bookingAmount}
-  onFocus={() => {
-    setTimeout(() => {
-      scrollRef.current?.scrollTo({ y: 200, animated: true });
-    }, 150);
-  }}
-  onChangeText={(t) => {
-    setBookingAmount(t);
-    setBookingAmountError("");
-  }}
-  keyboardType="numeric"
-  style={styles.inputBox}
-/>
-
-
-      {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
-
-      {/* Joining Date */}
-      <Text style={styles.label}>
-        Joining Date <Text style={{ color: "red" }}>*</Text>
-      </Text>
-      <TouchableOpacity
-        onPress={() => setShowJoinDatePicker(true)}
-        style={styles.inputBox}
-      >
-        <Text style={{ color: joiningDate ? "#000" : "#999" }}>
-          {joiningDate ? joiningDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
-        </Text>
-        <Image
-          source={require("../../../Assets/Images/calendar.png")}
-          style={styles.icon}
-        />
-      </TouchableOpacity>
-      {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
-
-      {/* Account */}
-      <Text style={styles.label}>
-        Mode Of Transaction <Text style={{ color: "red" }}>*</Text>
-      </Text>
-
-      <View style={{ position: "relative" }}>
-        <TouchableOpacity
-          onPress={() => setAccountopen(!accountOpen)}
-          style={styles.inputBox}
-        >
-          <Text style={styles.selectText}>
-            {accountSelected
-              ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-              : "Select Bank"}
-          </Text>
-          <Image source={DownArrow} style={styles.arrow} />
-        </TouchableOpacity>
-
-        {bankIdError && <ErrorMessage message={bankIdError} type="error" />}
-
-        {accountOpen && (
-          <View style={styles.dropdownMenu}>
-            <ScrollView style={{ maxHeight: 150 }}>
-              {AccountsList.map((v, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.option}
-                  onPress={() => {
-                    setAccountSelected(v);
-                    setAccountopen(false);
-                    setBankIdError("");
-                  }}
-                >
-                  <Text style={styles.optionText}>
-                    {v.accountHolderName}-{v.accountType}
+                  <Text style={styles.selectText}>
+                    {BookingTenantsSelected?.fullName || "Select Tenant"}
                   </Text>
+                  <Image source={DownArrow} style={styles.arrow} />
                 </TouchableOpacity>
-              ))}
+
+                {tenentsError && <ErrorMessage message={tenentsError} type="error" />}
+
+                {BookingTenantsOpen && (
+                  <View style={styles.dropdownMenu}>
+                    <ScrollView
+                      style={{ maxHeight: 160 }}
+                      nestedScrollEnabled={true}   // ✅ Android
+                      keyboardShouldPersistTaps="handled"
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {BookingTenants.map((v, i) => (
+                        <TouchableOpacity
+                          key={i}
+                          style={styles.option}
+                          onPress={() => {
+                            setBookTenantsSelected(v);
+                            setBookingTenantsopen(false);
+                            setTenantsError("");
+                          }}
+                        >
+                          <Text style={styles.optionText}>{v.fullName}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+
+              {/* Booking Date */}
+              <Text style={styles.label}>
+                Booking Date <Text style={{ color: "red" }}>*</Text>
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                style={styles.inputBox}
+              >
+                <Text style={{ color: bookingDate ? "#000" : "#999" }}>
+                  {bookingDate ? bookingDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
+                </Text>
+                <Image
+                  source={require("../../../Assets/Images/calendar.png")}
+                  style={styles.icon}
+                />
+              </TouchableOpacity>
+              {bookingDateError && <ErrorMessage message={bookingDateError} type="error" />}
+
+              {/* Booking Amount */}
+              <Text style={styles.label}>
+                Booking Amount <Text style={{ color: "red" }}>*</Text>
+              </Text>
+              <TextInput
+                placeholder="Enter Amount"
+                placeholderTextColor="#999"
+                value={bookingAmount}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: 200, animated: true });
+                  }, 150);
+                }}
+                onChangeText={(t) => {
+                  setBookingAmount(t);
+                  setBookingAmountError("");
+                }}
+                keyboardType="numeric"
+                style={styles.inputBox}
+              />
+
+
+              {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
+
+              {/* Joining Date */}
+              <Text style={styles.label}>
+                Joining Date <Text style={{ color: "red" }}>*</Text>
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowJoinDatePicker(true)}
+                style={styles.inputBox}
+              >
+                <Text style={{ color: joiningDate ? "#000" : "#999" }}>
+                  {joiningDate ? joiningDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
+                </Text>
+                <Image
+                  source={require("../../../Assets/Images/calendar.png")}
+                  style={styles.icon}
+                />
+              </TouchableOpacity>
+              {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
+
+              {/* Account */}
+              <Text style={styles.label}>
+                Mode Of Transaction <Text style={{ color: "red" }}>*</Text>
+              </Text>
+
+              <View style={{ position: "relative" }}>
+                <TouchableOpacity
+                  onPress={() => setAccountopen(!accountOpen)}
+                  style={styles.inputBox}
+                >
+                  <Text style={styles.selectText}>
+                    {accountSelected
+                      ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
+                      : "Select Bank"}
+                  </Text>
+                  <Image source={DownArrow} style={styles.arrow} />
+                </TouchableOpacity>
+
+                {bankIdError && <ErrorMessage message={bankIdError} type="error" />}
+
+                {accountOpen && (
+                  <View style={styles.dropdownMenu}>
+                    <ScrollView style={{ maxHeight: 150 }}>
+                      {AccountsList.map((v, i) => (
+                        <TouchableOpacity
+                          key={i}
+                          style={styles.option}
+                          onPress={() => {
+                            setAccountSelected(v);
+                            setAccountopen(false);
+                            setBankIdError("");
+                          }}
+                        >
+                          <Text style={styles.optionText}>
+                            {v.accountHolderName}-{v.accountType}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+
+              {/* Transaction */}
+              <Text style={styles.label}>Transaction Id</Text>
+
+              <TextInput
+                placeholder="Enter Transaction Id"
+                placeholderTextColor="#999"
+                value={referenceNumber}
+                onPressIn={() => {
+                  // ✅ every time tap works
+                  Keyboard.dismiss();
+
+                  setTimeout(() => {
+                    txnRef.current?.focus();
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }, 150);
+                }}
+                onChangeText={setReferenceNumber}
+                style={styles.inputBox}
+              />
+
+
             </ScrollView>
+
           </View>
-        )}
-      </View>
 
-      {/* Transaction */}
-    <Text style={styles.label}>Transaction Id</Text>
+          {/* ✅ FOOTER FIXED */}
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleCloseSheet}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
 
-<TextInput
-  placeholder="Enter Transaction Id"
-  placeholderTextColor="#999"
-  value={referenceNumber}
-  onPressIn={() => {
-    // ✅ every time tap works
-    Keyboard.dismiss();
-
-    setTimeout(() => {
-      txnRef.current?.focus();
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 150);
-  }}
-  onChangeText={setReferenceNumber}
-  style={styles.inputBox}
-/>
-
-
-    </ScrollView>
-   
-  </View>
-
-  {/* ✅ FOOTER FIXED */}
-  <View style={styles.footer}>
-    <TouchableOpacity style={styles.cancelBtn} onPress={handleCloseSheet}>
-      <Text style={styles.cancelText}>Cancel</Text>
-    </TouchableOpacity>
-
-    <TouchableOpacity style={styles.submitBtn} onPress={handleBooking}>
-      <Text style={styles.submitText}>Book</Text>
-    </TouchableOpacity>
-  </View>
-</Animated.View>
+            <TouchableOpacity style={styles.submitBtn} onPress={handleBooking}>
+              <Text style={styles.submitText}>Book</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
       </View>
 
 
-     {showDatePicker && (
-  <View style={styles.datePickerOverlay}>
-    <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
-      <View style={{ flex: 1 }} />
-    </TouchableWithoutFeedback>
+      {showDatePicker && (
+        <View style={styles.datePickerOverlay}>
+          <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
+            <View style={{ flex: 1 }} />
+          </TouchableWithoutFeedback>
 
-    <View style={styles.datePickerBox}>
-      <Calendar
-        // ✅ minDate = noticeDate (CustomerOverView)
-        minDate={minBookingDate ? minBookingDate.format("YYYY-MM-DD") : undefined}
+          <View style={styles.datePickerBox}>
+            <Calendar
+              // ✅ minDate = noticeDate (CustomerOverView)
+              minDate={minBookingDate ? minBookingDate.format("YYYY-MM-DD") : undefined}
 
-        // ✅ maxDate = today (no future)
-        maxDate={today.format("YYYY-MM-DD")}
+              // ✅ maxDate = today (no future)
+              maxDate={today.format("YYYY-MM-DD")}
 
-        onDayPress={(day) => {
-          const selected = dayjs(day.dateString);
+              onDayPress={(day) => {
+                const selected = dayjs(day.dateString);
 
-          // ✅ extra safety check
-          if (minBookingDate && selected.isBefore(minBookingDate, "day")) return;
-          if (selected.isAfter(today, "day")) return;
+                // ✅ extra safety check
+                if (minBookingDate && selected.isBefore(minBookingDate, "day")) return;
+                if (selected.isAfter(today, "day")) return;
 
-          setBookingDate(selected);
-          setBookingDateError("");
-          setShowDatePicker(false);
+                setBookingDate(selected);
+                setBookingDateError("");
+                setShowDatePicker(false);
 
-          // ✅ joining date auto adjust if needed
-          if (joiningDate && joiningDate.isBefore(selected)) {
-            setJoiningDate(selected);
-          }
-        }}
+                // ✅ joining date auto adjust if needed
+                if (joiningDate && joiningDate.isBefore(selected)) {
+                  setJoiningDate(selected);
+                }
+              }}
 
-        markedDates={
-          bookingDate
-            ? {
-                [bookingDate.format("YYYY-MM-DD")]: {
-                  selected: true,
-                  selectedColor: "#1D5DFF",
-                },
+              markedDates={
+                bookingDate
+                  ? {
+                    [bookingDate.format("YYYY-MM-DD")]: {
+                      selected: true,
+                      selectedColor: "#1D5DFF",
+                    },
+                  }
+                  : {}
               }
-            : {}
-        }
-      />
-    </View>
-  </View>
-)}
+            />
+          </View>
+        </View>
+      )}
 
 
       {showJoinDatePicker && (
@@ -653,15 +653,15 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
 
- sheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  sheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
 
-  height: "80%",     // ✅ fixed height
-  maxHeight: "80%",  // ✅ always stays inside screen
-},
+    height: "80%",     // ✅ fixed height
+    maxHeight: "80%",  // ✅ always stays inside screen
+  },
 
   handle: {
     width: 50,
@@ -747,13 +747,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.3)",
   },
 
- datePickerBox: {
-  backgroundColor: "#fff",
-  padding: 10,
-  borderRadius: 15,
-  marginHorizontal: 20,
-  marginBottom: 60,  // ✅ keep only bottom
-},
+  datePickerBox: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 15,
+    marginHorizontal: 20,
+    marginBottom: 60,  // ✅ keep only bottom
+  },
   arrow: { width: 18, height: 18, tintColor: "#444" },
   icon: { width: 20, height: 20, tintColor: "#1E45E1" },
   footer: {
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     gap: 15,
     marginTop: 25,
-    marginBottom:35
+    marginBottom: 35
   },
 
 

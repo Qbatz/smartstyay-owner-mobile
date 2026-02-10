@@ -459,7 +459,9 @@ export default function CreateAccount() {
                   onFocus={() => scrollToY(emailPos.current)}
                   onSubmitEditing={() => mobileRef.current?.focus()}
                   onChangeText={(text) => {
-                    setEmailId(text.toLowerCase());
+                    const noEmojis = text.replace(
+                      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"" );
+                    setEmailId(noEmojis.toLowerCase());
                     setEmailError("");
                     setBackendEmailError("");
                   }}
@@ -548,7 +550,8 @@ export default function CreateAccount() {
                   onFocus={() => scrollToY(passwordPos.current)}
                   onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                   onChangeText={(text) => {
-                    setPassword(text);
+                    const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"" );
+                    setPassword(noEmojis);
                     setPasswordError([]);
                     setBackendPasswordError("");
                   }}
@@ -579,7 +582,9 @@ export default function CreateAccount() {
                   onFocus={() => scrollToY(confirmPasswordPos.current)}
                   onSubmitEditing={createAccountClick}
                   onChangeText={(text) => {
-                    setConfirmPassword(text);
+                    const noEmojis = text.replace(
+      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                    setConfirmPassword(noEmojis);
                     setConfirmPasswordError("");
                     setBothPasswordError("");
                   }}

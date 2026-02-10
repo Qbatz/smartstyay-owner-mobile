@@ -354,7 +354,11 @@ for (let i = -90; i <= 90; i++) {
 
 
           <View style={styles.profileRow}>
-            <Image source={Profile} style={styles.profileImg} />
+            {customer?.profilePic ? <Image source={customer?.profilePic} style={styles.profileImg} /> : 
+            <View style={[styles.profileImg,{justifyContent:'center',alignItems:'center',backgroundColor:'#eef1ff'}]}>
+              <Text style={{fontSize:16,fontWeight:600}}>{customer?.initials}</Text>
+            </View>}
+            
 
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.name}>{customer?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>

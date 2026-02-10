@@ -115,7 +115,10 @@ const ConfirmMPin = ({ route }) => {
             style={styles.pinBox}
             keyboardType="number-pad"
             maxLength={1}
-            onChangeText={(t) => handleChange(t, i)}
+            onChangeText={(t) =>{
+              handleChange(t, i)
+              setEnterPinError("")
+            } }
             onKeyPress={(e)=>handleKeyPress(e,i)}
           />
         ))}

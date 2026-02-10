@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext,useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal,
-  FlatList,Animated, PanResponder,Pressable 
+  FlatList, Animated, PanResponder, Pressable
 } from "react-native";
 
 import Profile from "../../../Assets/Images/profile.png";
@@ -26,64 +26,65 @@ import { useCustomer } from "../../../Context/CustomerContext";
 
 export default function CheckoutList({ searchText }) {
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCheckoutCustomersByHostel, loading } = useCustomer();
+  const { getCheckoutCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
 
   const [checkoutCustomer, setCheckoutCustomer] = useState([]);
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  console.log(selectedCustomer)
 
   const {
-        canWriteModule: canWriteCheckout,
-        canReadModule: canReadCheckout,
-        canUpdateModule: canUpdateCheckout,
-        canDeleteModule: canDeleteCheckout,
-      } = useHasPermission("Checkout");
+    canWriteModule: canWriteCheckout,
+    canReadModule: canReadCheckout,
+    canUpdateModule: canUpdateCheckout,
+    canDeleteModule: canDeleteCheckout,
+  } = useHasPermission("Checkout");
 
   const translateY = useRef(new Animated.Value(500)).current;
-console.log("selectedCustomer",selectedCustomer)
-useEffect(() => {
-  if (showCustomerModal) {
+  console.log("selectedCustomer", selectedCustomer)
+  useEffect(() => {
+    if (showCustomerModal) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showCustomerModal]);
+
+  const closeModalWithAnimation = () => {
     Animated.timing(translateY, {
-      toValue: 0,
-      duration: 250,
+      toValue: 500,
+      duration: 200,
       useNativeDriver: true,
-    }).start();
-  }
-}, [showCustomerModal]);
+    }).start(() => {
+      setShowCustomerModal(false);
+    });
+  };
 
-const closeModalWithAnimation = () => {
-  Animated.timing(translateY, {
-    toValue: 500,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => {
-    setShowCustomerModal(false);
-  });
-};
-
-const panResponder = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gesture) => {
-      return gesture.dy > 5; // swipe down only
-    },
-    onPanResponderMove: (_, gesture) => {
-      if (gesture.dy > 0) {
-        translateY.setValue(gesture.dy);
-      }
-    },
-    onPanResponderRelease: (_, gesture) => {
-      if (gesture.dy > 120) {
-        closeModalWithAnimation();
-      } else {
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  })
-).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        return gesture.dy > 5; // swipe down only
+      },
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) {
+          translateY.setValue(gesture.dy);
+        }
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) {
+          closeModalWithAnimation();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
 
 
@@ -98,8 +99,12 @@ const panResponder = useRef(
     setCheckoutCustomer(data?.checkoutCustomers || []);
   };
 
-  const openCustomerDetails = (item) => {
-    setSelectedCustomer(item);
+  const openCustomerDetails =async (item) => {
+    
+
+    const res=await GetParticularCustomerDetails(item.customerId);
+    console.log(res)
+    setSelectedCustomer(res.data);
     setShowCustomerModal(true);
   };
 
@@ -113,20 +118,20 @@ const panResponder = useRef(
     );
   });
 
-    if (!canReadCheckout && !loading) {
-      return (
-         <View style={styles.container}>
-      
+  if (!canReadCheckout && !loading) {
+    return (
+      <View style={styles.container}>
+
         <View style={{ alignItems: "center", marginTop: 180 }}>
-    
-          <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
+
+          <Image source={EmptyState} style={{ width: 250, height: 180, }} />
           <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
             You do not have access to view Checkout
           </Text>
         </View>
-        </View>
-      )
-    }
+      </View>
+    )
+  }
 
   const renderItem = ({ item }) => {
     const isMenuVisible = menuVisibleId === item.customerId;
@@ -135,7 +140,10 @@ const panResponder = useRef(
       <View style={styles.card}>
         <View style={styles.leftRow}>
           <TouchableOpacity onPress={() => openCustomerDetails(item)}>
-            <Image source={Profile} style={styles.avatar} />
+            {item?.profilePic ? <Image source={item.profilePic} style={styles.profileImg} /> : 
+                <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
+                  <Text style={{fontSize:16,fontWeight:600}}>{item?.initials}</Text>
+                </View>}
           </TouchableOpacity>
 
           <View style={styles.info}>
@@ -195,91 +203,95 @@ const panResponder = useRef(
 
   return (
     <>
-    <View style={{ flex: 1 }}>
-   
+      <View style={{ flex: 1 }}>
 
-      {/* ✅ Menu open iruntha outside click la close pannum */}
-      {menuVisibleId && (
-        <TouchableWithoutFeedback onPress={() => setMenuVisibleId(null)}>
-          <View style={styles.menuOverlay} />
-        </TouchableWithoutFeedback>
-      )}
 
-      {!loading && filteredCheckout.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Image source={EmptyState} style={styles.emptyImage} />
-          <Text style={styles.emptyText}>
-            No Checkout Tenant available{"\n"}
-            There are no checkout tenant added
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredCheckout}
-          keyExtractor={(item) => item.customerId.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 60 }}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+        {/* ✅ Menu open iruntha outside click la close pannum */}
+        {menuVisibleId && (
+          <TouchableWithoutFeedback onPress={() => setMenuVisibleId(null)}>
+            <View style={styles.menuOverlay} />
+          </TouchableWithoutFeedback>
+        )}
 
-     
-   <Modal visible={showCustomerModal} transparent animationType="fade">
-  <View style={styles.overlay}>
+        {!loading && filteredCheckout.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Image source={EmptyState} style={styles.emptyImage} />
+            <Text style={styles.emptyText}>
+              No Checkout Tenant available{"\n"}
+              There are no checkout tenant added
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredCheckout}
+            keyExtractor={(item) => item.customerId.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 60 }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
 
-   
-   <Animated.View
-  onStartShouldSetResponder={() => true}
-  style={[styles.sheet, { transform: [{ translateY }] }]}
-  {...panResponder.panHandlers}
->
-      <View style={styles.handle} />
 
-      <Text style={styles.title}>Customer Details</Text>
+        <Modal visible={showCustomerModal} transparent animationType="fade">
+          <View style={styles.overlay}>
 
-      <View style={styles.profileRow}>
-        <Image source={Profile} style={styles.profileImg} />
-        <Text style={styles.profileName}>
-          {selectedCustomer?.firstName}
-        </Text>
+
+            <Animated.View
+              onStartShouldSetResponder={() => true}
+              style={[styles.sheet, { transform: [{ translateY }] }]}
+              {...panResponder.panHandlers}
+            >
+              <View style={styles.handle} />
+
+              <Text style={styles.title}>Customer Details</Text>
+
+              <View style={styles.profileRow}>
+                {selectedCustomer?.profilePic ? <Image source={selectedCustomer.profilePic} style={styles.profileImg} /> : 
+                <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
+                  <Text style={{fontSize:16,fontWeight:600}}>{selectedCustomer?.initials}</Text>
+                </View>}
+                
+                <Text style={styles.profileName}>
+                  {selectedCustomer?.fullName}
+                </Text>
+              </View>
+
+              <Text style={styles.label}>Email</Text>
+              <View style={styles.infoRow}>
+                <Image source={EmailIcon} style={styles.infoIcon} />
+                <Text>{selectedCustomer?.emailId || "N/A"}</Text>
+              </View>
+
+              <Text style={styles.label}>Mobile</Text>
+              <View style={styles.infoRow}>
+                <Image source={PhoneIcon} style={styles.infoIcon} />
+                <Text>{selectedCustomer?.mobileNo}</Text>
+              </View>
+
+              <Text style={styles.label}>Checkout Date</Text>
+              <View style={styles.infoRow}>
+                <Image source={CalendarIcon} style={styles.infoIcon} />
+                <Text>{selectedCustomer?.checkoutInfo?.checkoutDate}</Text>
+              </View>
+
+              <Text style={styles.label}>Amount</Text>
+              <View style={styles.infoRow}>
+                <Image source={AmountIcon} style={styles.infoIcon} />
+                <Text>₹ {selectedCustomer?.amount}</Text>
+              </View>
+            </Animated.View>
+
+            {/* ✅ outside click close (this should be behind sheet) */}
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={closeModalWithAnimation}
+            />
+          </View>
+        </Modal>
+
+
+
       </View>
-
-      <Text style={styles.label}>Email</Text>
-      <View style={styles.infoRow}>
-        <Image source={EmailIcon} style={styles.infoIcon} />
-        <Text>{selectedCustomer?.emailId || "N/A"}</Text>
-      </View>
-
-      <Text style={styles.label}>Mobile</Text>
-      <View style={styles.infoRow}>
-        <Image source={PhoneIcon} style={styles.infoIcon} />
-        <Text>{selectedCustomer?.mobile}</Text>
-      </View>
-
-      <Text style={styles.label}>Checkout Date</Text>
-      <View style={styles.infoRow}>
-        <Image source={CalendarIcon} style={styles.infoIcon} />
-        <Text>{selectedCustomer?.checkoutDate}</Text>
-      </View>
-
-      <Text style={styles.label}>Amount</Text>
-      <View style={styles.infoRow}>
-        <Image source={AmountIcon} style={styles.infoIcon} />
-        <Text>₹ {selectedCustomer?.amount}</Text>
-      </View>
-    </Animated.View>
-
-    {/* ✅ outside click close (this should be behind sheet) */}
-    <Pressable
-      style={StyleSheet.absoluteFill}
-      onPress={closeModalWithAnimation}
-    />
-  </View>
-</Modal>
-
-
-
-    </View>
     </>
   );
 }
@@ -339,22 +351,22 @@ const styles = StyleSheet.create({
     zIndex: 50,
   },
 
-overlay: {
-  flex: 1,
-  justifyContent: "flex-end",
-  backgroundColor: "rgba(0,0,0,0.4)",
-  paddingBottom: 0,   // ✅ extra gap avoid
-},
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingBottom: 0,   // ✅ extra gap avoid
+  },
 
 
   sheet: {
-  backgroundColor: "#fff",
-  paddingTop: 20,
-  paddingHorizontal: 20,
-  paddingBottom: 10,   // ✅ big padding remove
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-},
+    backgroundColor: "#fff",
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 10,   // ✅ big padding remove
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
 
 
   handle: {

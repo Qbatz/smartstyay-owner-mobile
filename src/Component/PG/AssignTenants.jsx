@@ -75,20 +75,20 @@ export default function AssignTenant({ navigation, route }) {
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
- useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
 
@@ -100,40 +100,40 @@ export default function AssignTenant({ navigation, route }) {
       });
     }, 120);
   };
- 
-//  const scrollInputIntoView = (ref) => {
-//   if (!ref?.current || !scrollRef?.current) return;
 
-//   setTimeout(() => {
-//     ref.current.focus();
+  //  const scrollInputIntoView = (ref) => {
+  //   if (!ref?.current || !scrollRef?.current) return;
 
-//     scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
-//       ref.current,
-//       200,   // extra offset above keyboard
-//       true
-//     );
-//   }, 150);
-// };
+  //   setTimeout(() => {
+  //     ref.current.focus();
 
-const scrollInputIntoView = (refOrNode) => {
-  if (!scrollRef?.current) return;
+  //     scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+  //       ref.current,
+  //       200,   // extra offset above keyboard
+  //       true
+  //     );
+  //   }, 150);
+  // };
 
-  // 🔥 detect if ref object or direct node
-  const input =
-    refOrNode?.current ? refOrNode.current : refOrNode;
+  const scrollInputIntoView = (refOrNode) => {
+    if (!scrollRef?.current) return;
 
-  if (!input || typeof input.focus !== "function") return;
+    // 🔥 detect if ref object or direct node
+    const input =
+      refOrNode?.current ? refOrNode.current : refOrNode;
 
-  setTimeout(() => {
-    input.focus();
+    if (!input || typeof input.focus !== "function") return;
 
-    scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
-      input,
-      200,
-      true
-    );
-  }, 150);
-};
+    setTimeout(() => {
+      input.focus();
+
+      scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+        input,
+        200,
+        true
+      );
+    }, 150);
+  };
 
 
 
@@ -225,13 +225,13 @@ const scrollInputIntoView = (refOrNode) => {
     // setExtraCharges(prev =>
     //   prev.map(i => (i.id === id ? { ...i, title } : i))
     // );
-      setExtraCharges(prev =>
-    prev.map(i =>
-      i.id === id
-        ? { ...i, title, titleError: "" }
-        : i
-    )
-  );
+    setExtraCharges(prev =>
+      prev.map(i =>
+        i.id === id
+          ? { ...i, title, titleError: "" }
+          : i
+      )
+    );
   };
 
   // const updateAmount = (id, amount) => {
@@ -240,16 +240,16 @@ const scrollInputIntoView = (refOrNode) => {
   //   );
   // };
   const updateAmount = (id, amount) => {
-  const onlyNum = amount.replace(/[^0-9]/g, "");
+    const onlyNum = amount.replace(/[^0-9]/g, "");
 
-  setExtraCharges((prev) =>
-    prev.map((i) =>
-      i.id === id
-        ? { ...i, amount: onlyNum, amountError: "" }
-        : i
-    )
-  );
-};
+    setExtraCharges((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? { ...i, amount: onlyNum, amountError: "" }
+          : i
+      )
+    );
+  };
 
 
   const validateBooking = () => {
@@ -325,69 +325,69 @@ const scrollInputIntoView = (refOrNode) => {
       alert(res.message || "Booking failed");
     }
   };
-    const validateExtraCharges = () => {
-  let valid = true;
+  const validateExtraCharges = () => {
+    let valid = true;
 
-  const updated = extraCharges.map((e) => {
-    let titleError = "";
-    let amountError = "";
+    const updated = extraCharges.map((e) => {
+      let titleError = "";
+      let amountError = "";
 
-    const titleFilled = e.title?.trim()?.length > 0;
-    const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+      const titleFilled = e.title?.trim()?.length > 0;
+      const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
 
-    const amt = Number(e.amount);
+      const amt = Number(e.amount);
 
-   
-    if (!e.type) {
-      return { ...e, titleError: "", amountError: "" };
-    }
 
-   
-    if (e.type === "Maintenance") {
-      if (!amountFilled) {
-        amountError = "Please enter maintenance amount";
-        valid = false;
-      } else if (isNaN(amt) || amt <= 0) {
-        amountError = "Amount must be greater than 0";
-        valid = false;
-      }
-
-      return { ...e, titleError: "", amountError };
-    }
-
-    // ✅ CASE 3: Others -> reason + amount both mandatory
-    if (e.type === "Others") {
-      // both empty -> ok (optional row)
-      if (!titleFilled && !amountFilled) {
+      if (!e.type) {
         return { ...e, titleError: "", amountError: "" };
       }
 
-      if (!titleFilled) {
-        titleError = "Please enter reason";
-        valid = false;
+
+      if (e.type === "Maintenance") {
+        if (!amountFilled) {
+          amountError = "Please enter maintenance amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, titleError: "", amountError };
       }
 
-      if (!amountFilled) {
-        amountError = "Please enter amount";
-        valid = false;
-      } else if (isNaN(amt) || amt <= 0) {
-        amountError = "Amount must be greater than 0";
-        valid = false;
+      // ✅ CASE 3: Others -> reason + amount both mandatory
+      if (e.type === "Others") {
+        // both empty -> ok (optional row)
+        if (!titleFilled && !amountFilled) {
+          return { ...e, titleError: "", amountError: "" };
+        }
+
+        if (!titleFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        if (!amountFilled) {
+          amountError = "Please enter amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, titleError, amountError };
       }
 
-      return { ...e, titleError, amountError };
-    }
+      return { ...e, titleError: "", amountError: "" };
+    });
 
-    return { ...e, titleError: "", amountError: "" };
-  });
-
-  setExtraCharges(updated);
-  return valid;
-};
+    setExtraCharges(updated);
+    return valid;
+  };
 
   const handleCheckIn = async () => {
-      const chargeValid = validateExtraCharges();
-  if (!chargeValid) return;
+    const chargeValid = validateExtraCharges();
+    if (!chargeValid) return;
     const customerId = CheckinTenantSelected?.customerId;
 
 
@@ -611,7 +611,7 @@ const scrollInputIntoView = (refOrNode) => {
     setCheckinTenantSelected(null);
     setCheckinTenantsopen(false);
 
-    setcheckJoiningDate(dayjs()); 
+    setcheckJoiningDate(dayjs());
     setOpenDropdownId(null);
   };
 
@@ -672,7 +672,7 @@ const scrollInputIntoView = (refOrNode) => {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-        {/* <ScrollView
+          {/* <ScrollView
   ref={scrollRef}
   keyboardShouldPersistTaps="handled"
   showsVerticalScrollIndicator={false}
@@ -680,16 +680,16 @@ const scrollInputIntoView = (refOrNode) => {
     paddingBottom: keyboardHeight + 80,
   }}
 > */}
-<ScrollView
-  ref={scrollRef}
-  keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="on-drag"
-  showsVerticalScrollIndicator={false}
-  scrollEnabled={!checkinTenantsOpen}
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight + 80,
-  }}
->
+          <ScrollView
+            ref={scrollRef}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={!checkinTenantsOpen}
+            contentContainerStyle={{
+              paddingBottom: keyboardHeight + 80,
+            }}
+          >
 
 
 
@@ -715,7 +715,7 @@ const scrollInputIntoView = (refOrNode) => {
                   {tenentsError && (
                     <ErrorMessage message={tenentsError} type="error" />
                   )}
-{/* {checkinTenantsOpen && (
+                  {/* {checkinTenantsOpen && (
   <View style={styles.dropdownMenuone}>
     <ScrollView
       nestedScrollEnabled={true}
@@ -739,32 +739,32 @@ const scrollInputIntoView = (refOrNode) => {
     </ScrollView>
   </View>
 )} */}
-{checkinTenantsOpen && (
-  <View style={styles.dropdownMenuone}>
-  <ScrollView
-  nestedScrollEnabled
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator
-  style={{ maxHeight: 160 }}
-  contentContainerStyle={{ paddingBottom: 5 }}
->
+                  {checkinTenantsOpen && (
+                    <View style={styles.dropdownMenuone}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator
+                        style={{ maxHeight: 160 }}
+                        contentContainerStyle={{ paddingBottom: 5 }}
+                      >
 
-      {CheckinTenants.map((v, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.option}
-          onPress={() => {
-            setCheckinTenantSelected(v);
-            setCheckinTenantsopen(false);
-            setTenantsError("");
-          }}
-        >
-          <Text style={styles.optionText}>{v.fullName}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </View>
-)}
+                        {CheckinTenants.map((v, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={styles.option}
+                            onPress={() => {
+                              setCheckinTenantSelected(v);
+                              setCheckinTenantsopen(false);
+                              setTenantsError("");
+                            }}
+                          >
+                            <Text style={styles.optionText}>{v.fullName}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
 
 
                   {/* {checkinTenantsOpen && (
@@ -792,19 +792,19 @@ const scrollInputIntoView = (refOrNode) => {
                 <View ref={bookingDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                   onPress={() => {
-  Keyboard.dismiss();   // 🔥 keyboard close
-  setOpenDropdownId(null);
-  setCheckinTenantsopen(false);
+                    onPress={() => {
+                      Keyboard.dismiss();   // 🔥 keyboard close
+                      setOpenDropdownId(null);
+                      setCheckinTenantsopen(false);
 
-  setTimeout(() => {
-    bookingDateRef.current.measureInWindow((x, y, w, h) => {
-      setDatePickerTop(getSafeCalendarTop(y, h));
-      setActiveDateField("booking");
-      setShowCalendar(true);
-    });
-  }, 150); // 🔥 keyboard animation wait
-}}
+                      setTimeout(() => {
+                        bookingDateRef.current.measureInWindow((x, y, w, h) => {
+                          setDatePickerTop(getSafeCalendarTop(y, h));
+                          setActiveDateField("booking");
+                          setShowCalendar(true);
+                        });
+                      }, 150); // 🔥 keyboard animation wait
+                    }}
 
                   >
                     <Text style={styles.placeholder}>
@@ -836,19 +836,19 @@ const scrollInputIntoView = (refOrNode) => {
                 <View ref={joiningDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                   onPress={() => {
-  Keyboard.dismiss();        // 🔥 keyboard close
-  setOpenDropdownId(null);
-  setCheckinTenantsopen(false);
+                    onPress={() => {
+                      Keyboard.dismiss();        // 🔥 keyboard close
+                      setOpenDropdownId(null);
+                      setCheckinTenantsopen(false);
 
-  setTimeout(() => {
-    joiningDateRef.current.measureInWindow((x, y, w, h) => {
-      setDatePickerTop(getSafeCalendarTop(y, h));
-      setActiveDateField("joining");
-      setShowCalendar(true);
-    });
-  }, 150);                  // 🔥 wait for keyboard animation
-}}
+                      setTimeout(() => {
+                        joiningDateRef.current.measureInWindow((x, y, w, h) => {
+                          setDatePickerTop(getSafeCalendarTop(y, h));
+                          setActiveDateField("joining");
+                          setShowCalendar(true);
+                        });
+                      }, 150);                  // 🔥 wait for keyboard animation
+                    }}
                   >
                     <Text style={styles.placeholder}>
                       {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
@@ -899,7 +899,7 @@ const scrollInputIntoView = (refOrNode) => {
                     </View>
                   )}
                   <Text style={styles.label}>Transaction Id</Text>
-               {/* <TextInput
+                  {/* <TextInput
   ref={transactionRef}
   placeholder="Enter Transaction Id"
   placeholderTextColor="#999"
@@ -910,23 +910,19 @@ const scrollInputIntoView = (refOrNode) => {
   }}
   onChangeText={setReferenceNumber}
 /> */}
-<TextInput
-  ref={transactionRef}
-  style={styles.inputBox}
-  placeholder="Enter Transaction Id"
-  value={referenceNumber}
- onFocus={() => scrollInputIntoView(transactionRef)}
+                  <TextInput
+                    ref={transactionRef}
+                    style={styles.inputBox}
+                    placeholder="Enter Transaction Id"
+                    value={referenceNumber}
+                    onFocus={() => scrollInputIntoView(transactionRef)}
 
-  onChangeText={(text) => {
-    
-    const cleaned = text.replace(
-      /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Emoji}\u200d]+/gu,
-      ""
-    );
+                    onChangeText={(text) => {
 
-    setReferenceNumber(cleaned);
-  }}
-/>
+                       const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"" );
+                      setReferenceNumber(noEmojis);
+                    }}
+                  />
 
 
                 </View>
@@ -960,31 +956,31 @@ const scrollInputIntoView = (refOrNode) => {
                   {tenentsError && (
                     <ErrorMessage message={tenentsError} type="error" />
                   )}
-{checkinTenantsOpen && (
-  <View style={styles.dropdownMenuone}>
-    <ScrollView
-  nestedScrollEnabled
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator
-  style={{ maxHeight: 160 }}
-  contentContainerStyle={{ paddingBottom: 5 }}
->
-      {CheckinTenants.map((v, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.option}
-          onPress={() => {
-            setCheckinTenantSelected(v);
-            setCheckinTenantsopen(false);
-            setTenantsError("");
-          }}
-        >
-          <Text style={styles.optionText}>{v.fullName}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </View>
-)}
+                  {checkinTenantsOpen && (
+                    <View style={styles.dropdownMenuone}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator
+                        style={{ maxHeight: 160 }}
+                        contentContainerStyle={{ paddingBottom: 5 }}
+                      >
+                        {CheckinTenants.map((v, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={styles.option}
+                            onPress={() => {
+                              setCheckinTenantSelected(v);
+                              setCheckinTenantsopen(false);
+                              setTenantsError("");
+                            }}
+                          >
+                            <Text style={styles.optionText}>{v.fullName}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
 
                   {/* {checkinTenantsOpen && (
                     <View style={styles.dropdownMenuone}>
@@ -1090,19 +1086,19 @@ const scrollInputIntoView = (refOrNode) => {
                 <View ref={checkinDateRef} collapsable={false}>
                   <TouchableOpacity
                     style={styles.dateBox}
-                   onPress={() => {
-  Keyboard.dismiss();        // 🔥 close keyboard
-  setOpenDropdownId(null);
-  setCheckinTenantsopen(false);
+                    onPress={() => {
+                      Keyboard.dismiss();        // 🔥 close keyboard
+                      setOpenDropdownId(null);
+                      setCheckinTenantsopen(false);
 
-  setTimeout(() => {
-    checkinDateRef.current.measureInWindow((x, y, w, h) => {
-      setDatePickerTop(getSafeCalendarTop(y, h));
-      setActiveDateField("checkin");
-      setShowCalendar(true);
-    });
-  }, 150);
-}}
+                      setTimeout(() => {
+                        checkinDateRef.current.measureInWindow((x, y, w, h) => {
+                          setDatePickerTop(getSafeCalendarTop(y, h));
+                          setActiveDateField("checkin");
+                          setShowCalendar(true);
+                        });
+                      }, 150);
+                    }}
 
                   >
                     <Text style={styles.placeholder}>
@@ -1163,16 +1159,16 @@ const scrollInputIntoView = (refOrNode) => {
                       ) : item.type === "Others" ? (
                         <TextInput
                           ref={(r) => {
-    inputRefs.current[`reason-${item.id}`] = r;
-  }}
+                            inputRefs.current[`reason-${item.id}`] = r;
+                          }}
                           style={styles.figmaLeftBox}
                           placeholder="Enter reason"
 
                           value={item.title}
-                        onFocus={() => {
-  setOpenDropdownId(null);
-  scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-}}
+                          onFocus={() => {
+                            setOpenDropdownId(null);
+                            scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                          }}
 
                           // onChangeText={(t) => updateTitle(item.id, t)}
                           onChangeText={(t) => {
@@ -1193,17 +1189,17 @@ const scrollInputIntoView = (refOrNode) => {
                         </View>
                       ) : (
                         <TextInput
-                         ref={(r) => {
-    inputRefs.current[`amount-${item.id}`] = r;
-  }}
+                          ref={(r) => {
+                            inputRefs.current[`amount-${item.id}`] = r;
+                          }}
                           style={styles.figmaRightBox}
                           placeholder="Enter amount"
                           keyboardType="numeric"
                           value={item.amount}
-                       onFocus={() => {
-  setOpenDropdownId(null);
-  scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-}}
+                          onFocus={() => {
+                            setOpenDropdownId(null);
+                            scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                          }}
 
                           onChangeText={(t) => updateAmount(item.id, t)}
                         />
@@ -1211,13 +1207,13 @@ const scrollInputIntoView = (refOrNode) => {
 
                     </View>
 
-{item.titleError && (
-                  <ErrorMessage message={item.titleError} type="error" />
-                )}
+                    {item.titleError && (
+                      <ErrorMessage message={item.titleError} type="error" />
+                    )}
 
- {item.amountError && (
-                  <ErrorMessage message={item.amountError} type="error" />
-                )}
+                    {item.amountError && (
+                      <ErrorMessage message={item.amountError} type="error" />
+                    )}
                     {openDropdownId === item.id && item.type === "" && (
                       <View style={styles.nonRefundDropdown}>
                         {TYPE_OPTIONS.map((t) => {
@@ -1584,21 +1580,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-dropdownMenuone: {
-  position: "absolute",
-  top: 50,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 12,
-  zIndex: 999,
-  elevation: 10,
+  dropdownMenuone: {
+    position: "absolute",
+    top: 50,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 999,
+    elevation: 10,
 
-  maxHeight: 220,   // ✅ முக்கியம்
-  overflow: "hidden" // ✅ scroll clean ஆகும்
-},
+    maxHeight: 220,   // ✅ முக்கியம்
+    overflow: "hidden" // ✅ scroll clean ஆகும்
+  },
 
 
   // dropdownMenuone: {

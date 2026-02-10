@@ -755,7 +755,11 @@ export default function TenantCheckIn({ navigation, route }) {
                                 scrollToInputRef(amountRefs.current[item.id]);
                               }, 300);
                             }}
-                            onChangeText={(t) => updateAmount(item.id, t)}
+                            onChangeText={(t) => {
+                              const onlyNumbers = t.replace(/[^0-9]/g, "");
+                              updateAmount(item.id, onlyNumbers)
+                            }
+                               }
                           />
 
 
