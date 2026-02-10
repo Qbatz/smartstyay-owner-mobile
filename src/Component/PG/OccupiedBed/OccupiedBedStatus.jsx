@@ -22,6 +22,9 @@ import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 import { ScrollView } from "react-native-gesture-handler";
 import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+
+
 
 export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveToNotice ,onReAssign,handleEditBed,selectedBed,onBedAdded,handleMakeUsInActive,handleCheckIn }) {
     const translateY = useRef(new Animated.Value(300)).current;
@@ -33,6 +36,8 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room , onMoveT
 // const [reason, setReason] = useState("");
     const [bookedItems,setBookedItems] = useState("")
      const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+
+
 
 const handleMoveClick = () => {
   setMenuOpen(false);
@@ -91,6 +96,19 @@ const closeSheet = () => {
             else Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
         }
     });
+
+             const {
+        canWriteModule: canWriteCustomers,
+        // canReadModule: canReadPayingGuests,
+        // canUpdateModule: canUpdatePayingGuests,
+        // canDeleteModule: canDeletePayingGuests,
+    } = useHasPermission("Customers");
+
+    const {
+        canUpdateModule: canUpdatePayingGuests,
+        // canDeleteModule: canDeletePayingGuests,
+
+    } = useHasPermission("Paying Guests");
 
     if (!visible) return null;
 
@@ -193,16 +211,27 @@ const closeSheet = () => {
                         </TouchableWithoutFeedback>
 
                         <View style={styles.popupMenu}>
-                            <TouchableOpacity style={styles.popupItem} onPress={handleReAssignBed}>
+                            <TouchableOpacity  
+                            disabled={!canWriteCustomers}
+                            style={[ styles.popupItem, !canWriteCustomers && { opacity: 0.4 }]}
+                            onPress={handleReAssignBed}>
                                 <Image source={ReassignIcon} style={styles.menuIcon} />
                                 <Text style={styles.popupText}>Change Bed</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.popupItem} onPress={handleMoveClick}>
+                            <TouchableOpacity 
+                            // style={styles.popupItem}
+                            disabled={!canWriteCustomers}
+                            style={[ styles.popupItem, !canWriteCustomers && { opacity: 0.4 }]}
+                            onPress={handleMoveClick}>
                                 <Image source={NoticeIcon} style={styles.menuIcon} />
                                 <Text style={styles.popupText}>Move to Notice Period</Text>
                             </TouchableOpacity>
-                             <TouchableOpacity style={styles.popupItem} onPress={handleEdit}>
+                             <TouchableOpacity
+                              // style={styles.popupItem}
+                            disabled={!canUpdatePayingGuests}
+                            style={[ styles.popupItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                              onPress={handleEdit}>
                                 <Image source={NoticeIcon} style={styles.menuIcon} />
                                 <Text style={styles.popupText}>Edit</Text>
                             </TouchableOpacity>
@@ -312,7 +341,9 @@ const closeSheet = () => {
 
                     <View style={styles.inlineMenu}>
                       <TouchableOpacity
-                        style={styles.menuItem}
+                        // style={styles.menuItem}
+                        disabled={!canWriteCustomers}
+                        style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                         onPress={handleBookToCheckin}
                      
                       >
@@ -324,8 +355,9 @@ const closeSheet = () => {
                       </TouchableOpacity>
                 
                       <TouchableOpacity
-                        style={styles.menuItem}
-                      
+                        // style={styles.menuItem}
+                         disabled={!canWriteCustomers}
+                        style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                         onPress={() => handleMakeUsIn(item)}
                         
                         

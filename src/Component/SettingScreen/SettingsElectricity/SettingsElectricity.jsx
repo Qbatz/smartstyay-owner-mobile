@@ -8,6 +8,7 @@ import {
   Image, BackHandler, PanResponder, TouchableWithoutFeedback, TextInput,Dimensions
 } from "react-native";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { UseSetting } from "../../../Context/SettingContext";
@@ -234,28 +235,33 @@ useEffect(() => {
 
 
 
-
-  const CustomSwitch = ({ value, onToggle }) => {
-    return (
-      <TouchableOpacity onPress={() => onToggle(!value)}>
-        <View
+const CustomSwitch = ({ value, onToggle, disabled }) => {
+  return (
+    <TouchableOpacity
+      disabled={disabled}
+      onPress={() => onToggle(!value)}
+      activeOpacity={0.8}
+    >
+      <View
+        style={[
+          styles.switch,
+          { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+          disabled && { opacity: 0.4 },   
+        ]}
+      >
+        <Animated.View
           style={[
-            styles.switch,
-            { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+            styles.knob,
+            { transform: [{ translateX: value ? 18 : 0 }] },
           ]}
         >
-          <Animated.View
-            style={[
-              styles.knob,
-              { transform: [{ translateX: value ? 18 : 0 }] },
-            ]}
-          >
-            <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
-          </Animated.View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+          <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 
   // const toggleRoomBased = () => {
   //   setElectricityData((prev) => ({
@@ -333,6 +339,12 @@ useEffect(() => {
   }
 };
 
+  const {
+    //     canWriteModule: canWriteComplaints,
+    canReadModule: canReadElectricity,
+    canUpdateModule: canUpdateElectricity,
+    // canDeleteModule: canDeleteComplaints,
+  } = useHasPermission("Electricity");
 
 
 
@@ -360,7 +372,11 @@ useEffect(() => {
               <Text style={styles.headerTitle}>Electricity</Text>
             </View>
 
-            <TouchableOpacity style={styles.editBtn} onPress={openEditSheet}>
+            <TouchableOpacity
+            //  style={styles.editBtn}
+            disabled={!canUpdateElectricity}
+            style={[ styles.editBtn, !canUpdateElectricity && { opacity: 0.4 }]}
+            onPress={openEditSheet}>
               <Text style={styles.editBtnText}>
                 {ebunitList ? "Edit" : "Add"}
               </Text>
@@ -368,14 +384,35 @@ useEffect(() => {
           </View>
 
 
-          {!ebunitList  && !loading ? (
-            <View style={styles.EmptyView}>
-              <Image source={EmptyState} style={styles.EmptyIcon} />
-              <Text style={{ marginTop: 12, fontSize: 16, color: "#777", fontFamily: "Gilroy-Medium" }}>
-                No Electricity Settings Found
-              </Text>
-              
-            </View>
+  {!canReadElectricity && !loading ? (
+  <View style={styles.EmptyView}>
+    <Image source={EmptyState} style={styles.EmptyIcon} />
+    <Text
+      style={{
+        marginTop: 12,
+        fontSize: 16,
+        color: "#777",
+        fontFamily: "Gilroy-Medium",
+        textAlign: "center",
+      }}
+    >
+      You don’t have permission to view Electricity Settings
+    </Text>
+  </View>
+) : !ebunitList && !loading ? (
+  <View style={styles.EmptyView}>
+    <Image source={EmptyState} style={styles.EmptyIcon} />
+    <Text
+      style={{
+        marginTop: 12,
+        fontSize: 16,
+        color: "#777",
+        fontFamily: "Gilroy-Medium",
+      }}
+    >
+      No Electricity Settings Found
+    </Text>
+  </View>
           ) : (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Electricity Information</Text>
@@ -394,30 +431,40 @@ useEffect(() => {
               <View style={styles.row}>
                 <Text style={styles.label}>Room Based Calculation</Text>
                 <View style={styles.switchRow}>
-                  <Text style={styles.switchText}>
+                  <Text   style={[
+    styles.switchText,
+    !canUpdateElectricity && { opacity: 0.4 }
+  ]}>
                     {ebunitList.isRoomBased ? "On" : "Off"}
                   </Text>
                   {/* <CustomSwitch
           value={electricityData.roomBased}
           onToggle={toggleRoomBased}
         /> */}
-                  <CustomSwitch
-                    value={ebunitList.isRoomBased}
-                    onToggle={handleRoomBased}
-                  />
+                 <CustomSwitch
+  value={ebunitList.isRoomBased}
+  onToggle={handleRoomBased}
+  disabled={!canUpdateElectricity}
+/>
+
                 </View>
               </View>
 
               <View style={styles.row}>
                 <Text style={styles.label}>Hostel Based Calculation</Text>
                 <View style={styles.switchRow}>
-                  <Text style={styles.switchText}>
+                  <Text   style={[
+    styles.switchText,
+    !canUpdateElectricity && { opacity: 0.4 }
+  ]}>
                     {ebunitList.isHostelBased ? "On" : "Off"}
                   </Text>
-                  <CustomSwitch
-                    value={ebunitList.isHostelBased}
-                    onToggle={handleHostelBased}
-                  />
+                 <CustomSwitch
+  value={ebunitList.isHostelBased}
+  onToggle={handleHostelBased}
+  disabled={!canUpdateElectricity}
+/>
+
 
                 </View>
               </View>

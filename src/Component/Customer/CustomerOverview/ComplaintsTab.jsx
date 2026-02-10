@@ -8,8 +8,8 @@ const ComplaintsTab = () => {
       <Image source={EmptyState} style={styles.image} resizeMode="contain" />
       <Text style={styles.text}>No Complaints Found</Text>
     </View>
-  );
-};
+  )
+}
 
 export default ComplaintsTab;
 

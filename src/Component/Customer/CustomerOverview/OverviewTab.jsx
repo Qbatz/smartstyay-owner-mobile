@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image, ScrollView
 } from "react-native";
-
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
 import Home from "../../../Assets/Images/home-link.png";
@@ -16,8 +15,10 @@ import RoomIcon from "../../../Assets/Images/RoomImg.png";
 import FloorIcon from "../../../Assets/Images/FloorImg.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import EditIcon from "../../../Assets/Images/edit.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 import { AmenityContext } from "../../../Context/AmenityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission"
 
 
 
@@ -31,6 +32,14 @@ export default function OverviewTab({ customerDetails, handleEditBasicDetails, h
   const handleAdressEdit = () => {
     handleEditAdressDetails()
   }
+
+           const {
+        canWriteModule: canWriteTenant,
+        canReadModule: canReadTenant,
+       canUpdateModule: canUpdateTenant,
+        canDeleteModule: canDeleteTenant,
+      } = useHasPermission("Customers");
+
   console.log("amenitiesAllData", amenitiesAllData)
 
   const [docTab, setDocTab] = useState("KYC");
@@ -91,7 +100,10 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Basic Details</Text>
               {/* <Image source={EditIcon} style={styles.editIcon} /> */}
-              <TouchableOpacity onPress={handleEdit}>
+              <TouchableOpacity  
+                    disabled={!canUpdateTenant}
+                    style={!canUpdateTenant && { opacity: 0.4 }}
+              onPress={handleEdit}>
                 <Image source={EditIcon} style={styles.editIcon} />
               </TouchableOpacity>
             </View>
@@ -199,7 +211,10 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 
               {/* RIGHT : Edit Icon */}
               {addressTab === "MANUAL" && (
-                <TouchableOpacity onPress={handleAdressEdit}>
+                <TouchableOpacity
+                  disabled={!canUpdateTenant}
+                    style={!canUpdateTenant && { opacity: 0.4 }}
+                 onPress={handleAdressEdit}>
                   <Image source={EditIcon} style={styles.editIcon} />
                 </TouchableOpacity>
               )}
@@ -408,8 +423,10 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
       </Text>
       <TouchableOpacity
         onPress={handleEditJoining}
-        disabled={!isJoiningDateEditable}
+        // disabled={!isJoiningDateEditable}
         activeOpacity={0.7}
+      disabled={!isJoiningDateEditable && !canUpdateTenant}
+      style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
       >
         <Image
           source={EditIcon}
@@ -437,9 +454,11 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
   <View style={styles.amountBox}>
     <View style={styles.amountValueRow}>
       <Text style={styles.amountValue}>Monthly Rent</Text>
-      <TouchableOpacity
+      <TouchableOpacity 
+      disabled={!isJoiningDateEditable && !canUpdateTenant}
+      style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
         onPress={handleEditMonthlyRent}
-        disabled={!isJoiningDateEditable}
+        // disabled={!isJoiningDateEditable}
       >
         <Image
           source={EditIcon}
@@ -460,8 +479,10 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
     <View style={styles.amountValueRow}>
       <Text style={styles.amountValue}>Advance Amount</Text>
       <TouchableOpacity
+       disabled={!isJoiningDateEditable && !canUpdateTenant}
+      style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
         onPress={handleEditAdvance}
-        disabled={!isJoiningDateEditable}
+        // disabled={!isJoiningDateEditable}
       >
         <Image
           source={EditIcon}
@@ -800,10 +821,12 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 <TouchableOpacity
   style={[
     styles.assignBtn,
-    disableAssignBtn && { opacity: 0.5 }
+    disableAssignBtn && !canWriteTenant &&  { opacity: 0.4 }
   ]}
   onPress={handleShowAmenities}
-  disabled={disableAssignBtn}
+  // disabled={disableAssignBtn}
+   disabled={disableAssignBtn && !canWriteTenant}
+  // style={!canWriteTenant && { opacity: 0.4 }}
 >
   <Text style={styles.assignText}>＋ Assign</Text>
 </TouchableOpacity>
