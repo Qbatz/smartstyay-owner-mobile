@@ -15,7 +15,7 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 const { height } = Dimensions.get("window");
-const SHEET_HEIGHT = height * 0.6;
+const SHEET_HEIGHT = height * 0.85;
 
 const STATES = [
   "Tamil Nadu",
@@ -375,7 +375,7 @@ export default function EditManualAddressSheet({
                 setLandmark(filtered)
               }}
             />
-            <Text style={styles.label}>City</Text>
+            <Text style={styles.label}>City<Text style={{marginRight:3,color: "red",}}>*</Text></Text>
             <TextInput
               style={styles.input}
               placeholder="City"
@@ -385,7 +385,7 @@ export default function EditManualAddressSheet({
                 setCity(filtered);
               }}
             />
-            <Text style={styles.label}>Pincode</Text>
+            <Text style={styles.label}>Pincode  <Text style={{marginRight:3,color: "red",}}>*</Text></Text>
             <TextInput
               style={styles.input}
               placeholder="Pincode"
@@ -403,7 +403,7 @@ export default function EditManualAddressSheet({
             {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
 
             {/* STATE DROPDOWN */}
-            <Text style={styles.label}>State</Text>
+            <Text style={styles.label}>State<Text style={{marginRight:3,color: "red",}}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TextInput
@@ -480,6 +480,10 @@ export default function EditManualAddressSheet({
             </View>
             {formError && <ErrorMessage message={formError} type="error" />}
             <View style={styles.footer}>
+              <TouchableOpacity style={[styles.saveBtn,{marginRight:14}]} onPress={closeSheet}>
+                <Text style={styles.saveText}>Cancel</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
                 <Text style={styles.saveText}>Update</Text>
               </TouchableOpacity>
@@ -532,12 +536,14 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     backgroundColor: "#2563EB",
-    paddingVertical: 14,
+    paddingVertical: 14,paddingHorizontal:14,
     borderRadius: 12,
     alignItems: "center",
   },
   footer: {
-    paddingTop: 10
+    paddingTop: 20,
+    flexDirection:'row',
+    justifyContent:'flex-end'
   },
   saveText: {
     color: "#fff",
@@ -566,7 +572,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     marginTop:5,
 
-    maxHeight: 100,        // 🔥 increase
+    maxHeight: 150,        // 🔥 increase
   },
   arrowIcon: {
     position: "absolute",

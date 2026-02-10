@@ -15,7 +15,7 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 
 const { height } = Dimensions.get("window");
-const SHEET_HEIGHT = height * 0.50;
+const SHEET_HEIGHT = height * 0.60;
 
 export default function EditBasicDetailsSheet({
     visible,
@@ -32,9 +32,12 @@ export default function EditBasicDetailsSheet({
     const [email, setEmail] = useState("")
     const [emailError, setEmailError] = useState("")
     const [firstNameError, setFirstNameError] = useState("")
+    const [mobileError, setMobileNumberError] = useState("")
     const [initialFirstName, setInitialFirstName] = useState("");
     const [initialLastName, setInitialLastName] = useState("");
     const [initialEmail, setInitialEmail] = useState("");
+    const [initialMobileNo, setInitialMobileNo] = useState("");
+    const [initialCountryCode, setInitialCountryCode] = useState("");
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
@@ -71,6 +74,8 @@ export default function EditBasicDetailsSheet({
             setInitialFirstName(f.trim());
             setInitialLastName(l.trim());
             setInitialEmail(e.trim().toLowerCase());
+            setInitialMobileNo(m)
+            setInitialCountryCode(c)
         }
     }, [visible, customerDetails]);
 
@@ -135,13 +140,25 @@ export default function EditBasicDetailsSheet({
             setEmailError("");
         }
 
+        if (
+            !mobile ||
+            !/^[6-9]\d{9}$/.test(mobile)
+        ) {
+            setMobileNumberError("Enter a valid 10 digit mobile number");
+            valid = false;
+        } else {
+            setMobileNumberError("");
+        }
+
+
         if (!valid) return;
 
         // 🔥 NO CHANGES DETECTED CHECK
         if (
             firstName.trim() === initialFirstName &&
             (lastName?.trim() || "") === initialLastName &&
-            (email?.trim().toLowerCase() || "") === initialEmail
+            (email?.trim().toLowerCase() || "") === initialEmail &&
+            mobile === initialMobileNo && countryCode === initialCountryCode
         ) {
             // alert("No changes detected");
             setModalType("warning");
@@ -266,19 +283,34 @@ export default function EditBasicDetailsSheet({
                                 }}
                             />
 
-                            <Text style={styles.label}>Mobile Number *</Text>
-                            <TextInput
-                                style={styles.input}
-                                // editable={false}
-                                value={ mobile }
-                                placeholder="Enter mobileno"
-                                keyboardType="phone-pad"
-                                maxLength={10}
-                                onChangeText={(text) => {
-                                    const onlyNumbers = text.replace(/[^0-9]/g, "");
-                                    setMobile(onlyNumbers);
-                                }}
-                            />
+                            <Text style={styles.label}>Mobile Number <Text style={{ color: "red", marginLeft: 2 }}>*</Text></Text>
+
+                            <View style={{
+                                height: 48, borderRadius: 10, paddingHorizontal: 15, marginTop: 6, borderColor: "#E5E7EB",
+                                flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 10
+                            }}>
+                                <Text style={{ fontSize: 15, fontWeight: "600", color: "#000", marginRight: 8, }}>+91</Text>
+
+                                <View style={{ width: 1, height: 22, backgroundColor: "#CFCFCF", marginRight: 10, }} />
+
+                                <TextInput
+                                    style={{ flex: 1, fontSize: 15, color: "#000", }}
+                                    // editable={false}
+                                    value={mobile}
+                                    placeholder="Enter mobileno"
+                                    keyboardType="phone-pad"
+                                    maxLength={10}
+                                    onChangeText={(text) => {
+                                        const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                        setMobile(onlyNumbers);
+                                        setMobileNumberError("")
+                                    }}
+                                />
+
+
+                            </View>
+
+                            {mobileError && <ErrorMessage message={mobileError} type="error" />}
 
                             <Text style={styles.label}>Email</Text>
                             <TextInput
@@ -299,7 +331,7 @@ export default function EditBasicDetailsSheet({
 
                             <View style={styles.footer}>
                                 <TouchableOpacity onPress={closeSheet}>
-                                    <Text style={styles.cancel}>Cancel</Text>
+                                    <Text style={[styles.cancel, { marginRight: 20 }]}>Cancel</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.updateBtn} onPress={handleUpdate}>
@@ -359,8 +391,9 @@ const styles = StyleSheet.create({
     },
     footer: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         marginTop: 10,
+        alignItems: 'center'
 
     },
     cancel: { fontSize: 14, color: "#374151" },
