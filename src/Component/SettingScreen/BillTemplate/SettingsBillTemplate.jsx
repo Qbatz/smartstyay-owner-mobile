@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, BackHandler } from "react-native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import BillIcon from "../../../Assets/Images/Global_Bill_Icon.png";
 import TemplateIcon from "../../../Assets/Images/Bill_Template_Icon.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
-
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 import GlobalBillSettings from "./GlobalBillSettings";
 import TemplateSettings from "./Templates";
 
 export default function BillTemplateSettings({navigation}) {
   const [screen, setScreen] = useState("main");
+
+    const {
+    // canWriteModule: canWriteProfile,
+    canReadModule: canReadInvoice,
+    canUpdateModule: canUpdateInvoice,
+    // canDeleteModule: canDeleteProfile,
+  } = useHasPermission("Bills");
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -58,7 +66,18 @@ export default function BillTemplateSettings({navigation}) {
         <Text style={styles.headerTitle}>Bill Templates</Text>
       </View>
 
-      {/* Global Settings Card */}
+       {!canReadInvoice &&  (
+                     <View style={styles.emptyContainer}>
+                       <Image source={EmptyState} style={{ width: 250, height: 160, marginBottom: 16 }}  />
+                       <Text style={styles.emptyText}>
+                         You do not have access to view Bill Templates
+                       </Text>
+                     </View>
+                   )}
+
+
+        {canReadInvoice &&  (
+          <>
       <TouchableOpacity style={styles.cardBox} onPress={() => setScreen("global")}>
         <View style={[styles.iconBox, { backgroundColor: "#E7F7EC" }]}>
           <Image source={BillIcon} style={styles.icon} />
@@ -70,7 +89,7 @@ export default function BillTemplateSettings({navigation}) {
         </View>
       </TouchableOpacity>
 
-      {/* Template Card */}
+  
       <TouchableOpacity style={styles.cardBox} onPress={() => setScreen("template")}>
         <View style={[styles.iconBox, { backgroundColor: "#F3E8FF" }]}>
           <Image source={TemplateIcon} style={styles.icon} />
@@ -81,6 +100,8 @@ export default function BillTemplateSettings({navigation}) {
           <Text style={styles.subtitle}>Fill the template form with details you'd like to customize.</Text>
         </View>
       </TouchableOpacity>
+      </>
+        )}
 
     </View>
   );
@@ -144,4 +165,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#8E8E93",
   },
+    emptyContainer: {
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 150,
+},
+emptyImage: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+  opacity: 0.8
+},
+
+emptyText: {
+  marginTop: 14,
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#777",
+},
 });

@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { AmenityContext } from "../../../Context/AmenityContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import Loader from "../../../Component/Loader/Loader"
@@ -112,6 +113,13 @@ const [priceError, setPriceError] = useState("");
     GetAllAmenities(activeHostelId);
   }
 }, [activeHostelId]);
+
+      const {
+        canWriteModule: canWriteAmenities,
+        canReadModule: canReadAmenities,
+        canUpdateModule: canUpdateAmenities,
+        canDeleteModule: canDeleteAmenities,
+    } = useHasPermission("Amenities");
 
 
   useEffect(() => {
@@ -596,33 +604,73 @@ const moveUpSelected = async () => {
   const anyUnassignedSelected = unassigned.some((u) => u.selected);
   const anyAssignedSelected = assigned.some((u) => u.selected);
 
-   const CustomSwitch = ({ value, onToggle }) => {
-      return (
-           <View style={styles.switchRow}>
-                     <Text style={[styles.switchLabel, { color: value ? "#3562FF" : "#A68DE3" }]}>
+  //  const CustomSwitch = ({ value, onToggle }) => {
+  //     return (
+  //          <View style={styles.switchRow}>
+  //                    <Text style={[styles.switchLabel, { color: value ? "#3562FF" : "#A68DE3" }]}>
+  //       {value ? "On" : "Off"}
+  //     </Text>
+  //       <TouchableOpacity onPress={() => onToggle(!value)}>
+  //         <View
+  //           style={[
+  //             styles.switch,
+  //             { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+  //           ]}
+  //         >
+      
+  //           <Animated.View
+  //             style={[
+  //               styles.knob,
+  //               { transform: [{ translateX: value ? 18 : 0 }] },
+  //             ]}
+  //           >
+  //             <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
+  //           </Animated.View>
+  //         </View>
+  //       </TouchableOpacity>
+  //       </View>
+  //     );
+  //   };
+
+
+
+  const CustomSwitch = ({ value, onToggle, disabled }) => {
+  return (
+    <View style={styles.switchRow}>
+      <Text
+        style={[
+          styles.switchLabel,
+          { color: value ? "#3562FF" : "#A68DE3" },
+          disabled && { opacity: 0.4 },
+        ]}
+      >
         {value ? "On" : "Off"}
       </Text>
-        <TouchableOpacity onPress={() => onToggle(!value)}>
-          <View
+
+      <TouchableOpacity
+        disabled={disabled}
+        onPress={() => !disabled && onToggle(!value)}
+        style={{ opacity: disabled ? 0.4 : 1 }}
+      >
+        <View
+          style={[
+            styles.switch,
+            { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+          ]}
+        >
+          <Animated.View
             style={[
-              styles.switch,
-              { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+              styles.knob,
+              { transform: [{ translateX: value ? 18 : 0 }] },
             ]}
           >
-      
-            <Animated.View
-              style={[
-                styles.knob,
-                { transform: [{ translateX: value ? 18 : 0 }] },
-              ]}
-            >
-              <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
-            </Animated.View>
-          </View>
-        </TouchableOpacity>
+            <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
+          </Animated.View>
         </View>
-      );
-    };
+      </TouchableOpacity>
+    </View>
+  );
+};
 
   const renderAmenity = ({ item }) => (
     <View style={{ marginBottom: 14 }}>
@@ -638,10 +686,11 @@ const moveUpSelected = async () => {
 
           <View style={styles.rightIcons}>
             <TouchableOpacity
-              style={{ marginRight: 10 }}
               onPress={() => {
                 openAssign(item.id);
               }}
+            disabled={!canWriteAmenities}
+            style={{marginRight: 10 , opacity: canWriteAmenities ? 1 : 0.4 }}
             >
               <Image source={LinkIcon} style={styles.linkIcon} />
             </TouchableOpacity>
@@ -670,6 +719,7 @@ const moveUpSelected = async () => {
        
 <CustomSwitch
    value={item.proRate}
+     disabled={!canWriteAmenities}
    onToggle={() => toggleActive(item)}
 />
 
@@ -677,6 +727,8 @@ const moveUpSelected = async () => {
       </View>
     </View>
   );
+
+
 
   return (
     <>
@@ -697,13 +749,31 @@ const moveUpSelected = async () => {
           <Text style={styles.headerTitle}>Amenities</Text>
         </View>
 
+        {/* ROLE BASED EMPTY STATE */}
+{!canReadAmenities && !loading && (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyAmenity} style={styles.emptyImg} />
+    <Text style={styles.emptyTitle}>
+      You do not have access to view Amenities
+    </Text>
+  </View>
+)}
+
+     {canReadAmenities && (
         <View style={{ flex: 1 }}>
-          {!loading && amenities.length === 0 ? (
+          {!loading  && amenities.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Image source={EmptyAmenity} style={styles.emptyImg} />
               <Text style={styles.emptyTitle}>No Amenities are there!</Text>
 
-              <TouchableOpacity style={styles.addButtonEmpty} onPress={handleShowAmenity}>
+              <TouchableOpacity
+              //  style={styles.addButtonEmpty} 
+                style={[
+    styles.addButtonEmpty,
+    !canWriteAmenities && { opacity: 0.4 }
+  ]}
+  disabled={!canWriteAmenities}
+              onPress={handleShowAmenity}>
                 <Text style={styles.addBtnText}>+  Add Amenity</Text>
               </TouchableOpacity>
             </View>
@@ -717,11 +787,19 @@ const moveUpSelected = async () => {
           )}
 
           {!loading && amenities.length > 0 && (
-            <TouchableOpacity style={styles.floatingBtn} onPress={() => openSheet(false)}>
+            <TouchableOpacity
+                            style={[
+    styles.floatingBtn,
+    !canWriteAmenities && { opacity: 0.4 }
+  ]}
+  disabled={!canWriteAmenities}
+            onPress={() => openSheet(false)}>
               <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
             </TouchableOpacity>
           )}
         </View>
+    )}
+      
       </View>
 {showMenu && (
   <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
@@ -737,14 +815,24 @@ const moveUpSelected = async () => {
         ]}
       >
         
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.menuItem}
           onPress={() => {
             const amenity = amenities.find((a) => a.id === menuAmenityId);
             setShowMenu(false);
             openSheet(true, amenity);
+          }} */}
+
+          <TouchableOpacity
+  disabled={!canUpdateAmenities}
+  style={[styles.menuItem,{ opacity: canUpdateAmenities ? 1 : 0.4 } ]  }
+  onPress={() => {
+            const amenity = amenities.find((a) => a.id === menuAmenityId);
+            setShowMenu(false);
+            openSheet(true, amenity);
           }}
-        >
+>
+        
             <Image
                             source={require("../../../Assets/Images/editIcon.png")}
                             style={styles.popupIcon}
@@ -755,7 +843,8 @@ const moveUpSelected = async () => {
         <View style={styles.menuDivider} />
 
         <TouchableOpacity
-          style={styles.menuItem}
+            style={[styles.menuItem,{ opacity: canDeleteAmenities ? 1 : 0.4 } ]  }
+            disabled={!canDeleteAmenities}
           onPress={() => {
             setShowMenu(false);
             confirmDelete(menuAmenityId);

@@ -15,7 +15,7 @@ import {
   ScrollView,
   BackHandler,
 } from "react-native";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyComplaint from "../../../Assets/Images/Empty_complaint.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -39,6 +39,14 @@ export default function ComplaintsSettings({ navigation }) {
     editComplaintType,
     deleteComplaintType,
   } = useContext(ComplaintContext);
+
+  const {
+  canWriteModule: canWriteComplaints,
+  canReadModule: canReadComplaints,
+  canUpdateModule: canUpdateComplaints,
+  canDeleteModule: canDeleteComplaints,
+} = useHasPermission("Complaints");
+
 
   const [showSheet, setShowSheet] = useState(false);
   const [showMenuId, setShowMenuId] = useState(null);
@@ -385,6 +393,16 @@ const openSheet = (edit = false, item = null) => {
           <Text style={styles.headerTitle}>Complaints</Text>
         </View>
 
+        {!canReadComplaints && !loading && (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyComplaint} style={styles.emptyImg} />
+    <Text style={styles.emptyTitle}>
+      You do not have access to view Complaints
+    </Text>
+  </View>
+)}
+
+{canReadComplaints && (
         <View style={{ flex: 1 }}>
   {!loading && complaints.length === 0 ? (
     <View style={styles.emptyContainer}>
@@ -392,8 +410,13 @@ const openSheet = (edit = false, item = null) => {
       <Text style={styles.emptyTitle}>No Complaints are there!</Text>
 
       <TouchableOpacity
-        style={styles.addButtonEmpty}
-        onPress={() => openSheet(false)}
+        // style={styles.addButtonEmpty}
+          style={[
+    styles.addButtonEmpty,
+    !canWriteComplaints && { opacity: 0.4 },
+  ]}
+  disabled={!canWriteComplaints}
+        onPress={() =>  canWriteComplaints && openSheet(false)}
       >
         <Text style={styles.addBtnText}>+ Complaints</Text>
       </TouchableOpacity>
@@ -409,11 +432,18 @@ const openSheet = (edit = false, item = null) => {
     />
   )}
 </View>
+)}
 
     
 
-        { !loading && complaints.length > 0 && (
-          <TouchableOpacity style={styles.addBtn} onPress={() => openSheet(false)}>
+        {canReadComplaints && !loading && complaints.length > 0 && (
+          <TouchableOpacity 
+                    style={[
+    styles.addBtn,
+    !canWriteComplaints && { opacity: 0.4 },
+  ]}
+  disabled={!canWriteComplaints}
+          onPress={() => canWriteComplaints && openSheet(false)}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
         )}
@@ -433,7 +463,8 @@ const openSheet = (edit = false, item = null) => {
         ]}
       >
         <TouchableOpacity
-          style={styles.menuItem}
+          style={[styles.menuItem ,  {opacity: canUpdateComplaints ? 1 : 0.4} ]}
+          disabled={!canUpdateComplaints}
           onPress={() => {
             const complaint = complaints.find((c) => c.id === menuComplaintId);
             setShowMenu(false);
@@ -447,7 +478,8 @@ const openSheet = (edit = false, item = null) => {
         <View style={styles.menuDivider} />
 
         <TouchableOpacity
-          style={styles.menuItem}
+          style={[styles.menuItem ,  {opacity: canDeleteComplaints ? 1 : 0.4} ]}
+          disabled={!canDeleteComplaints}
           onPress={() => {
             setShowMenu(false);
             setDeleteId(menuComplaintId);

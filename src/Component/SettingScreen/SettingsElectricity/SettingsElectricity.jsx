@@ -384,7 +384,7 @@ const CustomSwitch = ({ value, onToggle, disabled }) => {
           </View>
 
 
-  {!canReadElectricity && !loading ? (
+  {!canReadElectricity ? (
   <View style={styles.EmptyView}>
     <Image source={EmptyState} style={styles.EmptyIcon} />
     <Text
@@ -399,7 +399,7 @@ const CustomSwitch = ({ value, onToggle, disabled }) => {
       You don’t have permission to view Electricity Settings
     </Text>
   </View>
-) : !ebunitList && !loading ? (
+) : !ebunitList && canReadElectricity && !loading ? (
   <View style={styles.EmptyView}>
     <Image source={EmptyState} style={styles.EmptyIcon} />
     <Text
