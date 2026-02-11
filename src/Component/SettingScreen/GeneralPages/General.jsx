@@ -9,6 +9,7 @@ import {
   Pressable,
   BackHandler
 } from "react-native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import Dots from "../../../Assets/Images/3dots.png";
 import Sms from "../../../Assets/Images/sms.png";
 import Call from "../../../Assets/Images/call.png";
@@ -34,6 +35,13 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
+
+    const {
+    canWriteModule: canWriteProfile,
+    canReadModule: canReadProfile,
+    canUpdateModule: canUpdateProfile,
+    canDeleteModule: canDeleteProfile,
+  } = useHasPermission("Profile");
 
 
   useFocusEffect(
@@ -155,8 +163,9 @@ export default function GeneralDetailsScreen({ navigation }) {
       {activeMenu === u.userId && (
         <View style={styles.menuBox}>
           <TouchableOpacity
-            style={styles.menuRow}
-          
+            // style={styles.menuRow}
+                      style={[styles.menuRow,!canWriteProfile && { opacity: 0.4 },]}
+            disabled={!canWriteProfile}
 onPress={() => {
   setSelectedUserId(u.userId); 
   setShowPasswordSheet(true);
@@ -169,7 +178,9 @@ onPress={() => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.menuRow}
+            // style={styles.menuRow}
+            style={[styles.menuRow,!canUpdateProfile && { opacity: 0.4 },]}
+            disabled={!canUpdateProfile}
             onPress={() => {
               setActiveMenu(null);
               navigation.navigate("AddGeneralScreen", { editData: u });
@@ -179,7 +190,10 @@ onPress={() => {
             <Text style={styles.menuText}>Edit</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuRow} onPress={() => handleDelete(u.userId)}>
+          <TouchableOpacity 
+           style={[styles.menuRow,!canDeleteProfile && { opacity: 0.4 },]}
+            disabled={!canDeleteProfile}
+          onPress={() => handleDelete(u.userId)}>
             <Image source={Delete} style={[styles.menuIcon, { tintColor: "red" }]} />
             <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
           </TouchableOpacity>
@@ -212,23 +226,37 @@ onPress={() => {
             <Text style={styles.headerTitle}>General</Text>
 
               {getData?.length > 0 && (
-   <TouchableOpacity style={styles.masterButton} onPress={() => navigation.navigate("AddGeneralScreen")}>
+   <TouchableOpacity
+    // style={styles.masterButton} 
+              style={[styles.masterButton,!canWriteProfile && { opacity: 0.4 },]}
+              disabled={!canWriteProfile}
+              onPress={() => navigation.navigate("AddGeneralScreen")}>
               <Text style={styles.masterText}>+ Master</Text>
             </TouchableOpacity>
         
               )}
            </View>
 
+                    {!canReadProfile &&(
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyState} style={styles.emptyImage} />
+    <Text style={styles.emptyText}>You do not have access to view General</Text>
+  </View>
+                    )}
+
+        {canReadProfile && (
           <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
           
-            {getData?.length === 0 ? (
+            {canReadProfile && getData?.length === 0 ? (
   <View style={styles.emptyContainer}>
     <Image source={EmptyState} style={styles.emptyImage} />
     <Text style={styles.emptyText}>No Data Found</Text>
         <TouchableOpacity style={{    backgroundColor: "#4466F2",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 8,marginTop:10}} onPress={() => navigation.navigate("AddGeneralScreen")}>
+    borderRadius: 8,marginTop:10 , opacity : canWriteProfile ? 1 : 0.4}}
+    disabled={!canWriteProfile}
+     onPress={() => navigation.navigate("AddGeneralScreen")}>
               <Text style={styles.masterText}>+ Master</Text>
             </TouchableOpacity>
   </View>
@@ -238,9 +266,11 @@ onPress={() => {
 
             <View style={{ height: 40 }} />
           </ScrollView>
+            )}
 
         </View>
       </Pressable>
+
       {showDeletePopup && (
         <View style={styles.popupOverlay}>
           <View style={styles.popupBox}>

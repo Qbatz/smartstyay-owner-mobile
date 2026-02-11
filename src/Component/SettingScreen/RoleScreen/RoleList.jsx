@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import AddCategorySheet from "./AddRole";
 import { useFocusEffect } from '@react-navigation/native';
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import BackArrow from "../../../Assets/Images/Arrow_left.png";
 import RoleProfile from "../../../Assets/Images/Avatar.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -35,6 +36,13 @@ const [selectedRoleId, setSelectedRoleId] = useState(null);
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+
+  const {
+      canWriteModule: canWriteRole,
+      canReadModule: canReadRole,
+      canUpdateModule: canUpdateRole,
+      canDeleteModule: canDeleteRole,
+    } = useHasPermission("Role");
 
 
     useEffect(() => {
@@ -141,6 +149,7 @@ const getPermissionCount = (role) => {
         message={message}
         type={modalType}
       />
+       { loading && <Loader />}
 
     <View style={styles.container}>
 
@@ -155,18 +164,34 @@ const getPermissionCount = (role) => {
         <Text style={styles.headerTitle}>Roles</Text>
       </View>
 
-  { loading && <Loader />}
-    { !loading && roleList?.length === 0 &&
+               {!canReadRole && !loading && (
+         <View style={styles.emptyContainer}>
+           <Image source={EmptyState} style={styles.emptyImage} />
+           <Text style={styles.emptyText}>
+             You do not have access to view Roles
+           </Text>
+         </View>
+       )}
+
+
+ 
+
+
+    { !loading && canReadRole &&  roleList?.length === 0 &&
       <View style={styles.emptyContainer}>
         <Image source={EmptyState} style={styles.emptyImage} />
         <Text style={styles.emptyText}>No Roles Found</Text>
         
-          <TouchableOpacity style={styles.addRoleBtn}
+          <TouchableOpacity 
+           style={[styles.addRoleBtn, !canWriteRole && { opacity: 0.4 },]}
+           disabled={!canWriteRole}
            onPress={handleShowAddRole}>
           <Text style={styles.addRoleText}>+ Add Role</Text>
           </TouchableOpacity>
       </View>
      }
+
+{canReadRole && (
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
  {roleList.map((item, i) => (
   <View key={item.id} style={{ position: "relative" }}>
@@ -216,7 +241,10 @@ const getPermissionCount = (role) => {
         </TouchableWithoutFeedback>
 
         <View style={styles.dropdownBox}>
-          <TouchableOpacity style={styles.optionRow} onPress={() => {
+          <TouchableOpacity 
+           style={[styles.optionRow, !canUpdateRole && { opacity: 0.4 },]}
+           disabled={!canUpdateRole}
+          onPress={() => {
     setEditData(item);       
     setShowAddSheet(true); 
     setOpenMenuId(null);   
@@ -230,7 +258,10 @@ const getPermissionCount = (role) => {
 
           <View style={styles.divider} />
 
-          <TouchableOpacity style={styles.optionRow} onPress={() => handleDelete(item.id)}>
+          <TouchableOpacity
+          style={[styles.optionRow, !canDeleteRole && { opacity: 0.4 },]}
+          disabled={!canDeleteRole}
+          onPress={() => handleDelete(item.id)}>
             <Image
               source={Trash}
               style={styles.optionIcon}
@@ -246,17 +277,13 @@ const getPermissionCount = (role) => {
 
 
       </ScrollView>
+      )}
 
-    {!loading &&  roleList?.length > 0 &&(
-//       <TouchableOpacity style={styles.addButton} onPress={() => { 
-//   setShowAddSheet(true); 
-//   setEditData(null); 
-// }}
-//   >
-//   <Image source={TenantAddBlue} style={styles.addIcon} />
-// </TouchableOpacity>
-
-    <TouchableOpacity style={styles.addBtn}onPress={handleShowAddRole}>
+    {!loading && canReadRole && roleList?.length > 0 &&(
+    <TouchableOpacity 
+    style={[styles.addBtn, !canWriteRole && { opacity: 0.4 },]}
+    disabled={!canWriteRole}
+    onPress={handleShowAddRole}>
       <Image source={TenantAddBlue} style={{ width: 25, height: 25 }} />
     </TouchableOpacity>
     )}

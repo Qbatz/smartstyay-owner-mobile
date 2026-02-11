@@ -18,7 +18,7 @@ import { ExpensesContext } from "../../../Context/ExpensesContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader"
 import SuccessModal from "../../../ToastFile/ToastPage";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyExpense from "../../../Assets/Images/Empty_state.png"; 
 import Dots from "../../../Assets/Images/3dots.png";
@@ -41,6 +41,13 @@ const {
   setExpenses, UpdateExpenseCategory,
   UpdateExpenseSubCategory,
 } = useContext(ExpensesContext);
+
+  const {
+    canWriteModule: canWriteExpense,
+    canReadModule: canReadExpense,
+    canUpdateModule: canUpdateExpense,
+    canDeleteModule: canDeleteExpense,
+  } = useHasPermission("Expense");
 
 
   // const [expenses, setExpenses] = useState([
@@ -622,7 +629,9 @@ const saveSubcategory = async () => {
             openSubAddSheet(true, item, selectedExpenseId);
 
           }}
-          style={styles.iconBtn}
+          // style={styles.iconBtn}
+          style={[styles.iconBtn, !canUpdateExpense && { opacity: 0.4 },]}
+          disabled={!canUpdateExpense}
         >
           <Image source={EditIcon} style={styles.iconSmall} />
         </TouchableOpacity>
@@ -631,7 +640,9 @@ const saveSubcategory = async () => {
           onPress={() => {
             confirmDeleteSub(item.id);
           }}
-          style={styles.iconBtn}
+          // style={styles.iconBtn}
+          style={[styles.iconBtn, !canDeleteExpense && { opacity: 0.4 },]}
+          disabled={!canDeleteExpense}
         >
           <Image source={TrashIcon} style={[styles.iconSmall, { tintColor: "red" }]} />
         </TouchableOpacity>
@@ -660,7 +671,21 @@ const saveSubcategory = async () => {
           
             </View>
 
-            {loading ? (
+              {!canReadExpense &&  (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyExpense} style={styles.emptyImg} />
+    <Text style={styles.emptyTitle}>
+      You do not have access to view Expenses
+    </Text>
+  </View>
+)}
+
+            
+{canReadExpense && (
+  <>
+            {
+            
+            loading ? (
  <Loader />
 ) : expenses.length === 0 ? (
   <View style={styles.emptyContainer}>
@@ -668,7 +693,12 @@ const saveSubcategory = async () => {
     <Text style={styles.emptyTitle}>No Expenses are there!</Text>
 
     <TouchableOpacity
-      style={styles.addButtonEmpty}
+      // style={styles.addButtonEmpty}
+                style={[
+    styles.addButtonEmpty,
+    !canWriteExpense && { opacity: 0.4 },
+  ]}
+  disabled={!canWriteExpense}
       onPress={() => openExpenseSheet(false)}
     >
       <Text style={styles.addBtnText}>Add Expenses</Text>
@@ -681,6 +711,9 @@ const saveSubcategory = async () => {
     renderItem={renderExpense}
     contentContainerStyle={{ paddingBottom: 140 }}
   />
+)}
+
+</>
 )}
 
 
@@ -697,8 +730,12 @@ const saveSubcategory = async () => {
               <FlatList data={expenses} keyExtractor={(i) => i.id} renderItem={renderExpense} contentContainerStyle={{ paddingBottom: 140 }} />
             )} */}
 
-            {!loading && expenses?.length > 0 && (
-              <TouchableOpacity style={styles.floatingBtn} onPress={() => openExpenseSheet(false)}>
+            {!loading && canReadExpense &&  expenses?.length > 0 && (
+              <TouchableOpacity
+              //  style={styles.floatingBtn} 
+              style={[styles.floatingBtn,!canWriteExpense && { opacity: 0.4 },]}
+              disabled={!canWriteExpense}
+              onPress={() => openExpenseSheet(false)}>
                 <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
               </TouchableOpacity>
             )}
@@ -727,7 +764,8 @@ const saveSubcategory = async () => {
                 </View>
                    {getSelectedExpense() && getSelectedExpense().subcategories && getSelectedExpense().subcategories.length > 0 && 
                 <TouchableOpacity
-  style={styles.subAddBtn}
+                style={[styles.subAddBtn,!canWriteExpense && { opacity: 0.4 },]}
+                disabled={!canWriteExpense}
   onPress={() => {
     openSubAddSheet(false, null, selectedExpenseId);
   }}
@@ -915,7 +953,9 @@ onPress={() => {
             <View style={styles.globalPopupOverlay}>
               <View style={[styles.globalPopup, { top: popupPos.y, left: popupPos.x  }]}>
                 <TouchableOpacity
-                  style={styles.popupItem}
+                  // style={styles.popupItem}
+                  style={[styles.popupItem, !canUpdateExpense && { opacity: 0.4 },]}
+                  disabled={!canUpdateExpense}
                   onPress={() => {
                     const item = expenses.find((e) => e.id === showMenuId);
                     setShowMenuId(null);
@@ -927,7 +967,9 @@ onPress={() => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.popupItem}
+                  // style={styles.popupItem}
+                  style={[styles.popupItem,!canDeleteExpense && { opacity: 0.4 },]}
+                  disabled={!canDeleteExpense}
                   onPress={() => {
                     setShowMenuId(null);
                     confirmDeleteExpense(showMenuId);

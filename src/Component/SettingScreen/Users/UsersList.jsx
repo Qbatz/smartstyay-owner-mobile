@@ -17,6 +17,7 @@ import Trash from "../../../Assets/Images/trash.png";
 import AddUserBottomSheet from "./AddUser";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import Loader from "../../../Component/Loader/Loader";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -39,6 +40,13 @@ export default function UsersScreen({ navigation }) {
 
     loadUsers();
   }, [activeHostelId]);
+
+    const {
+    canWriteModule: canWriteUser,
+    canReadModule: canReadUser,
+    canUpdateModule: canUpdateUser,
+    canDeleteModule: canDeleteUser,
+  } = useHasPermission("User");
 
   const loadUsers = async () => {
     const res = await getUsersByHostel(activeHostelId);
@@ -138,6 +146,16 @@ export default function UsersScreen({ navigation }) {
           <Text style={styles.headerTitle}>Users</Text>
         </View>
 
+        {!canReadUser && !loading && (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyState} style={styles.emptyImage} />
+    <Text style={styles.emptyText}>
+      You do not have access to view Users
+    </Text>
+  </View>
+)}
+
+{canReadUser && (
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
           {!loading && Array.isArray(users) && users.map((u, i) => (
             <View key={i} style={styles.card}>
@@ -162,7 +180,11 @@ export default function UsersScreen({ navigation }) {
                     <View style={styles.fullOverlay} />
                   </TouchableWithoutFeedback>
                   <View style={styles.dropdownBox}>
-                    <TouchableOpacity style={styles.optionRow} onPress={() => {
+                    <TouchableOpacity 
+                    // style={styles.optionRow}
+                    style={[styles.optionRow, !canUpdateUser && { opacity: 0.4 },]}
+                    disabled={!canUpdateUser}
+                    onPress={() => {
                       setEditData(u);
                       setShowAddSheet(true);
                       setOpenMenuId(null);
@@ -176,7 +198,10 @@ export default function UsersScreen({ navigation }) {
 
                     <View style={styles.divider} />
 
-                    <TouchableOpacity style={styles.optionRow} onPress={() => handleDelete(u.userId)}>
+                    <TouchableOpacity 
+                    style={[styles.optionRow, !canDeleteUser && { opacity: 0.4 },]}
+                    disabled={!canDeleteUser}
+                    onPress={() => handleDelete(u.userId)}>
                       <Image
                         source={Trash}
                         style={styles.optionIcon}
@@ -220,7 +245,9 @@ export default function UsersScreen({ navigation }) {
       <Text style={styles.emptyText}>No Users Found</Text>
 
       <TouchableOpacity
-        style={styles.addUserBtn}
+        // style={styles.addUserBtn}
+        style={[styles.addUserBtn, !canWriteUser && { opacity: 0.4 },]}
+        disabled={!canWriteUser}
         onPress={handleShowAddUser} 
       >
         <Text style={styles.addUserText}>+ Add User</Text>
@@ -230,9 +257,14 @@ export default function UsersScreen({ navigation }) {
 }
 
         </ScrollView>
+)}
+      
 
-        {!loading && users?.length > 0 &&(
-          <TouchableOpacity  style={styles.addBtn} onPress={handleShowAddUser} >
+        {!loading && canReadUser && users?.length > 0 &&(
+          <TouchableOpacity  
+          style={[styles.addBtn, !canWriteUser && { opacity: 0.4 },]}
+          disabled={!canWriteUser}
+          onPress={handleShowAddUser} >
             <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
         )}
