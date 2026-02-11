@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  Image, BackHandler, PanResponder, TouchableWithoutFeedback, TextInput,Dimensions
+  Image, BackHandler, PanResponder, TouchableWithoutFeedback, TextInput, Dimensions
 } from "react-native";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
@@ -19,8 +19,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import Loader from "../../../Component/Loader/Loader"
 
 export default function ElectricitySettings({ navigation }) {
-  const {activeHostelId } = useContext(CommonContexts);
-  const { getElectricity, updateElectricity, changeRoomHostelElectricity ,loading} = UseSetting();
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getElectricity, updateElectricity, changeRoomHostelElectricity, loading } = UseSetting();
   const [ebunitList, setEbUnitList] = useState("")
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -28,28 +28,28 @@ export default function ElectricitySettings({ navigation }) {
 
 
   console.log("activeHostelId", activeHostelId)
-  
 
 
-useEffect(() => {
-  if (!activeHostelId) return;
-  loadElectricity(activeHostelId);
-}, [activeHostelId]);
+
+  useEffect(() => {
+    if (!activeHostelId) return;
+    loadElectricity(activeHostelId);
+  }, [activeHostelId]);
 
 
- const loadElectricity = async (id) => {
-  const res = await getElectricity(id);
+  const loadElectricity = async (id) => {
+    const res = await getElectricity(id);
 
-  console.log("response", res);
-  
+    console.log("response", res);
 
-  if (!res || res.success === false || !res.data) {
-    setEbUnitList(null);   
-    return;
-  }
 
-  setEbUnitList(res.data);  
-};
+    if (!res || res.success === false || !res.data) {
+      setEbUnitList(null);
+      return;
+    }
+
+    setEbUnitList(res.data);
+  };
 
 
 
@@ -77,6 +77,17 @@ useEffect(() => {
       return;
     }
 
+    const noChangesMade= unitAmount === ebunitList.chargerPerUnit;
+
+    if(noChangesMade){
+      setMessage("No Changes Detected");
+      setShowSuccess(true);
+      setModalType("error")
+
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 1500);
+    }
 
     const res = await updateElectricity(activeHostelId, Number(unitAmount));
 
@@ -132,29 +143,29 @@ useEffect(() => {
     });
     return () => back.remove();
   }, [showEditSheet]);
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    const keyboardHeight = e.endCoordinates.height;
-    Animated.timing(editY, {
-      toValue: -keyboardHeight + 40, // sheet top visible
-      duration: 220,
-      useNativeDriver: true,
-    }).start();
-  });
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      const keyboardHeight = e.endCoordinates.height;
+      Animated.timing(editY, {
+        toValue: -keyboardHeight + 40, // sheet top visible
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    Animated.timing(editY, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(editY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
   // useEffect(() => {
@@ -235,32 +246,32 @@ useEffect(() => {
 
 
 
-const CustomSwitch = ({ value, onToggle, disabled }) => {
-  return (
-    <TouchableOpacity
-      disabled={disabled}
-      onPress={() => onToggle(!value)}
-      activeOpacity={0.8}
-    >
-      <View
-        style={[
-          styles.switch,
-          { backgroundColor: value ? "#3562FF" : "#A68DE3" },
-          disabled && { opacity: 0.4 },   
-        ]}
+  const CustomSwitch = ({ value, onToggle, disabled }) => {
+    return (
+      <TouchableOpacity
+        disabled={disabled}
+        onPress={() => onToggle(!value)}
+        activeOpacity={0.8}
       >
-        <Animated.View
+        <View
           style={[
-            styles.knob,
-            { transform: [{ translateX: value ? 18 : 0 }] },
+            styles.switch,
+            { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+            disabled && { opacity: 0.4 },
           ]}
         >
-          <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
-        </Animated.View>
-      </View>
-    </TouchableOpacity>
-  );
-};
+          <Animated.View
+            style={[
+              styles.knob,
+              { transform: [{ translateX: value ? 18 : 0 }] },
+            ]}
+          >
+            <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
+          </Animated.View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
 
   // const toggleRoomBased = () => {
@@ -276,68 +287,68 @@ const CustomSwitch = ({ value, onToggle, disabled }) => {
   //     hostelBased: !prev.hostelBased,
   //   }));
   // };
- const handleRoomBased = async (value) => {
-  
- 
-  setEbUnitList((prev) => ({
-    ...prev,
-    isRoomBased: value,
-    isHostelBased: !value,
-  }));
+  const handleRoomBased = async (value) => {
 
-  const payload = {
-    hostelId: activeHostelId,
-    isRoomBased: value,
-    isHostelBased: !value,
+
+    setEbUnitList((prev) => ({
+      ...prev,
+      isRoomBased: value,
+      isHostelBased: !value,
+    }));
+
+    const payload = {
+      hostelId: activeHostelId,
+      isRoomBased: value,
+      isHostelBased: !value,
+    };
+
+    const res = await changeRoomHostelElectricity(payload);
+
+    if (res.success) {
+      setModalType("success");
+      setMessage("Updated Successfully");
+      setShowSuccess(true);
+
+      setTimeout(() => setShowSuccess(false), 1500);
+    } else {
+      setModalType("error");
+      setMessage(res.data?.message || "Failed to update");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    }
   };
 
-  const res = await changeRoomHostelElectricity(payload);
 
-  if (res.success) {
-    setModalType("success");
-    setMessage("Updated Successfully");
-    setShowSuccess(true);
+  const handleHostelBased = async (value) => {
 
-    setTimeout(() => setShowSuccess(false), 1500);
-  } else {
-    setModalType("error");
-    setMessage(res.data?.message || "Failed to update");
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
-  }
-};
+    // Update UI instantly
+    setEbUnitList((prev) => ({
+      ...prev,
+      isRoomBased: !value,
+      isHostelBased: value,
+    }));
 
+    const payload = {
+      hostelId: activeHostelId,
+      isRoomBased: !value,
+      isHostelBased: value,
+    };
 
- const handleHostelBased = async (value) => {
+    const res = await changeRoomHostelElectricity(payload);
 
-  // Update UI instantly
-  setEbUnitList((prev) => ({
-    ...prev,
-    isRoomBased: !value,
-    isHostelBased: value,
-  }));
+    if (res.success) {
+      setModalType("success");
+      setMessage("Updated Successfully");
+      setShowSuccess(true);
 
-  const payload = {
-    hostelId: activeHostelId,
-    isRoomBased: !value,
-    isHostelBased: value,
+      setTimeout(() => setShowSuccess(false), 1500);
+    } else {
+      setModalType("error");
+      setMessage(res.data?.message || "Failed to update");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    }
   };
-
-  const res = await changeRoomHostelElectricity(payload);
-
-  if (res.success) {
-    setModalType("success");
-    setMessage("Updated Successfully");
-    setShowSuccess(true);
-
-    setTimeout(() => setShowSuccess(false), 1500);
-  } else {
-    setModalType("error");
-    setMessage(res.data?.message || "Failed to update");
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
-  }
-};
 
   const {
     //     canWriteModule: canWriteComplaints,
@@ -357,168 +368,171 @@ const CustomSwitch = ({ value, onToggle, disabled }) => {
 
       />
 
-      { loading && <Loader />}
+      {loading && <Loader />}
       {/* <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       > */}
-        <View style={styles.container}>
-          {/* HEADER */}
-          <View style={styles.headerRow}>
-            <View style={styles.headerLeft}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Image source={ArrowLeft} style={styles.backIcon} />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>Electricity</Text>
-            </View>
-
-            <TouchableOpacity
-            //  style={styles.editBtn}
-            disabled={!canUpdateElectricity}
-            style={[ styles.editBtn, !canUpdateElectricity && { opacity: 0.4 }]}
-            onPress={openEditSheet}>
-              <Text style={styles.editBtnText}>
-                {ebunitList ? "Edit" : "Add"}
-              </Text>
+      <View style={styles.container}>
+        {/* HEADER */}
+        <View style={styles.headerRow}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={ArrowLeft} style={styles.backIcon} />
             </TouchableOpacity>
+            <Text style={styles.headerTitle}>Electricity</Text>
           </View>
 
+          <TouchableOpacity
+            //  style={styles.editBtn}
+            disabled={!canUpdateElectricity}
+            style={[styles.editBtn, !canUpdateElectricity && { opacity: 0.4 }]}
+            onPress={openEditSheet}>
+            <Text style={styles.editBtnText}>
+              {ebunitList ? "Edit" : "Add"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-  {!canReadElectricity && !loading ? (
-  <View style={styles.EmptyView}>
-    <Image source={EmptyState} style={styles.EmptyIcon} />
-    <Text
-      style={{
-        marginTop: 12,
-        fontSize: 16,
-        color: "#777",
-        fontFamily: "Gilroy-Medium",
-        textAlign: "center",
-      }}
-    >
-      You don’t have permission to view Electricity Settings
-    </Text>
-  </View>
-) : !ebunitList && !loading ? (
-  <View style={styles.EmptyView}>
-    <Image source={EmptyState} style={styles.EmptyIcon} />
-    <Text
-      style={{
-        marginTop: 12,
-        fontSize: 16,
-        color: "#777",
-        fontFamily: "Gilroy-Medium",
-      }}
-    >
-      No Electricity Settings Found
-    </Text>
-  </View>
-          ) : (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Electricity Information</Text>
 
-              <Text style={styles.cardSubtitle}>
-                Configure per-unit EB rate for tenant consumption calculation.
-              </Text>
+        {!canReadElectricity && !loading ? (
+          <View style={styles.EmptyView}>
+            <Image source={EmptyState} style={styles.EmptyIcon} />
+            <Text
+              style={{
+                marginTop: 12,
+                fontSize: 16,
+                color: "#777",
+                fontFamily: "Gilroy-Medium",
+                textAlign: "center",
+              }}
+            >
+              You don’t have permission to view Electricity Settings
+            </Text>
+          </View>
+        ) : !ebunitList && !loading ? (
+          <View style={styles.EmptyView}>
+            <Image source={EmptyState} style={styles.EmptyIcon} />
+            <Text
+              style={{
+                marginTop: 12,
+                fontSize: 16,
+                color: "#777",
+                fontFamily: "Gilroy-Medium",
+              }}
+            >
+              No Electricity Settings Found
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Electricity Information</Text>
 
-              <View style={styles.cardborder} />
+            <Text style={styles.cardSubtitle}>
+              Configure per-unit EB rate for tenant consumption calculation.
+            </Text>
 
-              <View style={styles.row}>
-                <Text style={styles.label}>Per Unit Amount</Text>
-                <Text style={styles.value}>₹ {ebunitList.chargerPerUnit}</Text>
-              </View>
+            <View style={styles.cardborder} />
 
-              <View style={styles.row}>
-                <Text style={styles.label}>Room Based Calculation</Text>
-                <View style={styles.switchRow}>
-                  <Text   style={[
-    styles.switchText,
-    !canUpdateElectricity && { opacity: 0.4 }
-  ]}>
-                    {ebunitList.isRoomBased ? "On" : "Off"}
-                  </Text>
-                  {/* <CustomSwitch
+            <View style={styles.row}>
+              <Text style={styles.label}>Per Unit Amount</Text>
+              <Text style={styles.value}>₹ {ebunitList.chargerPerUnit}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Room Based Calculation</Text>
+              <View style={styles.switchRow}>
+                <Text style={[
+                  styles.switchText,
+                  !canUpdateElectricity && { opacity: 0.4 }
+                ]}>
+                  {ebunitList.isRoomBased ? "On" : "Off"}
+                </Text>
+                {/* <CustomSwitch
           value={electricityData.roomBased}
           onToggle={toggleRoomBased}
         /> */}
-                 <CustomSwitch
-  value={ebunitList.isRoomBased}
-  onToggle={handleRoomBased}
-  disabled={!canUpdateElectricity}
-/>
+                <CustomSwitch
+                  value={ebunitList.isRoomBased}
+                  onToggle={handleRoomBased}
+                  disabled={!canUpdateElectricity}
+                />
 
-                </View>
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Hostel Based Calculation</Text>
-                <View style={styles.switchRow}>
-                  <Text   style={[
-    styles.switchText,
-    !canUpdateElectricity && { opacity: 0.4 }
-  ]}>
-                    {ebunitList.isHostelBased ? "On" : "Off"}
-                  </Text>
-                 <CustomSwitch
-  value={ebunitList.isHostelBased}
-  onToggle={handleHostelBased}
-  disabled={!canUpdateElectricity}
-/>
-
-
-                </View>
               </View>
             </View>
-          )}
 
-
-          {showEditSheet && (
-            <View style={styles.sheetOverlay}>
-
-              {/* Close on outside tap */}
-              <TouchableWithoutFeedback onPress={closeEditSheet}>
-                <View style={StyleSheet.absoluteFill} />
-              </TouchableWithoutFeedback>
-
-              {/* Bottom Sheet */}
-              <Animated.View
-                style={[
-                  styles.editSheet,
-                  { transform: [{ translateY: editY }] }
-                ]}
-                {...editPan.panHandlers}
-              >
-                <View style={styles.sheetHandle} />
-
-                <Text style={styles.sheetTitle}>Recurring Enabling</Text>
-
-                {/* Unit Dropdown */}
-                <Text style={styles.label}>Unit</Text>
-                <TouchableOpacity style={styles.dropdownBox}>
-                  <Text style={styles.dropdownText}>1 Kw Unit</Text>
-                  <Image source={DownArrow} style={styles.downIcon} />
-                </TouchableOpacity>
-
-                {/* Amount Input */}
-                <Text style={styles.label}>Amount / Unit</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Eg: ₹ 10"
-                  keyboardType="numeric"
-                  value={unitAmount}
-                  onChangeText={(v) => {
-                    setUnitAmount(v);
-                    setUnitAmountError("");
-                  }}
-
+            <View style={styles.row}>
+              <Text style={styles.label}>Hostel Based Calculation</Text>
+              <View style={styles.switchRow}>
+                <Text style={[
+                  styles.switchText,
+                  !canUpdateElectricity && { opacity: 0.4 }
+                ]}>
+                  {ebunitList.isHostelBased ? "On" : "Off"}
+                </Text>
+                <CustomSwitch
+                  value={ebunitList.isHostelBased}
+                  onToggle={handleHostelBased}
+                  disabled={!canUpdateElectricity}
                 />
-                {unitAmountError && (
-                  <ErrorMessage message={unitAmountError} type="error" />
-                )}
 
 
-                {/* Buttons */}
-                {/* <View style={styles.btnRow}>
+              </View>
+            </View>
+          </View>
+        )}
+
+
+        {showEditSheet && (
+          <View style={styles.sheetOverlay}>
+
+            {/* Close on outside tap */}
+            <TouchableWithoutFeedback onPress={closeEditSheet}>
+              <View style={StyleSheet.absoluteFill} />
+            </TouchableWithoutFeedback>
+
+            {/* Bottom Sheet */}
+            <Animated.View
+              style={[
+                styles.editSheet,
+                { transform: [{ translateY: editY }] }
+              ]}
+              {...editPan.panHandlers}
+            >
+              <View style={styles.sheetHandle} />
+
+              <Text style={styles.sheetTitle}>Recurring Enabling</Text>
+
+              {/* Unit Dropdown */}
+              <View style={{ flexDirection: "row", alignItems: "center"}}>
+                <Text style={styles.label}>Unit</Text>
+                <Text style={{ color: "red", fontSize: 16, marginLeft: 4,marginTop:3 }}>*</Text>
+              </View>
+              <TouchableOpacity style={styles.dropdownBox}>
+                <Text style={styles.dropdownText}>1 Kw Unit</Text>
+                <Image source={DownArrow} style={styles.downIcon} />
+              </TouchableOpacity>
+
+              {/* Amount Input */}
+              <Text style={styles.label}>Amount / Unit</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Eg: ₹ 10"
+                keyboardType="numeric"
+                value={unitAmount}
+                onChangeText={(v) => {
+                  setUnitAmount(v);
+                  setUnitAmountError("");
+                }}
+
+              />
+              {unitAmountError && (
+                <ErrorMessage message={unitAmountError} type="error" />
+              )}
+
+
+              {/* Buttons */}
+              {/* <View style={styles.btnRow}>
         <TouchableOpacity style={styles.cancelBtn} onPress={closeEditSheet}>
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
@@ -528,26 +542,26 @@ const CustomSwitch = ({ value, onToggle, disabled }) => {
         </TouchableOpacity>
       </View> */}
 
-                <View style={styles.btnRow}>
-                  <TouchableOpacity style={styles.cancelBtn} onPress={closeEditSheet}>
-                    <Text style={styles.cancelText}>Cancel</Text>
-                  </TouchableOpacity>
+              <View style={styles.btnRow}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={closeEditSheet}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.saveBtn}
-                    onPress={handleSave}
-                  >
-                    <Text style={styles.saveText}> Save</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={styles.saveBtn}
+                  onPress={handleSave}
+                >
+                  <Text style={styles.saveText}> Save</Text>
+                </TouchableOpacity>
+              </View>
 
-              </Animated.View>
+            </Animated.View>
 
-            </View>
-          )}
+          </View>
+        )}
 
 
-        </View>
+      </View>
       {/* </KeyboardAvoidingView> */}
     </>
   )

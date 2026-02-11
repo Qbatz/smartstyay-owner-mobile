@@ -312,7 +312,7 @@ export default function NotificationDetails() {
 
         <View style={{ height: 40 }} />
       </ScrollView> */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{flex:1}}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{flexGrow:1}}>
           {notifications
             .sort(
               (a, b) =>
@@ -373,7 +373,7 @@ export default function NotificationDetails() {
 
                       <View style={{ alignItems: "flex-end" }}>
                         <Text style={styles.time}>
-                          2m ...
+                          {item?.requestedAt}
                         </Text>
                       </View>
                     </View>

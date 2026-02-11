@@ -29,6 +29,9 @@ import dayjs from "dayjs";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import EmailPic from "../../../Assets/Images/gmail.png"
+import CallIcon from "../../../Assets/Images/call.png"
+import LocationPic from "../../../Assets/Images/location.png"
 
 
 
@@ -43,16 +46,16 @@ export default function VendorsList({ navigation }) {
   //   deleteVendor,
   // } = useContext(VendorContext);
 
-    const { vendorList, loading ,  getVendorList , deleteVendor} = useContext(CustomerContext);;
+  const { vendorList, loading, getVendorList, deleteVendor } = useContext(CustomerContext);;
 
   const { activeHostelId } = useContext(CommonContexts)
 
-const {
-  canReadModule: canReadVendor,
-  canWriteModule: canWriteVendor,
-  canUpdateModule,
-  canDeleteModule,
-} = useHasPermission("Vendor");
+  const {
+    canReadModule: canReadVendor,
+    canWriteModule: canWriteVendor,
+    canUpdateModule,
+    canDeleteModule,
+  } = useHasPermission("Vendor");
 
   console.log("vendorList", vendorList);
 
@@ -150,19 +153,19 @@ const {
   ).current;
 
   const handleEdit = (vendor) => {
-     if (!canUpdateModule) return;
+    if (!canUpdateModule) return;
     setEditVendor(vendor);
     setShowAddVendor(true);
     setActiveMenu(null)
   }
 
   const handleDelete = async () => {
-      if (!canDeleteModule) {
-    setModalType("warning");
-    setModalMessage("You do not have permission to delete vendor");
-    setShowSuccessModal(true);
-    return;
-  }
+    if (!canDeleteModule) {
+      setModalType("warning");
+      setModalMessage("You do not have permission to delete vendor");
+      setShowSuccessModal(true);
+      return;
+    }
     const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
     setDeletePopup(false)
     if (res?.success) {
@@ -188,41 +191,41 @@ const {
   }
 
 
-const getVendorInitials = (firstName = "", lastName = "") => {
-  const f = firstName?.trim();
-  const l = lastName?.trim();
+  const getVendorInitials = (firstName = "", lastName = "") => {
+    const f = firstName?.trim();
+    const l = lastName?.trim();
 
-  if (f && l) {
-    return (
-      f.charAt(0).toUpperCase() +
-      l.charAt(0).toUpperCase()
-    );
-  }
+    if (f && l) {
+      return (
+        f.charAt(0).toUpperCase() +
+        l.charAt(0).toUpperCase()
+      );
+    }
 
-  if (f) {
-    return f.charAt(0).toUpperCase();
-  }
+    if (f) {
+      return f.charAt(0).toUpperCase();
+    }
 
-  if (l) {
-    return l.charAt(0).toUpperCase();
-  }
+    if (l) {
+      return l.charAt(0).toUpperCase();
+    }
 
-  return "";
-};
+    return "";
+  };
 
 
-const handleAddVendorClick = () => {
-  if (!activeHostelId) {
-    setModalType("warning");
-    setModalMessage("Please add a hostel first");
-    setShowSuccessModal(true);
+  const handleAddVendorClick = () => {
+    if (!activeHostelId) {
+      setModalType("warning");
+      setModalMessage("Please add a hostel first");
+      setShowSuccessModal(true);
 
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
 
-  setShowAddVendor(true);
-};
+    setShowAddVendor(true);
+  };
 
 
   const renderVendor = ({ item }) => {
@@ -248,18 +251,18 @@ const handleAddVendorClick = () => {
         <View style={styles.card}>
           <View style={styles.cardTop}>
             <View style={styles.leftRow}>
-             {item.profilePic && item.profilePic.trim() !== "" ? (
-  <Image
-    source={{ uri: item.profilePic }}
-    style={styles.avatar}
-  />
-) : (
-  <View style={styles.initialCircle}>
-    <Text style={styles.initialText}>
-      {getVendorInitials(item.firstName, item.lastName)}
-    </Text>
-  </View>
-)}
+              {item.profilePic && item.profilePic.trim() !== "" ? (
+                <Image
+                  source={{ uri: item.profilePic }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={styles.initialCircle}>
+                  <Text style={styles.initialText}>
+                    {getVendorInitials(item.firstName, item.lastName)}
+                  </Text>
+                </View>
+              )}
 
 
               <View style={{ marginLeft: 12, flex: 1 }}>
@@ -292,28 +295,41 @@ const handleAddVendorClick = () => {
           <View style={styles.infoRow}>
             <View style={styles.infoCol}>
               <Text style={styles.infoLabel}>Mail ID</Text>
-              <Text style={styles.infoValue}>
-                {item.emailId || "N/A"}
-              </Text>
+              <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
+                <Image source={EmailPic} style={{ width: 16, height: 16 }} />
+                <Text style={[styles.infoValue, { marginLeft: 5 }]}>
+                  {item.emailId || "N/A"}
+                </Text>
+              </View>
+
             </View>
 
             <View style={[styles.infoCol, { alignItems: "flex-end" }]}>
               <Text style={styles.infoLabel}>Contact</Text>
-              <Text style={styles.infoValue}>
-                +{item.mobile || "--"}
-              </Text>
+              <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
+                <Image source={CallIcon} style={{ width: 16, height: 16 }} />
+                <Text style={[styles.infoValue, { marginLeft: 5 }]}>
+                  +{item.mobile || "--"}
+                </Text>
+
+              </View>
+
             </View>
           </View>
 
           <View style={[styles.infoRow, { marginTop: 10 }]}>
             <View style={{ flex: 1 }}>
               <Text style={styles.infoLabel}>Address</Text>
-              <Text
-                style={[styles.infoValue, { marginTop: 6 }]}
-                numberOfLines={2}
-              >
-                {address || "N?A"}
-              </Text>
+              <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
+                <Image source={CallIcon} style={{ width: 16, height: 16 }} />
+                <Text
+                  style={[styles.infoValue, { marginLeft: 5 }]}
+                  numberOfLines={2}
+                >
+                  {address || "N?A"}
+                </Text>
+              </View>
+
             </View>
           </View>
         </View>
@@ -326,11 +342,11 @@ const handleAddVendorClick = () => {
 
             <View style={styles.menuBox}>
               <TouchableOpacity
-                 style={[
-      styles.menuRow,
-      !canUpdateModule && { opacity: 0.4 }
-    ]}
-    disabled={!canUpdateModule}
+                style={[
+                  styles.menuRow,
+                  !canUpdateModule && { opacity: 0.4 }
+                ]}
+                disabled={!canUpdateModule}
                 onPress={() => handleEdit(item)}
               >
                 <Image
@@ -341,16 +357,16 @@ const handleAddVendorClick = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                        style={[
-      styles.menuRow,
-      !canDeleteModule && { opacity: 0.4 }
-    ]}
+                style={[
+                  styles.menuRow,
+                  !canDeleteModule && { opacity: 0.4 }
+                ]}
                 onPress={() => {
                   setDeleteVendorData(item);
                   setDeletePopup(true);
                   setActiveMenu(null);
                 }}
-                 disabled={!canDeleteModule}
+                disabled={!canDeleteModule}
               >
                 <Image
                   source={require("../../../Assets/Images/trash.png")}
@@ -369,30 +385,30 @@ const handleAddVendorClick = () => {
   };
 
 
-if (!canReadVendor && !loading) {
-  return (
-<View style={styles.container}>
-      <View style={styles.header}>
+  if (!canReadVendor && !loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack?.()}>
             <Image source={BackIcon} style={styles.backArrow} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Vendors</Text>
         </View>
-    <View style={styles.emptyContainer}>
-      
-      <Image source={EmptyState} style={styles.emptyImage} />
-      <Text style={styles.emptyText}>
-        You do not have access to view Vendors
-      </Text>
-    </View>
-    </View>
-  );
-}
+        <View style={styles.emptyContainer}>
+
+          <Image source={EmptyState} style={styles.emptyImage} />
+          <Text style={styles.emptyText}>
+            You do not have access to view Vendors
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <>
       {loading && <Loader />}
-      
+
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -418,75 +434,75 @@ if (!canReadVendor && !loading) {
             <Text style={styles.emptyText}>
               No vendors are there!
             </Text>
-            
-                    <TouchableOpacity   style={[
-    styles.addVendorBtn,
-    !canWriteVendor && { opacity: 0.7 }
-  ]}
-  disabled={!canWriteVendor} onPress={handleAddVendorClick}>
-                      <Text style={styles.addVendorText}>+ Add Vendor</Text>
-                    </TouchableOpacity>
+
+            <TouchableOpacity style={[
+              styles.addVendorBtn,
+              !canWriteVendor && { opacity: 0.7 }
+            ]}
+              disabled={!canWriteVendor} onPress={handleAddVendorClick}>
+              <Text style={styles.addVendorText}>+ Add Vendor</Text>
+            </TouchableOpacity>
           </View>
         ) : (
 
           <>
-          {!loading && vendorList?.length > 0 &&
-             <View style={styles.searchWrapper}>
-          <Image source={SearchIcon} style={styles.searchIcon} />
-          <TextInput
-            placeholder="Search"
-            placeholderTextColor="#9CA3AF"
-            // style={styles.searchInput}
-              style={[
-    styles.searchInput,
-    !canReadVendor && { opacity: 0.5 }
-  ]}
-  editable={canReadVendor}
-          />
-        </View>
-          }
-               
-         
-          <FlatList
-            data={vendorList}
-            keyExtractor={(item) => item?.id.toString()}
-            renderItem={renderVendor}
-            contentContainerStyle={{
-              paddingVertical: 16,
-              paddingHorizontal: 16,
-            }}
-            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-            showsVerticalScrollIndicator={false}
-          />
+            {!loading && vendorList?.length > 0 &&
+              <View style={styles.searchWrapper}>
+                <Image source={SearchIcon} style={styles.searchIcon} />
+                <TextInput
+                  placeholder="Search"
+                  placeholderTextColor="#9CA3AF"
+                  // style={styles.searchInput}
+                  style={[
+                    styles.searchInput,
+                    !canReadVendor && { opacity: 0.5 }
+                  ]}
+                  editable={canReadVendor}
+                />
+              </View>
+            }
 
 
-          
-           </>
+            <FlatList
+              data={vendorList}
+              keyExtractor={(item) => item?.id.toString()}
+              renderItem={renderVendor}
+              contentContainerStyle={{
+                paddingVertical: 16,
+                paddingHorizontal: 16,
+              }}
+              ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+              showsVerticalScrollIndicator={false}
+            />
+
+
+
+          </>
         )}
 
 
-      {!loading && vendorList?.length > 0 && (
-        <>
-        <TouchableOpacity   style={[
-    styles.filterFab,
-    !canReadVendor && { opacity: 0.4 }
-  ]}
-  disabled={!canReadVendor} onPress={() => setShowFilter(true)}>
-          <Image source={FilterIcon} style={styles.filterIcon} />
-        </TouchableOpacity>
+        {!loading && vendorList?.length > 0 && (
+          <>
+            <TouchableOpacity style={[
+              styles.filterFab,
+              !canReadVendor && { opacity: 0.4 }
+            ]}
+              disabled={!canReadVendor} onPress={() => setShowFilter(true)}>
+              <Image source={FilterIcon} style={styles.filterIcon} />
+            </TouchableOpacity>
 
-        <TouchableOpacity
-            style={[
-    styles.addFab,
-    !canWriteVendor && { opacity: 0.7 }
-  ]}
-  disabled={!canWriteVendor}
-          onPress={() => setShowAddVendor(true)}
-        >
-          <Image source={AddIcon} style={styles.addIcon} />
-        </TouchableOpacity>
-        </>
-      )}
+            <TouchableOpacity
+              style={[
+                styles.addFab,
+                !canWriteVendor && { opacity: 0.7 }
+              ]}
+              disabled={!canWriteVendor}
+              onPress={() => setShowAddVendor(true)}
+            >
+              <Image source={AddIcon} style={styles.addIcon} />
+            </TouchableOpacity>
+          </>
+        )}
 
 
       </View>
@@ -695,7 +711,7 @@ if (!canReadVendor && !loading) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF",  paddingTop: Platform.OS === "ios" ? 50 : 60, },
+  container: { flex: 1, backgroundColor: "#FFFFFF", paddingTop: Platform.OS === "ios" ? 50 : 60, },
 
   header: {
     // paddingBottom: 12,
@@ -726,7 +742,7 @@ const styles = StyleSheet.create({
 
   searchWrapper: {
     margin: 16,
-    marginBottom:6,
+    marginBottom: 6,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FAFAFA",
@@ -755,28 +771,28 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   leftRow: { flexDirection: "row", alignItems: "center", flex: 1 },
 
-avatar: {
-  width: 52,
-  height: 52,
-  borderRadius: 26,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-},
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
 
-initialCircle: {
-  width: 52,
-  height: 52,
-  borderRadius: 26,
-  backgroundColor: "#E5E7EB",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  initialCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-initialText: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#4B5563",
-},
+  initialText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#4B5563",
+  },
 
 
   vendorName: { fontSize: 16, fontWeight: "700", color: "#111" },
@@ -796,7 +812,7 @@ initialText: {
   infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 14 },
   infoCol: { flex: 1 },
   infoLabel: { color: "#9CA3AF", fontSize: 12 },
-  infoValue: { color: "#111", fontSize: 14, marginTop: 6 },
+  infoValue: { color: "#111", fontSize: 14, },
 
   filterFab: {
     position: "absolute",
@@ -977,7 +993,7 @@ initialText: {
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
-  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 52, marginBottom:20 },
+  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 52, marginBottom: 20 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" }, applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
   applyBtnText: { color: "#fff", fontWeight: "700" },
@@ -1057,7 +1073,7 @@ initialText: {
     paddingVertical: 22,
     paddingHorizontal: 18,
   },
-    addVendorBtn: {
+  addVendorBtn: {
     marginTop: 20,
     backgroundColor: "#1E45E1",
     paddingVertical: 12,

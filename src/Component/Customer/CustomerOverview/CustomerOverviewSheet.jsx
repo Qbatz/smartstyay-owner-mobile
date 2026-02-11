@@ -55,12 +55,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [message, setMessage] = useState("");
 
 
-           const {
-        canWriteModule: canWriteTenant,
-        canReadModule: canReadTenant,
-       canUpdateModule: canUpdateTenant,
-        canDeleteModule: canDeleteTenant,
-      } = useHasPermission("Customers");
+  const {
+    canWriteModule: canWriteTenant,
+    canReadModule: canReadTenant,
+    canUpdateModule: canUpdateTenant,
+    canDeleteModule: canDeleteTenant,
+  } = useHasPermission("Customers");
 
   console.log("customerDetails", customerDetails)
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     console.log("fetchCustomerDetails", res)
     if (res.success) {
       setCustomerDetails(res.data)
-    } 
+    }
   }
   const handleProfilePress = () => {
     Alert.alert(
@@ -139,7 +139,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         if (response.didCancel) return;
 
         if (response.assets?.length > 0) {
-          const image = response.assets[0]; 
+          const image = response.assets[0];
           setProfileImage(image); // UI update
 
           // ✅ Send existing details as payload
@@ -294,15 +294,15 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
   const NoReadAccess = () => (
-  <View style={styles.emptyContainer}>
-    {/* <Text style={styles.emptyIcon}>⚠️</Text> */}
-    {/* <Text style={styles.emptyTitle}>Access Restricted</Text> */}
-     <Image source={EmptyState} style={styles.image} />
-    <Text style={styles.emptyText}>
-       You don’t have permission to view Tenants.
-    </Text>
-  </View>
-);
+    <View style={styles.emptyContainer}>
+      {/* <Text style={styles.emptyIcon}>⚠️</Text> */}
+      {/* <Text style={styles.emptyTitle}>Access Restricted</Text> */}
+      <Image source={EmptyState} style={styles.image} />
+      <Text style={styles.emptyText}>
+        You don’t have permission to view Tenants.
+      </Text>
+    </View>
+  );
 
 
 
@@ -326,36 +326,36 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
   const renderTab = () => {
-  // ❌ NO READ ACCESS → same UI for all tabs
-  if (!canReadTenant) {
-    return <NoReadAccess />;
-  }
+    // ❌ NO READ ACCESS → same UI for all tabs
+    if (!canReadTenant) {
+      return <NoReadAccess />;
+    }
 
-  // ✅ HAS READ ACCESS → normal flow
-  switch (activeTab) {
-    case "EB Reading":
-      return <EBReadingTab customerDetails={customerDetails} />;
+    // ✅ HAS READ ACCESS → normal flow
+    switch (activeTab) {
+      case "EB Reading":
+        return <EBReadingTab customerDetails={customerDetails} />;
 
-    case "Bill":
-      return <BillTab customerDetails={customerDetails} />;
+      case "Bill":
+        return <BillTab customerDetails={customerDetails} />;
 
-    case "Complaints":
-      return <ComplaintsTab customerDetails={customerDetails} />;
+      case "Complaints":
+        return <ComplaintsTab customerDetails={customerDetails} />;
 
-    default:
-      return (
-        <OverviewTab
-         customerDetails={customerDetails}
-         handleEditBasicDetails={handleEditBasicDetails} 
-         handleEditAdressDetails={handleEditAdressDetails} 
-         handleEditJoining={handleEditJoining}
-         handleEditMonthlyRent={handleEditMonthlyRent} 
-         handleEditAdvance={handleEditAdvance} 
-         handleShowAmenities={handleShowAmenities}
-        />
-      );
-  }
-};
+      default:
+        return (
+          <OverviewTab
+            customerDetails={customerDetails}
+            handleEditBasicDetails={handleEditBasicDetails}
+            handleEditAdressDetails={handleEditAdressDetails}
+            handleEditJoining={handleEditJoining}
+            handleEditMonthlyRent={handleEditMonthlyRent}
+            handleEditAdvance={handleEditAdvance}
+            handleShowAmenities={handleShowAmenities}
+          />
+        );
+    }
+  };
 
   const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
@@ -423,9 +423,29 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               // alignItems: 'center',
             }}
           >
-            <View style={{ flex: 1, alignItems: 'center',paddingLeft:10 }}>
+            <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
               <TouchableOpacity onPress={handleProfilePress}>
-                <Image
+                <View style={{ width: 90, height: 90}}>
+                  {profileImage?.uri || customerDetails?.profilePic ? (
+                    <Image
+                      source={{
+                        uri: profileImage?.uri || customerDetails?.profilePic,
+                      }}
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    <View style={{
+                      width: 90, height: 90, borderRadius: 45, backgroundColor: "#E5E7EB",
+                      alignItems: "center",justifyContent: "center"}}>
+                      <Text style={{
+                        fontSize: 20,fontWeight: "600",color: "#374151",}}>
+                        {customerDetails?.initials}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* <Image
                   source={
                     profileImage?.uri
                       ? { uri: profileImage.uri }
@@ -434,13 +454,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         : ProfileImg
                   }
                   style={styles.avatar}
-                />
+                /> */}
               </TouchableOpacity>
             </View>
 
             <Image
               source={MoreDot}
-              style={{ width: 20, height: 20,  }}
+              style={{ width: 20, height: 20, }}
             />
           </View>
 
@@ -718,29 +738,29 @@ const styles = StyleSheet.create({
   },
 
   emptyContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 30,
-},
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
+  },
 
-emptyIcon: {
-  fontSize: 40,
-  marginBottom: 12,
-},
+  emptyIcon: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
 
-emptyTitle: {
-  fontSize: 16,
-  fontWeight: "600",
-  marginBottom: 6,
-  color: "#111827",
-},
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+    color: "#111827",
+  },
 
-emptyText: {
-  fontSize: 13,
-  color: "#6B7280",
-  textAlign: "center",
-},
+  emptyText: {
+    fontSize: 13,
+    color: "#6B7280",
+    textAlign: "center",
+  },
   image: {
     width: 250,
     height: 180,

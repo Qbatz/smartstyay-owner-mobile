@@ -1,4 +1,4 @@
-import React,{useEffect} from "react";
+import React,{useContext, useEffect} from "react";
 import {
   View,
   Text,
@@ -21,9 +21,12 @@ import Reportsimage from "../../Assets/Images/Reports.png"
 import Vendorimage from "../../Assets/Images/vendor.png"
 
 import RightArrow from "../../Assets/Images/right_direction.png"
+import { CommonContexts } from "../../Context/CommonContext";
 
 
 export default function MoreDesign({ navigation }) {
+
+  const {hostelList,activeHostelId}=useContext(CommonContexts)
 
   // useEffect(() => {
   //   const backHandler = BackHandler.addEventListener(
@@ -60,12 +63,24 @@ export default function MoreDesign({ navigation }) {
     { title: "Settings", icon: SettingsImage, bg: "#1E45E1", screen: "SettingsScreen" },
   ];
 
+  const activeHostel =
+  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+  hostelList?.[0] ??
+  {};
+
+  console.log(activeHostel)
+
   return (
     <View style={styles.container}>
       
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image source={HostelImage} style={styles.profileImg} />
+          {activeHostel?.mainImage ? <Image source={{uri:activeHostel?.mainImage}} style={styles.profileImg}/> :
+          <View style={[styles.profileImg,{ backgroundColor: "#E5E7EB",alignItems:'center',justifyContent:'center'}]}>
+            <Text style={{fontSize:14,fontWeight:'600'}}>{activeHostel?.initials}</Text>
+          </View>
+           }
+          
           <Text style={styles.headerTitle}>More</Text>
         </View>
 

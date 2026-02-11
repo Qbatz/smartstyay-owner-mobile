@@ -347,7 +347,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
           {/* HEADER */}
           <Text style={styles.title}>Tenant Booking</Text>
           <Text style={styles.subTitle}>
-            Room No :{selectedBed?.roomName} | {selectedBed?.bedName}
+            {selectedBed?.floorName} | {selectedBed?.roomName} | {selectedBed?.bedName}
           </Text>
 
           {/* ✅ FORM SCROLL AREA */}
@@ -437,7 +437,8 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   }, 150);
                 }}
                 onChangeText={(t) => {
-                  setBookingAmount(t);
+                    const onlyNumbers = t.replace(/[^0-9]/g, "");
+                  setBookingAmount(onlyNumbers);
                   setBookingAmountError("");
                 }}
                 keyboardType="numeric"
@@ -524,7 +525,11 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                     scrollRef.current?.scrollToEnd({ animated: true });
                   }, 150);
                 }}
-                onChangeText={setReferenceNumber}
+                onChangeText={(text)=>{
+                   const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"" );
+                   setReferenceNumber(noEmojis)
+                }
+                  }
                 style={styles.inputBox}
               />
 
