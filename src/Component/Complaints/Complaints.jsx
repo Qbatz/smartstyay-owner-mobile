@@ -174,7 +174,7 @@ useEffect(() => {
 const getStatusText = (item) => {
   if (item?.status === "PENDING") return "Pending";
   if (item?.status === "RESOLVED") return "Resolved";
-  if (item?.status === "ASSIGNED") return "Assigned";
+  if (item?.status === "ASSIGNED") return "ASSIGNED";
   if (item?.assigneeName === "") return "+ Assign";
 
   // return item?.assigneeName;

@@ -48,6 +48,8 @@ export default function AssignAmenitiesSheet({
   } = useContext(AmenityContext);
   const { assignAmenitiesForTenant } = useCustomer();
 
+  console.log(customerDetails)
+
   const { activeHostelId } = useContext(CommonContexts);
 
              const {
@@ -166,6 +168,8 @@ export default function AssignAmenitiesSheet({
       customerDetails?.hostelInfo?.bedName || ""
     }`.trim() || "N/A";
 
+  const ProfilePic= customerDetails?.profilePic
+
   // ✅ Dropdown position measure
   const openDropdown = () => {
     Keyboard.dismiss();
@@ -275,9 +279,14 @@ export default function AssignAmenitiesSheet({
 
           {/* CUSTOMER */}
           <View style={styles.userRow}>
+
+            {ProfilePic ?<Image source={{uri: ProfilePic}} style={{width:54,height:54,borderRadius:27,marginRight:12}}/> :
+
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{initials}</Text>
             </View>
+            }
+            
 
             <View style={{ flex: 1 }}>
               <Text style={styles.userName}>{name}</Text>
