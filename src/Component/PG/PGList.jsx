@@ -916,7 +916,7 @@ export default function PGPageFull({ route }) {
         </View>
 
 
-        {activeHostelId && floors?.length > 0 && (
+        {activeHostelId && canReadPayingGuests && floors?.length > 0 && (
           <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 13 }}>
 
             {/* ✅ Filters only when rooms exist */}
@@ -1017,6 +1017,8 @@ export default function PGPageFull({ route }) {
           ></ScrollView>
         </View>
 
+        {!showReadBlockedState && (
+
         <View style={{ flexDirection: "row", marginLeft: 13 }}>
           <ScrollView
             horizontal
@@ -1084,6 +1086,8 @@ export default function PGPageFull({ route }) {
             ))}
           </ScrollView>
         </View>
+        )
+        }
 
 {showReadBlockedState && (
   <View style={styles.centerContainer}>
@@ -1297,7 +1301,7 @@ export default function PGPageFull({ route }) {
       </View>
 
 
-      {floors.length > 0 && (
+      {canReadPayingGuests && floors.length > 0 && (
         <TouchableOpacity
           // style={styles.addFab}
           disabled={!canWritePayingGuests}

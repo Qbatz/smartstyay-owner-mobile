@@ -395,38 +395,38 @@ export default function ElectricitySettings({ navigation }) {
         </View>
 
 
-        {!canReadElectricity && !loading ? (
-          <View style={styles.EmptyView}>
-            <Image source={EmptyState} style={styles.EmptyIcon} />
-            <Text
-              style={{
-                marginTop: 12,
-                fontSize: 16,
-                color: "#777",
-                fontFamily: "Gilroy-Medium",
-                textAlign: "center",
-              }}
-            >
-              You don’t have permission to view Electricity Settings
-            </Text>
-          </View>
-        ) : !ebunitList && !loading ? (
-          <View style={styles.EmptyView}>
-            <Image source={EmptyState} style={styles.EmptyIcon} />
-            <Text
-              style={{
-                marginTop: 12,
-                fontSize: 16,
-                color: "#777",
-                fontFamily: "Gilroy-Medium",
-              }}
-            >
-              No Electricity Settings Found
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Electricity Information</Text>
+  {!canReadElectricity ? (
+  <View style={styles.EmptyView}>
+    <Image source={EmptyState} style={styles.EmptyIcon} />
+    <Text
+      style={{
+        marginTop: 12,
+        fontSize: 16,
+        color: "#777",
+        fontFamily: "Gilroy-Medium",
+        textAlign: "center",
+      }}
+    >
+      You don’t have permission to view Electricity Settings
+    </Text>
+  </View>
+) : !ebunitList && canReadElectricity && !loading ? (
+  <View style={styles.EmptyView}>
+    <Image source={EmptyState} style={styles.EmptyIcon} />
+    <Text
+      style={{
+        marginTop: 12,
+        fontSize: 16,
+        color: "#777",
+        fontFamily: "Gilroy-Medium",
+      }}
+    >
+      No Electricity Settings Found
+    </Text>
+  </View>
+          ) : (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Electricity Information</Text>
 
             <Text style={styles.cardSubtitle}>
               Configure per-unit EB rate for tenant consumption calculation.

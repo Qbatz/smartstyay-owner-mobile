@@ -7,16 +7,23 @@ import {
   Image,
   BackHandler,
 } from "react-native";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import RentalIcon from "../../../Assets/Images/security-safe.png";     
 import HostelIcon from "../../../Assets/Images/triangle.png";      
-
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 import RentalAgreement from "./RentalAgreement";
 // import HostelRulesAgreement from "./HostelRulesAgreement";
 
 export default function AgreementPolicy({ navigation }) {
   const [screen, setScreen] = useState("main");
+
+  const {
+    canWriteModule: canWriteAgreement,
+    canReadModule: canReadAgreement,
+    canUpdateModule: canUpdateAgreement,
+    // canDeleteModule: canDeleteAgreement,
+  } = useHasPermission("Agreement");
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -52,6 +59,18 @@ export default function AgreementPolicy({ navigation }) {
         <Text style={styles.headerTitle}>Agreement & Policy</Text>
       </View>
 
+            {!canReadAgreement &&  (
+               <View style={styles.emptyContainer}>
+                 <Image source={EmptyState} style={styles.emptyImage} />
+                 <Text style={styles.emptyText}>
+                   You do not have access to view Agreement
+                 </Text>
+               </View>
+             )}
+      
+   {canReadAgreement && (
+
+       <>
       <TouchableOpacity
         style={styles.cardBox}
         onPress={() => setScreen("rental")}
@@ -83,6 +102,9 @@ export default function AgreementPolicy({ navigation }) {
           </Text>
         </View>
       </TouchableOpacity>
+</>
+ )}
+
     </View>
   );
 }
@@ -130,4 +152,23 @@ const styles = StyleSheet.create({
   title: { fontSize: 17, fontWeight: "600" },
 
   subtitle: { fontSize: 14, marginTop: 4, color: "#8E8E93" },
+  
+  emptyContainer: {
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 150,
+},
+emptyImage: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+  opacity: 0.8
+},
+
+emptyText: {
+  marginTop: 14,
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#777",
+},
 });

@@ -915,7 +915,7 @@ console.log("profile", getProfileInitial);
       {activeTab === "Dashboard" && (
 
         <>
-    {!canReadDashboard && !loading ? (
+    {!canReadDashboard && !loading && (
       // 🔒 Dashboard restricted EMPTY STATE
       <View style={styles.centerContainer}>
         <Image source={EmptyState} style={styles.image} />
@@ -923,7 +923,8 @@ console.log("profile", getProfileInitial);
           You do not have access to view Dashboard
         </Text>
       </View>
-    ) : (
+    ) }  
+    {canReadDashboard && !loading &&(
         <ScrollView showsVerticalScrollIndicator={false}>
 
 

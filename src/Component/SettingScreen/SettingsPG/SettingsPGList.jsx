@@ -18,6 +18,8 @@ import { PGContext } from "../../../Context/PGContext";
 import { LoginContexts } from "../../../Context/LoginContext";
 import { getHostels } from "../../../Action/HostelAction";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { UIContext } from "../../Tabs/UIContext";
 import HostelImg from "../../../Assets/Images/PgImg.png";
@@ -39,7 +41,12 @@ export default function SettingsPG({ navigation }) {
   const { deletePG } = useContext(PGContext);
   const login = useContext(LoginContexts);
 
-
+  const {
+    canWriteModule: canWritePayingGuests,
+    canReadModule: canReadPayingGuests,
+    canUpdateModule: canUpdatePayingGuests,
+    canDeleteModule: canDeletePayingGuests,
+  } = useHasPermission("Paying Guests");
 
   const { tabBarHeight } = useContext(UIContext);
 
@@ -417,8 +424,10 @@ export default function SettingsPG({ navigation }) {
               borderWidth: 2,
               borderStyle: "dashed",
               borderColor: "#2D6CDF",
+              opacity: canWritePayingGuests ? 1 :  0.4
             }}
-            onPress={() => navigation.navigate("AddPG")}
+              disabled={!canWritePayingGuests}
+              onPress={() => navigation.navigate("AddPG")}
           >
             <Image
               source={PlusIcon}
@@ -461,6 +470,26 @@ export default function SettingsPG({ navigation }) {
           <Text style={styles.headerTitle}>Manage PG</Text>
         </View>
 
+        {!canReadPayingGuests && (
+  <View  style={{
+            flex: 1,
+            backgroundColor: "#fff",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 20,
+          }}>
+    <Image source={EmptyState} style={{ width: 250, height: 160, marginBottom: 16 }} />
+    <Text style={{
+              fontSize: 18,
+              fontFamily: "Gilroy-Bold",
+              marginBottom: 20,
+            }}>
+      You do not have access to view Paying Guests
+    </Text>
+  </View>
+)}
+
+      {canReadPayingGuests && (
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
 
           <View style={styles.card}>
@@ -607,21 +636,23 @@ export default function SettingsPG({ navigation }) {
           </ScrollView>
           {/* </View> */}
         </ScrollView>
+      )}
 
-        {hostelList && hostelList?.length > 0 &&
+        {canReadPayingGuests && hostelList && hostelList?.length > 0 &&
           (
             <View style={[
               styles.fixedAddBtnWrapper,
               { bottom: tabBarHeight - 50 }
             ]}>
               <TouchableOpacity
-                style={styles.figAddBtn}
-
+                // style={styles.figAddBtn}
+                style={[styles.figAddBtn, !canWritePayingGuests && { opacity: 0.4 },]}
+                disabled={!canWritePayingGuests}
                 onPress={() => navigation.navigate("AddPG")}
               >
                 <Image
                   source={PlusIcon}
-                  style={styles.figAddIcon}
+                  style={styles.figAddIcon}    
                 />
                 <Text style={styles.figAddText}>Add New PG</Text>
               </TouchableOpacity>
@@ -640,7 +671,9 @@ export default function SettingsPG({ navigation }) {
                 ]}
               >
                 <TouchableOpacity
-                  style={styles.popupItem}
+                  // style={styles.popupItem}
+                style={[styles.popupItem,!canUpdatePayingGuests && { opacity: 0.4 },]}
+                disabled={!canUpdatePayingGuests}
                   onPress={() => handleEdit(visiblePopup)}
                 >
                   <Image source={EditIcon} style={styles.popupIcon} />
@@ -650,8 +683,10 @@ export default function SettingsPG({ navigation }) {
                 <View style={styles.divider} />
 
                 <TouchableOpacity
-                  style={styles.popupItem}
-                  onPress={handleDelete}
+                  // style={styles.popupItem}
+                style={[styles.popupItem,!canDeletePayingGuests && { opacity: 0.4 },]}
+                disabled={!canDeletePayingGuests}
+                onPress={handleDelete}
                 >
                   <Image source={DeleteIcon} style={styles.popupIcon} />
                   <Text style={[styles.popupText, { color: "red" }]}>

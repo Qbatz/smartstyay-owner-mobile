@@ -6,12 +6,20 @@ import SubscriptionPlan from "../../../Assets/Images/SubscriptionPlan.png";
 import { useFocusEffect } from '@react-navigation/native';
 import Arrow from "../../../Assets/Images/Arrow_left.png";
 import LinearGradient from "react-native-linear-gradient";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 export default function SubscriptionPlans({navigation}) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [billingType, setBillingType] = useState("monthly");
+
+    const {
+    canWriteModule: canWriteSubscription,
+    canReadModule: canReadSubscription,
+    // canUpdateModule: canUpdateSubscription,
+    // canDeleteModule: canDeleteSubscription,
+  } = useHasPermission("Subscription");
 
   useFocusEffect(
          useCallback(() => {
@@ -103,6 +111,17 @@ export default function SubscriptionPlans({navigation}) {
           <Image source={Arrow} style={styles.backArrow}/>
           <Text style={styles.screenTitle}>Subscription plans</Text>
         </TouchableOpacity>
+
+         {!canReadSubscription &&  (
+                       <View style={styles.emptyContainer}>
+                         <Image source={EmptyState} style={styles.emptyImage} />
+                         <Text style={styles.emptyText}>
+                         You do not have access to view Subscription
+                         </Text>
+                       </View>
+                     )}
+
+        {canReadSubscription &&  (
    <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 16 }}>
 
  <View style={styles.card}>
@@ -232,7 +251,9 @@ export default function SubscriptionPlans({navigation}) {
           );
         })}
       </ScrollView>
+        )}
 
+   {canReadSubscription &&  (
    <TouchableOpacity
   disabled={!selectedPlan}
   style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
@@ -244,6 +265,7 @@ export default function SubscriptionPlans({navigation}) {
 >
   <Text style={styles.continueText}>Continue →</Text>
 </TouchableOpacity>
+   )}
 
     </View>
   );
@@ -446,4 +468,22 @@ popularTagText: {
     marginTop: 2,
     color: "#000",
   },
+      emptyContainer: {
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 150,
+},
+emptyImage: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+  opacity: 0.8
+},
+
+emptyText: {
+  marginTop: 14,
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#777",
+},
 });

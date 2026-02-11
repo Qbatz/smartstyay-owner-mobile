@@ -15,7 +15,7 @@ import ThreeDots from "../../Assets/Images/3dots.png";
 import Edit from "../../Assets/Images/editIcon.png";
 import Delete from "../../Assets/Images/trash.png";
 import ChangePasswordSheet from "../SettingScreen/GeneralPages/ChangePasswordSheet";
-
+import { useHasPermission } from "../../Utils/useHasPermission";
 
 
 export default function ProfileScreen({ navigation }) {
@@ -30,6 +30,13 @@ export default function ProfileScreen({ navigation }) {
 const sheetY = useRef(new Animated.Value(300)).current;
 const DotsTopRef = useRef(null);
 const DotsBottomRef = useRef(null);
+
+    const {
+    canWriteModule: canWriteProfile,
+    canReadModule: canReadProfile,
+    canUpdateModule: canUpdateProfile,
+    canDeleteModule: canDeleteProfile,
+  } = useHasPermission("Profile");
 
 const panResponder = useRef(
   PanResponder.create({
@@ -189,7 +196,10 @@ const dotsRef = useRef(null);
                         </Text>
                     </View>
 
-                 <TouchableOpacity style={styles.changeBtn} 
+                 <TouchableOpacity 
+                //  style={styles.changeBtn} 
+                 style={[styles.changeBtn,!canUpdateProfile && { opacity: 0.4 },]}
+                 disabled={!canUpdateProfile}
                 //  onPress={openSheet}
                  >
   <Image
@@ -250,7 +260,9 @@ const dotsRef = useRef(null);
 
       {/* EDIT */}
       <TouchableOpacity
-        style={styles.menuRow}
+        // style={styles.menuRow}
+        style={[styles.menuRow,!canUpdateProfile && { opacity: 0.4 },]}
+        disabled={!canUpdateProfile}
         onPress={() => {
           console.log(activeMenu + " EDIT");
           setActiveMenu(null);
@@ -262,7 +274,9 @@ const dotsRef = useRef(null);
 
       {/* DELETE */}
       <TouchableOpacity
-        style={styles.menuRow}
+        // style={styles.menuRow}
+        style={[styles.menuRow,!canDeleteProfile && { opacity: 0.4 },]}
+        disabled={!canDeleteProfile}
         onPress={() => {
           console.log(activeMenu + " DELETE");
           setActiveMenu(null);
