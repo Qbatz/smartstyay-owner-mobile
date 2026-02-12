@@ -152,7 +152,7 @@ export default function PGPageFull({ route }) {
   };
   const activeHostelName = hostelList?.find(
     (item) => item.hostelId === activeHostelId
-  )?.name;
+  );
 
   console.log("Active Hostel Name:", activeHostelName);
 
@@ -895,10 +895,14 @@ export default function PGPageFull({ route }) {
           {!!activeHostelId && (
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
-                <Image source={HostelImg} style={styles.HostelImg} />
+                {activeHostelName?.mainImage ?  <Image source={{uri:activeHostelName?.mainImage}} style={styles.HostelImg} /> :
+                <View style={[styles.HostelImg,{backgroundColor:'#EEF2FF',alignItems:'center',justifyContent:'center'}]}>
+                  <Text style={{fontSize:14,fontWeight:600}}>{activeHostelName?.initials}</Text>
+                </View>}
+               
               </TouchableOpacity>
 
-              <Text style={styles.title}>{activeHostelName}</Text>
+              <Text style={styles.title}>{activeHostelName?.name}</Text>
             </View>
           )}
 

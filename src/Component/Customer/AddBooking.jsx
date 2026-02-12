@@ -354,7 +354,7 @@ const [datePickerTop, setDatePickerTop] = useState(0);
          
           {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
 
-          <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
+          <Text style={styles.label}>Joining Date (Tentative) <Text style={{ color: "red" }}>*</Text></Text>
           {/* <TouchableOpacity
             onPress={() => setShowJoinDatePicker(true)}
             style={styles.inputBox}
