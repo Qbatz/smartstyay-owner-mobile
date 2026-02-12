@@ -34,6 +34,8 @@ import BedIcon from "../../../Assets/Images/bed.png"
 import Room_Icon from "../../../Assets/Images/Room_Icon.png"
 import MoreDot from "../../../Assets/Images/moreDot.png"
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import CheckinIcon from "../../../Assets/Images/Checkin_Icon.png";
+import BackIcon from "../../../Assets/Images/Arrow_left.png";
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
@@ -366,10 +368,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         {/* HEADER */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.back}>←</Text>
+            {/* <Text style={styles.back}>←</Text> */}
+             <Image source={BackIcon} style={{height:20 , width:20 , marginRight:15}} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Tenant Profile</Text>
-          <View style={styles.notificationDot} />
+          <Image source={CheckinIcon} style={{height:25 , width:22}} />
+          {/* <View style={styles.notificationDot} /> */}
         </View>
 
         {/* PROFILE CARD */}
@@ -599,12 +603,12 @@ const styles = StyleSheet.create({
   },
   back: { fontSize: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "600", flex: 1 },
-  notificationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "red",
-  },
+  // notificationDot: {
+  //   width: 10,
+  //   height: 10,
+  //   borderRadius: 5,
+  //   backgroundColor: "red",
+  // },
 
   profileCard: {
     flexDirection: "column",

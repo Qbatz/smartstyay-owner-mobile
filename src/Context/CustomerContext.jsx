@@ -75,6 +75,8 @@ export const CustomerProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
+        console.log("customer",res);
+        
         setParticularCustomerDetails(res.data); // 🔥 STORE DATA
         return { success: true, data: res.data };
       }
@@ -1114,6 +1116,106 @@ const getDashboardByHostel = async (hostelId) => {
   }
 };
 
+const AddManualDocument = async (hostelId, customerId, pickedFiles) => {
+  if (!hostelId || !customerId || !pickedFiles?.length) {
+    return { success: false, message: "Missing data" };
+  }
+
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    console.log("files", pickedFiles);
+    
+
+    pickedFiles.forEach((file) => {
+      formData.append("files", {
+        uri: file.fileCopyUri || file.uri,
+        name: file.name || "document",
+        type: file.type || "application/octet-stream",
+      });
+    });
+
+    formData.append("payload", {
+      string: JSON.stringify({ type: "OTHER" }),
+      type: "application/json",
+    });
+
+    const response = await axios.post(
+      `/v2/documents/${hostelId}/${customerId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log("response", response);
+    
+
+    if (response?.status === 201 || response?.status === 200) {
+      await GetParticularCustomerDetails(customerId);
+    }
+
+    return { success: true, data: response.data };
+
+  } catch (error) {
+    console.log("Upload Error", error?.response?.data || error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Document upload failed",
+    };
+  }
+};
+
+const deleteManualDocument = async (hostelId, customerId, documentId) => {
+  if (!hostelId || !customerId || !documentId) {
+    return { success: false, message: "Missing required data" };
+  }
+
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v2/documents/${hostelId}/${customerId}/${documentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res?.status === 204 || res?.status === 200) {
+      await GetParticularCustomerDetails(customerId);
+
+      return { success: true };
+    }
+
+    return { success: false, message: "Delete failed" };
+
+  } catch (error) {
+    console.log("DELETE DOCUMENT ERROR", error?.response?.data || error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Unable to delete document",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <CustomerContext.Provider
@@ -1133,7 +1235,7 @@ const getDashboardByHostel = async (hostelId) => {
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
-        getVendorList, deleteVendor,getDashboardByHostel
+        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument
       }}
     >
       {children}
