@@ -492,8 +492,7 @@ export default function AddPG({ navigation, route }) {
                 label="Hostel Name *"
                 value={hostelName}
                 onChangeText={(t) => {
-                  const cleaned = removeEmojis(t);
-                  setHostelName(cleaned)
+                  setHostelName(t.replace(/[^a-zA-Z\s]/g, ""));
                   setTopWarning("");
                   setErrors({ ...errors, hostelName: "" });
                 }}
