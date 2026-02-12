@@ -42,6 +42,9 @@ export default function OverviewTab({ customerDetails,
    const [showSuccess, setShowSuccess] = useState(false);
    const [message, setMessage] = useState("");
 
+   console.log("customerDetails", customerDetails);
+   
+
   const handleEdit = () => {
     handleEditBasicDetails()
   }
