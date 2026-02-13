@@ -40,10 +40,16 @@ import DeleteIcon from  "../../../Assets/Images/trash.png"
 import EditIcon from  "../../../Assets/Images/editIcon.png"  
 import TickIcon from  "../../../Assets/Images/tick-circle.png" 
 
+import ReactNativeBlobUtil from "react-native-blob-util";
+import Share from "react-native-share";
+
+
+
 const Receipt = ({onSelectReceipt}) => {
 
   const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
-      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt , getReceiptPdfDetails} = useContext(BillContext);
+      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt , getReceiptPdfDetails,
+    downloadReceipt} = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
   
         console.log("receiptsList", receiptsList);
@@ -196,6 +202,8 @@ const formatApiDate = (date) =>
   ).current;
 
   
+
+  
    const detailsfilter = useRef(
         PanResponder.create({
           onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
@@ -327,7 +335,9 @@ const handleDeleteReceipt = async () => {
       No Receipts Found
     </Text>
   </View>
-);
+)
+
+
 
 
 const renderItem = ({ item }) => {
