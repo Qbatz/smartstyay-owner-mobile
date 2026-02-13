@@ -21,7 +21,7 @@ import BillsPdfPreview from "./BillsPdfPreview";
 import SecurityDepositPdfPreview from "./SecurityDepositPreview";
 import ReceiptPdfPreview from "./ReceiptPdfPreview";
 
-export default function TemplatesScreen({ navigation }) {
+export default function TemplatesScreen({ navigation,onBack  }) {
   const [activeTab, setActiveTab] = useState("Bills");
 
   // Preview States
@@ -70,7 +70,7 @@ export default function TemplatesScreen({ navigation }) {
       {/* ---------------- HEADER (Hide during preview) ---------------- */}
       {!PREVIEW_ACTIVE && (
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={onBack}>
             <Image source={BackIcon} style={styles.backIcon} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Templates</Text>

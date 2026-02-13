@@ -12,6 +12,7 @@ const LoginContext = ({ children }) => {
   const [loggedIN,setLoggedIN]=useState()
   const [pinVerifid, setPinVerified] = useState(false)
   const [route,setRoute]=useState()
+  const [Network,setCheckNetConnectivity]=useState(true)
   console.log(userId)
 
 
@@ -159,6 +160,9 @@ const logout = async () => {
         // setLoggedIn(value)
         setLoggedIN(value )
     }
+    const fetchNetwork=(value)=>{
+    setCheckNetConnectivity(value)
+  }
 
   return (
     <LoginContexts.Provider
@@ -177,7 +181,7 @@ const logout = async () => {
         updateUserId,
         logoutf:logoutfn,
 
-        updateRoute:routeNamefn, getRoute:route
+        updateRoute:routeNamefn, getRoute:route,internet:fetchNetwork,getNetworkConnectivity:Network,
 
       }}
     >

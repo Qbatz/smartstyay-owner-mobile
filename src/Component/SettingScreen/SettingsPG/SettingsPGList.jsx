@@ -622,7 +622,12 @@ export default function SettingsPG({ navigation }) {
           >
             {otherHostels && otherHostels.filter(Boolean).map((hostel) => (
               <View key={hostel.id} style={styles.otherCard}>
-                <Image source={hostel.profilePhoto} style={styles.otherImg} />
+                {hostel?.profilePhoto  ? <Image source={hostel.profilePhoto} style={styles.otherImg} />
+                : <View style={[styles.otherImg,{backgroundColor: "#E6EEF9",alignItems: "center",
+                              justifyContent: "center",}]}>
+                  <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
+                    {hostel.profileIntials}</Text>
+                  </View>}
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={styles.otherName}>{hostel.name}</Text>
                   <Text style={styles.otherBadge}>{hostel.type}</Text>
