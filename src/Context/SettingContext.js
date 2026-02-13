@@ -458,11 +458,101 @@ const GetInvoiceReports = async (hostelId) => {
   }
 };
 
+const getTenantRegisterReport = async (hostelId, filters = {}) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/reports/tenants/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          startDate: filters?.startDate,
+          endDate: filters?.endDate,
+          period: filters?.period,
+          page: filters?.page ?? 0,
+          size: filters?.size ?? 10,
+        },
+      }
+    );
+
+    console.log("TENANT REGISTER SUCCESS →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log("TENANT REGISTER ERROR →", err.response?.data || err.message);
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/reports/expense/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          startDate: filters?.startDate,
+          endDate: filters?.endDate,
+          period: filters?.period,
+          categoryId: filters?.categoryId,
+          paymentMode: filters?.paymentMode,
+          createdBy: filters?.createdBy,
+          paidTo: filters?.paidTo,
+          page: filters?.page ?? 0,
+          size: filters?.size ?? 10,
+        },
+      }
+    );
+
+    console.log("EXPENSE REGISTER SUCCESS →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log("EXPENSE REGISTER ERROR →", err.response?.data || err.message);
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport}}>
       {children}
     </ElectricityContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React , {useState ,useEffect, useContext, } from "react";
 import {
   View,
   Text,
@@ -10,10 +10,22 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
+import Loader from "../../../Component/Loader/Loader"
+
+
 const TenantRegister = ({navigation}) => {
 
-    const {  Reportsdetails} = UseSetting();
+    // const {  Reportsdetails} = UseSetting();
+
+         const {loading,  Reportsdetails , GetInvoiceReports  ,
+           invoiceReports , getTenantRegisterReport}   = UseSetting();
+        const { activeHostelId } = useContext(CommonContexts);
+
+        const [tenantData, setTenantData] = useState(null);
+
 
           const {
             canWriteModule: canWriteReports,
@@ -21,6 +33,27 @@ const TenantRegister = ({navigation}) => {
             canUpdateModule: canUpdateReports,
             canDeleteModule: canDeleteReports,
           } = useHasPermission("Reports")
+
+          useEffect(() => {
+  if (!activeHostelId) return; // 🔥 hostelId illana call panna koodadhu
+
+  const fetchTenantRegister = async () => {
+    const response = await getTenantRegisterReport(activeHostelId, {
+      page: 0,
+      size: 10,
+    });
+
+    if (response.success) {
+      setTenantData(response.data);  // 🔥 store API response
+    }
+  };
+
+  fetchTenantRegister();
+}, [activeHostelId]);
+
+console.log("tenantdata", tenantData);
+
+
 
 const tenantList = [
   {
@@ -83,6 +116,7 @@ const tenantList = [
 
   return (
          <>
+           {loading && <Loader />}
 <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
          <View style={styles.container}>
              {/* <View style={styles.headerRow}>
@@ -154,16 +188,24 @@ const tenantList = [
      
 
       {/* LIST */}
-    {tenantList.map((item, index) => (
+    {tenantData && tenantData?.tenants?.map((item, index) => (
   <View key={index} style={styles.listItem}>
     <View>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.sub}>{item.sub}</Text>
+      <Text style={styles.name}>{item?.name}</Text>
+      <Text style={styles.sub}>{item?.mobileNo}</Text>
     </View>
 
-    <Text style={styles.amount}>{item.amount}</Text>
+    <Text style={styles.amount}>₹ {item?.checkInAmount}</Text>
   </View>
 ))}
+
+{tenantData?.tenants?.length === 0 && (
+   <View style={styles.emptyContainer}>
+           <Image source={EmptyState} style={styles.emptyImage} />
+           <Text style={styles.emptyText}>No Expenses are there!</Text>
+         </View>
+)}
+
 
 
       {/* EXPORT */}
@@ -331,6 +373,25 @@ sub: {
   amount: {
     fontSize: 14,
     fontWeight: "600",
+  },
+
+     emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
   },
 
   /* EXPORT */
