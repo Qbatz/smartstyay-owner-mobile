@@ -497,6 +497,36 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
     }
   };
 
+const downloadReceipt = async (hostelId, transactionId) => {
+  if (!hostelId || !transactionId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/transaction/download/${hostelId}/${transactionId}`
+    );
+
+    if (res.status === 200) {
+      return {
+        success: true,
+        url: res.data, // 🔥 PDF URL
+      };
+    }
+
+    return { success: false, message: "Download failed" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   
@@ -524,7 +554,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
          GetReceiptsList,
          DeleteReceipt , 
          getBillsPdfDetails , 
-         getReceiptPdfDetails
+         getReceiptPdfDetails,
+         downloadReceipt
       }}
     >
       {children}

@@ -18,8 +18,10 @@ import { useLayoutEffect } from "react";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
-import { Calendar } from "react-native-calendars";
+import { Calendar } from "react-native-calendars"; 
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import ReactNativeBlobUtil from "react-native-blob-util";
+import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
@@ -39,7 +41,7 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
-import Download from "../../../Assets/Images/download.png";
+import DownloadIcon from "../../../Assets/Images/download.png";
 import Telegram from "../../../Assets/Images/telegram.png";
 import Payment from "../../../Assets/Images/payment.png";
 import DatePicker from "react-native-ui-datepicker";
@@ -80,7 +82,7 @@ export default function BillsDesign({ route }) {
 
   const { BillDetails , loading, GetAllBillDetails ,
      RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  
-     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails} = useContext(BillContext);
+     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails , downloadReceipt} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
 
@@ -1353,6 +1355,40 @@ const refundBankOptions = (refundInitDetails?.listBanks || []).map((b) => ({
   value: b?.bankId,
 }));
 
+const handleDownloadReceipt = async (item) => {
+  if (!activeHostelId) return;
+
+  const response = await downloadReceipt(activeHostelId, item?.transactionId);
+
+  if (!response?.success) {
+    console.log("Failed to fetch receipt");
+    return;
+  }
+
+  const pdfUrl = response?.url;
+
+  try {
+    const { fs } = ReactNativeBlobUtil;
+    const filePath =
+      fs.dirs.CacheDir + `/receipt-${Date.now()}.pdf`;
+
+    const res = await ReactNativeBlobUtil.config({
+      fileCache: true,
+      path: filePath,
+    }).fetch("GET", pdfUrl);
+
+    await Share.open({
+      url: "file://" + res.path(),
+      type: "application/pdf",
+      failOnCancel: false,
+    });
+
+  } catch (err) {
+    console.log("Error:", err);
+  }
+};
+
+
 const handleSaveRefund = async () => {
   setRefundAmountError("");
   setRefundDateError("");
@@ -1928,8 +1964,8 @@ navigation.navigate("CancelNotice")
       </Text>
     </View>
 
-    <TouchableOpacity>
-      <Image source={Dots} style={{ width: 28, height: 28 }} />
+    <TouchableOpacity onPress={()=>handleDownloadReceipt(selectedReceipt)}>
+      <Image source={DownloadIcon} style={{ width: 28, height: 28 }} />
     </TouchableOpacity>
   </View>
 </View>
