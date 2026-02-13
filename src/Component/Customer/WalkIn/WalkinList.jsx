@@ -30,23 +30,23 @@ import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
-export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, navigation,searchText }) {
+export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, navigation, searchText }) {
   const { getCustomersByHostel, deleteCustomer, loading } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
 
-    const {
+  const {
     canWriteModule: canWriteWalkin,
     canReadModule: canReadWalkin,
     // canUpdateModule: canUpdateWalkin,
     canDeleteModule: canDeleteWalkin,
   } = useHasPermission("Walk in");
 
-           const {
-        canWriteModule: canWriteTenant,
-        canReadModule: canReadTenant,
-       canUpdateModule: canUpdateTenant,
-        canDeleteModule: canDeleteTenant,
-      } = useHasPermission("Customers");
+  const {
+    canWriteModule: canWriteTenant,
+    canReadModule: canReadTenant,
+    canUpdateModule: canUpdateTenant,
+    canDeleteModule: canDeleteTenant,
+  } = useHasPermission("Customers");
 
   const [walkinCustomers, setWalkinCustomers] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
@@ -138,9 +138,9 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   }
   const handleShowAddBooking = () => {
     // navigation.navigate("AddBooking")
-      navigation.navigate("AddBooking", {
-    selectedItem: selectedItem,
-  });
+    navigation.navigate("AddBooking", {
+      selectedItem: selectedItem,
+    });
 
     setMenuVisible(false)
   }
@@ -151,13 +151,13 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   }, [showFilter]);
 
 
-const filteredWalkins = walkinCustomers.filter((item) => {
-  const search = searchText.trim().toLowerCase();
-  return (
-    item?.fullName?.toLowerCase().includes(search) ||
-    item?.mobile?.toString().includes(search)
-  );
-});
+  const filteredWalkins = walkinCustomers.filter((item) => {
+    const search = searchText.trim().toLowerCase();
+    return (
+      item?.fullName?.toLowerCase().includes(search) ||
+      item?.mobile?.toString().includes(search)
+    );
+  });
   useFocusEffect(
     useCallback(() => {
       fetchWalkinCustomers();
@@ -193,33 +193,33 @@ const filteredWalkins = walkinCustomers.filter((item) => {
     return () => handler.remove();
   }, [showFilter]);
 
-const handleAddTenant = () => {
-  if (!activeHostelId) {
-    setModalType("warning");
-    setMessage("Please add a hostel first");
-    setShowSuccess(true);
+  const handleAddTenant = () => {
+    if (!activeHostelId) {
+      setModalType("warning");
+      setMessage("Please add a hostel first");
+      setShowSuccess(true);
 
-    setTimeout(() => setShowSuccess(false), 2000);
-    return;
-  }
+      setTimeout(() => setShowSuccess(false), 2000);
+      return;
+    }
 
-  navigation.navigate("AddTenant", {
-    refreshWalkins: walkinCustomers,
-  });
-};
+    navigation.navigate("AddTenant", {
+      refreshWalkins: walkinCustomers,
+    });
+  };
 
 
   if (!canReadWalkin && !loading) {
     return (
-       <View style={styles.container}>
-    
-      <View style={{ alignItems: "center", marginTop: 180 }}>
-  
-        <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
-        <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
-          You do not have access to view Walkin
-        </Text>
-      </View>
+      <View style={styles.container}>
+
+        <View style={{ alignItems: "center", marginTop: 180 }}>
+
+          <Image source={EmptyState} style={{ width: 250, height: 180, }} />
+          <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
+            You do not have access to view Walkin
+          </Text>
+        </View>
       </View>
     )
   }
@@ -230,34 +230,34 @@ const handleAddTenant = () => {
       {loading && <Loader />}
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
-       {
-        walkinCustomers?.length > 0 &&
-         <Text style={styles.monthHeading}>This Month</Text>
-       }
-        
-{!loading && walkinCustomers.length === 0 &&
-            <View style={styles.emptyContainer}>
-              <Image source={EmptyState} style={styles.emptyImage} />
-            <Text style={styles.emptyText}>
-  Add new tenants to start tracking{"\n"}
-  bookings and check-ins.
-</Text>
+        {
+          walkinCustomers?.length > 0 &&
+          <Text style={styles.monthHeading}>This Month</Text>
+        }
 
-               <TouchableOpacity 
-               style={[ styles.addBtnAdd, !canWriteWalkin && { opacity: 0.4 }]}
-               disabled={!canWriteWalkin}
-               onPress={handleAddTenant}>
-                    <Text style={styles.addBtnText}>
-                    + Add Tenant
-                    </Text>
-                  </TouchableOpacity>
-            </View>
-          }
-       
+        {!loading && walkinCustomers.length === 0 &&
+          <View style={styles.emptyContainer}>
+            <Image source={EmptyState} style={styles.emptyImage} />
+            <Text style={styles.emptyText}>
+              Add new tenants to start tracking{"\n"}
+              bookings and check-ins.
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.addBtnAdd, !canWriteWalkin && { opacity: 0.4 }]}
+              disabled={!canWriteWalkin}
+              onPress={handleAddTenant}>
+              <Text style={styles.addBtnText}>
+                + Add Tenant
+              </Text>
+            </TouchableOpacity>
+          </View>
+        }
+
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 50 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
 
 
@@ -268,19 +268,19 @@ const handleAddTenant = () => {
                 <Image source={UserIcon} style={styles.avatar} />
               </View> */}
               <View style={styles.avatarBox}>
-  {item?.profilePic ? (
-    <Image
-      source={{ uri: item.profilePic }}
-      style={styles.avatarImage}
-    />
-  ) : (
-    <View style={styles.initialCircle}>
-      <Text style={styles.initialText}>
-        {item?.initials || item?.fullName?.charAt(0)}
-      </Text>
-    </View>
-  )}
-</View>
+                {item?.profilePic ? (
+                  <Image
+                    source={{ uri: item.profilePic }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <View style={styles.initialCircle}>
+                    <Text style={styles.initialText}>
+                      {item?.initials || item?.fullName?.charAt(0)}
+                    </Text>
+                  </View>
+                )}
+              </View>
 
 
               <View style={{ flex: 1 }}>
@@ -301,10 +301,10 @@ const handleAddTenant = () => {
               </View>
             </View>
           ))}
-         
+
 
         </ScrollView>
-         
+
         {menuVisible && (
           <TouchableOpacity
             activeOpacity={1}
@@ -320,27 +320,27 @@ const handleAddTenant = () => {
                 },
               ]}
             >
-              <TouchableOpacity 
-              style={[ styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
-              disabled={!canWriteWalkin}
-              onPress={handleShowTennantCheckin}>
+              <TouchableOpacity
+                style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+                disabled={!canWriteWalkin}
+                onPress={handleShowTennantCheckin}>
                 <Image source={CalendarIcon} style={styles.menuIcon} />
                 <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
 
 
-              <TouchableOpacity 
-              style={[ styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
-              disabled={!canWriteWalkin}
-              onPress={handleShowAddBooking}>
+              <TouchableOpacity
+                style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+                disabled={!canWriteWalkin}
+                onPress={handleShowAddBooking}>
                 <Image source={CalendarIcon} style={styles.menuIcon} />
                 <Text style={styles.menuText}>Add booking</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-              style={[ styles.menuRow, !canDeleteWalkin && { opacity: 0.4 }]}
-              disabled={!canDeleteWalkin}
-              onPress={DeleteMenu}>
+              <TouchableOpacity
+                style={[styles.menuRow, !canDeleteWalkin && { opacity: 0.4 }]}
+                disabled={!canDeleteWalkin}
+                onPress={DeleteMenu}>
                 <Image source={require("../../../Assets/Images/trash.png")} style={styles.menuIcon} />
                 <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
               </TouchableOpacity>
@@ -348,28 +348,28 @@ const handleAddTenant = () => {
           </TouchableOpacity>
         )}
 
- {walkinCustomers?.length > 0 &&
-<>
-        <TouchableOpacity 
-            style={[ styles.filterBtn, !canReadWalkin && { opacity: 0.4 }]}
-            disabled={!canReadWalkin}
-        onPress={handleWalkinFilter}>
-          <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
-        </TouchableOpacity>
+        {walkinCustomers?.length > 0 &&
+          <>
+            <TouchableOpacity
+              style={[styles.filterBtn, !canReadWalkin && { opacity: 0.4 }]}
+              disabled={!canReadWalkin}
+              onPress={handleWalkinFilter}>
+              <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
+            </TouchableOpacity>
 
 
-        <TouchableOpacity
-            style={[ styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
-            disabled={!canWriteTenant}
-        onPress={() =>
-          navigation.navigate("AddTenant", {
-            refreshWalkins: walkinCustomers,
-          })
-        }>
-          <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
-        </TouchableOpacity>
-</>
-}
+            <TouchableOpacity
+              style={[styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
+              disabled={!canWriteTenant}
+              onPress={() =>
+                navigation.navigate("AddTenant", {
+                  refreshWalkins: walkinCustomers,
+                })
+              }>
+              <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
+            </TouchableOpacity>
+          </>
+        }
 
 
         {showFilter && (
@@ -722,19 +722,19 @@ const styles = StyleSheet.create({
 
   date: { fontSize: 11, color: "#6B7280", marginTop: 4 },
 
-filterBtn: {
-  position: "absolute",
-  bottom: 110,
-  right: 20,
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 30,
-  elevation: 5,
-},
-
-addBtn: {
+  filterBtn: {
     position: "absolute",
-    bottom: 50,
+    bottom: 70,
+    right: 20,
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 30,
+    elevation: 5,
+  },
+
+  addBtn: {
+    position: "absolute",
+    bottom: 10,
     right: 20,
     backgroundColor: "#00A32E",
     width: 50,
@@ -972,9 +972,9 @@ addBtn: {
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop:60
-   
-   
+    paddingTop: 60
+
+
   },
 
   emptyImage: {
@@ -985,22 +985,22 @@ addBtn: {
   },
 
   emptyText: {
-  fontSize: 14,
-  fontWeight: "500",
-  color: "#6B7280",
-  textAlign: "center",
-  lineHeight: 20,
-  marginTop: 10,
-  marginBottom: 20,
-},
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+    marginTop: 10,
+    marginBottom: 20,
+  },
 
   addBtnAdd: {
-  backgroundColor: "#1E45E1",
-  paddingVertical: 15,
-  paddingHorizontal:15,
-  borderRadius: 12,
-  marginBottom: 10,    // 🔥 reduced
-},
+    backgroundColor: "#1E45E1",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 12,
+    marginBottom: 10,    // 🔥 reduced
+  },
 
   addBtnText: {
     textAlign: "center",
@@ -1008,36 +1008,36 @@ addBtn: {
     fontWeight: "600",
   },
   avatarBox: {
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-  backgroundColor: "#E5E7EB",
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 12,
-  overflow: "hidden",
-},
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    overflow: "hidden",
+  },
 
-avatarImage: {
-  width: "100%",
-  height: "100%",
-  borderRadius: 24,
-},
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 24,
+  },
 
-initialCircle: {
-  width: "100%",
-  height: "100%",
-  borderRadius: 24,
-  backgroundColor: "#2563EB",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  initialCircle: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 24,
+    backgroundColor: "#2563EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-initialText: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "700",
-},
+  initialText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
 
 
 });

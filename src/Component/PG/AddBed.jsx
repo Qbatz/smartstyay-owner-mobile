@@ -1,24 +1,24 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View, Text, TextInput, TouchableOpacity,
-  Animated, PanResponder, Keyboard, TouchableWithoutFeedback, StyleSheet,ScrollView
+  Animated, PanResponder, Keyboard, TouchableWithoutFeedback, StyleSheet, ScrollView
 } from "react-native";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
 
-export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, onBedAdded,editBedData }) {
+export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, onBedAdded, editBedData }) {
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editBedData;
-  console.log("editBedData",editBedData)
- 
+  console.log("editBedData", editBedData)
 
 
 
-const amountRef = useRef(null);
 
-  const { addBed, getAllBedsByRoom,updateBed  } = useFloor();
+  const amountRef = useRef(null);
+
+  const { addBed, getAllBedsByRoom, updateBed } = useFloor();
 
   const { activeHostelId } = useContext(CommonContexts);
 
@@ -32,30 +32,30 @@ const amountRef = useRef(null);
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [bedId,setBedId] = useState("")
+  const [bedId, setBedId] = useState("")
   const [initialBedName, setInitialBedName] = useState("");
-const [initialAmount, setInitialAmount] = useState("");
+  const [initialAmount, setInitialAmount] = useState("");
 
 
 
   const isDisabled =
-  !bedName?.trim() || !String(amount)?.trim();
+    !bedName?.trim() || !String(amount)?.trim();
 
 
 
- useEffect(() => {
-  if (isEdit && editBedData) {
-    const name = editBedData.bedName ?? "";
-    const amt = String(editBedData?.rentAmount ?? "");
+  useEffect(() => {
+    if (isEdit && editBedData) {
+      const name = editBedData.bedName ?? "";
+      const amt = String(editBedData?.rentAmount ?? "");
 
-    setBedName(name);
-    setAmount(amt);
-    setBedId(editBedData?.bedId);
+      setBedName(name);
+      setAmount(amt);
+      setBedId(editBedData?.bedId);
 
-    setInitialBedName(name.trim());
-    setInitialAmount(amt.trim());
-  }
-}, [editBedData]);
+      setInitialBedName(name.trim());
+      setInitialAmount(amt.trim());
+    }
+  }, [editBedData]);
 
 
   useEffect(() => {
@@ -111,89 +111,89 @@ const [initialAmount, setInitialAmount] = useState("");
 
   if (!visible) return null;
   const handleSaveBed = async () => {
-  let valid = true;
+    let valid = true;
 
-  const trimmedBedName = bedName.trim();
-  // const trimmedAmount = amount.trim();
-   const trimmedAmount = amount?.toString().trim();
+    const trimmedBedName = bedName.trim();
+    // const trimmedAmount = amount.trim();
+    const trimmedAmount = amount?.toString().trim();
 
-  if (!trimmedBedName) {
-    setBedNameError("Bed name is required");
-    valid = false;
-  } else {
-    setBedNameError("");
-  }
+    if (!trimmedBedName) {
+      setBedNameError("Bed name is required");
+      valid = false;
+    } else {
+      setBedNameError("");
+    }
 
-  // if (!trimmedAmount) {
-  //   setAmountError("Amount is required");
-  //   valid = false;
-  // } else {
-  //   setAmountError("");
-  // }
- 
+    // if (!trimmedAmount) {
+    //   setAmountError("Amount is required");
+    //   valid = false;
+    // } else {
+    //   setAmountError("");
+    // }
 
-if (!trimmedAmount) {
-  setAmountError("Amount is required");
-  valid = false;
-} else if (Number(trimmedAmount) <= 0) {
-  setAmountError("Amount must be greater than 0");
-  valid = false;
-} else {
-  setAmountError("");
-}
 
-  if (!valid) return;
+    if (!trimmedAmount) {
+      setAmountError("Amount is required");
+      valid = false;
+    } else if (Number(trimmedAmount) <= 0) {
+      setAmountError("Amount must be greater than 0");
+      valid = false;
+    } else {
+      setAmountError("");
+    }
 
-  let res;
+    if (!valid) return;
 
-  if (isEdit) {
-    // ✅ EDIT BED
-    if (
-    trimmedBedName === initialBedName &&
-    trimmedAmount === initialAmount
-  ) {
-    setModalType("warning");
-    setMessage("No changes detected");
-    setShowSuccess(true);
+    let res;
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 800);
+    if (isEdit) {
+      // ✅ EDIT BED
+      if (
+        trimmedBedName === initialBedName &&
+        trimmedAmount === initialAmount
+      ) {
+        setModalType("warning");
+        setMessage("No changes detected");
+        setShowSuccess(true);
 
-    return;
-  }
-    res = await updateBed({
-      bedId: bedId,
-      bedName: trimmedBedName,
-      amount: trimmedAmount,
-    });
-  } else {
-    // ✅ ADD BED
-    res = await addBed({
-      bedName: trimmedBedName,
-      roomId: selectedRoomId,
-      hostelId: activeHostelId,
-      amount: trimmedAmount,
-    });
-  }
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 800);
 
-  if (res.success) {
-    setModalType("success");
-    setMessage(
-      isEdit ? "Bed Updated Successfully" : "Bed Added Successfully"
-    );
-    setShowSuccess(true);
+        return;
+      }
+      res = await updateBed({
+        bedId: bedId,
+        bedName: trimmedBedName,
+        amount: trimmedAmount,
+      });
+    } else {
+      // ✅ ADD BED
+      res = await addBed({
+        bedName: trimmedBedName,
+        roomId: selectedRoomId,
+        hostelId: activeHostelId,
+        amount: trimmedAmount,
+      });
+    }
 
-    setTimeout(() => {
-      setShowSuccess(false);
-      onBedAdded(selectedRoomId); 
-      onClose();
-    }, 800);
-  } else {
-    console.log("resbed",res)
-    setBedNameError(res.message);
-  }
-};
+    if (res.success) {
+      setModalType("success");
+      setMessage(
+        isEdit ? "Bed Updated Successfully" : "Bed Added Successfully"
+      );
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        onBedAdded(selectedRoomId);
+        onClose();
+      }, 800);
+    } else {
+      console.log("resbed", res)
+      setBedNameError(res.message);
+    }
+  };
 
 
   return (
@@ -206,87 +206,88 @@ if (!trimmedAmount) {
       />
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.overlayTouch} onPress={onClose} />
-<Animated.View
-  {...panResponder.panHandlers}
-  style={[
-    styles.sheet,
-    {
-      transform: [
-        {
-          translateY: Animated.subtract(
-            translateY,
-            new Animated.Value(safeKeyboardHeight)
-          ),
-        },
-      ],
-    },
-  ]}
->
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              transform: [
+                {
+                  translateY: Animated.subtract(
+                    translateY,
+                    new Animated.Value(safeKeyboardHeight)
+                  ),
+                },
+              ],
+            },
+          ]}
+        >
 
-<ScrollView
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: 30,
-  }}
->
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 30,
+            }}
+          >
 
-    <View style={styles.handle} />
+            <View style={styles.handle} />
 
-    <Text style={styles.title}> {isEdit ? "Edit Bed" : "Add Bed"}</Text>
+            <Text style={styles.title}> {isEdit ? "Edit Bed" : "Add Bed"}</Text>
 
-    <Text style={styles.label}>Bed Name or No <Text  style={{color:"red"}}>*</Text></Text>
-   <TextInput
-  style={styles.input}
-  placeholder="Enter Bed Name or No"
-  value={bedName}
-  returnKeyType="next"
-  onSubmitEditing={() => amountRef.current?.focus()}
-  onChangeText={(t) => {
-    // ✅ Emoji remove + normal text மட்டும் allow
-    const cleaned = t
-      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // emoji remove
-      .replace(/\s{2,}/g, " "); // extra spaces remove
+            <Text style={styles.label}>Bed Name or No <Text style={{ color: "red" }}>*</Text></Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Bed Name or No"
+              value={bedName}
+              returnKeyType="next"
+              onSubmitEditing={() => amountRef.current?.focus()}
+              onChangeText={(t) => {
+                // ✅ Emoji remove + normal text மட்டும் allow
+                const cleaned = t
+                  .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // emoji remove
+                  .replace(/\s{2,}/g, " "); // extra spaces remove
 
-    setBedName(cleaned);
-    setBedNameError("");
-  }}
-/>
+                setBedName(cleaned);
+                setBedNameError("");
+              }}
+            />
 
-    {bedNameError && <ErrorMessage message={bedNameError} type="error" />}
+            {bedNameError && <ErrorMessage message={bedNameError} type="error" />}
 
-    <Text style={styles.label}>Amount <Text style={{color:"red"}}>*</Text></Text>
-    
-    <TextInput
-     ref={amountRef}  
-  style={styles.input}
-  placeholder="Enter Amount"
-  value={amount}
-  keyboardType="numeric"
-  returnKeyType="done"     
-  blurOnSubmit={false}
-  onSubmitEditing={() => {
-    if (!isDisabled) {
-      handleSaveBed();     
-    }
-  }}
-  onChangeText={(text) => {
-    setAmount(text);
-    setAmountError("");
-  }}
-/>
+            <Text style={styles.label}>Amount <Text style={{ color: "red" }}>*</Text></Text>
 
-    {amountError && <ErrorMessage message={amountError} type="error" />}
+            <TextInput
+              ref={amountRef}
+              style={styles.input}
+              placeholder="Enter Amount"
+              value={amount}
+              keyboardType="numeric"
+              returnKeyType="done"
+              blurOnSubmit={false}
+              onSubmitEditing={() => {
+                if (!isDisabled) {
+                  handleSaveBed();
+                }
+              }}
+              onChangeText={(text) => {
+               const onlyNumbers = text.replace(/[^0-9]/g, "");
+                setAmount(onlyNumbers);
+                setAmountError("");
+              }}
+            />
 
-    <TouchableOpacity
-      style={styles.addButton}
-      // disabled={isDisabled}
-      onPress={handleSaveBed}
-    >
-      <Text style={styles.addButtonText}> {isEdit ? "Update Bed" : "Add Bed"}</Text>
-    </TouchableOpacity>
-  </ScrollView>
-</Animated.View>
+            {amountError && <ErrorMessage message={amountError} type="error" />}
+
+            <TouchableOpacity
+              style={styles.addButton}
+              // disabled={isDisabled}
+              onPress={handleSaveBed}
+            >
+              <Text style={styles.addButtonText}> {isEdit ? "Update Bed" : "Add Bed"}</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </Animated.View>
 
       </View>
     </>

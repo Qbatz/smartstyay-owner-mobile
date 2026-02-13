@@ -180,6 +180,7 @@ export default function TenantsScreen({ route }) {
   const [showDetailsMenu, setShowDetailsMenu] = useState(false);
   const [deleteTenants, setDeleteTenants] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null);
+  const[customerExpectedJoiningDate,setexpectedJoiiningDate]=useState()
   console.log("selectedCustomer", selectedCustomer)
   const handleWalkinFilter = () => {
     setShowFilter(true);
@@ -404,6 +405,7 @@ export default function TenantsScreen({ route }) {
     const res = await GetParticularCustomerDetails(customer.customerId)
     console.log("customerfull", res)
     console.log("roman", customer)
+    setexpectedJoiiningDate(customer)
     setSelectedCustomer(res.data);
     setShowDetailModal(true);
   };
@@ -981,7 +983,7 @@ export default function TenantsScreen({ route }) {
                       resizeMode="contain"
                     />
                     <Text style={styles.infoValue}>
-                      {selectedCustomer?.expectedJoiningDate || selectedCustomer?.hostelInfo?.joiningDate}</Text>
+                      {customerExpectedJoiningDate?.expectedJoiningDate || selectedCustomer?.hostelInfo?.joiningDate}</Text>
                   </View>
                 </View>
 

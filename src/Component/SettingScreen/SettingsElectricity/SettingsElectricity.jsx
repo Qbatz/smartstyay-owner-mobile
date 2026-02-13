@@ -77,7 +77,9 @@ export default function ElectricitySettings({ navigation }) {
       return;
     }
 
-    const noChangesMade= unitAmount === ebunitList.chargerPerUnit;
+    const noChangesMade = Number(unitAmount) === Number(ebunitList.chargerPerUnit) &&
+                          String(unitAmount) === String(ebunitList.chargerPerUnit);
+  
 
     if(noChangesMade){
       setMessage("No Changes Detected");
@@ -87,6 +89,7 @@ export default function ElectricitySettings({ navigation }) {
       setTimeout(() => {
         setShowSuccess(false)
       }, 1500);
+      return;
     }
 
     const res = await updateElectricity(activeHostelId, Number(unitAmount));

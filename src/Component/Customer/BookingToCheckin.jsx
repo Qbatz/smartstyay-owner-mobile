@@ -200,11 +200,11 @@ export default function BookingCheckIn({ navigation, route }) {
         });
 
 
-        if (customer.expectedJoiningDate) {
-            setJoiningDate(
-                dayjs(customer.expectedJoiningDate, "DD/MM/YYYY").toDate()
-            );
-        }
+        // if (customer.expectedJoiningDate) {
+        //     setJoiningDate(
+        //         dayjs(customer.expectedJoiningDate, "DD/MM/YYYY").toDate()
+        //     );
+        // }
 
     }, [customer]);
 

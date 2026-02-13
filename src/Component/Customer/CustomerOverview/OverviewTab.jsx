@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image, ScrollView
+  Image, ScrollView , Modal , TouchableWithoutFeedback
 } from "react-native";
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
@@ -18,14 +18,33 @@ import EditIcon from "../../../Assets/Images/edit.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import { AmenityContext } from "../../../Context/AmenityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
 import { useHasPermission } from "../../../Utils/useHasPermission"
+import { pick } from '@react-native-documents/picker';
+import SuccessModal from "../../../ToastFile/ToastPage";
+// import RNFS from "react-native-fs";
 
 
 
-export default function OverviewTab({ customerDetails, handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent,handleEditAdvance,handleShowAmenities }) {
+export default function OverviewTab({ customerDetails, 
+  handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent,handleEditAdvance,handleShowAmenities 
+,}) {
   const [addressTab, setAddressTab] = useState("KYC");
    const {GetAllAmenities,amenities,amenitiesAllData} = useContext(AmenityContext);
    const { activeHostelId } = useContext(CommonContexts);
+ const { AddManualDocument ,   ParticularcustomerDetails,
+  GetParticularCustomerDetails , deleteManualDocument} = useCustomer();
+
+    const [deletePopup, setDeletePopup] = useState(false)
+    const [deleteDocumentId, setDeleteDocumentId] = useState(null);
+
+   const [modalType, setModalType] = useState("success");
+   const [showSuccess, setShowSuccess] = useState(false);
+   const [message, setMessage] = useState("");
+
+   console.log("customerDetails", customerDetails);
+   
+
   const handleEdit = () => {
     handleEditBasicDetails()
   }
@@ -49,6 +68,7 @@ export default function OverviewTab({ customerDetails, handleEditBasicDetails, h
   const [city, setCity] = useState("")
   const [pincode, setPincode] = useState("")
   const [stateList, setStateList] = useState("")
+  const [manualDoc, setManualDocs] = useState([])
 
  useEffect(() => {
   if (activeHostelId) {
@@ -60,8 +80,75 @@ export default function OverviewTab({ customerDetails, handleEditBasicDetails, h
     if (customerDetails) {
       setFlat(customerDetails?.address?.houseNo)
     }
-
   }, [customerDetails])
+
+  console.log("customerDetails", customerDetails);
+  
+// const manualDocs = customerDetails?.files?.otherDoc || [];
+const dataSource = ParticularcustomerDetails || customerDetails;
+const manualDocs = dataSource?.files?.otherDoc || [];
+
+
+const pickFiles = async () => {
+  try {
+    const results = await pick({
+      allowMultiSelection: true,
+      type: ['*/*'],
+      copyTo: 'cachesDirectory',
+    });
+
+const res =  await AddManualDocument(
+      activeHostelId,
+      customerDetails?.customerId,
+      results
+    ); 
+if(res?.success){
+    await GetParticularCustomerDetails(customerDetails?.customerId)
+      setModalType("success");
+      setMessage("Document Added successfully");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
+}
+    
+  } catch (err) {
+    console.log("Cancelled or error 👉", err);
+  }
+};
+
+
+
+const handleDeleteDocument = async () => {
+  if (!deleteDocumentId) return;
+
+  const res = await deleteManualDocument(
+    activeHostelId,
+    customerDetails?.customerId,
+    deleteDocumentId
+  );
+
+  if (res.success) {
+    setDeletePopup(false);
+    setDeleteDocumentId(null);
+
+    setModalType("success");
+    setMessage("Document deleted successfully");
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 800);
+  } else {
+    console.log("Error", res.message);
+  }
+};
+
+
+
+
+
 
   const isJoiningDateEditable =
     !!customerDetails?.hostelInfo?.joiningDate &&
@@ -87,7 +174,12 @@ const disableAssignBtn = [
 console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
   return (
     <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
 
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
@@ -196,7 +288,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                     KYC Address
                   </Text>
                 </TouchableOpacity>
-
+ 
                 <TouchableOpacity onPress={() => setAddressTab("MANUAL")}>
                   <Text
                     style={[
@@ -603,7 +695,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 
           <View style={styles.docContainer}>
 
-
+  <View style={styles.docContentWrapper}>
             <View style={styles.docTabRow}>
               <TouchableOpacity onPress={() => setDocTab("KYC")}>
                 <Text
@@ -683,7 +775,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
               </>
             )}
 
-
+{/* 
             {docTab === "MANUAL" && (
 
               <View style={styles.docRow}>
@@ -710,9 +802,85 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                 </View>
               </View>
 
-            )}
+            )} */}
+
+            {docTab === "MANUAL" && (
+  <>
+   <View style={{ maxHeight: 300 }}>
+    <ScrollView nestedScrollEnabled>
+    {manualDocs.length > 0 ? (
+      manualDocs.map((doc) => (
+        <View style={styles.docRow} key={doc.documentId}>
+          <View style={styles.docLeft}>
+           <Image
+  source={
+    doc.type === "PDF"
+      ? require("../../../Assets/Images/pdf.png")
+      : { uri: doc?.url }
+  }
+  style={styles.pdfIcon}
+/>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.docTitle} numberOfLines={1}>
+                 {doc.type}
+                {/* {doc.url.split("/").pop()} */}
+              </Text>
+              {/* <Text style={styles.docMeta}>
+                {doc.type}
+              </Text> */}
+            </View>
+          </View>
+
+          <View style={styles.docActions}>
+            <TouchableOpacity onPress={() => console.log("View:", doc.url)}>
+              <Image
+                source={require("../../../Assets/Images/Eye.png")}
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity  
+               onPress={() => {
+               setDeleteDocumentId(doc.documentId);
+               setDeletePopup(true);
+                }}>
+              <Image
+                source={require("../../../Assets/Images/trash.png")}
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))
+    ) : (
+      <Text style={{ textAlign: "center", color: "#9CA3AF" }}>
+        No Manual Documents
+      </Text>
+    )}
+    </ScrollView>
+    </View>
+  </>
+)}
+
 
           </View>
+            {docTab === "MANUAL" && (
+    <TouchableOpacity
+      style={styles.uploadFabInside}
+      onPress={pickFiles}
+      
+    >
+      <Image
+        source={require("../../../Assets/Images/Doc_Upload.png")}
+        style={styles.uploadIcon}
+      />
+    </TouchableOpacity>
+  )}
+
+</View>
+
+
           {/* <View style={styles.sectionBox}>
 
            
@@ -926,6 +1094,51 @@ customerDetails.requestedAmenities.length > 0 ? (
 
         </View>
       </ScrollView>
+
+            <Modal
+              transparent
+              animationType="fade"
+              visible={deletePopup}
+              onRequestClose={() => setDeletePopup(false)}
+            >
+              <TouchableWithoutFeedback  
+                          onPress={() => {
+                          setDeleteDocumentId(null);
+                          setDeletePopup(false)}}>
+                <View style={styles.deleteOverlay}>
+      
+                  <TouchableWithoutFeedback>
+                    <View style={styles.deleteBox}>
+      
+                      <Text style={styles.deleteTitle}>Delete Document?</Text>
+                      <Text style={styles.deleteSub}>
+                        Are you sure you want to delete this Document?
+                      </Text>
+      
+                      <View style={styles.deleteBtnRow}>
+                        <TouchableOpacity
+                          style={styles.cancelBtn}
+                          onPress={() => {
+                          setDeleteDocumentId(null);
+                          setDeletePopup(false)}}
+                        >
+                          <Text style={styles.cancelText}>Cancel</Text>
+                        </TouchableOpacity>
+      
+                        <TouchableOpacity
+                          style={styles.deleteBtn}
+                          onPress={handleDeleteDocument}
+                        >
+                          <Text style={styles.deleteBtnText}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+      
+                    </View>
+                  </TouchableWithoutFeedback>
+      
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
 
     </>
   );
@@ -1201,6 +1414,7 @@ const styles = StyleSheet.create({
   pdfIcon: {
     width: 32,
     height: 32,
+    marginRight:6
   },
 
   docTitle: {
@@ -1222,7 +1436,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     marginLeft: 14,
-    tintColor: "#6B7280",
+    // tintColor: "#6B7280",
   },
   sectionHeaderRow: {
     flexDirection: "row",
@@ -1319,7 +1533,109 @@ noAmenityText: {
   marginTop: 10,
   fontStyle: "italic",
 },
+docContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 14,
+  marginTop: 14,
+  elevation: 2,
+  position: "relative",   // 🔥 Important
+},
 
+docContentWrapper: {
+  paddingBottom: 60, // space for floating button
+},
 
+uploadFabInside: {
+  position: "absolute",
+  bottom: 6,
+  right: 6,
+  width: 36,
+  height: 36,
+  borderRadius: 26,
+  backgroundColor: "#16A34A",
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 4,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 3,
+},
+
+uploadIcon: {
+  width: 22,
+  height: 22,
+  tintColor: "#fff",
+},
+
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBox: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+  },
+
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111',
+    textAlign: 'center',
+  },
+
+  deleteSub: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  deleteBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 22,
+  },
+
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginRight: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  cancelText: {
+    color: '#444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 
 });

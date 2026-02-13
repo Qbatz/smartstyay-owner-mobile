@@ -36,7 +36,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [selectedUserId, setSelectedUserId] = useState(null);
 
 
-    const {
+  const {
     canWriteModule: canWriteProfile,
     canReadModule: canReadProfile,
     canUpdateModule: canUpdateProfile,
@@ -127,9 +127,9 @@ export default function GeneralDetailsScreen({ navigation }) {
           <Text style={styles.userName}>{u.firstName} {u.lastName}</Text>
 
           <TouchableOpacity onPress={() => {
-    setSelectedUserId(u.userId);
-    setShowPasswordSheet(true);
-  }}>
+            setSelectedUserId(u.userId);
+            setShowPasswordSheet(true);
+          }}>
             <Text style={styles.changePassword}>Change Password</Text>
           </TouchableOpacity>
         </View>
@@ -164,14 +164,14 @@ export default function GeneralDetailsScreen({ navigation }) {
         <View style={styles.menuBox}>
           <TouchableOpacity
             // style={styles.menuRow}
-                      style={[styles.menuRow,!canWriteProfile && { opacity: 0.4 },]}
+            style={[styles.menuRow, !canWriteProfile && { opacity: 0.4 },]}
             disabled={!canWriteProfile}
-onPress={() => {
-  setSelectedUserId(u.userId); 
-  setShowPasswordSheet(true);
-  setActiveMenu(null);
-}}
-          
+            onPress={() => {
+              setSelectedUserId(u.userId);
+              setShowPasswordSheet(true);
+              setActiveMenu(null);
+            }}
+
           >
             <Image source={Edit} style={styles.menuIcon} />
             <Text style={styles.menuText}>Change Password</Text>
@@ -179,7 +179,7 @@ onPress={() => {
 
           <TouchableOpacity
             // style={styles.menuRow}
-            style={[styles.menuRow,!canUpdateProfile && { opacity: 0.4 },]}
+            style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
             disabled={!canUpdateProfile}
             onPress={() => {
               setActiveMenu(null);
@@ -190,10 +190,10 @@ onPress={() => {
             <Text style={styles.menuText}>Edit</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-           style={[styles.menuRow,!canDeleteProfile && { opacity: 0.4 },]}
+          <TouchableOpacity
+            style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
             disabled={!canDeleteProfile}
-          onPress={() => handleDelete(u.userId)}>
+            onPress={() => handleDelete(u.userId)}>
             <Image source={Delete} style={[styles.menuIcon, { tintColor: "red" }]} />
             <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
           </TouchableOpacity>
@@ -225,48 +225,49 @@ onPress={() => {
 
             <Text style={styles.headerTitle}>General</Text>
 
-              {getData?.length > 0 && (
-   <TouchableOpacity
-    // style={styles.masterButton} 
-              style={[styles.masterButton,!canWriteProfile && { opacity: 0.4 },]}
-              disabled={!canWriteProfile}
-              onPress={() => navigation.navigate("AddGeneralScreen")}>
-              <Text style={styles.masterText}>+ Master</Text>
-            </TouchableOpacity>
-        
-              )}
-           </View>
+            {getData?.length > 0 && (
+              <TouchableOpacity
+                // style={styles.masterButton} 
+                style={[styles.masterButton, !canWriteProfile && { opacity: 0.4 },]}
+                disabled={!canWriteProfile}
+                onPress={() => navigation.navigate("AddGeneralScreen")}>
+                <Text style={styles.masterText}>+ Master</Text>
+              </TouchableOpacity>
 
-                    {!canReadProfile &&(
-  <View style={styles.emptyContainer}>
-    <Image source={EmptyState} style={styles.emptyImage} />
-    <Text style={styles.emptyText}>You do not have access to view General</Text>
-  </View>
-                    )}
-
-        {canReadProfile && (
-          <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
-          
-            {canReadProfile && getData?.length === 0 ? (
-  <View style={styles.emptyContainer}>
-    <Image source={EmptyState} style={styles.emptyImage} />
-    <Text style={styles.emptyText}>No Data Found</Text>
-        <TouchableOpacity style={{    backgroundColor: "#4466F2",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,marginTop:10 , opacity : canWriteProfile ? 1 : 0.4}}
-    disabled={!canWriteProfile}
-     onPress={() => navigation.navigate("AddGeneralScreen")}>
-              <Text style={styles.masterText}>+ Master</Text>
-            </TouchableOpacity>
-  </View>
-) : (
-  getData?.map((u, index) => renderUserCard(u, index))
-)}
-
-            <View style={{ height: 40 }} />
-          </ScrollView>
             )}
+          </View>
+
+          {!canReadProfile && (
+            <View style={styles.emptyContainer}>
+              <Image source={EmptyState} style={styles.emptyImage} />
+              <Text style={styles.emptyText}>You do not have access to view General</Text>
+            </View>
+          )}
+
+          {canReadProfile && (
+            <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
+
+              {canReadProfile && getData?.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Image source={EmptyState} style={styles.emptyImage} />
+                  <Text style={styles.emptyText}>No Data Found</Text>
+                  <TouchableOpacity style={{
+                    backgroundColor: "#4466F2",
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    borderRadius: 8, marginTop: 10, opacity: canWriteProfile ? 1 : 0.4
+                  }}
+                    disabled={!canWriteProfile}
+                    onPress={() => navigation.navigate("AddGeneralScreen")}>
+                    <Text style={styles.masterText}>+ Master</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                getData?.map((u, index) => renderUserCard(u, index))
+              )}
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          )}
 
         </View>
       </Pressable>
@@ -304,7 +305,7 @@ onPress={() => {
       <ChangePasswordSheet
         visible={showPasswordSheet}
         onClose={() => setShowPasswordSheet(false)}
-         adminId={selectedUserId}
+        adminId={selectedUserId}
       />
 
     </>
@@ -482,24 +483,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700"
   },
-emptyContainer: {
-  alignItems: "center",
-  justifyContent: "center",
-  marginTop: 150,
-},
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 150,
+  },
 
-emptyImage: {
-  width: 180,
-  height: 180,
-  resizeMode: "contain",
-  opacity: 0.8
-},
+  emptyImage: {
+    width: 180,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.8
+  },
 
-emptyText: {
-  marginTop: 14,
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#777",
-},
+  emptyText: {
+    marginTop: 14,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#777",
+  },
 
 });

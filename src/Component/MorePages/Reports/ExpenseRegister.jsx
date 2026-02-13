@@ -1,4 +1,4 @@
-import React from "react";
+import React ,{useState , useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -10,12 +10,42 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
-
+import EmptyState from "../../../Assets/Images/Empty_state.png"
+import Loader from "../../../Component/Loader/Loader"
 
 const ExpenseRegister = ({navigation}) => {
 
-  const { Reportsdetails} = UseSetting();
+  const {loading,  Reportsdetails , GetExpenseRegisterReport} = UseSetting();
+
+  // const { getExpenseRegisterReport } = UseSetting();
+const { activeHostelId } = useContext(CommonContexts);
+
+const [expenseData, setExpenseData] = useState(null);
+
+useEffect(() => {
+  if (!activeHostelId) return;
+
+  const fetchExpenses = async () => {
+    const response = await GetExpenseRegisterReport(activeHostelId, {
+      // startDate: startDate,
+      // endDate: endDate,
+      page: 0,
+      size: 10,
+    });
+
+    if (response.success) {
+      setExpenseData(response?.data);
+    }
+  };
+
+  fetchExpenses();
+}, [activeHostelId, ]);
+
+console.log("expensesdata", expenseData);
+
+
 
         const {
           canWriteModule: canWriteReports,
@@ -75,6 +105,7 @@ const expenseList = [
 
   return (
          <>
+           {loading && <Loader />}
 <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
          <View style={styles.container}>
           <View style={styles.headerRow}>
@@ -130,16 +161,24 @@ const expenseList = [
     
 
       {/* LIST */}
-  {expenseList.map((item, index) => (
+  {expenseData?.expenseLists?.map((item, index) => (
   <View key={index} style={styles.listItem}>
     <View style={{ flex: 1, paddingRight: 10 }}>
-      <Text style={styles.name}>{item.title}</Text>
-      <Text style={styles.sub}>{item.sub}</Text>
+      <Text style={styles.name}>  {item?.expenseCategory}</Text>
+      <Text style={styles.sub}>{item?.description || "N/A"}</Text>
     </View>
 
-    <Text style={styles.amount}>{item.amount}</Text>
+    <Text style={styles.amount}> ₹ {item.amount}</Text>
   </View>
 ))}
+
+{expenseData?.expenseLists?.length === 0 && (
+   <View style={styles.emptyContainer}>
+           <Image source={EmptyState} style={styles.emptyImage} />
+           <Text style={styles.emptyText}>No Expenses are there!</Text>
+         </View>
+)}
+
 
 
       {/* EXPORT */}
@@ -232,6 +271,7 @@ sub: {
   fontSize: 12,
   color: "#9CA3AF",
   marginTop: 4,
+  marginLeft:9
 },
 
 
@@ -300,15 +340,34 @@ sub: {
     color: "#111827",
   },
 
-  sub: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginTop: 2,
-  },
+  // sub: {
+  //   fontSize: 12,
+  //   color: "#6B7280",
+  //   marginTop: 2,
+  // },
 
   amount: {
     fontSize: 14,
     fontWeight: "600",
+  },
+
+ emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
   },
 
   /* EXPORT */
