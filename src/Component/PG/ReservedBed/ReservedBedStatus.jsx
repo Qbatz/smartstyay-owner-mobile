@@ -86,6 +86,21 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
         },
     });
 
+       const {
+        canWriteModule: canWriteCustomers,
+        // canReadModule: canReadPayingGuests,
+        // canUpdateModule: canUpdatePayingGuests,
+        // canDeleteModule: canDeletePayingGuests,
+    } = useHasPermission("Customers");
+
+
+
+    const {
+        canUpdateModule: canUpdatePayingGuests,
+        // canDeleteModule: canDeletePayingGuests,
+
+    } = useHasPermission("Paying Guests");
+
     if (!visible) {
         return (
             <InactiveTenantSheet
@@ -116,20 +131,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
   });
     }
 
-        const {
-        canWriteModule: canWriteCustomers,
-        // canReadModule: canReadPayingGuests,
-        // canUpdateModule: canUpdatePayingGuests,
-        // canDeleteModule: canDeletePayingGuests,
-    } = useHasPermission("Customers");
-
-
-
-    const {
-        canUpdateModule: canUpdatePayingGuests,
-        // canDeleteModule: canDeletePayingGuests,
-
-    } = useHasPermission("Paying Guests");
+     
 
     return (
         <>
@@ -368,10 +370,15 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
 const styles = StyleSheet.create({
     overlay: {
-        position: "absolute",
-        left: 0, right: 0, top: 0, bottom: 40,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        justifyContent: "flex-end",
+
+      position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "flex-end",
+        // position: "absolute",
+        // left: 0, right: 0, top: 0,
+        // backgroundColor: "rgba(0,0,0,0.4)",
+        // justifyContent: "flex-end",
     },
 
     overlayTouch: {

@@ -94,6 +94,7 @@ const convertToBase64File = (json) => {
       return response;
     } catch (error) {
       console.log("UPDATE PG ERROR:", error);
+      console.log("error",error.message)
       setPgError(error);
       return error;
     } finally {

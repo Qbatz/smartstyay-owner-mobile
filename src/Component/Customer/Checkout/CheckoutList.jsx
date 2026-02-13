@@ -97,6 +97,7 @@ export default function CheckoutList({ searchText }) {
   const fetchCheckoutCustomers = async () => {
     const data = await getCheckoutCustomersByHostel(activeHostelId);
     setCheckoutCustomer(data?.checkoutCustomers || []);
+    console.log("Thara",data)
   };
 
   const openCustomerDetails =async (item) => {
@@ -135,6 +136,7 @@ export default function CheckoutList({ searchText }) {
 
   const renderItem = ({ item }) => {
     const isMenuVisible = menuVisibleId === item.customerId;
+    console.log("checkout",item)
 
     return (
       <View style={styles.card}>
@@ -147,7 +149,7 @@ export default function CheckoutList({ searchText }) {
           </TouchableOpacity>
 
           <View style={styles.info}>
-            <Text style={styles.name}>{item.firstName}</Text>
+            <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
 
             <View style={styles.row}>
               <View style={styles.floorBadge}>

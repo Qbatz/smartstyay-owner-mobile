@@ -824,6 +824,7 @@ function renderSelect(
 
 
 function renderImageBox(image, setImage) { {console.log(image)}
+const imageUri= image?.uri?.image || image?.uri;
   return (
     <View style={{ position: "relative" }}>
       <ScrollView horizontal showsHorizontalScrollIndicator>
@@ -835,8 +836,8 @@ function renderImageBox(image, setImage) { {console.log(image)}
           }
           style={styles.imgBox}
         >
-          {image?.uri ? (
-            <Image source={{ uri: image.uri.image }} style={styles.thumb} />
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.thumb} />
           ) : (
             <>
               <Image source={AddImageIcon} style={styles.imgPlus} />
