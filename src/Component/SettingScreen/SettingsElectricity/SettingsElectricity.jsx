@@ -200,6 +200,8 @@ export default function ElectricitySettings({ navigation }) {
 
   const openEditSheet = () => {
     // prefill from ebunitList if present
+
+    if(!activeHostelId) return
     if (ebunitList?.chargerPerUnit != null) {
       setUnitAmount(String(ebunitList.chargerPerUnit));
     } else {
