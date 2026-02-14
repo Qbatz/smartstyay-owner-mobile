@@ -46,7 +46,14 @@ const [modalType, setModalType] = useState("success");
    const [ReturnAmount, setReturnAmount] = useState('')
    const [showDetails, setShowDetails] = useState(false);
    const [showRefundpay,setShowRefundpay] = useState(false)
+     const [actualCheckoutDate, setActualCheckoutDate] = useState(
+    dayjs().format("DD-MM-YYYY")
+  );
+
 const scrollRef = useRef(null);
+
+console.log("actualcheckoutdate", actualCheckoutDate);
+
 
 
   //    useEffect(() => {
@@ -76,31 +83,84 @@ const scrollRef = useRef(null);
 
 
  
-const fetchSettlement = async (date = actualCheckoutDate) => {
-  if (!selectedItem && !selectedBed) return;
+// const fetchSettlement = async (date = actualCheckoutDate) => {
+//   if (!selectedItem && !selectedBed) return;
 
+//   const customerId =
+//     selectedItem?.customerId ||
+//     selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+//   const leavingDate = date || dayjs().format("DD-MM-YYYY");
+//       console.log("beforeaddreading", customerId , leavingDate);
+  
+//   const res = await getSettlementByCustomerId(customerId, leavingDate);
+      
+//   if (res?.success) {
+//     setSettlementDetails(res?.data);
+//     console.log("afteraddreading", res);
+    
+//   }
+
+// };
+
+const fetchSettlement = async (date = actualCheckoutDate) => {
   const customerId =
     selectedItem?.customerId ||
     selectedBed?.currentTenantInfo?.[0]?.tenetId;
 
   const leavingDate = date || dayjs().format("DD-MM-YYYY");
 
+  console.log("customerId", customerId);
+  console.log("leavingDate", leavingDate);
+    console.log("leavingDate", date);
+
+  // ✅ Stop if values not available
+  if (!customerId || !leavingDate) {
+    console.log("Missing customerId or leavingDate");
+    return;
+  }
+
+  console.log("beforeaddreading", customerId, leavingDate);
+
   const res = await getSettlementByCustomerId(customerId, leavingDate);
 
-  if (res.success) {
-    setSettlementDetails(res.data);
-  } else {
-    setModalType("error");
-    setMessage(res.message || "Failed to load settlement");
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 800);
+  if (res?.success) {
+    setSettlementDetails(res?.data);
+    console.log("afteraddreading", res);
   }
 };
-useEffect(() => {
-  if (selectedItem || selectedBed) {
-    fetchSettlement();
-  }
-}, [selectedItem, selectedBed, actualCheckoutDate]);
+
+
+// useEffect(() => {
+//   const customerId =
+//     selectedItem?.customerId ||
+//     selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+//   if (customerId && actualCheckoutDate) {
+//     fetchSettlement(actualCheckoutDate);
+//   }
+// }, [selectedItem, selectedBed, actualCheckoutDate]);
+
+useFocusEffect(
+  useCallback(() => {
+    const customerId =
+      selectedItem?.customerId ||
+      selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+    if (customerId && actualCheckoutDate) {
+      fetchSettlement(actualCheckoutDate)
+      
+    }
+  }, [selectedItem, selectedBed, actualCheckoutDate])
+);
+
+
+
+// useEffect(() => {
+//   if (selectedItem || selectedBed) {
+//     fetchSettlement();
+//   }
+// }, [selectedItem, selectedBed, actualCheckoutDate]);
 
 
 
@@ -111,9 +171,6 @@ useEffect(() => {
   console.log('selectedBed',selectedBed)
   console.log("selectedItem",selectedItem)
 
-  const [actualCheckoutDate, setActualCheckoutDate] = useState(
-    dayjs().format("DD-MM-YYYY")
-  );
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
  
@@ -1064,11 +1121,11 @@ const userEnteredDeductionsTotal = extraCharges
   // 👇 same date select pannalum call varum
   getSettlementByCustomerId(customerId, formatted)
     .then((res) => {
-      if (res.success) {
+      if (res?.success) {
         setSettlementDetails(res.data);
       } else {
         setModalType("error");
-        setMessage(res.message || "Failed to load settlement");
+        setMessage(res?.message || "Failed to load settlement");
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 800);
       }
