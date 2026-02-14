@@ -21,7 +21,7 @@ import BillsPdfPreview from "./BillsPdfPreview";
 import SecurityDepositPdfPreview from "./SecurityDepositPreview";
 import ReceiptPdfPreview from "./ReceiptPdfPreview";
 
-export default function TemplatesScreen({ navigation,onBack  }) {
+export default function TemplatesScreen({ navigation, onBack }) {
   const [activeTab, setActiveTab] = useState("Bills");
 
   // Preview States

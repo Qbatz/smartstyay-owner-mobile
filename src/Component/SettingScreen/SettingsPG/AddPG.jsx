@@ -342,8 +342,13 @@ export default function AddPG({ navigation, route }) {
         setModalType("success");
         setModalMessage("PG Updated Successfully");
         setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
-        navigation.goBack();
+        setTimeout(() =>{
+          setShowSuccessModal(false)
+          navigation.goBack();
+        }
+           
+        , 1500);
+       
       } else {
         alert("Update Failed");
       }
@@ -356,7 +361,9 @@ export default function AddPG({ navigation, route }) {
       setModalType("success");
       setModalMessage("PG Added Successfully");
       setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
+      setTimeout(() =>{ setShowSuccessModal(false)
+         navigation.goBack()
+      }, 1500);
       const fresh = await getHostels()
       const data = fresh.data
 
@@ -371,7 +378,7 @@ export default function AddPG({ navigation, route }) {
         updateHostelList(reordered)
       }
 
-      navigation.goBack()
+      // navigation.goBack()
     }
 
 
@@ -563,7 +570,8 @@ export default function AddPG({ navigation, route }) {
                 value={email}
                 onChangeText={(t) => {
                   const cleaned = removeEmojis(t);
-                  setEmail(cleaned);
+                  const lowerCaseText = cleaned.toLowerCase(); 
+                  setEmail(lowerCaseText);
                   setErrors({ ...errors, email: "" });
                   setTopWarning("");
                 }}
