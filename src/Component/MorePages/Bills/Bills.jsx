@@ -550,12 +550,13 @@ const refundPan = useRef(
       hideSub.remove();
     };
   }, []);
-
+    const [isInputFocused, setIsInputFocused] = useState(false);
   
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        if (!isInputFocused) return; 
       Animated.timing(recordSheetY, {
-        toValue: -e.endCoordinates.height + 60,
+        toValue: -e.endCoordinates.height + 80,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -567,13 +568,14 @@ const refundPan = useRef(
         duration: 180,
         useNativeDriver: true,
       }).start();
+         setIsInputFocused(false);
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [isInputFocused]);
 
 
 
@@ -825,6 +827,15 @@ const openBillDetails = (item) => {
 const handleShowWriteOff = () => {
   setShowWriteOff(true);
 }
+const handleTransactionChange = (text) => {
+  const filteredText = text.replace(
+    /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+    , ""
+  );
+
+  setTransactionId(filteredText);
+};
+
 
 const resetRecordPaymentForm = () => {
   setPaidAmount("");
@@ -2157,10 +2168,10 @@ navigation.navigate("CancelNotice")
     isBillLocked && styles.popupRowDisabled,
   ]}
   disabled={isBillLocked && !canWriteInvoice}
-  onPress={() => {
-    setShowMenu(false);
-    setDeleteTenants(true);
-  }}
+  // onPress={() => {
+  //   setShowMenu(false);
+  //   setDeleteTenants(true);
+  // }}
 >
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
@@ -2207,7 +2218,7 @@ navigation.navigate("CancelNotice")
     isBillLocked && styles.popupRowDisabled,
   ]}
   disabled={isBillLocked && !canWriteInvoice}
-  onPress={handleShowWriteOff}
+  // onPress={handleShowWriteOff}
 >
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
@@ -2275,10 +2286,10 @@ navigation.navigate("CancelNotice")
     isBillLocked && styles.popupRowDisabled,
   ]}
   disabled={isBillLocked && !canDeleteInvoice}
-  onPress={() => {
-    setShowMenu(false);
-    setDeleteTenants(true);
-  }}
+  // onPress={() => {
+  //   setShowMenu(false);
+  //   setDeleteTenants(true);
+  // }}
 >
   <Image
     source={require("../../../Assets/Images/trash.png")}
@@ -2498,7 +2509,7 @@ navigation.navigate("CancelNotice")
 />
 
         {/* PAID AMOUNT */}
-        <Text style={styles.label}>Paid Amount <Text style={{ color: "red" }}>*</Text></Text>
+        <Text style={styles.label}>Paid Amount <Text style={{ color: "red" , fontSize:19}}>*</Text></Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
@@ -2524,7 +2535,7 @@ navigation.navigate("CancelNotice")
 
         {/* PAID DATE */}
        <Text style={styles.label}>
-  Paid Date <Text style={{ color: "red" }}>*</Text>
+  Paid Date <Text style={{ color: "red" , fontSize:19}}>*</Text>
 </Text>
 
 <TouchableOpacity
@@ -2672,7 +2683,7 @@ navigation.navigate("CancelNotice")
 
 <View style={{ position: "relative" }}>
   <Text style={styles.label}>
-    Transaction Mode <Text style={{ color: "red" }}>*</Text>
+    Transaction Mode <Text style={{ color: "red" , fontSize:19}}>*</Text>
   </Text>
 
   {/* INPUT */}
@@ -2747,7 +2758,13 @@ navigation.navigate("CancelNotice")
           placeholder="Enter Transaction ID"
           // keyboardType="numeric"
           value={transactionId}
-          onChangeText={setTransactionId}
+           onChangeText={handleTransactionChange}
+          onFocus={() => {
+          setIsInputFocused(true);
+           }}
+          onBlur={() => {
+          setIsInputFocused(false);
+          }}
         />
 
 
@@ -3883,12 +3900,12 @@ filterTitle: {
   fontWeight: "700",
 },
 
-label: {
-  fontSize: 13,
-  color: "#6B7280",
-  marginBottom: 6,
-  marginTop: 10,
-},
+// label: {
+//   fontSize: 13,
+//   color: "#6B7280",
+//   marginBottom: 6,
+//   marginTop: 10,
+// },
 
 dropdownBox: {
   borderWidth: 1,
@@ -4390,7 +4407,7 @@ inputBox: {
     paddingHorizontal: 14,
     backgroundColor: "#fff",
     justifyContent: "center",
-    marginBottom: 5,
+    // marginBottom: 5,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -4403,7 +4420,7 @@ inputBox: {
     backgroundColor: "#fff",
     paddingHorizontal: 14,
     fontSize: 15,
-    marginBottom: 5,
+    // marginBottom: 5,
   },
 //   dateModalOverlay: {
 //   flex: 1,
