@@ -336,7 +336,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
     </View>
 
     <View style={{ marginTop: 15 }}>
-      <Text style={styles.infoLabel}>Joining Date</Text>
+      <Text style={styles.infoLabel}>Joining Date (Tentative)</Text>
       <View style={styles.amountRow}>
         <Image source={Calendar} style={styles.amountIcon} />
         <Text style={styles.amountText}>{item.joiningDate}</Text>

@@ -361,7 +361,7 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
             <Text style={styles.label}>Email ID <Text style={{ color: 'red' }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter Email" value={email}
               onChangeText={(text) => {
-                const filtered = text.replace(/[^A-Za-z0-9@#./]/g, "");
+                const filtered = text.toLowerCase().replace(/[^A-Za-z0-9@#./]/g, "");
                 setEmail(filtered);
                 setEmailError("");
               }} />

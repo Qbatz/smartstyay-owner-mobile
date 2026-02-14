@@ -89,10 +89,10 @@ const EnterMPin = (props) => {
             console.log(r)
             setFcmToken(r)
         })
-        .catch(error => {
-            console.log(error)
-            setFcmToken(null)
-        })
+            .catch(error => {
+                console.log(error)
+                setFcmToken(null)
+            })
     }
 
     useEffect(() => {
@@ -151,8 +151,8 @@ const EnterMPin = (props) => {
         }
     };
 
-     const validateForm=()=>{
-        let valid=true;
+    const validateForm = () => {
+        let valid = true;
 
         setEnterPinError("")
 
@@ -162,11 +162,11 @@ const EnterMPin = (props) => {
             setEnterPinError("Please enter a valid 4-digit MPIN");
             return false;
         }
-        return valid;        
+        return valid;
     }
 
     const enterPinClick = async () => {
-        if(!validateForm()) return;
+        if (!validateForm()) return;
         const res = await verifyMpin(Number(mPinNumber));
         console.log(res)
 
@@ -247,17 +247,17 @@ const EnterMPin = (props) => {
                         style={style.pinBox}
                         maxLength={1}
                         value={digit}
-                        
+
                         onChangeText={(text) => {
-  handlePinChange(text, index);
-  setEnterPinError("");
-}}
+                            handlePinChange(text, index);
+                            setEnterPinError("");
+                        }}
 
                         onKeyPress={(e) => handleKeyPress(e, index)}
                     />
                 ))}
             </View>
-            {enterPinError && <ErrorMessage message={enterPinError} type="error"/>}
+            {enterPinError && <ErrorMessage message={enterPinError} type="error" />}
             <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
                 <TouchableOpacity onPress={forgotMpinClick}
                 >

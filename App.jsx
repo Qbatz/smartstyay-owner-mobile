@@ -306,6 +306,8 @@ function AppContent(props) {
            <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
            <Navigation.Screen name='ForgotPassword' component={ForgotPassword}/>
            <Navigation.Screen name="OtpVerification" component={OtpVerification} />
+            <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
+             <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
           
         </Navigation.Navigator>
         </NavigationContainer>}
