@@ -342,8 +342,13 @@ export default function AddPG({ navigation, route }) {
         setModalType("success");
         setModalMessage("PG Updated Successfully");
         setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
-        navigation.goBack();
+        setTimeout(() =>{
+          setShowSuccessModal(false)
+          navigation.goBack();
+        }
+           
+        , 1500);
+       
       } else {
         alert("Update Failed");
       }
@@ -356,7 +361,9 @@ export default function AddPG({ navigation, route }) {
       setModalType("success");
       setModalMessage("PG Added Successfully");
       setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
+      setTimeout(() =>{ setShowSuccessModal(false)
+         navigation.goBack()
+      }, 1500);
       const fresh = await getHostels()
       const data = fresh.data
 
@@ -371,7 +378,7 @@ export default function AddPG({ navigation, route }) {
         updateHostelList(reordered)
       }
 
-      navigation.goBack()
+      // navigation.goBack()
     }
 
 
@@ -492,14 +499,13 @@ export default function AddPG({ navigation, route }) {
                 label="Hostel Name *"
                 value={hostelName}
                 onChangeText={(t) => {
-                  setHostelName(t.replace(/[^a-zA-Z\s]/g, ""));
-                  setTopWarning("");
-                  setErrors({ ...errors, hostelName: "" });
+                  const cleaned = removeEmojis(t)
+                  setHostelName(cleaned)
+                  setTopWarning("")
+                  setErrors({ ...errors, hostelName: "" })
                 }}
                 placeholder="Enter Hostel Name"
               />
-
-
               {errors.hostelName && (
                 <ErrorMessage message={errors.hostelName} type="error" />
               )}
@@ -563,7 +569,8 @@ export default function AddPG({ navigation, route }) {
                 value={email}
                 onChangeText={(t) => {
                   const cleaned = removeEmojis(t);
-                  setEmail(cleaned);
+                  const lowerCaseText = cleaned.toLowerCase(); 
+                  setEmail(lowerCaseText);
                   setErrors({ ...errors, email: "" });
                   setTopWarning("");
                 }}
@@ -824,6 +831,7 @@ function renderSelect(
 
 
 function renderImageBox(image, setImage) { {console.log(image)}
+const imageUri= image?.uri?.image || image?.uri;
   return (
     <View style={{ position: "relative" }}>
       <ScrollView horizontal showsHorizontalScrollIndicator>
@@ -835,8 +843,8 @@ function renderImageBox(image, setImage) { {console.log(image)}
           }
           style={styles.imgBox}
         >
-          {image?.uri ? (
-            <Image source={{ uri: image.uri.image }} style={styles.thumb} />
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.thumb} />
           ) : (
             <>
               <Image source={AddImageIcon} style={styles.imgPlus} />

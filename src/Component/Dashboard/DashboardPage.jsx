@@ -73,7 +73,7 @@ export default function DashboardScreen({initialParams}) {
   console.log("initialParams", initialParams);
   
   const insets = useSafeAreaInsets();
-const { getDashboardByHostel,  } = useCustomer();
+const { getDashboardByHostel, loading } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
   
@@ -81,7 +81,7 @@ const { getDashboardByHostel,  } = useCustomer();
   const login = useContext(LoginContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
-  const { expensesList, GetExpenseList, rolePermission ,GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
+  const { expensesList, GetExpenseList, rolePermission ,GetRoleBasedPermission ,profileDetails , GetProfileDetails  } = useContext(ExpensesContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList,setDashboardList] = useState([])
 
@@ -91,7 +91,7 @@ useEffect(() => {
   const loadDashboard = async () => {
     const res = await getDashboardByHostel(activeHostelId);
 
-    console.log("Dashboard API Response 👉", res);
+    console.log("Dashboard API Response", res);
 
     if (res.success) {
       setDashboardList(res.data);
@@ -915,15 +915,7 @@ console.log("profile", getProfileInitial);
       {activeTab === "Dashboard" && (
 
         <>
-    {!canReadDashboard && !loading && (
-      // 🔒 Dashboard restricted EMPTY STATE
-      <View style={styles.centerContainer}>
-        <Image source={EmptyState} style={styles.image} />
-        <Text style={styles.nodataText}>
-          You do not have access to view Dashboard
-        </Text>
-      </View>
-    ) }  
+ 
     {canReadDashboard && !loading &&(
         <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -1472,6 +1464,16 @@ console.log("profile", getProfileInitial);
           <View style={{ height: 50 }} />
         </ScrollView>
       )}
+
+          {!canReadDashboard && !loading && (
+      // 🔒 Dashboard restricted EMPTY STATE
+      <View style={styles.centerContainer}>
+        <Image source={EmptyState} style={styles.image} />
+        <Text style={styles.nodataText}>
+          You do not have access to view Dashboard
+        </Text>
+      </View>
+    ) } 
        </>
          )}
       {/* {activeTab === "Announcement" && (

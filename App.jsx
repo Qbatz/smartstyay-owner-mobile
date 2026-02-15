@@ -277,18 +277,16 @@ function AppContent(props) {
   }, [loginContext?.requiredPinSetup])
 
   const checkInternet =()=>{
-     CommonModule.checkInternet().then(r=>{
-        console.log(r)
-      })
+    
     if(Platform.OS == "android"){
       CommonModule.checkInternet().then(r=>{
+         loginContext.internet(r)
         console.log(r)
       }).catch((error)=>{
         console.log(error)
       })
     }
   }
-
 
 
   return (
@@ -308,9 +306,28 @@ function AppContent(props) {
            <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
            <Navigation.Screen name='ForgotPassword' component={ForgotPassword}/>
            <Navigation.Screen name="OtpVerification" component={OtpVerification} />
+            <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
+             <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
           
         </Navigation.Navigator>
         </NavigationContainer>}
+
+        {loginContext.getNetworkConnectivity != true && <View style={styles.noInternetContainer}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+
+          <Image source={NoInternet} style={{ width: 350, height: 246 }} />
+          <Text style={{ fontSize: 22, fontWeight: '700', color: '#000', marginBottom: 8, marginTop: 20 }}>
+            You're Offline
+          </Text>
+          <Text style={styles.content}>
+            No Internet Connection found! Check your Connection or try again
+          </Text>
+
+          <TouchableOpacity onPress={checkInternet} style={styles.tryagain}>
+            <Text style={{ fontSize: 16, fontWeight: 400, color: '#ffffff' }}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>}
 
       {/* <NavigationContainer>
         <Navigation.Navigator
@@ -397,6 +414,19 @@ function AppContent(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+   noInternetContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#fff", // Optional: removes overlap visibility
+    paddingHorizontal: 16,
+    zIndex: 999, // ensures it appears on top
   },
 });
 

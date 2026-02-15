@@ -470,6 +470,7 @@ export default function VendorsList({ navigation }) {
               contentContainerStyle={{
                 paddingVertical: 16,
                 paddingHorizontal: 16,
+                paddingBottom:200,
               }}
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
               showsVerticalScrollIndicator={false}
@@ -816,7 +817,7 @@ const styles = StyleSheet.create({
 
   filterFab: {
     position: "absolute",
-    bottom: 127,
+    bottom: 120,
     right: 25,
     width: 50,
     height: 50,
@@ -837,7 +838,7 @@ const styles = StyleSheet.create({
   addFab: {
     position: "absolute",
     right: 20,
-    bottom: 68,
+    bottom: 60,
     width: 56,
     height: 56,
     borderRadius: 28,

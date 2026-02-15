@@ -5,7 +5,7 @@ import {
   Animated,
   PanResponder,
   TouchableOpacity,
-  StyleSheet,Image,
+  StyleSheet, Image,
   ScrollView,
 } from "react-native";
 import Chat from "../../../Assets/Images/chat-notification.png"
@@ -74,40 +74,41 @@ export default function StayHistorySheet({ visible, onClose, customerDetails = [
         <Text style={styles.title}>Stay History</Text>
 
         {/* 🔥 IMPORTANT */}
-       <ScrollView
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{ paddingBottom: 40 }}
->
-  {customerDetails?.bedHistory?.map((item, index) => (
-    <View key={index} style={styles.historyRow}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
+          {customerDetails?.bedHistory?.map((item, index) => (
+            <View key={index} style={styles.historyRow}>
+              {console.log("stayhisotyr",item)}
 
-      {/* LEFT TIMELINE */}
-      <View style={styles.timelineContainer}>
-        {/* <View style={styles.circle} /> */}
-       <Image source={Chat} style={styles.chatimg}/>
-        {index !== customerDetails.bedHistory.length - 1 && (
-          <View style={styles.verticalLine} />
-        )}
-      </View>
+              {/* LEFT TIMELINE */}
+              <View style={styles.timelineContainer}>
+                {/* <View style={styles.circle} /> */}
+                <Image source={Chat} style={styles.chatimg} />
+                {index !== customerDetails.bedHistory.length - 1 && (
+                  <View style={styles.verticalLine} />
+                )}
+              </View>
 
-      {/* RIGHT CONTENT */}
-      <View style={styles.contentContainer}>
-        <Text style={styles.dateText}>
-          {item.startDate} - {item.endDate || "Present"}
-        </Text>
+              {/* RIGHT CONTENT */}
+              <View style={styles.contentContainer}>
+                <Text style={styles.dateText}>
+                  {item.startDate} - {item.endDate || "Present"}
+                </Text>
 
-        <Text style={styles.reasonText}>
-          {item.reason || item.type}
-        </Text>
+                <Text style={styles.reasonText}>
+                  {item.reason || item.type}
+                </Text>
 
-        <Text style={styles.roomText}>
-          {item.roomName} / {item.bedName} - ₹ {item.rentAmount}
-        </Text>
-      </View>
+                <Text style={styles.roomText}>
+                  {item.roomName} / {item.bedName} - ₹ {item.rentAmount}
+                </Text>
+              </View>
 
-    </View>
-  ))}
-</ScrollView>
+            </View>
+          ))}
+        </ScrollView>
 
       </Animated.View>
     </View>
@@ -166,55 +167,55 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   historyRow: {
-  flexDirection: "row",
-  marginBottom: 25,
-},
+    flexDirection: "row",
+    marginBottom: 25,
+  },
 
-timelineContainer: {
-  alignItems: "center",
-  marginRight: 15,
-},
+  timelineContainer: {
+    alignItems: "center",
+    marginRight: 15,
+  },
 
-circle: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  backgroundColor: "#EEF2FF",
-  borderWidth: 1,
-  borderColor: "#DCE3FF",
-},
-chatimg:{
- width: 30,
-  height: 30,
-},
+  circle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 1,
+    borderColor: "#DCE3FF",
+  },
+  chatimg: {
+    width: 30,
+    height: 30,
+  },
 
-verticalLine: {
-  width: 2,
-  flex: 1,
-  backgroundColor: "#E5E7EB",
-  marginTop: 5,
-},
+  verticalLine: {
+    width: 2,
+    flex: 1,
+    backgroundColor: "#E5E7EB",
+    marginTop: 5,
+  },
 
-contentContainer: {
-  flex: 1,
-},
+  contentContainer: {
+    flex: 1,
+  },
 
-dateText: {
-  fontSize: 15,
-  fontWeight: "700",
-  color: "#111",
-},
+  dateText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111",
+  },
 
-reasonText: {
-  fontSize: 14,
-  color: "#444",
-  marginTop: 6,
-},
+  reasonText: {
+    fontSize: 14,
+    color: "#444",
+    marginTop: 6,
+  },
 
-roomText: {
-  fontSize: 13,
-  color: "#8A8A8A",
-  marginTop: 6,
-},
+  roomText: {
+    fontSize: 13,
+    color: "#8A8A8A",
+    marginTop: 6,
+  },
 
 });

@@ -470,7 +470,7 @@ export default function SettingsPG({ navigation }) {
           <Text style={styles.headerTitle}>Manage PG</Text>
         </View>
 
-        {!canReadPayingGuests && (
+        {/* {!canReadPayingGuests && (
   <View  style={{
             flex: 1,
             backgroundColor: "#fff",
@@ -487,9 +487,9 @@ export default function SettingsPG({ navigation }) {
       You do not have access to view Paying Guests
     </Text>
   </View>
-)}
+)} */}
 
-      {canReadPayingGuests && (
+      {/* {canReadPayingGuests && ( */}
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
 
           <View style={styles.card}>
@@ -622,7 +622,21 @@ export default function SettingsPG({ navigation }) {
           >
             {otherHostels && otherHostels.filter(Boolean).map((hostel) => (
               <View key={hostel.id} style={styles.otherCard}>
-                <Image source={hostel.profilePhoto} style={styles.otherImg} />
+                {/* <Image source={hostel.profilePhoto} style={styles.otherImg} /> */}
+   {hostel.profilePhoto ? (
+                  <Image
+                    source={hostel.profilePhoto}
+                    style={styles.hostelImg}
+                  />
+                ) : (
+                  <View style={{ width: 50,height: 50,borderRadius: 25,backgroundColor: "#E6EEF9",alignItems: "center",
+                              justifyContent: "center",}}>
+                    <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
+                      {hostel?.profileIntials}
+                    </Text>
+                  </View>
+                )}
+
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={styles.otherName}>{hostel.name}</Text>
                   <Text style={styles.otherBadge}>{hostel.type}</Text>
@@ -636,9 +650,9 @@ export default function SettingsPG({ navigation }) {
           </ScrollView>
           {/* </View> */}
         </ScrollView>
-      )}
+      {/* // )} */}
 
-        {canReadPayingGuests && hostelList && hostelList?.length > 0 &&
+        { hostelList && hostelList?.length > 0 &&
           (
             <View style={[
               styles.fixedAddBtnWrapper,
@@ -710,10 +724,19 @@ export default function SettingsPG({ navigation }) {
                 <Text style={styles.switchTitle}>Switch to</Text>
 
                 <View style={styles.switchCard}>
+                  {switchHostel.profilePhoto ? (
                   <Image
-                    source={switchHostel?.profilePhoto}
-                    style={styles.switchImg}
+                    source={switchHostel.profilePhoto}
+                    style={styles.hostelImg}
                   />
+                ) : (
+                  <View style={{ width: 50,height: 50,borderRadius: 25,backgroundColor: "#E6EEF9",alignItems: "center",
+                              justifyContent: "center",}}>
+                    <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
+                      {switchHostel?.profileIntials}
+                    </Text>
+                  </View>
+                )}
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={styles.otherName}>{switchHostel?.name}</Text>
                     <Text style={styles.otherBadge} numberOfLines={1}>{switchHostel?.type}</Text>
@@ -947,6 +970,7 @@ const styles = StyleSheet.create({
   switchBox: {
     backgroundColor: "#fff",
     padding: 20,
+    paddingBottom:34,
     width: "100%",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -961,6 +985,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 15,
   },
+  switchTitle:{
+    fontSize:15,
+    marginBottom:5
+  },
 
   switchCard: {
     flexDirection: "row",
@@ -970,7 +998,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#DDE4F0",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 25,
   },
 
   switchImg: { width: 60, height: 60, borderRadius: 10 },
@@ -978,6 +1006,7 @@ const styles = StyleSheet.create({
   switchActions: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom:10
   },
 
   cancelBtn: {

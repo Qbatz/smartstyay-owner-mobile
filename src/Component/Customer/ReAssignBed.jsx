@@ -359,14 +359,14 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     const payload = {
       bedId: bedSelected.bedId,
       rentAmount: Number(amount),
-      joiningDate: dayjs(date).format("YYYY-MM-DD"),
+      joiningDate: dayjs(date).format("DD-MM-YYYY"),
       reason: reason || "",
-    };
+    }
     const res = await changeBedCustomer(
       activeHostelId,
       customerId,
       payload
-    );
+    )
 
     if (res.success) {
 
@@ -384,8 +384,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
     } 
     else {
-
-      alert(res.message || "Change bed failed");
+      console.log(res.message || "Change bed failed")
     }
   };
 

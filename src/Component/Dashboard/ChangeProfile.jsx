@@ -1,12 +1,12 @@
-import React,{useState,useRef , useContext} from "react";
+import React, { useState, useRef, useContext } from "react";
 import {
-    View,
-    Text,
-    StyleSheet,
-    Image,
-    TouchableOpacity,
-    ScrollView,
-    Dimensions,Animated,PanResponder
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions, Animated, PanResponder
 } from "react-native";
 import { ExpensesContext } from "../../Context/ExpensesContext";
 import LeftArrow from "../../Assets/Images/Arrow_left.png";
@@ -20,197 +20,197 @@ import { useHasPermission } from "../../Utils/useHasPermission";
 
 export default function ProfileScreen({ navigation }) {
 
-      const { expensesList, GetExpenseList, rolePermission ,
-    GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
-   const SCREEN_WIDTH = Dimensions.get("window").width;
-    const [activeMenu, setActiveMenu] = useState(null);
-    const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
-    const [showAccountSheet, setShowAccountSheet] = useState(false);
-     const [showPasswordSheet, setShowPasswordSheet] = useState(false);
-const sheetY = useRef(new Animated.Value(300)).current;
-const DotsTopRef = useRef(null);
-const DotsBottomRef = useRef(null);
+  const { expensesList, GetExpenseList, rolePermission,
+    GetRoleBasedPermission, profileDetails, GetProfileDetails, loading } = useContext(ExpensesContext);
+  const SCREEN_WIDTH = Dimensions.get("window").width;
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
+  const [showAccountSheet, setShowAccountSheet] = useState(false);
+  const [showPasswordSheet, setShowPasswordSheet] = useState(false);
+  const sheetY = useRef(new Animated.Value(300)).current;
+  const DotsTopRef = useRef(null);
+  const DotsBottomRef = useRef(null);
 
-    const {
+  const {
     canWriteModule: canWriteProfile,
     canReadModule: canReadProfile,
     canUpdateModule: canUpdateProfile,
     canDeleteModule: canDeleteProfile,
   } = useHasPermission("Profile");
 
-const panResponder = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gesture) =>
-      Math.abs(gesture.dy) > 5,  // only vertical drag
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        Math.abs(gesture.dy) > 5,  // only vertical drag
 
-    onPanResponderMove: (_, gesture) => {
-      if (gesture.dy > 0) sheetY.setValue(gesture.dy); // pull down only
-    },
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) sheetY.setValue(gesture.dy); // pull down only
+      },
 
-    onPanResponderRelease: (_, gesture) => {
-      if (gesture.dy > 120 || gesture.vy > 1.5) {
-        closeSheet();  
-      } else {
-        Animated.spring(sheetY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  })
-).current;
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120 || gesture.vy > 1.5) {
+          closeSheet();
+        } else {
+          Animated.spring(sheetY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
-const openSheet = () => {
-  setShowAccountSheet(true);
-  Animated.timing(sheetY, {
-    toValue: 0,
-    duration: 220,
-    useNativeDriver: true,
-  }).start();
-};
+  const openSheet = () => {
+    setShowAccountSheet(true);
+    Animated.timing(sheetY, {
+      toValue: 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  };
 
-const closeSheet = () => {
-  Animated.timing(sheetY, {
-    toValue: 300,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => setShowAccountSheet(false));
-};
+  const closeSheet = () => {
+    Animated.timing(sheetY, {
+      toValue: 300,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setShowAccountSheet(false));
+  };
 
-const getFullName = (profile) => {
-  if (!profile) return "";
+  const getFullName = (profile) => {
+    if (!profile) return "";
 
-  const first = profile.firstName?.trim() || "";
-  const last = profile.lastName?.trim() || "";
+    const first = profile.firstName?.trim() || "";
+    const last = profile.lastName?.trim() || "";
 
-  return `${first} ${last}`.trim(); // "Emima"
-};
+    return `${first} ${last}`.trim(); // "Emima"
+  };
 
-const getInitials = (profile) => {
-  if (profile?.initial) return profile.initial;
+  const getInitials = (profile) => {
+    if (profile?.initial) return profile.initial;
 
-  const first = profile?.firstName?.[0] || "";
-  const last = profile?.lastName?.[0] || "";
+    const first = profile?.firstName?.[0] || "";
+    const last = profile?.lastName?.[0] || "";
 
-  return (first + last).toUpperCase();
-};
+    return (first + last).toUpperCase();
+  };
 
 
-const dotsRef = useRef(null);
-    return (
-        <View style={styles.container}>
+  const dotsRef = useRef(null);
+  return (
+    <View style={styles.container}>
 
-            <View style={styles.header}>
+      <View style={styles.header}>
 
-                <View style={styles.leftRow}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image source={LeftArrow} style={styles.headerIcon} />
-                    </TouchableOpacity>
+        <View style={styles.leftRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={LeftArrow} style={styles.headerIcon} />
+          </TouchableOpacity>
 
-                    <Text style={styles.headerTitle}>Profile</Text>
-                </View>
+          <Text style={styles.headerTitle}>Profile</Text>
+        </View>
 
-                <TouchableOpacity onPress={() => navigation.navigate("SettingsScreen")}>
-                    <Image source={SettingIcon} style={styles.headerIcon} />
-                </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("SettingsScreen")}>
+          <Image source={SettingIcon} style={styles.headerIcon} />
+        </TouchableOpacity>
 
+      </View>
+
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={styles.avatar}>
+              {profileDetails?.profileImage ? (
+                <Image
+                  source={{ uri: profileDetails.profileImage }}
+                  style={styles.profileImg}
+                />
+              ) : (
+                <Text style={styles.avatarText}>
+                  {getInitials(profileDetails)}
+                </Text>
+              )}
             </View>
 
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.card}>
-                    <View style={styles.row}>
-                           <View style={styles.avatar}>
-                         {profileDetails?.profileImage ? (
-                           <Image
-                             source={{ uri: profileDetails.profileImage }}
-                             style={styles.profileImg}
-                           />
-                         ) : (
-                           <Text style={styles.avatarText}>
-                             {getInitials(profileDetails)}
-                           </Text>
-                         )}
-                       </View>
-
-                        <View style={{ flex: 1 , marginLeft:7}}>
-                           <View style={styles.nameWrapper}>
-  <Text style={styles.name}>
-    {getFullName(profileDetails)}
-  </Text>
-</View>
+            <View style={{ flex: 1, marginLeft: 7 }}>
+              <View style={styles.nameWrapper}>
+                <Text style={styles.name}>
+                  {getFullName(profileDetails)}
+                </Text>
+              </View>
 
 
-                            <TouchableOpacity style={styles.changePwdRow}  onPress={() => {setShowPasswordSheet(true)}}>
-                                <Image
-                                    source={require("../../Assets/Images/Eye.png")}
-                                    style={styles.eyeIcon}
-                                />
-                                <Text style={styles.changePwdText}>Change Password</Text>
-                            </TouchableOpacity>
-                        </View>
+              <TouchableOpacity style={styles.changePwdRow} onPress={() => { setShowPasswordSheet(true) }}>
+                <Image
+                  source={require("../../Assets/Images/Eye.png")}
+                  style={styles.eyeIcon}
+                />
+                <Text style={styles.changePwdText}>Change Password</Text>
+              </TouchableOpacity>
+            </View>
 
-                      <TouchableOpacity
-  ref={DotsTopRef}
-  onPress={() => {
-    DotsTopRef.current.measureInWindow((x, y, width, height) => {
-      setPopupPos({
-        top: y + height + 6,
-        right: SCREEN_WIDTH - (x + width),
-      });
-    });
-    setActiveMenu("box");
-  }}
->
-  <Image source={ThreeDots} style={styles.dotsIcon} />
-</TouchableOpacity>
+            <TouchableOpacity
+              ref={DotsTopRef}
+              onPress={() => {
+                DotsTopRef.current.measureInWindow((x, y, width, height) => {
+                  setPopupPos({
+                    top: y + height + 6,
+                    right: SCREEN_WIDTH - (x + width),
+                  });
+                });
+                setActiveMenu("box");
+              }}
+            >
+              <Image source={ThreeDots} style={styles.dotsIcon} />
+            </TouchableOpacity>
 
 
-                    </View>
+          </View>
 
-                    <View style={styles.infoRow}>
-                        <Image
-                            source={require("../../Assets/Images/sms.png")}
-                            style={styles.infoIcon}
-                        />
-                        <Text style={styles.infoText}>{profileDetails?.mailId || "N/A"}</Text>
-                    </View>
+          <View style={styles.infoRow}>
+            <Image
+              source={require("../../Assets/Images/sms.png")}
+              style={styles.infoIcon}
+            />
+            <Text style={styles.infoText}>{profileDetails?.mailId || "N/A"}</Text>
+          </View>
 
-                    <View style={styles.infoRow}>
-                        <Image
-                            source={require("../../Assets/Images/call.png")}
-                            style={styles.infoIcon}
-                        />
-                        <Text style={styles.infoText}>+91 {profileDetails?.mobileNo || "N/A"}</Text>
-                    </View>
+          <View style={styles.infoRow}>
+            <Image
+              source={require("../../Assets/Images/call.png")}
+              style={styles.infoIcon}
+            />
+            <Text style={styles.infoText}>+91 {profileDetails?.mobileNo || "N/A"}</Text>
+          </View>
 
-                    <Text style={styles.addressTitle}>Address</Text>
+          <Text style={styles.addressTitle}>Address</Text>
 
-                    <View style={styles.infoRow}>
-                        <Image
-                            source={require("../../Assets/Images/call.png")}
-                            style={styles.infoIcon}
-                        />
-                        <Text style={styles.infoText}>
-                           {profileDetails?.countryName || "N/A"}
-                        </Text>
-                    </View>
+          <View style={styles.infoRow}>
+            <Image
+              source={require("../../Assets/Images/call.png")}
+              style={styles.infoIcon}
+            />
+            <Text style={styles.infoText}>
+              {profileDetails?.countryName || "N/A"}
+            </Text>
+          </View>
 
-                 <TouchableOpacity 
-                //  style={styles.changeBtn} 
-                 style={[styles.changeBtn,!canUpdateProfile && { opacity: 0.4 },]}
-                 disabled={!canUpdateProfile}
-                //  onPress={openSheet}
-                 >
-  <Image
-    source={require("../../Assets/Images/call.png")}
-    style={styles.swapIcon}
-  />
-  <Text style={styles.changeBtnText}>Change Account</Text>
-</TouchableOpacity>
-                </View>
+          <TouchableOpacity
+            //  style={styles.changeBtn} 
+            style={[styles.changeBtn, !canUpdateProfile && { opacity: 0.4 },]}
+            disabled={!canUpdateProfile}
+          //  onPress={openSheet}
+          >
+            <Image
+              source={require("../../Assets/Images/call.png")}
+              style={styles.swapIcon}
+            />
+            <Text style={styles.changeBtnText}>Change Account</Text>
+          </TouchableOpacity>
+        </View>
 
-                {/* <View style={[styles.card, { marginTop: 20 }]}>
+        {/* <View style={[styles.card, { marginTop: 20 }]}>
                     <View style={styles.row}>
                         <Image
                             source={require("../../Assets/Images/profile.png")}
@@ -247,286 +247,286 @@ const dotsRef = useRef(null);
                     </View>
                 </View> */}
 
-                <View style={{ height: 40 }} />
-            </ScrollView>
+        <View style={{ height: 40 }} />
+      </ScrollView>
 
 
-   {activeMenu && (
-  <TouchableOpacity
-    style={styles.menuOverlay}
-    onPress={() => setActiveMenu(null)}
-  >
-    <View style={[styles.menuBox, { top: popupPos.top, right: popupPos.right }]}>
+      {activeMenu && (
+        <TouchableOpacity
+          style={styles.menuOverlay}
+          onPress={() => setActiveMenu(null)}
+        >
+          <View style={[styles.menuBox, { top: popupPos.top, right: popupPos.right }]}>
 
-      {/* EDIT */}
-      <TouchableOpacity
-        // style={styles.menuRow}
-        style={[styles.menuRow,!canUpdateProfile && { opacity: 0.4 },]}
-        disabled={!canUpdateProfile}
-        onPress={() => {
-          console.log(activeMenu + " EDIT");
-          setActiveMenu(null);
-        }}
-      >
-        <Image source={Edit} style={styles.menuIcon} />
-        <Text style={styles.menuText}>Edit</Text>
-      </TouchableOpacity>
+            {/* EDIT */}
+            <TouchableOpacity
+              // style={styles.menuRow}
+              style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
+              disabled={!canUpdateProfile}
+              onPress={() => {
+                console.log(activeMenu + " EDIT");
+                setActiveMenu(null);
+              }}
+            >
+              <Image source={Edit} style={styles.menuIcon} />
+              <Text style={styles.menuText}>Edit</Text>
+            </TouchableOpacity>
 
-      {/* DELETE */}
-      <TouchableOpacity
-        // style={styles.menuRow}
-        style={[styles.menuRow,!canDeleteProfile && { opacity: 0.4 },]}
-        disabled={!canDeleteProfile}
-        onPress={() => {
-          console.log(activeMenu + " DELETE");
-          setActiveMenu(null);
-        }}
-      >
-        <Image
-          source={Delete}
-          style={[styles.menuIcon, { tintColor: "red" }]}
-        />
-        <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-      </TouchableOpacity>
+            {/* DELETE */}
+            <TouchableOpacity
+              // style={styles.menuRow}
+              style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
+              disabled={!canDeleteProfile}
+              onPress={() => {
+                console.log(activeMenu + " DELETE");
+                setActiveMenu(null);
+              }}
+            >
+              <Image
+                source={Delete}
+                style={[styles.menuIcon, { tintColor: "red" }]}
+              />
+              <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+            </TouchableOpacity>
+
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {showAccountSheet && (
+        <View style={styles.sheetOverlay}>
+
+          <TouchableOpacity style={styles.overlayTouch} onPress={closeSheet} />
+
+          <Animated.View
+            {...panResponder.panHandlers}
+            style={[
+              styles.bottomSheet,
+              { transform: [{ translateY: sheetY }] }
+            ]}
+          >
+
+            <View style={styles.sheetBar} />
+
+            <TouchableOpacity style={styles.sheetCard}>
+              <Image source={require("../../Assets/Images/profile.png")} style={styles.sheetAvatar} />
+              <Text style={styles.sheetName}>Muthuram K</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.sheetCard}>
+              <Image source={require("../../Assets/Images/profile.png")} style={styles.sheetAvatar} />
+              <Text style={styles.sheetName}>Priya</Text>
+            </TouchableOpacity>
+
+
+          </Animated.View>
+        </View>
+      )}
+
+      <ChangePasswordSheet
+        visible={showPasswordSheet}
+        onClose={() => setShowPasswordSheet(false)}
+      />
 
     </View>
-  </TouchableOpacity>
-)}
-
-{showAccountSheet && (
-  <View style={styles.sheetOverlay}>
-    
-    <TouchableOpacity style={styles.overlayTouch} onPress={closeSheet} />
-
-    <Animated.View
-      {...panResponder.panHandlers}
-      style={[
-        styles.bottomSheet,
-        { transform: [{ translateY: sheetY }] }
-      ]}
-    >
-
-      <View style={styles.sheetBar} />
-
-      <TouchableOpacity style={styles.sheetCard}>
-        <Image source={require("../../Assets/Images/profile.png")} style={styles.sheetAvatar} />
-        <Text style={styles.sheetName}>Muthuram K</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.sheetCard}>
-        <Image source={require("../../Assets/Images/profile.png")} style={styles.sheetAvatar} />
-        <Text style={styles.sheetName}>Priya</Text>
-      </TouchableOpacity>
-      
-
-    </Animated.View>
-  </View>
-)}
-
-     <ChangePasswordSheet 
-  visible={showPasswordSheet}
-  onClose={() => setShowPasswordSheet(false)}
-/>
-
-        </View>
-    );
+  );
 }
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#F7F8FB",
-        paddingTop: 45,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#F7F8FB",
+    paddingTop: 45,
+  },
 
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 12,
-        backgroundColor: "#F8F9FF",
-    },
-    leftRow: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 12,
+    backgroundColor: "#F8F9FF",
+  },
+  leftRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-    leftContainer: {
-        width: 40,           // fixed width ensures perfect center title
-        justifyContent: "center",
-        alignItems: "flex-start",
-    },
+  leftContainer: {
+    width: 40,           // fixed width ensures perfect center title
+    justifyContent: "center",
+    alignItems: "flex-start",
+  },
 
-    rightContainer: {
-        width: 40,           // same width keeps title perfectly centered
-        justifyContent: "center",
-        alignItems: "flex-end",
-    },
+  rightContainer: {
+    width: 40,           // same width keeps title perfectly centered
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
 
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        marginLeft: 8,
-        color: "#000",
-    },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginLeft: 8,
+    color: "#000",
+  },
 
-    headerIcon: {
-        width: 22,
-        height: 22,
-        resizeMode: "contain",
-    },
-
-
-    card: {
-        backgroundColor: "#fff",
-        padding: 18,
-        marginHorizontal: 15,
-        borderRadius: 14,
-        elevation: 2,
-    },
-
-    row: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-
-    avatar: {
-  width: 40,
-  height: 40,
-  borderRadius: 25,
-  backgroundColor: "#E5E7EB",
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-avatarText: {
-  fontSize: 14,
-  fontWeight: "700",
-  color: "#374151",
-},
-
-profileImg: {
-  width: 40,
-  height: 40,
-  borderRadius: 25,
-},
-
-   row: {
-  flexDirection: "row",
-  alignItems: "flex-start",   
-},
-
-nameWrapper: {
-  flex: 1,                   
-  marginLeft: 4,
-  paddingRight: 10,          
-},
-
-name: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#111",
-  flexShrink: 1,             
-  flexWrap: "wrap",          
-},
+  headerIcon: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+  },
 
 
-    changePwdRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 4,
-    },
+  card: {
+    backgroundColor: "#fff",
+    padding: 18,
+    marginHorizontal: 15,
+    borderRadius: 14,
+    elevation: 2,
+  },
 
-    eyeIcon: {
-        width: 16,
-        height: 16,
-        marginRight: 6,
-        tintColor: "#2F80ED",
-    },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-    changePwdText: {
-        color: "#2F80ED",
-        fontSize: 13,
-        fontWeight: "500",
-    },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    dotsIcon: {
-        width: 20,
-        height: 20,
-        tintColor: "#444",
-    },
+  avatarText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#374151",
+  },
 
-    infoRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 14,
-    },
+  profileImg: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+  },
 
-    infoIcon: {
-        width: 18,
-        height: 18,
-        marginRight: 10,
+  row: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
 
-        tintColor: "#2F80ED",
-    },
+  nameWrapper: {
+    flex: 1,
+    marginLeft: 4,
+    paddingRight: 10,
+  },
 
-    infoText: {
-        fontSize: 14,
-        color: "#333",
-        lineHeight: 20,
-        flex: 1,
-    },
+  name: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111",
+    flexShrink: 1,
+    flexWrap: "wrap",
+  },
 
-    addressTitle: {
-        marginTop: 20,
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#444",
 
-    },
+  changePwdRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
 
-    changeBtn: {
-        marginTop: 20,
-        backgroundColor: "#1E45E1",
-        paddingVertical: 12,
-        borderRadius: 8,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  eyeIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
+    tintColor: "#2F80ED",
+  },
 
-    swapIcon: {
-        width: 20,
-        height: 20,
-        tintColor: "#fff",
-        marginRight: 6,
-    },
+  changePwdText: {
+    color: "#2F80ED",
+    fontSize: 13,
+    fontWeight: "500",
+  },
 
-    changeBtnText: {
-        color: "#fff",
-        fontSize: 15,
-        fontWeight: "600",
-    },
-    menuBox: {
-  position: "absolute",
-  backgroundColor: "#fff",
-  padding: 12,
-  width: 170,
-  borderRadius: 12,
-  elevation: 8,
-  shadowColor: "#000",
-  shadowOpacity: 0.15,
-  shadowRadius: 8,
-  shadowOffset: { width: 0, height: 3 },
-  borderWidth: 1,
-  borderColor: "#EEE",
-  zIndex: 9999,
-},
-menuOverlay: {
-  position: "absolute",
-  top: 0, left: 0, right: 0, bottom: 0,
-},
+  dotsIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#444",
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 14,
+  },
+
+  infoIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
+
+    tintColor: "#2F80ED",
+  },
+
+  infoText: {
+    fontSize: 14,
+    color: "#333",
+    lineHeight: 20,
+    flex: 1,
+  },
+
+  addressTitle: {
+    marginTop: 20,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#444",
+
+  },
+
+  changeBtn: {
+    marginTop: 20,
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  swapIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#fff",
+    marginRight: 6,
+  },
+
+  changeBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  menuBox: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    padding: 12,
+    width: 170,
+    borderRadius: 12,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    borderWidth: 1,
+    borderColor: "#EEE",
+    zIndex: 9999,
+  },
+  menuOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+  },
 
 
   menuRow: {
@@ -547,73 +547,73 @@ menuOverlay: {
     color: "#000",
   },
 
-sheetOverlay: {
-  position: "absolute",
-  top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-},
+  sheetOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
 
-overlayTouch: {
-  flex: 1,
-},
+  overlayTouch: {
+    flex: 1,
+  },
 
-bottomSheet: {
-  width: "100%",
-  backgroundColor: "#fff",
-  paddingTop: 15,
-  paddingBottom: 60,
-  paddingHorizontal: 18,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-},
+  bottomSheet: {
+    width: "100%",
+    backgroundColor: "#fff",
+    paddingTop: 15,
+    paddingBottom: 60,
+    paddingHorizontal: 18,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
 
-sheetBar: {
-  width: 45,
-  height: 5,
-  backgroundColor: "#D0D0D0",
-  borderRadius: 20,
-  alignSelf: "center",
-  marginBottom: 15,
-},
+  sheetBar: {
+    width: 45,
+    height: 5,
+    backgroundColor: "#D0D0D0",
+    borderRadius: 20,
+    alignSelf: "center",
+    marginBottom: 15,
+  },
 
-sheetCard: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 12,
-  paddingHorizontal: 12,
-  backgroundColor: "#F8F9FC",
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  marginBottom: 12,
-},
+  sheetCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#F8F9FC",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 12,
+  },
 
-sheetAvatar: {
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-  marginRight: 10,
-},
+  sheetAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
 
-sheetName: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#000",
-},
+  sheetName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
 
-closeBtn: {
-  marginTop: 10,
-  alignSelf: "center",
-  paddingVertical: 10,
-  paddingHorizontal: 20,
-},
+  closeBtn: {
+    marginTop: 10,
+    alignSelf: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
 
-closeBtnText: {
-  fontSize: 15,
-  fontWeight: "600",
-  color: "#555",
-},
+  closeBtnText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#555",
+  },
 
 });
 

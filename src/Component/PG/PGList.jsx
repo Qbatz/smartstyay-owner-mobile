@@ -102,7 +102,7 @@ export default function PGPageFull({ route }) {
   // const [matchedBed, setMatchedBed] = useState(null);
 
 
-    const {
+  const {
     canWriteModule: canWritePayingGuests,
     canReadModule: canReadPayingGuests,
     canUpdateModule: canUpdatePayingGuests,
@@ -236,6 +236,7 @@ export default function PGPageFull({ route }) {
     if (!res.success) return;
 
     const freshBed = res.data;
+    console.log("freshbed",freshBed)
 
     const matchedBed =
       bedsByRoom[room.id]?.find(b => b.id === bed.id);
@@ -895,11 +896,11 @@ export default function PGPageFull({ route }) {
           {!!activeHostelId && (
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
-                {activeHostelName?.mainImage ?  <Image source={{uri:activeHostelName?.mainImage}} style={styles.HostelImg} /> :
-                <View style={[styles.HostelImg,{backgroundColor:'#EEF2FF',alignItems:'center',justifyContent:'center'}]}>
-                  <Text style={{fontSize:14,fontWeight:600}}>{activeHostelName?.initials}</Text>
-                </View>}
-               
+                {activeHostelName?.mainImage ? <Image source={{ uri: activeHostelName?.mainImage }} style={styles.HostelImg} /> :
+                  <View style={[styles.HostelImg, { backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' }]}>
+                    <Text style={{ fontSize: 14, fontWeight: 600 }}>{activeHostelName?.initials}</Text>
+                  </View>}
+
               </TouchableOpacity>
 
               <Text style={styles.title}>{activeHostelName?.name}</Text>
@@ -911,7 +912,7 @@ export default function PGPageFull({ route }) {
             <TouchableOpacity
               // style={styles.floorButton}
               disabled={!canWritePayingGuests}
-              style={[ styles.floorButton, !canWritePayingGuests && { opacity: 0.4 }]}
+              style={[styles.floorButton, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() => setShowAddFloor(true)}
             >
               <Text style={styles.floorButtonText}>+ Floor</Text>
@@ -981,8 +982,8 @@ export default function PGPageFull({ route }) {
             <View style={styles.menuBox1} pointerEvents="auto">
               <TouchableOpacity
                 // style={styles.menuItem}
-              disabled={!canUpdatePayingGuests}
-              style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                disabled={!canUpdatePayingGuests}
+                style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowFloorMenu(false);
                   setEditFloorData(activeFloor);
@@ -990,20 +991,20 @@ export default function PGPageFull({ route }) {
                 }}
               >
 
-                <Image source={EditIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
+                <Image source={EditIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
                 <Text style={styles.menuText}>Edit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 // style={styles.menuItem}
-              disabled={!canDeletePayingGuests}
-              style={[ styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
+                disabled={!canDeletePayingGuests}
+                style={[styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowFloorMenu(false);
                   handleFloorDelete(activeFloor.id);
                 }}
               >
-                 <Image source={DeleteIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
+                <Image source={DeleteIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
                 <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
               </TouchableOpacity>
             </View>
@@ -1023,95 +1024,95 @@ export default function PGPageFull({ route }) {
 
         {!showReadBlockedState && (
 
-        <View style={{ flexDirection: "row", marginLeft: 13 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingLeft: 13, paddingRight: 20 }}
-          >
-            {floors.map((f, i) => (
+          <View style={{ flexDirection: "row", marginLeft: 13 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 13, paddingRight: 20 }}
+            >
+              {floors.map((f, i) => (
 
-              <TouchableOpacity
-                key={f.id}
-                style={[
-                  styles.floorTab,
-                  activeFloorIndex === i && styles.floorTabActive,
-                ]}
-                // onPress={() => {
-                //   setActiveFloorIndex(i);
-                //   setSelectedFloorId(f.id);
-                //    setOpenMenuRoomId(null);
+                <TouchableOpacity
+                  key={f.id}
+                  style={[
+                    styles.floorTab,
+                    activeFloorIndex === i && styles.floorTabActive,
+                  ]}
+                  // onPress={() => {
+                  //   setActiveFloorIndex(i);
+                  //   setSelectedFloorId(f.id);
+                  //    setOpenMenuRoomId(null);
 
 
-                // }}
-                onPressIn={() => {
-                  setShowFloorMenu(false);   // 👈 menu close immediately
-                }}
-                onPress={() => {
-                  setActiveFloorIndex(i);
-                  setSelectedFloorId(f.id);
-                  setOpenMenuRoomId(null)
+                  // }}
+                  onPressIn={() => {
+                    setShowFloorMenu(false);   // 👈 menu close immediately
+                  }}
+                  onPress={() => {
+                    setActiveFloorIndex(i);
+                    setSelectedFloorId(f.id);
+                    setOpenMenuRoomId(null)
 
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 8,
                   }}
                 >
                   <View
-                    style={[
-                      styles.floorCircle,
-                      activeFloorIndex === i && styles.floorCircleActive,
-                    ]}
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
                   >
-                    <Text
+                    <View
                       style={[
-                        styles.circleText,
-                        activeFloorIndex === i && styles.circleTextActive,
+                        styles.floorCircle,
+                        activeFloorIndex === i && styles.floorCircleActive,
                       ]}
                     >
-                      {getFloorLabel(f.name)}
+                      <Text
+                        style={[
+                          styles.circleText,
+                          activeFloorIndex === i && styles.circleTextActive,
+                        ]}
+                      >
+                        {getFloorLabel(f.name)}
+                      </Text>
+                    </View>
+
+                    <Text
+                      style={[
+                        styles.floorLabel,
+                        activeFloorIndex === i && styles.floorLabelActive,
+                      ]}
+                    >
+                      {f.name}
                     </Text>
                   </View>
-
-                  <Text
-                    style={[
-                      styles.floorLabel,
-                      activeFloorIndex === i && styles.floorLabelActive,
-                    ]}
-                  >
-                    {f.name}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         )
         }
 
-{showReadBlockedState && (
-  <View style={styles.centerContainer}>
-    <Image source={EmptyFloor} style={styles.image} />
-    <Text style={styles.noFloorText}>
-      You don’t have permission to view PG details
-    </Text>
-  </View>
-)}
+        {showReadBlockedState && (
+          <View style={styles.centerContainer}>
+            <Image source={EmptyFloor} style={styles.image} />
+            <Text style={styles.noFloorText}>
+              You don’t have permission to view PG details
+            </Text>
+          </View>
+        )}
 
 
-        {!loading && !showReadBlockedState && floors.length === 0 &&  (
+        {!loading && !showReadBlockedState && floors.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No floors are there!</Text>
 
             <TouchableOpacity
               // style={styles.addFloorBtn}
-                disabled={!canWritePayingGuests}
-              style={[ styles.addFloorBtn, !canWritePayingGuests && { opacity: 0.4 }]}
+              disabled={!canWritePayingGuests}
+              style={[styles.addFloorBtn, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() => {
                 if (!activeHostelId) {
                   setModalType("warning"); // or "error"
@@ -1131,7 +1132,7 @@ export default function PGPageFull({ route }) {
         )}
 
 
-      {!loading && !showReadBlockedState && floors.length > 0 && rooms.length === 0 && (
+        {!loading && !showReadBlockedState && floors.length > 0 && rooms.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No Rooms are there!</Text>
@@ -1139,7 +1140,7 @@ export default function PGPageFull({ route }) {
             <TouchableOpacity
               // style={styles.addFloorBtn}
               disabled={!canWritePayingGuests}
-              style={[ styles.addFloorBtn, !canWritePayingGuests && { opacity: 0.4 }]}
+              style={[styles.addFloorBtn, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() => setShowAddRoom(true)}
             >
               <Text style={styles.addFloorText}>+ Add Rooms</Text>
@@ -1148,96 +1149,96 @@ export default function PGPageFull({ route }) {
         )}
 
 
-{!showReadBlockedState && (
-        <FlatList
-          contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
-          data={rooms}
-          scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
-          keyboardShouldPersistTaps="always"
-          keyboardDismissMode="none"
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => {
-            const bedCount = bedsByRoom[item.id]?.length || 0;
-            return (
-              <View style={styles.roomCard}>
-                <TouchableOpacity
-                  style={styles.roomHeader}
-                  activeOpacity={0.8}
-                  onPress={() => {
-
-                    setSelectedRoomId(item.roomId);
-                  }}
-                >
-                  <View>
-                    <Text style={styles.roomTitle}>{item.name}</Text>
-                    <Text style={styles.roomSubtitle}>{bedCount} Sharing</Text>
-                  </View>
-
+        {!showReadBlockedState && (
+          <FlatList
+            contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
+            data={rooms}
+            scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => {
+              const bedCount = bedsByRoom[item.id]?.length || 0;
+              return (
+                <View style={styles.roomCard}>
                   <TouchableOpacity
-                    style={styles.addRoomBtn}
+                    style={styles.roomHeader}
+                    activeOpacity={0.8}
                     onPress={() => {
-                      setOpenMenuRoomId(
-                        openMenuRoomId === item.id ? null : item.id
-                      );
+
+                      setSelectedRoomId(item.roomId);
                     }}
                   >
-                    <Image source={Dots} style={{ width: 22, height: 22 }} />
-                  </TouchableOpacity>
-                </TouchableOpacity>
-
-                {openMenuRoomId === item.id && (
-                  <TouchableWithoutFeedback onPress={() => setOpenMenuRoomId(null)}>
-                    <View style={styles.menuOverlay}>
-                      <View style={styles.menuBox}>
-                        <TouchableOpacity
-                          // style={styles.menuItem}
-                          disabled={!canUpdatePayingGuests}
-                          style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
-                          onPress={() => {
-                            setOpenMenuRoomId(null);
-                            setEditRoomData(item);
-                            setShowAddRoom(true);
-                          }}
-
-                        >
-                           <Image source={EditIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
-                          <Text style={styles.menuText}>Edit</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          // style={styles.menuItem}
-                          disabled={!canDeletePayingGuests}
-                          style={[ styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
-                          onPress={() => handleDelete(item.id)}
-                        >
-                          <Image source={DeleteIcon} style={{ width: 18, height: 18,marginRight: 10,}} />
-                          <Text style={[styles.menuText, { color: "red" }]}>
-                            Delete
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
+                    <View>
+                      <Text style={styles.roomTitle}>{item.name}</Text>
+                      <Text style={styles.roomSubtitle}>{bedCount} Sharing</Text>
                     </View>
-                  </TouchableWithoutFeedback>
-                )}
+
+                    <TouchableOpacity
+                      style={styles.addRoomBtn}
+                      onPress={() => {
+                        setOpenMenuRoomId(
+                          openMenuRoomId === item.id ? null : item.id
+                        );
+                      }}
+                    >
+                      <Image source={Dots} style={{ width: 22, height: 22 }} />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+
+                  {openMenuRoomId === item.id && (
+                    <TouchableWithoutFeedback onPress={() => setOpenMenuRoomId(null)}>
+                      <View style={styles.menuOverlay}>
+                        <View style={styles.menuBox}>
+                          <TouchableOpacity
+                            // style={styles.menuItem}
+                            disabled={!canUpdatePayingGuests}
+                            style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                            onPress={() => {
+                              setOpenMenuRoomId(null);
+                              setEditRoomData(item);
+                              setShowAddRoom(true);
+                            }}
+
+                          >
+                            <Image source={EditIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
+                            <Text style={styles.menuText}>Edit</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            // style={styles.menuItem}
+                            disabled={!canDeletePayingGuests}
+                            style={[styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
+                            onPress={() => handleDelete(item.id)}
+                          >
+                            <Image source={DeleteIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
+                            <Text style={[styles.menuText, { color: "red" }]}>
+                              Delete
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  )}
 
 
-                <View style={styles.bedsRow}>
+                  <View style={styles.bedsRow}>
 
-                  {bedsByRoom[item.id]?.map((b) => {
-                    const status = getBedStatus(b);
-                    console.log("bedsByRoom..b", b)
+                    {bedsByRoom[item.id]?.map((b) => {
+                      const status = getBedStatus(b);
+                      console.log("bedsByRoom..b", b)
 
-                    return (
-                      <TouchableOpacity
-                        key={b.id}
-                        style={styles.bedItem}
-                        onPress={() => handleBedPress(b, item)}
+                      return (
+                        <TouchableOpacity
+                          key={b.id}
+                          style={styles.bedItem}
+                          onPress={() => handleBedPress(b, item)}
 
 
-                      >
-                        <Image source={getBaseBed(status)} style={styles.bedIcon} />
+                        >
+                          <Image source={getBaseBed(status)} style={styles.bedIcon} />
 
-                        {/* {overlayIcons[getPrimaryStatus(status)] && (
+                          {/* {overlayIcons[getPrimaryStatus(status)] && (
                         <Image
                           source={overlayIcons[getPrimaryStatus(status)]}
                           style={styles.overlayIcon}
@@ -1250,58 +1251,58 @@ export default function PGPageFull({ route }) {
                         </View>
                       )} */}
 
-                        {!(b.isOnNotice && b.isBooked) &&
-                          overlayIcons[getPrimaryStatus(status)] && (
-                            <Image
-                              source={overlayIcons[getPrimaryStatus(status)]}
-                              style={styles.overlayIcon}
-                            />
-                          )
-                        }
+                          {!(b.isOnNotice && b.isBooked) &&
+                            overlayIcons[getPrimaryStatus(status)] && (
+                              <Image
+                                source={overlayIcons[getPrimaryStatus(status)]}
+                                style={styles.overlayIcon}
+                              />
+                            )
+                          }
 
-                        {/* Multi status badge */}
-                        {b.isOnNotice && b.isBooked && (
-                          <View style={styles.multiBadge}>
-                            <Text style={styles.multiBadgeText}>2</Text>
-                          </View>
-                        )}
+                          {/* Multi status badge */}
+                          {b.isOnNotice && b.isBooked && (
+                            <View style={styles.multiBadge}>
+                              <Text style={styles.multiBadgeText}>2</Text>
+                            </View>
+                          )}
 
 
-                        <Text style={styles.bedLabel}>{b.bedName}</Text>
+                          <Text style={styles.bedLabel}>{b.bedName}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+
+
+                    <View style={styles.addBedHead}>
+                      <TouchableOpacity
+                        style={styles.addBedBox}
+                        onPress={() => handleAddBed(item.id)}
+                      >
+                        <View style={styles.addIconBox}>
+                          <Image source={AddIcon} style={styles.addIconImg} />
+                        </View>
+
+                        <Text style={styles.addBedText}>Add bed</Text>
                       </TouchableOpacity>
-                    );
-                  })}
+                    </View>
 
+                    {bedsByRoom[item.id] && bedsByRoom[item.id].length === 0 && (
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '400', color: '#222222' }}>No Beds are there</Text>
 
-                  <View style={styles.addBedHead}>
-                    <TouchableOpacity
-                      style={styles.addBedBox}
-                      onPress={() => handleAddBed(item.id)}
-                    >
-                      <View style={styles.addIconBox}>
-                        <Image source={AddIcon} style={styles.addIconImg} />
                       </View>
 
-                      <Text style={styles.addBedText}>Add bed</Text>
-                    </TouchableOpacity>
+                    )}
+
                   </View>
-
-                  {bedsByRoom[item.id] && bedsByRoom[item.id].length === 0 && (
-                    <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-                       <Text style={{fontSize:14,fontWeight:'400',color:'#222222'}}>No Beds are there</Text>
-
-                    </View>
-                   
-                  )}
-
                 </View>
-              </View>
-            )
+              )
 
 
-          }}
-        />
-)}
+            }}
+          />
+        )}
       </View>
 
 
@@ -1309,7 +1310,7 @@ export default function PGPageFull({ route }) {
         <TouchableOpacity
           // style={styles.addFab}
           disabled={!canWritePayingGuests}
-          style={[ styles.addFab, !canWritePayingGuests && { opacity: 0.4 }]}
+          style={[styles.addFab, !canWritePayingGuests && { opacity: 0.4 }]}
           onPress={() => setShowActionSheet(true)}
         >
           <Image source={AddFloorIcon} style={styles.addIcon} />
@@ -1334,8 +1335,8 @@ export default function PGPageFull({ route }) {
               <TouchableOpacity
                 // style={styles.actionItem}
 
-                   disabled={!canWritePayingGuests}
-          style={[ styles.actionItem, !canWritePayingGuests && { opacity: 0.4 }]}
+                disabled={!canWritePayingGuests}
+                style={[styles.actionItem, !canWritePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowAddFloor(true);
                   setShowActionSheet(false);
@@ -1353,7 +1354,7 @@ export default function PGPageFull({ route }) {
               <TouchableOpacity
                 // style={styles.actionItem}
                 disabled={!canWritePayingGuests}
-                style={[ styles.actionItem, !canWritePayingGuests && { opacity: 0.4 }]}
+                style={[styles.actionItem, !canWritePayingGuests && { opacity: 0.4 }]}
                 onPress={() => {
                   setShowAddRoom(true);
                   setShowActionSheet(false);
@@ -1418,6 +1419,7 @@ export default function PGPageFull({ route }) {
 
         onBedAdded={handleBedAdded}
       />
+
 
       <ReservedBedBottomSheet
         visible={showReservedSheet}
@@ -1789,7 +1791,7 @@ const styles = StyleSheet.create({
     flex: 3,
     alignItems: "center",
     justifyContent: "center",
-
+    marginTop:150
   },
 
   image: {
@@ -2024,8 +2026,8 @@ const styles = StyleSheet.create({
   // },
 
   menuItem: {
-    display:'flex', 
-    flexDirection:'row',
+    display: 'flex',
+    flexDirection: 'row',
     paddingVertical: 10,
     paddingHorizontal: 14,
   },

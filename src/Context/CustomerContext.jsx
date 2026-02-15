@@ -387,39 +387,35 @@ const getSettlementByCustomerId = async (customerId, leavingDate) => {
     return { success: false, message: "CustomerId missing" };
   }
 
-  if (!leavingDate) {
-    return { success: false, message: "Leaving Date missing" };
-  }
-
   try {
     const token = await retriveData("token");
     const axios = getAxios();
 
-    const res = await axios.get(`/v2/customers/settlement/${customerId}`, {
-      params: {
-        leavingDate, // ✅ DD-MM-YYYY (ex: 12-01-2026)
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await axios.get(
+      `/v2/customers/settlement/${customerId}`,
+      {
+        params: leavingDate ? { leavingDate } : {},
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    if (res.status === 200) {
-      return { success: true, data: res.data };
-    }
+    return { success: true, data: res.data };
 
-    return { success: false, message: "Failed to fetch settlement" };
   } catch (error) {
     console.log("SETTLEMENT ERROR 👉", error?.response?.data);
     return {
       success: false,
       message:
         error?.response?.data?.message ||
-        JSON.stringify(error?.response?.data) ||
+        error?.response?.data ||
         "Settlement fetch failed",
     };
   }
 };
+
+
 
 
 // const getSettlementByCustomerId = async (customerId) => {

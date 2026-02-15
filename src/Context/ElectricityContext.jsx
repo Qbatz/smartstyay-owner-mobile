@@ -135,7 +135,7 @@ export default function ElectricityProvider({children}){
     console.log("res", res);
     
 
-    if (res.status === 200 || res.status === 201) {
+    if (res?.status === 200 || res?.status === 201) {
       await GetEBRoomReading(payload.hostelId);
 
       return {
@@ -206,13 +206,19 @@ const DeleteRoomReading = async ({ hostelId, readingId }) => {
       `/v2/electricity/${hostelId}/${readingId}`
     );
 
-    if (res.status === 200 || res.status === 204) {
+    console.log('hostelId', hostelId);
+        console.log('readingId', readingId);
+            console.log('res', res);
+
+    if (res?.status === 200 || res?.status === 204) {
       return { success: true };
     }
 
     return { success: false };
   } catch (error) {
     const msg = getErrorMessage(error);
+    console.log("error", error , msg);
+    
     setErrorMsg(msg);
     return { success: false, message: msg };
   } finally {

@@ -18,8 +18,10 @@ import { useLayoutEffect } from "react";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
-import { Calendar } from "react-native-calendars";
+import { Calendar } from "react-native-calendars"; 
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import ReactNativeBlobUtil from "react-native-blob-util";
+import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
@@ -39,7 +41,7 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
-import Download from "../../../Assets/Images/download.png";
+import DownloadIcon from "../../../Assets/Images/download.png";
 import Telegram from "../../../Assets/Images/telegram.png";
 import Payment from "../../../Assets/Images/payment.png";
 import DatePicker from "react-native-ui-datepicker";
@@ -80,7 +82,7 @@ export default function BillsDesign({ route }) {
 
   const { BillDetails , loading, GetAllBillDetails ,
      RecordPayment , GetInitializeRefundDetails , CreateRefund , refundError  
-     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails} = useContext(BillContext);
+     , GetRecurringBills, recurringBills , BillPdfdetails , getBillsPdfDetails , getReceiptPdfDetails , downloadReceipt} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const {bankList, getBankListByHostel } = useContext(BankingContext);
 
@@ -548,12 +550,13 @@ const refundPan = useRef(
       hideSub.remove();
     };
   }, []);
-
+    const [isInputFocused, setIsInputFocused] = useState(false);
   
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        if (!isInputFocused) return; 
       Animated.timing(recordSheetY, {
-        toValue: -e.endCoordinates.height + 60,
+        toValue: -e.endCoordinates.height + 80,
         duration: 180,
         useNativeDriver: true,
       }).start();
@@ -565,13 +568,14 @@ const refundPan = useRef(
         duration: 180,
         useNativeDriver: true,
       }).start();
+         setIsInputFocused(false);
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [isInputFocused]);
 
 
 
@@ -823,6 +827,15 @@ const openBillDetails = (item) => {
 const handleShowWriteOff = () => {
   setShowWriteOff(true);
 }
+const handleTransactionChange = (text) => {
+  const filteredText = text.replace(
+    /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+    , ""
+  );
+
+  setTransactionId(filteredText);
+};
+
 
 const resetRecordPaymentForm = () => {
   setPaidAmount("");
@@ -1352,6 +1365,40 @@ const refundBankOptions = (refundInitDetails?.listBanks || []).map((b) => ({
   label: `${b?.bankName}`,
   value: b?.bankId,
 }));
+
+const handleDownloadReceipt = async (item) => {
+  if (!activeHostelId) return;
+
+  const response = await downloadReceipt(activeHostelId, item?.transactionId);
+
+  if (!response?.success) {
+    console.log("Failed to fetch receipt");
+    return;
+  }
+
+  const pdfUrl = response?.url;
+
+  try {
+    const { fs } = ReactNativeBlobUtil;
+    const filePath =
+      fs.dirs.CacheDir + `/receipt-${Date.now()}.pdf`;
+
+    const res = await ReactNativeBlobUtil.config({
+      fileCache: true,
+      path: filePath,
+    }).fetch("GET", pdfUrl);
+
+    await Share.open({
+      url: "file://" + res.path(),
+      type: "application/pdf",
+      failOnCancel: false,
+    });
+
+  } catch (err) {
+    console.log("Error:", err);
+  }
+};
+
 
 const handleSaveRefund = async () => {
   setRefundAmountError("");
@@ -1928,8 +1975,8 @@ navigation.navigate("CancelNotice")
       </Text>
     </View>
 
-    <TouchableOpacity>
-      <Image source={Dots} style={{ width: 28, height: 28 }} />
+    <TouchableOpacity onPress={()=>handleDownloadReceipt(selectedReceipt)}>
+      <Image source={DownloadIcon} style={{ width: 28, height: 28 }} />
     </TouchableOpacity>
   </View>
 </View>
@@ -2121,10 +2168,10 @@ navigation.navigate("CancelNotice")
     isBillLocked && styles.popupRowDisabled,
   ]}
   disabled={isBillLocked && !canWriteInvoice}
-  onPress={() => {
-    setShowMenu(false);
-    setDeleteTenants(true);
-  }}
+  // onPress={() => {
+  //   setShowMenu(false);
+  //   setDeleteTenants(true);
+  // }}
 >
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
@@ -2171,7 +2218,7 @@ navigation.navigate("CancelNotice")
     isBillLocked && styles.popupRowDisabled,
   ]}
   disabled={isBillLocked && !canWriteInvoice}
-  onPress={handleShowWriteOff}
+  // onPress={handleShowWriteOff}
 >
   <Image
     source={require("../../../Assets/Images/ReAssign.png")}
@@ -2239,10 +2286,10 @@ navigation.navigate("CancelNotice")
     isBillLocked && styles.popupRowDisabled,
   ]}
   disabled={isBillLocked && !canDeleteInvoice}
-  onPress={() => {
-    setShowMenu(false);
-    setDeleteTenants(true);
-  }}
+  // onPress={() => {
+  //   setShowMenu(false);
+  //   setDeleteTenants(true);
+  // }}
 >
   <Image
     source={require("../../../Assets/Images/trash.png")}
@@ -2462,7 +2509,7 @@ navigation.navigate("CancelNotice")
 />
 
         {/* PAID AMOUNT */}
-        <Text style={styles.label}>Paid Amount <Text style={{ color: "red" }}>*</Text></Text>
+        <Text style={styles.label}>Paid Amount <Text style={{ color: "red" , fontSize:19}}>*</Text></Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
@@ -2488,7 +2535,7 @@ navigation.navigate("CancelNotice")
 
         {/* PAID DATE */}
        <Text style={styles.label}>
-  Paid Date <Text style={{ color: "red" }}>*</Text>
+  Paid Date <Text style={{ color: "red" , fontSize:19}}>*</Text>
 </Text>
 
 <TouchableOpacity
@@ -2636,7 +2683,7 @@ navigation.navigate("CancelNotice")
 
 <View style={{ position: "relative" }}>
   <Text style={styles.label}>
-    Transaction Mode <Text style={{ color: "red" }}>*</Text>
+    Transaction Mode <Text style={{ color: "red" , fontSize:19}}>*</Text>
   </Text>
 
   {/* INPUT */}
@@ -2711,7 +2758,13 @@ navigation.navigate("CancelNotice")
           placeholder="Enter Transaction ID"
           // keyboardType="numeric"
           value={transactionId}
-          onChangeText={setTransactionId}
+           onChangeText={handleTransactionChange}
+          onFocus={() => {
+          setIsInputFocused(true);
+           }}
+          onBlur={() => {
+          setIsInputFocused(false);
+          }}
         />
 
 
@@ -3847,12 +3900,12 @@ filterTitle: {
   fontWeight: "700",
 },
 
-label: {
-  fontSize: 13,
-  color: "#6B7280",
-  marginBottom: 6,
-  marginTop: 10,
-},
+// label: {
+//   fontSize: 13,
+//   color: "#6B7280",
+//   marginBottom: 6,
+//   marginTop: 10,
+// },
 
 dropdownBox: {
   borderWidth: 1,
@@ -4354,7 +4407,7 @@ inputBox: {
     paddingHorizontal: 14,
     backgroundColor: "#fff",
     justifyContent: "center",
-    marginBottom: 5,
+    // marginBottom: 5,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -4367,7 +4420,7 @@ inputBox: {
     backgroundColor: "#fff",
     paddingHorizontal: 14,
     fontSize: 15,
-    marginBottom: 5,
+    // marginBottom: 5,
   },
 //   dateModalOverlay: {
 //   flex: 1,

@@ -11,16 +11,16 @@ export default function PGProvider({ children }) {
   const [PGDetails, setPgDetails] = useState(null);
 
 
-const convertToBase64File = (json) => {
-  const jsonString = JSON.stringify(json);
-  const encoded = base64.encode(jsonString);
+  const convertToBase64File = (json) => {
+    const jsonString = JSON.stringify(json);
+    const encoded = base64.encode(jsonString);
 
-  return {
-    uri: `data:application/json;base64,${encoded}`,
-    type: "application/json",
-    name: "payload.json",
+    return {
+      uri: `data:application/json;base64,${encoded}`,
+      type: "application/json",
+      name: "payload.json",
+    };
   };
-};
 
 
   const addPG = async (params) => {
@@ -31,15 +31,15 @@ const convertToBase64File = (json) => {
 
       const formData = new FormData();
 
-  
+
       formData.append("payloads", convertToBase64File(params.payloads));
 
- 
+
       if (params.mainImage) {
         formData.append("mainImage", params.mainImage);
       }
 
-   
+
       if (params.additionalImages?.length > 0) {
         params.additionalImages.forEach((img) => {
           formData.append("additionalImages", img);
@@ -62,26 +62,47 @@ const convertToBase64File = (json) => {
 
 
   const editPG = async (params) => {
+    console.log(params.additionalImages)
     try {
       setPgLoading(true);
       setPgError(null);
 
       const formData = new FormData();
 
-
+      const isNewImage = (img) => {
+        return typeof img?.uri === "string" && img.uri.startsWith("file://");
+      };
+      // Append payload
       formData.append("payloads", convertToBase64File(params.payloads));
 
-
-      formData.append("mainImage", params.mainImage || "");
-
-    
-      if (params.additionalImages?.length > 0) {
-        params.additionalImages.forEach((img) =>
-          formData.append("additionalImages", img)
-        );
-      } else {
-        formData.append("additionalImages", "");
+      // Append main image ONLY if new
+      if (params.mainImage && isNewImage(params.mainImage)) {
+        formData.append("mainImage", params.mainImage);
       }
+
+      // Append only NEW additional images
+      if (params.additionalImages?.length > 0) {
+        params.additionalImages.forEach((img) => {
+          if (isNewImage(img)) {
+            formData.append("additionalImages", img);
+          }
+        });
+      }
+
+
+      // formData.append("payloads", convertToBase64File(params.payloads));
+
+
+      // formData.append("mainImage", params.mainImage || "");
+
+
+      // if (params.additionalImages?.length > 0) {
+      //   params.additionalImages.forEach((img) =>
+      //     formData.append("additionalImages", img)
+      //   );
+      // } else {
+      //   formData.append("additionalImages", "");
+      // }
       const axios = getAxios();
       const response = await axios.put(
         `/v2/hostel/${params.hostelId}`,
@@ -94,6 +115,7 @@ const convertToBase64File = (json) => {
       return response;
     } catch (error) {
       console.log("UPDATE PG ERROR:", error);
+      console.log("error", error.message)
       setPgError(error);
       return error;
     } finally {
@@ -102,48 +124,48 @@ const convertToBase64File = (json) => {
   };
 
   const deletePG = async (hostelId) => {
-  try {
-    setPgLoading(true);
-    setPgError(null);
-    const axios = getAxios();
-    const response = await axios.delete(`/v2/hostel/${hostelId}`);
-    return response;
+    try {
+      setPgLoading(true);
+      setPgError(null);
+      const axios = getAxios();
+      const response = await axios.delete(`/v2/hostel/${hostelId}`);
+      return response;
 
-  } catch (error) {
-    console.log("DELETE PG ERROR:", error?.response || error);
+    } catch (error) {
+      console.log("DELETE PG ERROR:", error?.response || error);
 
-    setPgError(error);
-    return error?.response || error;
-  } finally {
-    setPgLoading(false);
-  }
-};
+      setPgError(error);
+      return error?.response || error;
+    } finally {
+      setPgLoading(false);
+    }
+  };
 
-const getParticularHostelDetails = async (hostelId) => {
-  try {
-    setPgLoading(true);
-    setPgError(null);
+  const getParticularHostelDetails = async (hostelId) => {
+    try {
+      setPgLoading(true);
+      setPgError(null);
 
-    const axios = getAxios();
-    const response = await axios.get(`/v2/hostel/${hostelId}`);
+      const axios = getAxios();
+      const response = await axios.get(`/v2/hostel/${hostelId}`);
 
-    setPgDetails(response?.data);
+      setPgDetails(response?.data);
 
-    return response;
-  } catch (error) {
-    console.log("GET PG DETAILS ERROR:", error?.response || error);
-    setPgError(error);
-    return error?.response || error;
-  } finally {
-    setPgLoading(false);
-  }
-};
+      return response;
+    } catch (error) {
+      console.log("GET PG DETAILS ERROR:", error?.response || error);
+      setPgError(error);
+      return error?.response || error;
+    } finally {
+      setPgLoading(false);
+    }
+  };
 
 
 
 
   return (
-    <PGContext.Provider value={{ addPG, editPG,deletePG ,getParticularHostelDetails,PGDetails, pgLoading, pgError }}>
+    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, PGDetails, pgLoading, pgError }}>
       {children}
     </PGContext.Provider>
   );
