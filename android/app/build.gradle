@@ -84,8 +84,8 @@ android {
         applicationId "com.qbatz.smartstay"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.0.8"
+        versionCode 9
+        versionName "1.5.0"
     }
     signingConfigs {
         debug {
