@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from "react";
-import AxiosConfig, { getAxios } from "../Config/AxiosConfig";
+import { getAxios } from "../Config/AxiosConfig";
 import { CommonContexts } from "../Context/CommonContext";
 
 export const VendorContext = createContext();
@@ -57,7 +57,8 @@ export default function VendorProvider({ children }) {
       });
     }
 
-    const res = await AxiosConfig.post("/v2/vendors", formData);
+    const axios = getAxios()
+    const res = await axios.post("/v2/vendors", formData);
 
     if (res.status === 200 || res.status === 201) {
       await getVendorList(hostelId);
@@ -91,7 +92,8 @@ export default function VendorProvider({ children }) {
         });
       }
 
-      const res = await AxiosConfig.put(
+      const axios = getAxios();
+      const res = await axios.put(
         `/v2/vendors/${updateVendor.vendorId}`,
         formData
       ); // ✅ no headers

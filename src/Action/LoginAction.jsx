@@ -1,8 +1,9 @@
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import  {getAxios} from "../Config/AxiosConfig";
 
 export const setLogin= async(data)=>{
     try{
-         const response=await AxiosConfig.post('/v2/users/login', data)
+        const axios = getAxios();
+         const response=await axios.post('/v2/users/login', data)
          return response;
     }catch(error){
         return{status: error.response.status, message: error.response.data}

@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 
 export const AmenityContext = createContext();
 

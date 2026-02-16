@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 
 export const BankingContext = createContext();
 
@@ -90,8 +90,8 @@ const AddBankAmount = async (hostelId, bankId, amount) => {
     setLoading(true);
     setErrorMsg("");
 
-
-    const res = await AxiosConfig.put(`/v2/bank/money/${hostelId}`, {
+    const axios = getAxios()
+    const res = await axios.put(`/v2/bank/money/${hostelId}`, {
       bankId,
       balance: amount,
     });
