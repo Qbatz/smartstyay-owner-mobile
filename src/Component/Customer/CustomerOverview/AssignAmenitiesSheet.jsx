@@ -83,6 +83,22 @@ export default function AssignAmenitiesSheet({
     );
   }, [amenitiesAllData, assignedIds]);
 
+  useEffect(() => {
+  if (visible) {
+    if (availableAmenities.length === 0) {
+      setModalType("error");
+      setMessage("Please Create Amenities before assign amenities");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        // resetState(); 
+      }, 1200);
+    }
+  }
+}, [visible, availableAmenities]);
+
+
   const resetState = () => {
     setSelectedAmenity(null);
     setShowDropdown(false);

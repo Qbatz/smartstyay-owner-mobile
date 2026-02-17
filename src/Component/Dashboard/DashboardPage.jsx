@@ -993,7 +993,7 @@ console.log("profile", getProfileInitial);
         
           <View style={styles.quickGrid}>
   {[
-    { label: "Add Customers", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
+    { label: "Add Tenant", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
     { label: "Add Expense", icon: ExpenseImg, color: "#EF4444", route: "AddExpenses" },
     { label: "Create Bills", icon: CrateBill, color: "#F59E0B", route: "CreateBills" },
     // { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA", route: "AddWalkin" },

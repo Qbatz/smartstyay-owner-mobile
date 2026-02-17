@@ -408,7 +408,7 @@ export default function AddBookingScreen({ navigation, route }) {
 
                       <TouchableOpacity
                         key={v.id}
-                        style={styles.option}
+                        style={[styles.option, selectedFloor?.id === v.id && { backgroundColor: "#E6F0FF" }]}
                         onPress={() => {
                           setSelectedFloor(v);
                           setFloorOpen(false);
@@ -449,7 +449,7 @@ export default function AddBookingScreen({ navigation, route }) {
                     {rooms.map((r) => (
                       <TouchableOpacity
                         key={r.id}
-                        style={styles.option}
+                        style={[styles.option,selectedRoom?.id === r.id && { backgroundColor: "#E6F0FF" }]}
                         onPress={() => {
                           setSelectedRoom(r);
                           setRoomOpen(false);
@@ -490,7 +490,7 @@ export default function AddBookingScreen({ navigation, route }) {
                     {filteredBeds.map((b) => (
                       <TouchableOpacity
                         key={b.bedId}
-                        style={styles.option}
+                        style={[styles.option,selectedBed?.id === b.id && { backgroundColor: "#E6F0FF" }]}
                         onPress={() => {
                           setSelectedBed(b);
                           setBedOpen(false);

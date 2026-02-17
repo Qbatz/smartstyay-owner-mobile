@@ -514,7 +514,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                           <TouchableOpacity
                             key={v.id}
-                            style={styles.option}
+                            style={[styles.option,selectedFloor?.id === v.id && {backgroundColor:'#E6F0FF'}]}
                             onPress={() => {
                               setSelectedFloor(v);
                               setFloorOpen(false);
@@ -556,10 +556,10 @@ export default function TenantCheckIn({ navigation, route }) {
                   {roomOpen && rooms.length > 0 && (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
-                        {rooms.map((r) => (
-                          <TouchableOpacity
+                        {rooms.map((r) => ( 
+                          <TouchableOpacity 
                             key={r.id}
-                            style={styles.option}
+                            style={[styles.option, selectedRoom?.id === r.id &&{backgroundColor:'#E6F0FF'}]}
                             onPress={() => {
                               setSelectedRoom(r);
                               setRoomOpen(false);
@@ -567,6 +567,7 @@ export default function TenantCheckIn({ navigation, route }) {
                             }}
 
                           >
+                            {console.log(r)}
                             <Text style={styles.optionText}>{r.name}</Text>
                           </TouchableOpacity>
                         ))}
@@ -599,7 +600,7 @@ export default function TenantCheckIn({ navigation, route }) {
                         {filteredBeds.map((b) => (
                           <TouchableOpacity
                             key={b.bedId}
-                            style={styles.option}
+                            style={[styles.option, selectedBed?.id === b.id &&{backgroundColor:'#E6F0FF'}]}
                             onPress={() => {
                               setSelectedBed(b);
                               setBedOpen(false);

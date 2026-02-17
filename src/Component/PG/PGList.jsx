@@ -1133,7 +1133,7 @@ export default function PGPageFull({ route }) {
 
 
         {!loading && !showReadBlockedState && floors.length > 0 && rooms.length === 0 && (
-          <View style={styles.centerContainer}>
+          <View style={{alignItems:"center",justifyContent:"center",marginTop:40,}}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No Rooms are there!</Text>
 
@@ -1788,10 +1788,10 @@ const styles = StyleSheet.create({
   bedLabel: { fontSize: 12 },
 
   centerContainer: {
-    flex: 3,
+    // flex: 3,
     alignItems: "center",
     justifyContent: "center",
-    marginTop:150
+    marginTop:150,
   },
 
   image: {

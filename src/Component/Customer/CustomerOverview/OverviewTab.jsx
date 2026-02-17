@@ -9,7 +9,7 @@ import {
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
 import Home from "../../../Assets/Images/home-link.png";
-import Location from "../../../Assets/Images/sms.png";
+// import Location from "../../../Assets/Images/sms.png";
 import BedIcon from "../../../Assets/Images/BedImage.png";
 import RoomIcon from "../../../Assets/Images/RoomImg.png";
 import FloorIcon from "../../../Assets/Images/FloorImg.png";
@@ -22,6 +22,11 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import { pick } from '@react-native-documents/picker';
 import SuccessModal from "../../../ToastFile/ToastPage";
+import House from "../../../Assets/Images/house.png"
+import Pin from "../../../Assets/Images/pin.png"
+import Street from "../../../Assets/Images/Street.png"
+import Building from "../../../Assets/Images/buildings.png"
+import Location from "../../../Assets/Images/location.png"
 // import RNFS from "react-native-fs";
 
 
@@ -58,6 +63,7 @@ export default function OverviewTab({ customerDetails,
        canUpdateModule: canUpdateTenant,
         canDeleteModule: canDeleteTenant,
       } = useHasPermission("Customers");
+      console.log(canWriteTenant)
 
   console.log("amenitiesAllData", amenitiesAllData)
 
@@ -320,7 +326,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>House No / Apartment</Text>
                       <View style={styles.valueRow}>
-                        <Image source={Home} style={styles.icon} />
+                        <Image source={House} style={styles.icon} />
                         <Text style={styles.value}>
                           {/* {customerDetails?.address?.houseNo || "N/A"} */}
                         </Text>
@@ -330,7 +336,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>Street / Area</Text>
                       <View style={styles.valueRow}>
-                        <Image source={Location} style={styles.icon} />
+                        <Image source={Street} style={styles.icon} />
                         <Text style={styles.value}>
                           {/* {customerDetails?.address?.streetName || "N/A"} */}
                         </Text>
@@ -352,9 +358,12 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>Pincode</Text>
-                      <Text style={styles.value}>
-                        {/* {customerDetails?.address?.pincode || "N/A"} */}
-                      </Text>
+                      <View style={styles.valueRow}>
+                        <Image source={Pin} style={styles.icon} />
+                        <Text style={styles.value}>
+                          {/* {customerDetails?.address?.pincode || "N/A"} */}
+                        </Text>
+                      </View>
                     </View>
                   </View>
 
@@ -362,16 +371,22 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                   <View style={styles.row}>
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>City</Text>
-                      <Text style={styles.value}>
-                        {/* {customerDetails?.address?.city || "N/A"} */}
-                      </Text>
+                      <View style={styles.valueRow}>
+                        <Image source={Building} style={styles.icon} />
+                        <Text style={styles.value}>
+                          {/* {customerDetails?.address?.city || "N/A"} */}
+                        </Text>
+                      </View>                    
                     </View>
 
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>State</Text>
-                      <Text style={styles.value}>
-                        {/* {customerDetails?.address?.state || "N/A"} */}
-                      </Text>
+                      <View style={styles.valueRow}>
+                        <Image source={Building} style={styles.icon} />
+                        <Text style={styles.value}>
+                          {/* {customerDetails?.address?.state || "N/A"} */}
+                        </Text>
+                      </View>                     
                     </View>
                   </View>
 
@@ -387,7 +402,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>House No / Apartment</Text>
                       <View style={styles.valueRow}>
-                        <Image source={Home} style={styles.icon} />
+                        <Image source={House} style={styles.icon} />
                         <Text style={styles.value}>
                           {customerDetails?.address?.houseNo || "N/A"}
                         </Text>
@@ -397,7 +412,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>Street / Area</Text>
                       <View style={styles.valueRow}>
-                        <Image source={Location} style={styles.icon} />
+                        <Image source={Street} style={styles.icon} />
                         <Text style={styles.value}>
                           {customerDetails?.address?.streetName || "N/A"}
                         </Text>
@@ -419,9 +434,12 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>Pincode</Text>
-                      <Text style={styles.value}>
-                        {customerDetails?.address?.pincode || "N/A"}
-                      </Text>
+                       <View style={styles.valueRow}>
+                        <Image source={Pin} style={styles.icon} />
+                        <Text style={styles.value}>
+                          {customerDetails?.address?.pincode || "N/A"}
+                        </Text>
+                      </View>                  
                     </View>
                   </View>
 
@@ -429,16 +447,22 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
                   <View style={styles.row}>
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>City</Text>
-                      <Text style={styles.value}>
-                        {customerDetails?.address?.city || "N/A"}
-                      </Text>
+                      <View style={styles.valueRow}>
+                        <Image source={Building} style={styles.icon} />
+                        <Text style={styles.value}>
+                          {customerDetails?.address?.city || "N/A"}
+                        </Text>
+                      </View>                        
                     </View>
 
                     <View style={[styles.detailBlock, styles.halfBlock]}>
                       <Text style={styles.label}>State</Text>
-                      <Text style={styles.value}>
-                        {customerDetails?.address?.state || "N/A"}
-                      </Text>
+                      <View style={styles.valueRow}>
+                        <Image source={Building} style={styles.icon} />
+                        <Text style={styles.value}>
+                          {customerDetails?.address?.state || "N/A"}
+                        </Text>
+                      </View>                     
                     </View>
                   </View>
 
@@ -497,7 +521,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
   <View style={styles.detailBox}>
     <Text style={styles.detailLabel}>Booking Date</Text>
     <View style={styles.valueWithIcon}>
-      <Image source={CalendarIcon} style={styles.detailIcon} />
+      <Image source={Home} style={styles.detailIcon} />
       <Text style={styles.detailValue}>
         {customerDetails?.hostelInfo?.bookingDate || "N/A"}
       </Text>
@@ -510,6 +534,7 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
   <View style={styles.detailBox}>
     <Text style={styles.detailLabel}>Joined Date</Text>
     <View style={styles.valueWithIcon}>
+      <Image source={Home} style={styles.detailIcon} />
       <Text style={styles.detailValue}>
         {customerDetails?.hostelInfo?.joiningDate || "N/A"}
       </Text>
@@ -989,11 +1014,11 @@ console.log("customerDetails?.hostelInfo",customerDetails?.hostelInfo)
 <TouchableOpacity
   style={[
     styles.assignBtn,
-    disableAssignBtn && !canWriteTenant &&  { opacity: 0.4 }
+    disableAssignBtn && canWriteTenant &&  { opacity: 0.4 }
   ]}
   onPress={handleShowAmenities}
   // disabled={disableAssignBtn}
-   disabled={disableAssignBtn && !canWriteTenant}
+   disabled={disableAssignBtn && canWriteTenant}
   // style={!canWriteTenant && { opacity: 0.4 }}
 >
   <Text style={styles.assignText}>＋ Assign</Text>

@@ -23,6 +23,7 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
+import { useNavigation } from "@react-navigation/native";
 
 export default function CheckoutList({ searchText }) {
   const { activeHostelId } = useContext(CommonContexts);
@@ -32,6 +33,7 @@ export default function CheckoutList({ searchText }) {
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const navigation = useNavigation();
   console.log(selectedCustomer)
 
   const {
@@ -134,6 +136,13 @@ export default function CheckoutList({ searchText }) {
     )
   }
 
+   const handleOverViewScrren = (item) => {
+    // setOverviewScreen(true)
+    navigation.navigate("CustomerOverviewScreen", {
+      customer: item,
+    });
+  }
+
   const renderItem = ({ item }) => {
     const isMenuVisible = menuVisibleId === item.customerId;
     console.log("checkout",item)
@@ -149,6 +158,11 @@ export default function CheckoutList({ searchText }) {
           </TouchableOpacity>
 
           <View style={styles.info}>
+            <TouchableOpacity
+                                style={{ flex: 1 }}
+                                activeOpacity={0.7}
+                                onPress={() => handleOverViewScrren(item)}
+                              >
             <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
 
             <View style={styles.row}>
@@ -166,6 +180,7 @@ export default function CheckoutList({ searchText }) {
                 <Text style={styles.detailText}>{item.bedName}</Text>
               </View>
             </View>
+            </TouchableOpacity>
           </View>
         </View>
 

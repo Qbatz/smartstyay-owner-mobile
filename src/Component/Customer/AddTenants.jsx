@@ -673,13 +673,15 @@ export default function AddTenant() {
                                                                     filteredStateList.map((v, index) => (
                                                                         <TouchableOpacity
                                                                             key={index}
-                                                                            style={styles.option}
+                                                                            style={[styles.option,selectedState === v.label
+                                                                                 &&{ backgroundColor: "#E6F0FF" }]}
                                                                             onPress={() => {
                                                                                 setSelectedState(v.label);
                                                                                 setStateQuery("");
                                                                                 setStateOpen(false);
                                                                             }}
                                                                         >
+                                                                            {console.log(v)}
                                                                             <Text style={styles.optionText}>{v.label}</Text>
                                                                         </TouchableOpacity>
                                                                     ))
