@@ -752,7 +752,7 @@ export default function AssignTenant({ navigation, route }) {
                         {CheckinTenants.map((v, index) => (
                           <TouchableOpacity
                             key={index}
-                            style={styles.option}
+                            style={[styles.option, CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
                             onPress={() => {
                               setCheckinTenantSelected(v);
                               setCheckinTenantsopen(false);
@@ -825,7 +825,8 @@ export default function AssignTenant({ navigation, route }) {
                   value={bookingAmount}
                   // onChangeText={setBookingAmount}
                   onChangeText={(text) => {
-                    setBookingAmount(text);
+                    const onlyNum=text.replace(/[^0-9]/g,"");
+                    setBookingAmount(onlyNum);
                     setBookingAmountError("");
                   }}
                 />
@@ -968,7 +969,7 @@ export default function AssignTenant({ navigation, route }) {
                         {CheckinTenants.map((v, index) => (
                           <TouchableOpacity
                             key={index}
-                            style={styles.option}
+                            style={[styles.option,CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
                             onPress={() => {
                               setCheckinTenantSelected(v);
                               setCheckinTenantsopen(false);
@@ -1055,7 +1056,8 @@ export default function AssignTenant({ navigation, route }) {
                   keyboardType="numeric"
                   value={rentalAmount}
                   onChangeText={(text) => {
-                    setRentalAmount(text);
+                      const onlyNum=text.replace(/[^0-9]/g,"");
+                    setRentalAmount(onlyNum);
                     setRentalError("");
                   }}
 
@@ -1073,10 +1075,10 @@ export default function AssignTenant({ navigation, route }) {
                   keyboardType="numeric"
                   value={advanceAmount}
                   onChangeText={(text) => {
-                    setAdvanceAmount(text);
+                      const onlyNum=text.replace(/[^0-9]/g,"");
+                    setAdvanceAmount(onlyNum);
                     setAdvanceError("");
                   }}
-
                 />
                 {advanceError && (
                   <ErrorMessage message={advanceError} type="error" />

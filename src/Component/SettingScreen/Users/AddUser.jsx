@@ -469,7 +469,11 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
               placeholder="Enter Description"
               multiline
               value={description}
-              onChangeText={setDescription}
+              onChangeText={(t)=>{
+                 const filtered = t.replace(/[^A-Za-z0-9@#./]/g, "");
+                 setDescription(filtered)
+              }
+                }
             />
 
             {/* Buttons */}
