@@ -154,6 +154,9 @@ for (let i = -365; i <= 365; i++) {
 // };
   const customerId =
         selectedItem?.customerId || selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+        console.log("customerId", customerId);
+        
 const handleSubmit = async () => {
   setReadingError("");
   setReadingDateError("");
@@ -192,10 +195,11 @@ const handleSubmit = async () => {
    setReadingDate(""); 
   
       setModalType("success");
-      setMessage(res.data);
+      setMessage(res?.data || "Reading Added");
       setShowSuccess(true);
       // onSuccess && onSuccess();
-      await fetchSettlement(customerId);
+      // await fetchSettlement(customerId);
+      await fetchSettlement();
       setTimeout(() => {
         setShowSuccess(false);
         onClose();
@@ -212,6 +216,10 @@ const handleSubmit = async () => {
   if (!visible) return null;
 
   return (
+
+    <>
+       <SuccessModal visible={showSuccess} message={message} type={modalType} />
+   
     <View style={styles.sheetOverlay}>
       <TouchableOpacity style={styles.overlayTouchable} onPress={onClose} />
 
@@ -347,6 +355,7 @@ const handleSubmit = async () => {
 )}
 
     </View>
+     </>
   );
 }
 

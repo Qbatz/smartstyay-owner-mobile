@@ -470,9 +470,10 @@ const handleEditRoomReading = (data) => {
 
 const handleDeleteRoomReading = (data) => {
 
-  console.log("data", data);
+  console.log("deletedata", data);
+    console.log("deletedata", matchedRoomData);
   
-  if (!data || !data.ebId) {
+  if (!data) {
     console.log("Invalid delete data", data);
     return;
   }
@@ -483,12 +484,18 @@ const handleDeleteRoomReading = (data) => {
 };
 
 
+console.log("deleteData", deleteData);
+
 
 const handleConfirmReadingDelete = async () => {
     const res = await DeleteRoomReading({
       hostelId: activeHostelId,
-      readingId: deleteData?.ebId,
-    });
+      // readingId: deleteData?.ebId,
+      readingId: deleteData?.readingId || deleteData?.ebId,
+
+    })
+    console.log("res", res);
+    
 
     if (res.success) {
       setShowDeleteModal(false);
@@ -502,8 +509,9 @@ const handleConfirmReadingDelete = async () => {
       setTimeout(() => setShowSuccess(false), 1200);
     }
     else{
+          console.log("res", res.message);
       setModalType("warning");
-      setMessage("something went wrong");
+      setMessage(res?.message || "something went wrong");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 1200);
     }
@@ -724,7 +732,7 @@ const handleConfirmReadingDelete = async () => {
       disabled={!canDeleteElectricity}
             onPress={() => {
               setShowActionMenu(false);
-              handleDeleteRoomReading(currentReadingData);
+              handleDeleteRoomReading(matchedRoomData);
             }}
           >
             <Image source={DeleteIcon} style={styles.popupIcon} />
