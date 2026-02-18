@@ -458,6 +458,55 @@ const GetInvoiceReports = async (hostelId) => {
   }
 };
 
+const getReceiptRegisterReport = async (hostelId, filters = {}) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/reports/transaction/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          startDate: filters?.startDate,
+          endDate: filters?.endDate,
+          invoiceType: filters?.invoiceType,
+          collectedBy: filters?.collectedBy,
+          period: filters?.period,
+          paymentMode: filters?.paymentMode,
+          page: filters?.page ?? 0,
+          size: filters?.size ?? 10,
+        },
+      }
+    );
+
+    console.log("RECEIPT REGISTER SUCCESS", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log(
+      "RECEIPT REGISTER ERROR →",
+      err.response?.data || err.message
+    );
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 const getTenantRegisterReport = async (hostelId, filters = {}) => {
   try {
     setLoading(true);
@@ -552,7 +601,7 @@ const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport}}>
       {children}
     </ElectricityContext.Provider>
   );

@@ -30,9 +30,9 @@ import SuccessModal from "../../ToastFile/ToastPage";
 export default function FinalSettlementScreen({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
  const { getSettlementByCustomerId,submitSettlement } = useCustomer();
-  const [openUnpaid, setOpenUnpaid] = useState(true);
+  const [openUnpaid, setOpenUnpaid] = useState(false);
   const [openRefundRent, setOpenRefundRent] = useState(false);
-  const [openEBill, setOpenEBill] = useState(true);
+  const [openEBill, setOpenEBill] = useState(false);
 const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
@@ -45,6 +45,7 @@ const [modalType, setModalType] = useState("success");
   const [selectedPendingEb,setSelectedPendingEb] = useState("")
    const [ReturnAmount, setReturnAmount] = useState('')
    const [showDetails, setShowDetails] = useState(false);
+  const [showOtherDetails, setShowOtherDetails] = useState(false);
    const [showRefundpay,setShowRefundpay] = useState(false)
      const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
@@ -471,50 +472,84 @@ const userEnteredDeductionsTotal = extraCharges
 >
         {/* ✅ TOP CUSTOMER CARD */}
         <View style={styles.customerCard}>
-          <Text style={styles.customerName}>{settlementDetails?.customerInfo?.fullName}</Text>
- 
 
-                    <View style={styles.smallRow} >
+
+        <View style={{display:'flex', flexDirection:'row'}}>
+      
+ 
+  <View style={{ width: 50, height: 50}}>
+                  { settlementDetails?.customerInfo?.profilePic ? (
+                    <Image
+                      source={{
+                        uri: settlementDetails?.customerInfo?.profilePic,
+                      }}
+                      style={{width: 40,height: 40, borderRadius: 45, marginBottom: 12,}}
+                    />
+                  ) : (
+                    <View style={{
+                      width: 40, height: 40, borderRadius: 45, backgroundColor: "#E5E7EB",
+                      alignItems: "center",justifyContent: "center"}}>
+                      <Text style={{
+                        fontSize: 17,fontWeight: "600",color: "#374151",}}>
+                        {settlementDetails?.customerInfo?.initials}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <View style={{display:"flex", flexDirection:'column'}}>
+                    <Text style={styles.customerName}>{settlementDetails?.customerInfo?.fullName}</Text>
+  <View style={styles.smallRow} >
                                            <View style={styles.badge}>
                                              <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed.floorName}</Text>
                                            </View>
+
+                                           <View style={styles.Roombadge}>
+                                        <Text style={styles.badgeText}>
+                        {selectedItem || selectedBed ? `${selectedItem?.roomName || selectedBed?.roomName || ""} - ${selectedItem?.bedName || selectedBed?.bedName || ""}` : ""}
+  </Text>
+</View>
+
+
                    
-                                           <Image source={RoomIcon} style={styles.smallIcon} />
+                                           {/* <Image source={RoomIcon} style={styles.smallIcon} />
                                            <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
                    
                                            <Image source={BedIcon} style={styles.smallIcon} />
-                                           <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text>
+                                           <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text> */}
                                          </View>
+                                         </View>
+</View>
+                  
 
                    
           <View style={styles.rowBetween}>
-            <View>
+            <View style={{flex:1}}>
               <Text style={styles.smallLabel}>Joined Date</Text>
               <Text style={styles.value}>{settlementDetails?.customerInfo?.joiningDate}</Text>
             </View>
-            <View>
+            <View style={{flex:1 , marginLeft:18}}>
               <Text style={styles.smallLabel}>Req Checkout Date</Text>
               <Text style={styles.value}>{settlementDetails?.stayInfo?.noticeDate}</Text>
             </View>
           </View>
 
           <View style={styles.rowBetween}>
-            <View>
+            <View style={{flex:1}}>
               <Text style={styles.smallLabel}>Advance Amount</Text>
               <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.advanceAmount}</Text>
             </View>
-            <View>
+            <View style={{flex:1}}>
               <Text style={styles.smallLabel}>Monthly Rent</Text>
               <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.rentAmount}</Text>
             </View>
           </View>
 
           <View style={styles.rowBetween}>
-            <View>
+            <View style={{flex:1}}>
               <Text style={styles.smallLabel}>Booking Amount</Text>
               <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.bookingAmount}</Text>
             </View>
-            <View>
+            <View style={{flex:1}}>
               <Text style={styles.smallLabel}>Advance paid</Text>
               <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.advancePaidAmount}</Text>
             </View>
@@ -542,7 +577,7 @@ const userEnteredDeductionsTotal = extraCharges
                 </TouchableOpacity>
               </View>
             </View>
-             <View style={[styles.gridCol, { marginLeft: 30 }]}>
+             <View style={[styles.gridCol, { marginLeft: 13 }]}>
                               <Text style={styles.gridLabel}>Status</Text>
                               <Text
                                 style={[
@@ -717,7 +752,52 @@ const userEnteredDeductionsTotal = extraCharges
               </Text>
 
               <Text style={styles.rightMuted}>
-                ({item.noOfDays} days × ₹{item.rent})
+               ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
+                {/* ({item.noOfDays} days × ₹{item.rent}) */}
+              </Text>
+            </View>
+          )
+        )}
+        <TouchableOpacity
+        style={styles.rowBetween}
+        onPress={() => setShowOtherDetails(!showOtherDetails)}
+        activeOpacity={0.7}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={styles.descText}>
+           Other Charges
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={[
+              styles.arrowSmall,
+              showOtherDetails && { transform: [{ rotate: "180deg" }] },
+            ]}
+          />
+        </View>
+
+        <Text style={styles.amountText}>
+          ₹{" "}
+          {Number(
+            settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+          ).toLocaleString("en-IN")}
+
+          
+        </Text>
+      </TouchableOpacity>
+
+      {/* DETAILS */}
+      {showOtherDetails &&
+        settlementDetails?.currentMonthRentInfo?.currentMonthOtherItems?.map(
+          (i, index) => (
+            <View key={index} style={styles.detailCard}>
+              <Text style={styles.linkText}>
+                {i?.item}
+              </Text>
+
+              <Text style={styles.rightMuted}>
+               ₹ {i?.amount}
               </Text>
             </View>
           )
@@ -1168,7 +1248,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 
-  customerName: { fontSize: 16, fontWeight: "700", marginBottom: 12 },
+  customerName: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
  
   smallLabel: { fontSize: 12, color: "#6B7280" },
   value: { fontSize: 14, fontWeight: "600", marginTop: 4 },
@@ -1393,8 +1473,9 @@ generateBtn: {
     zIndex: 20,
     elevation: 10,
   },
-  smallRow: { flexDirection: "row", alignItems: "center" },
+  smallRow: { flexDirection: "row", alignItems: "center",},
   badge: { backgroundColor: "#FFEFCF", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
+    Roombadge: { backgroundColor: "#FFE0D9", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
   badgeText: { color: "black", fontSize: 12 },
   smallIcon: { width: 16, height: 16, marginHorizontal: 4 },
   badgeLabel: { fontSize: 13 },
@@ -1597,7 +1678,7 @@ refundBody: {
 
 rowBetween: {
   flexDirection: "row",
-  justifyContent: "space-between",
+  justifyContent: "flex-start",
   alignItems: "center",
   marginBottom: 12,
 },
