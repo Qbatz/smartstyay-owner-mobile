@@ -78,12 +78,12 @@ export default function TenantsScreen({ route }) {
     });
   }
 
-         const {
-      canWriteModule: canWriteTenant,
-      canReadModule: canReadTenant,
-     canUpdateModule: canUpdateTenant,
-      canDeleteModule: canDeleteTenant,
-    } = useHasPermission("Customers");
+  const {
+    canWriteModule: canWriteTenant,
+    canReadModule: canReadTenant,
+    canUpdateModule: canUpdateTenant,
+    canDeleteModule: canDeleteTenant,
+  } = useHasPermission("Customers");
 
 
   useEffect(() => {
@@ -180,7 +180,7 @@ export default function TenantsScreen({ route }) {
   const [showDetailsMenu, setShowDetailsMenu] = useState(false);
   const [deleteTenants, setDeleteTenants] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null);
-  const[customerExpectedJoiningDate,setexpectedJoiiningDate]=useState()
+  const [customerExpectedJoiningDate, setexpectedJoiiningDate] = useState()
   console.log("selectedCustomer", selectedCustomer)
   const handleWalkinFilter = () => {
     setShowFilter(true);
@@ -498,9 +498,9 @@ export default function TenantsScreen({ route }) {
   // if (!canReadTenant && !loading) {
   //       return (
   //          <View style={styles.container}>
-        
+
   //         <View style={{ alignItems: "center", marginTop: 180 }}>
-      
+
   //           <Image source={EmptyState} style={{ width: 250, height: 180, }}/>
   //           <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
   //             You do not have access to view Tenant
@@ -526,7 +526,7 @@ export default function TenantsScreen({ route }) {
           /> */}
           <TextInput
             // style={styles.searchInput}
-            style={[ styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
+            style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
             disabled={!canReadTenant}
             placeholder="Search Customers"
             placeholderTextColor="#9CA3AF"
@@ -574,38 +574,38 @@ export default function TenantsScreen({ route }) {
 
           <View style={{ flex: 1 }}>
 
-{!canReadTenant && !loading && (
-      <View style={styles.emptyContainer}>
-        <Image source={EmptyState} style={styles.emptyImage} />
-        <Text style={styles.emptyText}>
-          You don’t have permission to view Tenants.
-        </Text>
-      </View>
-    )}
-
- {canReadTenant && (
-      <>
-            {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
+            {!canReadTenant && !loading && (
               <View style={styles.emptyContainer}>
                 <Image source={EmptyState} style={styles.emptyImage} />
                 <Text style={styles.emptyText}>
-                  No Tenant available{"\n"}
-                  There are no tenant added.
+                  You don’t have permission to view Tenants.
                 </Text>
               </View>
             )}
-            
 
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 50 }}
-            >
-              {
-                customers?.listCustomers?.length > 0 &&
-                <Text style={styles.sectionTitle}>This Month</Text>
-              }
+            {canReadTenant && (
+              <>
+                {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
+                  <View style={styles.emptyContainer}>
+                    <Image source={EmptyState} style={styles.emptyImage} />
+                    <Text style={styles.emptyText}>
+                      No Tenant available{"\n"}
+                      There are no tenant added.
+                    </Text>
+                  </View>
+                )}
 
-              {/* {
+
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 50 }}
+                >
+                  {
+                    customers?.listCustomers?.length > 0 &&
+                    <Text style={styles.sectionTitle}>This Month</Text>
+                  }
+
+                  {/* {
           customers.map((item)=>{
 <View style={styles.tenantRow}>
         <TouchableOpacity  onPress={() => openCustomerDetails(item.customerId)}>
@@ -643,187 +643,202 @@ export default function TenantsScreen({ route }) {
         </View>
           })
         } */}
-              {filteredTenants?.map((item) => (
-                // <View key={item.customerId} style={styles.tenantRow}>
+                  {filteredTenants?.map((item) => (
+                    // <View key={item.customerId} style={styles.tenantRow}>
 
-                //   <TouchableOpacity onPress={() => openCustomerDetails(item)}>
-                //     <Image source={Profile} style={styles.profileImg} />
-                //   </TouchableOpacity>
+                    //   <TouchableOpacity onPress={() => openCustomerDetails(item)}>
+                    //     <Image source={Profile} style={styles.profileImg} />
+                    //   </TouchableOpacity>
 
-                //   <View style={{ flex: 1 }}>
-                //     <Text style={styles.name}>
-                //       {item.fullName}
-                //     </Text>
+                    //   <View style={{ flex: 1 }}>
+                    //     <Text style={styles.name}>
+                    //       {item.fullName}
+                    //     </Text>
 
-                //     <View style={styles.detailRow}>
-                //       {item.floorName && (
-                //         <View style={styles.floorBadge}>
-                //           <Text style={styles.floorText}>{item.floorName}</Text>
-                //         </View>
-                //       )}
+                    //     <View style={styles.detailRow}>
+                    //       {item.floorName && (
+                    //         <View style={styles.floorBadge}>
+                    //           <Text style={styles.floorText}>{item.floorName}</Text>
+                    //         </View>
+                    //       )}
 
-                //       {item.roomName && (
-                //         <>
-                //           <Image source={room} style={styles.iconSmall} />
-                //           <Text style={styles.detailText}>{item.roomName}</Text>
-                //         </>
-                //       )}
+                    //       {item.roomName && (
+                    //         <>
+                    //           <Image source={room} style={styles.iconSmall} />
+                    //           <Text style={styles.detailText}>{item.roomName}</Text>
+                    //         </>
+                    //       )}
 
-                //       {item.bedName && (
-                //         <>
-                //           <Image source={Bed} style={styles.iconSmall} />
-                //           <Text style={styles.detailText}>{item.bedName}</Text>
-                //         </>
-                //       )}
-                //     </View>
-                //   </View>
+                    //       {item.bedName && (
+                    //         <>
+                    //           <Image source={Bed} style={styles.iconSmall} />
+                    //           <Text style={styles.detailText}>{item.bedName}</Text>
+                    //         </>
+                    //       )}
+                    //     </View>
+                    //   </View>
 
-                //   <View style={styles.rightSection}>
-                //     <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
-                //       <Image
-                //         source={Dots}
-                //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                //       />
-                //     </TouchableOpacity>
+                    //   <View style={styles.rightSection}>
+                    //     <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
+                    //       <Image
+                    //         source={Dots}
+                    //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+                    //       />
+                    //     </TouchableOpacity>
 
-                //     <Text style={styles.dateText}>
-                //       {item.bookedAt || "--"}
-                //     </Text>
-                //   </View>
+                    //     <Text style={styles.dateText}>
+                    //       {item.bookedAt || "--"}
+                    //     </Text>
+                    //   </View>
 
-                // </View>
-                //                 <TouchableOpacity
-                //   key={item.customerId}
-                //   style={styles.tenantRow}
-                //   activeOpacity={0.7}
-                //   onPress={() => openCustomerDetails(item)}   
-                // >
+                    // </View>
+                    //                 <TouchableOpacity
+                    //   key={item.customerId}
+                    //   style={styles.tenantRow}
+                    //   activeOpacity={0.7}
+                    //   onPress={() => openCustomerDetails(item)}   
+                    // >
 
-                //   <Image source={Profile} style={styles.profileImg} />
-
-
-                //   <View style={{ flex: 1 }}>
-                //     <Text style={styles.name}>{item.fullName}</Text>
-
-                //     <View style={styles.detailRow}>
-                //       {item.floorName && (
-                //         <View style={styles.floorBadge}>
-                //           <Text style={styles.floorText}>{item.floorName}</Text>
-                //         </View>
-                //       )}
-
-                //       {item.roomName && (
-                //         <>
-                //           <Image source={room} style={styles.iconSmall} />
-                //           <Text style={styles.detailText}>{item.roomName}</Text>
-                //         </>
-                //       )}
-
-                //       {item.bedName && (
-                //         <>
-                //           <Image source={Bed} style={styles.iconSmall} />
-                //           <Text style={styles.detailText}>{item.bedName}</Text>
-                //         </>
-                //       )}
-                //     </View>
-                //   </View>
+                    //   <Image source={Profile} style={styles.profileImg} />
 
 
-                //   <View style={styles.rightSection}>
-                //     <TouchableOpacity
-                //       onPress={(e) => {
-                //         e.stopPropagation();        
-                //         openMenu(e, item);          
-                //       }}
-                //       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                //     >
-                //       <Image
-                //         source={Dots}
-                //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                //       />
-                //     </TouchableOpacity>
+                    //   <View style={{ flex: 1 }}>
+                    //     <Text style={styles.name}>{item.fullName}</Text>
 
-                //     <Text style={styles.dateText}>
-                //       {item.bookedAt || "--"}
-                //     </Text>
-                //   </View>
-                // </TouchableOpacity>
-                <View key={item.customerId} style={styles.tenantRow}>
+                    //     <View style={styles.detailRow}>
+                    //       {item.floorName && (
+                    //         <View style={styles.floorBadge}>
+                    //           <Text style={styles.floorText}>{item.floorName}</Text>
+                    //         </View>
+                    //       )}
 
-                  {/* 1️⃣ PROFILE CLICK */}
-                  {/* <TouchableOpacity
+                    //       {item.roomName && (
+                    //         <>
+                    //           <Image source={room} style={styles.iconSmall} />
+                    //           <Text style={styles.detailText}>{item.roomName}</Text>
+                    //         </>
+                    //       )}
+
+                    //       {item.bedName && (
+                    //         <>
+                    //           <Image source={Bed} style={styles.iconSmall} />
+                    //           <Text style={styles.detailText}>{item.bedName}</Text>
+                    //         </>
+                    //       )}
+                    //     </View>
+                    //   </View>
+
+
+                    //   <View style={styles.rightSection}>
+                    //     <TouchableOpacity
+                    //       onPress={(e) => {
+                    //         e.stopPropagation();        
+                    //         openMenu(e, item);          
+                    //       }}
+                    //       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    //     >
+                    //       <Image
+                    //         source={Dots}
+                    //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+                    //       />
+                    //     </TouchableOpacity>
+
+                    //     <Text style={styles.dateText}>
+                    //       {item.bookedAt || "--"}
+                    //     </Text>
+                    //   </View>
+                    // </TouchableOpacity>
+                    <View key={item.customerId} style={styles.tenantRow}>
+
+                      {/* 1️⃣ PROFILE CLICK */}
+                      {/* <TouchableOpacity
     activeOpacity={0.7}
     onPress={() => openCustomerDetails(item)}
   >
     <Image source={Profile} style={styles.profileImg} />
   </TouchableOpacity> */}
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => openCustomerDetails(item)}
-                  >
-                    {item?.profilePic ? (
-                      <Image
-                        source={{ uri: item.profilePic }}
-                        style={styles.profileImg}
-                      />
-                    ) : (
-                      <View style={styles.initialCircle}>
-                        <Text style={styles.initialText}>
-                          {item?.initials ||
-                            item?.fullName?.slice(0, 2)?.toUpperCase() ||
-                            "--"}
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => openCustomerDetails(item)}
+                      >
+                        {item?.profilePic ? (
+                          <Image
+                            source={{ uri: item.profilePic }}
+                            style={styles.profileImg}
+                          />
+                        ) : (
+                          <View style={styles.initialCircle}>
+                            <Text style={styles.initialText}>
+                              {item?.initials ||
+                                item?.fullName?.slice(0, 2)?.toUpperCase() ||
+                                "--"}
+                            </Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
 
-                  {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
-                  <TouchableOpacity
-                    style={{ flex: 1 }}
-                    activeOpacity={0.7}
-                    onPress={() => handleOverViewScrren(item)}
-                  >
-                    <Text style={styles.name}>{item.fullName}</Text>
+                      {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
+                      <TouchableOpacity
+                        style={{ flex: 1 }}
+                        activeOpacity={0.7}
+                        onPress={() => handleOverViewScrren(item)}
+                      >
+                        <Text style={styles.name}>{item.fullName}</Text>
 
-                    <View style={styles.detailRow}>
-                      {item.floorName && (
-                        <View style={styles.floorBadge}>
-                          <Text style={styles.floorText}>{item.floorName}</Text>
+                        <View style={styles.detailRow}>
+                          {item.floorName && (
+                            <View style={[styles.floorBadge, { flex: 1 }]}>
+                              <Text style={[styles.floorText]}>{item.floorName}</Text>
+                            </View>
+                          )}
+
+                          {item.roomName && (
+                            <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
+                              <Image source={room} style={styles.iconSmall} />
+                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.roomName}</Text>
+
+                            </View>
+
+                          )}
+
+                          {item.bedName && (
+                            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                              <Image source={Bed} style={styles.iconSmall} />
+                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.bedName}</Text>
+                            </View>
+                          )}
                         </View>
-                      )}
+                      </TouchableOpacity>
 
-                      {item.roomName && (
-                        <>
-                          <Image source={room} style={styles.iconSmall} />
-                          <Text style={styles.detailText}>{item.roomName}</Text>
-                        </>
-                      )}
+                      {/* 3️⃣ DOT MENU ONLY */}
+                      <View style={styles.rightSection}>
+                        <TouchableOpacity
+                          onPress={(e) => {
+                            e.stopPropagation();   // 🔥 prevents other clicks
+                            openMenu(e, item);
+                          }}
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                          <Image
+                            source={Dots}
+                            style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+                          />
+                        </TouchableOpacity>
 
-                      {item.bedName && (
-                        <>
-                          <Image source={Bed} style={styles.iconSmall} />
-                          <Text style={styles.detailText}>{item.bedName}</Text>
-                        </>
-                      )}
-                    </View>
-                  </TouchableOpacity>
 
-                  {/* 3️⃣ DOT MENU ONLY */}
-                  <View style={styles.rightSection}>
-                    <TouchableOpacity
-                      onPress={(e) => {
-                        e.stopPropagation();   // 🔥 prevents other clicks
-                        openMenu(e, item);
-                      }}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                      <Image
-                        source={Dots}
-                        style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                      />
-                    </TouchableOpacity>
+                        <Text style={styles.dateText}>
+                          {item?.actualJoining && item.actualJoining !== "0000-00-00"
+                            ? item.actualJoining
+                            : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
+                              ? item.expectedJoiningDate
+                              : item?.RecheckIn_Date && item.RecheckIn_Date !== "0000-00-00"
+                                ? item.RecheckIn_Date
+                                : "-"
+                          }
+                        </Text>
 
-                    <Text style={styles.dateText}>
+
+                        {/* <Text style={styles.dateText}>
                       {item?.actualJoining && item.actualJoining !== "0000-00-00"
                         ? moment(item.actualJoining, "DD/MM/YYYY").format("D MMMM YYYY")
                         : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
@@ -832,34 +847,34 @@ export default function TenantsScreen({ route }) {
                             ? moment(item.RecheckIn_Date).format("D MMMM YYYY")
                             : "-"
                       }
-                    </Text>
-                  </View>
-                </View>
+                    </Text> */}
+                      </View>
+                    </View>
 
 
-              ))}
+                  ))}
 
 
 
-            </ScrollView>
+                </ScrollView>
 
-   </>
-    )}
+              </>
+            )}
 
             {customers?.listCustomers?.length > 0 &&
               <TouchableOpacity
-                 style={[
-            styles.editButton,
-            !canReadTenant && { opacity: 0.4 }
-          ]}
-            disabled={!canReadTenant}
+                style={[
+                  styles.editButton,
+                  !canReadTenant && { opacity: 0.4 }
+                ]}
+                disabled={!canReadTenant}
                 onPress={() => setShowFilter(true)}>
                 <Image source={Filter} style={{ width: 30, height: 30 }} />
               </TouchableOpacity>
             }
-            
 
-            
+
+
           </View>
         )}
 
@@ -988,7 +1003,7 @@ export default function TenantsScreen({ route }) {
                 </View>
 
                 {
-                  selectedCustomer?.customerCurrentStatus == "BOOKED"  && (
+                  selectedCustomer?.customerCurrentStatus == "BOOKED" && (
                     <View style={{ marginTop: 15, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>Booking Date</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -998,7 +1013,7 @@ export default function TenantsScreen({ route }) {
                           resizeMode="contain"
                         />
                         <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
-                         {selectedCustomer?.bookingInfo?.bookingDate}
+                          {selectedCustomer?.bookingInfo?.bookingDate}
                         </Text>
                       </View>
                     </View>
@@ -1008,7 +1023,7 @@ export default function TenantsScreen({ route }) {
               </View>
 
               {
-                ["CHECK_IN", "OCCUPIED","NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
+                ["CHECK_IN", "OCCUPIED", "NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View style={{ marginTop: 15, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>
@@ -1045,23 +1060,23 @@ export default function TenantsScreen({ route }) {
               }
 
               {
-                 selectedCustomer?.customerCurrentStatus == "BOOKED" && (
-                    <View style={{ marginTop: 15, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280", }}>
-                        Booking Amount
-                        {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
-                      </Text>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <Image
-                          source={RentMoney}
-                          style={{ width: 15, height: 15, marginRight: 5 }}
-                          resizeMode="contain"
-                        />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
-                          ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.bookingInfo?.bookingAmount)}</Text>
-                      </View>
+                selectedCustomer?.customerCurrentStatus == "BOOKED" && (
+                  <View style={{ marginTop: 15, }}>
+                    <Text style={{ fontSize: 13, color: "#6B7280", }}>
+                      Booking Amount
+                      {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
+                    </Text>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Image
+                        source={RentMoney}
+                        style={{ width: 15, height: 15, marginRight: 5 }}
+                        resizeMode="contain"
+                      />
+                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                        ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.bookingInfo?.bookingAmount)}</Text>
                     </View>
-                 )
+                  </View>
+                )
               }
 
 
@@ -1070,22 +1085,22 @@ export default function TenantsScreen({ route }) {
                 backgroundColor: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E10D" :
                   selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E0F" :
                     selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FFF9F9" :
-                     selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E10D" :
-                     ["INACTIVE", "IN_ACTIVE","InActive"].includes(selectedCustomer?.customerCurrentStatus) ?  "#FFF8EB" : "#FFF9F9" 
+                      selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E10D" :
+                        ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "#FFF8EB" : "#FFF9F9"
               }]}>
                 {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
                 <Text style={[styles.unassignText, {
                   color: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E1" :
                     selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E" :
                       selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FF0000" :
-                       selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E1" :
-                       ["INACTIVE", "IN_ACTIVE","InActive"].includes(selectedCustomer?.customerCurrentStatus) ?  "#FF9500" : "#FF0000"
+                        selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E1" :
+                          ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "#FF9500" : "#FF0000"
                 }]}>
-                  {selectedCustomer?.customerCurrentStatus === "BOOKED"? "Reserved"
-                   : selectedCustomer?.customerCurrentStatus === "CHECK_IN"? "Occupied"
-                   : selectedCustomer?.customerCurrentStatus === "NOTICE" ? "Notice Period"
-                   : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "Settlement Generated" 
-                   : ["INACTIVE", "IN_ACTIVE","InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "InActive" : "Write_Off"}
+                  {selectedCustomer?.customerCurrentStatus === "BOOKED" ? "Reserved"
+                    : selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "Occupied"
+                      : selectedCustomer?.customerCurrentStatus === "NOTICE" ? "Notice Period"
+                        : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "Settlement Generated"
+                          : ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "InActive" : "Write_Off"}
                 </Text>
 
 
@@ -1120,10 +1135,10 @@ export default function TenantsScreen({ route }) {
                 <>
                   <TouchableOpacity
                     // style={styles.popupRow}
-                       style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={() => {
                       setShowDetailsMenu(false);
                       setShowReAssignBed(true);
@@ -1135,10 +1150,10 @@ export default function TenantsScreen({ route }) {
 
                   <TouchableOpacity
                     // style={styles.popupRow}
-                       style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={() => {
                       setShowDetailsMenu(false);
                       setShowNotice(true);
@@ -1153,10 +1168,10 @@ export default function TenantsScreen({ route }) {
                 selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" &&
                 <TouchableOpacity
                   // style={styles.popupRow}
-                     style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                  style={[
+                    styles.popupRow,
+                    !canUpdateTenant && { opacity: 0.4 }]}
+                  disabled={!canUpdateTenant}
                   onPress={() => {
                     setShowMenu(false);
                     setShowCheckout(true);
@@ -1173,10 +1188,10 @@ export default function TenantsScreen({ route }) {
                 <>
                   <TouchableOpacity
                     // style={styles.popupRow}
-                       style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={handleShowTennantCheckin}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1185,10 +1200,10 @@ export default function TenantsScreen({ route }) {
 
                   <TouchableOpacity
                     // style={styles.popupRow}
-                       style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={handleMakeUsInActive}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1202,10 +1217,10 @@ export default function TenantsScreen({ route }) {
                 <>
                   <TouchableOpacity
                     // style={styles.popupRow}
-                       style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={handleShowFinalSettlement}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1213,10 +1228,10 @@ export default function TenantsScreen({ route }) {
                   </TouchableOpacity>
                   <TouchableOpacity
                     // style={styles.popupRow}
-                       style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={handleShowFinalNew}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1224,10 +1239,10 @@ export default function TenantsScreen({ route }) {
                   </TouchableOpacity>
                   <TouchableOpacity
                     // style={styles.popupRow}
-                        style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
                     onPress={handleShowCancelNotice}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
@@ -1264,9 +1279,9 @@ export default function TenantsScreen({ route }) {
                     <>
                       <TouchableOpacity
                         // style={styles.popupRow}
-                             style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
                         onPress={() => {
                           setReassignCustomer(selectedItem);
@@ -1282,9 +1297,9 @@ export default function TenantsScreen({ route }) {
                       </TouchableOpacity>
                       <TouchableOpacity
                         // style={styles.popupRow}
-                              style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
 
                         onPress={() => {
@@ -1309,9 +1324,9 @@ export default function TenantsScreen({ route }) {
                     <>
                       <TouchableOpacity
                         // style={styles.popupRow}
-                           style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
                         onPress={handleMakeUsInActive}
                       >
@@ -1320,9 +1335,9 @@ export default function TenantsScreen({ route }) {
                       </TouchableOpacity>
                       <TouchableOpacity
                         // style={styles.popupRow}
-                           style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
                         onPress={handleShowTennantCheckin}
                       // onPress={() => {
@@ -1339,13 +1354,13 @@ export default function TenantsScreen({ route }) {
                     !["Checked In", "Settlement Generated", "Booked"].includes(selectedItem.currentStatus) && (
 
                       <>
-                        <TouchableOpacity 
-                        // style={styles.popupRow}
-                           style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
-                        onPress={handleShowFinalSettlement} >
+                        <TouchableOpacity
+                          // style={styles.popupRow}
+                          style={[
+                            styles.popupRow,
+                            !canUpdateTenant && { opacity: 0.4 }]}
+                          disabled={!canUpdateTenant}
+                          onPress={handleShowFinalSettlement} >
                           <Image
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
@@ -1354,23 +1369,23 @@ export default function TenantsScreen({ route }) {
                         </TouchableOpacity>
                         <TouchableOpacity
                           // style={styles.popupRow}
-                             style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                          style={[
+                            styles.popupRow,
+                            !canUpdateTenant && { opacity: 0.4 }]}
+                          disabled={!canUpdateTenant}
                           onPress={handleShowFinalNew}
                         >
                           <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                           <Text style={styles.popupText}>Generate New</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                        // style={styles.popupRow} 
-                           style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
-                         onPress={handleShowCancelNotice} >
+                        <TouchableOpacity
+                          // style={styles.popupRow} 
+                          style={[
+                            styles.popupRow,
+                            !canUpdateTenant && { opacity: 0.4 }]}
+                          disabled={!canUpdateTenant}
+                          onPress={handleShowCancelNotice} >
                           <Image
                             source={require("../../Assets/Images/ReAssign.png")}
                             style={styles.popupIcon}
@@ -1383,9 +1398,9 @@ export default function TenantsScreen({ route }) {
                     !["Checked In", "Notice Period", "Booked"].includes(selectedItem.currentStatus) && (
                       <TouchableOpacity
                         // style={styles.popupRow}
-                           style={[
-                             styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
                         onPress={() => {
                           setShowMenu(false);

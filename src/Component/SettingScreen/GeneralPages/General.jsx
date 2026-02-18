@@ -43,12 +43,14 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const DotsTopRef = useRef(null);
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
+   const [popupPo, setPopupPo] = useState({ top: 0, right: 0 });
   const SCREEN_WIDTH = Dimensions.get("window").width;
   const [selectedUser, setSelectedUser] = useState(null);
+  const [activeMenuProfile,setActiveMenuProfile]=useState(null)
 
   const [activeTab, setActiveTab] = useState("Masters");
 
-  const tabs = ["Masters", "Your Activity", "Users Activity", "kakd", "hhhaha", "jjjf", "bjndfsdk"];
+  const tabs = ["Masters", "Your Activity", "Users Activity", "Managed Users"];
 
 
   const {
@@ -58,6 +60,7 @@ export default function GeneralDetailsScreen({ navigation }) {
     canDeleteModule: canDeleteProfile,
   } = useHasPermission("Profile");
 
+  console.log(profileDetails)
 
   useFocusEffect(
     useCallback(() => {
@@ -150,7 +153,7 @@ export default function GeneralDetailsScreen({ navigation }) {
             setSelectedUserId(u.userId);
             setShowPasswordSheet(true);
           }}>
-            <Text style={styles.changePassword}>Change Password</Text>
+            <Text style={styles.changePassword}>{u.roleName}</Text>
           </TouchableOpacity>
         </View>
 
@@ -390,7 +393,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                     style={styles.eyeIcon}
                   />
                   <Text style={styles.changePwdText}>
-                    Admin
+                    {profileDetails.roleName}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -400,13 +403,13 @@ export default function GeneralDetailsScreen({ navigation }) {
                 onPress={() => {
                   DotsTopRef.current.measureInWindow(
                     (x, y, width, height) => {
-                      setPopupPos({
+                      setPopupPo({
                         top: y + height + 6,
                         right: SCREEN_WIDTH - (x + width),
                       });
                     }
                   );
-                  setActiveMenu("box");
+                  setActiveMenuProfile("box");
                 }}
               >
                 <Image
@@ -497,6 +500,49 @@ export default function GeneralDetailsScreen({ navigation }) {
 
 
       </View>
+
+       {activeMenuProfile && (
+              <TouchableOpacity
+                style={styles.menuOverlay}
+                onPress={() => setActiveMenuProfile(null)}
+              >
+                <View style={[styles.menuBox, { top: popupPo.top, right: popupPo.right }]}>
+      
+                  {/* EDIT */}
+                  <TouchableOpacity
+                    // style={styles.menuRow}
+                    style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
+                    disabled={!canUpdateProfile}
+                    onPress={() => {
+                      console.log(activeMenu + " EDIT");
+                      setActiveMenuProfile(null);
+                    }}
+                  >
+                    <Image source={Edit} style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Edit</Text>
+                  </TouchableOpacity>
+      
+                  {/* DELETE */}
+                  <TouchableOpacity
+                    // style={styles.menuRow}
+                    style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
+                    disabled={!canDeleteProfile}
+                    onPress={() => {
+                      console.log(activeMenu + " DELETE");
+                      setActiveMenuProfile(null);
+                    }}
+                  >
+                    <Image
+                      source={Delete}
+                      style={[styles.menuIcon, { tintColor: "red" }]}
+                    />
+                    <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+                  </TouchableOpacity>
+      
+                </View>
+              </TouchableOpacity>
+            )}
+      
 
       <Modal
         transparent
@@ -690,6 +736,10 @@ const styles = StyleSheet.create({
   infoIcon: { width: 18, height: 18, marginRight: 8 },
 
   infoText: { fontSize: 14, color: "#333", flex: 1 },
+  menuOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+  },
   menuBox: {
     position: "absolute",
     top: 50,

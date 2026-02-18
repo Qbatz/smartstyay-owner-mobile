@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext, useMemo } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   Modal,
   ScrollView,
   BackHandler,
+  Dimensions,
 } from "react-native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { AmenityContext } from "../../../Context/AmenityContext";
@@ -30,6 +31,9 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import LinkIcon from "../../../Assets/Images/link.png";
 import Arrowup from "../../../Assets/Images/arrow_up_white.png";
 import Arrowdown from "../../../Assets/Images/arrow_down_white.png";
+import RoomIcon from "../../../Assets/Images/Room_Icon.png"
+import BedIcon from "../../../Assets/Images/Bed_Icon.png"
+import { useCustomer } from "../../../Context/CustomerContext";
 
 const sampleUsersInit = [
   {
@@ -57,43 +61,42 @@ const sampleUsersInit = [
     assigned: true,
   },
 ];
-
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function AmenitySettings({ navigation }) {
 
-  
-const { activeHostelId } = useContext(CommonContexts);
+
+
+  const { activeHostelId } = useContext(CommonContexts);
 
   const {
-        amenities,
-        amenityDetail,
-        loading,
-        GetAllAmenities,
-        ParticularAmenityDetails,
-        addAmenity,
-        updateAmenity,
-        deleteAmenity,
-        assignAmenity,
-        unAssignAmenity,
-} = useContext(AmenityContext);
+    amenities,
+    amenityDetail,
+    loading,
+    GetAllAmenities,
+    ParticularAmenityDetails,
+    addAmenity,
+    updateAmenity,
+    deleteAmenity,
+    assignAmenity,
+    unAssignAmenity,
+  } = useContext(AmenityContext);
 
-console.log("amenity",amenities ,  amenityDetail , addAmenity);
+  console.log("amenity", amenities, amenityDetail, addAmenity);
 
 
-  
-
+ const { getCustomersByHostel,  GetParticularCustomerDetails } = useCustomer();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-const [modalMessage, setModalMessage] = useState("");
-const [modalType, setModalType] = useState("success");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
 
   const [showMenu, setShowMenu] = useState(false);
-const [menuAmenityId, setMenuAmenityId] = useState(null);
-const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-
+  const [menuAmenityId, setMenuAmenityId] = useState(null);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   const [showSheet, setShowSheet] = useState(false);
   const sheetY = useRef(new Animated.Value(700)).current;
- 
+
 
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -105,21 +108,28 @@ const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [amenityToggle, setAmenityToggle] = useState(true);
 
   const [amenityError, setAmenityError] = useState("");
-const [priceError, setPriceError] = useState("");
+  const [priceError, setPriceError] = useState("");
+  const [customers, setCustomers] = useState([]);
 
 
   useEffect(() => {
-  if (activeHostelId) {
-    GetAllAmenities(activeHostelId);
-  }
-}, [activeHostelId]);
+    if (activeHostelId) {
+      GetAllAmenities(activeHostelId);
+       fetchCustomers();
+    }
+  }, [activeHostelId]);
 
-      const {
-        canWriteModule: canWriteAmenities,
-        canReadModule: canReadAmenities,
-        canUpdateModule: canUpdateAmenities,
-        canDeleteModule: canDeleteAmenities,
-    } = useHasPermission("Amenities");
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data.listCustomers || []);
+  };
+
+  const {
+    canWriteModule: canWriteAmenities,
+    canReadModule: canReadAmenities,
+    canUpdateModule: canUpdateAmenities,
+    canDeleteModule: canDeleteAmenities,
+  } = useHasPermission("Amenities");
 
 
   useEffect(() => {
@@ -150,28 +160,28 @@ const [priceError, setPriceError] = useState("");
         closeSheet();
         return true;
       }
-      if(showAssign){
-      setShowAssign(false)
-            return true;
+      if (showAssign) {
+        setShowAssign(false)
+        return true;
       }
       return false;
     });
     return () => backHandler.remove();
-  }, [showSheet , showAssign]);
+  }, [showSheet, showAssign]);
 
-   useEffect(() => {
-                  const backHandler = BackHandler.addEventListener(
-                    "hardwareBackPress",
-                    () => {
-                      navigation.goBack();  
-                      return true;
-                    }
-                  );
-                
-                  return () => backHandler.remove();
-                }, [])
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigation.goBack();
+        return true;
+      }
+    );
 
-                 const sheetPan = useRef(
+    return () => backHandler.remove();
+  }, [])
+
+  const sheetPan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 5,
       onPanResponderMove: (_, g) => {
@@ -188,52 +198,53 @@ const [priceError, setPriceError] = useState("");
     })
   ).current;
 
-const openSheet = (edit = false, item = null) => {
-  sheetY.setValue(700);
-  setIsEdit(edit);
+  const openSheet = (edit = false, item = null) => {
+    sheetY.setValue(700);
+    setIsEdit(edit);
 
-  if (edit && item) {
-    setAmenityName(item.name);
-    setAmenityPriceText(String(item.amount));
-    setAmenityToggle(item.proRate);
-    setEditingId(item.id);
+    if (edit && item) {
+      setAmenityName(item.name);
+      setAmenityPriceText(String(item.amount));
+      setAmenityToggle(item.proRate);
+      setEditingId(item.id);
 
-    // ✅ STORE INITIAL STATE
-    setInitialAmenityState({
-      name: item.name,
-      amount: Number(item.amount),
-      proRate: item.proRate,
-    });
-  } else {
-    setAmenityName("");
-    setAmenityPriceText("");
-    setAmenityToggle(true);
-    setEditingId(null);
-    setInitialAmenityState(null);
+      // ✅ STORE INITIAL STATE
+      setInitialAmenityState({
+        name: item.name,
+        amount: Number(item.amount),
+        proRate: item.proRate,
+      });
+    } else {
+      setAmenityName("");
+      setAmenityPriceText("");
+      setAmenityToggle(true);
+      setEditingId(null);
+      setInitialAmenityState(null);
+    }
+
+    setAmenityError("");
+    setPriceError("");
+    setNoChangeError("");
+
+    setShowSheet(true);
+    Animated.timing(sheetY, {
+      toValue: 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleShowAmenity = () => {
+    if (!activeHostelId) {
+      setModalType("warning");
+      setModalMessage("Please Add a Hostel First");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+    openSheet(false)
   }
 
-  setAmenityError("");
-  setPriceError("");
-  setNoChangeError("");
-
-  setShowSheet(true);
-  Animated.timing(sheetY, {
-    toValue: 0,
-    duration: 220,
-    useNativeDriver: true,
-  }).start();
-};
-
-const handleShowAmenity = () => {
-      if (!activeHostelId) {
-    setModalType("warning");
-    setModalMessage("Please Add a Hostel First");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
-  openSheet(false)
-}
 
 
   const closeSheet = () => {
@@ -250,152 +261,152 @@ const handleShowAmenity = () => {
     });
   };
 
-// const saveAmenity = async () => {
-//   let valid = true;
+  // const saveAmenity = async () => {
+  //   let valid = true;
 
-//   const name = amenityName.trim();
-//   const amount = Number(amenityPriceText);
+  //   const name = amenityName.trim();
+  //   const amount = Number(amenityPriceText);
 
-//   // RESET ERRORS
-//   setAmenityError("");
-//   setPriceError("");
-//   setNoChangeError("");
+  //   // RESET ERRORS
+  //   setAmenityError("");
+  //   setPriceError("");
+  //   setNoChangeError("");
 
-//   if (!name) {
-//     setAmenityError("Please Enter Amenity Name");
-//     valid = false;
-//   }
+  //   if (!name) {
+  //     setAmenityError("Please Enter Amenity Name");
+  //     valid = false;
+  //   }
 
-//   if (!amenityPriceText) {
-//     setPriceError("Please Enter Price");
-//     valid = false;
-//   } else if (isNaN(amount)) {
-//     setPriceError("Price Must Be a Number");
-//     valid = false;
-//   } else if (amount <= 0) {
-//     setPriceError("Price Must Be Greater Than 0");
-//     valid = false;
-//   }
+  //   if (!amenityPriceText) {
+  //     setPriceError("Please Enter Price");
+  //     valid = false;
+  //   } else if (isNaN(amount)) {
+  //     setPriceError("Price Must Be a Number");
+  //     valid = false;
+  //   } else if (amount <= 0) {
+  //     setPriceError("Price Must Be Greater Than 0");
+  //     valid = false;
+  //   }
 
-//   if (isEdit && initialAmenityState) {
-//     const isChanged =
-//       initialAmenityState.name !== name ||
-//       initialAmenityState.amount !== amount ||
-//       initialAmenityState.proRate !== amenityToggle;
+  //   if (isEdit && initialAmenityState) {
+  //     const isChanged =
+  //       initialAmenityState.name !== name ||
+  //       initialAmenityState.amount !== amount ||
+  //       initialAmenityState.proRate !== amenityToggle;
 
-//     if (!isChanged) {
-//       setNoChangeError("No Changes Detected");
-//       valid = false;
-//     }
-//   }
+  //     if (!isChanged) {
+  //       setNoChangeError("No Changes Detected");
+  //       valid = false;
+  //     }
+  //   }
 
-//   if (!valid) return;
+  //   if (!valid) return;
 
-//   if (isEdit && editingId) {
-//     await updateAmenity({
-//       hostelId: activeHostelId,
-//       amenityId: editingId,
-//       payload: {
-//         amenityName: name,
-//         amount: amount,
-//         proRate: amenityToggle,
-//       },
-//     });
-//   } else {
-//     await addAmenity({
-//       hostelId: activeHostelId,
-//       payload: {
-//         amenityName: name,
-//         amount: amount,
-//         proRate: amenityToggle,
-//       },
-//     });
-//   }
+  //   if (isEdit && editingId) {
+  //     await updateAmenity({
+  //       hostelId: activeHostelId,
+  //       amenityId: editingId,
+  //       payload: {
+  //         amenityName: name,
+  //         amount: amount,
+  //         proRate: amenityToggle,
+  //       },
+  //     });
+  //   } else {
+  //     await addAmenity({
+  //       hostelId: activeHostelId,
+  //       payload: {
+  //         amenityName: name,
+  //         amount: amount,
+  //         proRate: amenityToggle,
+  //       },
+  //     });
+  //   }
 
-//   closeSheet();
-// };
+  //   closeSheet();
+  // };
 
 
-const saveAmenity = async () => {
-  let valid = true;
+  const saveAmenity = async () => {
+    let valid = true;
 
-  const name = amenityName.trim();
-  const amount = Number(amenityPriceText);
+    const name = amenityName.trim();
+    const amount = Number(amenityPriceText);
 
-  setAmenityError("");
-  setPriceError("");
-  setNoChangeError("");
+    setAmenityError("");
+    setPriceError("");
+    setNoChangeError("");
 
-  if (!name) {
-    setAmenityError("Please Enter Amenity Name");
-    valid = false;
-  }
-
-  if (!amenityPriceText) {
-    setPriceError("Please Enter Price");
-    valid = false;
-  } else if (isNaN(amount)) {
-    setPriceError("Price Must Be a Number");
-    valid = false;
-  } else if (amount <= 0) {
-    setPriceError("Price Must Be Greater Than 0");
-    valid = false;
-  }
-
-  if (isEdit && initialAmenityState) {
-    const isChanged =
-      initialAmenityState.name !== name ||
-      initialAmenityState.amount !== amount ||
-      initialAmenityState.proRate !== amenityToggle;
-
-    if (!isChanged) {
-      setNoChangeError("No Changes Detected");
+    if (!name) {
+      setAmenityError("Please Enter Amenity Name");
       valid = false;
     }
-  }
 
-  if (!valid) return;
+    if (!amenityPriceText) {
+      setPriceError("Please Enter Price");
+      valid = false;
+    } else if (isNaN(amount)) {
+      setPriceError("Price Must Be a Number");
+      valid = false;
+    } else if (amount <= 0) {
+      setPriceError("Price Must Be Greater Than 0");
+      valid = false;
+    }
 
-  let res;
+    if (isEdit && initialAmenityState) {
+      const isChanged =
+        initialAmenityState.name !== name ||
+        initialAmenityState.amount !== amount ||
+        initialAmenityState.proRate !== amenityToggle;
 
-  if (isEdit && editingId) {
-    res = await updateAmenity({
-      hostelId: activeHostelId,
-      amenityId: editingId,
-      payload: {
-        amenityName: name,
-        amount: amount,
-        proRate: amenityToggle,
-      },
-    });
-  } else {
-    res = await addAmenity({
-      hostelId: activeHostelId,
-      payload: {
-        amenityName: name,
-        amount: amount,
-        proRate: amenityToggle,
-      },
-    });
-  }
+      if (!isChanged) {
+        setNoChangeError("No Changes Detected");
+        valid = false;
+      }
+    }
 
-  if (!res?.success) {
-    setModalType("warning");
-    setModalMessage(res?.message || "Something went wrong");
+    if (!valid) return;
+
+    let res;
+
+    if (isEdit && editingId) {
+      res = await updateAmenity({
+        hostelId: activeHostelId,
+        amenityId: editingId,
+        payload: {
+          amenityName: name,
+          amount: amount,
+          proRate: amenityToggle,
+        },
+      });
+    } else {
+      res = await addAmenity({
+        hostelId: activeHostelId,
+        payload: {
+          amenityName: name,
+          amount: amount,
+          proRate: amenityToggle,
+        },
+      });
+    }
+
+    if (!res?.success) {
+      setModalType("warning");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+
+    setModalType("success");
+    setModalMessage(res.message);
     setShowSuccessModal(true);
 
     setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
 
-  setModalType("success");
-  setModalMessage(res.message);
-  setShowSuccessModal(true);
-
-  setTimeout(() => setShowSuccessModal(false), 1500);
-
-  closeSheet();
-};
+    closeSheet();
+  };
 
 
 
@@ -408,60 +419,60 @@ const saveAmenity = async () => {
   };
 
 
-//  const doDelete = async () => {
-//   if (!deleteId) return;
+  //  const doDelete = async () => {
+  //   if (!deleteId) return;
 
-//   await deleteAmenity({
-//     hostelId: activeHostelId,
-//     amenityId: deleteId,
-//   });
+  //   await deleteAmenity({
+  //     hostelId: activeHostelId,
+  //     amenityId: deleteId,
+  //   });
 
-//   setShowDeleteConfirm(false);
-//   setDeleteId(null);
-// };
+  //   setShowDeleteConfirm(false);
+  //   setDeleteId(null);
+  // };
 
-const doDelete = async () => {
-  if (!deleteId) return;
+  const doDelete = async () => {
+    if (!deleteId) return;
 
-  const res = await deleteAmenity({
-    hostelId: activeHostelId,
-    amenityId: deleteId,
-  });
+    const res = await deleteAmenity({
+      hostelId: activeHostelId,
+      amenityId: deleteId,
+    });
 
-  if (!res?.success) {
-    setModalType("warning");
-    setModalMessage(res?.message || "Unable to delete amenity");
+    if (!res?.success) {
+      setModalType("warning");
+      setModalMessage(res?.message || "Unable to delete amenity");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+
+    setModalType("success");
+    setModalMessage(res.message);
     setShowSuccessModal(true);
 
     setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
 
-  setModalType("success");
-  setModalMessage(res.message);
-  setShowSuccessModal(true);
-
-  setTimeout(() => setShowSuccessModal(false), 1500);
-
-  setShowDeleteConfirm(false);
-  setDeleteId(null);
-};
+    setShowDeleteConfirm(false);
+    setDeleteId(null);
+  };
 
 
 
-const toggleActive = async (item) => {
-  const newValue = !item.proRate;
+  const toggleActive = async (item) => {
+    const newValue = !item.proRate;
 
-  await updateAmenity({
-    hostelId: activeHostelId,
-    amenityId: item.id,
-    payload: {
-      amenityName: item.name,
-      amount: item.amount,     
-      proRate: newValue,
-    },
-  });
-};
+    await updateAmenity({
+      hostelId: activeHostelId,
+      amenityId: item.id,
+      payload: {
+        amenityName: item.name,
+        amount: item.amount,
+        proRate: newValue,
+      },
+    });
+  };
 
 
 
@@ -483,44 +494,44 @@ const toggleActive = async (item) => {
   const [sampleUsers, setSampleUsers] = useState(sampleUsersInit.map((u) => ({ ...u, selected: false })));
   const [currentAmenityId, setCurrentAmenityId] = useState(null);
 
-const openAssign = async (amenityId) => {
-  setCurrentAmenityId(amenityId);
+  const openAssign = async (amenityId) => {
+    setCurrentAmenityId(amenityId);
 
-  const res = await ParticularAmenityDetails({
-    hostelId: activeHostelId,
-    amenityId,
-  });
+    const res = await ParticularAmenityDetails({
+      hostelId: activeHostelId,
+      amenityId,
+    });
 
-  if (res?.success) {
-    const assigned = res.data.assigned.map((u) => ({
-      ...u,
-      assigned: true,
-      selected: false,
-      id: u.customerId,
-      name: u.customerName,
-      floor: "",
-      room: "",
-      bed: "",
-    }));
+    if (res?.success) {
+      const assigned = res.data.assigned.map((u) => ({
+        ...u,
+        assigned: true,
+        selected: false,
+        id: u.customerId,
+        name: u.customerName,
+        floor: "",
+        room: "",
+        bed: "",
+      }));
 
-    const unAssigned = res.data.unAssigned.map((u) => ({
-      ...u,
-      assigned: false,
-      selected: false,
-      id: u.customerId,
-      name: u.customerName,
-      floor: "",
-      room: "",
-      bed: "",
-    }));
+      const unAssigned = res.data.unAssigned.map((u) => ({
+        ...u,
+        assigned: false,
+        selected: false,
+        id: u.customerId,
+        name: u.customerName,
+        floor: "",
+        room: "",
+        bed: "",
+      }));
 
-    setSampleUsers([...unAssigned, ...assigned]);
-  }
+      setSampleUsers([...unAssigned, ...assigned]);
+    }
 
-  assignY.setValue(900);
-  setShowAssign(true);
-  Animated.timing(assignY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
-};
+    assignY.setValue(900);
+    setShowAssign(true);
+    Animated.timing(assignY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
+  };
 
 
   const closeAssign = () => {
@@ -536,42 +547,43 @@ const openAssign = async (amenityId) => {
   };
 
 
-const moveDownSelected = async () => {
-  const customers = sampleUsers
-    .filter((u) => !u.assigned && u.selected)
-    .map((u) => u.id);
+  const moveDownSelected = async () => {
+    const customers = sampleUsers
+      .filter((u) => !u.assigned && u.selected)
+      .map((u) => u.id);
 
-  if (customers.length === 0) return;
+    if (customers.length === 0) return;
 
-  await assignAmenity({
-    hostelId: activeHostelId,
-    amenityId: currentAmenityId,
-    customers,
-  });
+    await assignAmenity({
+      hostelId: activeHostelId,
+      amenityId: currentAmenityId,
+      customers,
+    });
 
-  openAssign(currentAmenityId); 
-};
+    openAssign(currentAmenityId);
+  };
 
 
-const moveUpSelected = async () => {
-  const customers = sampleUsers
-    .filter((u) => u.assigned && u.selected)
-    .map((u) => u.id);
+  const moveUpSelected = async () => {
+    const customers = sampleUsers
+      .filter((u) => u.assigned && u.selected)
+      .map((u) => u.id);
 
-  if (customers.length === 0) return;
+    if (customers.length === 0) return;
 
-  await unAssignAmenity({
-    hostelId: activeHostelId,
-    amenityId: currentAmenityId,
-    customers,
-  });
+    await unAssignAmenity({
+      hostelId: activeHostelId,
+      amenityId: currentAmenityId,
+      customers,
+    });
 
-  openAssign(currentAmenityId);
-};
+    openAssign(currentAmenityId);
+  };
 
 
 
   const UserRow = ({ user }) => {
+    console.log(user)
     return (
       <View style={styles.userRow}>
         <View style={styles.userLeft}>
@@ -579,21 +591,81 @@ const moveUpSelected = async () => {
             <Text style={styles.avatarText}>{user.name?.[0] ?? "U"}</Text>
           </View>
 
-          <View style={{ marginLeft: 10, flex: 1 }}>
+          <View style={{ marginLeft: 10, flex: 1, marginRight: 12 }}>
             <Text style={styles.userName}>{user.name}</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 6 }}>
-              <View style={styles.floorBadge}>
-                <Text style={styles.floorBadgeText}>{user.floor}</Text>
-              </View>
-              <Text style={styles.metaText}>  {user.room} </Text>
-              <Text style={styles.metaText}> | {user.bed}</Text>
+           <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 6,
+              marginRight: 12
+            }}
+          >
+            {/* Floor Badge */}
+            <View style={styles.floorBadge}>
+              <Text style={styles.floorBadgeText}>
+                {user.floorName}
+              </Text>
+            </View>
+
+            {/* Room */}
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",            
+                marginLeft: 4,
+                marginRight:4
+
+              }}
+            >
+              <Image
+                source={RoomIcon}
+                style={{ width: 21, height: 17, resizeMode: "contain" }}
+              />
+              <Text
+                style={[styles.metaText, { marginLeft: 2,flexShrink: 1 }]}
+              >
+                {user.roomName}
+              </Text>
+            </View>
+
+            {/* Separator */}
+            {/* <Text style={{ color: "#666", marginHorizontal: 6 }}>
+              |
+            </Text> */}
+
+            {/* Bed */}
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",           
+              }}
+            >
+              <Image
+                source={BedIcon}
+                style={{ width: 21, height: 17, resizeMode: "contain" }}
+              />
+              <Text
+                style={[styles.metaText, { marginLeft: 4, flexShrink: 1 }]}
+              >
+                {user.bedName}
+              </Text>
             </View>
           </View>
+          </View>
+           
         </View>
 
-       <TouchableOpacity style={styles.checkbox} onPress={() => toggleUserSelect(user.id)}>
-  {user.selected ? <Text style={styles.tick}>✓</Text> : null}
-</TouchableOpacity>
+
+        {
+          user.canAssign == true ? <TouchableOpacity style={styles.checkbox} onPress={() => toggleUserSelect(user.id)}>
+          {user.selected ? <Text style={styles.tick}>✓</Text> : null}
+        </TouchableOpacity> : null
+        }
+        
 
       </View>
     );
@@ -603,6 +675,7 @@ const moveUpSelected = async () => {
   const assigned = sampleUsers.filter((u) => u.assigned);
   const anyUnassignedSelected = unassigned.some((u) => u.selected);
   const anyAssignedSelected = assigned.some((u) => u.selected);
+  console.log(unassigned)
 
   //  const CustomSwitch = ({ value, onToggle }) => {
   //     return (
@@ -617,7 +690,7 @@ const moveUpSelected = async () => {
   //             { backgroundColor: value ? "#3562FF" : "#A68DE3" },
   //           ]}
   //         >
-      
+
   //           <Animated.View
   //             style={[
   //               styles.knob,
@@ -631,56 +704,61 @@ const moveUpSelected = async () => {
   //       </View>
   //     );
   //   };
+  console.log(customers)
+
+
+
+
 
 
 
   const CustomSwitch = ({ value, onToggle, disabled }) => {
-  return (
-    <View style={styles.switchRow}>
-      <Text
-        style={[
-          styles.switchLabel,
-          { color: value ? "#3562FF" : "#A68DE3" },
-          disabled && { opacity: 0.4 },
-        ]}
-      >
-        {value ? "On" : "Off"}
-      </Text>
-
-      <TouchableOpacity
-        disabled={disabled}
-        onPress={() => !disabled && onToggle(!value)}
-        style={{ opacity: disabled ? 0.4 : 1 }}
-      >
-        <View
+    return (
+      <View style={styles.switchRow}>
+        <Text
           style={[
-            styles.switch,
-            { backgroundColor: value ? "#3562FF" : "#A68DE3" },
+            styles.switchLabel,
+            { color: value ? "#3562FF" : "#A68DE3" },
+            disabled && { opacity: 0.4 },
           ]}
         >
-          <Animated.View
+          {value ? "On" : "Off"}
+        </Text>
+
+        <TouchableOpacity
+          disabled={disabled}
+          onPress={() => !disabled && onToggle(!value)}
+          style={{ opacity: disabled ? 0.4 : 1 }}
+        >
+          <View
             style={[
-              styles.knob,
-              { transform: [{ translateX: value ? 18 : 0 }] },
+              styles.switch,
+              { backgroundColor: value ? "#3562FF" : "#A68DE3" },
             ]}
           >
-            <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
-          </Animated.View>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
+            <Animated.View
+              style={[
+                styles.knob,
+                { transform: [{ translateX: value ? 18 : 0 }] },
+              ]}
+            >
+              <Text style={styles.knobText}>{value ? "✓" : "✕"}</Text>
+            </Animated.View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderAmenity = ({ item }) => (
     <View style={{ marginBottom: 14 }}>
       <View style={styles.amenityCard}>
         <View style={styles.cardTopRow}>
           <View style={{ flex: 1 }}>
-           <Text style={styles.cardTitle}>{item.name}</Text>
-           <Text style={styles.priceRow}>
-                    ₹ {item.amount ?? 0}.00
-          <Text style={styles.perMonth}>/month</Text>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.priceRow}>
+              ₹ {item.amount ?? 0}.00
+              <Text style={styles.perMonth}>/month</Text>
             </Text>
           </View>
 
@@ -689,23 +767,23 @@ const moveUpSelected = async () => {
               onPress={() => {
                 openAssign(item.id);
               }}
-            disabled={!canWriteAmenities}
-            style={{marginRight: 10 , opacity: canWriteAmenities ? 1 : 0.4 }}
+              disabled={!canWriteAmenities}
+              style={{ marginRight: 10, opacity: canWriteAmenities ? 1 : 0.4 }}
             >
               <Image source={LinkIcon} style={styles.linkIcon} />
             </TouchableOpacity>
 
-   <TouchableOpacity
-  onPress={(e) => {
-    e.target.measure((fx, fy, width, height, px, py) => {
-      setMenuPosition({ x: px, y: py });
-      setMenuAmenityId(item.id);
-      setShowMenu(true);
-    });
-  }}
->
-  <Image source={Dots} style={styles.dots} />
-</TouchableOpacity>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.target.measure((fx, fy, width, height, px, py) => {
+                  setMenuPosition({ x: px, y: py });
+                  setMenuAmenityId(item.id);
+                  setShowMenu(true);
+                });
+              }}
+            >
+              <Image source={Dots} style={styles.dots} />
+            </TouchableOpacity>
 
 
           </View>
@@ -716,12 +794,12 @@ const moveUpSelected = async () => {
         <View style={styles.bottomRow}>
           <Text style={styles.prorateLabel}>Pro-Rate</Text>
 
-       
-<CustomSwitch
-   value={item.proRate}
-     disabled={!canWriteAmenities}
-   onToggle={() => toggleActive(item)}
-/>
+
+          <CustomSwitch
+            value={item.proRate}
+            disabled={!canWriteAmenities}
+            onToggle={() => toggleActive(item)}
+          />
 
         </View>
       </View>
@@ -732,14 +810,14 @@ const moveUpSelected = async () => {
 
   return (
     <>
-    <SuccessModal
-  visible={showSuccessModal}
-  onClose={() => setShowSuccessModal(false)}
-  message={modalMessage}
-  type={modalType}
-/>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
 
- { loading && <Loader />}
+      {loading && <Loader />}
 
       <View style={[styles.container, { backgroundColor: showSheet || showAssign ? "transparent" : "#fff" }]}>
         <View style={styles.headerRow}>
@@ -750,72 +828,72 @@ const moveUpSelected = async () => {
         </View>
 
         {/* ROLE BASED EMPTY STATE */}
-{!canReadAmenities && !loading && (
-  <View style={styles.emptyContainer}>
-    <Image source={EmptyAmenity} style={styles.emptyImg} />
-    <Text style={styles.emptyTitle}>
-      You do not have access to view Amenities
-    </Text>
-  </View>
-)}
+        {!canReadAmenities && !loading && (
+          <View style={styles.emptyContainer}>
+            <Image source={EmptyAmenity} style={styles.emptyImg} />
+            <Text style={styles.emptyTitle}>
+              You do not have access to view Amenities
+            </Text>
+          </View>
+        )}
 
-     {canReadAmenities && (
-        <View style={{ flex: 1 }}>
-          {!loading  && amenities.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Image source={EmptyAmenity} style={styles.emptyImg} />
-              <Text style={styles.emptyTitle}>No Amenities are there!</Text>
+        {canReadAmenities && (
+          <View style={{ flex: 1 }}>
+            {!loading && amenities.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Image source={EmptyAmenity} style={styles.emptyImg} />
+                <Text style={styles.emptyTitle}>No Amenities are there!</Text>
 
+                <TouchableOpacity
+                  //  style={styles.addButtonEmpty} 
+                  style={[
+                    styles.addButtonEmpty,
+                    !canWriteAmenities && { opacity: 0.4 }
+                  ]}
+                  disabled={!canWriteAmenities}
+                  onPress={handleShowAmenity}>
+                  <Text style={styles.addBtnText}>+  Add Amenity</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <FlatList
+                data={amenities}
+                keyExtractor={(i) => i.id}
+                renderItem={renderAmenity}
+                contentContainerStyle={{ paddingBottom: 140 }}
+              />
+            )}
+
+            {!loading && amenities.length > 0 && (
               <TouchableOpacity
-              //  style={styles.addButtonEmpty} 
                 style={[
-    styles.addButtonEmpty,
-    !canWriteAmenities && { opacity: 0.4 }
-  ]}
-  disabled={!canWriteAmenities}
-              onPress={handleShowAmenity}>
-                <Text style={styles.addBtnText}>+  Add Amenity</Text>
+                  styles.floatingBtn,
+                  !canWriteAmenities && { opacity: 0.4 }
+                ]}
+                disabled={!canWriteAmenities}
+                onPress={() => openSheet(false)}>
+                <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
               </TouchableOpacity>
-            </View>
-          ) : (  
-            <FlatList
-              data={amenities}
-              keyExtractor={(i) => i.id}
-              renderItem={renderAmenity}
-              contentContainerStyle={{ paddingBottom: 140 }}
-            />
-          )}
+            )}
+          </View>
+        )}
 
-          {!loading && amenities.length > 0 && (
-            <TouchableOpacity
-                            style={[
-    styles.floatingBtn,
-    !canWriteAmenities && { opacity: 0.4 }
-  ]}
-  disabled={!canWriteAmenities}
-            onPress={() => openSheet(false)}>
-              <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
-            </TouchableOpacity>
-          )}
-        </View>
-    )}
-      
       </View>
-{showMenu && (
-  <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-    <View style={styles.menuOverlay}>
+      {showMenu && (
+        <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+          <View style={styles.menuOverlay}>
 
-      <View
-        style={[
-          styles.menuBox,
-          {
-            top: menuPosition.y + 20,  
-            left: menuPosition.x - 120, 
-          },
-        ]}
-      >
-        
-        {/* <TouchableOpacity
+            <View
+              style={[
+                styles.menuBox,
+                {
+                  top: menuPosition.y + 20,
+                  left: menuPosition.x - 120,
+                },
+              ]}
+            >
+
+              {/* <TouchableOpacity
           style={styles.menuItem}
           onPress={() => {
             const amenity = amenities.find((a) => a.id === menuAmenityId);
@@ -823,44 +901,44 @@ const moveUpSelected = async () => {
             openSheet(true, amenity);
           }} */}
 
-          <TouchableOpacity
-  disabled={!canUpdateAmenities}
-  style={[styles.menuItem,{ opacity: canUpdateAmenities ? 1 : 0.4 } ]  }
-  onPress={() => {
-            const amenity = amenities.find((a) => a.id === menuAmenityId);
-            setShowMenu(false);
-            openSheet(true, amenity);
-          }}
->
-        
-            <Image
-                            source={require("../../../Assets/Images/editIcon.png")}
-                            style={styles.popupIcon}
-                          />
-          <Text style={styles.menuText}>Edit</Text>
-        </TouchableOpacity>
+              <TouchableOpacity
+                disabled={!canUpdateAmenities}
+                style={[styles.menuItem, { opacity: canUpdateAmenities ? 1 : 0.4 }]}
+                onPress={() => {
+                  const amenity = amenities.find((a) => a.id === menuAmenityId);
+                  setShowMenu(false);
+                  openSheet(true, amenity);
+                }}
+              >
 
-        <View style={styles.menuDivider} />
+                <Image
+                  source={require("../../../Assets/Images/editIcon.png")}
+                  style={styles.popupIcon}
+                />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
 
-        <TouchableOpacity
-            style={[styles.menuItem,{ opacity: canDeleteAmenities ? 1 : 0.4 } ]  }
-            disabled={!canDeleteAmenities}
-          onPress={() => {
-            setShowMenu(false);
-            confirmDelete(menuAmenityId);
-          }}
-        >
-            <Image
-                            source={require("../../../Assets/Images/trash.png")}
-                            style={[styles.popupIcon, { tintColor: "red" }]}
-                          />
-          <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-        </TouchableOpacity>
+              <View style={styles.menuDivider} />
 
-      </View>
-    </View>
-  </TouchableWithoutFeedback>
-)}
+              <TouchableOpacity
+                style={[styles.menuItem, { opacity: canDeleteAmenities ? 1 : 0.4 }]}
+                disabled={!canDeleteAmenities}
+                onPress={() => {
+                  setShowMenu(false);
+                  confirmDelete(menuAmenityId);
+                }}
+              >
+                <Image
+                  source={require("../../../Assets/Images/trash.png")}
+                  style={[styles.popupIcon, { tintColor: "red" }]}
+                />
+                <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+              </TouchableOpacity>
+
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      )}
 
 
 
@@ -901,70 +979,70 @@ const moveUpSelected = async () => {
               <Text style={styles.inputLabel}>
                 Amenity <Text style={{ color: "red" }}>*</Text>
               </Text>
- 
-<TextInput
-  style={[styles.inputBox]}
-  placeholder="Enter Amenity"
-  value={amenityName}
-  onChangeText={(t) => {
-    
-    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
 
-    setAmenityName(onlyLetters);
+              <TextInput
+                style={[styles.inputBox]}
+                placeholder="Enter Amenity"
+                value={amenityName}
+                onChangeText={(t) => {
 
-    if (amenityError) setAmenityError("");
-    setNoChangeError("");
-  }}
-/>
+                  const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
 
+                  setAmenityName(onlyLetters);
 
+                  if (amenityError) setAmenityError("");
+                  setNoChangeError("");
+                }}
+              />
 
 
-   {amenityError && (
-                                    <ErrorMessage message={amenityError} type="error" />
-                                )}
+
+
+              {amenityError && (
+                <ErrorMessage message={amenityError} type="error" />
+              )}
 
 
               <Text style={[styles.inputLabel, { marginTop: 12 }]}>
                 Price <Text style={{ color: "red" }}>*</Text>
               </Text>
-             <TextInput
-  style={[
-    styles.inputBox,]}
-  placeholder="Enter Price"
-  keyboardType="number-pad"
-  value={amenityPriceText}
-  onChangeText={(t) => {
-    setAmenityPriceText(t.replace(/[^0-9]/g, ""));
-    if (priceError)
-       setPriceError("")
-       setNoChangeError("")
-  }}
-/>
+              <TextInput
+                style={[
+                  styles.inputBox,]}
+                placeholder="Enter Price"
+                keyboardType="number-pad"
+                value={amenityPriceText}
+                onChangeText={(t) => {
+                  setAmenityPriceText(t.replace(/[^0-9]/g, ""));
+                  if (priceError)
+                    setPriceError("")
+                  setNoChangeError("")
+                }}
+              />
 
 
 
-        {priceError && (
-                                    <ErrorMessage message={priceError} type="error" />
-                                )}
+              {priceError && (
+                <ErrorMessage message={priceError} type="error" />
+              )}
 
-  
 
-     {noChangeError && (
-                                    <ErrorMessage message={noChangeError} type="error" />
-                                )}
+
+              {noChangeError && (
+                <ErrorMessage message={noChangeError} type="error" />
+              )}
 
 
             </ScrollView>
 
             <TouchableOpacity
-  style={styles.addTypeBtn}
-  onPress={saveAmenity}
->
-  <Text style={styles.addTypeText}>
-    {isEdit ? "Save Changes" : "Add Amenity"}
-  </Text>
-</TouchableOpacity>
+              style={styles.addTypeBtn}
+              onPress={saveAmenity}
+            >
+              <Text style={styles.addTypeText}>
+                {isEdit ? "Save Changes" : "Add Amenity"}
+              </Text>
+            </TouchableOpacity>
 
           </Animated.View>
         </View>
@@ -976,65 +1054,65 @@ const moveUpSelected = async () => {
             <View style={styles.sheetOverlayDim} />
           </TouchableWithoutFeedback>
 
-         <Animated.View style={[styles.assignSheet, { transform: [{ translateY: assignY }] }]}>
+          <Animated.View style={[styles.assignSheet, { transform: [{ translateY: assignY }] }]}>
 
-  <View style={styles.assignHandleWrapper} {...assignPan.panHandlers}>
-    <View style={styles.assignHandle} />
-  </View>
+            <View style={styles.assignHandleWrapper} {...assignPan.panHandlers}>
+              <View style={styles.assignHandle} />
+            </View>
 
-  <FlatList
-    data={[{ type: "header" }]}   
-    keyExtractor={(_, i) => String(i)}
-    renderItem={() => (
-      <>
-        <Text style={styles.assignTitle}>Assign Amenities</Text>
+            <FlatList
+              data={[{ type: "header" }]} showsVerticalScrollIndicator={false}
+              keyExtractor={(_, i) => String(i)}
+              renderItem={() => (
+                <>
+                  <Text style={styles.assignTitle}>Assign Amenities</Text>
 
-        <Text style={styles.sectionLabel}>Un Assigned</Text>
-        <FlatList
-          data={unassigned}
-          keyExtractor={(u) => u.id}
-          renderItem={({ item }) => <UserRow user={item} />}
-          ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No unassigned users</Text>}
-          scrollEnabled={false}   
-        />
+                  <Text style={styles.sectionLabel}>Un Assigned</Text>
+                  <FlatList
+                    data={unassigned}
+                    keyExtractor={(u) => u.id}
+                    renderItem={({ item }) => <UserRow user={item} />}
+                    ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No unassigned users</Text>}
+                    scrollEnabled={false}
+                  />
 
-         <View style={{display:'flex', flexDirection:'row', justifyContent:"flex-end"}}>
-        <View style={styles.assignActionsRow}>
-          <TouchableOpacity
-            disabled={!anyUnassignedSelected}
-            onPress={moveDownSelected}
-            style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
-          >
-            <Image source={Arrowdown} style={{height:22, width:22}}/>
-          </TouchableOpacity>
-        </View>
+                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "flex-end" }}>
+                    <View style={styles.assignActionsRow}>
+                      <TouchableOpacity
+                        disabled={!anyUnassignedSelected}
+                        onPress={moveDownSelected}
+                        style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
+                      >
+                        <Image source={Arrowdown} style={{ height: 22, width: 22 }} />
+                      </TouchableOpacity>
+                    </View>
 
-         <View style={styles.assignActionsRow}>
-          <TouchableOpacity
-            disabled={!anyAssignedSelected}
-            onPress={moveUpSelected}
-            style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
-          >
-           <Image source={Arrowup} style={{height:22, width:22}}/>
-          </TouchableOpacity>
-        </View>
+                    <View style={styles.assignActionsRow}>
+                      <TouchableOpacity
+                        disabled={!anyAssignedSelected}
+                        onPress={moveUpSelected}
+                        style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
+                      >
+                        <Image source={Arrowup} style={{ height: 22, width: 22 }} />
+                      </TouchableOpacity>
+                    </View>
 
-        </View>
+                  </View>
 
-        <Text style={styles.sectionLabel}>Assigned</Text>
-        <FlatList
-          data={assigned}
-          keyExtractor={(u) => u.id}
-          renderItem={({ item }) => <UserRow user={item} />}
-          scrollEnabled={false} 
-          ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No assigned users</Text>}
-        />
+                  <Text style={styles.sectionLabel}>Assigned</Text>
+                  <FlatList
+                    data={assigned}
+                    keyExtractor={(u) => u.id}
+                    renderItem={({ item }) => <UserRow user={item} />}
+                    scrollEnabled={false}
+                    ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No assigned users</Text>}
+                  />
 
-       
-      </>
-    )}
-  />
-</Animated.View>
+
+                </>
+              )}
+            />
+          </Animated.View>
 
         </View>
       )}
@@ -1082,15 +1160,15 @@ const styles = StyleSheet.create({
   onOffText: { fontSize: 14, marginRight: 6, color: "#3562FF", fontWeight: "600" },
 
   switchRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
 
-switchLabel: {
-  fontSize: 14,
-  fontWeight: "600",
-},
+  switchLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
   switch: {
     width: 40,
     height: 22,
@@ -1106,7 +1184,7 @@ switchLabel: {
     alignItems: "center",
     justifyContent: "center",
   },
-   knobText: { fontSize: 10, fontWeight: "700" },
+  knobText: { fontSize: 10, fontWeight: "700" },
 
   floatingBtn: {
     position: "absolute",
@@ -1164,6 +1242,7 @@ switchLabel: {
 
   assignSheet: {
     width: "100%",
+    maxHeight: SCREEN_HEIGHT * 0.95,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingBottom: 24,
@@ -1202,20 +1281,20 @@ switchLabel: {
     alignItems: "center",
     justifyContent: "center",
   },
- tick: {
-  fontSize: 16,
-  color: "#1D5DFF",
-  fontWeight: "900",
-},
-checkbox: {
-  width: 24,
-  height: 24,
-  borderRadius: 6,
-  borderWidth: 1,
-  borderColor: "#D1D5DB",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  tick: {
+    fontSize: 16,
+    color: "#1D5DFF",
+    fontWeight: "900",
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
 
   assignActionsRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14 },
@@ -1224,46 +1303,46 @@ checkbox: {
 
   userListEmpty: { padding: 12, color: "#777" },
 
-menuOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-},
+  menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 
-menuBox: {
-  position: "absolute",
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  elevation: 10,
-  paddingVertical: 4,
-  paddingHorizontal:10
+  menuBox: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    elevation: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 10
 
-},
-
-
+  },
 
 
-menuItem: {
-    display:'flex',
-    flexDirection:'row',
-  paddingVertical: 12,
-  paddingHorizontal: 22,
-  paddingLeft:4
-},
-  popupIcon: { width: 18, height: 18, marginRight: 10 , marginTop:4 },
 
-menuText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#000",
-},
 
-menuDivider: {
-  height: 1,
-  backgroundColor: "#E5E5E5",
-},
+  menuItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    paddingLeft: 4
+  },
+  popupIcon: { width: 18, height: 18, marginRight: 10, marginTop: 4 },
+
+  menuText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
+
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#E5E5E5",
+  },
 
 
 });
