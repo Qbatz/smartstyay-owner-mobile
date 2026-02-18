@@ -1,4 +1,4 @@
-import React, { useEffect, useRef , useState , useContext} from "react";
+import React, {useState, useEffect, useRef   , useContext} from "react";
 import {
   View,
   Text,
@@ -10,10 +10,11 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  BackHandler,
+  BackHandler,Keyboard
 } from "react-native";
 import { ComplaintContext } from "../../Context/ComplaintContext";
 import { useHasPermission } from "../../Utils/useHasPermission";
+import { CommonContexts } from "../../Context/CommonContext";
 import Loader from "../Loader/Loader"
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -27,18 +28,16 @@ export default function CommentBottomSheet({ visible, onClose  , complaint}) {
     console.log("complaint", complaint);
     
 
-  const { selectedComplaint, addComplaintComment, commentsLoading } =
-  useContext(ComplaintContext);
-
+  const { selectedComplaint, addComplaintComment, commentsLoading , getParticularComplaint} = useContext(ComplaintContext);
+      const { activeHostelId } = useContext(CommonContexts);
   // Prefer parent complaint, fallback to context
-const complaintData = complaint || selectedComplaint;
+    const complaintData = complaint || selectedComplaint;
 
-  const {
+            const {
                   canWriteModule: canWriteComplaints,
                   canReadModule: canReadComplaints,
                   canUpdateModule: canUpdateComplaints,
-                  canDeleteModule: canDeleteComplaints,
-              } = useHasPermission("Complaints");
+                  canDeleteModule: canDeleteComplaints, } = useHasPermission("Complaints");
 
 
       const [commentText, setCommentText] = useState("");
@@ -46,6 +45,7 @@ const complaintData = complaint || selectedComplaint;
       const [showSuccessModal, setShowSuccessModal] = useState(false);
       const [modalMessage, setModalMessage] = useState("");
       const [modalType, setModalType] = useState("success");
+      const [isInputFocused, setIsInputFocused] = useState(false);
 
 console.log("selectedComplaint", selectedComplaint);
 
@@ -63,19 +63,49 @@ console.log("selectedComplaint", selectedComplaint);
   ).current;
 
   const openSheet = () => {
+       setCommentText("")
+       setCommentError("")
     Animated.spring(translateY, {
       toValue: 0,
       useNativeDriver: true,
-    }).start();
-  };
+    }).start()
+  }
 
   const closeSheet = () => {
+    setCommentError("")
+    setCommentText("")
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
       duration: 220,
       useNativeDriver: true,
     }).start(onClose);
   };
+      useEffect(() => {
+          const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+            // if (!isInputFocused) return; 
+        
+            Animated.timing(translateY, {
+              toValue: -e.endCoordinates.height + 5,
+              duration: 180,
+              useNativeDriver: true,
+            }).start();
+          });
+        
+          const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+            Animated.timing(translateY, {
+              toValue: 0,
+              duration: 180,
+              useNativeDriver: true,
+            }).start();
+        
+            // setIsInputFocused(false);
+          });
+        
+          return () => {
+            showSub.remove();
+            hideSub.remove();
+          };
+        }, []);
 
   useEffect(() => {
     if (visible) {
@@ -96,7 +126,14 @@ console.log("selectedComplaint", selectedComplaint);
   if (!visible) return null;
 
 
+  
+     
+
+
 const handleSendComment = async () => {
+
+  console.log("comment",commentText);
+  
    if (!canWriteComplaints) {
     setCommentError("You do not have permission to add comments");
     return;
@@ -113,9 +150,12 @@ const handleSendComment = async () => {
   const res = await addComplaintComment({
     complaintId: selectedComplaint.complaintId,
     message: commentText.trim(),
-  });
+  })
+
+    console.log("res",res);
 
   if (res.success) {
+    getParticularComplaint(activeHostelId, selectedComplaint.complaintId);
     setModalType("success");
     setModalMessage(res?.message || "Comment added successfully");
     setShowSuccessModal(true);
@@ -209,7 +249,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
       >
         <View style={styles.dragLine} />
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+      
           <Text style={styles.commentsTitle}>Comments</Text>
 <View style={styles.mainUserRow}>
   {renderAvatar({
@@ -227,9 +267,9 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
     </Text>
   </View>
 </View>
-
-
-          <View style={styles.separator} />
+ <View style={styles.separator} />
+  <ScrollView showsVerticalScrollIndicator={true} style={{maxHeight:180}}>
+         
 {selectedComplaint?.comments?.map((item) => (
   <View key={item.commentId} style={styles.msgRow}>
     {renderAvatar({
@@ -258,8 +298,8 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
 )}
 
 
-
-          <View style={[styles.replyBox  , !canWriteComplaints && { opacity: 0.4 } ]}>
+       </ScrollView>
+          <View style={[styles.replyBox  , {marginBottom: commentError ? 5: 30 }, !canWriteComplaints && { opacity: 0.4 } ]}>
   <TextInput
   value={commentText}
   onChangeText={(text) => {
@@ -268,7 +308,13 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
   }}
   placeholder="Post your Reply Here"
   style={styles.input}
-    editable={canWriteComplaints}
+  editable={canWriteComplaints}
+  // onFocus={() => {
+  //   setIsInputFocused(true);
+  // }}
+  // onBlur={() => {
+  //   setIsInputFocused(false);
+  // }}
         // pointerEvents={canUpdateComplaints ? "auto" : "none"}
 />
 
@@ -288,7 +334,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
           {commentError ? (
   <ErrorMessage message={commentError} type="error" />
 ) : null} 
-        </ScrollView>
+ 
       </Animated.View>
     </>
   );
@@ -406,8 +452,8 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 12,
     paddingVertical: 3,
-    marginTop: 10,
-    marginBottom: 20,
+    marginTop: 5,
+
   },
 
   input: {

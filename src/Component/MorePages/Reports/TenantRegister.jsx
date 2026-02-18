@@ -148,21 +148,21 @@ const tenantList = [
 >
   <View style={styles.row}>
     <Text style={styles.label}>Total Tenants </Text>
-    <Text style={styles.totalValue}>{Reportsdetails?.tenantInfo?.totalTenants}</Text>
+    <Text style={styles.totalValue}>{tenantData?.summary?.totalTenants}</Text>
   </View>
-<View style={styles.divider} />
+<View style={styles.divider} />   
   <View style={styles.row}>
     <Text style={styles.label}>Active Tenants</Text>
-    <Text style={styles.value}>32</Text>
+    <Text style={styles.value}>{tenantData?.summary?.activeTenants?.count}</Text>
   </View>
 
   <View style={styles.row}>
     <Text style={styles.label}>Notice Period</Text>
-    <Text style={styles.value}>04</Text>
+    <Text style={styles.value}>{tenantData?.summary?.noticePeriod?.count}</Text>
   </View>
    <View style={styles.row}>
     <Text style={styles.label}>Check out</Text>
-    <Text style={styles.value}>02</Text>
+    <Text style={styles.value}>{tenantData?.summary?.checkoutMTD?.count}</Text>
   </View>
 </LinearGradient>
 
