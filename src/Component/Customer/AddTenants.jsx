@@ -29,6 +29,17 @@ export default function AddTenant() {
     const [pincodeError, setPincodeError] = useState("");
     const [stateSearch, setStateSearch] = useState("");
     const stateInputRef = useRef(null);
+    const [countryOpen, setCountryOpen] = useState(false);
+    const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India",});
+
+    const countryList = [
+  { label: "India", code: "+91" },
+  { label: "United States", code: "+1" },
+  { label: "United Kingdom", code: "+44" },
+  { label: "Australia", code: "+61" },
+  { label: "Canada", code: "+1" },
+  { label: "Singapore", code: "+65" },
+];
 
 
 
@@ -437,7 +448,46 @@ export default function AddTenant() {
 
                                     <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
                                     <View style={styles.mobileWrapper}>
-                                        <Text style={styles.countryCode}>+91</Text>
+                                       <View style={{ position: "relative" }}>
+  <TouchableOpacity
+    style={styles.countryDropdown}
+    onPress={() => setCountryOpen(!countryOpen)}
+    activeOpacity={0.7}
+  >
+    <Text style={styles.countryCodeText}>
+      {selectedCountry.code}
+    </Text>
+    <Image source={DownArrow} style={styles.countryArrow} />
+  </TouchableOpacity>
+
+  {/* {countryOpen && (
+    <>
+      <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
+        <View style={styles.dropdownOverlay} />
+      </TouchableWithoutFeedback>
+
+      <View style={styles.countryDropdownMenu}>
+        <ScrollView>
+          {countryList.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.countryOption}
+              onPress={() => {
+                setSelectedCountry(item);
+                setCountryOpen(false);
+              }}
+            >
+              <Text style={styles.countryOptionText}>
+                {item.label} ({item.code})
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </>
+  )} */}
+</View>
+
                                         <TextInput
                                             style={styles.mobileInput}
                                             keyboardType="number-pad"
@@ -920,16 +970,62 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
 
-    mobileWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        height: 48,
-        marginBottom: 2,
-    },
+mobileWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 8,
+  height: 50,
+  marginBottom: 2,
+},
+
+countryDropdown: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 10,
+  borderRightWidth: 1,
+  borderRightColor: "#E5E7EB",
+  height: "100%",
+},
+
+countryCodeText: {
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#111",
+  marginRight: 4,
+},
+
+countryArrow: {
+  width: 14,
+  height: 14,
+  tintColor: "#6B7280",
+},
+
+countryDropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  width: 180,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 10,
+  elevation: 10,
+  zIndex: 9999,
+  maxHeight: 200,
+},
+
+countryOption: {
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+},
+
+countryOptionText: {
+  fontSize: 14,
+  color: "#111",
+},
+
 
     countryCode: {
         fontSize: 14,

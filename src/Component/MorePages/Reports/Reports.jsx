@@ -308,16 +308,17 @@ const handleSwipe = () => {
         <View style={styles.registerScroll}>
           <Text style={styles.sectionTitle}>Registers</Text>
           <RegisterCard icon={InvoiceIcon}  onPress={() => navigation.navigate("InvoiceRegister")} 
-           title="Invoices" desc="Track all invoices and payments" bgColor="#E8F0FF"  />
-          <RegisterCard icon={ReceiptIcon} title="Receipt Register" desc="Monitor all collections" bgColor="#E6F9F1" 
+           title="Invoices" desc="Track all invoices, payments, and outstanding amounts" bgColor="#E8F0FF"  />
+          <RegisterCard icon={ReceiptIcon} title="Receipt Register"
+           desc="Monitor all payment  receipt and collections" bgColor="#E6F9F1" 
           onPress={() => navigation.navigate("ReceiptRegister")}/>
           {/* <RegisterCard icon={BankIcon} title="Bank Transactions" desc="View all banking transactions" bgColor="#F1EBFF" /> */}
           <RegisterCard icon={TenantsIcon} onPress={() => navigation.navigate("TenantRegister")}
-           title="Tenants" desc="Tenant directory & status" bgColor="#FFF3DB" />
+           title="Tenants" desc="Complete tenant directory with status tracking" bgColor="#FFF3DB" />
           <RegisterCard icon={ExpensesIcon} onPress={() => navigation.navigate("ExpenseRegister")}
-           title="Expense Register" desc="Expenses & approvals" bgColor="#FFECEC"   />
-          <RegisterCard icon={ElectricityIcon} title="Electricity Bills" desc="Meter readings & billing" bgColor="#EEF2FF" />
-          <RegisterCard icon={FinalSettlementIcon} title="Final Settlement" desc="Security deposit refunds" bgColor="#E6F9F1" />
+           title="Expense Register" desc="Track all expenses , approvals and payments" bgColor="#FFECEC"   />
+          <RegisterCard icon={ElectricityIcon} title="Electricity Bills" desc="Meter readings consumptions and billing records" bgColor="#EEF2FF" />
+          <RegisterCard icon={FinalSettlementIcon} title="Final Settlement" desc="Security deposit refunds and settlement tracking" bgColor="#E6F9F1" />
         </View>
       
       </ScrollView>
