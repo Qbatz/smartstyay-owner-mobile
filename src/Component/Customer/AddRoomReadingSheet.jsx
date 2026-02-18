@@ -251,7 +251,7 @@ const handleSubmit = async () => {
   Reading Date <Text style={{ color: "red" }}>*</Text>
 </Text>
 
-<View style={styles.dateInputWrapper}>
+{/* <View style={styles.dateInputWrapper}>
   <TextInput
   style={styles.dateInput}
   placeholder="DD-MM-YYYY"
@@ -272,25 +272,39 @@ const handleSubmit = async () => {
       style={styles.calendarIcon}
     />
   </TouchableOpacity>
-</View>
+</View> */}
+
+<TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => {
+    setOpenReadingDatePic(true);
+    setReadingDateError("");
+    setReadingError("");
+  }}
+>
+  <View style={styles.dateInputWrapper}>
+    <Text
+      style={[
+        styles.dateInput,
+        !readingDate && { color: "#9CA3AF" },
+      ]}
+    >
+      {readingDate
+        ? dayjs(readingDate).format("DD-MM-YYYY")
+        : "DD-MM-YYYY"}
+    </Text>
+
+    <Image
+      source={require("../../Assets/Images/calendar.png")}
+      style={styles.calendarIcon}
+    />
+  </View>
+</TouchableOpacity>
 
 {readingDateError && <ErrorMessage message={readingDateError} type="error" />}
 
 
-        {/* <Text style={styles.sheetLabel}>
-          Reading <Text style={{ color: "red" }}>*</Text>
-        </Text>
-
-        <TextInput
-          placeholder="Please Enter Reading"
-          style={styles.sheetInput}
-          keyboardType="numeric"
-          value={currentReading}
-          onChangeText={(t) => {
-            setCurrentReading(t.replace(/[^0-9]/g, ""));
-            setReadingError("");
-          }}
-        /> */}
+      
         <View style={styles.readingLabelRow}>
   <Text style={styles.sheetLabel}>
     Reading <Text style={{ color: "red" }}>*</Text>
