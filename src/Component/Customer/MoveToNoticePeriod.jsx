@@ -354,7 +354,7 @@ for (let i = -90; i <= 90; i++) {
 
 
           <View style={styles.profileRow}>
-            {customer?.profilePic ? <Image source={customer?.profilePic} style={styles.profileImg} /> : 
+            {customer?.profilePic ? <Image source={{uri:customer?.profilePic}} style={styles.profileImg} /> : 
             <View style={[styles.profileImg,{justifyContent:'center',alignItems:'center',backgroundColor:'#eef1ff'}]}>
               <Text style={{fontSize:16,fontWeight:600}}>{customer?.initials}</Text>
             </View>}

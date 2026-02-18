@@ -27,6 +27,7 @@ import ErrorMessage from '../ErrorMessagr/Errormessagestyle';
 import SuccessModal from '../../ToastFile/ToastPage';
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import CommingSoon from "../../Assets/Images/Coming_soon.png"
 
 export default function BookingCheckIn({ navigation, route }) {
     const { customerId, customer } = route.params || {};
@@ -496,6 +497,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         keyboardDismissMode="on-drag"
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{
+                            flexGrow:1,
                             paddingBottom: 80, // ✅ button row height + extra space
                         }}
                     >
@@ -779,9 +781,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         value={item.amount}
                                                         onChangeText={(t) => {
                                                             const onlyNumbers = t.replace(/[^0-9^\d]/g, "");
-                                                            updateAmount(item.id, onlyNumbers)}
+                                                            updateAmount(item.id, onlyNumbers)
                                                         }
-                                                            
+                                                        }
+
                                                     />
                                                 )}
 
@@ -834,31 +837,31 @@ export default function BookingCheckIn({ navigation, route }) {
 
                         {tab === "short" && (
 
-                            <View><Text>Comming Soon</Text></View>
+                            <View style={{justifyContent:'center',alignItems:'center',flex:1}}>
+                                <Image source={CommingSoon} style={{width:315,height:220,resizeMode:'contain'}}/>
+                                <Text style={{fontSize:16,fontWeight:600}}>Comming Soon</Text></View>
                         )}
                     </ScrollView>
-                    <View style={styles.BtnRow}>
-                        <TouchableOpacity style={styles.CancelBtn}>
-                            <Text style={{ color: "grey", fontWeight: "600" }}>
-                                Cancel
-                            </Text>
-                        </TouchableOpacity>
+                    {tab === "long" && (
+                        <View style={styles.BtnRow}>
+                            <TouchableOpacity style={styles.CancelBtn}>
+                                <Text style={{ color: "grey", fontWeight: "600" }}>
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
-                                        <Text style={styles.submitText}>Assign Bed</Text>
-                                    </TouchableOpacity> */}
-                        <TouchableOpacity
-                            style={[
-                                styles.submitBtn,
-                                isAssignDisabled && { backgroundColor: "#9CA3AF" }
-                            ]}
-                            disabled={isAssignDisabled}
-                            onPress={submitLongStay}
-                        >
-                            <Text style={styles.submitText}>Check-In</Text>
-                        </TouchableOpacity>
-
-                    </View>
+                            <TouchableOpacity
+                                style={[
+                                    styles.submitBtn,
+                                    isAssignDisabled && { backgroundColor: "#9CA3AF" }
+                                ]}
+                                disabled={isAssignDisabled}
+                                onPress={submitLongStay}
+                            >
+                                <Text style={styles.submitText}>Check-In</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </KeyboardAvoidingView>
             </SafeAreaView>
             {openDatePicker && (

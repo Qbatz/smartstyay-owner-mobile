@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState,useContext } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   PanResponder,
   Dimensions,
   TouchableWithoutFeedback,
-  Easing,ScrollView
+  Easing, ScrollView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -25,18 +25,18 @@ export default function DoubleStatusSheet({
   onPressNotice,
   handleShowFinalSettlement,
   handleNoticeToBookin,
-  handleReAssignBed,handleMakeUsInActive,handleCheckIn,selectedBed,handleNoticeToCheckout,handleEditBed
+  handleReAssignBed, handleMakeUsInActive, handleCheckIn, selectedBed, handleNoticeToCheckout, handleEditBed
 }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const { activeHostelId } = useContext(CommonContexts);
-    const { getCustomersByHostel, loading } = useCustomer();
-   const navigation = useNavigation();
+  const { getCustomersByHostel, loading } = useCustomer();
+  const navigation = useNavigation();
 
   const [showOccupiedMenu, setShowOccupiedMenu] = useState(false);
   const [showReservedMenu, setShowReservedMenu] = useState(null);
-    const [customers, setCustomers] = useState([]);
-  
+  const [customers, setCustomers] = useState([]);
+
   const handleCheckoutSheet = () => {
     setShowOccupiedMenu(false);
     handleNoticeToCheckout()
@@ -44,13 +44,13 @@ export default function DoubleStatusSheet({
   }
   const roomChip = room?.room_no ? `${room.room_no} - ${bed?.label || ""}` : "Room";
 
-   const handleEdit = () => {
+  const handleEdit = () => {
     if (!handleEditBed || !selectedBed) return;
     handleEditBed(selectedBed);
     onClose()
   };
 
- console.log("selectedBed",selectedBed)
+  console.log("selectedBed", selectedBed)
   const openSheet = () => {
     translateY.setValue(SCREEN_HEIGHT);
     overlayOpacity.setValue(0);
@@ -72,25 +72,25 @@ export default function DoubleStatusSheet({
     setShowOccupiedMenu(false);
     setShowReservedMenu(false);
   };
-  const handleNewReserve=()=>{
+  const handleNewReserve = () => {
     handleNoticeToBookin()
   }
-  const handleFinalSettled = ()=>{
+  const handleFinalSettled = () => {
     handleShowFinalSettlement()
   }
-const handleCancelNotice=()=>{
+  const handleCancelNotice = () => {
     handleReAssignBed()
-}
-// const handleMakeUsIn=()=>{
-//   handleMakeUsInActive()
-// }
-const handleMakeUsIn = (item) => {
-  setShowReservedMenu(null);
-  handleMakeUsInActive(item);   // ⭐ item direct-ah parent-ku
-};
-const handleBookToCheckin=()=>{
-  handleCheckIn()
-}
+  }
+  // const handleMakeUsIn=()=>{
+  //   handleMakeUsInActive()
+  // }
+  const handleMakeUsIn = (item) => {
+    setShowReservedMenu(null);
+    handleMakeUsInActive(item);   // ⭐ item direct-ah parent-ku
+  };
+  const handleBookToCheckin = () => {
+    handleCheckIn()
+  }
 
   /* ---------------- CLOSE ---------------- */
   const closeSheet = () => {
@@ -109,25 +109,25 @@ const handleBookToCheckin=()=>{
     ]).start(() => onClose());
   };
 
-   
-      useEffect(() => {
-        if (activeHostelId) {
-          fetchCustomers();
-        }
-      }, [activeHostelId])
-  
-  
-  
-  
-   const fetchCustomers = async () => {
+
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchCustomers();
+    }
+  }, [activeHostelId])
+
+
+
+
+  const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data?.listCustomers || []);
   };
-    console.log("customers123", customers)
-    const matchedCustomer = customers.find(
-      c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
-    );
-  console.log("matchedCustomer",matchedCustomer)
+  console.log("customers123", customers)
+  const matchedCustomer = customers.find(
+    c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
+  );
+  console.log("matchedCustomer", matchedCustomer)
 
   useEffect(() => {
     if (visible) openSheet();
@@ -160,29 +160,29 @@ const handleBookToCheckin=()=>{
       },
     })
   ).current;
-  const isDisabled = true; 
+  const isDisabled = true;
 
 
   if (!visible) return null;
 
   return (
     <View style={styles.absoluteContainer} pointerEvents="box-none">
-      
-      
+
+
       <TouchableWithoutFeedback onPress={closeSheet}>
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]} />
       </TouchableWithoutFeedback>
 
       {/* SHEET */}
-        <Animated.View
+      <Animated.View
         style={[
           styles.sheet,
           {
             transform: [{ translateY }],
-            maxHeight: "80%",   
+            maxHeight: "80%",
           },
         ]}
-        {...panResponder.panHandlers}  
+        {...panResponder.panHandlers}
       >
         <View style={styles.handle} />
 
@@ -198,177 +198,177 @@ const handleBookToCheckin=()=>{
             <Text style={[styles.chipText, styles.chipSoftText]}>{selectedBed.roomName}-{selectedBed.bedName}</Text>
           </View>
         </View>
-<ScrollView
-  showsVerticalScrollIndicator={false}
-  showsHorizontalScrollIndicator={false}
-  indicatorStyle="white"   
->
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Occupied by</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          indicatorStyle="white"
+        >
 
-          <View style={styles.headerRow}>
-            <View style={styles.personRow}>
-              {/* <Image
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Occupied by</Text>
+
+            <View style={styles.headerRow}>
+              <View style={styles.personRow}>
+                {/* <Image
                 source={require("../../../Assets/Images/Avatar.png")}
                 style={styles.avatar}
               /> */}
-              {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
-  <Image
-    source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
-    style={styles.avatar}
-  />
-) : (
-  <View style={styles.initialCircle}>
-    <Text style={styles.initialText}>
-      {selectedBed?.currentTenantInfo?.[0]?.initials ||
-        selectedBed?.currentTenantInfo?.[0]?.tenantFullName
-          ?.split(" ")
-          ?.map(w => w[0])
-          ?.join("")
-          ?.slice(0, 2)
-          ?.toUpperCase() ||
-        "--"}
-    </Text>
-  </View>
-)}
+                {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
+                  <Image
+                    source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={styles.initialCircle}>
+                    <Text style={styles.initialText}>
+                      {selectedBed?.currentTenantInfo?.[0]?.initials ||
+                        selectedBed?.currentTenantInfo?.[0]?.tenantFullName
+                          ?.split(" ")
+                          ?.map(w => w[0])
+                          ?.join("")
+                          ?.slice(0, 2)
+                          ?.toUpperCase() ||
+                        "--"}
+                    </Text>
+                  </View>
+                )}
 
-              <View>
-                <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
-                <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
+                <View>
+                  <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                  <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
+                </View>
               </View>
+
+              <TouchableOpacity
+                style={styles.dotsButton}
+                onPress={() => {
+                  setShowOccupiedMenu(!showOccupiedMenu);
+                  setShowReservedMenu(false);
+                }}
+              >
+                <Text style={styles.dots}>⋯</Text>
+              </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={styles.dotsButton}
-              onPress={() => {
-                setShowOccupiedMenu(!showOccupiedMenu);
-                setShowReservedMenu(false);
-              }}
-            >
-              <Text style={styles.dots}>⋯</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Rental Amount</Text>
+              <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Check-In Date</Text>
+              <Text style={styles.value}> {selectedBed.currentTenantInfo[0]?.joiningDate
+              }</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Last Invoice</Text>
+              <Text style={styles.link}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
+            </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Rental Amount</Text>
-            <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Check-In Date</Text>
-            <Text style={styles.value}> {selectedBed.currentTenantInfo[0]?.joiningDate
-}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Last Invoice</Text>
-            <Text style={styles.link}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
-          </View>
-
-          {showOccupiedMenu && (
-<>
- {/* {showOccupiedMenu && (
+            {showOccupiedMenu && (
+              <>
+                {/* {showOccupiedMenu && (
   <TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
     <View style={styles.menuOverlay} />
   </TouchableWithoutFeedback>
 )}    */}
-<TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
-    <View style={styles.fullMenuOverlay}>
-            <View style={styles.menuCard}>
- <TouchableOpacity
-                                              style={styles.menuItem}
-                                              onPress={handleEdit}
-                                            >
-                                              <Image
-                                                source={require("../../../Assets/Images/editIcon.png")}
-                                                style={styles.menuIcon}
-                                              />
-                                              <Text style={styles.menuText}>Edit</Text>
-                                            </TouchableOpacity>
-               {matchedCustomer?.currentStatus === "Settlement Generated" ? (
-                <>
-                              <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
-                                <Image
-                                  source={require("../../../Assets/Images/NewBook.png")}
-                                  style={styles.menuIcon}
-                                />
-                                <Text style={styles.menuText}>Checkout</Text>
-                              </TouchableOpacity>
-                              
-                              </>
-                            ) : (
-            <>
-              <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
-                <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
-                <Text style={styles.menuText}>New Booking</Text>
-              </TouchableOpacity>
+                <TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
+                  <View style={styles.fullMenuOverlay}>
+                    <View style={styles.menuCard}>
+                      <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={handleEdit}
+                      >
+                        <Image
+                          source={require("../../../Assets/Images/editIcon.png")}
+                          style={styles.menuIcon}
+                        />
+                        <Text style={styles.menuText}>Edit</Text>
+                      </TouchableOpacity>
+                      {matchedCustomer?.currentStatus === "Settlement Generated" ? (
+                        <>
+                          <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
+                            <Image
+                              source={require("../../../Assets/Images/NewBook.png")}
+                              style={styles.menuIcon}
+                            />
+                            <Text style={styles.menuText}>Checkout</Text>
+                          </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={handleCancelNotice}>
-                <Image style={styles.menuIcon} source={require("../../../Assets/Images/calendarremove.png")} />
-                <Text style={styles.menuText}>Cancel Check-out</Text>
-              </TouchableOpacity>
+                        </>
+                      ) : (
+                        <>
+                          <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
+                            <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
+                            <Text style={styles.menuText}>New Booking</Text>
+                          </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
-                <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
-                <Text style={styles.menuText}>Generate</Text>
-              </TouchableOpacity>
-            </>
-                            )}
- {/* {matchedCustomer?.currentStatus === "Settlement Generated" &&
+                          <TouchableOpacity style={styles.menuItem} onPress={handleCancelNotice}>
+                            <Image style={styles.menuIcon} source={require("../../../Assets/Images/calendarremove.png")} />
+                            <Text style={styles.menuText}>Cancel Check-out</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
+                            <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
+                            <Text style={styles.menuText}>Generate</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                      {/* {matchedCustomer?.currentStatus === "Settlement Generated" &&
   <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
                 <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
                 <Text style={styles.menuText}>Checkout</Text>
               </TouchableOpacity>
 } */}
 
-            </View>
-            </View>
-            </TouchableWithoutFeedback>
-            </>
-          )}
-        </View>
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </>
+            )}
+          </View>
 
-        {/* RESERVED SECTION */}
-       {selectedBed?.newTenantInfo?.length > 0 && (
-        <View style={[styles.section, { borderBottomWidth: 0 }]}>
-          <Text style={styles.sectionTitle}>Reserved by</Text>
+          {/* RESERVED SECTION */}
+          {selectedBed?.newTenantInfo?.length > 0 && (
+            <View style={[styles.section, { borderBottomWidth: 0 }]}>
+              <Text style={styles.sectionTitle}>Reserved by</Text>
 
-          {
-            selectedBed.newTenantInfo.map((item,index)=>{
-              return(
+              {
+                selectedBed.newTenantInfo.map((item, index) => {
+                  return (
 
-              
-<View style={{ position: "relative" }}  key={index}>
- <View style={styles.headerRow}>
-            <View style={styles.personRow}>
-              {/* <Image
+
+                    <View style={{ position: "relative" }} key={index}>
+                      <View style={styles.headerRow}>
+                        <View style={styles.personRow}>
+                          {/* <Image
                 source={require("../../../Assets/Images/profile.png")}
                 style={styles.avatar}
               /> */}
-              {item?.profilePic ? (
-  <Image
-    source={{ uri: item.profilePic }}
-    style={styles.avatar}
-  />
-) : (
-  <View style={styles.initialCircle}>
-    <Text style={styles.initialText}>
-      {item?.tenantFullName
-        ?.split(" ")
-        ?.map(w => w[0])
-        ?.join("")
-        ?.slice(0, 2)
-        ?.toUpperCase() || "--"}
-    </Text>
-  </View>
-)}
+                          {item?.profilePic ? (
+                            <Image
+                              source={{ uri: item.profilePic }}
+                              style={styles.avatar}
+                            />
+                          ) : (
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {item?.tenantFullName
+                                  ?.split(" ")
+                                  ?.map(w => w[0])
+                                  ?.join("")
+                                  ?.slice(0, 2)
+                                  ?.toUpperCase() || "--"}
+                              </Text>
+                            </View>
+                          )}
 
-              <View>
-                <Text style={styles.name}>{item.tenantFullName}</Text>
-                <Text style={styles.phone}>+91 {item.mobile}</Text>
-              </View>
-            </View>
+                          <View>
+                            <Text style={styles.name}>{item.tenantFullName}</Text>
+                            <Text style={styles.phone}>+91 {item.mobile}</Text>
+                          </View>
+                        </View>
 
-            {/* <TouchableOpacity
+                        {/* <TouchableOpacity
               style={styles.dotsButton}
               onPress={() => {
                 setShowReservedMenu(!showReservedMenu);
@@ -377,89 +377,89 @@ const handleBookToCheckin=()=>{
             >
               <Text style={styles.dots}>⋯</Text>
             </TouchableOpacity> */}
-            <TouchableOpacity
-  style={styles.dotsButton}
-  onPress={() => {
-    setShowReservedMenu(
-      showReservedMenu === index ? null : index
-    );
-    setShowOccupiedMenu(false);
-  }}
->
-  <Text style={styles.dots}>⋯</Text>
-</TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.dotsButton}
+                          onPress={() => {
+                            setShowReservedMenu(
+                              showReservedMenu === index ? null : index
+                            );
+                            setShowOccupiedMenu(false);
+                          }}
+                        >
+                          <Text style={styles.dots}>⋯</Text>
+                        </TouchableOpacity>
 
-          </View>
+                      </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Booking Amount</Text>
-            <Text style={styles.value}>₹  {item.bookingAmount}</Text>
-          </View>
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Booking Amount</Text>
+                        <Text style={styles.value}>₹  {item.bookingAmount}</Text>
+                      </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Check-In Date</Text>
-            <Text style={styles.value}> {item.joiningDate}</Text>
-          </View>
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Check-In Date</Text>
+                        <Text style={styles.value}> {item.joiningDate}</Text>
+                      </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Last Invoice</Text>
-            <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
-</Text>
-          </View>
-           {showReservedMenu === index && (
-            
-             <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>
-    <View style={styles.fullMenuOverlay}>
-    <View style={styles.inlineMenu}>
-      <TouchableOpacity
-      
-        onPress={handleBookToCheckin}
-        disabled={isDisabled}   // boolean
-  style={[
-    styles.menuItem,
-    isDisabled && styles.menuItemDisabled
-  ]}
-      >
-        <Image
-        style={[
-      styles.menuIcon,
-      isDisabled && { opacity: 0.5 }
-    ]}
-          source={require("../../../Assets/Images/add-circle.png")}
-        />
-        <Text style={[
-      styles.menuText,
-      isDisabled && styles.menuTextDisabled
-    ]}>Check-in</Text>
-      </TouchableOpacity>
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Last Invoice</Text>
+                        <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
+                        </Text>
+                      </View>
+                      {showReservedMenu === index && (
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        // onPress={handleMakeUsIn}
-        onPress={() => handleMakeUsIn(item)}  
-      >
-        <Image
-          style={styles.menuIcon}
-          source={require("../../../Assets/Images/Logout.png")}
-        />
-        <Text style={styles.menuText}>Make as Inactive</Text>
-      </TouchableOpacity>
-    </View>
-    </View>
-    </TouchableWithoutFeedback>
-  )}
-          
-</View>
-              )
-            })
-          }
+                        <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>
+                          <View style={styles.fullMenuOverlay}>
+                            <View style={styles.inlineMenu}>
+                              <TouchableOpacity
 
-         
+                                onPress={handleBookToCheckin}
+                                disabled={isDisabled}   // boolean
+                                style={[
+                                  styles.menuItem,
+                                  isDisabled && styles.menuItemDisabled
+                                ]}
+                              >
+                                <Image
+                                  style={[
+                                    styles.menuIcon,
+                                    isDisabled && { opacity: 0.5 }
+                                  ]}
+                                  source={require("../../../Assets/Images/add-circle.png")}
+                                />
+                                <Text style={[
+                                  styles.menuText,
+                                  isDisabled && styles.menuTextDisabled
+                                ]}>Check-in</Text>
+                              </TouchableOpacity>
 
-         
-        </View>
-       )}
-        
+                              <TouchableOpacity
+                                style={styles.menuItem}
+                                // onPress={handleMakeUsIn}
+                                onPress={() => handleMakeUsIn(item)}
+                              >
+                                <Image
+                                  style={styles.menuIcon}
+                                  source={require("../../../Assets/Images/Logout.png")}
+                                />
+                                <Text style={styles.menuText}>Make as Inactive</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        </TouchableWithoutFeedback>
+                      )}
+
+                    </View>
+                  )
+                })
+              }
+
+
+
+
+            </View>
+          )}
+
         </ScrollView>
 
         {/* FOOTER */}
@@ -467,11 +467,11 @@ const handleBookToCheckin=()=>{
           <TouchableOpacity style={styles.noticeBtn}>
             <Text style={styles.noticeText}>Notice Period</Text>
           </TouchableOpacity>
- {selectedBed?.newTenantInfo?.length > 0 && (
-          <TouchableOpacity style={styles.reservedBtn}>
-            <Text style={styles.reservedText}>Reserved</Text>
-          </TouchableOpacity>
- )}
+          {selectedBed?.newTenantInfo?.length > 0 && (
+            <TouchableOpacity style={styles.reservedBtn}>
+              <Text style={styles.reservedText}>Reserved</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Animated.View>
     </View>
@@ -566,38 +566,38 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
 
- menuItem: {
-  flexDirection: "row",
-  alignItems: "center",
-  padding: 12,
-  backgroundColor: "#FFFFFF",
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#FFFFFF",
 
-},
-menuIcon:{
-width:20,
-height:20
-},
+  },
+  menuIcon: {
+    width: 20,
+    height: 20
+  },
 
-menuItemDisabled: {
-  backgroundColor: "#F3F4F6",
-},
+  menuItemDisabled: {
+    backgroundColor: "#F3F4F6",
+  },
 
-menuText: {
-  fontSize: 14,
-  color: "#111",
-  marginLeft: 8,
-},
+  menuText: {
+    fontSize: 14,
+    color: "#111",
+    marginLeft: 8,
+  },
 
-menuTextDisabled: {
-  color: "#9CA3AF",
-},
+  menuTextDisabled: {
+    color: "#9CA3AF",
+  },
 
 
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 30,
-   
+
   },
 
   noticeBtn: {
@@ -622,18 +622,18 @@ menuTextDisabled: {
 
   reservedText: { color: "#1E45E1", fontWeight: "700", fontSize: 14 },
   inlineMenu: {
-  position: "absolute",
-  top: 40,   
-  right: 0,
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: "#E6E9F0",
-  elevation: 6,
-  paddingVertical: 6,
-  zIndex: 999,
-},
- menuOverlay: {
+    position: "absolute",
+    top: 40,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E6E9F0",
+    elevation: 6,
+    paddingVertical: 6,
+    zIndex: 999,
+  },
+  menuOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -643,29 +643,29 @@ menuTextDisabled: {
     zIndex: 1,
   },
   initialCircle: {
-  width: 42,
-  height: 42,
-  borderRadius: 21,
-  backgroundColor: "#E5E7EB",
-  alignItems: "center",
-  justifyContent: "center",
-  marginRight:5
-},
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 5
+  },
 
-initialText: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#374151", // dark grey ✅
-},
-fullMenuOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 9999,
-  backgroundColor: "transparent",
-},
+  initialText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#374151", // dark grey ✅
+  },
+  fullMenuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+    backgroundColor: "transparent",
+  },
 
 
 });
