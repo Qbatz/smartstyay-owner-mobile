@@ -309,7 +309,8 @@ const handleSwipe = () => {
           <Text style={styles.sectionTitle}>Registers</Text>
           <RegisterCard icon={InvoiceIcon}  onPress={() => navigation.navigate("InvoiceRegister")} 
            title="Invoices" desc="Track all invoices and payments" bgColor="#E8F0FF"  />
-          <RegisterCard icon={ReceiptIcon} title="Receipt Register" desc="Monitor all collections" bgColor="#E6F9F1" />
+          <RegisterCard icon={ReceiptIcon} title="Receipt Register" desc="Monitor all collections" bgColor="#E6F9F1" 
+          onPress={() => navigation.navigate("ReceiptRegister")}/>
           {/* <RegisterCard icon={BankIcon} title="Bank Transactions" desc="View all banking transactions" bgColor="#F1EBFF" /> */}
           <RegisterCard icon={TenantsIcon} onPress={() => navigation.navigate("TenantRegister")}
            title="Tenants" desc="Tenant directory & status" bgColor="#FFF3DB" />
