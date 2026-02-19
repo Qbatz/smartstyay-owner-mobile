@@ -598,9 +598,10 @@ export default function TenantCheckIn({ navigation, route }) {
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
                         {filteredBeds.map((b) => (
+                          
                           <TouchableOpacity
                             key={b.bedId}
-                            style={[styles.option, selectedBed?.id === b.id &&{backgroundColor:'#E6F0FF'}]}
+                            style={[styles.option, selectedBed?.bedId === b.bedId &&{backgroundColor:'#E6F0FF'}]}
                             onPress={() => {
                               setSelectedBed(b);
                               setBedOpen(false);
@@ -608,6 +609,8 @@ export default function TenantCheckIn({ navigation, route }) {
                               //  setRentalAmount(String(b.rentAmount));
                             }}
                           >
+                            {console.log(b)}
+                            {console.log(selectedBed)}
                             <Text style={styles.optionText}>
                               {b.bedName}
                             </Text>

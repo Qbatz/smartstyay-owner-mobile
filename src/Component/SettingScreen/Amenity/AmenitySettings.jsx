@@ -592,7 +592,11 @@ export default function AmenitySettings({ navigation }) {
           </View>
 
           <View style={{ marginLeft: 10, flex: 1, marginRight: 12 }}>
-            <Text style={styles.userName}>{user.name}</Text>
+            <View style={{flexDirection:'row',alignItems:'center',}}>
+              <Text style={styles.userName}>{user.name}</Text>
+                {!user.canAssign && <View style={{width:6,height:6,borderRadius:3,backgroundColor:'red',marginLeft:4}}/>}
+            </View>
+            
            <View
             style={{
               flex: 1,
@@ -675,7 +679,6 @@ export default function AmenitySettings({ navigation }) {
   const assigned = sampleUsers.filter((u) => u.assigned);
   const anyUnassignedSelected = unassigned.some((u) => u.selected);
   const anyAssignedSelected = assigned.some((u) => u.selected);
-  console.log(unassigned)
 
   //  const CustomSwitch = ({ value, onToggle }) => {
   //     return (
@@ -1267,7 +1270,7 @@ const styles = StyleSheet.create({
   userLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
   avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#E8EAF6", alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#1D3BFF", fontWeight: "700" },
-  userName: { fontWeight: "700", fontSize: 15 },
+  userName: { fontWeight: "700", fontSize: 15,flexShrink:1 },
   floorBadge: { backgroundColor: "#FDE7A8", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginRight: 8 },
   floorBadgeText: { fontSize: 12, fontWeight: "700", color: "#6b4a00" },
   metaText: { color: "#666", marginLeft: 6 },
