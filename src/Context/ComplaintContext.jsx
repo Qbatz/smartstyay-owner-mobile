@@ -340,6 +340,9 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
 const addComplaintComment = async ({ complaintId, message }) => {
   // setCommentsLoading(true);
 
+  console.log("complaintId", complaintId , message);
+  
+
   try {
     const axios = getAxios();
     const res = await axios.post(
@@ -347,6 +350,7 @@ const addComplaintComment = async ({ complaintId, message }) => {
       { message },
       { headers: { "Content-Type": "application/json" } }
     );
+     console.log("complaintId", res);
 
     if (res.status === 201 || res.status === 200) {
       await getParticularComplaint(complaintId);
@@ -359,6 +363,7 @@ console.log("rescomment",res)
 
     return { success: false, message: "Failed to add comment" };
   } catch (err) {
+         console.log("complaintId", err);
     return { success: false, message: getErrorMessage(err) };
   } finally {
     setCommentsLoading(false);

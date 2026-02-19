@@ -42,6 +42,22 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [countryOpen, setCountryOpen] = useState(false);
+const [selectedCountry, setSelectedCountry] = useState({
+  code: "+91",
+  label: "India",
+});
+
+
+const countryList = [
+  { label: "India", code: "+91" },
+  { label: "United States", code: "+1" },
+  { label: "United Kingdom", code: "+44" },
+  { label: "Australia", code: "+61" },
+  { label: "Singapore", code: "+65" },
+];
+
+
   useEffect(() => {
     if (!activeHostelId) return;
 
@@ -370,7 +386,7 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
             )}
 
             <Text style={styles.label}>Mobile Number <Text style={{ color: 'red' }}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="+91 98765 43210" value={mobile}
+            {/* <TextInput style={styles.input} placeholder="+91 98765 43210" value={mobile}
               keyboardType="numeric"
               maxLength={10}
               onChangeText={(text) => {
@@ -378,7 +394,68 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
                 setMobile(filtered);
                 setMobileError("");
               }}
-            />
+            /> */}
+            <View style={styles.mobileWrapper}>
+  
+  {/* COUNTRY DROPDOWN */}
+  <View style={{ position: "relative" }}>
+    <TouchableOpacity
+      style={styles.countryDropdown}
+      onPress={() => setCountryOpen(!countryOpen)}
+      activeOpacity={0.7}
+    >
+      <Text style={styles.countryCodeText}>
+        {selectedCountry.code}
+      </Text>
+      <Image
+        source={require("../../../Assets/Images/direction-down.png")}
+        style={styles.countryArrow}
+      />
+    </TouchableOpacity>
+
+    {countryOpen && (
+      <>
+        <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
+          <View style={styles.dropdownOverlay} />
+        </TouchableWithoutFeedback>
+
+        <View style={styles.countryDropdownMenu}>
+          <ScrollView>
+            {countryList.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.countryOption}
+                onPress={() => {
+                  setSelectedCountry(item);
+                  setCountryOpen(false);
+                }}
+              >
+                <Text style={styles.countryOptionText}>
+                  {item.label} ({item.code})
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </>
+    )}
+  </View>
+
+  {/* MOBILE INPUT */}
+  <TextInput
+    style={styles.mobileInput}
+    placeholder="9876543210"
+    keyboardType="numeric"
+    maxLength={10}
+    value={mobile}
+    onChangeText={(text) => {
+      const filtered = text.replace(/[^0-9]/g, "");
+      setMobile(filtered);
+      setMobileError("");
+    }}
+  />
+</View>
+
             {mobilError && (
               <ErrorMessage message={mobilError} type="error" />
             )}
@@ -483,7 +560,7 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.addBtn} onPress={handleAddUser}>
-                <Text style={styles.addText}>{editData ? "Edit" : "Add"}</Text>
+                <Text style={styles.addText}>{editData ? "Update" : "Add"}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -538,6 +615,77 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 15,
   },
+  mobileWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#D4D4D4",
+  borderRadius: 10,
+  marginTop: 6,
+},
+
+countryDropdown: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 10,
+  borderRightWidth: 1,
+  borderRightColor: "#E5E7EB",
+  height: 50,
+},
+
+countryCodeText: {
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#111",
+  marginRight: 4,
+},
+
+countryArrow: {
+  width: 14,
+  height: 14,
+  tintColor: "#6A6A6A",
+},
+
+mobileInput: {
+  flex: 1,
+  paddingHorizontal: 12,
+  fontSize: 15,
+  height: 50,
+},
+
+countryDropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  width: 180,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 10,
+  elevation: 10,
+  zIndex: 9999,
+  maxHeight: 200,
+},
+
+countryOption: {
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+},
+
+countryOptionText: {
+  fontSize: 14,
+  color: "#111",
+},
+
+dropdownOverlay: {
+  position: "absolute",
+  top: -1000,
+  left: -1000,
+  right: -1000,
+  bottom: -1000,
+},
+
+
 
   dropdownBox: {
     borderWidth: 1,
@@ -586,7 +734,7 @@ const styles = StyleSheet.create({
 
   btnRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     marginTop: 28,
     marginBottom: 30,
   },
