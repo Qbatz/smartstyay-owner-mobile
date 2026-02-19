@@ -251,6 +251,14 @@ const handleSubmit = async () => {
   Reading Date <Text style={{ color: "red" }}>*</Text>
 </Text>
 
+ <TouchableOpacity
+    // style={styles.calendarIconWrapper}
+    onPress={() => {
+      setOpenReadingDatePic(true);
+      setReadingDateError("");
+      setReadingError("");
+    }}
+  >
 <View style={styles.dateInputWrapper}>
   <TextInput
   style={styles.dateInput}
@@ -259,20 +267,14 @@ const handleSubmit = async () => {
   editable={false}
 />
 
-  <TouchableOpacity
-    style={styles.calendarIconWrapper}
-    onPress={() => {
-      setOpenReadingDatePic(true);
-      setReadingDateError("");
-      setReadingError("");
-    }}
-  >
+ 
     <Image
       source={require("../../Assets/Images/calendar.png")}
       style={styles.calendarIcon}
     />
-  </TouchableOpacity>
+ 
 </View>
+ </TouchableOpacity>
 
 {readingDateError && <ErrorMessage message={readingDateError} type="error" />}
 

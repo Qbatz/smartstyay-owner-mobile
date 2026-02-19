@@ -245,6 +245,7 @@ export default function ReserveToCheckin({ route, navigation }) {
           </TouchableOpacity>
 
           <Text style={styles.roomInfo}>
+            {selectedBed?.floorName} | 
             Room No {selectedBed?.roomName} |{" "}
             {selectedBed?.bedName}
           </Text>
@@ -334,7 +335,8 @@ export default function ReserveToCheckin({ route, navigation }) {
             <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
             <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={rentalAmount}
               onChangeText={(text) => {
-                setRentalAmount(text);
+                const onlyNum=text.replace(/[^0-9]/g,"")
+                setRentalAmount(onlyNum);
                 setRentalError("");
               }}
             />
@@ -344,7 +346,8 @@ export default function ReserveToCheckin({ route, navigation }) {
             <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={advanceAmount}
               // onChangeText={setAdvanceAmount}
               onChangeText={(text) => {
-                setAdvanceAmount(text);
+                const onlyNum=text.replace(/[^0-9]/g,"")
+                setAdvanceAmount(onlyNum);
                 setAdvanceError("");
               }}
             />
@@ -436,7 +439,12 @@ export default function ReserveToCheckin({ route, navigation }) {
                         placeholder="Enter amount"
                         keyboardType="numeric"
                         value={item.amount}
-                        onChangeText={(t) => updateAmount(item.id, t)}
+                        onChangeText={(t) => {
+                          const onlyNum=t.replace(/[^0-9]/g,"")
+                          updateAmount(item.id, onlyNum)
+                          
+                        }
+                          }
                       />
                     )}
 
