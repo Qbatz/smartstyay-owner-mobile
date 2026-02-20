@@ -1060,7 +1060,7 @@ console.log("profile", getProfileInitial);
                   <Text style={styles.statValue}>{dashboardList?.nextMonthProjection}</Text>
                 </View>
                   <View style={[styles.statBox, { width: width * 0.42 }]}>
-                  <Text style={styles.statTitle}>Total Customer</Text>
+                  <Text style={styles.statTitle}>Total Tenants</Text>
                   <Text style={styles.statValue}>{dashboardList?.totalCustomers}</Text>
                 </View>
                  <View style={[styles.statBox, { width: width * 0.42 }]}>

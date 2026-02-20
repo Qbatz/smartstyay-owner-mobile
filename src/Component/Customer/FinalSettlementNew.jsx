@@ -527,7 +527,7 @@ const userEnteredDeductionsTotal = extraCharges
               <Text style={styles.smallLabel}>Joined Date</Text>
               <Text style={styles.value}>{settlementDetails?.customerInfo?.joiningDate}</Text>
             </View>
-            <View style={{flex:1 , marginLeft:18}}>
+            <View style={{flex:1 }}>
               <Text style={styles.smallLabel}>Req Checkout Date</Text>
               <Text style={styles.value}>{settlementDetails?.stayInfo?.noticeDate}</Text>
             </View>
@@ -746,16 +746,29 @@ const userEnteredDeductionsTotal = extraCharges
       {showDetails &&
         settlementDetails?.currentMonthRentInfo?.rentLists?.map(
           (item, index) => (
-            <View key={index} style={styles.detailCard}>
-              <Text style={styles.linkText}>
-                {item.floorName} | {item.roomName} - {item.bedName}
-              </Text>
+            // <View key={index} style={styles.detailCard}>
+            //   <Text style={styles.linkText}>
+            //     {item.floorName} | {item.roomName} - {item.bedName}
+            //   </Text>
 
-              <Text style={styles.rightMuted}>
-               ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
-                {/* ({item.noOfDays} days × ₹{item.rent}) */}
-              </Text>
-            </View>
+            //   <Text style={styles.rightMuted}>
+            //    ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
+            //   </Text>
+            // </View>
+
+            <View key={index} style={styles.detailCard}>
+  <Text style={styles.linkText}>
+    {item.floorName} | {item.roomName} - {item.bedName}
+  </Text>
+
+  <Text
+    style={styles.rightMuted}
+    numberOfLines={0}
+  >
+    ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
+  </Text>
+</View>
+
           )
         )}
         <TouchableOpacity
@@ -1619,10 +1632,19 @@ totalAmount: {
   fontSize: 14,
   fontWeight: "700",
 },
-  linkText: {
-    color: "#2563EB",
-    fontSize: 13,
-  },
+ linkText: {
+  color: "#2563EB",
+  fontSize: 13,
+  flex: 1,               
+},
+
+rightMuted: {
+  fontSize: 12,
+  color: "#6B7280",
+  flex: 1,               
+  textAlign: "right",
+},
+
    tableRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, justifyContent: "space-between" },
  tableHeader: {
   flexDirection: "row",        // ✅ IMPORTANT
@@ -1695,6 +1717,15 @@ arrowSmall: {
   marginLeft: 6,
 },
 
+// detailCard: {
+//   backgroundColor: "#F8FAFC",
+//   borderRadius: 10,
+//   padding: 12,
+//   marginTop: 6,
+//   flexDirection: "row",
+//   justifyContent: "space-between",
+// },
+
 detailCard: {
   backgroundColor: "#F8FAFC",
   borderRadius: 10,
@@ -1702,14 +1733,14 @@ detailCard: {
   marginTop: 6,
   flexDirection: "row",
   justifyContent: "space-between",
+  flexWrap: "wrap",        
 },
 
 
-
-rightMuted: {
-  fontSize: 12,
-  color: "#6B7280",
-},
+// rightMuted: {
+//   fontSize: 12,
+//   color: "#6B7280",
+// },
 
 
 });

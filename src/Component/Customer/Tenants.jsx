@@ -1852,8 +1852,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingVertical: 50
-
+    // paddingVertical: 50,
+   paddingTop:50,
+   paddingBottom:30
 
   },
   searchContainer: {
