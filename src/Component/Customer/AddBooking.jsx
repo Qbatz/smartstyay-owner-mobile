@@ -490,7 +490,7 @@ export default function AddBookingScreen({ navigation, route }) {
                     {filteredBeds.map((b) => (
                       <TouchableOpacity
                         key={b.bedId}
-                        style={[styles.option,selectedBed?.id === b.id && { backgroundColor: "#E6F0FF" }]}
+                        style={[styles.option,selectedBed?.bedId === b.bedId && { backgroundColor: "#E6F0FF" }]}
                         onPress={() => {
                           setSelectedBed(b);
                           setBedOpen(false);
