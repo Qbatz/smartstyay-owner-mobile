@@ -521,9 +521,10 @@ const confirmCheckout = async (customerId) => {
         },
       }
     );
+    console.log("pallu",res)
 
     if (res.status === 200) {
-      return { success: true, data: res.data };
+      return { success: true, data: "Moved to checkout" };
     }
 
     return { success: false, message: "Checkout failed" };

@@ -260,7 +260,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
           contentContainerStyle={{ paddingBottom: 100 }}
         >
 
-
+{console.log("boys",filteredWalkins)}
 
           {filteredWalkins.map((item) => (
             <View key={item.customerId} style={styles.row}>
@@ -297,7 +297,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                   <Image source={MenuDots} style={styles.dotIcon} />
                 </TouchableOpacity>
 
-                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.date}>{item.bookedAt}</Text>
               </View>
             </View>
           ))}
@@ -724,7 +724,7 @@ const styles = StyleSheet.create({
 
   filterBtn: {
     position: "absolute",
-    bottom: 70,
+    bottom: 60,
     right: 20,
     backgroundColor: "#fff",
     padding: 12,
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
 
   addBtn: {
     position: "absolute",
-    bottom: 10,
+    bottom: 0,
     right: 20,
     backgroundColor: "#00A32E",
     width: 50,

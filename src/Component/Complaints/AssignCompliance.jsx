@@ -125,6 +125,8 @@ useEffect(() => {
   };
 
   const handleClose = () => {
+    setDropdownVisible(false);   
+  setUserError("");   
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
       duration: 200,

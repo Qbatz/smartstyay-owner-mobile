@@ -34,6 +34,8 @@ import Arrowdown from "../../../Assets/Images/arrow_down_white.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png"
 import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 import { useCustomer } from "../../../Context/CustomerContext";
+import DownArrow from "../../../Assets/Images/direction-down.png";
+
 
 const sampleUsersInit = [
   {
@@ -84,7 +86,7 @@ export default function AmenitySettings({ navigation }) {
   console.log("amenity", amenities, amenityDetail, addAmenity);
 
 
- const { getCustomersByHostel,  GetParticularCustomerDetails } = useCustomer();
+  const { getCustomersByHostel, GetParticularCustomerDetails } = useCustomer();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
@@ -110,12 +112,16 @@ export default function AmenitySettings({ navigation }) {
   const [amenityError, setAmenityError] = useState("");
   const [priceError, setPriceError] = useState("");
   const [customers, setCustomers] = useState([]);
+  const [selectAmenityError, setSelectAmenityError] = useState("")
+  const [showUnassigned, setShowUnassigned] = useState(true);
+  const [showAssigned, setShowAssigned] = useState(true);
+
 
 
   useEffect(() => {
     if (activeHostelId) {
       GetAllAmenities(activeHostelId);
-       fetchCustomers();
+      fetchCustomers();
     }
   }, [activeHostelId]);
 
@@ -592,84 +598,181 @@ export default function AmenitySettings({ navigation }) {
           </View>
 
           <View style={{ marginLeft: 10, flex: 1, marginRight: 12 }}>
-            <View style={{flexDirection:'row',alignItems:'center',}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', }}>
               <Text style={styles.userName}>{user.name}</Text>
-                {!user.canAssign && <View style={{width:6,height:6,borderRadius:3,backgroundColor:'red',marginLeft:4}}/>}
-            </View>
-            
-           <View
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              alignItems: "center",
-              marginTop: 6,
-              marginRight: 12
-            }}
-          >
-            {/* Floor Badge */}
-            <View style={styles.floorBadge}>
-              <Text style={styles.floorBadgeText}>
-                {user.floorName}
-              </Text>
+              {!user.canAssign && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: 'red', marginLeft: 4 }} />}
             </View>
 
-            {/* Room */}
             <View
               style={{
                 flex: 1,
                 flexDirection: "row",
-                alignItems: "center",            
-                marginLeft: 4,
-                marginRight:4
-
+                alignItems: "center",
+                marginTop: 6,
+                marginRight: 12
               }}
             >
-              <Image
-                source={RoomIcon}
-                style={{ width: 21, height: 17, resizeMode: "contain" }}
-              />
-              <Text
-                style={[styles.metaText, { marginLeft: 2,flexShrink: 1 }]}
-              >
-                {user.roomName}
-              </Text>
-            </View>
+              {/* Floor Badge */}
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorBadgeText}>
+                  {user.floorName}
+                </Text>
+              </View>
 
-            {/* Separator */}
-            {/* <Text style={{ color: "#666", marginHorizontal: 6 }}>
+              {/* Room */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 4,
+                  marginRight: 4
+
+                }}
+              >
+                <Image
+                  source={RoomIcon}
+                  style={{ width: 21, height: 17, resizeMode: "contain" }}
+                />
+                <Text
+                  style={[styles.metaText, { marginLeft: 2, flexShrink: 1 }]}
+                >
+                  {user.roomName}
+                </Text>
+              </View>
+
+              {/* Separator */}
+              {/* <Text style={{ color: "#666", marginHorizontal: 6 }}>
               |
             </Text> */}
 
-            {/* Bed */}
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",           
-              }}
-            >
-              <Image
-                source={BedIcon}
-                style={{ width: 21, height: 17, resizeMode: "contain" }}
-              />
-              <Text
-                style={[styles.metaText, { marginLeft: 4, flexShrink: 1 }]}
+              {/* Bed */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
               >
-                {user.bedName}
-              </Text>
+                <Image
+                  source={BedIcon}
+                  style={{ width: 21, height: 17, resizeMode: "contain" }}
+                />
+                <Text
+                  style={[styles.metaText, { marginLeft: 4, flexShrink: 1 }]}
+                >
+                  {user.bedName}
+                </Text>
+              </View>
             </View>
           </View>
-          </View>
-           
+
         </View>
 
 
         {
           user.canAssign == true ? <TouchableOpacity style={styles.checkbox} onPress={() => toggleUserSelect(user.id)}>
-          {user.selected ? <Text style={styles.tick}>✓</Text> : null}
-        </TouchableOpacity> : null
+            {user.selected ? <Text style={styles.tick}>✓</Text> : null}
+          </TouchableOpacity> : null
         }
-        
+
+
+      </View>
+    );
+  };
+
+  const UserAssignedRow = ({ user }) => {
+    console.log(user)
+    return (
+      <View style={styles.userRow}>
+        <View style={styles.userLeft}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{user.name?.[0] ?? "U"}</Text>
+          </View>
+
+          <View style={{ marginLeft: 10, flex: 1, marginRight: 12 }}>
+
+            <Text style={styles.userName}>{user.name}</Text>
+
+
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 6,
+                marginRight: 12
+              }}
+            >
+              {/* Floor Badge */}
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorBadgeText}>
+                  {user.floorName}
+                </Text>
+              </View>
+
+              {/* Room */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: 4,
+                  marginRight: 4
+
+                }}
+              >
+                <Image
+                  source={RoomIcon}
+                  style={{ width: 21, height: 17, resizeMode: "contain" }}
+                />
+                <Text
+                  style={[styles.metaText, { marginLeft: 2, flexShrink: 1 }]}
+                >
+                  {user.roomName}
+                </Text>
+              </View>
+
+              {/* Separator */}
+              {/* <Text style={{ color: "#666", marginHorizontal: 6 }}>
+              |
+            </Text> */}
+
+              {/* Bed */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={BedIcon}
+                  style={{ width: 21, height: 17, resizeMode: "contain" }}
+                />
+                <Text
+                  style={[styles.metaText, { marginLeft: 4, flexShrink: 1 }]}
+                >
+                  {user.bedName}
+                </Text>
+              </View>
+            </View>
+            {user.ending &&
+              <Text style={{ fontSize: 12, fontWeight: 40, color: 'red', marginTop: 4 }}>Ending on: {user?.endDate}</Text>}
+
+          </View>
+
+
+
+        </View>
+
+
+        <TouchableOpacity style={styles.checkbox} onPress={() => toggleUserSelect(user.id)}
+          disabled={user?.ending}>
+          {user.selected ? <Text style={styles.tick}>✓</Text> : null}
+        </TouchableOpacity>
+
+
 
       </View>
     );
@@ -680,6 +783,8 @@ export default function AmenitySettings({ navigation }) {
   const anyUnassignedSelected = unassigned.some((u) => u.selected);
   const anyAssignedSelected = assigned.some((u) => u.selected);
 
+  console.log("assigned", assigned)
+  console.log("unassigned", unassigned)
   //  const CustomSwitch = ({ value, onToggle }) => {
   //     return (
   //          <View style={styles.switchRow}>
@@ -707,7 +812,6 @@ export default function AmenitySettings({ navigation }) {
   //       </View>
   //     );
   //   };
-  console.log(customers)
 
 
 
@@ -1066,24 +1170,57 @@ export default function AmenitySettings({ navigation }) {
             <FlatList
               data={[{ type: "header" }]} showsVerticalScrollIndicator={false}
               keyExtractor={(_, i) => String(i)}
+              style={{ marginBottom: 100 }}
               renderItem={() => (
                 <>
                   <Text style={styles.assignTitle}>Assign Amenities</Text>
 
-                  <Text style={styles.sectionLabel}>Un Assigned</Text>
-                  <FlatList
-                    data={unassigned}
-                    keyExtractor={(u) => u.id}
-                    renderItem={({ item }) => <UserRow user={item} />}
-                    ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No unassigned users</Text>}
-                    scrollEnabled={false}
-                  />
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionLabel}>Un Assigned</Text>
 
-                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "flex-end" }}>
+
+                    <TouchableOpacity
+                      onPress={() => setShowUnassigned(!showUnassigned)}
+                    >
+                      <Image
+                        source={DownArrow}
+                        style={[
+                          styles.dropdownIcon,
+                          { transform: [{ rotate: showUnassigned ? "0deg" : "-180deg" }] },
+                        ]}
+                      />
+                    </TouchableOpacity>
+
+                  </View>
+
+
+
+                  {showUnassigned && (
+                    <FlatList
+                      data={unassigned}
+                      keyExtractor={(u) => u.id}
+                      renderItem={({ item }) => <UserRow user={item} />}
+                      scrollEnabled={false}
+                      ListEmptyComponent={
+                        <Text style={{ padding: 16, color: "#666" }}>
+                          No unassigned users
+                        </Text>
+                      }
+                    />
+                  )}
+
+
+
+                  {/* <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "flex-end" }}>
                     <View style={styles.assignActionsRow}>
                       <TouchableOpacity
-                        disabled={!anyUnassignedSelected}
-                        onPress={moveDownSelected}
+                        // disabled={!anyUnassignedSelected}
+                        onPress={() => {
+                          if (!anyUnassignedSelected) {
+                            setSelectAmenityError("Please select at least one user");
+                          }
+                          moveDownSelected
+                        }}
                         style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
                       >
                         <Image source={Arrowdown} style={{ height: 22, width: 22 }} />
@@ -1092,29 +1229,107 @@ export default function AmenitySettings({ navigation }) {
 
                     <View style={styles.assignActionsRow}>
                       <TouchableOpacity
-                        disabled={!anyAssignedSelected}
-                        onPress={moveUpSelected}
+                        // disabled={!anyAssignedSelected}
+                        onPress={()=>{
+                          if (!anyAssignedSelected) {
+                            setSelectAmenityError("Please select at least one user");
+                          }
+                          moveUpSelected
+                        }}
                         style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
                       >
                         <Image source={Arrowup} style={{ height: 22, width: 22 }} />
                       </TouchableOpacity>
                     </View>
 
+                  </View> */}
+
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionLabel}>Assigned</Text>
+
+                    <TouchableOpacity
+                      onPress={() => setShowAssigned(!showAssigned)}
+                    >
+                      <Image
+                        source={DownArrow}
+                        style={[
+                          styles.dropdownIcon,
+                          { transform: [{ rotate: showAssigned ? "0deg" : "-180deg" }] },
+                        ]}
+                      />
+                    </TouchableOpacity>
                   </View>
 
-                  <Text style={styles.sectionLabel}>Assigned</Text>
-                  <FlatList
+                  {showAssigned && (
+                    <FlatList
+                      data={assigned}
+                      keyExtractor={(u) => u.id}
+                      renderItem={({ item }) => <UserAssignedRow user={item} />}
+                      scrollEnabled={false}
+                      ListEmptyComponent={
+                        <Text style={{ padding: 16, color: "#666" }}>
+                          No assigned users
+                        </Text>
+                      }
+                    />
+                  )}
+
+
+                  {/* <FlatList
                     data={assigned}
                     keyExtractor={(u) => u.id}
-                    renderItem={({ item }) => <UserRow user={item} />}
+                    renderItem={({ item }) => <UserAssignedRow user={item} />}
                     scrollEnabled={false}
+                    style={{ paddingBottom: 50 }}
                     ListEmptyComponent={<Text style={{ padding: 16, color: "#666" }}>No assigned users</Text>}
-                  />
-
+                  /> */}
 
                 </>
               )}
             />
+
+            {/* {selectAmenityError && <ErrorMessage message={selectAmenityError} type="error" />} */}
+            {
+              <View style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "#fff",
+                flexDirection: "row", padding: 15, borderTopWidth: 1,
+                borderColor: "#EAEAEA", shadowColor: "#000", shadowOffset: { width: 0, height: -3 }, shadowOpacity: 0.08,
+                shadowRadius: 6, elevation: 8,
+              }}>
+
+                <View style={styles.assignActionsRow}>
+                  <TouchableOpacity
+                    // disabled={!anyUnassignedSelected}
+                    onPress={() => {
+                      if (!anyUnassignedSelected) {
+                        setSelectAmenityError("Please select at least one user");
+                      }
+                      moveDownSelected
+                    }}
+                    style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: 600, color: '#ffffff' }}>Assign</Text>
+                    <Image source={Arrowdown} style={{ height: 22, width: 22 }} />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.assignActionsRow}>
+                  <TouchableOpacity
+                    // disabled={!anyAssignedSelected}
+                    onPress={() => {
+                      if (!anyAssignedSelected) {
+                        setSelectAmenityError("Please select at least one user");
+                      }
+                      moveUpSelected
+                    }}
+                    style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: 600, color: '#ffffff' }}>UnAssign</Text>
+                    <Image source={Arrowup} style={{ height: 22, width: 22 }} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            }
           </Animated.View>
 
         </View>
@@ -1270,7 +1485,7 @@ const styles = StyleSheet.create({
   userLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
   avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#E8EAF6", alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#1D3BFF", fontWeight: "700" },
-  userName: { fontWeight: "700", fontSize: 15,flexShrink:1 },
+  userName: { fontWeight: "700", fontSize: 15, flexShrink: 1 },
   floorBadge: { backgroundColor: "#FDE7A8", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginRight: 8 },
   floorBadgeText: { fontSize: 12, fontWeight: "700", color: "#6b4a00" },
   metaText: { color: "#666", marginLeft: 6 },
@@ -1289,20 +1504,17 @@ const styles = StyleSheet.create({
     color: "#1D5DFF",
     fontWeight: "900",
   },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    alignItems: "center",
-    justifyContent: "center",
+  assignActionsRow: { flexDirection: "row", flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 14 },
+  downBtn: {
+    flex: 1, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center", justifyContent: "center", marginHorizontal: 6,
+    flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 15, elevation: 2, shadowColor: "#000", shadowOpacity: 0.25,
+    shadowRadius: 6,
   },
-
-
-  assignActionsRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14 },
-  downBtn: { width: 48, height: 48, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center", justifyContent: "center", marginHorizontal: 6 },
-  upBtn: { width: 48, height: 48, borderRadius: 10, backgroundColor: "#E53935", alignItems: "center", justifyContent: "center", marginHorizontal: 6 },
+  upBtn: {
+    flex: 1, borderRadius: 10, backgroundColor: "#E53935", alignItems: "center", justifyContent: "center",
+    marginHorizontal: 6, flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 15, elevation: 2, shadowColor: "#000", shadowOpacity: 0.25,
+    shadowRadius: 6
+  },
 
   userListEmpty: { padding: 12, color: "#777" },
 
@@ -1346,6 +1558,19 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#E5E5E5",
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 15,
+  },
+
+  dropdownIcon: {
+    width: 22,
+    height: 22,
+    tintColor: "#444",
+  },
+
 
 
 });

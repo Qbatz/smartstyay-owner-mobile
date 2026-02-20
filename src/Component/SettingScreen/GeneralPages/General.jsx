@@ -329,7 +329,7 @@ export default function GeneralDetailsScreen({ navigation }) {
             const screenWidth = Dimensions.get("window").width;
 
             setPopupPos({
-              top: pageY + 6,
+              top: pageY + 5,
               right: screenWidth - pageX,
             });
 
@@ -557,8 +557,9 @@ export default function GeneralDetailsScreen({ navigation }) {
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item, index }) => renderUserCard(item, index)}
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text>No Profile</Text>
+                 <View style={styles.emptyContainer}>
+                  <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
+                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -576,8 +577,9 @@ export default function GeneralDetailsScreen({ navigation }) {
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderItem}
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text>No Profile</Text>
+                 <View style={styles.emptyContainer}>
+                  <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
+                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -589,8 +591,21 @@ export default function GeneralDetailsScreen({ navigation }) {
 
       case "Users Activity":
         return (
-          <View>
-            <Text>Users Activity Content Here</Text>
+           <View style={{ flex: 1 }}>
+            <FlatList
+              data={!yourActivity} style={{ marginTop: 18, marginHorizontal: 10 }}
+              contentContainerStyle={{ paddingBottom: 65 }}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderItem}
+              ListEmptyComponent={
+                 <View style={styles.emptyContainer}>
+                  <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
+                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
+                </View>
+              }
+              showsVerticalScrollIndicator={false}
+
+            />
           </View>
         );
 
@@ -725,7 +740,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                   DotsTopRef.current.measureInWindow(
                     (x, y, width, height) => {
                       setPopupPo({
-                        top: y + height + 6,
+                        top: y + height + 20,
                         right: SCREEN_WIDTH - (x + width),
                       });
                     }
@@ -823,11 +838,11 @@ export default function GeneralDetailsScreen({ navigation }) {
       </View>
 
       {activeMenuProfile && (
-        <TouchableOpacity
-          style={styles.menuOverlay}
+        <TouchableWithoutFeedback
           onPress={() => setActiveMenuProfile(null)}
         >
-          <View style={[styles.menuBox, { top: popupPo.top, right: popupPo.right }]}>
+          <View style={styles.menuOverlay}>
+            <View style={[styles.menuBox, { top: popupPo.top, right: popupPo.right }]}>
 
             {/* EDIT */}
             <TouchableOpacity
@@ -861,7 +876,10 @@ export default function GeneralDetailsScreen({ navigation }) {
             </TouchableOpacity>
 
           </View>
-        </TouchableOpacity>
+
+          </View>
+          
+        </TouchableWithoutFeedback>
       )}
 
 

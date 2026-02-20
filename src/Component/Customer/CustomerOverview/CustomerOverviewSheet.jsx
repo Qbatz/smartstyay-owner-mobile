@@ -36,6 +36,7 @@ import MoreDot from "../../../Assets/Images/moreDot.png"
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import CheckinIcon from "../../../Assets/Images/Checkin_Icon.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
+import CustomerTransaction from "./CustomerTransaction"
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
@@ -254,6 +255,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return true;
       }
 
+      if(activeTab === "Transactions") {
+        setActiveTab("Complaints");
+        return true;
+      }
 
       if (activeTab === "Complaints") {
         setActiveTab("Bill");
@@ -343,6 +348,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
       case "Complaints":
         return <ComplaintsTab customerDetails={customerDetails} />;
+      
+      case "Transactions":
+        return <CustomerTransaction customerDetails={customerDetails}/>;
 
       default:
         return (
@@ -518,7 +526,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
         {/* TABS */}
         <View style={styles.tabRow}>
-          {["Overview", "EB Reading", "Bill", "Complaints"].map((tab) => {
+          {["Overview", "EB Reading", "Bill", "Complaints", "Transactions"].map((tab) => {
             const isActive = activeTab === tab;
             return (
               <TouchableOpacity

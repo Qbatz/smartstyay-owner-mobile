@@ -142,6 +142,7 @@ export default function CheckoutBottomSheet({
     }
 
     const res = await confirmCheckout(customerId);
+    console.log("checkout",res)
 
     if (res.success) {
 
