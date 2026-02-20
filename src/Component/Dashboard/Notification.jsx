@@ -345,6 +345,7 @@ export default function NotificationDetails() {
                       {label}
                     </Text>
                   )}
+                  {console.log(item)}
 
                   {/* 🔹 CARD */}
                   <View
