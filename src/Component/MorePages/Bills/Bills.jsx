@@ -1509,6 +1509,20 @@ navigation.navigate("CancelNotice")
 //   },
 // ];
 
+ const getStatusColor = (status) => {
+    switch (status) {
+      case "Checked In":
+        return "#00A32E"; // Green
+      case "Booked":
+        return "#1E45E1"; // Blue
+      case "Notice Period":
+      case "Settlement Generated":
+        return "#FF0000"; // Red
+      default:
+        return "#D1D5DB"; // Grey fallback
+    }
+  };
+
 
 
   return (
@@ -1665,6 +1679,13 @@ navigation.navigate("CancelNotice")
       </Text>
     </View>
   )}
+
+  <View
+                            style={[
+                              styles.ProfilestatusDot,
+                              { backgroundColor: getStatusColor(item?.currentStatus) },
+                            ]}
+                          />
 </TouchableOpacity>
 
         <View style={{ flex: 1 }}>
@@ -3672,6 +3693,19 @@ activeText: {
     fontWeight: "600",
     color: "#111827",
   },
+  ProfilestatusDot: {
+    position: "absolute",
+    // bottom: 2,
+    top: 3,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+
+  
   detailRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -481,18 +481,18 @@ export default function TenantsScreen({ route }) {
   });
 
   const getStatusColor = (status) => {
-  switch (status) {
-    case "Checked In":
-      return "#00A32E"; // Green
-    case "Booked":
-      return "#1E45E1"; // Blue
-    case "Notice Period":
-    case "Settlement Generated":
-      return "#FF0000"; // Red
-    default:
-      return "#D1D5DB"; // Grey fallback
-  }
-};
+    switch (status) {
+      case "Checked In":
+        return "#00A32E"; // Green
+      case "Booked":
+        return "#1E45E1"; // Blue
+      case "Notice Period":
+      case "Settlement Generated":
+        return "#FF0000"; // Red
+      default:
+        return "#D1D5DB"; // Grey fallback
+    }
+  };
 
 
 
@@ -765,7 +765,7 @@ export default function TenantsScreen({ route }) {
                     // </TouchableOpacity>
                     <View key={item.customerId} style={styles.tenantRow}>
 
-       
+
 
                       {/* <TouchableOpacity
                         activeOpacity={0.7}
@@ -789,33 +789,33 @@ export default function TenantsScreen({ route }) {
 
 
                       <TouchableOpacity
-  activeOpacity={0.7}
-  onPress={() => openCustomerDetails(item)}
-  style={{ position: "relative" }}
->
-  {item?.profilePic ? (
-    <Image
-      source={{ uri: item.profilePic }}
-      style={styles.profileImg}
-    />
-  ) : (
-    <View style={styles.initialCircle}>
-      <Text style={styles.initialText}>
-        {item?.initials ||
-          item?.fullName?.slice(0, 2)?.toUpperCase() ||
-          "--"}
-      </Text>
-    </View>
-  )}
+                        activeOpacity={0.7}
+                        onPress={() => openCustomerDetails(item)}
+                        style={{ position: "relative" }}
+                      >
+                        {item?.profilePic ? (
+                          <Image
+                            source={{ uri: item.profilePic }}
+                            style={styles.profileImg}
+                          />
+                        ) : (
+                          <View style={styles.initialCircle}>
+                            <Text style={styles.initialText}>
+                              {item?.initials ||
+                                item?.fullName?.slice(0, 2)?.toUpperCase() ||
+                                "--"}
+                            </Text>
+                          </View>
+                        )}
 
-  {/* ✅ STATUS DOT */}
-  <View
-    style={[
-      styles.statusDot,
-      { backgroundColor: getStatusColor(item.currentStatus) },
-    ]}
-  />
-</TouchableOpacity>
+                        {/* ✅ STATUS DOT */}
+                        <View
+                          style={[
+                            styles.statusDot,
+                            { backgroundColor: getStatusColor(item.currentStatus) },
+                          ]}
+                        />
+                      </TouchableOpacity>
 
 
 
@@ -1853,8 +1853,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingHorizontal: 16,
     // paddingVertical: 50,
-   paddingTop:50,
-   paddingBottom:30
+    paddingTop: 50,
+    paddingBottom: 30
 
   },
   searchContainer: {
@@ -2465,17 +2465,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#374151",
   },
-statusDot: {
-  position: "absolute",
-  // bottom: 2,
-  top:3,
-  right: 2,
-  width: 12,
-  height: 12,
-  borderRadius: 6,
-  borderWidth: 2,
-  borderColor: "#fff",
-},
+  statusDot: {
+    position: "absolute",
+    // bottom: 2,
+    top: 3,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
 
 
 

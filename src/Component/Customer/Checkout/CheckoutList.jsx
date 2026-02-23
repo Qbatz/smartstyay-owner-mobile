@@ -34,7 +34,7 @@ export default function CheckoutList({ searchText }) {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const navigation = useNavigation();
-  console.log(selectedCustomer)
+  console.log("checkla",selectedCustomer)
 
   const {
     canWriteModule: canWriteCheckout,
@@ -151,8 +151,8 @@ export default function CheckoutList({ searchText }) {
       <View style={styles.card}>
         <View style={styles.leftRow}>
           <TouchableOpacity onPress={() => openCustomerDetails(item)}>
-            {item?.profilePic ? <Image source={item.profilePic} style={styles.profileImg} /> : 
-                <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
+            {item?.profilePic ? <Image source={{uri:item.profilePic}} style={styles.profileImg} /> : 
+                <View style={{width:55,height:55,borderRadius:30,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
                   <Text style={{fontSize:16,fontWeight:600}}>{item?.initials}</Text>
                 </View>}
           </TouchableOpacity>
@@ -263,7 +263,7 @@ export default function CheckoutList({ searchText }) {
               <Text style={styles.title}>Customer Details</Text>
 
               <View style={styles.profileRow}>
-                {selectedCustomer?.profilePic ? <Image source={selectedCustomer.profilePic} style={styles.profileImg} /> : 
+                {selectedCustomer?.profilePic ? <Image source={{uri:selectedCustomer.profilePic}} style={styles.profileImg} /> : 
                 <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
                   <Text style={{fontSize:16,fontWeight:600}}>{selectedCustomer?.initials}</Text>
                 </View>}
@@ -291,11 +291,39 @@ export default function CheckoutList({ searchText }) {
                 <Text>{selectedCustomer?.checkoutInfo?.checkoutDate}</Text>
               </View>
 
-              <Text style={styles.label}>Amount</Text>
+              {/* <Text style={styles.label}>Amount</Text>
               <View style={styles.infoRow}>
                 <Image source={AmountIcon} style={styles.infoIcon} />
                 <Text>₹ {selectedCustomer?.amount}</Text>
-              </View>
+              </View> */}
+
+              <TouchableOpacity style={[styles.unassignBtn, {
+                              backgroundColor: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E10D" :
+                                selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E0F" :
+                                  selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FFF9F9" :
+                                  selectedCustomer?.customerCurrentStatus === "VACATED" ? "#FFF9F9" :
+                                    selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E10D" :
+                                      ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "#FFF8EB" : "#FFF9F9"
+                            }]}>
+                              {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
+                              <Text style={[styles.unassignText, {
+                                color: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E1" :
+                                  selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E" :
+                                    selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FF0000" :
+                                    selectedCustomer?.customerCurrentStatus === "VACATED" ? "#FF0000" :
+                                      selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E1" :
+                                        ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "#FF9500" : "#FF0000"
+                              }]}>
+                                {selectedCustomer?.customerCurrentStatus === "BOOKED" ? "Reserved"
+                                  : selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "Occupied"
+                                    : selectedCustomer?.customerCurrentStatus === "NOTICE" ? "Notice Period" :
+                                    selectedCustomer?.customerCurrentStatus === "VACATED" ? "Vacated" 
+                                      : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "Settlement Generated"
+                                        : ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "InActive" : "Write_Off"}
+                              </Text>
+              
+              
+                            </TouchableOpacity>
             </Animated.View>
 
             {/* ✅ outside click close (this should be behind sheet) */}
@@ -380,7 +408,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingTop: 20,
     paddingHorizontal: 20,
-    paddingBottom: 10,   // ✅ big padding remove
+    paddingBottom: 20,   // ✅ big padding remove
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -409,6 +437,18 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, color: "#6B7280", marginTop: 12 },
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
   infoIcon: { width: 16, height: 16, marginRight: 6 },
+  unassignBtn: {
+    // borderWidth: 1,
+    // borderColor: "#111",
+    borderRadius: 15,
+    marginTop: 25,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  unassignText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
   emptyContainer: {
     flex: 1,

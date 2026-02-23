@@ -255,7 +255,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return true;
       }
 
-      if(activeTab === "Transactions") {
+      if (activeTab === "Transactions") {
         setActiveTab("Complaints");
         return true;
       }
@@ -348,9 +348,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
       case "Complaints":
         return <ComplaintsTab customerDetails={customerDetails} />;
-      
+
       case "Transactions":
-        return <CustomerTransaction customerDetails={customerDetails}/>;
+        return <CustomerTransaction customerDetails={customerDetails} />;
 
       default:
         return (
@@ -377,10 +377,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             {/* <Text style={styles.back}>←</Text> */}
-             <Image source={BackIcon} style={{height:20 , width:20 , marginRight:15}} />
+            <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Tenant Profile</Text>
-          <Image source={CheckinIcon} style={{height:25 , width:22}} />
+          <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
           {/* <View style={styles.notificationDot} /> */}
         </View>
 
@@ -437,7 +437,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           >
             <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
               <TouchableOpacity onPress={handleProfilePress}>
-                <View style={{ width: 90, height: 90}}>
+                <View style={{ width: 90, height: 90 }}>
                   {profileImage?.uri || customerDetails?.profilePic ? (
                     <Image
                       source={{
@@ -448,9 +448,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                   ) : (
                     <View style={{
                       width: 90, height: 90, borderRadius: 45, backgroundColor: "#E5E7EB",
-                      alignItems: "center",justifyContent: "center"}}>
+                      alignItems: "center", justifyContent: "center"
+                    }}>
                       <Text style={{
-                        fontSize: 20,fontWeight: "600",color: "#374151",}}>
+                        fontSize: 20, fontWeight: "600", color: "#374151",
+                      }}>
                         {customerDetails?.initials}
                       </Text>
                     </View>
@@ -525,22 +527,24 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
         {/* TABS */}
-        <View style={styles.tabRow}>
-          {["Overview", "EB Reading", "Bill", "Complaints", "Transactions"].map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                style={styles.tabBtn}
-              >
-                <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-                  {tab}
-                </Text>
-                {isActive && <View style={styles.activeLine} />}
-              </TouchableOpacity>
-            );
-          })}
+        <View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabRow}>
+            {["Overview", "EB Reading", "Bill", "Complaints", "Transactions"].map((tab) => {
+              const isActive = activeTab === tab;
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  onPress={() => setActiveTab(tab)}
+                  style={styles.tabBtn}
+                >
+                  <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                    {tab}
+                  </Text>
+                  {isActive && <View style={styles.activeLine} />}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
 
         {/* CONTENT */}

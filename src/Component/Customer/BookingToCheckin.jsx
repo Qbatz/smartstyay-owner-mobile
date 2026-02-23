@@ -678,7 +678,8 @@ export default function BookingCheckIn({ navigation, route }) {
                                         placeholder='Enter AdvanceAmount'
                                         // onChangeText={setAdvanceAmount}
                                         onChangeText={(text) => {
-                                            setAdvanceAmount(text);
+                                            const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                            setAdvanceAmount(onlyNumbers);
                                             setAdvanceError("");
                                         }}
 
@@ -702,7 +703,8 @@ export default function BookingCheckIn({ navigation, route }) {
                                         placeholderTextColor="#9CA3AF"
                                         // onChangeText={setRentalAmount}
                                         onChangeText={(text) => {
-                                            setRentalAmount(text);
+                                            const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                            setRentalAmount(onlyNumbers);
                                             setRentError("");
                                         }}
 

@@ -1,8 +1,10 @@
-import React,{useState,useEffect,useCallback,useRef,useContext} from "react";
-import { View, Text, StyleSheet,ScrollView ,Image} from "react-native";
+import React, { useState, useEffect, useCallback, useRef, useContext } from "react";
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 import { ElectricityContext } from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import RoomIcon from "../../../Assets/Images/Room_Icon.png"
+import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 
 const EB_DATA = [
   {
@@ -41,91 +43,111 @@ const EB_DATA = [
 ];
 
 export default function EBReadingTab(customerDetails) {
-     const { activeHostelId } = useContext(CommonContexts);
-      const {ParticularTenantReadingDetails ,particular_EbTenantReading} = useContext(ElectricityContext);
-      const [ebTenantsList,setEbTenantsList] = useState([])
-console.log("customerDetails",customerDetails)
-const customerId = customerDetails.customerDetails?.customerId
+  const { activeHostelId } = useContext(CommonContexts);
+  const { ParticularTenantReadingDetails, particular_EbTenantReading } = useContext(ElectricityContext);
+  const [ebTenantsList, setEbTenantsList] = useState([])
+  console.log("customerDetails", customerDetails)
+  const customerId = customerDetails.customerDetails?.customerId
 
-        
-      useEffect(() => {
-  if (activeHostelId && customerId) {
-    ParticularTenantReadingDetails(activeHostelId, customerId);
-   
-  }
-}, [activeHostelId, customerId]);
 
-     const ebList = particular_EbTenantReading || [];   
-     const historyList = ebList?.electricityHistory || [];
-     console.log("ebList",ebList)  
-        
+  useEffect(() => {
+    if (activeHostelId && customerId) {
+      ParticularTenantReadingDetails(activeHostelId, customerId);
+
+    }
+  }, [activeHostelId, customerId]);
+
+  const ebList = particular_EbTenantReading || [];
+  const historyList = ebList?.electricityHistory || [];
+  console.log("ebList", ebList)
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+
+    const [day, month, year] = dateStr.split("/");
+
+    const date = new Date(`${year}-${month}-${day}`);
+
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+    });
+  };
   return (
-      <ScrollView
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{ paddingBottom: 16 }}
->
-  {historyList.length === 0 ? (
-  
-     <View style={styles.emptyContainer}>
-    <Image source={EmptyState} style={styles.image} resizeMode="contain" />
-    <Text style={styles.emptyText}>
-      No EB readings found
-    </Text>
-  </View>
-   
-  ) : (
-    historyList.map((item, index) => {
-      const getMonthYear = (dateStr) => {
-  if (!dateStr) return "";
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 16 }}
+    >
+      {historyList.length === 0 ? (
 
-  const [day, month, year] = dateStr.split("/");
-
-  const date = new Date(year, month - 1, day);
-
-  return date.toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-};
-
-      return(
-
-      
-      <View key={item.id || index} style={styles.rowBox}>
-        {/* LEFT */}
-        <View style={{ flex: 1 }}>
-          <View style={styles.monthRow}>
-            <Text style={styles.monthText}>
-              <Text style={styles.monthText}>
-  {getMonthYear(item.startDate)}
-</Text>
-            </Text>
-          </View>
-
-          <View style={styles.metaRow}>
-            <View style={styles.floorBadge}>
-              <Text style={styles.floorText}>
-                {item.floorName}
-              </Text>
-            </View>
-
-            <Text style={styles.iconText}>🏠 {item.roomName}</Text>
-            <Text style={styles.iconText}>🛏 {item.bedName}</Text>
-          </View>
-        </View>
-
-        {/* RIGHT */}
-        <View style={styles.rightBox}>
-          <Text style={styles.amount}>EB</Text>
-          <Text style={styles.range}>
-            {item.startDate} → {item.endDate}
+        <View style={styles.emptyContainer}>
+          <Image source={EmptyState} style={styles.image} resizeMode="contain" />
+          <Text style={styles.emptyText}>
+            No EB readings found
           </Text>
         </View>
-      </View>
-      )
-})
-  )}
-</ScrollView>
+
+      ) : (
+        historyList.map((item, index) => {
+          const getMonthYear = (dateStr) => {
+            if (!dateStr) return "";
+
+            const [day, month, year] = dateStr.split("/");
+
+            const date = new Date(year, month - 1, day);
+
+            return date.toLocaleString("en-US", {
+              month: "long",
+              year: "numeric",
+            });
+          };
+
+          return (
+
+
+            <View key={item.id || index} style={styles.rowBox}>
+              {/* LEFT */}
+              <View style={{ flex: 1 }}>
+                <View style={styles.monthRow}>
+                  <Text style={styles.monthText}>
+                    <Text style={styles.monthText}>
+                      {getMonthYear(item.startDate)}
+                    </Text>
+                  </Text>
+                </View>
+
+                <View style={[styles.metaRow, {flex: 1 }]}>
+                  <View style={styles.floorBadge}>
+                    <Text style={styles.floorText}>
+                      {item.floorName}
+                    </Text>
+                  </View>
+
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image source={RoomIcon} style={{ width: 21, height: 17, resizeMode: 'contain' }} />
+                    <Text style={[styles.iconText, { flexShrink: 1 }]}> {item.roomName}</Text>
+                  </View>
+
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <Image source={RoomIcon} style={{ width: 21, height: 17, resizeMode: 'contain' }} />
+                    <Text style={[styles.iconText, { flexShrink: 1 }]}> {item.bedName}</Text>
+                  </View>
+
+                </View>
+              </View>
+
+              {/* RIGHT */}
+              <View style={styles.rightBox}>
+                <Text style={styles.amount}>₹{item?.amount}</Text>
+                <Text style={[styles.range,{marginTop:10}]}>
+                  {formatDate(item.startDate)} → {formatDate(item.endDate)}
+                </Text>
+              </View>
+            </View>
+          )
+        })
+      )}
+    </ScrollView>
 
   );
 }
@@ -192,21 +214,21 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: 6,
   },
-    image: {
+  image: {
     width: 180,
     height: 180,
   },
   emptyContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingVertical: 80, // little push to center nicely
-},
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 80, // little push to center nicely
+  },
 
-emptyText: {
-  marginTop: 20,
-  fontSize: 15,
-  color: "#6B7280",
-},
+  emptyText: {
+    marginTop: 20,
+    fontSize: 15,
+    color: "#6B7280",
+  },
 
 });
