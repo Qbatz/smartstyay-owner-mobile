@@ -593,7 +593,7 @@ const handleSubmitComplaint = async () => {
 
 
   <Text style={styles.label}>
-    Customer <Text style={{ color: "red" }}>*</Text>
+    Tenant <Text style={{ color: "red" }}>*</Text>
   </Text>
 
   <TouchableOpacity
@@ -605,7 +605,7 @@ const handleSubmitComplaint = async () => {
     }}
   >
     <Text style={styles.selectedText}>
-      {selectedCustomer?.fullName || "Select Customer"}
+      {selectedCustomer?.fullName || "Select Tenant"}
     </Text>
     <Text style={styles.arrow}>⌄</Text>
   </TouchableOpacity>

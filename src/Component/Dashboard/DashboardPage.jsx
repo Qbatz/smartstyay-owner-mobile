@@ -914,6 +914,32 @@ console.log("profile", getProfileInitial);
 
       {activeTab === "Dashboard" && (
 
+          !hasHostel ? (
+
+    <View style={styles.centerContainer}>
+      <Image source={EmptyState} style={styles.image} />
+      <Text style={styles.nodataText}>
+        No PG added yet
+      </Text>
+
+      <TouchableOpacity
+        style={{
+          marginTop: 20,
+          backgroundColor: "#2F80ED",
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          borderRadius: 8,
+        }}
+        onPress={() => navigation.navigate("AddPG")}
+      >
+        <Text style={{ color: "#fff", fontWeight: "600" }}>
+          Add PG
+        </Text>
+      </TouchableOpacity>
+    </View>
+
+  ) : (
+
         <>
  
     {canReadDashboard && !loading &&(
@@ -1466,7 +1492,6 @@ console.log("profile", getProfileInitial);
       )}
 
           {!canReadDashboard && !loading && (
-      // 🔒 Dashboard restricted EMPTY STATE
       <View style={styles.centerContainer}>
         <Image source={EmptyState} style={styles.image} />
         <Text style={styles.nodataText}>
@@ -1475,7 +1500,9 @@ console.log("profile", getProfileInitial);
       </View>
     ) } 
        </>
-         )}
+         )
+)}
+         {/* )} */}
       {/* {activeTab === "Announcement" && (
   <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
 )}

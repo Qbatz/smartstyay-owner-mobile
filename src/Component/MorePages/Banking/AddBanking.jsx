@@ -69,7 +69,11 @@ export default function AddBankingModal({ visible, onClose, mode, editTab }) {
     const [isInputFocused, setIsInputFocused] = useState(false);
 const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
 
-
+const descriptionRef = useRef(null);
+const ifscRef = useRef(null);
+const cardRef = useRef(null);
+ console.log("isDescriptionFocused", isDescriptionFocused);
+ 
 
       useEffect(() => {
     if (activeHostelId) {
@@ -188,6 +192,7 @@ useEffect(() => {
 };
 
 const handleClose = () => {
+    Keyboard.dismiss();  
   resetForm();
   onClose();
 };
@@ -230,9 +235,16 @@ const translateY = useRef(new Animated.Value(0)).current;
   const panResponder = useRef(
     PanResponder.create({
 onMoveShouldSetPanResponder: (_, g) => {
-  if (isInputFocused) return false;  
+  const anyInputFocused =
+    ifscRef.current?.isFocused() ||
+    descriptionRef.current?.isFocused() ||
+    cardRef.current?.isFocused();
+
+  if (anyInputFocused) return false;
+
   return Math.abs(g.dy) > 20 && Math.abs(g.dx) < 10;
 },
+
 
       onPanResponderMove: (_, g) => {
         if (g.dy > 0) translateY.setValue(g.dy);
@@ -258,15 +270,55 @@ onMoveShouldSetPanResponder: (_, g) => {
   ).current;
   
 
-  useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    if (!isDescriptionFocused) return; // 🔥 IMPORTANT
 
-    Animated.timing(translateY, {
-      toValue: -e.endCoordinates.height + 80,
-      duration: 180,
-      useNativeDriver: true,
-    }).start();
+// useEffect(() => {
+//   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+//     if (!isDescriptionFocused) return;
+
+//     Animated.timing(translateY, {
+//       toValue: -Math.min(e.endCoordinates.height - 100, 250),
+//       duration: 180,
+//       useNativeDriver: true,
+//     }).start();
+//   });
+
+//   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+//     Animated.timing(translateY, {
+//       toValue: 0,
+//       duration: 180,
+//       useNativeDriver: true,
+//     }).start();
+
+//     setIsDescriptionFocused(false);
+//   });
+
+//   return () => {
+//     showSub.remove();
+//     hideSub.remove();
+//   };
+// }, []);
+useEffect(() => {
+  if (visible) {
+    translateY.setValue(0);
+  }
+}, [visible])
+
+
+
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+if (
+  ifscRef.current?.isFocused() ||
+  descriptionRef.current?.isFocused() || 
+  cardRef.current?.isFocused()
+) {
+      Animated.timing(translateY, {
+          toValue: -e.endCoordinates.height + 90,
+        // toValue: -Math.min(e.endCoordinates.height - 100, 250),
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    }
   });
 
   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
@@ -275,15 +327,16 @@ onMoveShouldSetPanResponder: (_, g) => {
       duration: 180,
       useNativeDriver: true,
     }).start();
-
-    setIsDescriptionFocused(false);
   });
 
   return () => {
     showSub.remove();
     hideSub.remove();
   };
-}, [isDescriptionFocused]);
+}, []);
+
+
+
 
   
 
@@ -341,6 +394,8 @@ const isValidUpi = (v) => {
   return "";
 };
 
+const upiRegex = /^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/;
+const bankNameRegex = /^[a-zA-Z.&\s]{3,50}$/;
 
 
 
@@ -350,7 +405,9 @@ const validate = () => {
   if (activeTab === "Bank") {
     if (!beneficiary.trim())
       err.beneficiary = "Please Enter Beneficiary Name";
-
+    if (!bankNameRegex.test(bankName.trim())) {
+    err.bankName = "Please Enter Valid Bank Name";
+   }
     const accErr = isAccountNoValid(accountNo);
     if (accErr) err.accountNo = accErr;
   }
@@ -379,6 +436,22 @@ const validate = () => {
   setErrors(err);
   return Object.keys(err).length === 0;
 };
+
+const handleIfscChange = (value) => {
+  let formatted = value.toUpperCase();
+  setErrors(prev => ({ ...prev, ifsc: "", common: "" }));
+
+  formatted = formatted.replace(/[^A-Z0-9]/g, "");
+
+  if (formatted.length > 11) return;
+
+  if (formatted.length <= 4 && !/^[A-Z]*$/.test(formatted)) return;
+
+  if (formatted.length === 5 && formatted[4] !== "0") return;
+
+  setIfsc(formatted);
+};
+
 
 
 // const isChanged =
@@ -586,29 +659,48 @@ const TabButton = ({ title }) => {
   style={styles.input}
   placeholder="Enter Beneficiary Name"
   value={beneficiary}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
-  // autoFocus
   onChangeText={(v) => {
      setBeneficiary(v.replace(/[^a-zA-Z\s]/g, ""))
-    setErrors({ ...errors, beneficiary: "" , common: ""});
+    setErrors({ ...errors, beneficiary: "" , common: ""})
   }}
 />
 {errors.beneficiary && <ErrorMessage message={errors.beneficiary} type="error" />}
 
 <Text style={styles.label}>Bank Name</Text>
-<TextInput
+{/* <TextInput
   style={styles.input}
   placeholder="Enter Bank Name"
   value={bankName}
-  // onChangeText={setBankName}
      onChangeText={(v) => {
     setBankName(v);
     setErrors(prev => ({ ...prev, bankName: "", common: "" }));
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
+/> */}
+<TextInput
+  style={styles.input}
+  placeholder="Enter Bank Name"
+  value={bankName}
+  autoCapitalize="words"
+  onChangeText={(v) => {
+    const cleaned = v.replace(/[^a-zA-Z.&\s]/g, "");
+    setBankName(cleaned);
+          setErrors(prev => ({
+        ...prev,
+        bankName: "",
+        common: ""
+      }));
+
+    if (!bankNameRegex.test(cleaned)) {
+      setErrors(prev => ({
+        ...prev,
+        bankName: "Enter Valid Bank Name"
+      }));
+    } 
+  }}
 />
+{errors.bankName && <ErrorMessage message={errors.bankName} type="error" />}
+
+
 
 <Text style={styles.label}>Account No <Text style={{color:'red'}}> *</Text></Text>
 <TextInput
@@ -635,24 +727,26 @@ const TabButton = ({ title }) => {
 {errors.accountNo && <ErrorMessage message={errors.accountNo} type="error" />}
 
             <Text style={styles.label}>IFSC Code</Text>
-            <TextInput
+            {/* <TextInput
+              ref={ifscRef}
   style={styles.input}
   placeholder="Enter IFSC Code"
   value={ifsc}
-  // onChangeText={setIfsc}
          onChangeText={(v) => {
     setIfsc(v);
     setErrors(prev => ({ ...prev, ifsc: "", common: "" }));
   }}
- onFocus={() => {
-    setIsInputFocused(true);
-    setIsDescriptionFocused(true);   // ✅ ONLY HERE
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-    setIsDescriptionFocused(false);
-  }}
+/> */}
+<TextInput
+  ref={ifscRef}
+  style={styles.input}
+  placeholder="Enter IFSC Code"
+  value={ifsc}
+  autoCapitalize="characters"
+  maxLength={11}
+  onChangeText={handleIfscChange}
 />
+
 
             <Text style={styles.label}>Description</Text>
                       <TextInput
@@ -665,14 +759,7 @@ const TabButton = ({ title }) => {
         setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, description: "", common: "" }));
   }}
-  onFocus={() => {
-    setIsInputFocused(true);
-    setIsDescriptionFocused(true);   // ✅ ONLY HERE
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-    setIsDescriptionFocused(false);
-  }}
+  ref={descriptionRef}
 />
           </>
         );
@@ -699,7 +786,7 @@ const TabButton = ({ title }) => {
 
 
     <Text style={styles.label}>UPI ID <Text style={{color:'red'}}> *</Text></Text>
-    <TextInput
+    {/* <TextInput
       style={styles.input}
       placeholder="Enter UPI ID"
       value={upiId}
@@ -707,9 +794,28 @@ const TabButton = ({ title }) => {
     setUpiId(v);
     setErrors(prev => ({ ...prev, upiId: "", common: "" }));
   }}
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
-    />
+    /> */}
+
+    <TextInput
+  style={styles.input}
+  placeholder="Enter UPI ID"
+  value={upiId}
+  autoCapitalize="none"
+  keyboardType="email-address"
+  autoCorrect={false}
+  onChangeText={(v) => {
+    const formatted = v.replace(/\s/g, "")
+    setUpiId(formatted);
+    setErrors(prev => ({ ...prev, upiId: "", common: "" }));
+    if (upiRegex.test(formatted)) {
+      setErrors(prev => ({ ...prev, upiId: "", common: "" }));
+    } 
+    // else {
+    //   setErrors(prev => ({ ...prev, upiId: "Invalid UPI ID" }));
+    // }
+  }}
+/>
+
 
     {errors.upiId && <ErrorMessage message={errors.upiId} type="error" />}
   </>
@@ -727,14 +833,7 @@ const TabButton = ({ title }) => {
     setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, description: "", common: "" }));
   }}
- onFocus={() => {
-    setIsInputFocused(true);
-    setIsDescriptionFocused(true);   // ✅ ONLY HERE
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-    setIsDescriptionFocused(false);
-  }}
+  ref={descriptionRef}
 />
           </>
         );
@@ -782,18 +881,12 @@ const TabButton = ({ title }) => {
       placeholder="Enter Card Number"
       value={cardNo}
       onChangeText={(v) => {
-    setCardNo(v);
-    setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
+      const onlyNum = v.replace(/[^0-9]/g, "");
+      setCardNo(onlyNum);
+      setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
   }}
       
- onFocus={() => {
-    setIsInputFocused(true);
-    setIsDescriptionFocused(true);   // ✅ ONLY HERE
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-    setIsDescriptionFocused(false);
-  }}
+  ref={cardRef}
     />
   </>
 )}
@@ -808,14 +901,7 @@ const TabButton = ({ title }) => {
     setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev,  common: "" }))
   }}
- onFocus={() => {
-    setIsInputFocused(true);
-    setIsDescriptionFocused(true);   // ✅ ONLY HERE
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-    setIsDescriptionFocused(false);
-  }}
+  ref={descriptionRef}
 />
           </>
         );
@@ -832,8 +918,7 @@ const TabButton = ({ title }) => {
     setCashName(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, cashName: "", common: "" }));
   }}
-  onFocus={() => setIsInputFocused(true)}
-  // onBlur={() => setIsInputFocused(false)}
+
 />
 
 {errors.cashName && (
@@ -851,9 +936,6 @@ const TabButton = ({ title }) => {
     setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev,  common: "" }))
   }}
-  
-  onFocus={() => setIsInputFocused(true)}
-  onBlur={() => setIsInputFocused(false)}
 />
           </>
         );
@@ -876,7 +958,7 @@ const TabButton = ({ title }) => {
   <View style={styles.sheetOverlay}>
     {/* BACKDROP */}
     <TouchableWithoutFeedback   onPress={() => {
-    if (!isInputFocused) handleClose();
+   handleClose();
   }}>
       <View style={{ flex: 1 }} />
     </TouchableWithoutFeedback>
@@ -915,8 +997,10 @@ const TabButton = ({ title }) => {
       <ScrollView
         // keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-           keyboardShouldPersistTaps="always"
-             keyboardDismissMode="none"
+          //  keyboardShouldPersistTaps="always"
+          //    keyboardDismissMode="none"
+               keyboardShouldPersistTaps="handled"
+               keyboardDismissMode="on-drag"
       >
         {RenderForm()} 
       </ScrollView>
@@ -996,6 +1080,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",
+        // backgroundColor: "#fff",
   },
 
   sheet: {
@@ -1065,6 +1150,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     marginTop: 20,
+    marginBottom:20,
     alignItems: "center",
   },
 
@@ -1104,6 +1190,7 @@ sheetOverlay: {
   position: "absolute",
   top: 0, left: 0, right: 0, bottom: 0,
   backgroundColor: "rgba(0,0,0,0.4)",
+  //  backgroundColor: "#fff",
   justifyContent: "flex-end",
   zIndex: 9999,
 },
@@ -1111,10 +1198,11 @@ sheetOverlay: {
 sheet: {
   backgroundColor: "#fff",
   padding: 20,
+  paddingTop:10,
   borderTopLeftRadius: 25,
   borderTopRightRadius: 25,
   paddingBottom: 30,
-  minHeight: "77%",  },
+  minHeight: "72%",  },
 
 sheetHandle: {
   width: 60,

@@ -145,32 +145,32 @@ const [keyboardHeight, setKeyboardHeight] = useState(0);
     const translateY = useRef(new Animated.Value(0)).current;
     const [isInputFocused, setIsInputFocused] = useState(false);
 
-       useEffect(() => {
-        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-          if (!isInputFocused) return; 
+      //  useEffect(() => {
+      //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      //     if (!isInputFocused) return; 
       
-          Animated.timing(translateY, {
-            toValue: -e.endCoordinates.height + 80,
-            duration: 180,
-            useNativeDriver: true,
-          }).start();
-        });
+      //     Animated.timing(translateY, {
+      //       toValue: -e.endCoordinates.height + 80,
+      //       duration: 180,
+      //       useNativeDriver: true,
+      //     }).start();
+      //   });
       
-        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-          Animated.timing(translateY, {
-            toValue: 0,
-            duration: 180,
-            useNativeDriver: true,
-          }).start();
+      //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      //     Animated.timing(translateY, {
+      //       toValue: 0,
+      //       duration: 180,
+      //       useNativeDriver: true,
+      //     }).start();
       
-          setIsInputFocused(false);
-        });
+      //     setIsInputFocused(false);
+      //   });
       
-        return () => {
-          showSub.remove();
-          hideSub.remove();
-        };
-      }, [isInputFocused]);
+      //   return () => {
+      //     showSub.remove();
+      //     hideSub.remove();
+      //   };
+      // }, [isInputFocused]);
 
 
 
@@ -370,23 +370,28 @@ if (isEdit) {
 
 
 const scrollRef = useRef(null);
-const assetRef = useRef(null);
-const productRef = useRef(null);
+const serialRef = useRef(null);
+const brandRef = useRef(null);
 const vendorRef = useRef(null);
 const purchaseRef = useRef(null);
 const priceRef = useRef(null);
 const paymentRef = useRef(null);
+
 const scrollToField = (ref) => {
   if (!ref?.current || !scrollRef.current) return;
 
   ref.current.measureLayout(
-    scrollRef.current.getInnerViewNode(),
+    scrollRef.current,
     (x, y) => {
-      scrollRef.current.scrollTo({ y: y - 20, animated: true });
+      scrollRef.current.scrollTo({
+        y: y - 100,
+        animated: true,
+      });
     },
     () => {}
   );
 };
+
 
 
     const panResponder = useRef(
@@ -501,6 +506,7 @@ for (let i = -365; i <= 365; i++) {
                 {...panResponder.panHandlers}
             >
                 <View style={styles.handle} />
+                           <Text style={styles.title}>{title}</Text>
 
                 {/* <ScrollView
                     showsVerticalScrollIndicator={false}
@@ -516,15 +522,20 @@ for (let i = -365; i <= 365; i++) {
   }}
 > */}
 <ScrollView
-  ref={scrollRef}
-  showsVerticalScrollIndicator={false}
+  // ref={scrollRef}
+  // showsVerticalScrollIndicator={false}
+  // keyboardShouldPersistTaps="handled"
+  // contentContainerStyle={{
+  //   paddingBottom: keyboardHeight + 40,
+  // }}
+
+    ref={scrollRef}
   keyboardShouldPersistTaps="handled"
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight + 40,
-  }}
+  keyboardDismissMode="on-drag"
+  contentContainerStyle={{ paddingBottom: 120 }}
 >
 
-                    <Text style={styles.title}>{title}</Text>
+         
 
 
                     <Text style={styles.label}>Asset Name  <Text style={{ color: "red" }}>*</Text></Text>
@@ -629,6 +640,7 @@ for (let i = -365; i <= 365; i++) {
 
 
                     <Text style={styles.label}>Brand name</Text>
+                      <View ref={brandRef}>
                    <TextInput
   style={styles.input}
   
@@ -639,16 +651,12 @@ onChangeText={(t) => {
   setBrandName(cleaned);
   clearApiError();
 }}
-              onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+ onFocus={() => scrollToField(brandRef)}
 />
-
+</View>
 
                     <Text style={styles.label}>Serial number</Text>
+                      <View ref={serialRef}>
                   <TextInput
   style={styles.input}
   placeholder="Enter Serial Number"
@@ -659,14 +667,9 @@ onChangeText={(t) => {
   setSerialNumber(cleaned);
   clearApiError();
 }}
-              onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+    onFocus={() => scrollToField(serialRef)}
 />
-
+</View>
 
 
 
@@ -711,6 +714,7 @@ onChangeText={(t) => {
 
 
                     <Text style={styles.label}>Price  <Text style={{ color: "red" }}>*</Text></Text>
+                    <View ref={priceRef}>
                   <TextInput
   style={[styles.input, ]}
   placeholder="Enter price"
@@ -722,13 +726,10 @@ onChangeText={(t) => {
     setErrors((prev) => ({ ...prev, price: "" }));
     clearApiError();
   }}
-                onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+    onFocus={() => scrollToField(priceRef)}
 />
+
+</View>
   {errors.price && (
                     <ErrorMessage message={errors.price} type="error" />
                                 )}

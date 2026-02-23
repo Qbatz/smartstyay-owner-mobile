@@ -137,19 +137,42 @@ if (selectedDate) {
 const [keyboardHeight, setKeyboardHeight] = useState(0);
 
 useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height + 60,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  const hide = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  return () => {
-    show.remove();
-    hide.remove();
-  };
-}, []);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+// useEffect(() => {
+//   const show = Keyboard.addListener("keyboardDidShow", (e) => {
+//     setKeyboardHeight(e.endCoordinates.height);
+//   });
+
+//   const hide = Keyboard.addListener("keyboardDidHide", () => {
+//     setKeyboardHeight(0);
+//   });
+
+//   return () => {
+//     show.remove();
+//     hide.remove();
+//   };
+// }, []);
 
 
 // const [keyboardOpen, setKeyboardOpen] = useState(false);
@@ -172,11 +195,23 @@ useEffect(() => {
   Animated.timing(translateY, {
   toValue: visible ? 0 : 500,
   duration: 250,
-  useNativeDriver: false,
+  useNativeDriver: true,
 }).start();
 
-  }, [visible]);
+  }, [visible])
 
+  
+
+useEffect(() => {
+  if (visible) {
+    setSelectedDate(null);
+    setRentAmount("");
+    setSameAsCurrent(false);
+    setReason("");
+    setDateError("");
+    setRentError("");
+  }
+}, [visible]);
 
 
 
@@ -190,7 +225,7 @@ useEffect(() => {
       else
       Animated.spring(translateY, {
   toValue: 0,
-  useNativeDriver: false,
+  useNativeDriver: true,
 }).start();
 
     },
@@ -297,7 +332,7 @@ useEffect(() => {
   keyboardShouldPersistTaps="handled"
   keyboardDismissMode="on-drag"
   contentContainerStyle={{
-    paddingBottom: keyboardHeight + 40,
+    paddingBottom:  20,
     flexGrow: 1,
   }}
 >
@@ -419,6 +454,7 @@ useEffect(() => {
             <TouchableOpacity onPress={onClose}>
               <Text style={styles.cancel}>Cancel</Text>
             </TouchableOpacity>
+
 
 
             <TouchableOpacity style={styles.assignBtn} onPress={handleSubmitReassign}>

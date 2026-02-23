@@ -1027,17 +1027,17 @@ const styles = StyleSheet.create({
 
   dropdownMenu: {
     position: "absolute",
-    top: 52,
+    bottom: 52,
     left: 0,
     right: 0,
-    backgroundColor: "#fff",   // ✅ must
+    backgroundColor: "#fff", 
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 12,
     zIndex: 9999,
-    elevation: 25,             // Android fix
+    elevation: 25,         
     maxHeight: 220,
-    overflow: "hidden",        // ✅ VERY IMPORTANT
+    overflow: "hidden",  
   },
 
 
