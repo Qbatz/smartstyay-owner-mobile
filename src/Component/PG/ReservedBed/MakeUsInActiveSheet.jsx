@@ -273,6 +273,31 @@ useEffect(() => {
           Are you sure you want to inactive this tenant?
         </Text>
 
+        
+                  <View style={styles.profileRow}>
+                    {selectedItem?.profilePic ? <Image source={{uri:selectedItem?.profilePic}} style={styles.profileImg} /> : 
+                    <View style={[styles.profileImg,{justifyContent:'center',alignItems:'center',backgroundColor:'#eef1ff'}]}>
+                      <Text style={{fontSize:16,fontWeight:600}}>{selectedItem?.initials}</Text>
+                    </View>}
+                    
+        
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={styles.name}>{selectedItem?.fullName}</Text>
+        
+                      <View style={styles.badgeRow}>
+                        <View style={styles.badgeYellow}>
+                          <Text style={styles.badgeText}>{selectedItem?.floorName}</Text>
+                        </View>
+        
+                        <View style={styles.badgeRed}>
+                          <Text style={styles.badgeText}>
+                            {selectedItem?.roomName} - {selectedItem?.bedName}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+
         {/* Joining Date */}
         <Text style={styles.label}>
         Date <Text style={{ color: "red" }}>*</Text>
@@ -494,6 +519,24 @@ const styles = StyleSheet.create({
      borderWidth: 1,
     borderColor: "#5555",
   },
+  profileRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
+  profileImg: { width: 50, height: 50, borderRadius: 25 },
+  name: { fontSize: 16, fontWeight: "600" },
 
+  badgeRow: { flexDirection: "row", marginTop: 5 },
+  badgeYellow: {
+    backgroundColor: "#FFF6CC",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 6,
+  },
+  badgeRed: {
+    backgroundColor: "#FFD6D6",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeText: { fontSize: 12 },
 
 });
