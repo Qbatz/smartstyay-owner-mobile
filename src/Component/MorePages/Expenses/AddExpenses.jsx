@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext , useRef} from "react";
 import {
   View,
   Text,
@@ -51,7 +51,8 @@ const isEditMode = !!editData;
   const [description, setDescription] = useState("");
 
 
-
+const scrollRef = useRef(null);
+const descriptionRef = useRef(null);
  
   const [unitCountOpen, setUnitCountOpen] = useState(false);
 
@@ -214,6 +215,23 @@ const isEditMode = !!editData;
       };
     }
   }
+
+
+  const scrollToField = (ref) => {
+  if (!ref?.current || !scrollRef.current) return;
+
+  ref.current.measureLayout(
+    scrollRef.current,
+    (x, y) => {
+      scrollRef.current.scrollTo({
+        y: y - 100,
+        animated: true,
+      });
+    },
+    () => {}
+  );
+};
+
 
   const renderSelectField = (label, selected, open, setOpen, list, onSelect) => (
     <View style={{ marginBottom: 6 }}>
@@ -381,9 +399,18 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
         </View>
 
         <ScrollView
-          showsVerticalScrollIndicator={false}
+        //  ref={scrollRef}
+          // showsVerticalScrollIndicator={false}
           style={styles.container}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          // contentContainerStyle={{ paddingBottom: 40 }}
+          //  keyboardShouldPersistTaps="handled"
+          // keyboardDismissMode="on-drag"
+  // contentContainerStyle={{ paddingBottom: 120 }}
+
+      ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
+  contentContainerStyle={{ paddingBottom: 250 }}
         >
 
           <Text style={styles.label}>
@@ -677,6 +704,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
 
           {/* Description */}
           <Text style={styles.label}>Description</Text>
+             <View ref={descriptionRef}>
           <TextInput
             style={styles.textarea}
             multiline
@@ -684,7 +712,9 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
             onChangeText={setDescription}
             placeholder="Add a short description"
             placeholderTextColor="#999"
+            onFocus={() => scrollToField(descriptionRef)}
           />
+          </View>
 
           {/* BUTTONS */}
           <View style={styles.btnRow}>
