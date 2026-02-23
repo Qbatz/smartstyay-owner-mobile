@@ -560,9 +560,9 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
           <View style={styles.deleteOverlay}>
             <View style={styles.deleteBox}>
 
-              <Text style={styles.deleteTitle}>Delete Customer?</Text>
+              <Text style={styles.deleteTitle}>Delete Tenant?</Text>
               <Text style={styles.deleteSub}>
-                Are you sure you want to delete this Customer?
+                Are you sure you want to delete this Tenant?
               </Text>
 
               <View style={styles.deleteBtnRow}>

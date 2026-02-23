@@ -1,14 +1,14 @@
-import React, { useState , useRef , useEffect , useContext} from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   FlatList,
-  StyleSheet,  TouchableWithoutFeedback,
-  Modal, Animated ,
+  StyleSheet, TouchableWithoutFeedback,
+  Modal, Animated,
   PanResponder,
-  BackHandler , TextInput , ScrollView , Dimensions
+  BackHandler, TextInput, ScrollView, Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -36,17 +36,17 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import Telegram from "../../../Assets/Images/telegram.png";
 import Payment from "../../../Assets/Images/payment.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
-import DeleteIcon from  "../../../Assets/Images/trash.png"
-import EditIcon from  "../../../Assets/Images/editIcon.png"  
-import TickIcon from  "../../../Assets/Images/tick-circle.png" 
+import DeleteIcon from "../../../Assets/Images/trash.png"
+import EditIcon from "../../../Assets/Images/editIcon.png"
+import TickIcon from "../../../Assets/Images/tick-circle.png"
 
-const BillBookings = ({onSelectReceipt}) => {
+const BillBookings = ({ onSelectReceipt }) => {
 
-  const { BillDetails, loading, GetAllBillDetails  , GetInitializeRefundDetails    ,
-      UpdateTenantRecurringStatus , receiptsList  , GetReceiptsList , DeleteReceipt , getReceiptPdfDetails} = useContext(BillContext);
-    const { activeHostelId } = useContext(CommonContexts);
-  
-        console.log("receiptsList", receiptsList);
+  const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
+    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails } = useContext(BillContext);
+  const { activeHostelId } = useContext(CommonContexts);
+
+  console.log("receiptsList", receiptsList);
 
   const dotsRefs = useRef({});
   const navigation = useNavigation();
@@ -55,115 +55,115 @@ const BillBookings = ({onSelectReceipt}) => {
   const [openDropdown, setOpenDropdown] = useState(false);
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-  const [deleteReceipt,setDeleteReceipt] = useState(false)
-   const [showMenu, setShowMenu] = useState(false);
-const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [deleteReceipt, setDeleteReceipt] = useState(false)
+  const [showMenu, setShowMenu] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
 
- const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
-  
+
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
-  
+
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
 
-    const detailsY = useRef(new Animated.Value(0)).current;
-    const detailsSheetY = useRef(new Animated.Value(0)).current;
+  const detailsY = useRef(new Animated.Value(0)).current;
+  const detailsSheetY = useRef(new Animated.Value(0)).current;
 
-         const amountOptions = [
-            "Low to High (Lowest First)",
-            "High to Low (Highest First)",
-            "Newest First",
-            "Oldest First",
-          ];
-       
-            const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
-            const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+  const amountOptions = [
+    "Low to High (Lowest First)",
+    "High to Low (Highest First)",
+    "Newest First",
+    "Oldest First",
+  ];
 
-            dayjs.extend(customParseFormat);
+  const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
+  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
 
-const formatApiDate = (date) =>
-  date
-    ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
-    : "--";
+  dayjs.extend(customParseFormat);
+
+  const formatApiDate = (date) =>
+    date
+      ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
+      : "--";
 
 
- 
+
 
   useEffect(() => {
-  if (activeHostelId) {
-    GetReceiptsList(activeHostelId);
-  }
-}, [activeHostelId]);
+    if (activeHostelId) {
+      GetReceiptsList(activeHostelId);
+    }
+  }, [activeHostelId]);
 
   useLayoutEffect(() => {
     const backAction = () => {
-    
+
       if (showFilter) {
         setShowFilter(false);
         return true;
       }
-  
-       if (showBillDetails) {
+
+      if (showBillDetails) {
         setShowBillDetails(false);
         return true;
       }
-  
-    
-  
-  
-  
+
+
+
+
+
       return false;
     };
-  
+
     const handler = BackHandler.addEventListener(
       "hardwareBackPress",
       backAction
     );
-  
+
     return () => handler.remove();
-  }, [ showBillDetails , showFilter ]);
+  }, [showBillDetails, showFilter]);
 
-      useEffect(() => {
-        const onBackPress = () => {
-          if (amountDropdownVisible) {
-            setAmountDropdownVisible(false);
-            return true;
-          }
-         
-          if (openFrom) {
-            setOpenFrom(false);
-            return true;
-          }
-          if (openTo) {
-            setOpenTo(false);
-            return true;
-          }
-          if (showFilter) {
-            setShowFilter(false);
-            return true;
-          }
-  
-          
-        
-          
-          return false;
-        };
-    
-        const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-        return () => sub.remove();
-      }, [ showFilter, openFrom, openTo, amountDropdownVisible]);
+  useEffect(() => {
+    const onBackPress = () => {
+      if (amountDropdownVisible) {
+        setAmountDropdownVisible(false);
+        return true;
+      }
 
-     const billDetailsPan = useRef(
+      if (openFrom) {
+        setOpenFrom(false);
+        return true;
+      }
+      if (openTo) {
+        setOpenTo(false);
+        return true;
+      }
+      if (showFilter) {
+        setShowFilter(false);
+        return true;
+      }
+
+
+
+
+      return false;
+    };
+
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => sub.remove();
+  }, [showFilter, openFrom, openTo, amountDropdownVisible]);
+
+  const billDetailsPan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
       onPanResponderMove: (_, g) => {
@@ -189,117 +189,117 @@ const formatApiDate = (date) =>
     })
   ).current;
 
-  
-   const detailsfilter = useRef(
-        PanResponder.create({
-          onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-          onPanResponderMove: (_, g) => {
-            if (g.dy > 0) detailsY.setValue(g.dy);
-          },
-          onPanResponderRelease: (_, g) => {
-            if (g.dy > 120) {
-              Animated.timing(detailsY, {
-                toValue: 700,
-                duration: 200,
-                useNativeDriver: true,
-              }).start(() => {
-                setShowFilter(false);
-                detailsY.setValue(0);
-              });
-            } else {
-              Animated.spring(detailsY, { toValue: 0, useNativeDriver: true }).start();
-            }
-          },
-        })
-      ).current;
-    
-      const toggleAmountDropdown = () => {
-      setAmountDropdownVisible((v) => !v);
-    };
+
+  const detailsfilter = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) detailsY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          Animated.timing(detailsY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowFilter(false);
+            detailsY.setValue(0);
+          });
+        } else {
+          Animated.spring(detailsY, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
+
+  const toggleAmountDropdown = () => {
+    setAmountDropdownVisible((v) => !v);
+  };
 
   const handleBillDetails = () => {
     setShowBillDetails(true)
   }
 
-const openMenu = (item, id) => {
-  const ref = dotsRefs.current[id];
+  const openMenu = (item, id) => {
+    const ref = dotsRefs.current[id];
 
-  if (!ref) return;
+    if (!ref) return;
 
-  ref.measureInWindow((px, py, width, height) => {
-    setPopupPosition({ x: px, y: py });
-    setSelectedCustomer(item);
-    setShowMenu(true);
-  });
-};
+    ref.measureInWindow((px, py, width, height) => {
+      setPopupPosition({ x: px, y: py });
+      setSelectedCustomer(item);
+      setShowMenu(true);
+    });
+  };
 
-console.log('selected', selectedCustomer ,  activeHostelId,
-      );
-
-
-// const handleShowReceiptPdf = async () => {
-// navigation.navigate("ReceiptPdf")
-//   const res = await getReceiptPdfDetails(
-//       activeHostelId,
-//       selectedReceipt?.transactionId
-//     );
-//     console.log("res", res);
-// }
+  console.log('selected', selectedCustomer, activeHostelId,
+  );
 
 
-const handleCreateBill = () => {
-navigation.navigate("CreateReceipt" , {mode: "add"})
-}
-
-// const handleViewReceiptDetails = (item) => {
-//       setSelectedReceipt(item);
-//       setShowBillDetails(true);
-//     }
-
-     const handleViewReceiptDetails = (item) => {
-      onSelectReceipt(item);
-       };
+  // const handleShowReceiptPdf = async () => {
+  // navigation.navigate("ReceiptPdf")
+  //   const res = await getReceiptPdfDetails(
+  //       activeHostelId,
+  //       selectedReceipt?.transactionId
+  //     );
+  //     console.log("res", res);
+  // }
 
 
-const handleEditBill = () => {
-
- navigation.navigate("CreateReceipt", {
-    mode: "edit",
-    // data: item,  
-  });
-    setShowMenu(false);
-}
-
- console.log("selectedReceipt", selectedReceipt);
-
-const handleDeleteReceipt = async () => {
-
-  
-  const res = await DeleteReceipt({
-    hostelId: activeHostelId,
-    receiptId: selectedCustomer?.transactionId,
-  });
-
-  
-
-  if (res.success) {
-     
-  setModalType("success");
-  setModalMessage("Deleted Successfully");
-  setShowSuccessModal(true);
-  setDeleteReceipt(false)
-
-  setTimeout(() => setShowSuccessModal(false), 1500);
-  } else {
-   setModalType("warning");
-   setModalMessage(res?.message || "Something went wrong");
-   setShowSuccessModal(true);
-
-    setTimeout(() => setShowSuccessModal(false), 1500); 
+  const handleCreateBill = () => {
+    navigation.navigate("CreateReceipt", { mode: "add" })
   }
-};
 
-  
+  // const handleViewReceiptDetails = (item) => {
+  //       setSelectedReceipt(item);
+  //       setShowBillDetails(true);
+  //     }
+
+  const handleViewReceiptDetails = (item) => {
+    onSelectReceipt(item);
+  };
+
+
+  const handleEditBill = () => {
+
+    navigation.navigate("CreateReceipt", {
+      mode: "edit",
+      // data: item,  
+    });
+    setShowMenu(false);
+  }
+
+  console.log("selectedReceipt", selectedReceipt);
+
+  const handleDeleteReceipt = async () => {
+
+
+    const res = await DeleteReceipt({
+      hostelId: activeHostelId,
+      receiptId: selectedCustomer?.transactionId,
+    });
+
+
+
+    if (res.success) {
+
+      setModalType("success");
+      setModalMessage("Deleted Successfully");
+      setShowSuccessModal(true);
+      setDeleteReceipt(false)
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    } else {
+      setModalType("warning");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    }
+  };
+
+
 
   const toggleSwitch = (id) => {
     setData((prev) =>
@@ -310,23 +310,23 @@ const handleDeleteReceipt = async () => {
   };
 
   const EmptyReceiptState = () => (
-  <View style={styles.emptyContainer}>
-    <Image
-      source={EmptyFloor}
-      style={styles.emptyImage}
-      resizeMode="contain"
-    />
-    <Text style={styles.emptyText}>
-      No Bookings Found
-    </Text>
-  </View>
-);
+    <View style={styles.emptyContainer}>
+      <Image
+        source={EmptyFloor}
+        style={styles.emptyImage}
+        resizeMode="contain"
+      />
+      <Text style={styles.emptyText}>
+        No Bookings Found
+      </Text>
+    </View>
+  );
 
 
-const renderItem = ({ item }) => {
-  return (
-    <View style={styles.row}>
-      {/* <TouchableOpacity
+  const renderItem = ({ item }) => {
+    return (
+      <View style={styles.row}>
+        {/* <TouchableOpacity
         onPress={() => {handleViewReceiptDetails(item)}}
       >
         <Image
@@ -338,56 +338,56 @@ const renderItem = ({ item }) => {
           style={styles.avatar}
         />
       </TouchableOpacity> */}
- <TouchableOpacity >
-  <View style={styles.avatarWrapper}>
-    {item?.profilePic ? (
-      <Image source={{ uri: item.profilePic }} style={styles.avatar} />
-    ) : (
-      <View style={styles.initialCircle}>
-        <Text style={styles.initialText}>
-          {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
-        </Text>
-      </View>
-    )}
+        <TouchableOpacity >
+          <View style={styles.avatarWrapper}>
+            {item?.profilePic ? (
+              <Image source={{ uri: item.profilePic }} style={styles.avatar} />
+            ) : (
+              <View style={styles.initialCircle}>
+                <Text style={styles.initialText}>
+                  {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
+                </Text>
+              </View>
+            )}
 
-    {/* ✅ TICK ICON */}
-    <View style={styles.tickWrapper}>
-      <Image source={TickIcon} style={styles.tickIcon} />
-    </View>
-  </View>
-</TouchableOpacity>
-
-
-
-      <View style={{ flex: 1 }}>
-        {/* <Text style={styles.name}>{item.fullName}</Text> */}
-         <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("CustomerOverviewScreen", {
-              customerId: item.customerId,  
-              customer: item,             
-            })
-          }
-        >
-          <Text style={styles.name}>{item.fullName}</Text>
+            {/* ✅ TICK ICON */}
+            <View style={styles.tickWrapper}>
+              <Image source={TickIcon} style={styles.tickIcon} />
+            </View>
+          </View>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-          {/* <View style={styles.tagBox}>
+
+
+        <View style={{ flex: 1 }}>
+          {/* <Text style={styles.name}>{item.fullName}</Text> */}
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("CustomerOverviewScreen", {
+                customerId: item.customerId,
+                customer: item,
+              })
+            }
+          >
+            <Text style={styles.name}>{item.fullName}</Text>
+          </TouchableOpacity>
+
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
+            {/* <View style={styles.tagBox}>
             <Text style={styles.tag}>{item.invoiceType}</Text>
           </View> */}
 
-          <Image
-            source={Bills_Black_Icon}
-            style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
-          />
+            <Image
+              source={Bills_Black_Icon}
+              style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
+            />
 
-          <Text style={styles.bill}>{item.invoiceNumber}</Text>
+            <Text style={styles.bill}>{item.invoiceNumber}</Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.rightSection}>
-        {/* <TouchableOpacity
+        <View style={styles.rightSection}>
+          {/* <TouchableOpacity
           ref={(r) => (dotsRefs.current[item.transactionId] = r)}
           onPress={() => openMenu(item, item.transactionId)}
         >
@@ -397,15 +397,15 @@ const renderItem = ({ item }) => {
           />
         </TouchableOpacity> */}
 
-        <Text>₹ 1500</Text>
+          <Text>₹ 1500</Text>
 
-        <Text style={styles.dateText}>
-          {formatApiDate(item.paidAt)}
-        </Text>
+          <Text style={styles.dateText}>
+            {formatApiDate(item.paidAt)}
+          </Text>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
 
 
 
@@ -413,82 +413,84 @@ const renderItem = ({ item }) => {
   return (
 
     <>
-    
+
       <SuccessModal
-  visible={showSuccessModal}
-  onClose={() => setShowSuccessModal(false)}
-  message={modalMessage}
-  type={modalType}
-/>
-  
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.monthText}>This Month</Text>
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
 
-   
-      </View>
-
- <FlatList
-  data={[]}
-  renderItem={renderItem}
-  keyExtractor={(item) => item.transactionId}
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    flexGrow: 1,        
-    paddingBottom: 120,
-  }}
-  ListEmptyComponent={
-    !loading && <EmptyReceiptState />
-  }
-/>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.monthText}>This Month</Text>
 
 
+        </View>
+
+        <FlatList
+          data={[]}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.transactionId}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: 120,
+          }}
+          ListEmptyComponent={
+            !loading && <EmptyReceiptState />
+          }
+        />
 
 
-      <TouchableOpacity style={styles.filterButton} >
+
+
+        <TouchableOpacity style={styles.filterButton} >
           <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
 
-         <TouchableOpacity style={styles.addBtn} >
-              <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
+        <TouchableOpacity style={styles.addBtn} >
+          <Image source={AddIcon} style={{ width: 25, height: 25 }} />
+        </TouchableOpacity>
 
 
-           {showMenu && (
-  <TouchableOpacity
-    activeOpacity={1}
-    onPress={() => setShowMenu(false)}
-    style={styles.popupOverlay}
-  >
-    <View
-      style={[
-        styles.popupBox,
-        { top: popupPosition.y - 120, left: popupPosition.x - 180 },
-      ]}
-    >
-      <TouchableOpacity style={styles.popupRow}>
-        <Image  source={Download} style={styles.popupIcon}/>
-        <Text style={styles.popupText}>Download</Text>
-      </TouchableOpacity>
+        {showMenu && (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => setShowMenu(false)}
+            style={styles.popupOverlay}
+          >
+            <View
+              style={[
+                styles.popupBox,
+                { top: popupPosition.y - 120, left: popupPosition.x - 180 },
+              ]}
+            >
+              <TouchableOpacity style={styles.popupRow}>
+                <Image source={Download} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Download</Text>
+              </TouchableOpacity>
 
-      <TouchableOpacity style={styles.popupRow} onPress={handleEditBill}>
-           <Image  source={EditIcon} style={styles.popupIcon}/>
-        <Text style={styles.popupText}>Edit</Text>
-      </TouchableOpacity>
+              <TouchableOpacity style={styles.popupRow} onPress={handleEditBill}>
+                <Image source={EditIcon} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Edit</Text>
+              </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.popupRow}
-        onPress={() => {setShowMenu(false)
-          setDeleteReceipt(true)}
-        }
-    
-      >
-           <Image  source={DeleteIcon} style={styles.popupIcon}/>
-        <Text style={styles.popupText}>Delete</Text>
-      </TouchableOpacity>
-    </View>
-  </TouchableOpacity>
-)}
+              <TouchableOpacity
+                style={styles.popupRow}
+                onPress={() => {
+                  setShowMenu(false)
+                  setDeleteReceipt(true)
+                }
+                }
+
+              >
+                <Image source={DeleteIcon} style={styles.popupIcon} />
+                <Text style={styles.popupText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        )}
 
 
 
@@ -623,228 +625,228 @@ const renderItem = ({ item }) => {
 
 
         {showFilter && (
-              <View style={styles.sheetOverlay}>
+          <View style={styles.sheetOverlay}>
             <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
               <View style={{ flex: 1 }} />
             </TouchableWithoutFeedback>
-        
+
             <Animated.View
               style={[styles.transactionSheet, { transform: [{ translateY: detailsY }] }]}
               {...detailsfilter.panHandlers}
             >
               <View style={styles.sheetHandle} />
-             
-                         <View style={styles.filterHeaderRow}>
-                           <View style={{ flexDirection: "row", alignItems: "center" }}>
-                             <Image source={FilterIcon} style={{ width: 40, height: 40 }} />
-                             <Text style={styles.filterTitle}>  Filter by</Text>
-                           </View>
-                         </View>
-             
-                         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                           <Text style={styles.label}>Date Range</Text>
-                           <TouchableOpacity
-                             onPress={() => {
-                               setFromDate(dayjs());
-                               setToDate(dayjs());
-                               setAmountSelected(amountOptions[0]);
-                             }}
-                           >
-                             <Text style={styles.resetTextSmall}>Reset</Text>
-                           </TouchableOpacity>
-                         </View>
-             
-                         <View style={styles.dateRow}>
-                           <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                             <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-                             <Image source={CalendarIcon} style={styles.calIcon} />
-                           </TouchableOpacity>
-             
-                           <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                             <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-                             <Image source={CalendarIcon} style={styles.calIcon} />
-                           </TouchableOpacity>
-                         </View>
-             
-                         <View style={styles.quickRow}>
-                           <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                             <Text style={styles.quickText}>Today</Text>
-                           </TouchableOpacity>
-             
-                           <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                             <Text style={styles.quickText}>This Week</Text>
-                           </TouchableOpacity>
-             
-                           <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                             <Text style={styles.quickText}>This Month</Text>
-                           </TouchableOpacity>
-                         </View>
-             
-                         <Text style={[styles.label, { marginTop: 18 }]}>Type</Text>
-             
-                         <View
-                           style={styles.selectWrapper}
-                           onLayout={(event) => {
-                             const { y, height } = event.nativeEvent.layout;
-                             const screenHeight = Dimensions.get("window").height;
-                             const bottomSpace = screenHeight - (y + height);
-             
-                             setOpenUpward(bottomSpace < 250);
-                           }}
-                         >
-                           <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
-                             <Text style={styles.selectedText}>{amountSelected}</Text>
-                             <Image source={DownArrow} style={styles.downArrow} />
-                           </TouchableOpacity>
-             
-                           {amountDropdownVisible && (
-                             <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
-                               <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                                 {amountOptions.map((opt) => (
-                                   <TouchableOpacity key={opt} style={styles.option}
-                                     onPress={() => {
-                                       setAmountSelected(opt);
-                                       setAmountDropdownVisible(false);
-                                     }}
-                                   >
-                                     <Text style={styles.optionText}>{opt}</Text>
-                                   </TouchableOpacity>
-                                 ))}
-                               </ScrollView>
-                             </View>
-                           )}
-                         </View>
-             
-                         <View style={styles.bottomButtons}>
-                           <TouchableOpacity style={styles.resetBtn}
-                             onPress={() => {
-                               setFromDate(dayjs());
-                               setToDate(dayjs());
-                               setAmountSelected(amountOptions[0]);
-                             }}
-                           >
-                             <Text style={styles.resetBtnText}>Reset All</Text>
-                           </TouchableOpacity>
-             
-                           <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
-                             <Text style={styles.applyBtnText}>Apply</Text>
-                           </TouchableOpacity>
-                         </View>
+
+              <View style={styles.filterHeaderRow}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Image source={FilterIcon} style={{ width: 40, height: 40 }} />
+                  <Text style={styles.filterTitle}>  Filter by</Text>
+                </View>
+              </View>
+
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={styles.label}>Date Range</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setFromDate(dayjs());
+                    setToDate(dayjs());
+                    setAmountSelected(amountOptions[0]);
+                  }}
+                >
+                  <Text style={styles.resetTextSmall}>Reset</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.dateRow}>
+                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+                  <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+                  <Image source={CalendarIcon} style={styles.calIcon} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+                  <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+                  <Image source={CalendarIcon} style={styles.calIcon} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.quickRow}>
+                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+                  <Text style={styles.quickText}>Today</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+                  <Text style={styles.quickText}>This Week</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+                  <Text style={styles.quickText}>This Month</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={[styles.label, { marginTop: 18 }]}>Type</Text>
+
+              <View
+                style={styles.selectWrapper}
+                onLayout={(event) => {
+                  const { y, height } = event.nativeEvent.layout;
+                  const screenHeight = Dimensions.get("window").height;
+                  const bottomSpace = screenHeight - (y + height);
+
+                  setOpenUpward(bottomSpace < 250);
+                }}
+              >
+                <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
+                  <Text style={styles.selectedText}>{amountSelected}</Text>
+                  <Image source={DownArrow} style={styles.downArrow} />
+                </TouchableOpacity>
+
+                {amountDropdownVisible && (
+                  <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
+                    <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
+                      {amountOptions.map((opt) => (
+                        <TouchableOpacity key={opt} style={styles.option}
+                          onPress={() => {
+                            setAmountSelected(opt);
+                            setAmountDropdownVisible(false);
+                          }}
+                        >
+                          <Text style={styles.optionText}>{opt}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.bottomButtons}>
+                <TouchableOpacity style={styles.resetBtn}
+                  onPress={() => {
+                    setFromDate(dayjs());
+                    setToDate(dayjs());
+                    setAmountSelected(amountOptions[0]);
+                  }}
+                >
+                  <Text style={styles.resetBtnText}>Reset All</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                  <Text style={styles.applyBtnText}>Apply</Text>
+                </TouchableOpacity>
+              </View>
             </Animated.View>
           </View>
-              )}
+        )}
 
-              {deleteReceipt && (
-                <Modal
-                  transparent
-                  animationType="fade"
-                  visible={deleteReceipt}
-                  onRequestClose={() => setDeleteReceipt(false)}
-                >
-                  <View style={styles.deleteOverlay}>
-                    <View style={styles.deleteBox}>
-              
-                      <Text style={styles.deleteTitle}>Delete Receipt?</Text>
-                      <Text style={styles.deleteSub}>
-                        Are you sure you want to delete this Receipt?
-                      </Text>
-              
-                      <View style={styles.deleteBtnRow}>
-                        <TouchableOpacity
-                          style={styles.cancelBtn}
-                          onPress={() => setDeleteReceipt(false)}
-                        >
-                          <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
-              
-                        <TouchableOpacity
-                          style={styles.deleteBtn}
-                         onPress={()=> handleDeleteReceipt()}
-                        >
-                          <Text style={styles.deleteBtnText}>Delete</Text>
-                        </TouchableOpacity>
-                      </View>
-              
-                    </View>
-                  </View>
-                </Modal>
-              )}
-              
-    </View>
-      </>
+        {deleteReceipt && (
+          <Modal
+            transparent
+            animationType="fade"
+            visible={deleteReceipt}
+            onRequestClose={() => setDeleteReceipt(false)}
+          >
+            <View style={styles.deleteOverlay}>
+              <View style={styles.deleteBox}>
+
+                <Text style={styles.deleteTitle}>Delete Receipt?</Text>
+                <Text style={styles.deleteSub}>
+                  Are you sure you want to delete this Receipt?
+                </Text>
+
+                <View style={styles.deleteBtnRow}>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => setDeleteReceipt(false)}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={() => handleDeleteReceipt()}
+                  >
+                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </View>
+          </Modal>
+        )}
+
+      </View>
+    </>
   );
 };
 
 export default BillBookings;
 
 const styles = StyleSheet.create({
-container: {
-  flex: 1,
-  padding: 15,
-  backgroundColor: "#fff",
-  position: "relative",
-  zIndex: 1,
-},
+  container: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: "#fff",
+    position: "relative",
+    zIndex: 1,
+  },
 
 
-headerRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop: 10,
-  marginBottom: 10,
-  zIndex: 1000,
-},
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    marginBottom: 10,
+    zIndex: 1000,
+  },
 
   monthText: { fontSize: 16, fontWeight: "600" },
 
- dropButton: {
-  borderWidth: 1,
-  borderColor: "#C9C9C9",
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  borderRadius: 20,
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#fff",
-},
+  dropButton: {
+    borderWidth: 1,
+    borderColor: "#C9C9C9",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
 
-dropButtonText: {
-  fontSize: 14,
-  color: "#000",
-  marginRight: 6,
-},
+  dropButtonText: {
+    fontSize: 14,
+    color: "#000",
+    marginRight: 6,
+  },
 
-arrow: {
-  fontSize: 12,
-  color: "#444",
-},
+  arrow: {
+    fontSize: 12,
+    color: "#444",
+  },
 
-dropCard: {
-  position: "absolute",
-  top: 40,
-  right: 0,
-  width: 150,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  paddingVertical: 8,
-  elevation: 10,       
-  zIndex: 9999,       
-  shadowColor: "#000",
-  shadowRadius: 5,
-  shadowOpacity: 0.25,
-  shadowOffset: { width: 0, height: 2 },
-},
+  dropCard: {
+    position: "absolute",
+    top: 40,
+    right: 0,
+    width: 150,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 8,
+    elevation: 10,
+    zIndex: 9999,
+    shadowColor: "#000",
+    shadowRadius: 5,
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
 
-optionRow: {
-  paddingVertical: 8,
-  paddingHorizontal: 12,
-},
+  optionRow: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
 
-optionText: {
-  fontSize: 14,
-  color: "#000",
-},
+  optionText: {
+    fontSize: 14,
+    color: "#000",
+  },
 
 
   row: {
@@ -875,7 +877,7 @@ optionText: {
 
   bill: { fontSize: 10, color: "#777" },
 
-  labelOn: { fontSize: 12, color: "#3562FF", marginBottom: 2 , marginRight:5},
+  labelOn: { fontSize: 12, color: "#3562FF", marginBottom: 2, marginRight: 5 },
 
   switch: {
     width: 42,
@@ -901,7 +903,7 @@ optionText: {
   },
 
 
-   filterButton: {
+  filterButton: {
     position: "absolute",
     bottom: 124,
     right: 50,
@@ -912,177 +914,177 @@ optionText: {
   },
 
 
- sheetOverlay: {
-  position: "absolute",
-  top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-  zIndex: 9999,
-},
-transactionSheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  paddingBottom: 30,
-  minHeight: 400,
-},
-sheetHandle: {
-  width: 60,
-  height: 5,
-  backgroundColor: "#ccc",
-  alignSelf: "center",
-  borderRadius: 30,
-  marginBottom: 15,
-},
-billHeaderRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 10,
-  paddingHorizontal: 5,
-},
+  sheetOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+    zIndex: 9999,
+  },
+  transactionSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    paddingBottom: 30,
+    minHeight: 400,
+  },
+  sheetHandle: {
+    width: 60,
+    height: 5,
+    backgroundColor: "#ccc",
+    alignSelf: "center",
+    borderRadius: 30,
+    marginBottom: 15,
+  },
+  billHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+    paddingHorizontal: 5,
+  },
 
-billHeaderText: {
-  fontSize: 20,
-  fontWeight: "700",
-  color: "#000",
-},
+  billHeaderText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#000",
+  },
 
-statusBadge: {
-  backgroundColor: "#D7FFD7",
-  paddingHorizontal: 14,
-  paddingVertical: 6,
-  borderRadius: 20,
-},
+  statusBadge: {
+    backgroundColor: "#D7FFD7",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
 
-statusText: {
-  color: "black",
-  fontWeight: "700",
-  fontSize: 13,
-},
+  statusText: {
+    color: "black",
+    fontWeight: "700",
+    fontSize: 13,
+  },
 
-userRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 15,
-},
-avatarWrapper: {
-  position: "relative",
-  marginRight: 12,
-},
+  userRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 15,
+  },
+  avatarWrapper: {
+    position: "relative",
+    marginRight: 12,
+  },
 
-tickWrapper: {
-  position: "absolute",
-  top: -2,
-  right: -1,
-  backgroundColor: "#fff",   // white border effect
-  borderRadius: 10,
-  padding: 1,
-},
+  tickWrapper: {
+    position: "absolute",
+    top: -2,
+    right: -1,
+    backgroundColor: "#fff",   // white border effect
+    borderRadius: 10,
+    padding: 1,
+  },
 
-tickIcon: {
-  width: 16,
-  height: 16,
-},
+  tickIcon: {
+    width: 16,
+    height: 16,
+  },
 
 
-userImg: {
-  width: 55,
-  height: 55,
-  borderRadius: 30,
-},
+  userImg: {
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+  },
 
-userName: {
-  fontSize: 17,
-  fontWeight: "700",
-  color: "#000",
-},
+  userName: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#000",
+  },
 
-invTypeBadge: {
-  backgroundColor: "#FFE6C7",
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  borderRadius: 8,
-  marginRight: 8,
-},
+  invTypeBadge: {
+    backgroundColor: "#FFE6C7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 8,
+  },
 
-invTypeText: {
-  color: "#C67506",
-  fontWeight: "600",
-  fontSize: 12,
-},
+  invTypeText: {
+    color: "#C67506",
+    fontWeight: "600",
+    fontSize: 12,
+  },
 
-billNumber: {
-  color: "#555",
-  fontSize: 13,
-  alignSelf: "center",
-},
+  billNumber: {
+    color: "#555",
+    fontSize: 13,
+    alignSelf: "center",
+  },
 
-twoColRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop: 25,
-},
+  twoColRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 25,
+  },
 
-colItem: {
-  width: "48%",
-},
+  colItem: {
+    width: "48%",
+  },
 
-label: {
-  color: "#777",
-  fontSize: 14,
-  marginBottom: 5,
-},
+  label: {
+    color: "#777",
+    fontSize: 14,
+    marginBottom: 5,
+  },
 
-rowAlign: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+  rowAlign: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-iconSmall: {
-  width: 18,
-  height: 18,
-  marginRight: 6,
-},
+  iconSmall: {
+    width: 18,
+    height: 18,
+    marginRight: 6,
+  },
 
-value: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#000",
-},
+  value: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
 
-amountValue: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#000",
-},
+  amountValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+  },
 
-dueValue: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "red",
-},
+  dueValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "red",
+  },
 
-previewBtn: {
-  backgroundColor: "#1E45E1",
-  paddingVertical: 14,
-  borderRadius: 12,
-  marginTop: 39,
-  alignItems: "center",
-},
+  previewBtn: {
+    backgroundColor: "#1E45E1",
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 39,
+    alignItems: "center",
+  },
 
-previewText: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "700",
-},
+  previewText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
 
-filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
- filterTitle: { fontSize: 20, fontWeight: "700" },
+  filterTitle: { fontSize: 20, fontWeight: "700" },
   resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
@@ -1097,7 +1099,7 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
     justifyContent: "space-between",
     borderWidth: 1,
     borderColor: "#E0E0E0",
-    height: 50,   
+    height: 50,
     paddingHorizontal: 12,
     borderRadius: 12,
   },
@@ -1106,28 +1108,28 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontWeight: "600" },
- bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
+  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontWeight: "700" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
   applyBtnText: { color: "#fff", fontWeight: "700" },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   dropdownMenu: {
-  position: "absolute",
-  top: 52,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  elevation: 7,
-  zIndex: 9999,
-  maxHeight: 150,    
-  overflow: "hidden", 
-},
+    position: "absolute",
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    elevation: 7,
+    zIndex: 9999,
+    maxHeight: 150,
+    overflow: "hidden",
+  },
 
- rightSection: {
+  rightSection: {
     alignItems: "flex-end",
   },
   dateText: {
@@ -1139,8 +1141,8 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
     fontSize: 22,
     color: "#6B7280",
   },
-  
-   addBtn: {
+
+  addBtn: {
     position: "absolute",
     bottom: 60,
     right: 45,
@@ -1152,142 +1154,142 @@ filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignI
     alignItems: "center",
     elevation: 6,
   },
-  
-  popupOverlay: {
-  position: "absolute",
-  top: 10,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "transparent",
-},
 
-popupBox: {
-  position: "absolute",
-  width: 150,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  elevation: 20,
-  paddingVertical: 10,
-  zIndex: 10000,
-},
+  popupOverlay: {
+    position: "absolute",
+    top: 10,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+  },
+
+  popupBox: {
+    position: "absolute",
+    width: 150,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    elevation: 20,
+    paddingVertical: 10,
+    zIndex: 10000,
+  },
 
   popupRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
 
-popupIcon: {
-  width: 20,
-  height: 20,
-  marginRight: 10,
-},
+  popupIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
 
-popupText: {
-  fontSize: 14,
-  color: "#333",
-},
+  popupText: {
+    fontSize: 14,
+    color: "#333",
+  },
 
 
 
-deleteOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-deleteBox: {
-  width: "90%",
-  backgroundColor: "#fff",
-  padding: 25,
-  borderRadius: 15,
-  alignItems: "center",
-  elevation: 10,
-},
+  deleteBox: {
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 25,
+    borderRadius: 15,
+    alignItems: "center",
+    elevation: 10,
+  },
 
-deleteTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  color: "#111",
-  marginBottom: 10,
-},
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111",
+    marginBottom: 10,
+  },
 
-deleteSub: {
-  fontSize: 14,
-  color: "#555",
-  textAlign: "center",
-  marginBottom: 25,
-},
+  deleteSub: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 25,
+  },
 
-deleteBtnRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  width: "100%",
-},
+  deleteBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
 
-cancelBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#2D6CDF",
-  marginRight: 10,
-  alignItems: "center",
-},
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#2D6CDF",
+    marginRight: 10,
+    alignItems: "center",
+  },
 
-cancelText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#2D6CDF",
-},
+  cancelText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2D6CDF",
+  },
 
-deleteBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 10,
-  backgroundColor: "#2D6CDF",
-  alignItems: "center",
-},
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+  },
 
-deleteBtnText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#fff",
-},
-initialCircle: {
-  width:40,
-  height:40,
-  borderRadius: 20,
-  backgroundColor: "#E5E7EB",  
-  alignItems: "center",
-  justifyContent: "center",
-   marginRight:5
-},
+  deleteBtnText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  initialCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 5
+  },
 
-initialText: {
-  fontSize: 13,
-  fontWeight: "700",
-  color: "#374151",  // dark grey
-},
-emptyContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-},
+  initialText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#374151",  // dark grey
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-emptyImage: {
-  width: 250,
-  height: 180,
-},
+  emptyImage: {
+    width: 250,
+    height: 180,
+  },
 
-emptyText: {
-  marginTop: 12,
-  fontSize: 14,
-  color: "#777",
-},
+  emptyText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: "#777",
+  },
 
 
 });
