@@ -34,7 +34,6 @@ export default function CheckoutList({ searchText }) {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const navigation = useNavigation();
-  console.log("checkla",selectedCustomer)
 
   const {
     canWriteModule: canWriteCheckout,

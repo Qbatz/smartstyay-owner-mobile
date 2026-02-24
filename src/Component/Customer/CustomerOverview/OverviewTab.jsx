@@ -538,7 +538,9 @@ export default function OverviewTab({ customerDetails,
                   <Text style={styles.detailValue}>
                     {customerDetails?.hostelInfo?.joiningDate || "N/A"}
                   </Text>
-                  <TouchableOpacity
+                  {
+                   !["VACATED", "BOOKED"].includes(customerDetails?.customerCurrentStatus) && (
+                         <TouchableOpacity
                     onPress={handleEditJoining}
                     // disabled={!isJoiningDateEditable}
                     activeOpacity={0.7}
@@ -553,6 +555,10 @@ export default function OverviewTab({ customerDetails,
                       ]}
                     />
                   </TouchableOpacity>
+                    )
+
+                  }
+                 
                 </View>
               </View>
 
