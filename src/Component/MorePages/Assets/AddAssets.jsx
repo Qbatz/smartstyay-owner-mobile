@@ -532,7 +532,7 @@ for (let i = -365; i <= 365; i++) {
     ref={scrollRef}
   keyboardShouldPersistTaps="handled"
   keyboardDismissMode="on-drag"
-  contentContainerStyle={{ paddingBottom: 120 }}
+  contentContainerStyle={{ paddingBottom: 150 , paddingRight:15 }}
 >
 
          
@@ -835,7 +835,7 @@ onChangeText={(t) => {
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.addBtn} onPress={handleSubmit}>
-                            <Text style={styles.addBtnText}>{title}</Text>
+                            <Text style={styles.addBtnText}>Save</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

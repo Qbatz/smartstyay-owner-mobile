@@ -87,6 +87,24 @@ const [initialEditState, setInitialEditState] = useState(null);
   const [description, setDescription] = useState("");
   const [isDescFocused, setIsDescFocused] = useState(false);
 
+  const scrollRef = useRef(null);
+  const descriptionRef = useRef(null);
+
+  const scrollToField = (ref) => {
+  if (!ref?.current || !scrollRef.current) return;
+
+  ref.current.measureLayout(
+    scrollRef.current,
+    (x, y) => {
+      scrollRef.current.scrollTo({
+        y: y - 100,
+        animated: true,
+      });
+    },
+    () => {}
+  );
+};
+
 
     const blockedStatus = [
   "Vacated",
@@ -98,28 +116,28 @@ const [initialEditState, setInitialEditState] = useState(null);
  const sheetY = useRef(new Animated.Value(0)).current;
 
 
-    useEffect(() => {
-      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-        Animated.timing(sheetY, {
-          toValue: -e.endCoordinates.height + 20,
-          duration: 180,
-          useNativeDriver: true,
-        }).start();
-      });
+    // useEffect(() => {
+    //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    //     Animated.timing(sheetY, {
+    //       toValue: -e.endCoordinates.height + 20,
+    //       duration: 180,
+    //       useNativeDriver: true,
+    //     }).start();
+    //   });
   
-      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-        Animated.timing(sheetY, {
-          toValue: 0,
-          duration: 180,
-          useNativeDriver: true,
-        }).start();
-      });
+    //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    //     Animated.timing(sheetY, {
+    //       toValue: 0,
+    //       duration: 180,
+    //       useNativeDriver: true,
+    //     }).start();
+    //   });
   
-      return () => {
-        showSub.remove();
-        hideSub.remove();
-      };
-    }, []);
+    //   return () => {
+    //     showSub.remove();
+    //     hideSub.remove();
+    //   };
+    // }, []);
 
   const closeAll = () => {
     setCustomerOpen(false);
@@ -524,33 +542,30 @@ const handleSubmitComplaint = async () => {
   type={modalType}
 />
    
-    <KeyboardAvoidingView
+    {/* <KeyboardAvoidingView
      style={{ flex: 1 }}
   behavior={Platform.OS === "ios" ? "padding" : "height"}
   keyboardVerticalOffset={0}
-     >
-       <ScrollView
-         showsVerticalScrollIndicator={false}
-         keyboardShouldPersistTaps="handled"
-       >
-
-  <TouchableWithoutFeedback onPress={closeAll}>
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={ArrowLeft} style={styles.backIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {mode === "edit" ? "Edit Complaint" : "Add Complaint"}
-        </Text>
-      </View>
+     > */}
+       <View style={{ flex: 1 }}>
+  
+  {/* HEADER - FIXED */}
+  <View style={styles.header}>
+    <TouchableOpacity onPress={() => navigation.goBack()}>
+      <Image source={ArrowLeft} style={styles.backIcon} />
+    </TouchableOpacity>
+    <Text style={styles.headerTitle}>
+      {mode === "edit" ? "Edit Complaint" : "Add Complaint"}
+    </Text>
+  </View>
 
       <ScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        scrollEnabled={!customerOpen && !ctypeOpen} 
+  style={{ flex: 1 }}
+          scrollEnabled={!customerOpen && !ctypeOpen} 
+            ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
+  contentContainerStyle={{ paddingBottom: 180 , paddingRight:15 , padding:20}}
       >
    
 
@@ -810,7 +825,7 @@ const handleSubmitComplaint = async () => {
     value={description}
     onChangeText={handleDescriptionChange}
   /> */}
-
+   <View ref={descriptionRef}>
   <TextInput
   style={styles.descriptionBox}
   placeholder="Enter Description"
@@ -819,10 +834,9 @@ const handleSubmitComplaint = async () => {
   textAlignVertical="top"
   value={description}
   onChangeText={handleDescriptionChange}
-  onFocus={() => setIsDescFocused(true)}
-  onBlur={() => setIsDescFocused(false)}
+  onFocus={() => scrollToField(descriptionRef)}
 />
-
+</View>
  {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
 
   <View style={styles.footer}>
@@ -852,23 +866,8 @@ const handleSubmitComplaint = async () => {
 
         <View style={{ height: 160 }} /> */}
       </ScrollView>
-
-      {/* <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmitComplaint }>
-          <Text style={styles.submitText}>
-            {mode === "edit" ? "Update Complaint" : "Add Complaint"}
-          </Text>
-        </TouchableOpacity>
-      </View> */}
-
- 
-
     </View>
 
-    </TouchableWithoutFeedback>
-
-    </ScrollView>
- </KeyboardAvoidingView>
          <Modal
   transparent
   visible={openDate}
@@ -954,7 +953,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
 
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 5, marginTop:40, marginLeft:20 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
 
@@ -975,7 +974,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10
+    // marginBottom: 5
   },
 
   selectedText: { color: "#000", fontSize: 15 },
@@ -1042,7 +1041,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 15,
     justifyContent: "center",
-    marginBottom:10
+    // marginBottom:10
   },
 
   dateBox: {
@@ -1054,7 +1053,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    marginBottom:10
+    // marginBottom:10
   },
 
   descriptionBox: {
@@ -1152,7 +1151,7 @@ calendarContainer: {
   height: 48,
   paddingHorizontal: 12,
   marginTop: 6,
-  marginBottom:10
+  // marginBottom:10
 },
 
 dateInput: {

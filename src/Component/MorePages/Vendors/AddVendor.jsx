@@ -91,6 +91,32 @@ const [countryCodeOpen, setCountryCodeOpen] = useState(false);
   const [initialData, setInitialData] = useState(null);
 const [noChangeError, setNoChangeError] = useState("");
 
+const scrollRef = useRef(null);
+const mobileRef = useRef(null);
+const emailRef = useRef(null);
+const businessnameRef = useRef(null);
+const flatRef = useRef(null);
+const landmarkRef = useRef(null);
+const cityRef = useRef(null)
+const pincodeRef = useRef(null)
+const stateRef = useRef(null);
+const countryRef = useRef(null);
+
+const scrollToField = (ref) => {
+  if (!ref?.current || !scrollRef.current) return;
+
+  ref.current.measureLayout(
+    scrollRef.current,
+    (x, y) => {
+      scrollRef.current.scrollTo({
+        y: y - 100,
+        animated: true,
+      });
+    },
+    () => {}
+  );
+};
+
 
 useEffect(() => {
   if (!vendorData) return;
@@ -611,32 +637,32 @@ if (!mobile.trim()) {
   ).current;
 
 
-    useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      if (!isInputFocused) return; 
+  //   useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     if (!isInputFocused) return; 
   
-      Animated.timing(translateY, {
-        toValue: -e.endCoordinates.height + 80,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
+  //     Animated.timing(translateY, {
+  //       toValue: -e.endCoordinates.height + 80,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
   
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     Animated.timing(translateY, {
+  //       toValue: 0,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
   
-      setIsInputFocused(false);
-    });
+  //     setIsInputFocused(false);
+  //   });
   
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [isInputFocused]);
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, [isInputFocused]);
 
   // useEffect(() => {
   //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -693,17 +719,18 @@ if (!mobile.trim()) {
         style={[styles.sheet, { transform: [{ translateY }] }]}
       >
         <View style={styles.handle} />
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          scrollEnabled={!stateOpen}    
-          keyboardShouldPersistTaps="handled"
-        >
-
-          <Text style={styles.title}>
+           <Text style={styles.title}>
             {vendorData ? "Edit Vendor" : "Add Vendor"}
           </Text>
+
+        <ScrollView
+    ref={scrollRef}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="on-drag"
+  contentContainerStyle={{ paddingBottom: 180, paddingRight:15 }}
+        >
+
+       
 
 
 
@@ -794,8 +821,6 @@ if (!mobile.trim()) {
 </Text>
 
 <View style={styles.mobileWrapper}>
-
-  {/* COUNTRY CODE */}
   <TouchableOpacity
     style={styles.countryCodeBox}
     onPress={() => setCountryCodeOpen(!countryCodeOpen)}
@@ -804,63 +829,47 @@ if (!mobile.trim()) {
     <Image source={DownArrow} style={styles.countryArrow} />
   </TouchableOpacity>
 
-  {/* MOBILE INPUT */}
+   <View ref={mobileRef}>
   <TextInput
     style={styles.mobileInput}
     keyboardType="numeric"
     placeholder="Enter Mobile Number"
     value={mobile}
     onChangeText={(t) => {
-      const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
-      setMobile(cleaned);
-        
-      setErrors({ ...errors, mobile: "" });
-      setNoChangeError("");
+      const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
+      setMobile(cleaned)
+      setErrors({ ...errors, mobile: "" })
+      setNoChangeError("")
     }}
+      onFocus={() => scrollToField(mobileRef)}
   />
-  
-  {/* {countryCodeOpen && (
-  <View style={styles.countryDropdown}>
-    <TouchableOpacity
-      style={styles.option}
-      onPress={() => {
-        setCountryCode("+91");
-        setCountryCodeOpen(false);
-      }}
-    >
-      <Text style={styles.optionText}>🇮🇳 +91</Text>
-    </TouchableOpacity>
   </View>
-)} */}
+
 </View>
  <ErrorMessage message={errors.mobile} type="error" />
 
-{/* COUNTRY DROPDOWN */}
-
-
-
           <Text style={styles.label}>Email ID</Text>
+            <View ref={emailRef}>
         <TextInput
   value={email}
   onChangeText={(t) => {
     const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
-
     setEmail(sanitized);
     setErrors({ ...errors, email: "" })
      setNoChangeError("")
   }}
   style={styles.input}
   placeholder="Enter Email"
-    onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+  onFocus={() => scrollToField(emailRef)}
 />
+</View>
+         {errors.email && (
+  <ErrorMessage message={errors.email} type="error" />
+)}
 
 
           <Text style={styles.label}>Business Name <Text style={{ color: "red" }}>*</Text></Text>
+            <View ref={businessnameRef}>
           <TextInput
             value={businessName}
             onChangeText={(t) => {
@@ -870,20 +879,16 @@ if (!mobile.trim()) {
           }}
             style={styles.input}
             placeholder="Enter Business Name"
-                onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+  onFocus={() => scrollToField(businessnameRef)}
           />
-
+</View>
           {errors.businessName && (
   <ErrorMessage message={errors.businessName} type="error" />
 )}
 
 
-          <Text style={styles.label}>Flat, House No., Building...</Text>
+          <Text style={styles.label}>Flat, House No., Building</Text>
+            <View ref={flatRef}>
         <TextInput
   value={street}
   onChangeText={(t) => {
@@ -892,17 +897,13 @@ if (!mobile.trim()) {
   }}
   style={styles.input}
   placeholder="Enter Street"
-      onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+  onFocus={() => scrollToField(flatRef)}
 />
-
+</View>
 
 
           <Text style={styles.label}>Landmark</Text>
+               <View ref={landmarkRef}>
           <TextInput
             value={landmark}
             onChangeText={(t) =>{
@@ -911,15 +912,11 @@ if (!mobile.trim()) {
             }}
             style={styles.input}
             placeholder="Enter Landmark"
-                onFocus={() => {
-              setIsInputFocused(true);
-                 }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+            onFocus={() => scrollToField(landmarkRef)}  
           />
-
+</View>
           <Text style={styles.label}>Town/City <Text style={{ color: "red" }}>*</Text></Text>
+              <View ref={cityRef}>
            <TextInput
             value={city}
                onChangeText={(t) => {
@@ -929,19 +926,16 @@ if (!mobile.trim()) {
           }}
             style={styles.input}
             placeholder="Enter City"
-                onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+            onFocus={() => scrollToField(cityRef)} 
           />
+          </View>
           {errors.city && (
   <ErrorMessage message={errors.city} type="error" />
 )}
 
 
           <Text style={styles.label}>Pincode <Text style={{ color: "red" }}>*</Text></Text>
+           <View ref={pincodeRef}>
            <TextInput
   value={pinCode}
   keyboardType="numeric"
@@ -955,14 +949,9 @@ if (!mobile.trim()) {
   }}
   style={styles.input}
   placeholder="Enter Pincode"
-      onFocus={() => {
-    setIsInputFocused(true);
-  }}
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+  onFocus={() => scrollToField(pincodeRef)} 
 />
-
+</View>
 {errors.pinCode && (
   <ErrorMessage message={errors.pinCode} type="error" />
 )}
@@ -1017,26 +1006,29 @@ if (!mobile.trim()) {
 </Text>
 
 <View style={{ position: "relative", marginBottom: 6 }}>
+   <View ref={stateRef}>
   <TextInput
     style={styles.select}
     placeholder="Select State"
     placeholderTextColor="#9CA3AF"
     value={stateOpen ? stateQuery : stateName}
     editable={true}
-    onFocus={() => {
-      setStateOpen(true);
-      setStateQuery("");
-       setIsInputFocused(true);
-    }}
+    // onFocus={() => {
+    //   setStateOpen(true);
+    //   setStateQuery("");
+    //    setIsInputFocused(true);
+    // }}
     onChangeText={(t) => {
       setStateQuery(t);
       setStateOpen(true);
     }}
+      onFocus={() => scrollToField(stateRef)} 
   
-  onBlur={() => {
-    setIsInputFocused(false);
-  }}
+  // onBlur={() => {
+  //   setIsInputFocused(false);
+  // }}
   />
+  </View>
 
   <Image source={DownArrow} style={styles.arrowIcon} />
 
@@ -1325,6 +1317,7 @@ noChangeInner: {
   sheet: {
     backgroundColor: "#fff",
     padding: 20,
+    // paddingRight:28,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     maxHeight: "88%",

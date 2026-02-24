@@ -263,6 +263,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
             onPress={() => {
               setMenuOpen(null);
               handleMakeUsInActive(item);
+              setBookedItems(item)
               onClose();
             }}
           >

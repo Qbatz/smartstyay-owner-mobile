@@ -23,6 +23,7 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
 import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
+// import CatLoader from "../../../Component/Loader/CatLoader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -1714,8 +1715,8 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
         onClose={() => setShowSuccessModal(false)}
         message={modalMessage}
         type={modalType}
-      />
-      {loading && <Loader />}
+      /> 
+       {loading && <Loader />}
 
       <SafeAreaView style={styles.container}>
 
@@ -1780,7 +1781,7 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
             )}
 
 
-            {canReadInvoice && (
+            {canReadInvoice && !loading  && (
               <>
                 {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                   <ScrollView
@@ -2172,9 +2173,9 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
             <View style={styles.divider} />
 
-           <View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
-  <View style={{marginLeft:-5}}>
-  <Text style={styles.label}> date</Text>
+           <View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between', flex:1 }}>
+  <View style={{display:'flex',justifyContent:'flex-start'}}>
+  <Text style={styles.label}> Date</Text>
   </View>
    <View>
   <Text style={{fontSize:12}}>
@@ -2182,6 +2183,9 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
   </Text>
   </View>
 </View>
+
+
+
 <View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
   <View>
   <Text style={styles.label}>Mode</Text>
@@ -2345,6 +2349,7 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
       </Text>
     </TouchableOpacity>
   )}
+
 
   {isPartial && (
     <TouchableOpacity
@@ -3072,10 +3077,18 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
                 {/* USER INFO */}
                 <View style={{ flexDirection: "row", marginBottom: 20 }}>
-                  <Image
-                    source={ProfileImage}
-                    style={{ width: 55, height: 55, borderRadius: 28 }}
-                  />
+                   {selectedBill?.profilePic ? (
+  <Image
+    source={{ uri: selectedBill.profilePic }}
+    style={styles.userImg}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
+    </Text>
+  </View>
+)}
 
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
@@ -3418,10 +3431,18 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
                 {/* USER SECTION */}
                 <View style={{ flexDirection: "row", marginBottom: 20 }}>
-                  <Image
-                    source={ProfileImage}
-                    style={{ width: 55, height: 55, borderRadius: 30 }}
-                  />
+                 {selectedBill?.profilePic ? (
+  <Image
+    source={{ uri: selectedBill.profilePic }}
+    style={styles.userImg}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
+    </Text>
+  </View>
+)}
 
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
