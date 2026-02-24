@@ -670,6 +670,19 @@ export default function AddPG({ navigation, route }) {
                 <Image source={DownArrow} style={styles.arrowIcon} />
 
                 {stateOpen && (
+
+                   <>
+    <TouchableOpacity
+      style={{
+        position: "absolute",
+        top: -1000,
+        bottom: -1000,
+        left: -1000,
+        right: -1000,
+      }}
+      activeOpacity={1}
+      onPress={() => setStateOpen(false)}
+    />
                   <View style={styles.dropdownMenu}>
                     <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
                       style={{ flex: 1 }}
@@ -705,6 +718,9 @@ export default function AddPG({ navigation, route }) {
                       )}
                     </ScrollView>
                   </View>
+
+                  <TouchableOpacity/>
+                  </>
                 )}
               </View>
 

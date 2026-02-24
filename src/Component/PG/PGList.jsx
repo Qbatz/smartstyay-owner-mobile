@@ -781,7 +781,7 @@ export default function PGPageFull({ route }) {
   const handleShowFinalSettlement = () => {
     setShowNoticePeriodSheet(false);
     // navigation.navigate("FinalSettlement");
-    navigation.navigate("FinalSettlement", {
+    navigation.navigate("FinalSettlementScreen", {
       selectedBed: selectedBed
       // selectedBed?.currentTenantInfo?.[0]?.tenetId,
     });
