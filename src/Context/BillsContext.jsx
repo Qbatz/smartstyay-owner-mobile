@@ -498,6 +498,8 @@ const DeleteReceipt = async ({ hostelId, receiptId }) => {
   };
 
 const downloadReceipt = async (hostelId, transactionId) => {
+  console.log(hostelId)
+  console.log(transactionId)
   if (!hostelId || !transactionId) {
     return { success: false, message: "Invalid data" };
   }

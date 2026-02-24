@@ -412,7 +412,7 @@ export default function SettingsPG({ navigation }) {
             No PG Available
           </Text>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -442,7 +442,7 @@ export default function SettingsPG({ navigation }) {
             >
               Add New PG
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
       </>
