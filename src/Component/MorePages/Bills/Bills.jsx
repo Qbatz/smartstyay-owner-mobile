@@ -67,8 +67,11 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import DueIcon from "../../../Assets/Images/Due_Icon.png";
 import MoneyCheckIcon from "../../../Assets/Images/money_check.png";
-import PreviewIcon from "../../../Assets/Images/View_Icon.png";
+import PreviewIcon from "../../../Assets/Images/Preview_icon.png";
 import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
+import PaidIcon from "../../../Assets/Images/tick-circle.png"
+import PartiallypaidIcon from "../../../Assets/Images/Orange_tick.png"
+import TickIcon from "../../../Assets/Images/check.png";
 import { Dimensions } from "react-native";
 import BillBookings from "./Bill_Bookings";
 
@@ -88,9 +91,12 @@ export default function BillsDesign({ route }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext);
 
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [modalType, setModalType] = useState("success");
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+
+    const [showPayments, setShowPayments] = useState(true);
+
 
   const {
     canWriteModule: canWriteInvoice,
@@ -342,14 +348,16 @@ export default function BillsDesign({ route }) {
   ]);
 
 
-  const dotsRef = useRef(null);
+// const dotsRef = useRef(null);
+
+const dotsRefs = useRef({});
+
 
   const detailsY = useRef(new Animated.Value(0)).current;
   const detailsSheetY = useRef(new Animated.Value(0)).current;
   const writeoffSheetY = useRef(new Animated.Value(0)).current;
   const receiptdetailsSheetY = useRef(new Animated.Value(0)).current;
 
-  const dotsRefs = useRef({});
 
   const handleRefundRecord = () => {
     if (!refundAmount) {
@@ -395,17 +403,35 @@ export default function BillsDesign({ route }) {
   }));
 
 
-  const openMenu = (event, item) => {
-    event.target.measureInWindow((x, y, width, height) => {
+// const openMenu = (event, item) => {
+//   event.target.measureInWindow((x, y, width, height) => {
+//     setPopupPosition({
+//       x: x,
+//       y: y + height,
+//     });
+//       setSelectedBill(item);
+//     setSelectedCustomer(item);
+//     setShowMenu(true);
+//   });
+// };
+
+const openMenu = (item) => {
+  const ref = dotsRefs.current[item?.invoiceId];
+
+  if (ref) {
+    ref.measureInWindow((x, y, width, height) => {
+
       setPopupPosition({
         x: x,
         y: y + height,
       });
+
       setSelectedBill(item);
-      setSelectedCustomer(item);
       setShowMenu(true);
     });
-  };
+  }
+};
+
 
 
   const DeleteMenu = () => {
@@ -873,11 +899,12 @@ export default function BillsDesign({ route }) {
     setShowDetailModal(true);
   };
 
-  const openBillDetails = (item) => {
-    if (!canReadInvoice) return;
-    setSelectedBill(item);
-    setShowBillDetails(true);
-  };
+const openBillDetails = (item) => {
+   if (!canReadInvoice) return;
+  setSelectedBill(item);
+  setShowBillDetails(true);
+  const res =  getBillsPdfDetails(item?.hostelId, item?.invoiceId);
+};
 
 
 
@@ -1599,60 +1626,65 @@ export default function BillsDesign({ route }) {
     navigation.navigate("CancelNotice")
   }
 
-  // const customerList = [
-  //   {
-  //     id: 1,
-  //     name: "Allwin A",
-  //     img: Profile,
-  //     floor: "Ground Floor",
-  //     room: "203",
-  //     bed: "03",
-  //     email: "rajkumar001@gmail.com",
-  //     phone: "+91 98765 43210",
-  //     joinDate: "10 July 2025",
-  //   },
-  // ];
+// const customerList = [
+//   {
+//     id: 1,
+//     name: "Allwin A",
+//     img: Profile,
+//     floor: "Ground Floor",
+//     room: "203",
+//     bed: "03",
+//     email: "rajkumar001@gmail.com",
+//     phone: "+91 98765 43210",
+//     joinDate: "10 July 2025",
+//   },
+// ];
 
-  const handleEditReceipt = () => {
 
-    navigation.navigate("CreateReceipt", {
-      mode: "edit",
-      // data: item,  
-    });
-    setShowReceiptMenu(false);
+const getPaymentIcon = (status) => {
+  switch (status) {
+    case "Paid":
+      return PaidIcon;
+
+    case "Partial Payment":
+    case "Partially Paid":
+     case "Partially Refunded" :
+      return PartiallypaidIcon; 
+
+    case "Pending":
+      return null; 
+
+    default:
+      return null;
   }
+};
 
-  const handleDeleteReceipt = async () => {
-
-    if (!canDeleteReceipt) return;
-
-    const res = await DeleteReceipt({
-      hostelId: activeHostelId,
-      receiptId: selecetedTenantReceipt?.transactionId,
-    });
-
+const isPaid = selectedBill?.paymentStatus === "Paid";
+const isPartial =
+  selectedBill?.paymentStatus === "Partially Paid" ||
+  selectedBill?.paymentStatus === "Partially Refunded" ||
+    selectedBill?.paymentStatus ===  "Partial Payment"
+const isPending = selectedBill?.paymentStatus === "Pending";
 
 
-    if (res.success) {
+const getOverdueDays = (dueDate) => {
+  if (!dueDate) return 0;
 
-      setModalType("success");
-      setModalMessage("Deleted Successfully");
-      setShowSuccessModal(true);
-      setDeleteReceipt(false)
+  const today = dayjs().startOf("day");
+
+  const due = dayjs(dueDate, "DD/MM/YYYY").startOf("day");
+
+  if (!due.isValid()) return 0;
+
+  const diff = today.diff(due, "day");
+
+  return diff > 0 ? diff : 0;
+};
 
 
-      setTimeout(() => {
-        setShowSuccessModal(false)
-        setShowReceiptDetails(false)
-      }, 1500);
-    } else {
-      setModalType("warning");
-      setModalMessage(res?.message || "Something went wrong");
-      setShowSuccessModal(true);
+const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
-      setTimeout(() => setShowSuccessModal(false), 1500);
-    }
-  };
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -1807,49 +1839,46 @@ export default function BillsDesign({ route }) {
                     )}
 
 
-                    {BillDetails?.listInvoices?.map((item) => (
+    {BillDetails?.listInvoices?.map((item) => (
+      <TouchableOpacity key={item.invoiceId}  activeOpacity={0.8} style={styles.tenantRow} onPress={() => openBillDetails(item)}>
+         
+        <View>
+  {item?.profilePic ? (
+    <Image
+      source={{ uri: item.profilePic }}
+      style={styles.profileImg}
+    />
+  ) : (
+    <View style={styles.initialCircle}>
+      <Text style={styles.initialText}>
+        {item?.initials?.toUpperCase() || "NA"}
+      </Text>
+    </View>
+  )}
 
-                      <View key={item.invoiceId} style={styles.tenantRow}>
-                        {/* <TouchableOpacity onPress={() => openBillDetails(item)}>
-          <Image
-            source={item.profilePic ? { uri: item.profilePic } : ProfileImage}
-            style={styles.profileImg}
-          />
-        </TouchableOpacity> */}
-                        <TouchableOpacity onPress={() => openBillDetails(item)}>
-                          {item?.profilePic ? (
-                            <Image
-                              source={{ uri: item.profilePic }}
-                              style={styles.profileImg}
-                            />
-                          ) : (
-                            <View style={styles.initialCircle}>
-                              <Text style={styles.initialText}>
-                                {item?.initials?.toUpperCase() || "NA"}
-                              </Text>
-                            </View>
-                          )}
+ <View style={styles.profileStatusBadge}>
+  {item.paymentStatus === "Pending" ? (
+    <View style={styles.redDot} />
+  ) : (
+    <View style={styles.tickBadge}>
+      <Image
+        source={getPaymentIcon(item.paymentStatus)}
+        style={styles.statusIcon}
+      />
+    </View>
+  )}
+</View>
 
-                          <View
-                            style={[
-                              styles.ProfilestatusDot,
-                              { backgroundColor: getStatusColor(item?.paymentStatus) },
-                            ]}
-                          />
-                        </TouchableOpacity>
 
-                        <View style={{ flex: 1, marginLeft: 5 }}>
-                          {/* <Text style={styles.name}>{item.fullName}</Text> */}
-                          <TouchableOpacity
-                            onPress={() =>
-                              navigation.navigate("CustomerOverviewScreen", {
-                                customerId: item.customerId,
-                                customer: item,
-                              })
-                            }
-                          >
-                            <Text style={styles.name}>{item.fullName}</Text>
-                          </TouchableOpacity>
+    
+
+</View>
+
+        <View style={{ flex: 1 }}>
+          {/* <Text style={styles.name}>{item.fullName}</Text> */}
+
+  <Text style={styles.name}>{item.fullName}</Text>
+
 
 
                           <View style={styles.detailRow}>
@@ -1862,20 +1891,25 @@ export default function BillsDesign({ route }) {
                           </View>
                         </View>
 
-                        <View style={styles.rightSection}>
-                          <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
-                            <Image
-                              source={Dots}
-                              style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                            />
-                          </TouchableOpacity>
+        <View style={styles.rightSection}>
+          {/* <TouchableOpacity ref={dotsRef}  onPress={(e) => openMenu(e, item)}>
+            <Image
+              source={Dots}
+              style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
+            />
+          </TouchableOpacity> */}
+            <Text style={{  fontSize: 14,
+  fontWeight: "600",
+  color: "#000",}}>₹ {item?.invoiceAmount ?? "--"}</Text>
 
-                          <Text style={styles.dateText}>{item.invoiceDate}</Text>
-                        </View>
-                      </View>
-                    ))}
-                  </ScrollView>
-                )}
+          <Text style={styles.dateText}>{item.invoiceDate}</Text>
+        </View>
+       
+       
+      </TouchableOpacity>
+    ))}
+  </ScrollView>
+) }
 
                 {(
                   !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
@@ -1938,27 +1972,29 @@ export default function BillsDesign({ route }) {
         {showBillDetails && (
           <View style={styles.sheetOverlay}>
 
-            <TouchableWithoutFeedback onPress={() => setShowBillDetails(false)}>
-              <View style={{ flex: 1 }} />
-            </TouchableWithoutFeedback>
+    <TouchableWithoutFeedback onPress={() => {
+        setShowBillDetails(false)
+        setShowPayments(!showPayments) }}
+       >
+      <View style={{ flex: 1 }} />
+    </TouchableWithoutFeedback>
 
-            <Animated.View
-              style={[
-                styles.transactionSheet,
-                { height: "50%", transform: [{ translateY: detailsSheetY }] }
-              ]}
-              {...billDetailsPan.panHandlers}
-            >
-              <View style={styles.sheetHandle} />
+    <Animated.View
+      style={[
+        styles.transactionSheet,
+        { height: isPaid ? "70%" : isPartial ? "75%" : "60%", 
+          transform: [{ translateY: detailsSheetY }] }
+      ]}
+      {...billDetailsPan.panHandlers}
+    >
+      <View style={styles.sheetHandle} />
 
-              {/* TOP HEADER TITLE */}
-
+      
 
               <ScrollView showsVerticalScrollIndicator={false}>
 
-                {/* HEADER ROW */}
-                <View style={styles.billHeaderRow}>
-                  <Text style={styles.billHeaderText}>Bill Details</Text>
+  <View style={styles.billHeaderRow}>
+    <Text style={styles.billHeaderText}>Bill Details</Text>
 
 
                   <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -1986,40 +2022,44 @@ export default function BillsDesign({ route }) {
                       </Text>
                     </View>
 
-                    <TouchableOpacity>
-                      <Image
-                        source={Dots}
-                        style={{ width: 28, height: 28, }}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+  
 
-                {/* USER SECTION */}
-                <View style={styles.userRow}>
-                  {/* <Image 
-      source={
-         selectedBill?.profilePic
-           ? { uri: selectedBill.profilePic }
-           : ProfileImage
-       }
-    style={styles.userImg} /> */}
-                  {selectedBill?.profilePic ? (
-                    <Image
-                      source={{ uri: selectedBill.profilePic }}
-                      style={styles.userImg}
-                    />
-                  ) : (
-                    <View style={styles.initialCircle}>
-                      <Text style={styles.initialText}>
-                        {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
-                      </Text>
-                    </View>
-                  )}
+    <TouchableOpacity   ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
+  onPress={() => openMenu(selectedBill)}>
+            <Image
+              source={Dots}
+              style={{ width: 30, height: 30,  }}
+            />
+          </TouchableOpacity> 
+    </View>
+  </View>
+
+  <View style={styles.userRow}>
+    {selectedBill?.profilePic ? (
+  <Image
+    source={{ uri: selectedBill.profilePic }}
+    style={styles.userImg}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
+    </Text>
+  </View>
+)}
 
 
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
+    <View style={{ flex: 1, marginLeft: 12 }}>
+              <TouchableOpacity
+  onPress={() =>
+    navigation.navigate("CustomerOverviewScreen", {
+      customerId: selectedBill?.customerId,  
+      customer: selectedBill,             
+    }) 
+  }
+>
+ <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
+</TouchableOpacity>
 
                     <View style={{ flexDirection: "row", marginTop: 4 }}>
                       <View style={styles.invTypeBadge}>
@@ -2035,60 +2075,298 @@ export default function BillsDesign({ route }) {
                   </View>
                 </View>
 
-                {/* DATES SECTION */}
-                <View style={styles.twoColRow}>
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Invoice date</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-                      <Text style={styles.value}>{selectedBill?.invoiceDate}</Text>
-                    </View>
-                  </View>
+<View style={{ marginTop: 20, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={{fontSize:15, fontWeight:600}}>Total Amount</Text>
+  </View>
+   <View>
+    <View style={{display:'flex', flexDirection:'column'}}>
+        <Text style={styles.amountValue}>
+    ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"}
+  </Text>
+      {isPaid && (
+  <View style={{ marginTop: 3 , display:'flex', flexDirection:'row', justifyContent:'center' }}>
+  
+      <Image source={TickIcon} style={{height:13, width:13, marginRight:5 , marginTop:2}}/>
+        <Text style={{fontSize:13}  }>Full Paid</Text>
+ 
+  </View>
+)}
+    </View>
 
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Due date</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-                      <Text style={styles.value}>{selectedBill?.dueDate}</Text>
-                    </View>
-                  </View>
-                </View>
+  </View>
+</View>
 
-                {/* AMOUNT SECTION */}
-                <View style={styles.twoColRow}>
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Amount</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={MoneyCheckIcon} style={{
-                        width: 18,
-                        height: 18, marginTop: 5, marginRight: 5
-                      }} />
-                      <Text style={styles.amountValue}>₹{selectedBill?.invoiceAmount ?? "--"}</Text>
-                    </View>
-                  </View>
+   {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
+<View key={index} style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={{fontSize:13, fontWeight:500}}>{pay?.description ?? "N/A"}</Text>
+  </View>
+   <View>
+  <Text style={styles.amountValue}>
+ ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+  </Text>
+  </View>
+</View>
+   ))}
 
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Due</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={DueIcon} style={{
-                        width: 18,
-                        height: 18, marginTop: 5, marginRight: 5
-                      }} />
-                      <Text style={styles.dueValue}>₹{selectedBill?.dueAmount ?? "--"}</Text>
-                    </View>
-                  </View>
-                </View>
 
-                {/* PREVIEW BUTTON */}
-                <TouchableOpacity style={styles.previewBtn} onPress={handleShowBillPdf}>
-                  <View style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Image source={PreviewIcon} style={{
-                      width: 18,
-                      height: 18, marginTop: 3, marginRight: 12
-                    }} />
-                    <Text style={styles.previewText}>Preview</Text>
-                  </View>
-                </TouchableOpacity>
+
+{isPartial && ( 
+  <View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={{fontSize:15, fontWeight:600}}>Due Pending</Text>
+  </View>
+   <View>
+<Text
+      style={[
+        styles.amountValue,
+        { color:  "#FF0000" },
+      ]}
+    >
+      ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0}
+    </Text>
+  </View>
+</View>
+
+)}
+
+
+
+
+{(isPaid || isPartial) && BillPdfdetails?.paymentHistory?.length > 0 && (
+  <View style={{ marginTop: 25 }}>
+     <TouchableOpacity
+      onPress={() => setShowPayments(!showPayments)}
+    >
+     <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
+   
+     <Text style={styles.paymentHeaderText}>
+        Payments Made
+      </Text>
+
+  
+     
+
+      <Image
+        source={DownArrow}
+        style={{ width: 22, height: 22 , transform: showPayments ? "rotate(180deg)": "rotate(0deg)" }}
+      />
+   
+    </View>
+ </TouchableOpacity>
+    {showPayments && (
+      <View style={{ marginTop: 10 }}>
+        {BillPdfdetails?.paymentHistory?.map((pay, index) => (
+          <View key={index} style={styles.paymentCard}>
+
+            <View style={styles.paymentTopRow}>
+              <Text >
+                #{BillPdfdetails?.invoiceNumber}
+              </Text>
+
+              <Text style={styles.paymentAmount}>
+              ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+           <View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View style={{marginLeft:-5}}>
+  <Text style={styles.label}> date</Text>
+  </View>
+   <View>
+  <Text style={{fontSize:12}}>
+    {pay?.paidDate ?? "N/A"}
+  </Text>
+  </View>
+</View>
+<View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={styles.label}>Mode</Text>
+  </View>
+   <View>
+  <Text style={{fontSize:12}}>
+    {pay?.mode ?? "N/A"}
+  </Text>
+  </View>
+</View>
+<View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={styles.label}>Transaction ID</Text>
+  </View>
+   <View>
+  <Text style={{fontSize:12}}>
+    {pay?.referenceNumber ?? "N/A"}
+  </Text>
+  </View>
+</View>
+          </View>
+        ))}
+      </View>
+    )}
+
+  </View>
+)}
+
+
+{(selectedBill?.paymentStatus === "Partially Refunded") && BillPdfdetails?.refundHistory?.length > 0 && (
+  <View style={{ marginTop: 25 }}>
+
+     <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
+     <Text style={styles.paymentHeaderText}>
+        Payments Made
+      </Text>
+
+    <TouchableOpacity
+      style={styles.paymentHeader}
+      onPress={() => setShowPayments(!showPayments)}
+    >
+     
+
+      <Image
+        source={DownArrow}
+        style={{ width: 18, height: 18 , transform: showPayments ? "rotate(180deg)": "rotate(0deg)" }}
+      />
+    </TouchableOpacity>
+    </View>
+
+    {showPayments && (
+      <View style={{ marginTop: 10 }}>
+        {BillPdfdetails?.refundHistory?.map((pay, index) => (
+          <View key={index} style={styles.paymentCard}>
+
+            <View style={styles.paymentTopRow}>
+              <Text >
+                #{BillPdfdetails?.invoiceNumber}
+              </Text>
+
+              <Text style={styles.paymentAmount}>
+              ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+           <View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={styles.label}> date</Text>
+  </View>
+   <View>
+  <Text style={{fontSize:12}}>
+    {pay?.date ?? "N/A"}
+  </Text>
+  </View>
+</View>
+<View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={styles.label}>Mode</Text>
+  </View>
+   <View>
+  <Text style={{fontSize:12}}>
+    {pay?.paymentMode ?? "N/A"}
+  </Text>
+  </View>
+</View>
+<View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={styles.label}>Transaction ID</Text>
+  </View>
+   <View>
+  <Text style={{fontSize:12}}>
+    {pay?.referenceNumber ?? "N/A"}
+  </Text>
+  </View>
+</View>
+          </View>
+        ))}
+      </View>
+    )}
+
+  </View>
+)}
+
+
+
+
+<View style={{ marginTop: 10, display:'flex', flexDirection:'row', justifyContent:'space-between' }}>
+  <View>
+  <Text style={styles.label}>Invoice date</Text>
+  </View>
+   <View>
+  <Text  style={{fontSize:12}}>
+    {BillPdfdetails?.invoiceDate ?? "--"}
+  </Text>
+  </View>
+</View>
+
+{!isPaid && (
+  <View
+    style={{
+      marginTop: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+    }}
+  >
+    <Text style={styles.label}>Due date</Text>
+
+    <View style={{ alignItems: "flex-end" }}>
+      <Text style={{ fontSize: 12 }}>
+        {BillPdfdetails?.dueDate ?? "--"}
+      </Text>
+
+      {overdueDays > 0 && (
+        <Text
+          style={{
+            color: "#F97316",
+            fontSize: 12,
+            marginTop: 4,
+          }}
+        >
+          Overdue by {overdueDays}{" "}
+          {overdueDays === 1 ? "Day" : "Days"}
+        </Text>
+      )}
+    </View>
+  </View>
+)}
+
+  <View style={{ marginTop: 30 }}>
+
+  {isPending && (
+    <TouchableOpacity
+      style={styles.primaryBtn}
+      onPress={handleShowRecordPayment}
+    >
+      <Text style={styles.primaryBtnText}>
+        + Record Payment
+      </Text>
+    </TouchableOpacity>
+  )}
+
+  {isPartial && (
+    <TouchableOpacity
+      style={styles.primaryBtn}
+      onPress={handleShowRecordPayment}
+    >
+      <Text style={styles.primaryBtnText}>
+        + Record Payment
+      </Text>
+    </TouchableOpacity>
+  )}
+
+<TouchableOpacity style={styles.previewBtn} onPress={handleShowBillPdf}>
+    <View style={{display:'flex', flexDirection:'row'}}>
+               <Image source={PreviewIcon} style={{   width: 18,
+    height: 18, marginTop:3 , marginRight:12
+  }} />
+    <Text style={styles.previewText}>Preview</Text>
+    </View>
+  </TouchableOpacity>
+</View>
+
 
               </ScrollView>
 
@@ -2409,28 +2687,37 @@ export default function BillsDesign({ route }) {
               onPress={() => setShowDetailsMenu(false)}
             />
 
-            <View
-              style={[
-                styles.popupBox,
-                {
-                  top: popupPosition.y + popupPosition.h + 8,
-                  left:
-                    popupPosition.x + 200 > screenWidth
-                      ? popupPosition.x - 200 + popupPosition.w
-                      : popupPosition.x,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.popupRow}
-                onPress={() => {
-                  setShowDetailsMenu(false);
-                  setShowReAssignBed(true);
-                }}
-              >
-                <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Re-Assign Bed</Text>
-              </TouchableOpacity>
+    <View
+      // style={[
+      //   styles.popupBox,
+      //   {
+      //     top: popupPosition.y + popupPosition.h + 8,
+      //     left:
+      //       popupPosition.x + 200 > screenWidth
+      //         ? popupPosition.x - 200 + popupPosition.w
+      //         : popupPosition.x,
+      //   },
+      // ]}
+
+       style={[
+    styles.popupBox,
+
+    {
+      top: popupPosition.y - 10,
+      left: popupPosition.x - 180,
+    },
+  ]}
+    >
+      <TouchableOpacity
+        style={styles.popupRow}
+        onPress={() => {
+          setShowDetailsMenu(false);
+          setShowReAssignBed(true);
+        }}
+      >
+        <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+        <Text style={styles.popupText}>Re-Assign Bed</Text>
+      </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.popupRow}
@@ -2455,18 +2742,21 @@ export default function BillsDesign({ route }) {
         {/* <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} /> */}
 
 
-        {showMenu && (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setShowMenu(false)}
-            style={styles.popupOverlay}
-          >
-            <View
-              style={[
-                styles.popupBox,
-                { top: popupPosition.y + 10, left: popupPosition.x - 180 },
-              ]}
-            >
+{showMenu && (
+  <TouchableOpacity
+    activeOpacity={1}
+    onPress={() => setShowMenu(false)}
+    style={styles.popupOverlay}
+  >
+    <View
+     style={[
+    styles.popupBox,
+    {
+      top: popupPosition.y - 10,
+      left: popupPosition.x - 180,
+    },
+  ]}
+    >
 
 
 
@@ -3988,17 +4278,27 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
   },
-  ProfilestatusDot: {
-    position: "absolute",
-    // bottom: 2,
-    top: 3,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
+  profileStatusBadge: {
+  position: "absolute",
+  top: 3,
+  right: 3,
+},
+
+tickBadge: {
+  width: 18,
+  height: 18,
+  borderRadius: 9,
+  backgroundColor: "#fff",
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 2,
+},
+
+statusIcon: {
+  width: 14,
+  height: 14,
+  resizeMode: "contain",
+},
 
 
   detailRow: {
@@ -4145,36 +4445,56 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  unassignText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  popupOverlay: {
-    position: "absolute",
-    top: 10,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "transparent",
-  },
+unassignText: {
+  fontSize: 15,
+  fontWeight: "600",
+},
+// popupOverlay: {
+//   position: "absolute",
+//   top: 10,
+//   left: 0,
+//   right: 0,
+//   bottom: 0,
+//   backgroundColor: "transparent",
+// },
+popupOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 20000,  
+  elevation: 50,
+},
+popupBox: {
+  position: "absolute",
+  width: 180,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  elevation: 50,
+  zIndex: 20001,
+  paddingVertical: 10,
+},
 
-  popupBox: {
-    position: "absolute",
-    width: 200,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    elevation: 20,
-    paddingVertical: 10,
-    zIndex: 10000,
-  },
-  popupRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  popupRowDisabled: {
-    opacity: 0.4,
+
+
+// popupBox: {
+//   position: "absolute",
+//   width: 200,
+//   backgroundColor: "#fff",
+//   borderRadius: 12,
+//   elevation: 20,
+//   paddingVertical: 10,
+//   zIndex: 10000,
+// },
+popupRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+},
+ popupRowDisabled: {
+    opacity: 0.4,         
   },
 
   popupIcon: {
@@ -4694,20 +5014,39 @@ const styles = StyleSheet.create({
     color: "red",
   },
 
-  previewBtn: {
-    backgroundColor: "#1E45E1",
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 39,
-    alignItems: "center",
-  },
+previewBtn: {
+  borderWidth: 1,
+  borderColor: "#D1D5DB",
+  paddingVertical: 14,
+  borderRadius: 12,
+  marginTop: 8,
+  alignItems: "center",
+  backgroundColor: "#fff",
+},
 
-  previewText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  btnRow: {
+
+previewText: {
+  color: "#111",
+  fontSize: 16,
+  fontWeight: "600",
+},
+
+
+primaryBtn: {
+  backgroundColor: "#1E45E1",
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+primaryBtnText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700",
+},
+
+   btnRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 20,
@@ -4802,15 +5141,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginRight: 6,
   },
-  initialCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 21,
-    backgroundColor: "#E5E7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 5
-  },
+initialCircle: {
+  width: 45,
+  height: 45,
+  borderRadius: 21,
+  backgroundColor: "#E5E7EB",   
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight:5
+},
 
   initialText: {
     fontSize: 13,
@@ -4842,5 +5181,83 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
 
+// statusIcon: {
+//   width: 15,
+//   height: 15,
+//   marginRight:7,
+//   marginBottom:3
+// },
+
+redDot: {
+  width: 12,
+  height: 12,
+  borderRadius: 6,
+  backgroundColor: "#FF0000",
+  borderWidth: 2,
+  borderColor: "#fff",
+},
+
+paymentHeaderRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 10,
+},
+
+paymentHeaderText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#111",
+},
+
+paymentCard: {
+  backgroundColor: "#fff",
+  borderRadius: 14,
+  padding: 14,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
+
+paymentTopRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+receiptText: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#111",
+},
+
+paymentAmount: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#111",
+},
+
+divider: {
+  height: 1,
+  backgroundColor: "#E5E7EB",
+  marginVertical: 10,
+},
+
+paymentRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginBottom: 6,
+},
+
+paymentLabel: {
+  fontSize: 13,
+  color: "#6B7280",
+},
+
+paymentValue: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#111",
+},
 
 });
