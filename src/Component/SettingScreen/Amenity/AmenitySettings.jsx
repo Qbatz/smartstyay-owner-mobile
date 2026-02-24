@@ -554,17 +554,38 @@ export default function AmenitySettings({ navigation }) {
 
 
   const moveDownSelected = async () => {
+    console.log("cholo")
     const customers = sampleUsers
       .filter((u) => !u.assigned && u.selected)
       .map((u) => u.id);
 
     if (customers.length === 0) return;
 
-    await assignAmenity({
+   const res= await assignAmenity({
       hostelId: activeHostelId,
       amenityId: currentAmenityId,
       customers,
     });
+
+    if(res.success === true){
+      setModalType("success");
+      setShowSuccessModal(true);
+      setModalMessage(res?.message)
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1500);
+    }else{
+      setModalType("warning");
+      setShowSuccessModal(true);
+      setModalMessage(res?.message || "Something Went Wrong")
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1500);
+    }
+
+    console.log("amenityyy",res)
 
     openAssign(currentAmenityId);
   };
@@ -577,11 +598,29 @@ export default function AmenitySettings({ navigation }) {
 
     if (customers.length === 0) return;
 
-    await unAssignAmenity({
+   const res= await unAssignAmenity({
       hostelId: activeHostelId,
       amenityId: currentAmenityId,
       customers,
     });
+
+     if(res.success === true){
+      setModalType("success");
+      setShowSuccessModal(true);
+      setModalMessage(res?.message)
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1500);
+    }else{
+      setModalType("warning");
+      setShowSuccessModal(true);
+      setModalMessage(res?.message || "Something Went Wrong")
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1500);
+    }
 
     openAssign(currentAmenityId);
   };
@@ -1231,9 +1270,9 @@ export default function AmenitySettings({ navigation }) {
                       <TouchableOpacity
                         // disabled={!anyAssignedSelected}
                         onPress={()=>{
-                          if (!anyAssignedSelected) {
-                            setSelectAmenityError("Please select at least one user");
-                          }
+                          // if (!anyAssignedSelected) {
+                          //   setSelectAmenityError("Please select at least one user");
+                          // }
                           moveUpSelected
                         }}
                         style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
@@ -1303,8 +1342,9 @@ export default function AmenitySettings({ navigation }) {
                     onPress={() => {
                       if (!anyUnassignedSelected) {
                         setSelectAmenityError("Please select at least one user");
+                        return;
                       }
-                      moveDownSelected
+                      moveDownSelected();
                     }}
                     style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
                   >
@@ -1319,8 +1359,9 @@ export default function AmenitySettings({ navigation }) {
                     onPress={() => {
                       if (!anyAssignedSelected) {
                         setSelectAmenityError("Please select at least one user");
+                        return;
                       }
-                      moveUpSelected
+                      moveUpSelected();
                     }}
                     style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
                   >

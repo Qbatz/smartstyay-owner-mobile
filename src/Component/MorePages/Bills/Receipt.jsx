@@ -389,16 +389,16 @@ const Receipt = ({ onSelectReceipt }) => {
 
         <View style={{ flex: 1 }}>
           {/* <Text style={styles.name}>{item.fullName}</Text> */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() =>
               navigation.navigate("CustomerOverviewScreen", {
                 customerId: item.customerId,
                 customer: item,
               })
             }
-          >
+          > */}
             <Text style={styles.name}>{item.fullName}</Text>
-          </TouchableOpacity>
+          {/* </TouchableOpacity> */}
 
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
             <View style={styles.tagBox}>
@@ -415,17 +415,18 @@ const Receipt = ({ onSelectReceipt }) => {
         </View>
 
         <View style={styles.rightSection}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             ref={(r) => (dotsRefs.current[item.transactionId] = r)}
             onPress={() => openMenu(item, item.transactionId)}
           >
             <Image
               source={Dots}
-              style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-            />
-          </TouchableOpacity>
+              style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }} 
+            /> 
+          </TouchableOpacity>  */}
+          <Text style={[styles.name,{marginTop:2}]}>₹{item?.paidAmount}</Text>
 
-          <Text style={styles.dateText}>
+          <Text style={[styles.dateText,{marginTop:10}]}>
             {formatApiDate(item.paidAt)}
           </Text>
         </View>
