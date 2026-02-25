@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState,useContext } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   TextInput,
   ScrollView,
   BackHandler,
-  Keyboard,Image
+  Keyboard, Image,
+  TouchableWithoutFeedback
 } from "react-native";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
@@ -28,39 +29,39 @@ export default function EditRentalAmountSheet({
   customerDetails,
   onSuccess,
 }) {
- 
-const translateY = useRef(new Animated.Value(600)).current;
-const keyboardOffset = useRef(new Animated.Value(0)).current;
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    Animated.timing(keyboardOffset, {
-      toValue: e.endCoordinates.height - 20,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    Animated.timing(keyboardOffset, {
-      toValue: 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  });
+  const translateY = useRef(new Animated.Value(600)).current;
+  const keyboardOffset = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(keyboardOffset, {
+        toValue: e.endCoordinates.height - 20,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(keyboardOffset, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
   const { editRentalAmount } = useCustomer();
-    const {getBillingConfig} = UseSetting();
-    const [billingData,setBillingData] = useState("")
-     const {activeHostelId } = useContext(CommonContexts);
+  const { getBillingConfig } = UseSetting();
+  const [billingData, setBillingData] = useState("")
+  const { activeHostelId } = useContext(CommonContexts);
 
-  const [type, setType] = useState(null); 
+  const [type, setType] = useState(null);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
   const [monthlyRent, setMonthlyRent] = useState("");
@@ -94,46 +95,46 @@ useEffect(() => {
       loadBilling(activeHostelId);
     }
   }, [activeHostelId]);
-  
+
   const loadBilling = async (id) => {
     const res = await getBillingConfig(id);
     console.log("Billing Data →", res);
     setBillingData(res.data)
   };
-  console.log("billingData",billingData)
+  console.log("billingData", billingData)
 
 
 
   const getBillingCycleRange = (billStartDate) => {
-  const today = dayjs();
+    const today = dayjs();
 
-  let cycleMonth = today.month(); // 0-based
+    let cycleMonth = today.month(); // 0-based
 
-  if (today.date() >= billStartDate) {
-    cycleMonth = today.add(1, "month").month();
-  }
+    if (today.date() >= billStartDate) {
+      cycleMonth = today.add(1, "month").month();
+    }
 
-  const start = dayjs()
-    .year(today.year() + (cycleMonth < today.month() ? 1 : 0))
-    .month(cycleMonth)
-    .date(billStartDate)
-    .startOf("day");
+    const start = dayjs()
+      .year(today.year() + (cycleMonth < today.month() ? 1 : 0))
+      .month(cycleMonth)
+      .date(billStartDate)
+      .startOf("day");
 
-  const end = start
-    .add(1, "month")
-    .date(billStartDate - 1)
-    .endOf("day");
+    const end = start
+      .add(1, "month")
+      .date(billStartDate - 1)
+      .endOf("day");
 
-  return {
-    minDate: start.format("YYYY-MM-DD"),
-    maxDate: end.format("YYYY-MM-DD"),
+    return {
+      minDate: start.format("YYYY-MM-DD"),
+      maxDate: end.format("YYYY-MM-DD"),
+    };
   };
-};
-const billStartDate = billingData?.billStartDate;
+  const billStartDate = billingData?.billStartDate;
 
-const billingRange = billStartDate
-  ? getBillingCycleRange(billStartDate)
-  : null;
+  const billingRange = billStartDate
+    ? getBillingCycleRange(billStartDate)
+    : null;
   /* ================= BACK BUTTON ================= */
   useEffect(() => {
     if (!visible) return;
@@ -150,20 +151,20 @@ const billingRange = billStartDate
     return () => sub.remove();
   }, [visible]);
   const getSheetHeight = () => {
-  if (!type) return 240;                // only dropdown
-  if (type === "Edit-Rent") return 480; // rent + reason
-  if (type === "Rent-Revision") return 620; // full form
-  return 560;
-};
-const sheetHeight = getSheetHeight();
+    if (!type) return 240;                // only dropdown
+    if (type === "Edit-Rent") return 480; // rent + reason
+    if (type === "Rent-Revision") return 620; // full form
+    return 560;
+  };
+  const sheetHeight = getSheetHeight();
   /* ================= OPEN / CLOSE ================= */
-useEffect(() => {
-  Animated.timing(translateY, {
-    toValue: visible ? 0 : sheetHeight,
-    duration: 250,
-    useNativeDriver: true,
-  }).start();
-}, [visible, sheetHeight]);
+  useEffect(() => {
+    Animated.timing(translateY, {
+      toValue: visible ? 0 : sheetHeight,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [visible, sheetHeight]);
 
 
   /* ================= PAN ================= */
@@ -196,27 +197,27 @@ useEffect(() => {
 
     if (!type) {
       setError("Please select type");
-       valid = false;
+      valid = false;
     }
 
     if (!monthlyRent || Number(monthlyRent) <= 0) {
       setRentError("Please Enter Monthly Rent");
-     valid = false;
+      valid = false;
     }
 
     if (type === "Rent-Revision" && !effectiveDate) {
       setDateError("Please select effective date");
       valid = false;
     }
-     
+
     const oldAmount = Number(customerDetails?.hostelInfo?.monthlyRent);
     const newAmount = Number(monthlyRent);
 
     if (oldAmount === newAmount) {
       setError("No changes detected in Rent Amount");
-       valid = false;
+      valid = false;
     }
-  if (!valid) return;
+    if (!valid) return;
     const payload = {
       newRent: newAmount,
       reason,
@@ -231,7 +232,7 @@ useEffect(() => {
       customerDetails.bookingId,
       payload
     );
-    console.log("payload",payload)
+    console.log("payload", payload)
 
     if (res?.success) {
       setMessage(res.data);
@@ -259,43 +260,43 @@ useEffect(() => {
       />
 
       {/* SHEET */}
-     <Animated.View
-  {...panResponder.panHandlers}
-  style={[
-    styles.sheet,
-    {
-      height: sheetHeight,
-      transform: [
-        { translateY },
-        { translateY: Animated.multiply(keyboardOffset, -1) }, // ⭐ IMPORTANT
-      ],
-    },
-  ]}
->
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[
+          styles.sheet,
+          {
+            height: sheetHeight,
+            transform: [
+              { translateY },
+              { translateY: Animated.multiply(keyboardOffset, -1) }, // ⭐ IMPORTANT
+            ],
+          },
+        ]}
+      >
         <View style={styles.handle} />
 
-       <ScrollView
-  keyboardShouldPersistTaps="handled"
-  contentContainerStyle={{
-    padding: 16,
-    paddingBottom: 24,
-    width: "100%",   
-  }}
->
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: 24,
+            width: "100%",
+          }}
+        >
           <Text style={styles.title}>Edit Rental Amount</Text>
 
-         
+
 
           {type === "Rent-Revision" && (
-  <View style={styles.infoBanner}>
-    <Text style={styles.infoIcon}>?</Text>
-    <Text style={styles.infoText}>
-      Rent changes will apply from next billing cycle and are fully audit-logged
-    </Text>
-  </View>
-)}
+            <View style={styles.infoBanner}>
+              <Text style={styles.infoIcon}>?</Text>
+              <Text style={styles.infoText}>
+                Rent changes will apply from next billing cycle and are fully audit-logged
+              </Text>
+            </View>
+          )}
 
-          <Text style={styles.label}>Type <Text style={{color:"red"}}>*</Text></Text>
+          <Text style={styles.label}>Type <Text style={{ color: "red" }}>*</Text></Text>
 
           <TouchableOpacity
             style={styles.dropdownInput}
@@ -310,10 +311,10 @@ useEffect(() => {
               {type === "Edit-Rent"
                 ? "Edit Rent"
                 : type === "Rent-Revision"
-                ? "Rent Revision"
-                : "Select Type"}
+                  ? "Rent Revision"
+                  : "Select Type"}
             </Text>
-               <Image source={DownArrow} style={styles.arrow} />
+            <Image source={DownArrow} style={styles.arrow} />
           </TouchableOpacity>
 
           {showTypeDropdown && (
@@ -342,26 +343,27 @@ useEffect(() => {
           {/* ================= RENT (ONLY AFTER TYPE) ================= */}
           {type && (
             <>
-              <Text style={styles.label}>New Monthly Rent <Text style={{color:"red"}}>*</Text></Text>
+              <Text style={[styles.label,{marginTop:15}]}>New Monthly Rent <Text style={{ color: "red" }}>*</Text></Text>
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
                 placeholder="Enter rent"
                 value={monthlyRent}
-                  onChangeText={(text) => {
-    setMonthlyRent(text);
-    setRentError("");
-  }}
+                onChangeText={(text) => {
+                  const onlyNum = text.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                  setMonthlyRent(onlyNum);
+                  setRentError("");
+                }}
 
               />
-               {renteError && <ErrorMessage message={renteError} />}
+              {renteError && <ErrorMessage message={renteError} />}
             </>
           )}
 
           {/* ================= EFFECTIVE DATE ================= */}
           {type === "Rent-Revision" && (
             <>
-              <Text style={styles.label}>Effective From <Text style={{color:"red"}}>*</Text></Text>
+              <Text style={[styles.label,{marginTop:15}]}>Effective From <Text style={{ color: "red" }}>*</Text></Text>
               <TouchableOpacity
                 style={styles.input}
                 onPress={() => setShowCalendar(true)}
@@ -373,14 +375,14 @@ useEffect(() => {
                 </Text>
               </TouchableOpacity>
             </>
-            
+
           )}
-             {dateError && <ErrorMessage message={dateError} />}
+          {dateError && <ErrorMessage message={dateError} />}
 
           {/* ================= REASON ================= */}
           {type && (
             <>
-              <Text style={styles.label}>Reason</Text>
+              <Text style={[styles.label,{marginTop:15}]}>Reason</Text>
               <TextInput
                 style={[styles.input, { height: 90 }]}
                 multiline
@@ -395,7 +397,8 @@ useEffect(() => {
 
           {/* ================= ACTIONS ================= */}
           <View style={styles.footer}>
-            <TouchableOpacity onPress={resetState}>
+            <TouchableOpacity onPress={resetState}
+            style={{borderColor: "#1E40AF",borderWidth:1,paddingHorizontal: 30,paddingVertical: 12,borderRadius: 24,marginRight:8}}>
               <Text style={styles.cancel}>Cancel</Text>
             </TouchableOpacity>
 
@@ -413,13 +416,14 @@ useEffect(() => {
         </ScrollView>
       </Animated.View>
 
-     
+
       {showCalendar && (
         <View style={styles.calendarOverlay}>
-          <TouchableOpacity
-            style={{ flex: 1 }}
+          <TouchableWithoutFeedback
             onPress={() => setShowCalendar(false)}
-          />
+          >
+            <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
+          </TouchableWithoutFeedback>
           <View style={styles.calendarSheet}>
             {/* <Calendar
               onDayPress={(day) => {
@@ -434,23 +438,23 @@ useEffect(() => {
               }}
             /> */}
             <Calendar
-  minDate={billingRange?.minDate}
-  maxDate={billingRange?.maxDate}
-  disableAllTouchEventsForDisabledDays={true}
-  onDayPress={(day) => {
-    setEffectiveDate(day.dateString);
-    setShowCalendar(false);
-    setRentError("")
-  }}
-  markedDates={{
-    ...(effectiveDate && {
-      [effectiveDate]: {
-        selected: true,
-        selectedColor: "#2563EB",
-      },
-    }),
-  }}
-/>
+              minDate={billingRange?.minDate}
+              maxDate={billingRange?.maxDate}
+              disableAllTouchEventsForDisabledDays={true}
+              onDayPress={(day) => {
+                setEffectiveDate(day.dateString);
+                setShowCalendar(false);
+                setRentError("")
+              }}
+              markedDates={{
+                ...(effectiveDate && {
+                  [effectiveDate]: {
+                    selected: true,
+                    selectedColor: "#2563EB",
+                  },
+                }),
+              }}
+            />
 
           </View>
         </View>
@@ -464,19 +468,19 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.35)",
-    
+
   },
- sheet: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,            // ⭐ ADD
-  right: 0,           // ⭐ ADD
-  width: "100%",
-  minHeight: 300,
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-},
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,            // ⭐ ADD
+    right: 0,           // ⭐ ADD
+    width: "100%",
+    minHeight: 300,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
   handle: {
     width: 60,
     height: 5,
@@ -500,8 +504,8 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 12,
     padding: 14,
-    marginBottom: 16,
-    width:"100%"
+    marginBottom: 3,
+    width: "100%"
   },
   dropdownInput: {
     borderWidth: 1,
@@ -515,7 +519,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 15,
   },
- arrow: { width: 18, height: 18, tintColor: "#777" },
+  arrow: { width: 18, height: 18, tintColor: "#777" },
   dropdownBox: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
@@ -530,8 +534,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     marginTop: 10,
+    alignItems:'center'
   },
   cancel: {
     color: "#2563EB",
@@ -542,6 +547,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 24,
+    marginLeft:5
   },
   updateText: {
     color: "#fff",
@@ -561,32 +567,32 @@ const styles = StyleSheet.create({
     marginBottom: 80,
   },
   infoBanner: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#C7D2FE", // light blue
-  borderRadius: 10,
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-  marginBottom: 12,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#C7D2FE", // light blue
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
 
-infoIcon: {
-  width: 22,
-  height: 22,
-  borderRadius: 11,
-  backgroundColor: "#E0E7FF",
-  textAlign: "center",
-  textAlignVertical: "center",
-  fontWeight: "700",
-  marginRight: 8,
-  color: "#1E3A8A",
-},
+  infoIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#E0E7FF",
+    textAlign: "center",
+    textAlignVertical: "center",
+    fontWeight: "700",
+    marginRight: 8,
+    color: "#1E3A8A",
+  },
 
-infoText: {
-  flex: 1,
-  fontSize: 12,
-  color: "#1E3A8A",
-  fontWeight: "500",
-},
+  infoText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#1E3A8A",
+    fontWeight: "500",
+  },
 
 });

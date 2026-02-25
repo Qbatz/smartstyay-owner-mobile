@@ -367,7 +367,7 @@ const Receipt = ({ onSelectReceipt }) => {
   )}
 </TouchableOpacity> */}
 
-        <TouchableOpacity onPress={() => handleViewReceiptDetails(item)}>
+        <TouchableOpacity onPress={() => handleViewReceiptDetails(item)} style={{flex:1,flexDirection:'row',alignItems:'center'}}>
           <View style={styles.avatarWrapper}>
             {item?.profilePic ? (
               <Image source={{ uri: item.profilePic }} style={styles.avatar} />
@@ -384,7 +384,7 @@ const Receipt = ({ onSelectReceipt }) => {
               <Image source={TickIcon} style={styles.tickIcon} />
             </View>
           </View>
-        </TouchableOpacity>
+        
 
 
         <View style={{ flex: 1 }}>
@@ -430,6 +430,7 @@ const Receipt = ({ onSelectReceipt }) => {
             {formatApiDate(item.paidAt)}
           </Text>
         </View>
+        </TouchableOpacity>
       </View>
     );
   };

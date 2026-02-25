@@ -234,15 +234,7 @@ export default function DoubleStatusSheet({
                 )}
 
                 <View>
-                  <TouchableOpacity onPress={() =>
-                    navigation.navigate("CustomerOverviewScreen", {
-                      customerId: selectedBed.currentTenantInfo[0]?.tenetId,
-                      customer: selectedBed.currentTenantInfo[0],
-                    })
-                  }>
-                    <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
-                  </TouchableOpacity>
-
+                  <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
                   <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
                 </View>
               </View>
@@ -371,15 +363,7 @@ export default function DoubleStatusSheet({
                           )}
 
                           <View>
-                            <TouchableOpacity onPress={() =>
-                              navigation.navigate("CustomerOverviewScreen", {
-                                customerId: item?.tenetId,
-                                customer: item,
-                              })
-                            }>
-                              <Text style={styles.name}>{item.tenantFullName}</Text>
-                            </TouchableOpacity>
-
+                            <Text style={styles.name}>{item.tenantFullName}</Text>
                             <Text style={styles.phone}>+91 {item.mobile}</Text>
                           </View>
                         </View>
@@ -485,7 +469,7 @@ export default function DoubleStatusSheet({
           </TouchableOpacity>
           {selectedBed?.newTenantInfo?.length > 0 && (
             <TouchableOpacity style={styles.reservedBtn}>
-              <Text style={styles.reservedText}>Reserved</Text>
+              <Text style={styles.reservedText}>Occupied</Text>
             </TouchableOpacity>
           )}
         </View>

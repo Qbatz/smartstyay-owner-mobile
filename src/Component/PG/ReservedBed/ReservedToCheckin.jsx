@@ -245,7 +245,7 @@ export default function ReserveToCheckin({ route, navigation }) {
           </TouchableOpacity>
 
           <Text style={styles.roomInfo}>
-            {selectedBed?.floorName} | 
+            {selectedBed?.floorName} |
             Room No {selectedBed?.roomName} |{" "}
             {selectedBed?.bedName}
           </Text>
@@ -335,7 +335,7 @@ export default function ReserveToCheckin({ route, navigation }) {
             <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
             <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={rentalAmount}
               onChangeText={(text) => {
-                const onlyNum=text.replace(/[^0-9]/g,"")
+                const onlyNum = text.replace(/[^0-9]/g, "")
                 setRentalAmount(onlyNum);
                 setRentalError("");
               }}
@@ -346,7 +346,7 @@ export default function ReserveToCheckin({ route, navigation }) {
             <TextInput placeholder="Enter amount" style={styles.input} keyboardType="numeric" value={advanceAmount}
               // onChangeText={setAdvanceAmount}
               onChangeText={(text) => {
-                const onlyNum=text.replace(/[^0-9]/g,"")
+                const onlyNum = text.replace(/[^0-9]/g, "")
                 setAdvanceAmount(onlyNum);
                 setAdvanceError("");
               }}
@@ -440,11 +440,13 @@ export default function ReserveToCheckin({ route, navigation }) {
                         keyboardType="numeric"
                         value={item.amount}
                         onChangeText={(t) => {
-                          const onlyNum=t.replace(/[^0-9]/g,"")
+                          // const onlyNum = t.replace(/[^0-9]/g, "")
+                           const onlyNum = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                       
                           updateAmount(item.id, onlyNum)
-                          
+
                         }
-                          }
+                        }
                       />
                     )}
 

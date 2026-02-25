@@ -314,7 +314,14 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
   )}
 
   <View>
-    <Text style={styles.userName}>{item.tenantFullName}</Text>
+  <TouchableOpacity onPress={() =>
+                      navigation.navigate("CustomerOverviewScreen", {
+                        customerId: item.tenetId,
+                        customer: item,
+                      })
+                    }>
+                      <Text style={styles.userName}>{item.tenantFullName}</Text>
+                    </TouchableOpacity>
     <Text style={styles.phone}>+91 {item.mobile}</Text>
   </View>
 </View>
