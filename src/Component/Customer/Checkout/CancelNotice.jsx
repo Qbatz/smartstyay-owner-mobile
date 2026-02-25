@@ -185,9 +185,15 @@ const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
 
         {/* Tenant Details */}
         <View style={styles.tenantRow}>
-          <Image source={SampleAvatar} style={styles.avatar} />
 
-          <View style={{ marginLeft: 14 }}>
+          {selectedItem?.profilePic ? <Image source={{uri:selectedItem?.profilePic }} style={styles.avatar} /> 
+          : 
+          <View style={[styles.avatar,{alignItems:'center', backgroundColor: "#E5E7EB",justifyContent:'center'}]}>
+            <Text style={{fontSize: 13,fontWeight: "700",color: "#374151"}}>{selectedItem?.initials}</Text>
+          </View>}
+          {/* <Image source={SampleAvatar} style={styles.avatar} /> */}
+
+          <View style={{ marginLeft: 14,marginRight:50 }}>
             <Text style={styles.tenantName}>{selectedItem?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
 
             <View style={styles.smallRow}>

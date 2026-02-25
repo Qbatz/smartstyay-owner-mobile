@@ -12,7 +12,7 @@ import {
 import Profile from "../../../Assets/Images/Avatar.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 
 
@@ -29,6 +29,7 @@ export default function NoticePeriodBedSheet({
   const { getCustomersByHostel, loading } = useCustomer();
   const [menuVisible, setMenuVisible] = useState(false);
   const [customers, setCustomers] = useState([]);
+   const navigation = useNavigation();
   console.log("selectedBed", selectedBed)
   const handleEdit = () => {
     if (!handleEditBed || !selectedBed) return;
@@ -50,16 +51,16 @@ export default function NoticePeriodBedSheet({
 
 
 
- const fetchCustomers = async () => {
-  const data = await getCustomersByHostel(activeHostelId);
-  setCustomers(data?.listCustomers || []);
-};
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data?.listCustomers || []);
+  };
   console.log("customers123", customers)
   const matchedCustomer = customers.find(
     c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
   );
-console.log("matchedCustomer",matchedCustomer)
- 
+  console.log("matchedCustomer", matchedCustomer)
+
 
   // console.log("filteredTenants", filteredTenants);
   useEffect(() => {
@@ -103,7 +104,7 @@ console.log("matchedCustomer",matchedCustomer)
     onClose();
   };
 
-    const {
+  const {
     canWriteModule: canWriteCustomers,
     // canReadModule: canReadPayingGuests,
     // canUpdateModule: canUpdatePayingGuests,
@@ -212,90 +213,90 @@ console.log("matchedCustomer",matchedCustomer)
           )} */}
           {menuVisible && (
             <>
-            {/* {menuVisible && (
+              {/* {menuVisible && (
   <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
     <View style={styles.menuOverlay} />
   </TouchableWithoutFeedback>
 )} */}
-  <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
-      <View style={StyleSheet.absoluteFillObject} />
-    </TouchableWithoutFeedback>
-   
-            <View style={styles.dropdown}>
+              <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+                <View style={StyleSheet.absoluteFillObject} />
+              </TouchableWithoutFeedback>
 
-  <TouchableOpacity
-                // style={styles.menuItem}
-                disabled={!canUpdatePayingGuests}
-                style={[ styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
-                onPress={handleEdit}    
-              >
-                <Image
-                  source={require("../../../Assets/Images/editIcon.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>Edit</Text>
-              </TouchableOpacity>
-              {matchedCustomer?.currentStatus === "Settlement Generated" ? (
+              <View style={styles.dropdown}>
+
                 <TouchableOpacity
-                //  style={styles.menuItem}
-                  disabled={!canWriteCustomers}
-                  style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                onPress={handleCheckoutSheet}>
+                  // style={styles.menuItem}
+                  disabled={!canUpdatePayingGuests}
+                  style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                  onPress={handleEdit}
+                >
                   <Image
-                    source={require("../../../Assets/Images/NewBook.png")}
+                    source={require("../../../Assets/Images/editIcon.png")}
                     style={styles.menuIcon}
                   />
-                  <Text style={styles.menuText}>Checkout</Text>
+                  <Text style={styles.menuText}>Edit</Text>
                 </TouchableOpacity>
-              ) : (
-                <>
-                  {/* Normal menu items */}
+                {matchedCustomer?.currentStatus === "Settlement Generated" ? (
                   <TouchableOpacity
-                    // style={styles.menuItem}
+                    //  style={styles.menuItem}
                     disabled={!canWriteCustomers}
-                    style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                    onPress={handleNoticeToBooking}
-                  >
+                    style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                    onPress={handleCheckoutSheet}>
                     <Image
                       source={require("../../../Assets/Images/NewBook.png")}
                       style={styles.menuIcon}
                     />
-                    <Text style={styles.menuText}>New Booking</Text>
+                    <Text style={styles.menuText}>Checkout</Text>
                   </TouchableOpacity>
+                ) : (
+                  <>
+                    {/* Normal menu items */}
+                    <TouchableOpacity
+                      // style={styles.menuItem}
+                      disabled={!canWriteCustomers}
+                      style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                      onPress={handleNoticeToBooking}
+                    >
+                      <Image
+                        source={require("../../../Assets/Images/NewBook.png")}
+                        style={styles.menuIcon}
+                      />
+                      <Text style={styles.menuText}>New Booking</Text>
+                    </TouchableOpacity>
 
-                  <TouchableOpacity
-                    // style={styles.menuItem}
-                    disabled={!canWriteCustomers}
-                    style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                    onPress={handleCancelNoticePeriod}
-                  >
-                    <Image
-                      source={require("../../../Assets/Images/calendarremove.png")}
-                      style={styles.menuIcon}
-                    />
-                    <Text style={styles.menuText}>Cancel Check-out</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      // style={styles.menuItem}
+                      disabled={!canWriteCustomers}
+                      style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                      onPress={handleCancelNoticePeriod}
+                    >
+                      <Image
+                        source={require("../../../Assets/Images/calendarremove.png")}
+                        style={styles.menuIcon}
+                      />
+                      <Text style={styles.menuText}>Cancel Check-out</Text>
+                    </TouchableOpacity>
 
-                  <TouchableOpacity
-                    // style={styles.menuItem}
-                    disabled={!canWriteCustomers}
-                    style={[ styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                    onPress={handleFinalSettledment}
-                  >
-                    <Image
-                      source={require("../../../Assets/Images/receipttext.png")}
-                      style={styles.menuIcon}
-                    />
-                    <Text style={styles.menuText}>Generate</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      // style={styles.menuItem}
+                      disabled={!canWriteCustomers}
+                      style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                      onPress={handleFinalSettledment}
+                    >
+                      <Image
+                        source={require("../../../Assets/Images/receipttext.png")}
+                        style={styles.menuIcon}
+                      />
+                      <Text style={styles.menuText}>Generate</Text>
+                    </TouchableOpacity>
 
 
-                </>
-              )}
-            
-            </View>
-         
-           
+                  </>
+                )}
+
+              </View>
+
+
             </>
           )}
 
@@ -305,25 +306,34 @@ console.log("matchedCustomer",matchedCustomer)
           <View style={styles.profileRow}>
             {/* <Image source={Profile} style={styles.profileImg} /> */}
             {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
-  <Image
-    source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
-    style={styles.profileImg}
-  />
-) : (
-  <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
-    <Text style={styles.initialText}>
-      {selectedBed?.currentTenantInfo?.[0]?.tenantFullName
-        ?.split(" ")
-        ?.map(w => w[0])
-        ?.join("")
-        ?.slice(0, 2)
-        ?.toUpperCase() || "--"}
-    </Text>
-  </View>
-)}
+              <Image
+                source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
+                style={styles.profileImg}
+              />
+            ) : (
+              <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
+                <Text style={styles.initialText}>
+                  {selectedBed?.currentTenantInfo?.[0]?.tenantFullName
+                    ?.split(" ")
+                    ?.map(w => w[0])
+                    ?.join("")
+                    ?.slice(0, 2)
+                    ?.toUpperCase() || "--"}
+                </Text>
+              </View>
+            )}
 
             <View>
-              <Text style={styles.tenantName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+              {console.log("haha",selectedBed)}
+              <TouchableOpacity   onPress={() =>
+                        navigation.navigate("CustomerOverviewScreen", {
+                          customerId: selectedBed.currentTenantInfo[0]?.tenetId,
+                          customer: selectedBed.currentTenantInfo[0],
+                        })
+                      }>
+                    <Text style={styles.tenantName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+              </TouchableOpacity>
+              
               <Text style={styles.tenantPhone}>+91{selectedBed.currentTenantInfo[0]?.mobile}</Text>
             </View>
           </View>
@@ -417,29 +427,29 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     padding: 6,
   },
- menuOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 999,
-},
+  menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+  },
 
- dropdown: {
-  position: "absolute",
-  right: 20,
-  top: 105,
-  backgroundColor: "#fff",
-  width: 190,
-  borderRadius: 12,
-  paddingVertical: 8,
-  elevation: 10,
-  shadowColor: "#000",
-  shadowOpacity: 0.15,
-  shadowRadius: 4,
-  zIndex: 999,
-},
+  dropdown: {
+    position: "absolute",
+    right: 20,
+    top: 105,
+    backgroundColor: "#fff",
+    width: 190,
+    borderRadius: 12,
+    paddingVertical: 8,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    zIndex: 999,
+  },
 
 
   menuItem: {
@@ -487,16 +497,16 @@ const styles = StyleSheet.create({
 
   noticeText: { color: "#D9534F", fontSize: 15, fontWeight: "700" },
   initialCircle: {
-  backgroundColor: "#E5E7EB",
-  alignItems: "center",
-  justifyContent: "center",
-  marginRight:5
-},
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 5
+  },
 
-initialText: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#374151",
-},
+  initialText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#374151",
+  },
 
 });

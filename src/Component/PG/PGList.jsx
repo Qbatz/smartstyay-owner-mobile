@@ -241,6 +241,9 @@ export default function PGPageFull({ route }) {
     const matchedBed =
       bedsByRoom[room.id]?.find(b => b.id === bed.id);
 
+      console.log("mathc",matchedBed)
+      console.log("fresh",freshBed)
+
     if (!matchedBed) return;
 
     const status = getBedStatus(matchedBed);

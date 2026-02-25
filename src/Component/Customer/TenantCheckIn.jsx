@@ -760,7 +760,9 @@ export default function TenantCheckIn({ navigation, route }) {
                               }, 300);
                             }}
                             onChangeText={(t) => {
-                              const onlyNumbers = t.replace(/[^0-9]/g, "");
+                              // const onlyNumbers = t.replace(/[^0-9]/g, "");
+                              const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                       
                               updateAmount(item.id, onlyNumbers)
                             }
                                }

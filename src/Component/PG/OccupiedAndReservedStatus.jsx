@@ -29,6 +29,7 @@ export default function OccupiedAndReservedBedSheet({ visible, onClose, bed, roo
 // const [reqDate, setReqDate] = useState("31/07/2025");
 // const [outDate, setOutDate] = useState("30/08/2025");
 // const [reason, setReason] = useState("");
+const navigation = useNavigation();
 
 const handleMoveClick = () => {
   setMenuOpen(false);
@@ -134,6 +135,14 @@ const handleReAssignBed=()=>{
                 <View style={styles.userRow}>
                     <Image source={Profile} style={styles.userImg} />
                     <View>
+                        <TouchableOpacity onPress={() =>
+                              navigation.navigate("CustomerOverviewScreen", {
+                                customerId: selectedBed.currentTenantInfo[0]?.tenetId,
+                                customer: selectedBed.currentTenantInfo[0],
+                              })
+                            }>
+
+                        </TouchableOpacity>
                         <Text style={styles.userName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
                         <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
                     </View>
