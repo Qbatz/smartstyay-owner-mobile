@@ -71,6 +71,7 @@ const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
 
 const descriptionRef = useRef(null);
 const ifscRef = useRef(null);
+const acnoRef = useRef(null);
 const cardRef = useRef(null);
  console.log("isDescriptionFocused", isDescriptionFocused);
  
@@ -238,7 +239,9 @@ onMoveShouldSetPanResponder: (_, g) => {
   const anyInputFocused =
     ifscRef.current?.isFocused() ||
     descriptionRef.current?.isFocused() ||
-    cardRef.current?.isFocused();
+    cardRef.current?.isFocused() ||
+    acnoRef.current?.isFocused()
+    
 
   if (anyInputFocused) return false;
 
@@ -310,7 +313,8 @@ useEffect(() => {
 if (
   ifscRef.current?.isFocused() ||
   descriptionRef.current?.isFocused() || 
-  cardRef.current?.isFocused()
+  cardRef.current?.isFocused() || 
+  acnoRef.current?.isFocused()
 ) {
       Animated.timing(translateY, {
           toValue: -e.endCoordinates.height + 90,
@@ -704,6 +708,7 @@ const TabButton = ({ title }) => {
 
 <Text style={styles.label}>Account No <Text style={{color:'red'}}> *</Text></Text>
 <TextInput
+  ref={acnoRef}
   style={styles.input}
   placeholder="Enter Account Number"
   keyboardType="number-pad"
@@ -746,6 +751,7 @@ const TabButton = ({ title }) => {
   maxLength={11}
   onChangeText={handleIfscChange}
 />
+
 
 
             <Text style={styles.label}>Description</Text>
@@ -804,10 +810,11 @@ const TabButton = ({ title }) => {
   keyboardType="email-address"
   autoCorrect={false}
   onChangeText={(v) => {
-    const formatted = v.replace(/\s/g, "")
-    setUpiId(formatted);
+    // const formatted = v.replace(/\s/g, "")
+    const cleaned = v.replace(/\s/g, "").replace(/[^\w.@-]/g, "");
+    setUpiId(cleaned);
     setErrors(prev => ({ ...prev, upiId: "", common: "" }));
-    if (upiRegex.test(formatted)) {
+    if (upiRegex.test(cleaned)) {
       setErrors(prev => ({ ...prev, upiId: "", common: "" }));
     } 
     // else {

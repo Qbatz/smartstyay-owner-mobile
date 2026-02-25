@@ -13,6 +13,7 @@ import {
   PanResponder,
   BackHandler, Keyboard
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
 import { BillContext } from "../../../Context/BillsContext";
@@ -83,6 +84,8 @@ import BillBookings from "./Bill_Bookings";
 
 
 export default function BillsDesign({ route }) {
+
+   const insets = useSafeAreaInsets();
 
   const detailDotsRef = useRef(null);
 
@@ -1717,7 +1720,7 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
         type={modalType}
       /> 
        {loading && <Loader />}
-
+    <View style={[styles.safe, { paddingTop: insets.top }]}>
       <SafeAreaView style={styles.container}>
 
 
@@ -4122,17 +4125,18 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
 
       </SafeAreaView>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+    safe: { backgroundColor: "#fff", flex: 1 },
   container: {
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingTop: 60
-    // paddingVertical:60
+    // paddingTop: 60
   },
   searchContainer: {
     flexDirection: "row",
@@ -4249,6 +4253,7 @@ const styles = StyleSheet.create({
   tab: {
     alignItems: "center",
     paddingBottom: 6,
+    fontFamily: "Gilroy-Semibold"
   },
 
   activeTab: {
@@ -4260,6 +4265,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+       fontFamily: "Gilroy-Semibold"
   },
 
   tabIcon: {
@@ -4271,11 +4277,13 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     color: "#6B7280",
+    fontFamily: "Gilroy-Semibold"
   },
 
   activeText: {
     color: "#2D6CDF",
-    fontWeight: "600",
+   fontFamily: "Gilroy-Bold"
+    // fontWeight: "600",
   },
 
   sectionTitle: {

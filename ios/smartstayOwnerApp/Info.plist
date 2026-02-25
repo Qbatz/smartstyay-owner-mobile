@@ -34,14 +34,14 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Gilroy-Bold.ttf</string>
 		<string>Gilroy-Medium.ttf</string>
 		<string>Gilroy-Regular.ttf</string>
-		<string>Gilroy-Bold.ttf</string>
 		<string>Gilroy-SemiBold.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

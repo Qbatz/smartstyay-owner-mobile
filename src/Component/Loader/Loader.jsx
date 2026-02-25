@@ -72,16 +72,15 @@ const styles = StyleSheet.create({
   },
   text: {
     marginTop: 10,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    letterSpacing: 0.7,
+    fontSize: 22,
+    // fontWeight: "600",
+   fontFamily: "Gilroy-Bold",
+    color: "#222222",
   },
   subText: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "600",
+    fontSize: 22,
+    color: "#222222",
+    fontFamily: "Gilroy-Bold",
     marginTop: 4,
-    letterSpacing: 0.7,
   },
 });

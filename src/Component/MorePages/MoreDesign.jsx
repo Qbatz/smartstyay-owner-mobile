@@ -77,7 +77,7 @@ export default function MoreDesign({ navigation }) {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           {activeHostel?.mainImage ? <Image source={{uri:activeHostel?.mainImage}} style={styles.profileImg}/> :
           <View style={[styles.profileImg,{ backgroundColor: "#E5E7EB",alignItems:'center',justifyContent:'center'}]}>
-            <Text style={{fontSize:14,fontWeight:'600'}}>{activeHostel?.initials}</Text>
+            <Text style={{fontSize:14, fontFamily: "Gilroy-Semibold"}}>{activeHostel?.initials}</Text>
           </View>
            }
           
@@ -132,12 +132,13 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 20,
-    marginLeft:10
+    marginLeft:10,
+    fontFamily: "Gilroy-Semibold"
   },
 
   headerTitle: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Bold" ,
     marginLeft: 20,
     color: "#000",
   },
@@ -171,9 +172,10 @@ const styles = StyleSheet.create({
 
   itemText: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#000",
+    fontSize: 17,
+    // fontWeight: "500",
+  fontFamily: "Gilroy-Bold" ,
+    color: "#222222",
   },
 
   arrow: {
