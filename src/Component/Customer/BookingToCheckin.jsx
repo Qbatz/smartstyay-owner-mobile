@@ -782,7 +782,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         keyboardType="numeric"
                                                         value={item.amount}
                                                         onChangeText={(t) => {
-                                                            const onlyNumbers = t.replace(/[^0-9^\d]/g, "");
+                                                           const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
                                                             updateAmount(item.id, onlyNumbers)
                                                         }
                                                         }
