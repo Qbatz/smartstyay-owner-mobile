@@ -378,7 +378,7 @@ exportWrapper: {
   left: 0,
   right: 0,
   paddingHorizontal: 16,
-  paddingBottom: 20, // 🔥 Android navigation bar safe
+  paddingBottom: 45, 
   backgroundColor: "#fff",
 },
 

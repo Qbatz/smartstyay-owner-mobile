@@ -893,7 +893,7 @@ console.log("profile", getProfileInitial);
                     styles.tabText,
                     activeTab === item.key && {
                       color: "#1E45E1",
-                      fontWeight: "700",
+                     fontFamily: "Gilroy-Bold",
                       fontSize: 17,
                     },
                   ]}
@@ -1615,7 +1615,7 @@ hostelAvatar: {
 
 hostelAvatarText: {
   fontSize: 16,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   color: "black",
 },
 
@@ -1660,14 +1660,14 @@ addPgText: {
 
 hostelTitle: {
   fontSize: 16,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   color: "#1E293B",
   flexWrap: "wrap",
 },
 
 
 
-  changeText: { fontSize: 12, color: "#2F80ED", marginTop: 3 },
+  changeText: { fontSize: 12, color: "#2F80ED", marginTop: 3, fontFamily: "Gilroy-Regular"    },
 
 
   iconCircle: {
@@ -1687,7 +1687,7 @@ hostelTitle: {
 
   tabBtn: { marginRight: 20 },
 
-  tabText: { fontSize: 17, color: "#6B7280" },
+  tabText: { fontSize: 17, color: "#6B7280", fontFamily: "Gilroy-Bold" },
 
   underline: {
     height: 3,
@@ -1717,7 +1717,7 @@ hostelTitle: {
   bannerTitle: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
   bannerSub: {
@@ -1725,8 +1725,8 @@ hostelTitle: {
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
-    fontStyle: "italic",        // <== ITALIC
-    width: 190,                 // <== FORCE 2 LINES LIKE FIGMA
+    fontStyle: "italic",        
+    width: 190,             
   },
 
 
@@ -1784,7 +1784,7 @@ hostelTitle: {
     alignItems: "center",
   },
 
-  cardLabel: { color: "#42526E", marginTop: 10 },
+  cardLabel: { color: "#42526E", marginTop: 10, fontFamily: "Gilroy-Medium"  },
 
   cardValue: { fontSize: 28, fontWeight: "800", marginTop: 6 },
 
@@ -1815,14 +1815,15 @@ hostelTitle: {
     alignItems: "center",
   },
 
-  smallLabel: { fontSize: 12, color: "#6B7280", marginTop: 6 },
+  smallLabel: { fontSize: 12, color: "#6B7280", marginTop: 6 , fontFamily: "Gilroy-Medium" },
 
   smallValue: { fontSize: 18, fontWeight: "700", marginTop: 4 },
 
   sectionTitle: {
     marginLeft: 16,
     marginTop: 20,
-    fontWeight: "700",
+    marginBottom:4,
+    fontFamily: "Gilroy-Bold" ,
     fontSize: 17,
   },
 
@@ -1855,7 +1856,7 @@ hostelTitle: {
     backgroundColor: "#FFFFFF",
   },
 
-  quickLabel: { fontSize: 12, marginTop: 8, textAlign: "center" },
+  quickLabel: { fontSize: 12, marginTop: 8, textAlign: "center" , fontFamily: "Gilroy-Regular" },
 
   statsGrid: {
     flexDirection: "row",
@@ -1884,9 +1885,9 @@ hostelTitle: {
     marginBottom: 12,
   },
 
-  statTitle: { color: "#6B7280", fontSize: 13 },
+  statTitle: { color: "#6B7280", fontSize: 13, fontFamily: "Gilroy-Regular" },
 
-  statValue: { fontSize: 22, fontWeight: "700", marginTop: 6 },
+  statValue: { fontSize: 22, fontFamily: "Gilroy-Bold", marginTop: 6 },
 
   advanceCard: {
     margin: 16,
@@ -1926,12 +1927,14 @@ hostelTitle: {
   cardTitle: {
     fontSize: 14,
     color: "#6B7280",
-    fontWeight: "500",
+   fontFamily: "Gilroy-Regular",
+   marginLeft:4 ,
+   marginBottom:3
   },
 
   cardValue: {
     fontSize: 26,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     marginTop: 10,
     color: "#1E293B",
   },

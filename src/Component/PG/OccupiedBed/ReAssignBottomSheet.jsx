@@ -437,8 +437,10 @@ useEffect(() => {
                 style={styles.inputField}
                 placeholder="Enter Amount"
                 value={rentAmount}
-                onChangeText={(text) => {
-                  setRentAmount(text);
+                onChangeText={(t) => {
+                  const cleaned = t.replace(/[^0-9]/g, "");
+                  setRentAmount(cleaned);
+                  // setRentAmount(text);
                   setRentError("");
                 }}
                 placeholderTextColor="#999"
@@ -634,6 +636,7 @@ sheet: {
 },
 
   inputField: {
+     flex: 1,  
     fontSize: 15,
     color: "#000",
   },
@@ -662,10 +665,12 @@ sheet: {
 
 
   footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 25,
-    marginBottom: 20
+        flexDirection: "row",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  marginTop: 20,
+  marginBottom: 10,
+  gap: 20, 
   },
 
   cancel: {
