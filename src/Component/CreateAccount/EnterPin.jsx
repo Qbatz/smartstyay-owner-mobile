@@ -261,7 +261,7 @@ const EnterMPin = (props) => {
             <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
                 <TouchableOpacity onPress={forgotMpinClick}
                 >
-                    <Text style={{ color: '#1E45E1', fontSize: 14, fontWeight: 400, textDecorationLine: 'underline', }}>
+                    <Text style={{ color: '#1E45E1', fontSize: 14, fontFamily: "Gilroy-Regular", textDecorationLine: 'underline', }}>
                         Forgot Mpin</Text>
                 </TouchableOpacity>
             </View>
@@ -309,18 +309,18 @@ const EnterMPin = (props) => {
 
 const style = StyleSheet.create({
     logo: { width: 151, height: 28.22 },
-    createText: { fontSize: 27, fontWeight: 600, color: '#222222', marginTop: 20 },
-    subtitle: { fontSize: 14, fontWeight: 400, color: '#4B4B4B', marginTop: 15 },
+    createText: { fontSize: 23, fontFamily: "Gilroy-Bold", color: '#222222', marginTop: 20 },
+    subtitle: { fontSize: 14, fontFamily: "Gilroy-Regular", color: '#4B4B4B', marginTop: 15 },
     pinContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20, paddingLeft: 10, paddingRight: 10 },
     pinBox: {
         width: 60, heiht: 70, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
         fontSize: 20, color: "#000"
     },
     nextButton: { backgroundColor: '#1A73E8', borderRadius: 8, paddingVertical: 20, alignItems: 'center' },
-    nextText: { color: '#ffffff', fontSize: 16, fontWeight: 600 },
+    nextText: { color: '#ffffff', fontSize: 16, fontFamily: "Gilroy-Bold"},
     title: {
         fontSize: 28,
-        fontWeight: "600",
+        fontFamily:"Gilroy-Bold",
         marginTop: 10,
     },
 
@@ -347,13 +347,14 @@ const style = StyleSheet.create({
 
     popupText: {
         fontSize: 18,
-        fontWeight: "600",
+        fontFamily:  "Gilroy-Medium",
         color: "#333",
         marginTop: 5,
     },
     popupSubText: {
         fontSize: 14,
         color: "#777",
+        fontFamily:  "Gilroy-Medium",
         marginTop: 6,
     },
 

@@ -964,7 +964,10 @@ export default function PGPageFull({ route }) {
             {/* ✅ Dots RIGHT END (no layout change) */}
             <TouchableOpacity
               style={[styles.addRoomBtn, { marginLeft: "auto" }]}  // ✅ magic line
-              onPress={() => setShowFloorMenu(!showFloorMenu)}
+              onPress={() => {
+              setOpenMenuRoomId(null);
+              setShowFloorMenu(prev => !prev);
+              }}
             >
               <Image source={Dots} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
@@ -1180,6 +1183,7 @@ export default function PGPageFull({ route }) {
                     <TouchableOpacity
                       style={styles.addRoomBtn}
                       onPress={() => {
+                        setShowFloorMenu(false); 
                         setOpenMenuRoomId(
                           openMenuRoomId === item.id ? null : item.id
                         );
@@ -1314,7 +1318,12 @@ export default function PGPageFull({ route }) {
           // style={styles.addFab}
           disabled={!canWritePayingGuests}
           style={[styles.addFab, !canWritePayingGuests && { opacity: 0.4 }]}
-          onPress={() => setShowActionSheet(true)}
+          onPress={() => {
+            setShowFloorMenu(false)
+            setOpenMenuRoomId(null)
+            setShowActionSheet(true)
+          }
+          }
         >
           <Image source={AddFloorIcon} style={styles.addIcon} />
         </TouchableOpacity>

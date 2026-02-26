@@ -40,7 +40,7 @@ export default function ExpensesScreen() {
   const navigation = useNavigation();
   const [showFilter, setShowFilter] = useState(false);
 
-  const { expensesList, GetExpenseList, loading } = useContext(ExpensesContext);
+  const { expensesList, GetExpenseList, loading , IntializeexpensesList  , GetInitializeExpense} = useContext(ExpensesContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("expenselist", expensesList);
@@ -60,7 +60,12 @@ export default function ExpensesScreen() {
     }, [activeHostelId])
   );
 
+  useEffect(() => {
+    if (activeHostelId) {
+      GetInitializeExpense(activeHostelId)
+    }
 
+  }, [activeHostelId])
 
 
 
@@ -95,7 +100,7 @@ export default function ExpensesScreen() {
   const detailsY = useRef(new Animated.Value(0)).current;
   const assignTranslateY = useRef(new Animated.Value(0)).current;
 
-
+ const categoryList = IntializeexpensesList?.listExpenses || [];
 
 
   const renderExpensesItem = ({ item }) => (
@@ -311,6 +316,14 @@ export default function ExpensesScreen() {
     setTimeout(() => setShowSuccessModal(false), 1500);
     return;
   }
+     if (categoryList?.length === 0 ) {
+    setModalType("warning");
+    setModalMessage("Please add a Category option in Settings, accessible after adding an expense");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
     navigation.navigate("AddExpenses")
   }
 

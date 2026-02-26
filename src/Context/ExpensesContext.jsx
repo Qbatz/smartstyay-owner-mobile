@@ -153,7 +153,8 @@ const AddExpense = async (payload) => {
       `/v2/expense/${payload.hostelId}`,
       payload
     );
-
+   console.log("response", res.status);
+   
     if (res?.status === 201) {
       return { success: true, data: res.data };
     }
@@ -161,6 +162,8 @@ const AddExpense = async (payload) => {
     return { success: false, message: "Something went wrong" };
   } catch (err) {
     if (err?.response?.status === 400 || err?.response?.status === 403) {
+      console.log("error", err?.response?.status , err.response.data);
+      
       return {
         success: false,
         message: err.response.data || "Insufficient fund",

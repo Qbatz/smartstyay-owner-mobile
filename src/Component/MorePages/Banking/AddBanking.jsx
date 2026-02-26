@@ -71,6 +71,7 @@ const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
 
 const descriptionRef = useRef(null);
 const ifscRef = useRef(null);
+const acnoRef = useRef(null);
 const cardRef = useRef(null);
  console.log("isDescriptionFocused", isDescriptionFocused);
  
@@ -238,7 +239,9 @@ onMoveShouldSetPanResponder: (_, g) => {
   const anyInputFocused =
     ifscRef.current?.isFocused() ||
     descriptionRef.current?.isFocused() ||
-    cardRef.current?.isFocused();
+    cardRef.current?.isFocused() ||
+    acnoRef.current?.isFocused()
+    
 
   if (anyInputFocused) return false;
 
@@ -310,7 +313,8 @@ useEffect(() => {
 if (
   ifscRef.current?.isFocused() ||
   descriptionRef.current?.isFocused() || 
-  cardRef.current?.isFocused()
+  cardRef.current?.isFocused() || 
+  acnoRef.current?.isFocused()
 ) {
       Animated.timing(translateY, {
           toValue: -e.endCoordinates.height + 90,
@@ -394,6 +398,17 @@ const isValidUpi = (v) => {
   return "";
 };
 
+const isValidCardNumber = (v) => {
+  if (!v) return ""; 
+
+  if (/^0+$/.test(v)) return "Please Enter Valid Card Number";
+
+  if (v.length < 12 || v.length > 19)
+    return "Card Number Must Be 12–19 Digits";
+
+  return "";
+};
+
 const upiRegex = /^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/;
 const bankNameRegex = /^[a-zA-Z.&\s]{3,50}$/;
 
@@ -426,6 +441,9 @@ const validate = () => {
 
     if (!cardType)
       err.cardType = "Please Select Card Type";
+
+    const cardErr = isValidCardNumber(cardNo);
+    if (cardErr) err.cardNo = cardErr;
   }
 
   if (activeTab === "Cash") {
@@ -704,6 +722,7 @@ const TabButton = ({ title }) => {
 
 <Text style={styles.label}>Account No <Text style={{color:'red'}}> *</Text></Text>
 <TextInput
+  ref={acnoRef}
   style={styles.input}
   placeholder="Enter Account Number"
   keyboardType="number-pad"
@@ -746,6 +765,7 @@ const TabButton = ({ title }) => {
   maxLength={11}
   onChangeText={handleIfscChange}
 />
+
 
 
             <Text style={styles.label}>Description</Text>
@@ -804,10 +824,11 @@ const TabButton = ({ title }) => {
   keyboardType="email-address"
   autoCorrect={false}
   onChangeText={(v) => {
-    const formatted = v.replace(/\s/g, "")
-    setUpiId(formatted);
+    // const formatted = v.replace(/\s/g, "")
+    const cleaned = v.replace(/\s/g, "").replace(/[^\w.@-]/g, "");
+    setUpiId(cleaned);
     setErrors(prev => ({ ...prev, upiId: "", common: "" }));
-    if (upiRegex.test(formatted)) {
+    if (upiRegex.test(cleaned)) {
       setErrors(prev => ({ ...prev, upiId: "", common: "" }));
     } 
     // else {
@@ -875,19 +896,24 @@ const TabButton = ({ title }) => {
     />
 
     <Text style={styles.label}>Card Number</Text>
+  
     <TextInput
-      style={styles.input}
-      keyboardType="numeric"
-      placeholder="Enter Card Number"
-      value={cardNo}
-      onChangeText={(v) => {
-      const onlyNum = v.replace(/[^0-9]/g, "");
-      setCardNo(onlyNum);
-      setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
+      ref={cardRef}
+  style={styles.input}
+  keyboardType="numeric"
+  placeholder="Enter Card Number"
+  value={cardNo}
+  onChangeText={(v) => {
+    const onlyNum = v.replace(/[^0-9]/g, "");
+    setCardNo(onlyNum);
+    setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
   }}
-      
-  ref={cardRef}
-    />
+
+/>
+
+{errors.cardNo && (
+  <ErrorMessage message={errors.cardNo} type="error" />
+)}
   </>
 )}
 

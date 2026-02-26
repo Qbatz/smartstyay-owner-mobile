@@ -178,7 +178,7 @@ headerLeft: {
 headerText: {
   marginLeft: 12,
   fontSize: 18,
-  fontWeight: "600",
+  fontFamily: "Gilroy-Bold",
   color: "#000",
 },
 
@@ -219,7 +219,8 @@ settingsIcon: {
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: "#000",
+    color: "#9C9C9C",
+    fontFamily: "Gilroy-Regular"
   },
 
   itemRow: {
@@ -246,8 +247,9 @@ settingsIcon: {
   },
 
   itemText: {
-    fontSize: 15,
-    color: "#000",
+    fontSize: 16,
+    color: "#222222",
+   fontFamily: "Gilroy-Medium" 
   },
 
   arrow: {
@@ -261,7 +263,7 @@ settingsIcon: {
     marginTop: 16,
     marginBottom: 8,
     fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
+    fontFamily: "Gilroy-Semibold",
+    color: "#4B4B4B",
   },
 });

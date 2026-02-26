@@ -143,8 +143,9 @@ function MyTabBar({ state, descriptors, navigation }) {
                 style={{
                   marginTop: 4,
                   fontSize: 12,
-                  color: isFocused ? "#1E45E1" : "#999",
-                  fontWeight: isFocused ? "600" : "400",
+                  color: isFocused ? "#1E45E1" : "#4B4B4B",
+                  // fontWeight: isFocused ? "600" : "400",
+                  fontFamily: isFocused ? "Gilroy-Semibold" : "Gilroy-Regular"
                 }}
               >
                 {route.name}

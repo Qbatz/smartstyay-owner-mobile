@@ -103,7 +103,7 @@ const commentRef = useRef(null);
   (c) => String(c.customerId) === String(bookedItems?.tenetId)
 );
 
-console.log("✅ matchedCustomer", matchedCustomer);
+console.log("matchedCustomer", matchedCustomer);
 
   useEffect(() => {
     if (!customerId) return;
@@ -140,7 +140,7 @@ useEffect(() => {
     }, 400);
   }
 }, [visible]);
-  console.log("selectedBedcustomers", customers)
+  console.log("bookedItems", bookedItems)
   console.log("selectedItempr", selectedItem)
   useEffect(() => {
     Animated.timing(translateY, {
@@ -275,23 +275,23 @@ useEffect(() => {
 
         
                   <View style={styles.profileRow}>
-                    {selectedItem?.profilePic ? <Image source={{uri:selectedItem?.profilePic}} style={styles.profileImg} /> : 
+                    {(selectedItem?.profilePic || matchedCustomer?.profilePic) ? <Image source={{uri:selectedItem?.profilePic || matchedCustomer?.profilePic}} style={styles.profileImg} /> : 
                     <View style={[styles.profileImg,{justifyContent:'center',alignItems:'center',backgroundColor:'#eef1ff'}]}>
-                      <Text style={{fontSize:16,fontWeight:600}}>{selectedItem?.initials}</Text>
+                      <Text style={{fontSize:16,fontWeight:600}}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
                     </View>}
                     
         
                     <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.name}>{selectedItem?.fullName}</Text>
+                      <Text style={styles.name}>{selectedItem?.fullName || matchedCustomer?.fullName}</Text>
         
                       <View style={styles.badgeRow}>
                         <View style={styles.badgeYellow}>
-                          <Text style={styles.badgeText}>{selectedItem?.floorName}</Text>
+                          <Text style={styles.badgeText}>{selectedItem?.floorName ||  matchedCustomer?.floorName}</Text>
                         </View>
         
                         <View style={styles.badgeRed}>
                           <Text style={styles.badgeText}>
-                            {selectedItem?.roomName} - {selectedItem?.bedName}
+                            {selectedItem?.roomName ||  matchedCustomer?.roomName} - {selectedItem?.bedName ||  matchedCustomer?.bedName}
                           </Text>
                         </View>
                       </View>
