@@ -1885,13 +1885,13 @@ const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
 
 
-                          <View style={styles.detailRow}>
-                            <View style={styles.floorBadge}>
+                          <View style={[styles.detailRow,{flex:1}]}>
+                            <View style={[styles.floorBadge,{flex:1,alignItems:'center'}]}>
                               <Text style={styles.floorText}>{item.invoiceType}-{item?.invoiceMode}</Text>
                             </View>
 
                             <Image source={Bills_Black_Icon} style={styles.iconSmall} />
-                            <Text style={styles.detailText}>#{item.invoiceNumber}</Text>
+                            <Text style={[styles.detailText,{flexShrink:1,flex:1}]}>#{item.invoiceNumber}</Text>
                           </View>
                         </View>
 

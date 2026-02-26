@@ -205,7 +205,7 @@ console.log("profileDetails", profileDetails);
             style={{ flexDirection: "row", flex: 1 }}
             onPress={() => {
               onClose();
-              setTimeout(() => navigation.navigate("ProfileScreen"), 150);
+              setTimeout(() => navigation.navigate("GeneralDetailsScreen"), 150);
             }}
           >
            <View style={styles.avatar}>

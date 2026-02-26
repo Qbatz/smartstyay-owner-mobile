@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback, useContext } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, BackHandler, TouchableWithoutFeedback, Animated,
-  PanResponder, KeyboardAvoidingView, Platform,Keyboard 
+  PanResponder, KeyboardAvoidingView, Platform, Keyboard
 
 } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -21,7 +21,7 @@ dayjs.extend(customParseFormat);
 export default function MoveNoticeSheet({
   visible, onClose, customer, onSuccess, selectedBed, onBedAdded, roomId
 }) {
-    const [reqDate, setReqDate] = useState(null);
+  const [reqDate, setReqDate] = useState(null);
   const [outDate, setOutDate] = useState(null);
   const [reqDateError, setReqDateError] = useState("");
   const [outDateError, setOutDateError] = useState("");
@@ -30,7 +30,7 @@ export default function MoveNoticeSheet({
   const scrollRef = useRef(null);
   const reasonRef = useRef(null);
 
-  console.log("customercustomer",roomId)
+  console.log("customercustomer", roomId)
 
 
 
@@ -38,12 +38,12 @@ export default function MoveNoticeSheet({
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, moveToNoticePeriod,cancelCheckout } = useCustomer();
+  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout } = useCustomer();
   const { getAllBedsByRoom } = useFloor();
 
   const [reason, setReason] = useState("");
-const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
-const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
 
 
@@ -52,19 +52,19 @@ const [keyboardHeight, setKeyboardHeight] = useState(0);
   console.log("selectedBed", selectedBed)
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", () =>
-    setKeyboardOpen(true)
-  );
-  const hide = Keyboard.addListener("keyboardDidHide", () =>
-    setKeyboardOpen(false)
-  );
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", () =>
+      setKeyboardOpen(true)
+    );
+    const hide = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardOpen(false)
+    );
 
-  return () => {
-    show.remove();
-    hide.remove();
-  };
-}, []);
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -128,19 +128,19 @@ useEffect(() => {
   };
 
   useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
   const handleMoveNotice = async () => {
@@ -179,45 +179,45 @@ useEffect(() => {
 
     const res = await moveToNoticePeriod(activeHostelId, payload);
 
-//     if (res.success) {
-//       setModalType("success");
-//       setMessage(res.data);
-//       setShowSuccess(true);
-//       onBedAdded && onBedAdded(roomId || customer.roomId);
-//      onSuccess && onSuccess()
-    
-      
-
-//       // setTimeout(() => {
-//       //   setShowSuccess(false);
-//       //   onClose();
-//       // }, 800);
-//     setTimeout(() => {
-//   setShowSuccess(false);   // ✅ first modal close
-//   onClose();               // ✅ then sheet close
-// }, 800);
+    //     if (res.success) {
+    //       setModalType("success");
+    //       setMessage(res.data);
+    //       setShowSuccess(true);
+    //       onBedAdded && onBedAdded(roomId || customer.roomId);
+    //      onSuccess && onSuccess()
 
 
-//   // ✅ next sheet close
- 
-//     } 
-if (res.success) {
-  setModalType("success");
-  setMessage(res.data);
-  setShowSuccess(true);
 
-  setTimeout(() => {
-    setShowSuccess(false);
-    onClose(); 
-  }, 600);
+    //       // setTimeout(() => {
+    //       //   setShowSuccess(false);
+    //       //   onClose();
+    //       // }, 800);
+    //     setTimeout(() => {
+    //   setShowSuccess(false);   // ✅ first modal close
+    //   onClose();               // ✅ then sheet close
+    // }, 800);
 
-  setTimeout(() => {
-    onBedAdded && onBedAdded(selectedBed?.roomId || customer?.roomId); 
-    onSuccess && onSuccess();
-  }, 900);
 
-  return;
-}
+    //   // ✅ next sheet close
+
+    //     } 
+    if (res.success) {
+      setModalType("success");
+      setMessage(res.data);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+      }, 600);
+
+      setTimeout(() => {
+        onBedAdded && onBedAdded(selectedBed?.roomId || customer?.roomId);
+        onSuccess && onSuccess();
+      }, 900);
+
+      return;
+    }
 
     else {
       alert(res.message || "Move to notice failed");
@@ -267,84 +267,84 @@ if (res.success) {
     return false;
   };
 
-const markedDates = {};
+  const markedDates = {};
 
-const start = joiningDate
-  ? dayjs(joiningDate)
-  : null;
+  const start = joiningDate
+    ? dayjs(joiningDate)
+    : null;
 
-const end = dayjs(); 
+  const end = dayjs();
 
 
-for (let i = -90; i <= 90; i++) {
-  const d = dayjs().add(i, "day");
-  const key = d.format("YYYY-MM-DD");
+  for (let i = -90; i <= 90; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
 
-  const disabled =
-    (start && d.isBefore(start, "day")) ||
-    d.isAfter(end, "day");
+    const disabled =
+      (start && d.isBefore(start, "day")) ||
+      d.isAfter(end, "day");
 
-  if (disabled) {
-    markedDates[key] = {
-      disabled: true,
-      disableTouchEvent: true,
-      customStyles: {
-        container: {
-          backgroundColor: "#F3F4F6",
-          opacity: 0.4,          // 🔥 THIS IS WHAT YOU WANT
-          borderRadius: 8,
+    if (disabled) {
+      markedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,          // 🔥 THIS IS WHAT YOU WANT
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
         },
-        text: {
-          color: "#9CA3AF",
-        },
-      },
-    };
+      };
+    }
   }
-}
-const isCheckoutDisabled = (date) => {
-  if (!date) return false;
+  const isCheckoutDisabled = (date) => {
+    if (!date) return false;
 
 
-  if (reqDate && dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
+    if (reqDate && dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
 
-  return false;
-};
+    return false;
+  };
 
-const checkoutMarkedDates = {};
+  const checkoutMarkedDates = {};
 
-// show +- 90 days (safe window)
-for (let i = -90; i <= 90; i++) {
-  const d = dayjs().add(i, "day");
-  const key = d.format("YYYY-MM-DD");
+  // show +- 90 days (safe window)
+  for (let i = -90; i <= 90; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
 
-  if (isCheckoutDisabled(d)) {
-    checkoutMarkedDates[key] = {
-      disabled: true,
-      disableTouchEvent: true,
-      customStyles: {
-        container: {
-          backgroundColor: "#F3F4F6",
-          opacity: 0.4,          // 🔥 faded look
-          borderRadius: 8,
+    if (isCheckoutDisabled(d)) {
+      checkoutMarkedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,          // 🔥 faded look
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
         },
-        text: {
-          color: "#9CA3AF",
-        },
-      },
-    };
+      };
+    }
   }
-}
 
 
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
- <View style={styles.overlay}>
+      <View style={styles.overlay}>
 
-    <Animated.View
-      style={[styles.sheet, { transform: [{ translateY }] }]}
-      {...panResponder.panHandlers}
-    >
+        <Animated.View
+          style={[styles.sheet, { transform: [{ translateY }] }]}
+          {...panResponder.panHandlers}
+        >
           <View style={styles.handle} />
 
           <Text style={styles.title}>Move to Notice Period?</Text>
@@ -354,11 +354,11 @@ for (let i = -90; i <= 90; i++) {
 
 
           <View style={styles.profileRow}>
-            {customer?.profilePic ? <Image source={{uri:customer?.profilePic}} style={styles.profileImg} /> : 
-            <View style={[styles.profileImg,{justifyContent:'center',alignItems:'center',backgroundColor:'#eef1ff'}]}>
-              <Text style={{fontSize:16,fontWeight:600}}>{customer?.initials}</Text>
-            </View>}
-            
+            {customer?.profilePic ? <Image source={{ uri: customer?.profilePic }} style={styles.profileImg} /> :
+              <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
+                <Text style={{ fontSize: 16, fontWeight: 600 }}>{customer?.initials}</Text>
+              </View>}
+
 
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.name}>{customer?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
@@ -377,20 +377,20 @@ for (let i = -90; i <= 90; i++) {
             </View>
           </View>
 
-<ScrollView
-  ref={scrollRef}
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="on-drag"
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight + 5,  
-  }}
->
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{
+              paddingBottom: keyboardHeight + 5,
+            }}
+          >
 
 
 
 
-            <Text style={styles.label}>Request Date <Text style={{color:"red"}}>*</Text></Text>
+            <Text style={styles.label}>Request Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBox}
               onPress={() => setOpenRequestPicker(true)}
@@ -405,7 +405,7 @@ for (let i = -90; i <= 90; i++) {
             )}
 
 
-            <Text style={styles.label}>Check-Out Date  <Text style={{color:"red"}}>*</Text></Text>
+            <Text style={styles.label}>Check-Out Date  <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBox}
               onPress={() => setOpenCheckoutPicker(true)}
@@ -420,29 +420,29 @@ for (let i = -90; i <= 90; i++) {
             )}
 
             <Text style={styles.label}>Reason (Comments)</Text>
-      <TextInput
-  ref={reasonRef}
-  style={styles.textArea}
-  value={reason}
-  onChangeText={setReason}
-  placeholder="Enter Reason"
-  multiline
- onFocus={() => {
-  setTimeout(() => {
-    reasonRef.current?.measureLayout(
-      scrollRef.current,
-      (x, y) => {
-        scrollRef.current?.scrollTo({
-          y: y - 20,
-          animated: true,
-        });
-      },
-      () => {}
-    );
-  }, 200);
-}}
+            <TextInput
+              ref={reasonRef}
+              style={styles.textArea}
+              value={reason}
+              onChangeText={setReason}
+              placeholder="Enter Reason"
+              multiline
+              onFocus={() => {
+                setTimeout(() => {
+                  reasonRef.current?.measureLayout(
+                    scrollRef.current,
+                    (x, y) => {
+                      scrollRef.current?.scrollTo({
+                        y: y - 20,
+                        animated: true,
+                      });
+                    },
+                    () => { }
+                  );
+                }, 200);
+              }}
 
-/>
+            />
 
           </ScrollView>
 
@@ -460,8 +460,8 @@ for (let i = -90; i <= 90; i++) {
 
           </View>
         </Animated.View>
-      {/* </KeyboardAvoidingView> */}
-       
+        {/* </KeyboardAvoidingView> */}
+
       </View>
       <Modal
         visible={openRequestPicker}
@@ -476,25 +476,25 @@ for (let i = -90; i <= 90; i++) {
           />
           <View style={styles.calendarBox}>
 
-           <Calendar
-  markingType="custom"
-  markedDates={markedDates}
+            <Calendar
+              markingType="custom"
+              markedDates={markedDates}
 
-  onDayPress={(day) => {
-    setReqDate(day.dateString);
-    setReqDateError("");
-    setOpenRequestPicker(false);
-  }}
+              onDayPress={(day) => {
+                setReqDate(day.dateString);
+                setReqDateError("");
+                setOpenRequestPicker(false);
+              }}
 
-  theme={{
-    textDisabledColor: "#9CA3AF",     
-    disabledArrowColor: "#D1D5DB",
-    todayTextColor: "#000000",
-    selectedDayBackgroundColor: "#2563EB",
-    selectedDayTextColor: "#FFFFFF",
-    textDayFontWeight: "500",
-  }}
-/>
+              theme={{
+                textDisabledColor: "#9CA3AF",
+                disabledArrowColor: "#D1D5DB",
+                todayTextColor: "#000000",
+                selectedDayBackgroundColor: "#2563EB",
+                selectedDayTextColor: "#FFFFFF",
+                textDayFontWeight: "500",
+              }}
+            />
 
 
 
@@ -521,27 +521,27 @@ for (let i = -90; i <= 90; i++) {
             onPress={() => setOpenCheckoutPicker(false)}
           />
           <View style={styles.calendarBox}>
-   <Calendar
-  current={formatDate(outDate || reqDate || dayjs())}
+            <Calendar
+              current={formatDate(outDate || reqDate || dayjs())}
 
-  markingType="custom"
-  markedDates={checkoutMarkedDates}
+              markingType="custom"
+              markedDates={checkoutMarkedDates}
 
-  onDayPress={(day) => {
-    if (isCheckoutDisabled(dayjs(day.dateString))) return;
+              onDayPress={(day) => {
+                if (isCheckoutDisabled(dayjs(day.dateString))) return;
 
-    setOutDate(day.dateString);
-    setOutDateError("");
-    setOpenCheckoutPicker(false);
-  }}
+                setOutDate(day.dateString);
+                setOutDateError("");
+                setOpenCheckoutPicker(false);
+              }}
 
-  theme={{
-    todayTextColor: "#2563EB",
-    selectedDayBackgroundColor: "#2563EB",
-    selectedDayTextColor: "#FFFFFF",
-    arrowColor: "#111827",
-  }}
-/>
+              theme={{
+                todayTextColor: "#2563EB",
+                selectedDayBackgroundColor: "#2563EB",
+                selectedDayTextColor: "#FFFFFF",
+                arrowColor: "#111827",
+              }}
+            />
 
 
 
@@ -599,24 +599,24 @@ for (let i = -90; i <= 90; i++) {
 }
 
 const styles = StyleSheet.create({
-overlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-},
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
 
 
-sheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  maxHeight: "85%",
-},
+  sheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    maxHeight: "85%",
+  },
 
 
 
@@ -680,7 +680,7 @@ sheet: {
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 20,
-  
+
   },
 
 

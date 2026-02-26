@@ -39,6 +39,8 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import DeleteIcon from "../../../Assets/Images/trash.png"
 import EditIcon from "../../../Assets/Images/editIcon.png"
 import TickIcon from "../../../Assets/Images/tick-circle.png"
+import CommingSoon from "../../../Assets/Images/Coming_soon.png"
+
 
 const BillBookings = ({ onSelectReceipt }) => {
 
@@ -423,12 +425,12 @@ const BillBookings = ({ onSelectReceipt }) => {
 
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <Text style={styles.monthText}>This Month</Text>
+          {/* <Text style={styles.monthText}>This Month</Text> */}
 
 
         </View>
 
-        <FlatList
+        {/* <FlatList
           data={[]}
           renderItem={renderItem}
           keyExtractor={(item) => item.transactionId}
@@ -440,18 +442,24 @@ const BillBookings = ({ onSelectReceipt }) => {
           ListEmptyComponent={
             !loading && <EmptyReceiptState />
           }
-        />
+        /> */}
+        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, }}>
+          <Image source={CommingSoon} style={{ width: 315, height: 220, resizeMode: 'contain' }} />
+          <Text style={{ fontSize: 16, fontFamily:"Gilroy-Bold"}}>Comming Soon</Text>
+          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular'}}>Our team is building something helpfull for you.</Text>
+          <Text>Check back again shortly.</Text>
+          </View>
 
 
 
 
-        <TouchableOpacity style={styles.filterButton} >
+        {/* <TouchableOpacity style={styles.filterButton} >
           <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.addBtn} >
           <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
 
         {showMenu && (
