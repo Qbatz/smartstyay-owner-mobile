@@ -398,6 +398,17 @@ const isValidUpi = (v) => {
   return "";
 };
 
+const isValidCardNumber = (v) => {
+  if (!v) return ""; 
+
+  if (/^0+$/.test(v)) return "Please Enter Valid Card Number";
+
+  if (v.length < 12 || v.length > 19)
+    return "Card Number Must Be 12–19 Digits";
+
+  return "";
+};
+
 const upiRegex = /^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/;
 const bankNameRegex = /^[a-zA-Z.&\s]{3,50}$/;
 
@@ -430,6 +441,9 @@ const validate = () => {
 
     if (!cardType)
       err.cardType = "Please Select Card Type";
+
+    const cardErr = isValidCardNumber(cardNo);
+    if (cardErr) err.cardNo = cardErr;
   }
 
   if (activeTab === "Cash") {
@@ -882,19 +896,24 @@ const TabButton = ({ title }) => {
     />
 
     <Text style={styles.label}>Card Number</Text>
+  
     <TextInput
-      style={styles.input}
-      keyboardType="numeric"
-      placeholder="Enter Card Number"
-      value={cardNo}
-      onChangeText={(v) => {
-      const onlyNum = v.replace(/[^0-9]/g, "");
-      setCardNo(onlyNum);
-      setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
+      ref={cardRef}
+  style={styles.input}
+  keyboardType="numeric"
+  placeholder="Enter Card Number"
+  value={cardNo}
+  onChangeText={(v) => {
+    const onlyNum = v.replace(/[^0-9]/g, "");
+    setCardNo(onlyNum);
+    setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
   }}
-      
-  ref={cardRef}
-    />
+
+/>
+
+{errors.cardNo && (
+  <ErrorMessage message={errors.cardNo} type="error" />
+)}
   </>
 )}
 

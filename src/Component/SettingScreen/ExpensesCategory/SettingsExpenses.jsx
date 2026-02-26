@@ -917,8 +917,11 @@ onPress={() => {
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.deleteBtn} onPress={deleteExpense}>
-                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  <TouchableOpacity style={[styles.deleteBtn, {opacity: 0.4}]}
+                  //  onPress={deleteExpense}
+                   disabled
+                  >
+                    <Text style={styles.deleteBtnText}>Coming soon</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -938,8 +941,10 @@ onPress={() => {
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.deleteBtn} onPress={deleteSub}>
-                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  <TouchableOpacity style={[styles.deleteBtn, {opacity: 0.4}]} 
+                  // onPress={deleteSub}
+                  >
+                    <Text style={styles.deleteBtnText}>Coming soon</Text>
                   </TouchableOpacity>
                 </View>
               </View>

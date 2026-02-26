@@ -949,9 +949,10 @@ export default function TenantsScreen({ route }) {
             >
 
               <View style={styles.modalHandle} />
+              
 
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Customer Details</Text>
+                <Text style={styles.modalTitle}>Tenant Details</Text>
                 {/* <TouchableOpacity onPress={() => setShowDetailsMenu(true)}>
             <Image
               source={Dots}

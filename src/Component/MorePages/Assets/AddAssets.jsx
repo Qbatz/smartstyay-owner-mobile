@@ -508,31 +508,12 @@ for (let i = -365; i <= 365; i++) {
                 <View style={styles.handle} />
                            <Text style={styles.title}>{title}</Text>
 
-                {/* <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    scrollEnabled={!vendorOpen}
-                    nestedScrollEnabled={true}
-                > */}
-                {/* <ScrollView
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="handled"
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight + 40, // ✅ keyboard வந்தாலும் மேலே jump ஆகாது
-  }}
-> */}
+    
 <ScrollView
-  // ref={scrollRef}
-  // showsVerticalScrollIndicator={false}
-  // keyboardShouldPersistTaps="handled"
-  // contentContainerStyle={{
-  //   paddingBottom: keyboardHeight + 40,
-  // }}
-
     ref={scrollRef}
   keyboardShouldPersistTaps="handled"
   keyboardDismissMode="on-drag"
-  contentContainerStyle={{ paddingBottom: 150 , paddingRight:15 }}
+  contentContainerStyle={{ paddingBottom: 210 , paddingRight:15 }}
 >
 
          
@@ -1057,7 +1038,7 @@ inputBox: {
     paddingHorizontal: 14,
     backgroundColor: "#fff",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: 2,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
