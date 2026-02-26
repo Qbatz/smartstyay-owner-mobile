@@ -145,6 +145,26 @@ export const GeneralProvider = ({ children }) => {
   }
 };
 
+ const updateProfile =async(formData)=>{
+  console.log("for",formData)
+    try{
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res=await axios.put("/v2/profile", formData ,{
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+
+      });
+      console.log(res)
+      return { success: true, data: res.data }
+    }catch (error) {
+      const errorData = error.response?.data || { message: error.message }
+      return {success: false, data: errorData };
+    }
+ }
+
 
   return (
     <GeneralContext.Provider
@@ -159,6 +179,7 @@ export const GeneralProvider = ({ children }) => {
         successMsg,
         setErrorMsg,
         setSuccessMsg,
+        updateProfile
       }}
     >
       {children}

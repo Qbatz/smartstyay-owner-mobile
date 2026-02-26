@@ -141,9 +141,10 @@ const handleReAssignBed=()=>{
                                 customer: selectedBed.currentTenantInfo[0],
                               })
                             }>
+                                <Text style={styles.userName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
 
                         </TouchableOpacity>
-                        <Text style={styles.userName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                        
                         <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
                     </View>
                 </View>

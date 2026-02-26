@@ -42,6 +42,11 @@ import MaximizeIcon from "../../../Assets/Images/maximize.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import Trash from "../../../Assets/Images/trash.png";
 import AddUserBottomSheet from "../Users/AddUser";
+import EditProfileSheet from "../GeneralPages/EditProfileSheet"
+import LogoutIcon from "../../../Assets/Images/Logout.png"
+import { removeData, storeData } from "../../../Utils/Storage";
+import { LoginContexts } from "../../../Context/LoginContext";
+import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
 
 
 
@@ -52,7 +57,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showPasswordSheet, setShowPasswordSheet] = useState(false);
   const { deleteGeneral, getAdminList } = useGeneral();
-  const { profileDetails } = useContext(ExpensesContext);
+  const { profileDetails, GetProfileDetails } = useContext(ExpensesContext);
   const [getData, setGetData] = useState([])
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
@@ -65,7 +70,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [activeMenuProfile, setActiveMenuProfile] = useState(null)
   const { activeHostelId } = useContext(CommonContexts);
-  const { getUsersByHostel,deleteUser } = UseSetting();
+  const { getUsersByHostel, deleteUser } = UseSetting();
   const [users, setUsers] = useState([])
   const [openMenuId, setOpenMenuId] = useState(null);
   const [managedUserBottomShet, setManagedUserBottomsheet] = useState(false)
@@ -74,8 +79,13 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [editData, setEditData] = useState(null);
   const [deletePopup, setDeletePopup] = useState(false)
   const [deleteUserId, setDeleteUserId] = useState(null);
-   const [message, setMessage] = useState("");
-     const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [editProfileBottomSheet, setEditProfileSheet] = useState(false)
+
+  const loginContext = useContext(LoginContexts)
+
+  const { logout } = useContext(LoginContexts)
 
   console.log(users)
 
@@ -557,7 +567,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item, index }) => renderUserCard(item, index)}
               ListEmptyComponent={
-                 <View style={styles.emptyContainer}>
+                <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
                   <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
                 </View>
@@ -577,7 +587,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderItem}
               ListEmptyComponent={
-                 <View style={styles.emptyContainer}>
+                <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
                   <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
                 </View>
@@ -591,14 +601,14 @@ export default function GeneralDetailsScreen({ navigation }) {
 
       case "Users Activity":
         return (
-           <View style={{ flex: 1 }}>
+          <View style={{ flex: 1 }}>
             <FlatList
               data={!yourActivity} style={{ marginTop: 18, marginHorizontal: 10 }}
               contentContainerStyle={{ paddingBottom: 65 }}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderItem}
               ListEmptyComponent={
-                 <View style={styles.emptyContainer}>
+                <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
                   <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
                 </View>
@@ -631,6 +641,48 @@ export default function GeneralDetailsScreen({ navigation }) {
 
       default:
         return null;
+    }
+  };
+
+  const handleLogout = async () => {
+    console.log("thata")
+    const res = await logout();
+    console.log(res)
+
+    if (res?.status == 200) {
+      await Promise.all([
+        removeData(ACCESS_TOKEN),
+        storeData(LOGGEDIN, "false"),
+        removeData(USER_ID)
+      ])
+
+
+      loginContext.logoutf("false")
+
+      loginContext.updateUserId("")
+
+      setModalType("success");
+      setModalMessage("Logout successfully");
+      setShowSuccessModal(true);
+
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+
+        // navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: "LoginDesign" }],
+        // });
+      }, 1500);
+
+    } else {
+      setModalType("error");
+      setModalMessage(res?.message || "Logout failed");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
     }
   };
 
@@ -844,41 +896,59 @@ export default function GeneralDetailsScreen({ navigation }) {
           <View style={styles.menuOverlay}>
             <View style={[styles.menuBox, { top: popupPo.top, right: popupPo.right }]}>
 
-            {/* EDIT */}
-            <TouchableOpacity
-              // style={styles.menuRow}
-              style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
-              disabled={!canUpdateProfile}
-              onPress={() => {
-                console.log(activeMenu + " EDIT");
-                setActiveMenuProfile(null);
-              }}
-            >
-              <Image source={Edit} style={styles.menuIcon} />
-              <Text style={styles.menuText}>Edit</Text>
-            </TouchableOpacity>
+              {/* {ChangePassword} */}
 
-            {/* DELETE */}
-            <TouchableOpacity
-              // style={styles.menuRow}
-              style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
-              disabled={!canDeleteProfile}
-              onPress={() => {
-                console.log(activeMenu + " DELETE");
-                setActiveMenuProfile(null);
-              }}
-            >
-              <Image
-                source={Delete}
-                style={[styles.menuIcon, { tintColor: "red" }]}
-              />
-              <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                // style={styles.menuRow}
+                style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
+                disabled={!canUpdateProfile}
+                onPress={() => {
+                  console.log(activeMenu + " EDIT");
+                  setActiveMenuProfile(null);
+                  setEditProfileSheet(true)
+                }}
+              >
+                <Image source={Edit} style={styles.menuIcon} />
+                <Text style={styles.menuText}>Change Password</Text>
+              </TouchableOpacity>
+
+              {/* EDIT */}
+              <TouchableOpacity
+                // style={styles.menuRow}
+                style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
+                disabled={!canUpdateProfile}
+                onPress={() => {
+                  console.log(activeMenu + " EDIT");
+                  setActiveMenuProfile(null);
+                  setEditProfileSheet(true)
+                }}
+              >
+                <Image source={Edit} style={styles.menuIcon} />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
+
+              {/* DELETE */}
+              <TouchableOpacity
+                // style={styles.menuRow}
+                style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
+                disabled={!canDeleteProfile}
+                onPress={ 
+                  handleLogout
+                  // console.log(activeMenu + " DELETE");
+                  // setActiveMenuProfile(null);
+                }
+              >
+                <Image
+                  source={LogoutIcon}
+                  style={[styles.menuIcon, { tintColor: "red" }]}
+                />
+                <Text style={[styles.menuText, { color: "red" }]}>Logout</Text>
+              </TouchableOpacity>
+
+            </View>
 
           </View>
 
-          </View>
-          
         </TouchableWithoutFeedback>
       )}
 
@@ -1104,6 +1174,12 @@ export default function GeneralDetailsScreen({ navigation }) {
         onClose={() => setShowAddSheet(false)}
         editData={editData}
         onSuccess={loadUsers}
+      />
+
+      <EditProfileSheet
+        visible={editProfileBottomSheet}
+        onClose={() => setEditProfileSheet(false)}
+        profileData={profileDetails}
       />
 
       <Modal
