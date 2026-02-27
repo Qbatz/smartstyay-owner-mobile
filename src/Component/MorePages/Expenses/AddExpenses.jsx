@@ -596,8 +596,9 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
             placeholder="Enter Amount"
             value={purchaseAmount}
             keyboardType="numeric"
-            onChangeText={(v) => {
-              setPurchaseAmount(v);
+            onChangeText={(t) => {
+              const cleaned = t.replace(/[^0-9]/g, "");
+              setPurchaseAmount(cleaned);
               setAmountErr("");
             }}
           />
@@ -610,8 +611,10 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
             style={styles.inputBox}
             keyboardType="numeric"
             value={unitCount}
-            onChangeText={(v) => {
-              setUnitCount(v)
+            onChangeText={(t) => {
+              const cleaned = t.replace(/[^0-9]/g, "");
+              setUnitCount(cleaned);
+              // setUnitCount(v)
               setUnitCountErr("")
             }
             }
@@ -731,7 +734,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
   onPress={handleSaveExpense}
 >
   <Text style={styles.saveText}>
-    {isEditMode ? "Coming Soon" : "Save"}
+    {isEditMode ? "Coming Soon" : "Add Expense"}
   </Text>
 </TouchableOpacity>
 

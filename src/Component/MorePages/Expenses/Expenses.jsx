@@ -123,7 +123,10 @@ export default function ExpensesScreen() {
 
         <View style={{ alignItems: "flex-end" }}>
           <Text style={styles.date}>{item?.transactionDate}</Text>
-          <Text style={styles.amount}>₹ {item?.totalAmount}</Text>
+          <Text style={styles.amount}>₹ {Number(item?.totalAmount || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -661,14 +664,16 @@ export default function ExpensesScreen() {
 
                 <View>
                   <Text style={styles.label}>Amount</Text>
-                  <Text style={styles.value}>₹ {selectedExpense?.totalAmount}</Text>
+                  <Text style={styles.value}>₹ {Number(selectedExpense?.totalAmount || 0).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2})}</Text>
                 </View>
               </View>
 
               <View style={{ marginTop: 10 }}>
                 <Text style={styles.label}>Description</Text>
                 <Text style={styles.descText}>
-                  {selectedExpense?.description}
+                  {selectedExpense?.description || "N/A"}
                 </Text>
               </View>
 
@@ -918,12 +923,12 @@ const styles = StyleSheet.create({
     marginTop: -3,
   },
 
-  fab: { position: "absolute", bottom: 45, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  fab: { position: "absolute", bottom: 75, right: 25, width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
   fabIcon: { width: 30, height: 30 },
   fabIconAdd: { width: 60, height: 60 },
   Filterfab: {
     position: "absolute",
-    bottom: 120,
+    bottom: 140,
     right: 30,
     width: 50,
     height: 50,

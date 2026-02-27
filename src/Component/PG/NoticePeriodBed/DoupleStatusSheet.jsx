@@ -14,6 +14,8 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
+import ReAssign from "../../../Assets/Images/ReAssign.png";
+
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -427,7 +429,43 @@ export default function DoubleStatusSheet({
                         <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>
                           <View style={styles.fullMenuOverlay}>
                             <View style={styles.inlineMenu}>
+                             
+
                               <TouchableOpacity
+                                style={styles.menuItem}
+                                // onPress={handleMakeUsIn}
+                                onPress={() => handleMakeUsIn(item)}
+                              >
+                                <Image
+                                  style={styles.menuIcon}
+                                  source={require("../../../Assets/Images/Logout.png")}
+                                />
+                                <Text style={styles.menuText}>Make as Inactive</Text>
+                              </TouchableOpacity>
+
+                               <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={handleEdit}
+                      >
+                        <Image
+                          source={require("../../../Assets/Images/editIcon.png")}
+                          style={styles.menuIcon}
+                        />
+                        <Text style={styles.menuText}>Edit</Text>
+                      </TouchableOpacity>
+
+                       <TouchableOpacity
+                        style={styles.menuItem}
+                        // onPress={handleEdit}
+                        disabled
+                      >
+                        <Image
+                          source={ReAssign}
+                          style={styles.menuIcon}
+                        />
+                        <Text style={styles.menuText}>Change Bed</Text>
+                      </TouchableOpacity>
+                       <TouchableOpacity
 
                                 onPress={handleBookToCheckin}
                                 disabled={isDisabled}   // boolean
@@ -447,18 +485,6 @@ export default function DoubleStatusSheet({
                                   styles.menuText,
                                   isDisabled && styles.menuTextDisabled
                                 ]}>Check-in</Text>
-                              </TouchableOpacity>
-
-                              <TouchableOpacity
-                                style={styles.menuItem}
-                                // onPress={handleMakeUsIn}
-                                onPress={() => handleMakeUsIn(item)}
-                              >
-                                <Image
-                                  style={styles.menuIcon}
-                                  source={require("../../../Assets/Images/Logout.png")}
-                                />
-                                <Text style={styles.menuText}>Make as Inactive</Text>
                               </TouchableOpacity>
                             </View>
                           </View>
@@ -639,8 +665,8 @@ const styles = StyleSheet.create({
   reservedText: { color: "#1E45E1", fontWeight: "700", fontSize: 14 },
   inlineMenu: {
     position: "absolute",
-    top: 40,
-    right: 0,
+    top: 10,
+    right: 28,
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
