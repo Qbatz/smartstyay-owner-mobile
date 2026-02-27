@@ -333,12 +333,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
   const renderTab = () => {
-    // ❌ NO READ ACCESS → same UI for all tabs
     if (!canReadTenant) {
       return <NoReadAccess />;
     }
 
-    // ✅ HAS READ ACCESS → normal flow
     switch (activeTab) {
       case "EB Reading":
         return <EBReadingTab customerDetails={customerDetails} />;
@@ -346,8 +344,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       case "Bill":
         return <BillTab customerDetails={customerDetails} />;
 
-      case "Complaints":
-        return <ComplaintsTab customerDetails={customerDetails} />;
+      // case "Complaints":
+      //   return <ComplaintsTab customerDetails={customerDetails} />;
 
       case "Transactions":
         return <CustomerTransaction customerDetails={customerDetails} />;

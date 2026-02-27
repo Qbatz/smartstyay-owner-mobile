@@ -231,6 +231,17 @@ export default function PGPageFull({ route }) {
     return statuses.length ? statuses.join(",") : "available";
   };
 
+
+//   const getStatusArray = (bed) => {
+//   const arr = [];
+
+//   if (bed.isBooked) arr.push("reserved");
+//   if (bed.onNotice) arr.push("notice");
+//   if (bed.overDue) arr.push("overdue");
+
+//   return arr;
+// };
+
   const handleBedPress = async (bed, room) => {
     const res = await getBedById(bed.id);
     if (!res.success) return;
@@ -1234,6 +1245,31 @@ export default function PGPageFull({ route }) {
                     {bedsByRoom[item.id]?.map((b) => {
                       const status = getBedStatus(b);
                       console.log("bedsByRoom..b", b)
+  let statusArray = [];
+let statusCount = 0;
+
+// Website exact logic match
+if (b.isBooked && b.onNotice) {
+  statusCount = (b.overDue) ? 3 : 2;
+
+  if (b.isBooked) statusArray.push("reserved");
+  if (b.onNotice) statusArray.push("noticeperiod");
+  if (b.overDue) statusArray.push("overdue");
+}
+else if (b.overDue && !b.isBooked && !b.onNotice) {
+  statusArray = ["overdue"];
+  statusCount = 1;
+}
+else if (b.isBooked && !b.onNotice) {
+  statusArray = ["reserved"];
+  statusCount = 1;
+}
+else if (b.onNotice && !b.isBooked) {
+  statusArray = ["noticeperiod"];
+  statusCount = 1;
+}
+                      // const statusArray = getStatusArray(b);
+                      // const statusCount = statusArray.length;
 
                       return (
                         <TouchableOpacity
@@ -1244,7 +1280,20 @@ export default function PGPageFull({ route }) {
 
                         >
                           <Image source={getBaseBed(status)} style={styles.bedIcon} />
+                         {/* 🔵 Multi Status Badge */}
+{statusCount > 1 && (
+  <View style={styles.multiBadge}>
+    <Text style={styles.multiBadgeText}>{statusCount}</Text>
+  </View>
+)}
 
+{/* 🔹 Single Status Icon */}
+{statusCount === 1 && (
+  <Image
+    source={overlayIcons[statusArray[0]]}
+    style={styles.overlayIcon}
+  />
+)}
                           {/* {overlayIcons[getPrimaryStatus(status)] && (
                         <Image
                           source={overlayIcons[getPrimaryStatus(status)]}
@@ -1258,21 +1307,20 @@ export default function PGPageFull({ route }) {
                         </View>
                       )} */}
 
-                          {!(b.isOnNotice && b.isBooked) &&
+                          {/* {!(b.isOnNotice && b.isBooked) &&
                             overlayIcons[getPrimaryStatus(status)] && (
                               <Image
                                 source={overlayIcons[getPrimaryStatus(status)]}
                                 style={styles.overlayIcon}
                               />
                             )
-                          }
+                          } */}
 
-                          {/* Multi status badge */}
-                          {b.isOnNotice && b.isBooked && (
+                          {/* {b.isOnNotice && b.isBooked && (
                             <View style={styles.multiBadge}>
                               <Text style={styles.multiBadgeText}>2</Text>
                             </View>
-                          )}
+                          )} */}
 
 
                           <Text style={styles.bedLabel}>{b.bedName}</Text>
@@ -1978,7 +2026,7 @@ const styles = StyleSheet.create({
     right: 6,
     backgroundColor: "#fff",
     borderWidth: 2,
-    borderColor: "#1E45E1",
+    borderColor: "#00A32E",
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -1988,7 +2036,7 @@ const styles = StyleSheet.create({
   },
 
   multiBadgeText: {
-    color: "#1E45E1",
+    color: "#00A32E",
     fontSize: 11,
     fontWeight: "700",
   },

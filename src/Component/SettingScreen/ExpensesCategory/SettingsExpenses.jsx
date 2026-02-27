@@ -280,6 +280,7 @@ useEffect(() => {
     }).start(() => {
       setShowExpenseSheet(false);
       setExpenseText("");
+      setExpenseError("");
       setIsExpenseEdit(false);
       setEditingExpenseId(null);
     });
@@ -292,6 +293,7 @@ useEffect(() => {
     setSelectedExpenseId(expenseId);
     setSubSheetTitle(parent.title);
     setShowSubSheet(true);
+    setExpenseError("")
     Animated.timing(subSheetY, {
       toValue: 0,
       duration: 240,
@@ -309,6 +311,7 @@ useEffect(() => {
       setShowSubSheet(false);
       setSelectedExpenseId(null);
       setSubSheetTitle("");
+      setExpenseError("")
     });
   };
 
@@ -517,8 +520,16 @@ const saveExpense = async () => {
 
 
 const saveSubcategory = async () => {
-  const value = subName.trim();
+  const value = subName.trim()
+   if (!value) {
+    setExpenseError("Please Enter SubCategory");
+    return;
+  }
   if (!value || !selectedExpenseId) return;
+
+  //  const value = expenseText.trim();
+
+ 
 
   // 🚫 NO CHANGE DETECTED
   if (
@@ -841,8 +852,10 @@ onPress={() => {
           value={subName}
              onChangeText={(t) =>  {
               setSubName(t.replace(/[^a-zA-Z\s]/g, ""))
+              setExpenseError("")
             }}
         />
+                {expenseError ? <ErrorMessage message={expenseError} type="error" /> : null}
 
         <TouchableOpacity
           style={styles.addTypeBtn}
