@@ -38,7 +38,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class CommonModule extends ReactContextBaseJavaModule {
-//    Context context;
+    Context context;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final ReactApplicationContext reactContext;
