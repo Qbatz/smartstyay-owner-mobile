@@ -185,11 +185,15 @@ const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
 
         {/* Tenant Details */}
         <View style={styles.tenantRow}>
+          {console.log("kaja",selectedItem)}
 
-          {selectedItem?.profilePic ? <Image source={{uri:selectedItem?.profilePic }} style={styles.avatar} /> 
+          {selectedItem?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ? 
+          <Image source={{uri:selectedItem?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic}} style={styles.avatar} /> 
           : 
           <View style={[styles.avatar,{alignItems:'center', backgroundColor: "#E5E7EB",justifyContent:'center'}]}>
-            <Text style={{fontSize: 13,fontWeight: "700",color: "#374151"}}>{selectedItem?.initials}</Text>
+            <Text style={{fontSize: 13,fontWeight: "700",color: "#374151"}}>
+              {selectedItem?.initials || selectedBed?.currentTenantInfo[0]?.tenantInitials}
+            </Text>
           </View>}
           {/* <Image source={SampleAvatar} style={styles.avatar} /> */}
 

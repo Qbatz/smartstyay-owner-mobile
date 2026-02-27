@@ -142,6 +142,31 @@ const EnterMPin = (props) => {
             const pinNumber = newPin.join("");
             setmPinNumber(pinNumber)
             console.log(pinNumber)
+
+            const res = await verifyMpin(Number(pinNumber));
+        console.log(res)
+
+        if (res.status == 200) {
+            fetchFcmToken(res.data)
+            setType("success");
+            setMessage("Login Successfully");
+            setShowModal(true);
+            // showSuccessPopup()
+            
+
+            setTimeout(() => {
+                setShowModal(false);
+                updatePinSetupStatus(true)
+
+            }, 500);
+        } else {
+            setType("error");
+            setMessage("Incorrect MPIN");
+            setShowModal(true);
+            setTimeout(() => {
+                setShowModal(false);
+            }, 1500);
+        }
         }
     }
 
@@ -271,11 +296,11 @@ const EnterMPin = (props) => {
         </View>
 
 
-        <View style={{ flex: 1, justifyContent: "center", }}>
+        {/* <View style={{ flex: 1, justifyContent: "center", }}>
             <TouchableOpacity onPress={enterPinClick} style={style.nextButton}>
                 <Text style={style.nextText}>Enter mPIN</Text>
             </TouchableOpacity>
-        </View>
+        </View> */}
 
         {showPopup && (
             <View style={style.popupContainer}>

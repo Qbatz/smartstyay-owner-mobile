@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
@@ -17,6 +18,7 @@ import com.facebook.react.bridge.ReactMethod;
 import android.content.Intent;
 import android.net.Uri;
 import android.content.ActivityNotFoundException;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.qbatz.utils.Constants;
 import android.webkit.MimeTypeMap;
 import androidx.core.content.FileProvider;
@@ -39,9 +41,15 @@ public class CommonModule extends ReactContextBaseJavaModule {
     Context context;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+    private final ReactApplicationContext reactContext;
+    private final ConnectivityManager connectivityManager;
+
     CommonModule(ReactApplicationContext context) {
         super(context);
-        this.context = context;
+        this.reactContext = context;
+
+        connectivityManager =(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        registerNetworkListener();
     }
 
     @NonNull
@@ -50,19 +58,80 @@ public class CommonModule extends ReactContextBaseJavaModule {
         return "CommonModule";
     }
 
+//    @ReactMethod
+//    public void checkInternet(Promise promise){
+//        ConnectivityManager connectivityManager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//
+//        boolean connected=(connectivityManager.getNetworkInfo(connectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+//                connectivityManager.getNetworkInfo(connectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED);
+//
+//        System.out.println("connne ," + connected);
+//        promise.resolve(connected);
+//    }
+
     @ReactMethod
     public void checkInternet(Promise promise) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        try {
 
-        boolean connected = (connectivityManager.getNetworkInfo(connectivityManager.TYPE_MOBILE)
-                .getState() == NetworkInfo.State.CONNECTED ||
-                connectivityManager.getNetworkInfo(connectivityManager.TYPE_WIFI)
-                        .getState() == NetworkInfo.State.CONNECTED);
+            if (connectivityManager == null) {
+                promise.resolve(false);
+                return;
+            }
 
-        System.out.println("connne ," + connected);
-        promise.resolve(connected);
+            Network network = connectivityManager.getActiveNetwork();
+            if (network == null) {
+                promise.resolve(false);
+                return;
+            }
+
+            NetworkCapabilities capabilities =
+                    connectivityManager.getNetworkCapabilities(network);
+
+            boolean connected = capabilities != null &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+
+            promise.resolve(connected);
+
+        } catch (Exception e) {
+            promise.resolve(false);
+        }
     }
+
+    private void registerNetworkListener() {
+
+        if (connectivityManager == null) return;
+
+        connectivityManager.registerDefaultNetworkCallback(
+                new ConnectivityManager.NetworkCallback() {
+
+                    @Override
+                    public void onAvailable(Network network) {
+//                        sendEvent(true);
+                        NetworkCapabilities capabilities =
+                                connectivityManager.getNetworkCapabilities(network);
+
+                        boolean isConnected = capabilities != null &&
+                                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+
+                        sendEvent(isConnected);
+                    }
+
+                    @Override
+                    public void onLost(Network network) {
+                        sendEvent(false);
+                    }
+                }
+        );
+    }
+
+    private void sendEvent(boolean isConnected) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("networkStatus", isConnected);
+    }
+
 
     @ReactMethod
     public void fetchBaseUrl(Promise promise) {
