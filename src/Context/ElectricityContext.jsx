@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 
 export const ElectricityContext = createContext();
 
@@ -126,8 +126,8 @@ export default function ElectricityProvider({children}){
   setErrorMsg("");
 
   try {
-    // const axios = getAxios();
-    const res = await AxiosConfig.post(
+    const axios = getAxios();
+    const res = await axios.post(
       `/v2/electricity/${payload.hostelId}`,
       payload
     );
@@ -166,7 +166,8 @@ const UpdateRoomReading = async (payload) => {
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios();
+    const res = await axios.put(
       `/v2/electricity/${payload.hostelId}/${payload.readingId}`,
       null,
       {

@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 
 
 export const ComplaintContext = createContext();
@@ -316,7 +316,8 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
   // setLoading(true);
   try {
 
-    const res = await AxiosConfig.get(
+    const axios = getAxios()
+    const res = await axios.get(
       `/v2/complaint/${complaintId}`
     );
 
