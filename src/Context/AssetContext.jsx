@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from "react";
-import AxiosConfig from "../Config/AxiosConfig";
+import { getAxios } from "../Config/AxiosConfig";
 
 export const AssetContext = createContext();
 
@@ -19,7 +19,8 @@ export const AssetProvider = ({ children }) => {
     setErrorMsg("");
 
     try {
-      const res = await AxiosConfig.get(`/v2/assets/${hostelId}`);
+      const axios = getAxios();
+      const res = await axios.get(`/v2/assets/${hostelId}`);
 
       if (res.status === 200) {
         setAssetList(res.data || []);
@@ -41,7 +42,8 @@ export const AssetProvider = ({ children }) => {
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.post(
+    const axios = getAxios()
+    const res = await axios.post(
       `/v2/assets/${payload.hostelId}`,
       payload
     );
@@ -79,7 +81,8 @@ const handleUpdateAsset = async (payload) => {
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios()
+    const res = await axios.put(
       `/v2/assets/${payload.hostelId}/${payload.assetId}`,
       payload
     );
@@ -120,7 +123,8 @@ const assignAsset = async (payload) => {
   setErrorMsg("");
 
   try {
-    const res = await AxiosConfig.put(
+    const axios = getAxios()
+    const res = await axios.put(
       `/v2/assets/assign/${payload.assetId}`,
       payload
     );
@@ -163,7 +167,8 @@ const assignAsset = async (payload) => {
     setErrorMsg("");
 
     try {
-      const res = await AxiosConfig.delete(`/v2/assets/${assetId}`);
+      const axios = getAxios()
+      const res = await axios.delete(`/v2/assets/${assetId}`);
 
       if (res.status === 200) {
         await getAllAssets(hostelId);

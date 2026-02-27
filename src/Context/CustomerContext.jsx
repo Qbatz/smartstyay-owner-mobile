@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 export const CustomerContext = createContext();

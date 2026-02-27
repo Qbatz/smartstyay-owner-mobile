@@ -1,5 +1,5 @@
 import React, { createContext, useContext,useState } from "react";
-import AxiosConfig, {getAxios} from "../Config/AxiosConfig";
+import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
 
@@ -17,7 +17,7 @@ const getElectricity = async (hostelId) => {
     const token = await retriveData("token");
 console.log("token",token , hostelId)
 const axios = getAxios();
-    const res = await AxiosConfig.get(
+    const res = await axios.get(
       `/v2/hostel/electricity/${hostelId}`,
       {
         headers: { Authorization: `Bearer ${token}` }
@@ -45,7 +45,7 @@ const updateElectricity = async (hostelId, unitPrice) => {
 
       const body = { unitPrice };
       const axios = getAxios();
-      const res = await AxiosConfig.put(
+      const res = await axios.put(
         `/v2/hostel/electricity/${hostelId}`,
         body,
         {
