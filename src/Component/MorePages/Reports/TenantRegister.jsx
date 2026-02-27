@@ -14,9 +14,14 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import Loader from "../../../Component/Loader/Loader"
+import { NativeModules } from "react-native";
+import {getAxios} from "../../../Config/AxiosConfig";
+import { retriveData } from "../../../Utils/Storage";
 
 
 const TenantRegister = ({navigation}) => {
+
+  const { CommonModule } = NativeModules;
 
     // const {  Reportsdetails} = UseSetting();
 
@@ -55,64 +60,43 @@ console.log("tenantdata", tenantData);
 
 
 
-const tenantList = [
-  {
-    name: "Muthuraja M",
-    sub: "+91 98765 43213",
-    amount: "₹ 9,300",
-  },
-  {
-    name: "Murugan N",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Wilson Calzoni",
-    sub: "INV-002",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Nolan Calzoni",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Alfredo Press",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-   {
-    name: "Wilson Calzoni",
-    sub: "INV-002",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Nolan Calzoni",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Alfredo Press",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-   {
-    name: "Wilson Calzoni",
-    sub: "INV-002",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Nolan Calzoni",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-  {
-    name: "Alfredo Press",
-    sub: "+91 98765 43213",
-    amount: "₹ 5,100",
-  },
-];
 
+
+const handleDownloadReport = async () => {
+  try {
+    const token = await retriveData("token")
+    const axios = getAxios();
+
+    const startDate = tenantData?.dateRange?.from
+    const endDate = tenantData?.dateRange?.to
+
+    const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          startDate,
+          endDate,
+        },
+      }
+    )
+
+    console.log("DOWNLOAD API RESPONSE →", res.data);
+
+    const fileUrl = res.data;
+
+    if (!fileUrl) {
+      console.log("No file URL received");
+      return;
+    }
+
+    await CommonModule.downloadAndViewDocument(fileUrl);
+
+  } catch (error) {
+    console.log("Download error →", error);
+  }
+};
 
   return (
          <>
@@ -217,7 +201,7 @@ const tenantList = [
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn}>
+    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>

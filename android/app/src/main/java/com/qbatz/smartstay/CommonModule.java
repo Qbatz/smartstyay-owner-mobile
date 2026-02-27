@@ -47,7 +47,7 @@ public class CommonModule extends ReactContextBaseJavaModule {
     CommonModule(ReactApplicationContext context) {
         super(context);
         this.reactContext = context;
-
+        this.context = context; 
         connectivityManager =(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         registerNetworkListener();
     }
