@@ -446,8 +446,9 @@ const BillBookings = ({ onSelectReceipt }) => {
         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, }}>
           <Image source={CommingSoon} style={{ width: 315, height: 220, resizeMode: 'contain' }} />
           <Text style={{ fontSize: 16, fontFamily:"Gilroy-Bold"}}>Comming Soon</Text>
-          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular'}}>Our team is building something helpfull for you.</Text>
-          <Text>Check back again shortly.</Text>
+          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',marginTop:10}}>
+            Our team is building something helpful for you.</Text>
+          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',marginTop:5}}>Check back again shortly.</Text>
           </View>
 
 

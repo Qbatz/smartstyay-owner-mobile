@@ -14,7 +14,7 @@
 
 import React, { useContext, useEffect, useState } from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View, NativeModules, Platform } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, NativeModules, Platform, TouchableOpacity, Dimensions, NativeEventEmitter, Image } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -114,8 +114,9 @@ import SuccessFlow from './src/SuccessFlow'
 import { initBaseUrl } from './src/Utils/Constant';
 import { Text, TextInput } from "react-native";
 import {NotificationProvider} from "./src/Context/NotificationContext";
+import NoInternetIcon from "./src/Assets/Images/noInternet.png"
 
-
+const { width, height } = Dimensions.get("window");
 
 
 
@@ -205,8 +206,10 @@ function AppContent(props) {
   const Navigation = createStackNavigator();
   const [isLoggedIn,setIsLoggedIn]=useState()
   const [pinVerify, setPinVerify] = useState()
+    const [isConnected, setIsConnected] = useState(true);
 
   const {CommonModule}=NativeModules;
+  const emitter = new NativeEventEmitter(CommonModule);
 
 
 
@@ -225,9 +228,25 @@ function AppContent(props) {
         // }
        
     })
+   
+
 
    
   },[])
+
+   useEffect(() => {
+    if(Platform.OS ==="android"){
+      const subscription = emitter.addListener("networkStatus", (status) => {
+      // setIsConnected(status);
+      loginContext.internet(status)
+      console.log(status)
+    });
+
+    return () => subscription.remove();
+
+    }
+    
+  }, []);
   useEffect(()=>{
     retriveData(LOGGEDIN).then(r=>{
       if(r === "true"){
@@ -263,6 +282,16 @@ function AppContent(props) {
   console.log(loginContext)
 
   useEffect(() => {
+
+     if (Platform.OS == 'android') {
+      CommonModule.checkInternet().then(r => {
+        console.log(r)
+        loginContext.internet(r)
+      }).catch(error => {
+        console.log(error)
+      })
+    }
+
     if (loginContext?.LoggedIN) {
       setIsLoggedIn(loginContext?.LoggedIN)
 
@@ -312,11 +341,13 @@ function AppContent(props) {
         </Navigation.Navigator>
         </NavigationContainer>}
 
-        {loginContext.getNetworkConnectivity != true && <View style={styles.noInternetContainer}>
+        
+
+        {loginContext?.getNetworkConnectivity !=true && <View style={styles.noInternetContainer}>
         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
 
-          <Image source={NoInternet} style={{ width: 350, height: 246 }} />
-          <Text style={{ fontSize: 22, fontWeight: '700', color: '#000', marginBottom: 8, marginTop: 20 }}>
+          <Image source={NoInternetIcon} style={{ width: 350, height: 246 }} />
+          <Text style={{ fontSize: 22, fontFamily:'Gilroy-Bold', color: '#000', marginBottom: 8, marginTop: 20 }}>
             You're Offline
           </Text>
           <Text style={styles.content}>
@@ -424,10 +455,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 1,
     alignItems: "center",
-    backgroundColor: "#fff", // Optional: removes overlap visibility
+    backgroundColor: "#fff",
     paddingHorizontal: 16,
-    zIndex: 999, // ensures it appears on top
+    zIndex: 999,
   },
+  tryagain: {
+    backgroundColor: '#1E45E1', justifyContent: 'center', alignItems: 'center', paddingVertical: 15, marginTop: height * 0.1,
+    width: width * 0.8, borderRadius: 10
+  },
+  content: { fontSize: 16,fontFamily:'Gilroy-Regular',color: '#555', textAlign: 'center', width: 270, lineHeight: 22, marginTop: 10 },
 });
 
 export default App;

@@ -33,7 +33,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [description,setDescription]=useState("")
+  const [description, setDescription] = useState("")
   const toggleAll = () => {
     const newValue = !selectAll;
 
@@ -364,7 +364,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
               style={styles.textArea}
               placeholder="Manage all except Banking & Finance"
               multiline
-               value={description}
+              value={description}
               onChangeText={(text) => {
                 const filtered = text.replace(/[^A-Za-z0-9./#@!^&*()]/g, "");
                 setDescription(filtered);
@@ -372,7 +372,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
                 //   setRoleError("");
                 // }
               }}
-              
+
             />
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 12 }}>
               <TickBox checked={selectAll} onPress={toggleAll} />
@@ -401,8 +401,35 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
                     {permissions.map((p, i) => (
                       <View key={i} style={styles.row}>
                         <Text style={styles.permissionFixed}>{p.moduleName}</Text>
-
                         <View style={styles.rightRow}>
+                          <View style={styles.checkCell}>
+                            <TickBox checked={permState[i].add} onPress={() => {toggle(i, "add");
+                              setPermissionError("");
+                            }} />
+                          </View>
+
+                          <View style={styles.checkCell}>
+                            <TickBox checked={permState[i].read} onPress={() => {toggle(i, "read");
+                              setPermissionError("");
+                            }} />
+                          </View>
+
+                          <View style={styles.checkCell}>
+                            <TickBox checked={permState[i].edit} onPress={() => {
+                              toggle(i, "edit");
+                              setPermissionError("");
+                            }} />
+                          </View>
+
+                          <View style={styles.checkCell}>
+                            <TickBox checked={permState[i].del} onPress={() => {
+                              toggle(i, "del");
+                              setPermissionError("");
+                            }} />
+                          </View>
+                        </View>
+
+                        {/* <View style={styles.rightRow}>
                           <TickBox checked={permState[i].add} onPress={() => {
                             toggle(i, "add");
                             setPermissionError("");
@@ -410,7 +437,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
                           <TickBox checked={permState[i].read} onPress={() => { toggle(i, "read"); setPermissionError(""); }} />
                           <TickBox checked={permState[i].edit} onPress={() => { toggle(i, "edit"); setPermissionError(""); }} />
                           <TickBox checked={permState[i].del} onPress={() => { toggle(i, "del"); setPermissionError(""); }} />
-                        </View>
+                        </View> */}
                       </View>
                     ))}
                   </ScrollView>
@@ -576,6 +603,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  checkCell: {
+  width: 90,           
+  alignItems: "center",
+  justifyContent: "center",
+},
 
   tickBox: {
     width: 24,

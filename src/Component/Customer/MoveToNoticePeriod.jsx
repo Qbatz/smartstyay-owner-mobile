@@ -27,6 +27,7 @@ export default function MoveNoticeSheet({
   const [outDateError, setOutDateError] = useState("");
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const scrollRef = useRef(null);
   const reasonRef = useRef(null);
 
@@ -170,7 +171,19 @@ export default function MoveNoticeSheet({
 
     if (hasError) return;
 
-    const payload = {
+    setShowNoticeModal(true)
+
+   
+  };
+
+  const confirmMoveNotice=async()=>{
+    setShowNoticeModal(false)
+
+    const tenantId =
+      customer?.customerId ||
+      selectedBed?.currentTenantInfo[0]?.tenetId;
+
+     const payload = {
       customerId: tenantId,
       requestDate: dayjs(reqDate).format("DD-MM-YYYY"),
       checkoutDate: dayjs(outDate).format("DD-MM-YYYY"),
@@ -222,7 +235,12 @@ export default function MoveNoticeSheet({
     else {
       alert(res.message || "Move to notice failed");
     }
-  };
+
+
+  }
+
+
+
   const joiningDateRaw =
     customer?.actualJoining ||
     selectedBed?.currentTenantInfo[0]?.joiningDate;
@@ -498,14 +516,6 @@ export default function MoveNoticeSheet({
 
 
 
-
-
-
-
-
-
-
-
           </View>
         </View>
       </Modal>
@@ -544,9 +554,6 @@ export default function MoveNoticeSheet({
             />
 
 
-
-
-
           </View>
         </View>
       </Modal>
@@ -583,7 +590,7 @@ export default function MoveNoticeSheet({
                 style={styles.okConfirmBtn}
                 onPress={() => {
                   setShowNoticeModal(false);
-                  onMove();
+                  confirmMoveNotice();
                 }}
               >
                 <Text style={styles.okConfirmText}>Confirm</Text>
@@ -593,6 +600,8 @@ export default function MoveNoticeSheet({
           </View>
         </View>
       </Modal>
+
+      
 
     </>
   );
