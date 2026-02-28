@@ -15,7 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ReAssign from "../../../Assets/Images/ReAssign.png";
-
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -44,6 +44,23 @@ export default function DoubleStatusSheet({
     handleNoticeToCheckout()
     onClose();
   }
+
+
+  const {
+    canWriteModule: canWriteCustomers,
+    // canReadModule: canReadPayingGuests,
+    // canUpdateModule: canUpdatePayingGuests,
+    // canDeleteModule: canDeletePayingGuests,
+  } = useHasPermission("Customers");
+
+
+
+  const {
+    canUpdateModule: canUpdatePayingGuests,
+    // canDeleteModule: canDeletePayingGuests,
+
+  } = useHasPermission("Paying Guests");
+
   const roomChip = room?.room_no ? `${room.room_no} - ${bed?.label || ""}` : "Room";
 
   const handleEdit = () => {
@@ -285,7 +302,9 @@ export default function DoubleStatusSheet({
                   <View style={styles.fullMenuOverlay}>
                     <View style={styles.menuCard}>
                       <TouchableOpacity
-                        style={styles.menuItem}
+                        // style={styles.menuItem}
+                            disabled={!canUpdatePayingGuests}
+                        style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                         onPress={handleEdit}
                       >
                         <Image
@@ -296,7 +315,11 @@ export default function DoubleStatusSheet({
                       </TouchableOpacity>
                       {matchedCustomer?.currentStatus === "Settlement Generated" ? (
                         <>
-                          <TouchableOpacity style={styles.menuItem} onPress={handleCheckoutSheet}>
+                          <TouchableOpacity
+                              disabled={!canWriteCustomers}
+                          style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                          // style={styles.menuItem} 
+                          onPress={handleCheckoutSheet}>
                             <Image
                               source={require("../../../Assets/Images/NewBook.png")}
                               style={styles.menuIcon}
@@ -307,17 +330,29 @@ export default function DoubleStatusSheet({
                         </>
                       ) : (
                         <>
-                          <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
+                          <TouchableOpacity 
+                          // style={styles.menuItem}
+                              disabled={!canWriteCustomers}
+                          style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                          onPress={handleNewReserve}>
                             <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
                             <Text style={styles.menuText}>New Booking</Text>
                           </TouchableOpacity>
 
-                          <TouchableOpacity style={styles.menuItem} onPress={handleCancelNotice}>
+                          <TouchableOpacity
+                              disabled={!canWriteCustomers}
+                          style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                          // style={styles.menuItem}
+                           onPress={handleCancelNotice}>
                             <Image style={styles.menuIcon} source={require("../../../Assets/Images/calendarremove.png")} />
                             <Text style={styles.menuText}>Cancel Check-out</Text>
                           </TouchableOpacity>
 
-                          <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
+                          <TouchableOpacity
+                          //  style={styles.menuItem} 
+                          disabled={!canWriteCustomers}
+                          style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                          onPress={handleFinalSettled}>
                             <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
                             <Text style={styles.menuText}>Generate</Text>
                           </TouchableOpacity>
@@ -432,7 +467,9 @@ export default function DoubleStatusSheet({
                              
 
                               <TouchableOpacity
-                                style={styles.menuItem}
+                                // style={styles.menuItem}
+                              disabled={!canWriteCustomers}
+                              style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                                 // onPress={handleMakeUsIn}
                                 onPress={() => handleMakeUsIn(item)}
                               >
@@ -444,7 +481,9 @@ export default function DoubleStatusSheet({
                               </TouchableOpacity>
 
                                <TouchableOpacity
-                        style={styles.menuItem}
+                        // style={styles.menuItem}
+                               disabled={!canUpdatePayingGuests}
+                        style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                         onPress={handleEdit}
                       >
                         <Image
@@ -455,7 +494,9 @@ export default function DoubleStatusSheet({
                       </TouchableOpacity>
 
                        <TouchableOpacity
-                        style={styles.menuItem}
+                        // style={styles.menuItem}
+                        // disabled={!canWriteCustomers}
+                        style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                         // onPress={handleEdit}
                         disabled
                       >
@@ -473,6 +514,9 @@ export default function DoubleStatusSheet({
                                   styles.menuItem,
                                   isDisabled && styles.menuItemDisabled
                                 ]}
+
+                        // disabled={!canWriteCustomers}
+                        // style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                               >
                                 <Image
                                   style={[
