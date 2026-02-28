@@ -140,7 +140,7 @@ console.log("receiptData", receiptData);
       </Text>
       <Text style={styles.sub}>{item?.invoiceNumber}</Text>
     </View>
-    <Text style={styles.amount}>₹ {item?.amount}</Text>
+    <Text style={styles.amount}>₹ {item?.paymentMade}</Text>
   </View>
 ))}
 
