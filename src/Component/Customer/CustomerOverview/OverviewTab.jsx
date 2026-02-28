@@ -539,26 +539,26 @@ export default function OverviewTab({ customerDetails,
                     {customerDetails?.hostelInfo?.joiningDate || "N/A"}
                   </Text>
                   {
-                   !["VACATED", "BOOKED"].includes(customerDetails?.customerCurrentStatus) && (
-                         <TouchableOpacity
-                    onPress={handleEditJoining}
-                    // disabled={!isJoiningDateEditable}
-                    activeOpacity={0.7}
-                    disabled={!isJoiningDateEditable && !canUpdateTenant}
-                    style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
-                  >
-                    <Image
-                      source={EditIcon}
-                      style={[
-                        styles.editIconSmall,
-                        !isJoiningDateEditable && styles.disabledIcon,
-                      ]}
-                    />
-                  </TouchableOpacity>
+                    ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
+                      <TouchableOpacity
+                        onPress={handleEditJoining}
+                        // disabled={!isJoiningDateEditable}
+                        activeOpacity={0.7}
+                        disabled={!isJoiningDateEditable && !canUpdateTenant}
+                        style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
+                      >
+                        <Image
+                          source={EditIcon}
+                          style={[
+                            styles.editIconSmall,
+                            !isJoiningDateEditable && styles.disabledIcon,
+                          ]}
+                        />
+                      </TouchableOpacity>
                     )
 
                   }
-                 
+
                 </View>
               </View>
 
@@ -577,20 +577,27 @@ export default function OverviewTab({ customerDetails,
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
-                  <TouchableOpacity
-                    disabled={!isJoiningDateEditable && !canUpdateTenant}
-                    style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
-                    onPress={handleEditMonthlyRent}
-                  // disabled={!isJoiningDateEditable}
-                  >
-                    <Image
-                      source={EditIcon}
-                      style={[
-                        styles.editIconSmall,
-                        !isJoiningDateEditable && styles.disabledIcon,
-                      ]}
-                    />
-                  </TouchableOpacity>
+                  {
+                    ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
+                      <TouchableOpacity
+                        disabled={!isJoiningDateEditable && !canUpdateTenant}
+                        style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
+                        onPress={handleEditMonthlyRent}
+                      // disabled={!isJoiningDateEditable}
+                      >
+                        <Image
+                          source={EditIcon}
+                          style={[
+                            styles.editIconSmall,
+                            !isJoiningDateEditable && styles.disabledIcon,
+                          ]}
+                        />
+                      </TouchableOpacity>
+
+                    )
+                  }
+
+
                 </View>
                 <Text style={styles.amountLabel}>
                   ₹ {customerDetails?.hostelInfo?.monthlyRent || "N/A"}
@@ -601,20 +608,26 @@ export default function OverviewTab({ customerDetails,
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
-                  <TouchableOpacity
-                    disabled={!isJoiningDateEditable && !canUpdateTenant}
-                    style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
-                    onPress={handleEditAdvance}
-                  // disabled={!isJoiningDateEditable}
-                  >
-                    <Image
-                      source={EditIcon}
-                      style={[
-                        styles.editIconSmall,
-                        !isJoiningDateEditable && styles.disabledIcon,
-                      ]}
-                    />
-                  </TouchableOpacity>
+                  {
+                    ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
+                      <TouchableOpacity
+                        disabled={!isJoiningDateEditable && !canUpdateTenant}
+                        style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
+                        onPress={handleEditAdvance}
+                      // disabled={!isJoiningDateEditable}
+                      >
+                        <Image
+                          source={EditIcon}
+                          style={[
+                            styles.editIconSmall,
+                            !isJoiningDateEditable && styles.disabledIcon,
+                          ]}
+                        />
+                      </TouchableOpacity>
+
+                    )
+                  }
+
                 </View>
                 <Text style={styles.amountLabel}>
                   ₹ {customerDetails?.advanceInfo?.advanceAmount || "N/A"}

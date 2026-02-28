@@ -12,7 +12,6 @@ import {
   Modal, Animated,
   PanResponder,
   BackHandler, Keyboard,
-  NativeModules
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -2583,10 +2582,10 @@ const handleShareBill = async () => {
                     <Text style={{ fontSize: 17, fontWeight: 600 }}>₹{selectedReceipt?.paidAmount ?? "--"}</Text>
                   </View>
 
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+                  {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
                     <Text style={{ fontSize: 14, fontWeight: 600 }}>Refund</Text>
                     <Text style={{ fontSize: 14, fontWeight: 600 }}>₹2500</Text>
-                  </View>
+                  </View> */}
 
                   <View style={{ borderWidth: 0.8, marginVertical: 20, borderColor: '#E3E3E3' }} />
 
@@ -2597,7 +2596,7 @@ const handleShareBill = async () => {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
                     <Text style={{ fontSize: 14, fontWeight: 500, color: '#3C3C4399' }}>Payment mode</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>₹2500</Text>
+                    <Text style={{ fontSize: 14, fontWeight: 600 }}>N/A</Text>
                   </View>
 
 

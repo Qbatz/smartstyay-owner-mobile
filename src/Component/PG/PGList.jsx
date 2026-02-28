@@ -167,12 +167,18 @@ export default function PGPageFull({ route }) {
     setDeleteFloorId(FloorId)
   }
   const handleDeleteFloor = async (floorId) => {
+
     const res = await deleteFloor(floorId);
 
     if (res.success) {
       setModalType("success");
       setMessage("Floor deleted successfully");
       setShowSuccess(true);
+
+      if (selectedFloorId === floorId) {
+        setSelectedFloorId(null);   // 👈 triggers effect
+      }
+
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -232,28 +238,28 @@ export default function PGPageFull({ route }) {
   };
 
 
-//   const getStatusArray = (bed) => {
-//   const arr = [];
+  //   const getStatusArray = (bed) => {
+  //   const arr = [];
 
-//   if (bed.isBooked) arr.push("reserved");
-//   if (bed.onNotice) arr.push("notice");
-//   if (bed.overDue) arr.push("overdue");
+  //   if (bed.isBooked) arr.push("reserved");
+  //   if (bed.onNotice) arr.push("notice");
+  //   if (bed.overDue) arr.push("overdue");
 
-//   return arr;
-// };
+  //   return arr;
+  // };
 
   const handleBedPress = async (bed, room) => {
     const res = await getBedById(bed.id);
     if (!res.success) return;
 
     const freshBed = res.data;
-    console.log("freshbed",freshBed)
+    console.log("freshbed", freshBed)
 
     const matchedBed =
       bedsByRoom[room.id]?.find(b => b.id === bed.id);
 
-      console.log("mathc",matchedBed)
-      console.log("fresh",freshBed)
+    console.log("mathc", matchedBed)
+    console.log("fresh", freshBed)
 
     if (!matchedBed) return;
 
@@ -423,16 +429,24 @@ export default function PGPageFull({ route }) {
 
   useEffect(() => {
     const loadRooms = async () => {
-      if (!selectedFloorId) return;
+      if (!selectedFloorId) {
+        setRooms([])
+        return;
+      }
+
 
       const res = await getAllRoomsByFloor(selectedFloorId);
       if (res.success) {
         setRooms(res.data);
       }
+      else {
+        setRooms([])
+      }
     };
 
     loadRooms();
   }, [selectedFloorId]);
+
   const refreshRooms = async () => {
     if (!selectedFloorId) return;
 
@@ -976,8 +990,8 @@ export default function PGPageFull({ route }) {
             <TouchableOpacity
               style={[styles.addRoomBtn, { marginLeft: "auto" }]}  // ✅ magic line
               onPress={() => {
-              setOpenMenuRoomId(null);
-              setShowFloorMenu(prev => !prev);
+                setOpenMenuRoomId(null);
+                setShowFloorMenu(prev => !prev);
               }}
             >
               <Image source={Dots} style={{ width: 22, height: 22 }} />
@@ -1150,7 +1164,7 @@ export default function PGPageFull({ route }) {
 
 
         {!loading && !showReadBlockedState && floors.length > 0 && rooms.length === 0 && (
-          <View style={{alignItems:"center",justifyContent:"center",marginTop:40,}}>
+          <View style={{ alignItems: "center", justifyContent: "center", marginTop: 40, }}>
             <Image source={EmptyFloor} style={styles.image} />
             <Text style={styles.noFloorText}>No Rooms are there!</Text>
 
@@ -1165,7 +1179,7 @@ export default function PGPageFull({ route }) {
           </View>
         )}
 
-
+        {console.log('haha', rooms)}
         {!showReadBlockedState && (
           <FlatList
             contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
@@ -1194,7 +1208,7 @@ export default function PGPageFull({ route }) {
                     <TouchableOpacity
                       style={styles.addRoomBtn}
                       onPress={() => {
-                        setShowFloorMenu(false); 
+                        setShowFloorMenu(false);
                         setOpenMenuRoomId(
                           openMenuRoomId === item.id ? null : item.id
                         );
@@ -1245,29 +1259,29 @@ export default function PGPageFull({ route }) {
                     {bedsByRoom[item.id]?.map((b) => {
                       const status = getBedStatus(b);
                       console.log("bedsByRoom..b", b)
-  let statusArray = [];
-let statusCount = 0;
+                      let statusArray = [];
+                      let statusCount = 0;
 
-// Website exact logic match
-if (b.isBooked && b.onNotice) {
-  statusCount = (b.overDue) ? 3 : 2;
+                      // Website exact logic match
+                      if (b.isBooked && b.onNotice) {
+                        statusCount = (b.overDue) ? 3 : 2;
 
-  if (b.isBooked) statusArray.push("reserved");
-  if (b.onNotice) statusArray.push("noticeperiod");
-  if (b.overDue) statusArray.push("overdue");
-}
-else if (b.overDue && !b.isBooked && !b.onNotice) {
-  statusArray = ["overdue"];
-  statusCount = 1;
-}
-else if (b.isBooked && !b.onNotice) {
-  statusArray = ["reserved"];
-  statusCount = 1;
-}
-else if (b.onNotice && !b.isBooked) {
-  statusArray = ["noticeperiod"];
-  statusCount = 1;
-}
+                        if (b.isBooked) statusArray.push("reserved");
+                        if (b.onNotice) statusArray.push("noticeperiod");
+                        if (b.overDue) statusArray.push("overdue");
+                      }
+                      else if (b.overDue && !b.isBooked && !b.onNotice) {
+                        statusArray = ["overdue"];
+                        statusCount = 1;
+                      }
+                      else if (b.isBooked && !b.onNotice) {
+                        statusArray = ["reserved"];
+                        statusCount = 1;
+                      }
+                      else if (b.onNotice && !b.isBooked) {
+                        statusArray = ["noticeperiod"];
+                        statusCount = 1;
+                      }
                       // const statusArray = getStatusArray(b);
                       // const statusCount = statusArray.length;
 
@@ -1280,20 +1294,20 @@ else if (b.onNotice && !b.isBooked) {
 
                         >
                           <Image source={getBaseBed(status)} style={styles.bedIcon} />
-                         {/* 🔵 Multi Status Badge */}
-{statusCount > 1 && (
-  <View style={styles.multiBadge}>
-    <Text style={styles.multiBadgeText}>{statusCount}</Text>
-  </View>
-)}
+                          {/* 🔵 Multi Status Badge */}
+                          {statusCount > 1 && (
+                            <View style={styles.multiBadge}>
+                              <Text style={styles.multiBadgeText}>{statusCount}</Text>
+                            </View>
+                          )}
 
-{/* 🔹 Single Status Icon */}
-{statusCount === 1 && (
-  <Image
-    source={overlayIcons[statusArray[0]]}
-    style={styles.overlayIcon}
-  />
-)}
+                          {/* 🔹 Single Status Icon */}
+                          {statusCount === 1 && (
+                            <Image
+                              source={overlayIcons[statusArray[0]]}
+                              style={styles.overlayIcon}
+                            />
+                          )}
                           {/* {overlayIcons[getPrimaryStatus(status)] && (
                         <Image
                           source={overlayIcons[getPrimaryStatus(status)]}
@@ -1851,7 +1865,7 @@ const styles = StyleSheet.create({
     // flex: 3,
     alignItems: "center",
     justifyContent: "center",
-    marginTop:150,
+    marginTop: 150,
   },
 
   image: {
