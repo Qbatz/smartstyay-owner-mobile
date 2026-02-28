@@ -1497,11 +1497,15 @@ export default function BillsDesign({ route }) {
     // });
   }
 
-  const handleDownloadBillsPdf = async () => {
+ const handleDownloadBillsPdf = async () => {
+  if (!activeHostelId || !selectedBill?.invoiceId) return;
+
   const res = await downloadBill(activeHostelId, selectedBill.invoiceId);
 
-  if (res?.success) {
-       await CommonModule.downloadAndViewDocument(res?.url);
+  if (res?.success && res?.url) {
+    await CommonModule.downloadAndViewDocument(res.url);
+  } else {
+    console.log(res?.message);
   }
 };
 
