@@ -14,11 +14,13 @@ import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
-
+import { NativeModules } from "react-native";
 
 const ReceiptRegister = ({navigation}) => {
+
+    const { CommonModule } = NativeModules;
  
-    const {loading,  getReceiptRegisterReport} = UseSetting();
+    const {loading,  getReceiptRegisterReport , downloadReceiptReport} = UseSetting();
     const { activeHostelId } = useContext(CommonContexts);
     const [receiptData, setReceiptData] = useState(null);
       const {
@@ -48,6 +50,14 @@ const loadReceipts = async () => {
     setReceiptData(null)
   }
 }
+
+const handleDownloadReceiptReport = async () => {
+  const res = await downloadReceiptReport(activeHostelId);
+
+  if (res?.success && res?.url) {
+    await CommonModule.downloadAndViewDocument(res.url);
+  }
+};
 
 console.log("receiptData", receiptData);
 
@@ -152,7 +162,7 @@ console.log("receiptData", receiptData);
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn}>
+    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadReceiptReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>

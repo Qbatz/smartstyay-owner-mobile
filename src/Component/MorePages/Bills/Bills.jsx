@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
-import { NativeModules } from "react-native";
+// import { NativeModules } from "react-native";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
@@ -88,7 +88,7 @@ import BillBookings from "./Bill_Bookings";
 export default function BillsDesign({ route }) {
 
   const insets = useSafeAreaInsets();
-   const { CommonModule } = NativeModules;
+  //  const { CommonModule } = NativeModules;
 
   const detailDotsRef = useRef(null);
 
