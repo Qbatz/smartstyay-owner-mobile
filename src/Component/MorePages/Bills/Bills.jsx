@@ -2624,7 +2624,7 @@ export default function BillsDesign({ route }) {
                     <View
                       style={[
                         styles.popupBox,
-                        { bottom: popupPosition.y - 80, left: popupPosition.x - 180 },
+                        { bottom: popupPosition.y - 50, left: popupPosition.x - 180 },
                       ]}
                     >
                       <TouchableOpacity

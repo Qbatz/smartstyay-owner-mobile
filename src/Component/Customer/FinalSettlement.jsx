@@ -521,14 +521,16 @@ const selectType = (id, type) => {
 
                       <View style={styles.smallRow} >
                         <View style={styles.badge}>
-                          <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed.floorName}</Text>
+                          <Text style={styles.badgeText}>
+                            {selectedItem?.floorName || selectedBed?.floorName || selectedItem?.hostelInfo?.floorName}</Text>
                         </View>
 
                         <Image source={RoomIcon} style={styles.smallIcon} />
-                        <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
+                        <Text style={styles.badgeLabel}>
+                          {selectedItem?.roomName || selectedBed?.roomName || selectedItem?.hostelInfo?.roomName}</Text>
 
                         <Image source={BedIcon} style={styles.smallIcon} />
-                        <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text>
+                        <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed?.bedName || selectedItem?.hostelInfo?.bedName}</Text>
                       </View>
 
                 {/* //     )

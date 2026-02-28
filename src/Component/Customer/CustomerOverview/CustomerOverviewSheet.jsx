@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  TouchableOpacity, TouchableWithoutFeedback,
   Image, BackHandler
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -37,6 +37,11 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 import CheckinIcon from "../../../Assets/Images/Checkin_Icon.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import CustomerTransaction from "./CustomerTransaction"
+import ReAssignIcon from "../../../Assets/Images/ReAssign.png";
+import ReassignBedSheet from "../ReAssignBed";
+import MoveNoticeSheet from "../MoveToNoticePeriod";
+import InactiveTenantSheet from "../../PG/ReservedBed/MakeUsInActiveSheet";
+import CheckoutBottomSheet from "../Checkout/CheckoutTenant";
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
@@ -56,6 +61,19 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showReAssignbed, setShowReAssignBed] = useState(false)
+  const [reassignCustomer, setReassignCustomer] = useState(null);
+
+  const [showNotice, setShowNotice] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [reason, setReason] = useState("");
+
+  const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+
 
 
   const {
@@ -219,6 +237,89 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   //     }
   //   );
   // };
+  const openMenu = (event, item) => {
+    event.stopPropagation();
+
+    const { pageX, pageY } = event.nativeEvent;
+
+
+    if (menuVisible && selectedItem?.customerId === item.customerId) {
+      setMenuVisible(false);
+      setSelectedItem(null);
+      return;
+    }
+
+    setSelectedItem(item);
+
+    setMenuPosition({
+      x: Math.max(10, pageX - 180),
+      y: pageY + 8,
+    });
+
+    setMenuVisible(true);
+  };
+
+  const handleShowReAssignBed = () => {
+    setShowReAssignBed(true)
+    setMenuVisible(false)
+  };
+  const handlecloseReAssignbed = () => {
+    setShowReAssignBed(false)
+  }
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    // setCustomers(data || []);
+  };
+
+  const handleCheckoutSuccess = async () => {
+    await fetchCustomers();
+    setShowCheckout(false);
+  };
+
+  const handleMakeUsInActive = () => {
+    // setShowDetailsMenu(false);
+    setShowInactiveSheet(true)
+    setMenuVisible(false)
+    // setShowDetailModal(false)
+
+  }
+
+   const handleShowTennantCheckin = () => {
+    // navigation.navigate("TenantCheckin")
+    navigation.navigate("BookingCheckIn", {
+      customerId: selectedItem.customerId,
+      customer: selectedItem,
+    });
+
+    setMenuVisible(false)
+  }
+   const handleShowFinalSettlement = () => {
+   
+    setMenuVisible(false)
+    navigation.navigate("FinalSettlement", {
+      selectedItem: selectedItem
+      // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+    });
+  };
+
+   const handleShowFinalNew = () => {
+    
+    setMenuVisible(false)
+    navigation.navigate("FinalSettlementScreen", {
+      selectedItem: selectedItem
+      // selectedBed?.currentTenantInfo?.[0]?.tenetId,
+    });
+  };
+
+   const handleShowCancelNotice = () => {
+    setMenuVisible(false)
+    navigation.navigate("CancelNotice", {
+      selectedItem: selectedItem,
+    });
+  };
+
+
+
 
 
   useEffect(() => {
@@ -282,6 +383,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       navigation.goBack();
       return true;
     };
+
 
     const handler = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -470,10 +572,20 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
 
-            <Image
-              source={MoreDot}
-              style={{ width: 20, height: 20, }}
-            />
+            {customerDetails?.customerCurrentStatus != "VACATED" && (
+              <TouchableOpacity onPress={(e) => {
+                openMenu(e, customerDetails);
+              }}>
+                <Image
+                  source={MoreDot}
+                  style={{ width: 20, height: 20, }}
+                />
+
+              </TouchableOpacity>
+
+            )}
+
+
           </View>
 
 
@@ -527,7 +639,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         {/* TABS */}
         <View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabRow}>
-            {["Overview", "EB Reading", "Bill", "Complaints", "Transactions"].map((tab) => {
+            {["Overview", "EB Reading", "Bill", "Transactions"].map((tab) => {
               const isActive = activeTab === tab;
               return (
                 <TouchableOpacity
@@ -554,6 +666,215 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
       </View>
+
+      {menuVisible && (
+        <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+          <View style={styles.menuOverlay}>
+            <TouchableWithoutFeedback>
+              <View
+                style={[
+                  styles.menuBox,
+                  {
+                    top: menuPosition.y,
+                    left: menuPosition.x,
+                  },
+                ]}
+              >
+
+                {
+                  selectedItem && selectedItem.customerCurrentStatus === "CHECK_IN" &&
+                  <>
+                    <TouchableOpacity
+                      // style={styles.popupRow}
+                      style={[
+                        styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                      disabled={!canUpdateTenant}
+                      onPress={() => {
+                        setReassignCustomer(selectedItem);
+                        handleShowReAssignBed();
+                      }}
+                    >
+
+                      <Image
+                        source={ReAssignIcon}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Change_Bed</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                      disabled={!canUpdateTenant}
+
+                      onPress={() => {
+                        // setSelectedCustomer(selectedItem);
+                        // setShowMenu(false);
+                        setMenuVisible(false)
+                        setShowNotice(true);
+                      }}
+
+                    >
+                      <Image
+                        source={ReAssignIcon}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Move to Notice Period</Text>
+                    </TouchableOpacity>
+                  </>
+
+                }
+                {
+                  selectedItem && selectedItem.customerCurrentStatus === "BOOKED" &&
+                  <>
+                    <TouchableOpacity
+                      // style={styles.popupRow}
+                      style={[
+                        styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                      disabled={!canUpdateTenant}
+                    onPress={handleMakeUsInActive}
+                    >
+                      <Image source={ReAssignIcon} style={styles.popupIcon} />
+                      <Text style={styles.popupText}>Make Us InActive</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      // style={styles.popupRow}
+                      style={[
+                        styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                      disabled={!canUpdateTenant}
+                    onPress={handleShowTennantCheckin}
+                    // onPress={() => {
+                    //   setShowDetailsMenu(false);
+                    //   // setShowNotice(true);
+                    // }}
+                    >
+                      <Image source={ReAssignIcon} style={styles.popupIcon} />
+                      <Text style={styles.popupText}>Checkin</Text>
+                    </TouchableOpacity>
+                  </>
+                }
+                {selectedItem &&
+                  !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+
+                    <>
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                      onPress={handleShowFinalSettlement}
+                      >
+                        <Image
+                          source={ReAssignIcon}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Generate</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                      onPress={handleShowFinalNew}
+                      >
+                        <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Generate New</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        // style={styles.popupRow} 
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                      onPress={handleShowCancelNotice} 
+                      >
+                        <Image
+                          source={require("../../../Assets/Images/ReAssign.png")}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Cancel Check-out</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                {selectedItem &&
+                  !["CHECK_IN", "NOTICE", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+                    <TouchableOpacity
+                      style={[
+                        styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                      disabled={!canUpdateTenant}
+                      onPress={() => {
+                        setShowCheckout(true);
+                        setMenuVisible(false)
+                      }}
+                    >
+                      <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                      <Text style={styles.popupText}>Checkout</Text>
+                    </TouchableOpacity>
+
+                  )}
+
+
+
+
+                {/* <TouchableOpacity
+        style={styles.popupRow}
+        onPress={() => {
+          setShowMenu(false);
+          setDeleteTenants(true);
+        }}
+      >
+        <Image
+          source={require("../../Assets/Images/trash.png")}
+          style={styles.popupIcon}
+        />
+        <Text style={styles.popupText}>Delete</Text>
+      </TouchableOpacity> */}
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      )}
+
+      {
+        showReAssignbed &&
+        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
+
+      }
+
+      {showNotice && (
+        <MoveNoticeSheet
+          visible={showNotice}
+          onClose={() => setShowNotice(false)}
+          customer={selectedItem}
+          onSuccess={handleCheckoutSuccess}
+        />
+      )}
+      <InactiveTenantSheet
+        visible={showInactiveSheet}
+        onClose={() => setShowInactiveSheet(false)}
+        selectedItem={selectedItem}
+        onSuccess={handleCheckoutSuccess}
+      />
+
+      {
+              showCheckout &&
+              <CheckoutBottomSheet
+                visible={showCheckout}
+                onClose={() => setShowCheckout(false)}
+                reason={reason}
+                setReason={setReason}
+                selectedItem={selectedItem}
+                onSuccess={handleCheckoutSuccess}
+      
+              />
+            }
 
       <EditBasicDetailsSheet
         visible={showEdit}
@@ -667,7 +988,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  name: { fontSize: 16, fontWeight: "600" },
+  name: { fontSize: 16, fontWeight: "600",textAlign:'center' },
   verified: { color: "green", marginLeft: 6 },
 
   metaRow: {
@@ -780,6 +1101,51 @@ const styles = StyleSheet.create({
     height: 180,
     resizeMode: "contain",
     opacity: 0.9,
+  },
+  // ---
+  menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+  },
+
+
+  menuBox: {
+    position: "absolute",
+    width: 190,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 6,
+    elevation: 15,
+  },
+
+
+  menuRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+
+  popupRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+
+  popupIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+
+  popupText: {
+    fontSize: 14,
+    color: "#333",
   },
 
 });
