@@ -94,6 +94,9 @@ const [selectedBankId, setSelectedBankId] = useState(null);
     canDeleteModule: canDeleteBanking,
   } = useHasPermission("Banking")
 
+  console.log("selectedTransaction", selectedTransaction);
+  
+
 
   if (!canReadBanking && !loading) {
   return (
@@ -1015,10 +1018,10 @@ if (!activeHostelId && !loading) {
   fontWeight: "600",marginLeft:-3}}> {selectedTransaction?.raw?.accountHolder}</Text>
         </View>
 
-        <View style={{ flex: 1 }}>
+        {/* <View style={{ flex: 1 }}>
           <Text style={styles.label}>To</Text>
-          <Text style={styles.valueText}>HDFC Bank</Text>
-        </View>
+          <Text style={styles.valueText}>N/A</Text>
+        </View> */}
       </View>
 
       {/* AMOUNT */}
@@ -1041,7 +1044,7 @@ if (!activeHostelId && !loading) {
       {/* DESCRIPTION */}
       <Text style={styles.label}>Description</Text>
       <Text style={styles.description}>
-        Transfer Rs:10,000 for Balance maintenance
+        {/* Transfer Rs:10,000 for Balance maintenance */}
         {selectedTransaction?.raw?.referenceNumber || "-"}
       </Text>
     </Animated.View>
@@ -1909,12 +1912,12 @@ fromToRow: {
   marginBottom: 20,
 },
 
-label: {
-  fontSize: 13,
-  color: "#888",
-  marginBottom: 5,
-  fontWeight: "600",
-},
+// label: {
+//   fontSize: 13,
+//   color: "#888",
+//   marginBottom: 5,
+//   fontWeight: "600",
+// },
 
 valueText: {
   fontSize: 14,
@@ -2011,7 +2014,7 @@ sheetTitle: {
 label: {
   fontSize: 14,
   fontWeight: "500",
-  marginTop: 10,
+  // marginTop: 10,
   marginBottom: 6,
 },
 

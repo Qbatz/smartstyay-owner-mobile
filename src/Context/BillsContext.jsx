@@ -530,7 +530,37 @@ const downloadReceipt = async (hostelId, transactionId) => {
   }
 };
 
+const downloadBill = async (hostelId, invoiceId) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
 
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/download/${hostelId}/${invoiceId}`
+    );
+
+    if (res.status === 200) {
+      return {
+        success: true,
+        url: res.data, 
+      };
+    }
+
+    return { success: false, message: "Download failed" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
   
 
 
@@ -557,7 +587,8 @@ const downloadReceipt = async (hostelId, transactionId) => {
          DeleteReceipt , 
          getBillsPdfDetails , 
          getReceiptPdfDetails,
-         downloadReceipt
+         downloadReceipt,
+         downloadBill ,
       }}
     >
       {children}

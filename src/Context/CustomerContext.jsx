@@ -8,6 +8,7 @@ export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("")
   const [vendorList, setVendorList] = useState([]);
+  const [ReAssignStatusCode , setReAssignStatusCode] = useState(0)
   
 
   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
@@ -240,7 +241,9 @@ export const CustomerProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
+        setReAssignStatusCode(200)
         return { success: true, data: res.data };
+
       }
 
       return { success: false };
@@ -1221,6 +1224,8 @@ const deleteManualDocument = async (hostelId, customerId, documentId) => {
         GetParticularCustomerDetails,
         ParticularcustomerDetails,
         resetParticularCustomer,
+        ReAssignStatusCode,
+        setReAssignStatusCode,
         loading, 
         errorMsg,
         addCustomer,

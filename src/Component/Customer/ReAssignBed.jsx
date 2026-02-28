@@ -65,7 +65,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const [currentRoomName, setCurrentRoomName] = useState("")
   const [currentBedName, setCurrentBedName] = useState("")
   const [reAssignBedDate, setReAssignBedDate] = useState("")
-
+  const [customerDetails, setCustomerDetails] = useState(null);
 
   useEffect(() => {
     if (visible && customer?.customerId) {
@@ -81,44 +81,98 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     const res = await getCustomerDetails(customer.customerId);
     console.log("fetchCustomerDetails", res)
     if (res.success) {
+      setCustomerDetails(res?.data);
       setRentAmount(String(res.data.hostelInfo?.monthlyRent || ""));
       setReAssignBedDate(res.data.hostelInfo.joiningDate)
       setCurrentFloorName(res.data.hostelInfo.floorName)
       setCurrentRoomName(res.data.hostelInfo.roomName)
       setCurrentBedName(res.data.hostelInfo.bedName)
 
-    } else {
-      alert(res.message);
-    }
+    } 
+    // else {
+    //   alert(res.message);
+    // }
   };
 
-  const minDate = reAssignBedDate
-    ? dayjs(reAssignBedDate, "DD/MM/YYYY")
+  
+
+  const today = dayjs().startOf("day");
+
+const joiningDate = customerDetails?.hostelInfo?.joiningDate
+  ? dayjs(customerDetails.hostelInfo.joiningDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+  : null;
+
+const bedHistory = customerDetails?.bedHistory || [];
+const invoices = customerDetails?.invoiceResponseList || [];
+
+// Last invoice date
+const lastBillDate =
+  invoices.length > 0
+    ? dayjs(
+        invoices[invoices.length - 1].invoiceGeneratedDate,
+        ["DD/MM/YYYY", "DD-MM-YYYY"]
+      )
     : null;
 
-  const maxDate = dayjs(); // today
-  const isDisabledReassignDate = (dateStr) => {
-    const d = dayjs(dateStr, "YYYY-MM-DD");
+// Latest bed change date
+let latestBedChangeDate = null;
 
-    // joiningDate இல்லனா future மட்டும் disable
-    if (!minDate) return d.isAfter(maxDate, "day");
+if (bedHistory.length > 0) {
+  const lastRecord = bedHistory[bedHistory.length - 1];
 
-    // joiningDate ku munnadi disable
-    if (d.isBefore(minDate, "day")) return true;
+  if (lastRecord.endDate === "Till date") {
+    latestBedChangeDate = dayjs(
+      lastRecord.startDate,
+      ["DD/MM/YYYY", "DD-MM-YYYY"]
+    );
+  } else {
+    const validDates = bedHistory
+      .filter(b => b.startDate)
+      .map(b =>
+        dayjs(b.startDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+      );
 
-    // future date disable
-    if (d.isAfter(maxDate, "day")) return true;
+    if (validDates.length > 0) {
+      latestBedChangeDate = dayjs.max(validDates);
+    }
+  }
+}
 
-    return false;
-  };
-  const markedDates = {};
+// Joined this month logic
+const joinedThisMonth =
+  joiningDate &&
+  joiningDate.month() === today.month() &&
+  joiningDate.year() === today.year();
+
+let compareDate;
+
+if (joinedThisMonth) {
+  compareDate = latestBedChangeDate || joiningDate;
+} else {
+  compareDate =
+    latestBedChangeDate || lastBillDate || joiningDate;
+}
+
+const isDisabledReassignDate = (dateStr) => {
+  const d = dayjs(dateStr, "YYYY-MM-DD");
+
+  if (d.isAfter(today, "day")) return true;
+
+  if (compareDate && d.isBefore(compareDate, "day"))
+    return true;
+
+  return false;
+};
+
+const markedDates = React.useMemo(() => {
+  const marks = {};
 
   for (let i = -365; i <= 365; i++) {
     const d = dayjs().add(i, "day");
     const key = d.format("YYYY-MM-DD");
 
     if (isDisabledReassignDate(key)) {
-      markedDates[key] = {
+      marks[key] = {
         disabled: true,
         disableTouchEvent: true,
         customStyles: {
@@ -135,16 +189,20 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     }
   }
 
-  // selected date highlight
   if (date) {
     const selectedKey = dayjs(date).format("YYYY-MM-DD");
-    markedDates[selectedKey] = {
-      ...markedDates[selectedKey],
+    marks[selectedKey] = {
+      ...marks[selectedKey],
       selected: true,
       selectedColor: "#2563EB",
       selectedTextColor: "#fff",
     };
   }
+
+  return marks;
+}, [date, compareDate]);
+
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -304,6 +362,8 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     }
   };
 
+  
+
 
   const filteredBeds = beds.filter(bed => {
     if (!floorSelected || !roomSelected) return false;
@@ -443,13 +503,18 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             <Calendar
               markingType="custom"
               markedDates={markedDates}
+              // current={
+              //   date
+              //     ? dayjs(date).format("YYYY-MM-DD")
+              //     : minDate
+              //       ? minDate.format("YYYY-MM-DD")
+              //       : dayjs().format("YYYY-MM-DD")
+              // }
               current={
-                date
-                  ? dayjs(date).format("YYYY-MM-DD")
-                  : minDate
-                    ? minDate.format("YYYY-MM-DD")
-                    : dayjs().format("YYYY-MM-DD")
-              }
+  date
+    ? dayjs(date).format("YYYY-MM-DD")
+    : today.format("YYYY-MM-DD")
+}
               onDayPress={(day) => {
                 if (isDisabledReassignDate(day.dateString)) return;
 
@@ -498,7 +563,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   showsVerticalScrollIndicator={false}
   keyboardShouldPersistTaps="handled"
   scrollEnabled={!disableSheetScroll}   // ✅ important
-  contentContainerStyle={{ paddingBottom: 40 }}
+  contentContainerStyle={{ paddingBottom: 80 }}
 >
 
             <Text style={styles.title}>Change Bed</Text>

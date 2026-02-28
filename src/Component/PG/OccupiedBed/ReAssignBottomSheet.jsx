@@ -25,6 +25,9 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import { useNavigation } from "@react-navigation/native";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import minMax from "dayjs/plugin/minMax";
+dayjs.extend(minMax);
+
 
 
 export default function ConfirmReassignSheet({
@@ -48,6 +51,8 @@ export default function ConfirmReassignSheet({
   const [message, setMessage] = useState("");
   const [dateError, setDateError] = useState("")
   const [rentError, setRentError] = useState("")
+  const [customerdetails, setCustomerDetails] = useState(null)
+
  const scrollRef = useRef(null);
   const reasonRef = useRef(null);
   const { activeHostelId } = useContext(CommonContexts);
@@ -59,26 +64,121 @@ export default function ConfirmReassignSheet({
     if (sameAsCurrent) {
       setRentAmount(String(selectedBed?.rentAmount || ""));
     }
-  }, [sameAsCurrent]);const joiningDateRaw = selectedBed?.currentTenantInfo?.[0]?.joiningDate;
+  }, [sameAsCurrent]);
+
+ 
+ useEffect(() => {
+  const fetchCustomerDetails = async () => {
+    const tenantId = selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+    if (!tenantId || !activeHostelId) return;
+
+    const res = await getCustomerDetails(tenantId);
+
+    if (res?.success) {
+      setCustomerDetails(res?.data);
+    }
+  };
+
+  fetchCustomerDetails();
+}, [selectedBed, activeHostelId]);
+
+console.log("customerdetails", customerdetails);
+
+
+  const today = dayjs().startOf("day");
+
+
+  const joiningDateRaw = selectedBed?.currentTenantInfo?.[0]?.joiningDate;
 
 const joiningDate = joiningDateRaw
   ? dayjs(joiningDateRaw, ["DD/MM/YYYY", "DD-MM-YYYY", "YYYY-MM-DD"])
   : null;
 
-const today = dayjs().startOf("day");
+ const bedHistory = customerdetails?.bedHistory || [];
+  console.log("bedhistory", bedHistory);
+
+  const invoices = customerdetails?.invoiceResponseList || [];
+
+const lastBillDate =
+  invoices.length > 0
+    ? dayjs(
+        invoices[invoices.length - 1].invoiceGeneratedDate,
+        ["DD/MM/YYYY", "DD-MM-YYYY"]
+      )
+    : null;
+  
+
+let latestBedChangeDate = null;
+
+if (bedHistory.length > 0) {
+  const lastRecord = bedHistory[bedHistory.length - 1];
+
+  if (lastRecord.endDate === "Till date") {
+    latestBedChangeDate = dayjs(
+      lastRecord.startDate,
+      ["DD/MM/YYYY", "DD-MM-YYYY"]
+    );
+  } else {
+    const validDates = bedHistory
+      .filter(b => b.startDate)
+      .map(b =>
+        dayjs(b.startDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+      );
+
+    if (validDates.length > 0) {
+      latestBedChangeDate = dayjs.max(validDates);
+    }
+  }
+}
+
+const joinedThisMonth =
+  joiningDate &&
+  joiningDate.month() === today.month() &&
+  joiningDate.year() === today.year();
+
+let compareDate;
+
+if (joinedThisMonth) {
+  compareDate = latestBedChangeDate || joiningDate;
+} else {
+  compareDate =
+    latestBedChangeDate || lastBillDate || joiningDate;
+}
+
+// const compareDate = latestBedChangeDate || joiningDate;
+
+
+
+
 const isDateDisabled = (date) => {
   if (!date) return false;
 
   const d = dayjs(date);
 
-  // ❌ before joining date
-  if (joiningDate && d.isBefore(joiningDate, "day")) return true;
-
-  // ❌ future date
+  // ❌ future block
   if (d.isAfter(today, "day")) return true;
+
+  // ❌ before latest bed change OR joining date
+  if (compareDate && d.isBefore(compareDate, "day")) return true;
 
   return false;
 };
+
+// const isDateDisabled = (date) => {
+//   if (!date) return false;
+
+//   const d = dayjs(date);
+
+//   if (joiningDate && d.isBefore(joiningDate, "day")) return true;
+
+
+//   if (d.isAfter(today, "day")) return true;
+
+//   return false;
+// };
+
+
 const markedDates = {};
 
 for (let i = -180; i <= 180; i++) {
@@ -276,11 +376,11 @@ useEffect(() => {
       setTimeout(() => {
         setShowSuccess(false);
         onClose();
-        navigation.navigate({
-          name: "PG",
-          params: { refresh: true },
-          merge: true,
-        });
+        // navigation.navigate({
+        //   name: "PG",
+        //   params: { refresh: true },
+        //   merge: true,
+        // });
       }, 800);
 
 
