@@ -40,7 +40,7 @@ const TenantRegister = ({navigation}) => {
           } = useHasPermission("Reports")
 
           useEffect(() => {
-  if (!activeHostelId) return; // 🔥 hostelId illana call panna koodadhu
+  if (!activeHostelId) return;
 
   const fetchTenantRegister = async () => {
     const response = await getTenantRegisterReport(activeHostelId, {
@@ -49,7 +49,7 @@ const TenantRegister = ({navigation}) => {
     });
 
     if (response.success) {
-      setTenantData(response.data);  // 🔥 store API response
+      setTenantData(response.data);  
     }
   };
 
@@ -165,13 +165,7 @@ const handleDownloadReport = async () => {
   showsVerticalScrollIndicator={false}
    contentContainerStyle={{ paddingBottom: 140 }}
     >
-      {/* SUMMARY CARD */}
-
-
-      {/* FILTER */}
      
-
-      {/* LIST */}
     {tenantData && tenantData?.tenants?.map((item, index) => (
   <View key={index} style={styles.listItem}>
     <View>
@@ -190,14 +184,9 @@ const handleDownloadReport = async () => {
          </View>
 )}
 
-
-
-      {/* EXPORT */}
     
     </ScrollView>
-      {/* <TouchableOpacity style={styles.exportBtn}>
-        <Text style={styles.exportText}>Export PDF</Text>
-      </TouchableOpacity> */}
+
     </View>
 
       <View style={styles.exportWrapper}>
@@ -213,7 +202,6 @@ const handleDownloadReport = async () => {
 
 export default TenantRegister;
 
-/* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
  container: {
@@ -225,7 +213,6 @@ const styles = StyleSheet.create({
 
 
  headerRow: {
-    // height: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent:'space-between',
@@ -246,39 +233,29 @@ monthText: {
 
   title: { fontSize: 18, fontWeight: "700" },
 
-  /* SUMMARY */
-//   summaryCard: {
-//     backgroundColor: "#F8FAFC",
-//     borderRadius: 14,
-//     padding: 16,
-//     marginBottom: 14,
-//   },
+
 
   summaryCard: {
   borderRadius: 14,
   padding: 16,
   marginBottom: 14,
-//   shadowColor: "#000",
-//   shadowOpacity: 0.04,
-//   shadowRadius: 8,
-//   elevation: 5,
 },
 
 divider: {
   height: 1,
-  backgroundColor: "rgba(0,0,0,0.06)", // 🔥 figma subtle line
+  backgroundColor: "rgba(0,0,0,0.06)", 
   marginVertical: 2,
   marginBottom:4
 },
 
 totalValue: {
-  fontSize: 20,        // figma-la konjam perusa irukkum
+  fontSize: 20,      
   fontWeight: "700",
   color: "#111827",
 },
 sub: {
   fontSize: 12,
-  color: "#9CA3AF",   // slightly lighter like figma
+  color: "#9CA3AF",   
   marginTop: 4,
 },
 
@@ -300,7 +277,6 @@ sub: {
     color: "#111827",
   },
 
-  /* FILTER */
   filterRow: {
     flexDirection: "row",
     marginBottom: 10,
@@ -332,12 +308,11 @@ sub: {
     fontWeight: "500",
   },
 
-  /* LIST */
   listItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,   // 🔥 compact like figma
+    paddingVertical: 10,   
     borderBottomWidth: 1,
     borderColor: "#F1F5F9",
   },
@@ -378,7 +353,6 @@ sub: {
     fontWeight: "500",
   },
 
-  /* EXPORT */
 
 exportWrapper: {
   position: "absolute",
@@ -396,9 +370,6 @@ exportBtn: {
   paddingVertical: 14,
   alignItems: "center",
 },
-
-
-
   exportText: {
     color: "#fff",
     fontWeight: "600",

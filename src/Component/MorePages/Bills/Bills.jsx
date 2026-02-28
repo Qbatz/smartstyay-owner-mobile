@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
+import { NativeModules } from "react-native";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
@@ -86,14 +87,16 @@ import BillBookings from "./Bill_Bookings";
 export default function BillsDesign({ route }) {
 
   const insets = useSafeAreaInsets();
+   const { CommonModule } = NativeModules;
 
   const detailDotsRef = useRef(null);
 
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
-    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt } = useContext(BillContext);
+    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt ,
+  downloadBill} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
-  const { bankList, getBankListByHostel } = useContext(BankingContext);
+  const { bankList, getBankListByHostel } = useContext(BankingContext)
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -1494,6 +1497,48 @@ export default function BillsDesign({ route }) {
     // });
   }
 
+  const handleDownloadBillsPdf = async () => {
+  const res = await downloadBill(activeHostelId, selectedBill.invoiceId);
+
+  if (res?.success) {
+       await CommonModule.downloadAndViewDocument(res?.url);
+  }
+};
+
+  
+  // const handleDownloadReport = async () => {
+  //   try {
+   
+  
+  //     const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         params: {
+  //           startDate,
+  //           endDate,
+  //         },
+  //       }
+  //     )
+  
+  //     console.log("DOWNLOAD API RESPONSE →", res.data);
+  
+  //     const fileUrl = res.data;
+  
+  //     if (!fileUrl) {
+  //       console.log("No file URL received");
+  //       return;
+  //     }
+  
+  //     await CommonModule.downloadAndViewDocument(fileUrl);
+  
+  //   } catch (error) {
+  //     console.log("Download error →", error);
+  //   }
+  // };
+  
+
   const handleDownloadReceipt = async () => {
     console.log("bijuroy")
     if (!activeHostelId) return;
@@ -2790,25 +2835,23 @@ export default function BillsDesign({ route }) {
         <Text style={styles.popupText}>Download</Text> 
       </TouchableOpacity> */}
 
-                <TouchableOpacity
-                  style={[
-                    styles.popupRow,
-                    isBillLocked && styles.popupRowDisabled,
-                  ]}
-                  disabled={isBillLocked && !canWriteInvoice}
+                <TouchableOpacity 
+                  style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
+                  onPress={handleDownloadBillsPdf}
+                  disabled={!canWriteInvoice}
                 // onPress={() => {
                 //   setShowMenu(false);
                 //   setDeleteTenants(true);
                 // }}
                 >
                   <Image
-                    source={require("../../../Assets/Images/ReAssign.png")}
+                   source={DownloadIcon} 
                     style={styles.popupIcon}
                   />
                   <Text
                     style={[
                       styles.popupText,
-                      isBillLocked && styles.popupTextDisabled,
+                      //  styles.popupTextDisabled,
                     ]}
                   >
                     Download
@@ -2840,13 +2883,13 @@ export default function BillsDesign({ route }) {
 
                 )}
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[
                     styles.popupRow,
                     isBillLocked && styles.popupRowDisabled,
                   ]}
                   disabled={isBillLocked && !canWriteInvoice}
-                // onPress={handleShowWriteOff}
+                onPress={handleShowWriteOff}
                 >
                   <Image
                     source={require("../../../Assets/Images/ReAssign.png")}
@@ -2860,7 +2903,7 @@ export default function BillsDesign({ route }) {
                   >
                     Write-off
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
 
                 {/* <TouchableOpacity style={styles.popupRow} onPress={handleShowWriteOff} >

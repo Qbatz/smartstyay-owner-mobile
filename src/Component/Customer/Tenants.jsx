@@ -1260,8 +1260,7 @@ export default function TenantsScreen({ route }) {
               {
                 selectedCustomer?.customerCurrentStatus === "NOTICE" &&
                 <>
-                  <TouchableOpacity
-                    // style={styles.popupRow}
+                  {/* <TouchableOpacity
                     style={[
                       styles.popupRow,
                       !canUpdateTenant && { opacity: 0.4 }]}
@@ -1270,7 +1269,7 @@ export default function TenantsScreen({ route }) {
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                     <Text style={styles.popupText}>Generate</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                   <TouchableOpacity
                     // style={styles.popupRow}
                     style={[
@@ -1280,7 +1279,7 @@ export default function TenantsScreen({ route }) {
                     onPress={handleShowFinalNew}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Generate New</Text>
+                    <Text style={styles.popupText}>Generate </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     // style={styles.popupRow}
@@ -1399,8 +1398,7 @@ export default function TenantsScreen({ route }) {
                     !["Checked In", "Settlement Generated", "Booked"].includes(selectedItem.currentStatus) && (
 
                       <>
-                        <TouchableOpacity
-                          // style={styles.popupRow}
+                        {/* <TouchableOpacity
                           style={[
                             styles.popupRow,
                             !canUpdateTenant && { opacity: 0.4 }]}
@@ -1411,7 +1409,7 @@ export default function TenantsScreen({ route }) {
                             style={styles.popupIcon}
                           />
                           <Text style={styles.popupText}>Generate</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity
                           // style={styles.popupRow}
                           style={[
@@ -1421,7 +1419,7 @@ export default function TenantsScreen({ route }) {
                           onPress={handleShowFinalNew}
                         >
                           <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                          <Text style={styles.popupText}>Generate New</Text>
+                          <Text style={styles.popupText}>Generate </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity

@@ -15,6 +15,7 @@ import Tick from "../../../Assets/Images/tick.png";
 import ConfirmReassignSheet from "./ReAssignBottomSheet";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useCustomer } from "../../../Context/CustomerContext";
 import EmptyState from "../../../Assets/Images/Empty_state.png"; 
 import Reservedimg from "../../../Assets/Images/Reservedbed.png";
 
@@ -30,15 +31,18 @@ export default function ReassignBedScreen({ route, navigation }) {
   const [bedsByRoom, setBedsByRoom] = useState({});
   const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id);
 const [rooms, setRooms] = useState([]);
-
+        
+          const { ReAssignStatusCode, setReAssignStatusCode,getCustomerDetails} = useCustomer();
 
 const [bedDetails,setBedDetails] = useState([])
 console.log("selectedBed",selectedBed)
+console.log("rooms",rooms)
 useEffect(() => {
   if (!selectedFloorId) return;
 
   const loadRooms = async () => {
     const res = await getAllRoomsByFloor(selectedFloorId);
+ 
     if (res.success) {
       setRooms(res.data);
     } else {
@@ -48,6 +52,21 @@ useEffect(() => {
 
   loadRooms();
 }, [selectedFloorId]);
+
+
+
+
+ 
+
+ useEffect(() => {
+  if(ReAssignStatusCode === 200){
+      navigation.goBack()
+  }
+  setReAssignStatusCode(0)
+},[ReAssignStatusCode])
+
+console.log("ReAssignStatusCode", ReAssignStatusCode);
+
 
 
  useEffect(() => {
