@@ -270,7 +270,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
 
             {
-              selectedBed.newTenantInfo > 0 &&
+              selectedBed?.newTenantInfo > 0 &&
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
                 <Text style={styles.sectionTitle}>Reserved by</Text>
 
@@ -367,8 +367,6 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                                 disabled={!canWriteCustomers}
                                 style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                                 onPress={() => handleMakeUsIn(item)}
-
-
                               >
                                 <Image
                                   style={styles.menuIcon}
