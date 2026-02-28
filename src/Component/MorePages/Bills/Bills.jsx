@@ -11,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard
+  BackHandler, Keyboard,
+  NativeModules
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -228,6 +229,8 @@ export default function BillsDesign({ route }) {
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
+
+  const {CommonModule}=NativeModules;
 
 
 
@@ -1500,6 +1503,8 @@ export default function BillsDesign({ route }) {
 
     const response = await downloadReceipt(activeHostelId, selecetedTenantReceipt?.transactionId);
     console.log("downloadReceipt", response)
+
+    CommonModule.downloadAndViewDocument(response.url)
   }
   // const handleDownloadReceipt = async (item) => {
   //   if (!activeHostelId) return;
