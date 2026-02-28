@@ -30,6 +30,7 @@ import Loader from "../../../Component/Loader/Loader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
 import SuccessModal from "../../../ToastFile/ToastPage";
+import PaymentIcon from "../../../Assets/Images/RecordPayIcon.png";
 import Profile from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import SearchIcon from "../../../Assets/Images/Asset_search.png";
@@ -38,6 +39,7 @@ import ActiveCheckout from "../../../Assets/Images/Active_checkout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout.png";
 import ActiveWalkin from "../../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../../Assets/Images/walkin.png";
+import WhatsappIcon from "../../../Assets/Images/whatsapp_blue.png";
 // import TenAntAdd from "../../../Assets/Images/TenantAdd.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -95,7 +97,7 @@ export default function BillsDesign({ route }) {
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt ,
-  downloadBill} = useContext(BillContext);
+  downloadBill , shareBillOnWhatsapp} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
 
@@ -1512,6 +1514,20 @@ export default function BillsDesign({ route }) {
   }
 };
 
+const handleShareBill = async () => {
+  const res = await shareBillOnWhatsapp(activeHostelId, selectedBill?.invoiceId);
+ 
+  if (res?.success) {
+        setModalType("success");
+        setModalMessage("WhatsApp shared successfully");
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 1500);
+    // console.log("WhatsApp shared successfully");
+  } else {
+    console.log(res?.message);
+  }
+}
+
   
   // const handleDownloadReport = async () => {
   //   try {
@@ -2052,7 +2068,7 @@ export default function BillsDesign({ route }) {
                 style={[
                   styles.transactionSheet,
                   {
-                    height: isPaid ? "70%" : isPartial ? "75%" : "60%",
+                    height: isPaid ? "60%" : isPartial ? "80%" : "60%",
                     transform: [{ translateY: detailsSheetY }]
                   }
                 ]}
@@ -2711,6 +2727,7 @@ export default function BillsDesign({ route }) {
                         <Image source={DeleteIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Delete</Text>
                       </TouchableOpacity>
+                     
                     </View>
                   </TouchableOpacity>
                 )}
@@ -2871,7 +2888,7 @@ export default function BillsDesign({ route }) {
                   <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                     onPress={handleShowRefundPayment} disabled={!canWriteInvoice}>
                     <Image
-                      source={require("../../../Assets/Images/ReAssign.png")}
+                       source={PaymentIcon}
                       style={styles.popupIcon}
                     />
                     <Text style={styles.popupText}>Refund Amount</Text>
@@ -2884,7 +2901,7 @@ export default function BillsDesign({ route }) {
                     style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                     onPress={handleShowRecordPayment} disabled={!canWriteInvoice}>
                     <Image
-                      source={require("../../../Assets/Images/ReAssign.png")}
+                      source={PaymentIcon}
                       style={styles.popupIcon}
                     />
                     <Text style={styles.popupText}>Record Payment</Text>
@@ -2984,6 +3001,15 @@ export default function BillsDesign({ route }) {
                     Delete
                   </Text>
                 </TouchableOpacity>
+
+                  <TouchableOpacity
+                        style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
+                        disabled={!canReadInvoice}
+                        onPress={handleShareBill }
+                      >
+                        <Image source={WhatsappIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>share</Text>
+                      </TouchableOpacity>
 
 
                 {/* <TouchableOpacity
@@ -5114,7 +5140,8 @@ const styles = StyleSheet.create({
     borderColor: "#D1D5DB",
     paddingVertical: 14,
     borderRadius: 12,
-    marginTop: 8,
+    marginTop: 2,
+    marginBottom:10,
     alignItems: "center",
     backgroundColor: "#fff",
   },
@@ -5132,7 +5159,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 6,
   },
 
   primaryBtnText: {

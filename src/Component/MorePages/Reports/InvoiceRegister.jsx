@@ -9,6 +9,7 @@ import {
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import { NativeModules } from "react-native";
 import Loader from "../../../Component/Loader/Loader"
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
@@ -17,8 +18,8 @@ import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 
 const InvoiceRegister = ({navigation}) => {
- 
-     const {loading,  Reportsdetails , GetInvoiceReports  , invoiceReports} = UseSetting();
+       const { CommonModule } = NativeModules;
+     const {loading,  Reportsdetails , GetInvoiceReports  , invoiceReports , downloadInvoiceReport} = UseSetting();
     const { activeHostelId } = useContext(CommonContexts);
 
       const {
@@ -33,6 +34,15 @@ const InvoiceRegister = ({navigation}) => {
     GetInvoiceReports(activeHostelId);
   }
 }, [activeHostelId]);
+
+
+const handleDownloadInvoiceReport = async () => {
+  const res = await downloadInvoiceReport(activeHostelId);
+
+  if (res?.success && res?.url) {
+    await CommonModule.downloadAndViewDocument(res.url);
+  }
+};
 
 console.log("invoiceReports", invoiceReports);
 
@@ -134,7 +144,7 @@ console.log("invoiceReports", invoiceReports);
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn}>
+    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadInvoiceReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,Image
 } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import { NativeModules } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
@@ -17,7 +18,8 @@ import Loader from "../../../Component/Loader/Loader"
 
 const ExpenseRegister = ({navigation}) => {
 
-  const {loading,  Reportsdetails , GetExpenseRegisterReport} = UseSetting();
+    const { CommonModule } = NativeModules;
+  const {loading,  Reportsdetails , GetExpenseRegisterReport , downloadExpenseReport} = UseSetting();
 
   // const { getExpenseRegisterReport } = UseSetting();
 const { activeHostelId } = useContext(CommonContexts);
@@ -101,6 +103,14 @@ const expenseList = [
     amount: "₹ 1,100",
   },
 ];
+
+const handleDownloadExpenseReport = async () => {
+  const res = await downloadExpenseReport(activeHostelId)
+
+  if (res?.success && res?.url) {
+    await CommonModule.downloadAndViewDocument(res.url)
+  }
+}
 
 
   return (
@@ -190,7 +200,7 @@ const expenseList = [
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn}>
+    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadExpenseReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>
