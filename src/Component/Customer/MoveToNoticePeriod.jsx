@@ -173,17 +173,17 @@ export default function MoveNoticeSheet({
 
     setShowNoticeModal(true)
 
-   
+
   };
 
-  const confirmMoveNotice=async()=>{
+  const confirmMoveNotice = async () => {
     setShowNoticeModal(false)
 
     const tenantId =
       customer?.customerId ||
       selectedBed?.currentTenantInfo[0]?.tenetId;
 
-     const payload = {
+    const payload = {
       customerId: tenantId,
       requestDate: dayjs(reqDate).format("DD-MM-YYYY"),
       checkoutDate: dayjs(outDate).format("DD-MM-YYYY"),
@@ -354,10 +354,15 @@ export default function MoveNoticeSheet({
   }
 
 
+
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.overlay}>
+
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
 
         <Animated.View
           style={[styles.sheet, { transform: [{ translateY }] }]}
@@ -372,9 +377,11 @@ export default function MoveNoticeSheet({
 
 
           <View style={styles.profileRow}>
-            {customer?.profilePic ? <Image source={{ uri: customer?.profilePic }} style={styles.profileImg} /> :
+            {customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ? 
+            <Image source={{ uri: customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic}} style={styles.profileImg} /> :
               <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
-                <Text style={{ fontSize: 16, fontWeight: 600 }}>{customer?.initials}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 600 }}>
+                  {customer?.initials || selectedBed?.currentTenantInfo[0]?.tenantInitials}</Text>
               </View>}
 
 
@@ -383,12 +390,14 @@ export default function MoveNoticeSheet({
 
               <View style={styles.badgeRow}>
                 <View style={styles.badgeYellow}>
-                  <Text style={styles.badgeText}>{customer?.floorName || selectedBed?.floorName}</Text>
+                  <Text style={styles.badgeText}>
+                    {customer?.floorName || selectedBed?.floorName || customer?.hostelInfo?.floorName}</Text>
                 </View>
 
                 <View style={styles.badgeRed}>
                   <Text style={styles.badgeText}>
-                    {customer?.roomName || selectedBed?.roomName} - {customer?.bedName || selectedBed?.bedName}
+                    {customer?.roomName || selectedBed?.roomName || customer?.hostelInfo?.roomName} -
+                    {customer?.bedName || selectedBed?.bedName || customer?.hostelInfo?.bedName}
                   </Text>
                 </View>
               </View>
@@ -601,7 +610,7 @@ export default function MoveNoticeSheet({
         </View>
       </Modal>
 
-      
+
 
     </>
   );
