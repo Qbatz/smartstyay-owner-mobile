@@ -760,7 +760,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                   !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
 
                     <>
-                      <TouchableOpacity
+                      {/* <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
@@ -773,7 +773,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                           style={styles.popupIcon}
                         />
                         <Text style={styles.popupText}>Generate</Text>
-                      </TouchableOpacity>
+                      </TouchableOpacity> */}
                       <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
@@ -783,7 +783,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                       onPress={handleShowFinalNew}
                       >
                         <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                        <Text style={styles.popupText}>Generate New</Text>
+                        <Text style={styles.popupText}>Generate</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
