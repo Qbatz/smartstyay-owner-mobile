@@ -25,75 +25,75 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function CancelNotice({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout,initializeCancelCheckout,getCustomerDetails } = useCustomer();
+  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout, initializeCancelCheckout, getCustomerDetails } = useCustomer();
   const [openDate, setOpenDate] = useState(false);
-  const [checkInDate, setCheckInDate] = useState(new Date());
+  const [checkInDate, setCheckInDate] = useState();
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [reason, setReason] = useState("");
-  const [reCheckinSameBed,setReCheckinSameBed] = useState("")
+  const [reCheckinSameBed, setReCheckinSameBed] = useState("")
   const bedData = selectedBed || selectedItem;
   const data = selectedItem || selectedBed;
-  const [customerDetails,setCustomerDetails] = useState("")
+  const [customerDetails, setCustomerDetails] = useState("")
 
   const bedId =
     data?.bedId;
 
   const tenantId =
-    data?.customerId ||                
+    data?.customerId ||
     data?.currentTenantInfo?.[0]?.tenetId;
 
- useEffect(() => {
+  useEffect(() => {
     if (tenantId) {
       fetchCustomerDetails();
     }
   }, [tenantId]);
 
-     const fetchCustomerDetails = async () => {
+  const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(tenantId);
     console.log("fetchCustomerDetails", res)
     if (res.success) {
-     setCustomerDetails(res.data)
+      setCustomerDetails(res.data)
 
     } else {
       alert(res.message);
     }
   };
-console.log("customerDetails",customerDetails)
+  console.log("customerDetails", customerDetails)
   console.log("selectedItem", selectedItem)
   console.log("selectedBed", selectedBed)
-useFocusEffect(
-  useCallback(() => {
-    if (activeHostelId && tenantId) {
-      initCancel();
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId && tenantId) {
+        initCancel();
+      }
+    }, [activeHostelId, tenantId])
+  );
+
+  const initCancel = async () => {
+    const res = await initializeCancelCheckout(activeHostelId, tenantId);
+
+    if (res?.success) {
+      console.log("INIT CANCEL CHECKOUT DATA ✅", res.data);
+      setReCheckinSameBed(res.data)
+      // Example: set default date
+      // setCheckInDate(dayjs(res.data?.reCheckInDate, "DD-MM-YYYY").toDate());
+      // setReason(res.data?.reason || "");
+    } else {
+      alert(res?.message);
     }
-  }, [activeHostelId, tenantId])
-);
+  };
+  const canCheckin = reCheckinSameBed?.canRecheckinSameBed === true;
 
-const initCancel = async () => {
-  const res = await initializeCancelCheckout(activeHostelId, tenantId);
+  const requestedLeavingDate =
+    customerDetails?.checkoutInfo?.noticeDate;
 
-  if (res?.success) {
-    console.log("INIT CANCEL CHECKOUT DATA ✅", res.data);
-setReCheckinSameBed(res.data)
-    // Example: set default date
-    // setCheckInDate(dayjs(res.data?.reCheckInDate, "DD-MM-YYYY").toDate());
-    // setReason(res.data?.reason || "");
-  } else {
-    alert(res?.message);
-  }
-};
-const canCheckin = reCheckinSameBed?.canRecheckinSameBed === true;
+  const minSelectableDate = requestedLeavingDate
+    ? dayjs(requestedLeavingDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+    : dayjs().format("YYYY-MM-DD");
 
-const requestedLeavingDate =
-  customerDetails?.checkoutInfo?.noticeDate; 
-
-const minSelectableDate = requestedLeavingDate
-  ? dayjs(requestedLeavingDate, "DD/MM/YYYY").format("YYYY-MM-DD")
-  : dayjs().format("YYYY-MM-DD");
-
-const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
+  const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
 
   useFocusEffect(
     useCallback(() => {
@@ -146,7 +146,7 @@ const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
     );
 
     if (res?.success) {
-    
+
       setModalType("success");
       setMessage(res.data);
       setShowSuccess(true);
@@ -166,88 +166,91 @@ const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
 
   return (
     <>
-    <SuccessModal visible={showSuccess} message={message} type={modalType} />
-    <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 30 }}>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 30 }}>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={ArrowLeft} style={styles.backIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Cancel Check-out</Text>
-      </View>
-
-      {/* Content */}
-      <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-      >
-
-        {/* Tenant Details */}
-        <View style={styles.tenantRow}>
-          {console.log("kaja",selectedItem)}
-
-          {selectedItem?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ? 
-          <Image source={{uri:selectedItem?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic}} style={styles.avatar} /> 
-          : 
-          <View style={[styles.avatar,{alignItems:'center', backgroundColor: "#E5E7EB",justifyContent:'center'}]}>
-            <Text style={{fontSize: 13,fontWeight: "700",color: "#374151"}}>
-              {selectedItem?.initials || selectedBed?.currentTenantInfo[0]?.tenantInitials}
-            </Text>
-          </View>}
-          {/* <Image source={SampleAvatar} style={styles.avatar} /> */}
-
-          <View style={{ marginLeft: 14,marginRight:50 }}>
-            <Text style={styles.tenantName}>{selectedItem?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
-
-            <View style={styles.smallRow}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed?.floorName}</Text>
-              </View>
-
-              <Image source={RoomIcon} style={styles.smallIcon} />
-              <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed?.roomName}</Text>
-
-              <Image source={BedIcon} style={styles.smallIcon} />
-              <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed?.bedName}</Text>
-            </View>
-          </View>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Cancel Check-out</Text>
         </View>
 
-
-        <Text style={styles.label}>Stay Type</Text>
-
-        <TouchableOpacity style={styles.dropBox}>
-          <Text style={styles.dropText}>Long stay</Text>
-
-          <Image source={DownArrow} style={styles.dropIcon} />
-        </TouchableOpacity>
-
-        <Text style={styles.label}>Re Check-In Date <Text style={{ color: "red" }}>*</Text></Text>
-
-        <TouchableOpacity
-          style={styles.inputBox}
-          onPress={() => setOpenDate(!openDate)}
+        {/* Content */}
+        <ScrollView
+          contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.inputText}>
-            {dayjs(checkInDate).format("DD/MM/YYYY")}
-          </Text>
-          <Image source={CalendarIcon} style={styles.calendarIcon} />
-        </TouchableOpacity>
+
+          {/* Tenant Details */}
+          <View style={styles.tenantRow}>
+            {console.log("kaja", selectedItem)}
+
+            {selectedItem?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ?
+              <Image source={{ uri: selectedItem?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic }} style={styles.avatar} />
+              :
+              <View style={[styles.avatar, { alignItems: 'center', backgroundColor: "#E5E7EB", justifyContent: 'center' }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: "#374151" }}>
+                  {selectedItem?.initials || selectedBed?.currentTenantInfo[0]?.tenantInitials}
+                </Text>
+              </View>}
+            {/* <Image source={SampleAvatar} style={styles.avatar} /> */}
+
+            <View style={{ marginLeft: 14, marginRight: 50 }}>
+              <Text style={styles.tenantName}>{selectedItem?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
+
+              <View style={styles.smallRow}>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed?.floorName || selectedItem?.hostelInfo?.floorName}</Text>
+                </View>
+
+                <Image source={RoomIcon} style={styles.smallIcon} />
+                <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed?.roomName || selectedItem?.hostelInfo?.roomName}</Text>
+
+                <Image source={BedIcon} style={styles.smallIcon} />
+                <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed?.bedName || selectedItem?.hostelInfo?.bedName}</Text>
+              </View>
+            </View>
+          </View>
+
+
+          <Text style={styles.label}>Stay Type</Text>
+
+          <TouchableOpacity style={styles.dropBox}>
+            <Text style={styles.dropText}>Long stay</Text>
+
+            <Image source={DownArrow} style={styles.dropIcon} />
+          </TouchableOpacity>
+
+          <Text style={styles.label}>Re Check-In Date <Text style={{ color: "red" }}>*</Text></Text>
+
+          <TouchableOpacity
+            style={styles.inputBox}
+            onPress={() => setOpenDate(!openDate)}
+          >
+            <Text style={styles.inputText}>
+              {checkInDate
+                ? dayjs(checkInDate).format("DD/MM/YYYY")
+                : "DD/MM/YYYY"}
+              {/* {dayjs(checkInDate).format("DD/MM/YYYY")} */}
+            </Text>
+            <Image source={CalendarIcon} style={styles.calendarIcon} />
+          </TouchableOpacity>
 
 
 
-        {/* Reason */}
-        <Text style={styles.label}>Reason (Comments)</Text>
-        <TextInput
-          style={styles.textarea}
-          multiline
-          placeholder="Add reason..."
-          value={reason}
-          onChangeText={setReason}
-        />
-      </ScrollView>
-      {/* {openDate && (
+          {/* Reason */}
+          <Text style={styles.label}>Reason (Comments)</Text>
+          <TextInput
+            style={styles.textarea}
+            multiline
+            placeholder="Add reason..."
+            value={reason}
+            onChangeText={setReason}
+          />
+        </ScrollView>
+        {/* {openDate && (
         <View style={styles.dropdownBox}>
           <DatePicker
             mode="single"
@@ -259,54 +262,54 @@ const maxSelectableDate = dayjs().format("YYYY-MM-DD"); // ✅ future disable
           />
         </View>
       )} */}
-      {openDate && (
-  <View style={styles.dropdownBox}>
-    <Calendar
-      current={dayjs(checkInDate).format("YYYY-MM-DD")}
-      minDate={minSelectableDate}
-      maxDate={maxSelectableDate}
-      onDayPress={(day) => {
-        setCheckInDate(new Date(day.dateString));
-        setOpenDate(false);
-      }}
-      markedDates={{
-        [dayjs(checkInDate).format("YYYY-MM-DD")]: {
-          selected: true,
-          selectedColor: "#2B6CF6",
-        },
-      }}
-      theme={{
-        todayTextColor: "#2B6CF6",
-        arrowColor: "#2B6CF6",
-      }}
-    />
-  </View>
-)}
+        {openDate && (
+          <View style={styles.dropdownBox}>
+            <Calendar
+              current={dayjs(checkInDate).format("YYYY-MM-DD")}
+              minDate={minSelectableDate}
+              maxDate={maxSelectableDate}
+              onDayPress={(day) => {
+                setCheckInDate(new Date(day.dateString));
+                setOpenDate(false);
+              }}
+              markedDates={{
+                [dayjs(checkInDate).format("YYYY-MM-DD")]: {
+                  selected: true,
+                  selectedColor: "#2B6CF6",
+                },
+              }}
+              theme={{
+                todayTextColor: "#2B6CF6",
+                arrowColor: "#2B6CF6",
+              }}
+            />
+          </View>
+        )}
 
 
-      {/* Bottom Buttons */}
-      <View style={styles.btnRow}>
-        <TouchableOpacity
-          style={styles.cancelBtn}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
+        {/* Bottom Buttons */}
+        <View style={styles.btnRow}>
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
 
-        {/* <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
+          {/* <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
           <Text style={styles.addBtnText}>Check-In</Text>
         </TouchableOpacity> */}
-        <TouchableOpacity
-  style={[styles.addBtn2, !canCheckin && styles.disabledBtn]}
-  onPress={handleCancelNotice}
-  disabled={!canCheckin}
->
-  <Text style={[styles.addBtnText, !canCheckin && styles.disabledText]}>
-    Check-In
-  </Text>
-</TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.addBtn2, !canCheckin && styles.disabledBtn]}
+            onPress={handleCancelNotice}
+            disabled={!canCheckin}
+          >
+            <Text style={[styles.addBtnText, !canCheckin && styles.disabledText]}>
+              Check-In
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
     </>
   );
 }
@@ -468,10 +471,10 @@ const styles = StyleSheet.create({
     tintColor: "#555",   // arrow light black
   },
   disabledBtn: {
-  backgroundColor: "#CBD5E1", // grey
-},
-disabledText: {
-  color: "#6B7280",
-},
+    backgroundColor: "#CBD5E1", // grey
+  },
+  disabledText: {
+    color: "#6B7280",
+  },
 
 });

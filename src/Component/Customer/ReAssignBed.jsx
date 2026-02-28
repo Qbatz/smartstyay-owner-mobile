@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
     bottom: 0,
 
     height: "95%",
-    maxHeight: "90%",
+    maxHeight: "95%",
 
     backgroundColor: "#fff",
     borderTopLeftRadius: 30,

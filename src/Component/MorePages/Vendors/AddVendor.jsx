@@ -226,6 +226,7 @@ const filteredStateList = stateList?.filter((s) =>
     return bStart - aStart;
   });
 
+  console.log('stat',filteredStateList)
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -1022,7 +1023,10 @@ if (!mobile.trim()) {
       setStateQuery(t);
       setStateOpen(true);
     }}
-      onFocus={() => scrollToField(stateRef)} 
+      onFocus={() => {
+        setStateOpen(true);
+        setStateQuery("")
+        scrollToField(stateRef)} }
   
   // onBlur={() => {
   //   setIsInputFocused(false);

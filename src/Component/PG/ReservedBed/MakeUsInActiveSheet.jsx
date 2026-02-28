@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useContext,useCallback } from "react";
+import React, { useRef, useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Image,
-  StyleSheet, PanResponder,KeyboardAvoidingView,Platform,ScrollView,Keyboard 
+  StyleSheet, PanResponder, KeyboardAvoidingView, Platform, ScrollView, Keyboard
 } from "react-native";
 
 import DatePicker from "react-native-ui-datepicker";
@@ -21,14 +21,14 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
-export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems ,onBedAdded}) {
+export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems, onBedAdded }) {
   const translateY = useRef(new Animated.Value(400)).current;
   const [joiningDate, setJoiningDate] = useState(null);
   const [bookingDetails, setBookingDetails] = useState("")
   const [comments, setComments] = useState("");
   const { activeHostelId } = useContext(CommonContexts);
-   const { getAllBedsByRoom } = useFloor();
-  const { cancelCheckout, initializeCheckIn, initializeCancelBooking, cancelBooking,getCustomersByHostel } = useCustomer();
+  const { getAllBedsByRoom } = useFloor();
+  const { cancelCheckout, initializeCheckIn, initializeCancelBooking, cancelBooking, getCustomersByHostel } = useCustomer();
   const [openJoinDatePic, setOpenJoinDatePic] = useState("");
   const [bankdetails, setBankDetails] = useState("")
   const [commentError, setCommentError] = useState("")
@@ -39,8 +39,8 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   console.log("bookingDetails", bookingDetails)
   const today = dayjs().format("YYYY-MM-DD");
   const [customers, setCustomers] = useState([]);
-const scrollRef = useRef(null);
-const commentRef = useRef(null);
+  const scrollRef = useRef(null);
+  const commentRef = useRef(null);
   const minDate = bookingDetails?.bookedDate
     ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
     : today;
@@ -61,49 +61,49 @@ const commentRef = useRef(null);
     initCheckIn();
   }, [activeHostelId, customerId]);
   useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    Animated.timing(translateY, {
-      toValue: -e.endCoordinates.height + 80,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  });
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height + 80,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    Animated.timing(translateY, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
-
-
-    useFocusEffect(
-      useCallback(() => {
-        if (activeHostelId) {
-          fetchCustomers();
-        }
-      }, [activeHostelId])
-    );
-  
-  
-  
-    const fetchCustomers = async () => {
-      const data = await getCustomersByHostel(activeHostelId);
-      setCustomers(data.listCustomers || []);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
     };
+  }, []);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        fetchCustomers();
+      }
+    }, [activeHostelId])
+  );
+
+
+
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data.listCustomers || []);
+  };
   console.log("setBookingDetails", bookingDetails)
   const matchedCustomer = customers?.find(
-  (c) => String(c.customerId) === String(bookedItems?.tenetId)
-);
+    (c) => String(c.customerId) === String(bookedItems?.tenetId)
+  );
 
-console.log("matchedCustomer", matchedCustomer);
+  console.log("matchedCustomer", matchedCustomer);
 
   useEffect(() => {
     if (!customerId) return;
@@ -133,13 +133,13 @@ console.log("matchedCustomer", matchedCustomer);
     setOpenJoinDatePic(false);
     onClose();
   };
-useEffect(() => {
-  if (visible) {
-    setTimeout(() => {
-      commentRef.current?.focus();
-    }, 400);
-  }
-}, [visible]);
+  useEffect(() => {
+    if (visible) {
+      setTimeout(() => {
+        commentRef.current?.focus();
+      }, 400);
+    }
+  }, [visible]);
   console.log("bookedItems", bookedItems)
   console.log("selectedItempr", selectedItem)
   useEffect(() => {
@@ -177,7 +177,7 @@ useEffect(() => {
       setJoiningDateError("Please select joining date");
       valid = false;
     }
-   
+
 
     if (!valid) return;
 
@@ -200,7 +200,7 @@ useEffect(() => {
       setMessage(res.data);
       setShowSuccess(true);
       onSuccess && onSuccess();
-     onBedAdded && onBedAdded(matchedCustomer?.roomId);
+      onBedAdded && onBedAdded(matchedCustomer?.roomId);
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -253,152 +253,154 @@ useEffect(() => {
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-   <View style={styles.overlay}>
-  <TouchableWithoutFeedback onPress={handleClose}>
-    <View style={{ flex: 1 }} />
-  </TouchableWithoutFeedback>
+      <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={handleClose}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
 
- 
-    <Animated.View
-      style={[styles.sheet, { transform: [{ translateY }] }]}
-      {...panResponder.panHandlers}
-    >
-  <ScrollView
-  ref={scrollRef}
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
->
-        <Text style={styles.title}>Tenant Inactive ?</Text>
-        <Text style={styles.subTitle}>
-          Are you sure you want to inactive this tenant?
-        </Text>
 
-        
-                  <View style={styles.profileRow}>
-                    {(selectedItem?.profilePic || matchedCustomer?.profilePic) ? <Image source={{uri:selectedItem?.profilePic || matchedCustomer?.profilePic}} style={styles.profileImg} /> : 
-                    <View style={[styles.profileImg,{justifyContent:'center',alignItems:'center',backgroundColor:'#eef1ff'}]}>
-                      <Text style={{fontSize:16,fontWeight:600}}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
-                    </View>}
-                    
-        
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.name}>{selectedItem?.fullName || matchedCustomer?.fullName}</Text>
-        
-                      <View style={styles.badgeRow}>
-                        <View style={styles.badgeYellow}>
-                          <Text style={styles.badgeText}>{selectedItem?.floorName ||  matchedCustomer?.floorName}</Text>
-                        </View>
-        
-                        <View style={styles.badgeRed}>
-                          <Text style={styles.badgeText}>
-                            {selectedItem?.roomName ||  matchedCustomer?.roomName} - {selectedItem?.bedName ||  matchedCustomer?.bedName}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
+        <Animated.View
+          style={[styles.sheet, { transform: [{ translateY }] }]}
+          {...panResponder.panHandlers}
+        >
+          <ScrollView
+            ref={scrollRef}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.title}>Tenant Inactive ?</Text>
+            <Text style={styles.subTitle}>
+              Are you sure you want to inactive this tenant?
+            </Text>
+
+
+            <View style={styles.profileRow}>
+              {(selectedItem?.profilePic || matchedCustomer?.profilePic) ? <Image source={{ uri: selectedItem?.profilePic || matchedCustomer?.profilePic }} style={styles.profileImg} /> :
+                <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
+                  <Text style={{ fontSize: 16, fontWeight: 600 }}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
+                </View>}
+
+
+              <View style={{ marginLeft: 12 }}>
+                <Text style={styles.name}>{selectedItem?.fullName || matchedCustomer?.fullName}</Text>
+
+                <View style={styles.badgeRow}>
+                  <View style={styles.badgeYellow}>
+                    <Text style={styles.badgeText}>
+                      {selectedItem?.floorName || matchedCustomer?.floorName || selectedItem?.hostelInfo?.floorName}</Text>
                   </View>
 
-        {/* Joining Date */}
-        <Text style={styles.label}>
-        Date <Text style={{ color: "red" }}>*</Text>
-        </Text>
+                  <View style={styles.badgeRed}>
+                    <Text style={styles.badgeText}>
+                      {selectedItem?.roomName || matchedCustomer?.roomName || selectedItem?.hostelInfo?.roomName} - 
+                      {selectedItem?.bedName || matchedCustomer?.bedName || selectedItem?.hostelInfo?.bedName}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
 
-       <TouchableOpacity
-  style={styles.dateBox}
-  onPress={() => {
-    Keyboard.dismiss();      // ✅ close keyboard first
-    setTimeout(() => {
-      setOpenJoinDatePic(true);
-    }, 100);                 // small delay for smooth close
-  }}
->
+            {/* Joining Date */}
+            <Text style={styles.label}>
+              Date <Text style={{ color: "red" }}>*</Text>
+            </Text>
 
-          <Text style={styles.placeholder}>
-            {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-          </Text>
-          <Image source={CalendarImage} style={{ width: 22, height: 22 }} />
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.dateBox}
+              onPress={() => {
+                Keyboard.dismiss();      // ✅ close keyboard first
+                setTimeout(() => {
+                  setOpenJoinDatePic(true);
+                }, 100);                 // small delay for smooth close
+              }}
+            >
 
-        {joiningDateError && (
-          <ErrorMessage message={joiningDateError} type="error" />
-        )}
+              <Text style={styles.placeholder}>
+                {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+              </Text>
+              <Image source={CalendarImage} style={{ width: 22, height: 22 }} />
+            </TouchableOpacity>
 
-        {/* Reason */}
-        <Text style={[styles.label, { marginTop: 12 }]}>
-          Reason (Comments)
-        </Text>
+            {joiningDateError && (
+              <ErrorMessage message={joiningDateError} type="error" />
+            )}
 
-       <TextInput
-    ref={commentRef}
-    style={styles.textArea}
-    multiline
-    placeholder="Enter comments..."
-    value={comments}
-    onFocus={() => {
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 200);
-    }}
-    onChangeText={(text) => {
-      setComments(text);
-      setCommentError("");
-    }}
-  />
+            {/* Reason */}
+            <Text style={[styles.label, { marginTop: 12 }]}>
+              Reason (Comments)
+            </Text>
 
-        {commentError && <ErrorMessage message={commentError} type="error" />}
+            <TextInput
+              ref={commentRef}
+              style={styles.textArea}
+              multiline
+              placeholder="Enter comments..."
+              value={comments}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({ animated: true });
+                }, 200);
+              }}
+              onChangeText={(text) => {
+                setComments(text);
+                setCommentError("");
+              }}
+            />
 
-        {/* Buttons */}
-        <View style={styles.btnRow}>
-          <TouchableOpacity style={styles.cancelBtn} onPress={handleClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
+            {commentError && <ErrorMessage message={commentError} type="error" />}
 
-          <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmCancel}>
-            <Text style={styles.confirmText}>Confirm</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </Animated.View>
- 
-</View>
+            {/* Buttons */}
+            <View style={styles.btnRow}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleClose}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
 
-    {openJoinDatePic && (
-  <TouchableWithoutFeedback
-    onPress={() => {
-      Keyboard.dismiss();
-      setOpenJoinDatePic(false);
-    }}
-  >
-    <View style={styles.sheetOverlay}>
-      
-      <TouchableWithoutFeedback onPress={() => {}}>
-        <View style={styles.datePickerBox}>
-          <Calendar
-            minDate={minDate}
-            maxDate={today}
-            markedDates={
-              joiningDate
-                ? {
-                    [dayjs(joiningDate).format("YYYY-MM-DD")]: {
-                      selected: true,
-                      selectedColor: "#1E45E1",
-                    },
+              <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmCancel}>
+                <Text style={styles.confirmText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </Animated.View>
+
+      </View>
+
+      {openJoinDatePic && (
+        <TouchableWithoutFeedback
+          onPress={() => {
+            Keyboard.dismiss();
+            setOpenJoinDatePic(false);
+          }}
+        >
+          <View style={styles.sheetOverlay}>
+
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <View style={styles.datePickerBox}>
+                <Calendar
+                  minDate={minDate}
+                  maxDate={today}
+                  markedDates={
+                    joiningDate
+                      ? {
+                        [dayjs(joiningDate).format("YYYY-MM-DD")]: {
+                          selected: true,
+                          selectedColor: "#1E45E1",
+                        },
+                      }
+                      : {}
                   }
-                : {}
-            }
-            onDayPress={(day) => {
-              Keyboard.dismiss();
-              setJoiningDate(day.dateString);
-              setOpenJoinDatePic(false);
-              setJoiningDateError("");
-            }}
-          />
-        </View>
-      </TouchableWithoutFeedback>
+                  onDayPress={(day) => {
+                    Keyboard.dismiss();
+                    setJoiningDate(day.dateString);
+                    setOpenJoinDatePic(false);
+                    setJoiningDateError("");
+                  }}
+                />
+              </View>
+            </TouchableWithoutFeedback>
 
-    </View>
-  </TouchableWithoutFeedback>
-)}
+          </View>
+        </TouchableWithoutFeedback>
+      )}
 
     </>
   );
@@ -406,11 +408,20 @@ useEffect(() => {
 
 const styles = StyleSheet.create({
   overlay: {
-    position: "absolute",
-    left: 0, right: 0, top: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-    marginBottom: 25
+     position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "flex-end",
+  zIndex: 9999,     
+  elevation: 9999,   
+    // position: "absolute",
+    // left: 0, right: 0, top: 0, bottom: 0,
+    // backgroundColor: "rgba(0,0,0,0.4)",
+    // justifyContent: "flex-end",
+    // marginBottom: 25
   },
 
   sheet: {
@@ -420,16 +431,16 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   sheetOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  // backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-  alignItems: "center",
-  
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+    alignItems: "center",
+
+  },
 
 
   title: {
@@ -503,11 +514,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
- 
-   
 
 
- 
+
+
+
   datePickerBox: {
     backgroundColor: "#fff",
     width: "90%",
@@ -516,7 +527,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     elevation: 6,
     marginBottom: 120,
-     borderWidth: 1,
+    borderWidth: 1,
     borderColor: "#5555",
   },
   profileRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
