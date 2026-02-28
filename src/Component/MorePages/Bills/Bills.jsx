@@ -16,7 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
-// import { NativeModules } from "react-native";
+import { NativeModules } from "react-native";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
@@ -1508,8 +1508,10 @@ export default function BillsDesign({ route }) {
 
   if (res?.success && res?.url) {
     await CommonModule.downloadAndViewDocument(res.url);
+    setShowMenu(false)
   } else {
     console.log(res?.message);
+    setShowMenu(false)
   }
 };
 
@@ -1521,9 +1523,11 @@ const handleShareBill = async () => {
         setModalMessage("WhatsApp shared successfully");
         setShowSuccessModal(true);
         setTimeout(() => setShowSuccessModal(false), 1500);
+        setShowMenu(false)
     // console.log("WhatsApp shared successfully");
   } else {
     console.log(res?.message);
+    setShowMenu(false)
   }
 }
 
@@ -3004,7 +3008,7 @@ const handleShareBill = async () => {
                   <TouchableOpacity
                         style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
                         disabled={!canReadInvoice}
-                        onPress={handleShareBill }
+                        onPress={handleShareBill}
                       >
                         <Image source={WhatsappIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>share</Text>
