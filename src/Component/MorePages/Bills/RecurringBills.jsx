@@ -350,7 +350,7 @@ const RecurringBills = () => {
                     { transform: [{ translateX: isActive ? s(18) : 0 }] },
                   ]}
                 >
-                  <Text style={{ fontSize: 10, fontWeight: "700" }}>
+                  <Text style={{ fontSize: 10,fontFamily: "Gilroy-Bold"  }}>
                     {isActive ? "✓" : "✕"}
                   </Text>
                 </View>
@@ -544,7 +544,7 @@ const RecurringBills = () => {
                 </View>
 
                 <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: vs(10) }}>
-                  <View><Text style={{ fontSize: 16, fontWeight: 500 }}>Recurring</Text></View>
+                  <View><Text style={{ fontSize: 16, fontFamily: "Gilroy-Medium"}}>Recurring</Text></View>
                   <View style={{ display: 'flex', flexDirection: 'row', alignItems: "center" }}>
                     <Text style={styles.labelOn}>
                       {selectedBill?.currentStatus ? "On" : "Off"}
@@ -563,7 +563,7 @@ const RecurringBills = () => {
                             { transform: [{ translateX: selectedBill?.currentStatus ? s(18) : 0 }] },
                           ]}
                         >
-                          <Text style={{ fontSize: 10, fontWeight: "700" }}>
+                          <Text style={{ fontSize: 10, fontFamily: "Gilroy-Bold"  }}>
                             {selectedBill?.currentStatus ? "✓" : "✕"}
                           </Text>
                         </View>
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
 
-  monthText: { fontSize: s(16), fontWeight: "600" },
+  monthText: { fontSize: s(16),fontFamily: "Gilroy-Semibold" },
 
   dropButton: {
     borderWidth: 1,
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: s(16),
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#4B5563",
   },
 
@@ -844,7 +844,7 @@ const styles = StyleSheet.create({
     marginRight: s(12),
   },
 
-  name: { fontSize: s(16), fontWeight: "700", color: "#000" },
+  name: { fontSize: s(15), fontFamily: "Gilroy-Bold" , color: "#000" },
 
   tagBox: {
     backgroundColor: "#FFE69C",
@@ -854,11 +854,11 @@ const styles = StyleSheet.create({
     marginRight: s(6),
   },
 
-  tag: { fontSize: s(12), fontWeight: "600", color: "#976600" },
+  tag: { fontSize: s(12), fontFamily: "Gilroy-Semibold", color: "#976600" },
 
-  bill: { fontSize: s(10), color: "#777" },
+  bill: { fontSize: s(10), color: "#777", fontFamily: "Gilroy-Medium" },
 
-  labelOn: { fontSize: s(12), color: "#3562FF", marginBottom: 2, marginRight: s(5) },
+  labelOn: { fontSize: s(12), color: "#3562FF", marginBottom: 2, marginRight: s(5) , fontFamily: "Gilroy-Medium"},
 
   switch: {
     width: s(42),
@@ -881,6 +881,7 @@ const styles = StyleSheet.create({
     marginTop: vs(4),
     fontSize: s(11),
     color: "#878787",
+    fontFamily: "Gilroy-Medium"
   },
   emptyContainer: {
     flex: 1,
@@ -945,7 +946,7 @@ const styles = StyleSheet.create({
 
   billHeaderText: {
     fontSize: s(20),
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     color: "#000",
   },
 
@@ -958,7 +959,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     color: "#2E8B2E",
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     fontSize: s(13),
   },
 
@@ -975,8 +976,8 @@ const styles = StyleSheet.create({
   },
 
   userName: {
-    fontSize: s(17),
-    fontWeight: "700",
+    fontSize: s(15),
+  fontFamily: "Gilroy-Bold" ,
     color: "#000",
   },
 
@@ -990,7 +991,7 @@ const styles = StyleSheet.create({
 
   invTypeText: {
     color: "#C67506",
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold",
     fontSize: s(12),
   },
 
@@ -1029,19 +1030,19 @@ const styles = StyleSheet.create({
 
   value: {
     fontSize: s(16),
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
   amountValue: {
     fontSize: s(16),
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#000",
   },
 
   dueValue: {
     fontSize: s(16),
-    fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
     color: "red",
   },
 
@@ -1056,15 +1057,15 @@ const styles = StyleSheet.create({
   previewText: {
     color: "#fff",
     fontSize: s(16),
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   option: { paddingVertical: vs(12), paddingHorizontal: 14 },
   optionText: { fontSize: s(15), color: "#000" },
 
-  filterTitle: { fontSize: s(20), fontWeight: "700" },
-  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
+  filterTitle: { fontSize: s(20), fontFamily: "Gilroy-Bold" },
+  resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold"},
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: vs(8) },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: s(12), borderRadius: 12 },
@@ -1086,12 +1087,12 @@ const styles = StyleSheet.create({
   selectedText: { fontSize: s(15), color: "#000", flex: 1 },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: vs(16) },
   quickBtn: { width: "32%", paddingVertical: vs(12), borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111", fontWeight: "600" },
+  quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: vs(32) },
   resetBtn: { width: "48%", paddingVertical: vs(14), borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" },
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold"  },
   applyBtn: { width: "48%", paddingVertical: vs(14), borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontWeight: "700" },
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold"  },
   downArrow: { width: s(18), height: s(18), tintColor: "#6F6F6F" },
   dropdownMenu: {
     position: "absolute",

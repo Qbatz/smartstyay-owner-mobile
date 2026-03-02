@@ -84,6 +84,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 12,
     marginLeft: 6,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium",
   },
 });

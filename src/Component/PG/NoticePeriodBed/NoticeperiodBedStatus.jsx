@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  title: { fontSize: 18, fontWeight: "700" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold" },
 
   tagRow: {
     flexDirection: "row",
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  tagText: { fontSize: 12, fontWeight: "600", color: "#333" },
+  tagText: { fontSize: 12, fontFamily: "Gilroy-Semibold", color: "#333" },
 
   menuButton: {
     marginLeft: "auto",
@@ -461,9 +461,9 @@ const styles = StyleSheet.create({
 
   menuIcon: { width: 18, height: 18, marginRight: 10 },
 
-  menuText: { fontSize: 14, color: "#333" },
+  menuText: { fontSize: 14, color: "#333" , fontFamily: "Gilroy-Medium" },
 
-  label: { fontSize: 14, color: "#666", marginTop: 12 },
+  label: { fontSize: 14, color: "#666", marginTop: 12,fontFamily: "Gilroy-Regular" },
 
   profileRow: { flexDirection: "row", marginTop: 6, alignItems: "center" },
 
@@ -475,17 +475,17 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  tenantName: { fontSize: 16, fontWeight: "700" },
+  tenantName: { fontSize: 16, fontFamily: "Gilroy-Bold" },
 
-  tenantPhone: { fontSize: 13, color: "#666" },
+  tenantPhone: { fontSize: 13, color: "#666" , fontFamily: "Gilroy-Semibold"},
 
-  amount: { fontSize: 17, fontWeight: "700", marginTop: 4 },
+  amount: { fontSize: 17, fontFamily: "Gilroy-Bold" , marginTop: 4 },
 
   dateRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
 
   icon: { width: 18, height: 18, marginRight: 8 },
 
-  dateText: { fontSize: 14, fontWeight: "600" },
+  dateText: { fontSize: 14, fontFamily: "Gilroy-Semibold" },
 
   noticeBtn: {
     backgroundColor: "#FFE5E5",
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
 
-  noticeText: { color: "#D9534F", fontSize: 15, fontWeight: "700" },
+  noticeText: { color: "#D9534F", fontSize: 15, fontFamily: "Gilroy-Bold"  },
   initialCircle: {
     backgroundColor: "#E5E7EB",
     alignItems: "center",
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#374151",
   },
 

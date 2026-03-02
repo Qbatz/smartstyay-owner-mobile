@@ -22,6 +22,7 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import Checkin from "../../../Assets/Images/add-circle.png";
 import Loader from "../../Loader/Loader";
 
 
@@ -324,7 +325,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                 style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
                 disabled={!canWriteWalkin}
                 onPress={handleShowTennantCheckin}>
-                <Image source={CalendarIcon} style={styles.menuIcon} />
+                <Image source={Checkin} style={[styles.menuIcon , {tintColor: "#1E45E1",}]} />
                 <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
 
@@ -333,7 +334,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                 style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
                 disabled={!canWriteWalkin}
                 onPress={handleShowAddBooking}>
-                <Image source={CalendarIcon} style={styles.menuIcon} />
+                <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.menuIcon} />
                 <Text style={styles.menuText}>Add booking</Text>
               </TouchableOpacity>
 
