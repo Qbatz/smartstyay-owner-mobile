@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard,
+  BackHandler, Keyboard,NativeModules
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
