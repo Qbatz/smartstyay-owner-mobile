@@ -353,10 +353,9 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
       totalAmount: Number(purchaseAmount),
       description,
       bankId: selectedMode.id,
-      hostelId: activeHostelId,
     }
 
-    const res = await AddExpense(payload);
+    const res = await AddExpense(payload,activeHostelId);
 
     if (res.success) {
       await GetExpenseList(activeHostelId);

@@ -144,16 +144,18 @@ const GetExpenseList = async (hostelId) => {
   }
 };
 
-const AddExpense = async (payload) => {
+const AddExpense = async (payload,hostelId) => {
+  console.log("pilla",payload)
   try {
     setLoading(true);
     setError(null);
     const axios = getAxios();
     const res = await axios.post(
-      `/v2/expense/${payload.hostelId}`,
+      `/v2/expense/${hostelId}`,
       payload
     );
    console.log("response", res.status);
+   console.log(res)
    
     if (res?.status === 201) {
       return { success: true, data: res.data };
