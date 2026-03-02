@@ -118,7 +118,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
     const trimmedAmount = amount?.toString().trim();
 
     if (!trimmedBedName) {
-      setBedNameError("Bed name is required");
+      setBedNameError("Please Enter Bed Name");
       valid = false;
     } else {
       setBedNameError("");
@@ -133,7 +133,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
 
 
     if (!trimmedAmount) {
-      setAmountError("Amount is required");
+      setAmountError("Please Enter Amount");
       valid = false;
     } else if (Number(trimmedAmount) <= 0) {
       setAmountError("Amount must be greater than 0");
@@ -314,8 +314,8 @@ const styles = StyleSheet.create({
     width: 60, height: 5, backgroundColor: "#ccc",
     alignSelf: "center", borderRadius: 3, marginBottom: 15,
   },
-  title: { fontSize: 18, fontWeight: "700", marginBottom: 15 },
-  label: { marginTop: 10, fontWeight: "600", color: "#444" },
+  title: { fontSize: 18,  fontFamily: "Gilroy-Bold", marginBottom: 15 },
+  label: { marginTop: 10,   fontFamily: "Gilroy-Semibold", color: "#444" },
   input: {
     height: 45,
     borderWidth: 1,
@@ -323,6 +323,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     marginTop: 5,
+      fontFamily: "Gilroy-Regular"
   },
   addButton: {
     marginTop: 25,
@@ -339,6 +340,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Semibold",
   },
 });

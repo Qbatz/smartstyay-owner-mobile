@@ -248,12 +248,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
     marginBottom: 8,
+    fontFamily: "Gilroy-Semibold"
   },
   input: {
     borderWidth: 1,
@@ -261,6 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
+     fontFamily: "Gilroy-Regular"
   },
 footer: {
   // borderTopWidth: 1,
@@ -279,7 +281,7 @@ addBtn: {
 addBtnText: {
   color: "#fff",
   textAlign: "center",
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
 },
 
 });

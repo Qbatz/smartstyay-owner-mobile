@@ -595,6 +595,40 @@ const shareBillOnWhatsapp = async (hostelId, invoiceId) => {
     setLoading(false);
   }
 };
+
+
+const shareReceiptOnWhatsapp = async (hostelId, transactionId) => {
+  if (!hostelId || !transactionId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/transaction/share/${hostelId}/${transactionId}`
+    );
+
+    if (res.status === 200) {
+      return {
+        success: true,
+        data: res.data, 
+      };
+    }
+
+    return { success: false, message: "Share failed" };
+
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
   
 
 
@@ -623,7 +657,8 @@ const shareBillOnWhatsapp = async (hostelId, invoiceId) => {
          getReceiptPdfDetails,
          downloadReceipt,
          downloadBill ,
-         shareBillOnWhatsapp
+         shareBillOnWhatsapp,
+         shareReceiptOnWhatsapp,
       }}
     >
       {children}

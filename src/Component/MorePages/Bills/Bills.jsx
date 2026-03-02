@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard,NativeModules
+  BackHandler, Keyboard
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -96,7 +96,7 @@ export default function BillsDesign({ route }) {
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt ,
-  downloadBill , shareBillOnWhatsapp} = useContext(BillContext);
+  downloadBill , shareBillOnWhatsapp , shareReceiptOnWhatsapp} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
 
@@ -104,7 +104,7 @@ export default function BillsDesign({ route }) {
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
 
-  const [showPayments, setShowPayments] = useState(true);
+  const [showPayments, setShowPayments] = useState(false);
 
 
   const {
@@ -1509,9 +1509,11 @@ export default function BillsDesign({ route }) {
   if (res?.success && res?.url) {
     await CommonModule.downloadAndViewDocument(res.url);
     setShowMenu(false)
+    setShowBillDetails(false)
   } else {
     console.log(res?.message);
     setShowMenu(false)
+    
   }
 };
 
@@ -1519,17 +1521,39 @@ const handleShareBill = async () => {
   const res = await shareBillOnWhatsapp(activeHostelId, selectedBill?.invoiceId);
  
   if (res?.success) {
+        setShowMenu(false)
+        setShowBillDetails(false)
         setModalType("success");
-        setModalMessage("WhatsApp shared successfully");
+        setModalMessage("Bill shared successfully");
         setShowSuccessModal(true);
         setTimeout(() => setShowSuccessModal(false), 1500);
-        setShowMenu(false)
+   
     // console.log("WhatsApp shared successfully");
   } else {
     console.log(res?.message);
     setShowMenu(false)
   }
 }
+
+
+const handleShareReceipt = async () => {
+
+  const res = await shareReceiptOnWhatsapp(activeHostelId, selectedReceipt?.transactionId);
+
+  if (res?.success) {
+        setShowReceiptMenu(false)
+        setShowReceiptDetails(false)
+        setModalType("success");
+        setModalMessage("Receipt shared successfully");
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 1500);
+
+    // console.log("WhatsApp shared successfully");
+  } else {
+    console.log(res?.message);
+    setShowMenu(false)
+  }
+};
 
   
   // const handleDownloadReport = async () => {
@@ -1794,6 +1818,7 @@ const handleShareBill = async () => {
   return (
 
     <>
+    
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -1802,6 +1827,7 @@ const handleShareBill = async () => {
       />
       {loading && <Loader />}
       <View style={[styles.safe, { paddingTop: insets.top }]}>
+
         <SafeAreaView style={styles.container}>
 
 
@@ -1985,7 +2011,7 @@ const handleShareBill = async () => {
           </TouchableOpacity> */}
                             <Text style={{
                               fontSize: 14,
-                              fontWeight: "600",
+                              fontFamily: "Gilroy-Bold",
                               color: "#000",
                             }}>₹ {item?.invoiceAmount ?? "--"}</Text>
 
@@ -2167,18 +2193,19 @@ const handleShareBill = async () => {
 
                   <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View>
-                      <Text style={{ fontSize: 15, fontWeight: 600 }}>Total Amount</Text>
+                      <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Total Amount</Text>
                     </View>
                     <View>
                       <View style={{ display: 'flex', flexDirection: 'column' }}>
                         <Text style={styles.amountValue}>
-                          ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"}
+                          {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
+                          ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ? Number(BillPdfdetails?.invoiceInfo?.totalAmount).toFixed(2) : "0.00"}
                         </Text>
                         {isPaid && (
                           <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
                             <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
-                            <Text style={{ fontSize: 13 }}>Full Paid</Text>
+                            <Text style={{ fontSize: 13,fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
 
                           </View>
                         )}
@@ -2190,7 +2217,7 @@ const handleShareBill = async () => {
                   {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
                     <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={{ fontSize: 13, fontWeight: 500 }}>{pay?.description ?? "N/A"}</Text>
+                        <Text style={{ fontSize: 13,  fontFamily: "Gilroy-Medium" }}>{pay?.description ?? "N/A"}</Text>
                       </View>
                       <View>
                         <Text style={styles.amountValue}>
@@ -2205,7 +2232,7 @@ const handleShareBill = async () => {
                   {isPartial && (
                     <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={{ fontSize: 15, fontWeight: 600 }}>Due Pending</Text>
+                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold"}}>Due Pending</Text>
                       </View>
                       <View>
                         <Text
@@ -2262,12 +2289,12 @@ const handleShareBill = async () => {
 
                               <View style={styles.divider} />
 
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
+                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1 , }}>
                                 <View style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                  <Text style={styles.label}> Date</Text>
+                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}> Date</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 }}>
+                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
                                     {pay?.paidDate ?? "N/A"}
                                   </Text>
                                 </View>
@@ -2277,20 +2304,20 @@ const handleShareBill = async () => {
 
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={styles.label}>Mode</Text>
+                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Mode</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 }}>
+                                  <Text style={{ fontSize: 12,  fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.mode ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={styles.label}>Transaction ID</Text>
+                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Transaction ID</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 }}>
+                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.referenceNumber ?? "N/A"}
                                   </Text>
                                 </View>
@@ -2344,30 +2371,30 @@ const handleShareBill = async () => {
 
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={styles.label}> date</Text>
+                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}> date</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 }}>
+                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
                                     {pay?.date ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={styles.label}>Mode</Text>
+                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Mode</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 }}>
+                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
                                     {pay?.paymentMode ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={styles.label}>Transaction ID</Text>
+                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Transaction ID</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 }}>
+                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.referenceNumber ?? "N/A"}
                                   </Text>
                                 </View>
@@ -2385,10 +2412,10 @@ const handleShareBill = async () => {
 
                   <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View>
-                      <Text style={styles.label}>Invoice date</Text>
+                      <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Invoice date</Text>
                     </View>
                     <View>
-                      <Text style={{ fontSize: 12 }}>
+                      <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
                         {BillPdfdetails?.invoiceDate ?? "--"}
                       </Text>
                     </View>
@@ -2403,10 +2430,10 @@ const handleShareBill = async () => {
                         alignItems: "flex-start",
                       }}
                     >
-                      <Text style={styles.label}>Due date</Text>
+                      <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Due date</Text>
 
                       <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ fontSize: 12 }}>
+                        <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold" }}>
                           {BillPdfdetails?.dueDate ?? "--"}
                         </Text>
 
@@ -2582,8 +2609,8 @@ const handleShareBill = async () => {
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, marginTop: 22 }}>
-                    <Text style={{ fontSize: 17, fontWeight: 600 }}>Amount Paid</Text>
-                    <Text style={{ fontSize: 17, fontWeight: 600 }}>₹{selectedReceipt?.paidAmount ?? "--"}</Text>
+                    <Text style={{ fontSize: 17, fontFamily: "Gilroy-Semibold" }}>Amount Paid</Text>
+                    <Text style={{ fontSize: 17, fontFamily: "Gilroy-Semibold"  }}>₹{selectedReceipt?.paidAmount ?? "--"}</Text>
                   </View>
 
                   {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
@@ -2594,29 +2621,29 @@ const handleShareBill = async () => {
                   <View style={{ borderWidth: 0.8, marginVertical: 20, borderColor: '#E3E3E3' }} />
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 500, color: '#3C3C4399' }}>Payment date</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>{formatApiDate(selectedReceipt?.paidAt)}</Text>
+                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Medium" ,color: '#3C3C4399' }}>Payment date</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{formatApiDate(selectedReceipt?.paidAt)}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 500, color: '#3C3C4399' }}>Payment mode</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>N/A</Text>
+                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment mode</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"  }}>N/A</Text>
                   </View>
 
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 500, color: '#3C3C4399' }}>Invoice No</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>{selectedReceipt?.invoiceNumber}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Invoice No</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceipt?.invoiceNumber}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 500, color: '#3C3C4399' }}>Payment to</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment to</Text>
+                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 500, color: '#3C3C4399' }}>Transaction Id</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>{selectedReceipt?.transactionNumber || "--"}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Transaction Id</Text>
+                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceipt?.transactionNumber || "--"}</Text>
                   </View>
 
 
@@ -2729,6 +2756,15 @@ const handleShareBill = async () => {
                       >
                         <Image source={DeleteIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Delete</Text>
+                      </TouchableOpacity>
+
+                                        <TouchableOpacity
+                        style={[styles.popupRow, !canReadReceipt && { opacity: 0.4 }]}
+                        disabled={!canReadReceipt}
+                        onPress={handleShareReceipt}
+                      >
+                        <Image source={WhatsappIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>share</Text>
                       </TouchableOpacity>
                      
                     </View>
@@ -3080,7 +3116,7 @@ const handleShareBill = async () => {
                             marginRight: 7,
                           }}
                         >
-                          <Text style={{ color: "#C67506", fontSize: 11, fontWeight: "600" }}>
+                          <Text style={{ color: "#C67506", fontSize: 11, fontFamily: "Gilroy-Semibold"  }}>
                             Checkout Inv
                           </Text>
                         </View>
@@ -3108,7 +3144,7 @@ const handleShareBill = async () => {
                   </View>
 
                   {/* COMMENT BOX */}
-                  <Text style={{ marginBottom: 6, fontWeight: "600", color: "#444" }}>
+                  <Text style={{ marginBottom: 6, fontFamily: "Gilroy-Semibold" , color: "#444" }}>
                     Reason (Comments)
                   </Text>
 
@@ -3203,7 +3239,7 @@ const handleShareBill = async () => {
                             marginRight: 8,
                           }}
                         >
-                          <Text style={{ color: "#C67506", fontWeight: "600", fontSize: 12 }}>
+                          <Text style={{ color: "#C67506", fontFamily: "Gilroy-Semibold" , fontSize: 12 }}>
                             {selectedBill?.invoiceType || "-"}
                           </Text>
                         </View>
@@ -3557,7 +3593,7 @@ const handleShareBill = async () => {
                             marginRight: 8,
                           }}
                         >
-                          <Text style={{ color: "#C67506", fontSize: 11, fontWeight: "600" }}>
+                          <Text style={{ color: "#C67506", fontSize: 11, fontFamily: "Gilroy-Semibold"  }}>
                             {selectedBill?.invoiceType || "-"}
                           </Text>
                         </View>
@@ -4252,6 +4288,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: "#111827",
+  fontFamily: "Gilroy-Medium" ,
   },
 
   backIcon: {
@@ -4354,6 +4391,7 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomWidth: 2,
     borderBottomColor: "#2D6CDF",
+    fontFamily: "Gilroy-Bold"
   },
 
   tabContent: {
@@ -4399,7 +4437,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
   profileStatusBadge: {
@@ -4440,7 +4478,7 @@ const styles = StyleSheet.create({
   floorText: {
     fontSize: 11,
     color: "black",
-    fontWeight: "500",
+  fontFamily: "Gilroy-Medium",
   },
   iconSmall: {
     width: 12,
@@ -4450,6 +4488,7 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 10,
     color: "#4B5563",
+    fontFamily: "Gilroy-Medium"
   },
   rightSection: {
     alignItems: "flex-end",
@@ -4458,6 +4497,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#6B7280",
     marginBottom: 3,
+    fontFamily: "Gilroy-Medium"
   },
   dots: {
     fontSize: 22,
@@ -4544,7 +4584,7 @@ const styles = StyleSheet.create({
 
   modalName: {
     fontSize: 17,
-    fontWeight: "600",
+ fontFamily: "Gilroy-Semibold" ,
     color: "#111",
   },
 
@@ -4571,7 +4611,7 @@ const styles = StyleSheet.create({
 
   unassignText: {
     fontSize: 15,
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold" ,
   },
   // popupOverlay: {
   //   position: "absolute",
@@ -4630,10 +4670,12 @@ const styles = StyleSheet.create({
   popupText: {
     fontSize: 14,
     color: "#333",
+    fontFamily: "Gilroy-Medium" 
   },
 
   popupTextDisabled: {
     color: "#9CA3AF",
+  fontFamily: "Gilroy-Medium" 
   },
 
   filterOverlay: {
@@ -4736,7 +4778,7 @@ const styles = StyleSheet.create({
   dropdownTextSelected: {
     color: "#fff", // 👈 WHITE
     fontSize: 15,
-    fontWeight: "600",
+ fontFamily: "Gilroy-Semibold" ,
   },
 
 
@@ -4772,7 +4814,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  quickText: { color: "#111", fontWeight: "500" },
+  quickText: { color: "#111", fontFamily: "Gilroy-Medium" },
 
   bottomButtons: {
     flexDirection: "row",
@@ -4791,7 +4833,7 @@ const styles = StyleSheet.create({
 
   resetText: {
     color: "#2D6CDF",
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold" ,
   },
 
   applyBtn: {
@@ -4804,7 +4846,7 @@ const styles = StyleSheet.create({
 
   applyText: {
     color: "#fff",
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold" ,
   },
 
 
@@ -4867,7 +4909,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-    fontWeight: "600",
+  fontFamily: "Gilroy-Semibold" ,
     color: "#2D6CDF",
   },
 
@@ -4884,7 +4926,7 @@ const styles = StyleSheet.create({
 
   deleteBtnText: {
     fontSize: 16,
-    fontWeight: "600",
+ fontFamily: "Gilroy-Semibold" ,
     color: "#fff",
   },
 
@@ -4920,7 +4962,7 @@ const styles = StyleSheet.create({
   addFloorText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold" ,
   },
 
   sheetOverlay: {
@@ -4986,11 +5028,11 @@ const styles = StyleSheet.create({
   optionText: { fontSize: 15, color: "#000" },
 
   filterTitle: { fontSize: 20, fontWeight: "700" },
-  resetTextSmall: { color: "#2D6CDF", fontWeight: "600", marginLeft: 10 },
+  resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold" , marginLeft: 10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
-  dateText: { color: "#111" },
+  // dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
 
   selectWrapper: { position: "relative", width: "100%", marginTop: 8 },
@@ -5008,12 +5050,12 @@ const styles = StyleSheet.create({
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111", fontWeight: "600" },
+  quickText: { color: "#111",fontFamily: "Gilroy-Medium"  },
   //  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" },
+  resetBtnText: { color: "#1E45E1",fontFamily: "Gilroy-Bold"  },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontWeight: "700" },
+  applyBtnText: { color: "#fff",fontFamily: "Gilroy-Bold"  },
   billHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -5024,7 +5066,7 @@ const styles = StyleSheet.create({
 
   billHeaderText: {
     fontSize: 20,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#000",
   },
 
@@ -5051,7 +5093,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     fontSize: 12,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
 
@@ -5069,7 +5111,7 @@ const styles = StyleSheet.create({
 
   userName: {
     fontSize: 17,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     color: "#000",
   },
 
@@ -5083,7 +5125,7 @@ const styles = StyleSheet.create({
 
   invTypeText: {
     color: "#C67506",
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold",
     fontSize: 12,
   },
 
@@ -5091,6 +5133,7 @@ const styles = StyleSheet.create({
     color: "#555",
     fontSize: 13,
     alignSelf: "center",
+    fontFamily: "Gilroy-Semibold"
   },
 
   twoColRow: {
@@ -5122,19 +5165,19 @@ const styles = StyleSheet.create({
 
   value: {
     fontSize: 16,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
   amountValue: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 15,
+  fontFamily: "Gilroy-Bold" ,
     color: "#000",
   },
 
   dueValue: {
     fontSize: 16,
-    fontWeight: "700",
+ fontFamily: "Gilroy-Bold" ,
     color: "red",
   },
 
@@ -5153,7 +5196,7 @@ const styles = StyleSheet.create({
   previewText: {
     color: "#111",
     fontSize: 16,
-    fontWeight: "600",
+fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -5168,7 +5211,7 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+fontFamily: "Gilroy-Bold"  ,
   },
 
   btnRow: {
@@ -5199,7 +5242,7 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+  fontFamily: "Gilroy-Semibold"  ,
   },
   inputBox: {
     height: 50,
@@ -5278,7 +5321,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 13,
-    fontWeight: "700",
+  fontFamily: "Gilroy-Bold",
     color: "#4B5563",
   },
 
@@ -5331,7 +5374,7 @@ const styles = StyleSheet.create({
 
   paymentHeaderText: {
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -5348,17 +5391,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    fontFamily: "Gilroy-Semibold"
   },
 
   receiptText: {
     fontSize: 14,
-    fontWeight: "700",
+  fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
   paymentAmount: {
     fontSize: 16,
-    fontWeight: "700",
+fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -5381,7 +5425,7 @@ const styles = StyleSheet.create({
 
   paymentValue: {
     fontSize: 13,
-    fontWeight: "600",
+ fontFamily: "Gilroy-Semibold" ,
     color: "#111",
   },
 

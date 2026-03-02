@@ -132,7 +132,7 @@ console.log("ReAssignStatusCode", ReAssignStatusCode);
         {/* PROFILE */}
         <View style={styles.profileRow}>
 
-          {!selectedBed?.currentTenantInfo[0]?.profilePic ?
+          {selectedBed?.currentTenantInfo[0]?.profilePic ?
             <Image source={{ uri: selectedBed?.currentTenantInfo[0]?.profilePic }} style={styles.profileImg} /> :
             <View style={[styles.profileImg, { backgroundColor: '#9CA3AF', alignItems: 'center', justifyContent: 'center' }]}>
               <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold' }}>{selectedBed?.currentTenantInfo[0]?.tenantInitials}</Text>
