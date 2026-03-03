@@ -45,6 +45,7 @@ import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet";
 import CustomerOverviewScreen from "./CustomerOverview/CustomerOverviewSheet";
 import moment from "moment";
 import RentMoney from "../../Assets/Images/RentMoney.png"
+import checkinAddCircle from "../../Assets/Images/CheckinAddCircle.png"
 
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -1355,7 +1356,7 @@ export default function TenantsScreen({ route }) {
 
                       >
                         <Image
-                          source={require("../../Assets/Images/ReAssign.png")}
+                          source={checkinAddCircle}
                           style={styles.popupIcon}
                         />
                         <Text style={styles.popupText}>Move to Notice Period</Text>
@@ -1389,7 +1390,7 @@ export default function TenantsScreen({ route }) {
                       //   // setShowNotice(true);
                       // }}
                       >
-                        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                        <Image source={checkinAddCircle} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Checkin</Text>
                       </TouchableOpacity>
                     </>

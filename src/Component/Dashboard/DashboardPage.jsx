@@ -1,4 +1,4 @@
-import React, { useState,useCallback, useEffect, useContext,useRef } from "react";
+import React, { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -41,7 +41,7 @@ import ActiveCompliance from '../../Assets/Images/ActiveCompliance.png';
 import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
-import Svg, {  Path, Circle, Line, Text as SvgText} from "react-native-svg";
+import Svg, { Path, Circle, Line, Text as SvgText } from "react-native-svg";
 import { CommonContexts } from "../../Context/CommonContext";
 import { LoginContexts } from "../../Context/LoginContext";
 import { PGContext } from "../../Context/PGContext";
@@ -63,249 +63,261 @@ import {
 } from "react-native-svg-charts";
 import { getHostels } from "../../Action/HostelAction";
 import { retriveData } from "../../Utils/Storage";
+import SuccessModal from "../../ToastFile/ToastPage";
 
 
 
 
 
-export default function DashboardScreen({initialParams}) {
+export default function DashboardScreen({ initialParams }) {
 
   console.log("initialParams", initialParams);
-  
+
   const insets = useSafeAreaInsets();
-const { getDashboardByHostel, loading } = useCustomer();
+  const { getDashboardByHostel, loading } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
-  
- const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
+
+  const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
-  const { expensesList, GetExpenseList, rolePermission ,GetRoleBasedPermission ,profileDetails , GetProfileDetails  } = useContext(ExpensesContext);
+  const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [dashboardList,setDashboardList] = useState([])
+  const [dashboardList, setDashboardList] = useState([])
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
-useEffect(() => {
-  if (!activeHostelId) return;
+  const categoryList = IntializeexpensesList?.listExpenses || [];
 
-  const loadDashboard = async () => {
-    const res = await getDashboardByHostel(activeHostelId);
+  useEffect(() => {
+    if (!activeHostelId) return;
 
-    console.log("Dashboard API Response", res);
+    const loadDashboard = async () => {
+      const res = await getDashboardByHostel(activeHostelId);
 
-    if (res.success) {
-      setDashboardList(res.data);
+      console.log("Dashboard API Response", res);
 
+      if (res.success) {
+        setDashboardList(res.data);
+
+      }
+    };
+
+    loadDashboard();
+  }, [activeHostelId]);
+
+  useEffect(() => {
+    if (activeHostelId) {
+      GetInitializeExpense(activeHostelId);
     }
+  }, [activeHostelId])
+
+  console.log("dashboardjd", dashboardList)
+  const fetchCustomers = async () => {
+    const res = await getNotificationsByHostel(activeHostelId);
+
+
+    setUnreadCount(res?.data?.unreadCount);
   };
+  console.log("unreadCount", unreadCount)
 
-  loadDashboard();
-}, [activeHostelId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        fetchCustomers();
+      }
+    }, [activeHostelId])
+  );
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId]);
 
-console.log("dashboardjd",dashboardList)
-     const fetchCustomers = async () => {
-   const res = await getNotificationsByHostel(activeHostelId);
- 
-  
-   setUnreadCount(res?.data?.unreadCount);
- };
- console.log("unreadCount",unreadCount)
- 
-         useFocusEffect(
-         useCallback(() => {
-           if (activeHostelId) {
-             fetchCustomers();
-           }
-         }, [activeHostelId])
-       );
-useEffect(() => {
-  if(activeHostelId){
-  getParticularHostelDetails(activeHostelId);
-  }
-}, [activeHostelId]);
-
-console.log("profileDetails", profileDetails);
-
-
-
-useEffect(() => {
-  GetProfileDetails();
-}, []);
-
-
-useEffect(() => {
-  if (profileDetails?.roleId) {
-    GetRoleBasedPermission(profileDetails?.roleId);
-  }
-}, [profileDetails?.roleId]);
-
-
-  console.log("rolepermission", rolePermission);
-  
-  console.log("PGdetails", PGDetails);
-
-
-             const {
-                 canWriteModule: canWriteDashboard,
-                 canReadModule: canReadDashboard,
-                 canUpdateModule: canUpdateDashboard,
-                 canDeleteModule: canDeleteDashboard,
-             } = useHasPermission("Dashboard")
-
-             const {
-  canReadModule: canReadAnnouncement,
-} = useHasPermission("Announcement");
-
-const {
-  canReadModule: canReadUpdates,
-} = useHasPermission("Updates");
+  console.log("profileDetails", profileDetails);
 
 
 
   useEffect(() => {
-  retriveData("token").then(t => console.log("TOKEN:", t));
-}, [])
-
-const scaleAnim = useRef(new Animated.Value(1)).current;
-const rotateAnim = useRef(new Animated.Value(0)).current;
+    GetProfileDetails();
+  }, []);
 
 
+  useEffect(() => {
+    if (profileDetails?.roleId) {
+      GetRoleBasedPermission(profileDetails?.roleId);
+    }
+  }, [profileDetails?.roleId]);
 
-const [showBanner, setShowBanner] = useState(false);
-const bannerDismissedRef = useRef(false);
+
+  console.log("rolepermission", rolePermission);
+
+  console.log("PGdetails", PGDetails);
 
 
-useEffect(() => {
-  if (!PGDetails) return;
+  const {
+    canWriteModule: canWriteDashboard,
+    canReadModule: canReadDashboard,
+    canUpdateModule: canUpdateDashboard,
+    canDeleteModule: canDeleteDashboard,
+  } = useHasPermission("Dashboard")
 
-  if (bannerDismissedRef.current) return;
+  const {
+    canReadModule: canReadAnnouncement,
+  } = useHasPermission("Announcement");
 
-  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+  const {
+    canReadModule: canReadUpdates,
+  } = useHasPermission("Updates");
 
-  // ❌ 8+ days → NEVER show
-  if (remainingDaysLeft > 7 && isSubscriptionActive) {
+
+
+  useEffect(() => {
+    retriveData("token").then(t => console.log("TOKEN:", t));
+  }, [])
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+
+
+  const [showBanner, setShowBanner] = useState(false);
+  const bannerDismissedRef = useRef(false);
+
+
+  useEffect(() => {
+    if (!PGDetails) return;
+
+    if (bannerDismissedRef.current) return;
+
+    const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+    // ❌ 8+ days → NEVER show
+    if (remainingDaysLeft > 7 && isSubscriptionActive) {
+      setShowBanner(false);
+      return;
+    }
+
+    // ✅ 7 days or less OR expired
+    if (!isSubscriptionActive || remainingDaysLeft <= 7) {
+      setShowBanner(true);
+    }
+  }, [PGDetails]);
+  ;
+
+  const getSubscriptionCopy = (PGDetails) => {
+    if (!PGDetails) return null;
+
+    const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+    if (!isSubscriptionActive || remainingDaysLeft <= 0) {
+      return {
+        title: "Subscription Expired",
+        subtitle:
+          "Your SmartStay subscription has expired. Please renew now to continue using all features without interruption.",
+      };
+    }
+
+    if (remainingDaysLeft === 1) {
+      return {
+        title: "Subscription Expiring Tomorrow",
+        subtitle:
+          "Your SmartStay subscription will expire tomorrow. Renew now to avoid service disruption.",
+      };
+    }
+
+    if (remainingDaysLeft <= 7) {
+      return {
+        title: "Subscription Expiring Soon",
+        subtitle:
+          `Your SmartStay subscription will expire in ${remainingDaysLeft} days. Renew soon to ensure uninterrupted service.`,
+      };
+    }
+
+    return null;
+  };
+
+
+  const shouldShowBanner = (() => {
+    if (!PGDetails) return false;
+
+    const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
+
+    if (bannerDismissedRef.current) return false;
+
+    if (!isSubscriptionActive || remainingDaysLeft <= 0) return true;
+    if (remainingDaysLeft === 1) return true;
+    if (remainingDaysLeft <= 7) return true;
+
+    return false; // ⛔ 8+ days → NEVER SHOW
+  })();
+
+
+  // useEffect(() => {
+  //   if (!PGDetails) return;
+
+  //   setShowBanner(shouldShowBanner);
+  // }, [PGDetails]);
+
+
+  const copy = getSubscriptionCopy(PGDetails);
+
+  const handleCloseBanner = () => {
+    bannerDismissedRef.current = true; // this login only
     setShowBanner(false);
-    return;
-  }
-
-  // ✅ 7 days or less OR expired
-  if (!isSubscriptionActive || remainingDaysLeft <= 7) {
-    setShowBanner(true);
-  }
-}, [PGDetails]);
-;
-
-const getSubscriptionCopy = (PGDetails) => {
-  if (!PGDetails) return null;
-
-  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
-
-  if (!isSubscriptionActive || remainingDaysLeft <= 0) {
-    return {
-      title: "Subscription Expired",
-      subtitle:
-        "Your SmartStay subscription has expired. Please renew now to continue using all features without interruption.",
-    };
-  }
-
-  if (remainingDaysLeft === 1) {
-    return {
-      title: "Subscription Expiring Tomorrow",
-      subtitle:
-        "Your SmartStay subscription will expire tomorrow. Renew now to avoid service disruption.",
-    };
-  }
-
-  if (remainingDaysLeft <= 7) {
-    return {
-      title: "Subscription Expiring Soon",
-      subtitle:
-        `Your SmartStay subscription will expire in ${remainingDaysLeft} days. Renew soon to ensure uninterrupted service.`,
-    };
-  }
-
-  return null;
-};
-
-
-const shouldShowBanner = (() => {
-  if (!PGDetails) return false;
-
-  const { isSubscriptionActive, remainingDaysLeft } = PGDetails;
-
-  if (bannerDismissedRef.current) return false;
-
-  if (!isSubscriptionActive || remainingDaysLeft <= 0) return true;
-  if (remainingDaysLeft === 1) return true;
-  if (remainingDaysLeft <= 7) return true;
-
-  return false; // ⛔ 8+ days → NEVER SHOW
-})();
-
-
-// useEffect(() => {
-//   if (!PGDetails) return;
-
-//   setShowBanner(shouldShowBanner);
-// }, [PGDetails]);
-
-
-const copy = getSubscriptionCopy(PGDetails);
-
-const handleCloseBanner = () => {
-  bannerDismissedRef.current = true; // this login only
-  setShowBanner(false);
-};
+  };
 
 
 
 
-useEffect(() => {
-  Animated.loop(
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.05,
-        duration: 900,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 900,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-    ])
-  ).start();
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.05,
+          duration: 900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
-  Animated.loop(
-    Animated.sequence([
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(rotateAnim, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: true,
-      }),
-    ])
-  ).start();
-}, []);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 1200,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
 
   console.log("Hostels:", hostelList);
 
-//   const activeHostel = hostelList &&  hostelList.find(h =>
-//   (h.hostelId ?? h.id) === activeHostelId
-// ) || hostelList[0];
+  //   const activeHostel = hostelList &&  hostelList.find(h =>
+  //   (h.hostelId ?? h.id) === activeHostelId
+  // ) || hostelList[0];
 
-const activeHostel =
-  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
-  hostelList?.[0] ??
-  {};
+  const activeHostel =
+    hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+    hostelList?.[0] ??
+    {};
 
 
   const navigation = useNavigation();
@@ -313,7 +325,7 @@ const activeHostel =
 
   //  useEffect(() => {
   //   if (!login.getToken) return;
-    
+
 
   //   getHostels(login.getToken).then((res) => {
   //     updateHostelList(res.data);
@@ -321,24 +333,24 @@ const activeHostel =
   // }, [login.getToken]);
 
   useEffect(() => {
-  getHostels().then((res) => {
-    console.log("res", res);
-    
-    if (res?.data) {
-      updateHostelList(res.data);
-    }
-  });
-}, []);
+    getHostels().then((res) => {
+      console.log("res", res);
+
+      if (res?.data) {
+        updateHostelList(res.data);
+      }
+    });
+  }, []);
 
 
-    useEffect(()=> {
-    if(activeHostel){
+  useEffect(() => {
+    if (activeHostel) {
       setActiveHostelId(activeHostel.hostelId)
     }
-  },[activeHostel])
+  }, [activeHostel])
 
   console.log("activeHostelId", activeHostelId);
-  
+
 
   // useFocusEffect(
   //   useCallback(() => {
@@ -356,75 +368,75 @@ const activeHostel =
   // );
 
 
-useFocusEffect(
-  useCallback(() => {
-    const onBackPress = () => {
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
 
-      // Drawer open → close drawer
-      if (drawerVisible) {
-        setDrawerVisible(false);
-        return true;
-      }
+        // Drawer open → close drawer
+        if (drawerVisible) {
+          setDrawerVisible(false);
+          return true;
+        }
 
-      // Updates → Announcement
-      if (activeTab === "Updates") {
-        setActiveTab("Announcement");
-        return true;
-      }
+        // Updates → Announcement
+        if (activeTab === "Updates") {
+          setActiveTab("Announcement");
+          return true;
+        }
 
-      // Announcement → Dashboard
-      if (activeTab === "Announcement") {
-        setActiveTab("Dashboard");
-        return true;
-      }
+        // Announcement → Dashboard
+        if (activeTab === "Announcement") {
+          setActiveTab("Dashboard");
+          return true;
+        }
 
-      // Dashboard → EXIT APP
-      // if (activeTab === "Dashboard") {
-      //   BackHandler.exitApp();
-      //   return true;
-      // }
+        // Dashboard → EXIT APP
+        // if (activeTab === "Dashboard") {
+        //   BackHandler.exitApp();
+        //   return true;
+        // }
 
-      return false;
-    };
+        return false;
+      };
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
 
-    return () => subscription.remove();
-  }, [activeTab, drawerVisible])
-);
+      return () => subscription.remove();
+    }, [activeTab, drawerVisible])
+  );
 
-//   useFocusEffect(
-//   useCallback(() => {
-//     const onBackPress = () => {
+  //   useFocusEffect(
+  //   useCallback(() => {
+  //     const onBackPress = () => {
 
-      
-//       if (drawerVisible) {
-//         setDrawerVisible(false);
-//         return true;
-//       }
 
-      
-//       if (activeTab === "Updates") {
-//         setActiveTab("Announcement");
-//         return true;
-//       }
+  //       if (drawerVisible) {
+  //         setDrawerVisible(false);
+  //         return true;
+  //       }
 
-//       if (activeTab === "Announcement") {
-//         setActiveTab("Dashboard");
-//         return true;
-//       }
 
-     
-//       return false;
-//     };
+  //       if (activeTab === "Updates") {
+  //         setActiveTab("Announcement");
+  //         return true;
+  //       }
 
-//     const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-//     return () => sub.remove();
-//   }, [drawerVisible, activeTab])
-// );
+  //       if (activeTab === "Announcement") {
+  //         setActiveTab("Dashboard");
+  //         return true;
+  //       }
+
+
+  //       return false;
+  //     };
+
+  //     const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+  //     return () => sub.remove();
+  //   }, [drawerVisible, activeTab])
+  // );
 
   // useFocusEffect(
   //   useCallback(() => {
@@ -444,14 +456,14 @@ useFocusEffect(
   //     return () => subscription.remove();
   //   }, [navigation])
   // );
-  const context=useContext(LoginContexts)
-    const [tooltip, setTooltip] = useState(null);
-    const { width } = Dimensions.get("window");
-    // const [hostelList,setHostelList]=useState([])
+  const context = useContext(LoginContexts)
+  const [tooltip, setTooltip] = useState(null);
+  const { width } = Dimensions.get("window");
+  // const [hostelList,setHostelList]=useState([])
 
-    console.log("activeHostel" , activeHostel)
-    console.log("hostelList", hostelList);
-    
+  console.log("activeHostel", activeHostel)
+  console.log("hostelList", hostelList);
+
 
   const months = ["Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024"];
   const advance = [100000, 150000, 23000, 31000, 28000];
@@ -486,46 +498,46 @@ useFocusEffect(
     });
   };
 
-  
+
   const reorderHostels = (list, activeId) => {
-  const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
-  const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
+    const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
+    const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
 
-  return selected ? [selected, ...others] : list;
-};
+    return selected ? [selected, ...others] : list;
+  };
 
-useEffect(() => {
-  if (!activeHostelId) return;
+  useEffect(() => {
+    if (!activeHostelId) return;
 
-  getHostels().then((res) => {
+    getHostels().then((res) => {
       console.log("res", res);
-    if (res?.data) {
-      const reordered = reorderHostels(res.data, activeHostelId);
-      updateHostelList(reordered);
-    }
-  });
-}, [activeHostelId]);
+      if (res?.data) {
+        const reordered = reorderHostels(res.data, activeHostelId);
+        updateHostelList(reordered);
+      }
+    });
+  }, [activeHostelId]);
 
 
-//   useEffect(() => {
-//   if (!login.getToken) return;
-//   if(activeHostelId){
-//  getHostels(login.getToken).then((res) => {
-//     const reordered = reorderHostels(res.data, activeHostelId);
-//     updateHostelList(reordered);
-//   });
-//   }
- 
-// }, [login.getToken, activeHostelId]);
+  //   useEffect(() => {
+  //   if (!login.getToken) return;
+  //   if(activeHostelId){
+  //  getHostels(login.getToken).then((res) => {
+  //     const reordered = reorderHostels(res.data, activeHostelId);
+  //     updateHostelList(reordered);
+  //   });
+  //   }
+
+  // }, [login.getToken, activeHostelId]);
 
 
 
-    // useEffect(()=>{
-    //     getHostels(context.getToken).then(r=>{
-    //       console.log(r)
-    //       setHostelList(r.data)
-    //     })
-    // },[])
+  // useEffect(()=>{
+  //     getHostels(context.getToken).then(r=>{
+  //       console.log(r)
+  //       setHostelList(r.data)
+  //     })
+  // },[])
 
 
   const data = [
@@ -648,27 +660,27 @@ useEffect(() => {
 
   const hasHostelProfile = !!activeHostel?.mainImage
 
-const getProfileInitial = () => {
-  if (!hasHostel) return "PG";
+  const getProfileInitial = () => {
+    if (!hasHostel) return "PG";
 
-  const name = activeHostel?.name?.trim();
-  if (!name) return "PG";
+    const name = activeHostel?.name?.trim();
+    if (!name) return "PG";
 
-  const words = name.split(" ").filter(Boolean);
+    const words = name.split(" ").filter(Boolean);
 
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
 
-  if (words[0].length >= 2) {
-    return words[0].substring(0, 2).toUpperCase();
-  }
+    if (words[0].length >= 2) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
 
-  return words[0][0].toUpperCase();
-};
+    return words[0][0].toUpperCase();
+  };
 
 
-console.log("profile", getProfileInitial);
+  console.log("profile", getProfileInitial);
 
 
 
@@ -677,17 +689,24 @@ console.log("profile", getProfileInitial);
 
   return (
     <>
-    
-    { loading && <Loader />}
-    <View style={[styles.safe, { paddingTop: insets.top }]}>
 
-      <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
+      {loading && <Loader />}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
 
-      <LinearGradient
-        colors={["#E9F2FF", "#F6FBFF"]}
-        style={styles.header}
-      >
-        {/* <View style={styles.headerTop}>
+      <View style={[styles.safe, { paddingTop: insets.top }]}>
+
+        <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
+
+        <LinearGradient
+          colors={["#E9F2FF", "#F6FBFF"]}
+          style={styles.header}
+        >
+          {/* <View style={styles.headerTop}>
           <View style={styles.hostelRow}>
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
             <View style={{ marginLeft: 12 , flex:1, paddingRight:13}}>
@@ -714,8 +733,8 @@ console.log("profile", getProfileInitial);
           </View>
         </View> */}
 
-<View style={styles.headerTop}>
-  {/* <View style={styles.hostelRow}>
+          <View style={styles.headerTop}>
+            {/* <View style={styles.hostelRow}>
     <Image source={PgImg} style={{ width: 38, height: 38 }} />
 
     <View style={{ marginLeft: 12, flex: 1 }}>
@@ -729,7 +748,7 @@ console.log("profile", getProfileInitial);
     </View>
   </View> */}
 
-  {/* <View style={styles.hostelRow}>
+            {/* <View style={styles.hostelRow}>
   {hasHostel ? (
     <>
 
@@ -770,280 +789,297 @@ console.log("profile", getProfileInitial);
   )}
 </View> */}
 
-<View style={styles.hostelRow}>
-  <TouchableOpacity style={styles.hostelAvatar}>
-    {hasHostelProfile ? (
-      <Image
-        source={{ uri: activeHostel?.mainImage }}
-        style={styles.hostelAvatarImg}
-      />
-    ) : (
-      <Text style={styles.hostelAvatarText}>
-        {getProfileInitial()}
-      </Text>
-    )}
-  </TouchableOpacity>
+            <View style={styles.hostelRow}>
+              <TouchableOpacity style={styles.hostelAvatar}>
+                {hasHostelProfile ? (
+                  <Image
+                    source={{ uri: activeHostel?.mainImage }}
+                    style={styles.hostelAvatarImg}
+                  />
+                ) : (
+                  <Text style={styles.hostelAvatarText}>
+                    {getProfileInitial()}
+                  </Text>
+                )}
+              </TouchableOpacity>
 
-  {hasHostel ? (
-    <View style={{ marginLeft: 12, flex: 1 }}>
-      <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
-      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
-        <Text style={styles.changeText}>Change Hostel →</Text>
-      </TouchableOpacity>
-    </View>
-  ) : (
-   (
-  <Animated.View
-    style={[
-      styles.addPgWrapper,
-      {
-        transform: [{ scale: scaleAnim }],
-      },
-    ]}
-  >
-    <TouchableOpacity
-      activeOpacity={0.85}
-      style={styles.addPgBtn}
-      onPress={() => navigation.navigate("AddPG")}
-    >
-      <Animated.Text
-        style={[
-          styles.addPgIcon,
-          {
-            transform: [
-              {
-                rotate: rotateAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ["0deg", "90deg"],
-                }),
-              },
-            ],
-          },
-        ]}
-      >
-        +
-      </Animated.Text>
+              {hasHostel ? (
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+                    <Text style={styles.changeText}>Change Hostel →</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                (
+                  <Animated.View
+                    style={[
+                      styles.addPgWrapper,
+                      {
+                        transform: [{ scale: scaleAnim }],
+                      },
+                    ]}
+                  >
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      style={styles.addPgBtn}
+                      onPress={() => navigation.navigate("AddPG")}
+                    >
+                      <Animated.Text
+                        style={[
+                          styles.addPgIcon,
+                          {
+                            transform: [
+                              {
+                                rotate: rotateAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: ["0deg", "90deg"],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+                        +
+                      </Animated.Text>
 
-      <Text style={styles.addPgText}>Add  PG</Text>
-    </TouchableOpacity>
-  </Animated.View>
-)
+                      <Text style={styles.addPgText}>Add  PG</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                )
 
-  )}
-</View>
+              )}
+            </View>
 
 
 
-  <View style={styles.rightIcons}>
-    {/* <TouchableOpacity
+            <View style={styles.rightIcons}>
+              {/* <TouchableOpacity
       style={styles.iconCircle}
       onPress={() => navigation.navigate("NotificationDetails")}
     >
       <Image source={Bell} style={{ width: 28, height: 28 }} />
     </TouchableOpacity> */}
-    <TouchableOpacity
-  style={styles.iconCirclenoti}
-  onPress={() => navigation.navigate("NotificationDetails")}
->
-  <Image source={Bell} style={{ width: 28, height: 28 }} />
+              <TouchableOpacity
+                style={styles.iconCirclenoti}
+                onPress={() => navigation.navigate("NotificationDetails")}
+              >
+                <Image source={Bell} style={{ width: 28, height: 28 }} />
 
-  {unreadCount > 0 && (
-    <View style={styles.badge}>
-      <Text style={styles.badgeText}>
-        {unreadCount > 99 ? "99+" : unreadCount}
-      </Text>
-    </View>
-  )}
-</TouchableOpacity>
-
-
-    <TouchableOpacity
-      style={[styles.iconCircle, { marginLeft: 10 }]}
-      onPress={() => setDrawerVisible(true)}
-    >
-      <Image source={Profile} style={{ width: 40, height: 40 }} />
-    </TouchableOpacity>
-  </View>
-</View>
+                {unreadCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
 
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabsRow}
-        >
-          {tabs.map((item) => (
-            <TouchableOpacity
-              key={item.key}
-              onPress={() => setActiveTab(item.key)}
-              style={styles.tabBtn}
-            >
-            
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image
-                  source={activeTab === item.key ? item.active : item.inactive}
-                  style={{
-                    width: 22,
-                    height: 22,
-                  }}
-                />
-
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === item.key && {
-                      color: "#1E45E1",
-                     fontFamily: "Gilroy-Bold",
-                      fontSize: 17,
-                    },
-                  ]}
-                >
-                  {"  "}
-                  {item.key}
-                </Text>
-              </View>
-
-              {activeTab === item.key && <View style={styles.underline} />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+              <TouchableOpacity
+                style={[styles.iconCircle, { marginLeft: 10 }]}
+                onPress={() => setDrawerVisible(true)}
+              >
+                <Image source={Profile} style={{ width: 40, height: 40 }} />
+              </TouchableOpacity>
+            </View>
+          </View>
 
 
-      </LinearGradient>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsRow}
+          >
+            {tabs.map((item) => (
+              <TouchableOpacity
+                key={item.key}
+                onPress={() => setActiveTab(item.key)}
+                style={styles.tabBtn}
+              >
+
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Image
+                    source={activeTab === item.key ? item.active : item.inactive}
+                    style={{
+                      width: 22,
+                      height: 22,
+                    }}
+                  />
+
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === item.key && {
+                        color: "#1E45E1",
+                        fontFamily: "Gilroy-Bold",
+                        fontSize: 17,
+                      },
+                    ]}
+                  >
+                    {"  "}
+                    {item.key}
+                  </Text>
+                </View>
+
+                {activeTab === item.key && <View style={styles.underline} />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
 
-      {activeTab === "Dashboard" && (
+        </LinearGradient>
+
+
+        {activeTab === "Dashboard" && (
 
           !hasHostel ? (
 
-    <View style={styles.centerContainer}>
-      <Image source={EmptyState} style={styles.image} />
-      <Text style={styles.nodataText}>
-        No PG added yet
-      </Text>
-
-      <TouchableOpacity
-        style={{
-          marginTop: 20,
-          backgroundColor: "#2F80ED",
-          paddingHorizontal: 20,
-          paddingVertical: 10,
-          borderRadius: 8,
-        }}
-        onPress={() => navigation.navigate("AddPG")}
-      >
-        <Text style={{ color: "#fff", fontWeight: "600" }}>
-          Add PG
-        </Text>
-      </TouchableOpacity>
-    </View>
-
-  ) : (
-
-        <>
- 
-    {canReadDashboard && !loading &&(
-        <ScrollView showsVerticalScrollIndicator={false}>
-
-
-          <View style={styles.banner}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.bannerTitle}>SmartStay –</Text>
-              <Text style={styles.bannerSub}>
-                The smartest way to manage your PG, all in one place!
+            <View style={styles.centerContainer}>
+              <Image source={EmptyState} style={styles.image} />
+              <Text style={styles.nodataText}>
+                No PG added yet
               </Text>
+
+              <TouchableOpacity
+                style={{
+                  marginTop: 20,
+                  backgroundColor: "#2F80ED",
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                }}
+                onPress={() => navigation.navigate("AddPG")}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  Add PG
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <Image
-              source={SmartPlur}
-              style={styles.bannerIcon}
-            />
-          </View>
+          ) : (
+
+            <>
+
+              {canReadDashboard && !loading && (
+                <ScrollView showsVerticalScrollIndicator={false}>
 
 
+                  <View style={styles.banner}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.bannerTitle}>SmartStay –</Text>
+                      <Text style={styles.bannerSub}>
+                        The smartest way to manage your PG, all in one place!
+                      </Text>
+                    </View>
 
-          <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { width: width * 0.45 }]}>
-              <View >
-
-                <Image
-                  source={RoomImg}
-                  style={{ width: 35, height: 35 }}
-                />
-              </View>
-              <Text style={styles.cardLabel}>Total Rooms</Text>
-              <Text style={styles.cardValue}>{dashboardList?.totalRooms}</Text>
-            </View>
-
-            <View style={styles.sideColumn}>
-
-              <View style={[styles.smallCard, { width: width * 0.4 }]}>
-                <View style={styles.smallCardContent}>
-                  <View>
-                    <Text style={styles.smallLabel}>Total Beds</Text>
-                    <Text style={styles.smallValue}>{dashboardList?.totalBeds}</Text>
-                  </View>
-
-                  <View >
                     <Image
-                      source={BedImg}
-                      style={{ width: 35, height: 35 }}
+                      source={SmartPlur}
+                      style={styles.bannerIcon}
                     />
                   </View>
-                </View>
-              </View>
 
 
 
-              <View style={styles.smallCard}>
-                <View style={styles.smallCardContent}>
-                  <View>
-                    <Text style={styles.smallLabel}>Free Bed</Text>
-                    <Text style={styles.smallValue}>{dashboardList?.freeBeds}</Text>
+                  <View style={styles.summaryRow}>
+                    <View style={[styles.summaryCard, { width: width * 0.45 }]}>
+                      <View >
+
+                        <Image
+                          source={RoomImg}
+                          style={{ width: 35, height: 35 }}
+                        />
+                      </View>
+                      <Text style={styles.cardLabel}>Total Rooms</Text>
+                      <Text style={styles.cardValue}>{dashboardList?.totalRooms}</Text>
+                    </View>
+
+                    <View style={styles.sideColumn}>
+
+                      <View style={[styles.smallCard, { width: width * 0.4 }]}>
+                        <View style={styles.smallCardContent}>
+                          <View>
+                            <Text style={styles.smallLabel}>Total Beds</Text>
+                            <Text style={styles.smallValue}>{dashboardList?.totalBeds}</Text>
+                          </View>
+
+                          <View >
+                            <Image
+                              source={BedImg}
+                              style={{ width: 35, height: 35 }}
+                            />
+                          </View>
+                        </View>
+                      </View>
+
+
+
+                      <View style={styles.smallCard}>
+                        <View style={styles.smallCardContent}>
+                          <View>
+                            <Text style={styles.smallLabel}>Free Bed</Text>
+                            <Text style={styles.smallValue}>{dashboardList?.freeBeds}</Text>
+                          </View>
+
+                          <View >
+                            <Image
+                              source={FreeBedImg}
+                              style={{ width: 35, height: 35 }}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    </View>
                   </View>
 
-                  <View >
-                    <Image
-                      source={FreeBedImg}
-                      style={{ width: 35, height: 35 }}
-                    />
+
+                  <Text style={styles.sectionTitle}>Quick Actions</Text>
+
+
+                  <View style={styles.quickGrid}>
+                    {[
+                      { label: "Add Tenant", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
+                      { label: "Add Expense", icon: ExpenseImg, color: "#EF4444", route: "AddExpenses" },
+                      { label: "Create Bills", icon: CrateBill, color: "#F59E0B", route: "CreateBills" },
+                      // { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA", route: "AddWalkin" },
+                      { label: "Make agreement", icon: AgreementImg, color: "#10B981", route: "Agreement" },
+                    ].map((x, i) => (
+                      <TouchableOpacity
+                        key={i}
+                        style={styles.quickCard}
+                        onPress={() => {
+                          if (x.label === "Add Expense") {
+                            if (categoryList && categoryList.length > 0) {
+                              navigation.navigate(x.route);
+                            } else {
+                              setShowSuccessModal(true);
+                              setModalMessage("Please add a Category option in Settings, accessible after adding an expense");
+                              setModalType("warning")
+
+                              setTimeout(() => {
+                                setShowSuccessModal(false)
+                              }, 1000);
+                            }
+                          } else {
+                            navigation.navigate(x.route)
+                          }
+
+                        }}   // 👈 Navigate on press
+                      >
+                        <View style={[styles.iconWrapper, { borderColor: x.color }]}>
+                          <Image
+                            source={x.icon}
+                            style={{ width: 30, height: 30, resizeMode: "contain" }}
+                          />
+                        </View>
+
+                        <Text style={styles.quickLabel}>{x.label}</Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                </View>
-              </View>
-            </View>
-          </View>
 
 
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-        
-          <View style={styles.quickGrid}>
-  {[
-    { label: "Add Tenant", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
-    { label: "Add Expense", icon: ExpenseImg, color: "#EF4444", route: "AddExpenses" },
-    { label: "Create Bills", icon: CrateBill, color: "#F59E0B", route: "CreateBills" },
-    // { label: "Add Walkin", icon: WalkinImg, color: "#A78BFA", route: "AddWalkin" },
-    { label: "Make agreement", icon: AgreementImg, color: "#10B981", route: "Agreement" },
-  ].map((x, i) => (
-    <TouchableOpacity
-      key={i}
-      style={styles.quickCard}
-      onPress={() => navigation.navigate(x.route)}   // 👈 Navigate on press
-    >
-      <View style={[styles.iconWrapper, { borderColor: x.color }]}>
-        <Image
-          source={x.icon}
-          style={{ width: 30, height: 30, resizeMode: "contain" }}
-        />
-      </View>
-
-      <Text style={styles.quickLabel}>{x.label}</Text>
-    </TouchableOpacity>
-  ))}
-</View>
-
-
-{/* 
+                  {/* 
           <View style={{ backgroundColor: "#F3F5FF" }}>
             <View style={styles.statsGrid}>
               {[
@@ -1069,90 +1105,90 @@ console.log("profile", getProfileInitial);
 
           </View> */}
 
-       <View style={{ backgroundColor: "#F3F5FF" }}>
-            <View style={styles.statsGrid}>
-              {/* {[
+                  <View style={{ backgroundColor: "#F3F5FF" }}>
+                    <View style={styles.statsGrid}>
+                      {/* {[
                 { title: "Occupied Bed", value: "53" },
                 { title: "Next Month Projection", value: "16" },
                 { title: "Total Customer", value: "378" },
                 { title: "EB Amount", value: "₹ 24,000" },
               ].map((item, i) => ( */}
-                <View style={[styles.statBox, { width: width * 0.42 }]}>
-                  <Text style={styles.statTitle}>Occupied Bed</Text>
-                  <Text style={styles.statValue}>{dashboardList?.occupiedBeds}</Text>
-                </View>
-                 <View style={[styles.statBox, { width: width * 0.42 }]}>
-                  <Text style={styles.statTitle}>Next Month Projection</Text>
-                  <Text style={styles.statValue}>{dashboardList?.nextMonthProjection}</Text>
-                </View>
-                  <View style={[styles.statBox, { width: width * 0.42 }]}>
-                  <Text style={styles.statTitle}>Total Tenants</Text>
-                  <Text style={styles.statValue}>{dashboardList?.totalCustomers}</Text>
-                </View>
-                 <View style={[styles.statBox, { width: width * 0.42 }]}>
-                  <Text style={styles.statTitle}>EB Amount</Text>
-                  <Text style={styles.statValue}>{dashboardList?.electricityAmount}</Text>
-                </View>
-              {/* ))} */}
-            </View>
+                      <View style={[styles.statBox, { width: width * 0.42 }]}>
+                        <Text style={styles.statTitle}>Occupied Bed</Text>
+                        <Text style={styles.statValue}>{dashboardList?.occupiedBeds}</Text>
+                      </View>
+                      <View style={[styles.statBox, { width: width * 0.42 }]}>
+                        <Text style={styles.statTitle}>Next Month Projection</Text>
+                        <Text style={styles.statValue}>{dashboardList?.nextMonthProjection}</Text>
+                      </View>
+                      <View style={[styles.statBox, { width: width * 0.42 }]}>
+                        <Text style={styles.statTitle}>Total Tenants</Text>
+                        <Text style={styles.statValue}>{dashboardList?.totalCustomers}</Text>
+                      </View>
+                      <View style={[styles.statBox, { width: width * 0.42 }]}>
+                        <Text style={styles.statTitle}>EB Amount</Text>
+                        <Text style={styles.statValue}>{dashboardList?.electricityAmount}</Text>
+                      </View>
+                      {/* ))} */}
+                    </View>
 
 
 
 
-            <View style={[styles.statBoxOne, { marginHorizontal: 16 }]}>
-              <Text style={styles.statTitle}>Total Asset Value</Text>
-              <Text style={[styles.statValue, { fontSize: 22 }]}>₹ {dashboardList?.totalAssetsValue}</Text>
-            </View>
+                    <View style={[styles.statBoxOne, { marginHorizontal: 16 }]}>
+                      <Text style={styles.statTitle}>Total Asset Value</Text>
+                      <Text style={[styles.statValue, { fontSize: 22 }]}>₹ {dashboardList?.totalAssetsValue}</Text>
+                    </View>
 
-          </View>
+                  </View>
 
-          <View style={styles.cardBlue}>
-            <View style={styles.row}>
+                  <View style={styles.cardBlue}>
+                    <View style={styles.row}>
 
-              <Image source={AdvanceHand} style={{ width: 25, height: 25 }} />
-              <Text style={styles.cardTitle}>Advance in Hand</Text>
-            </View>
-            <Text style={styles.cardValue}>₹ {dashboardList?.advances}</Text>
-          </View>
-
-
-          <View style={styles.cardWhite}>
-            <View style={styles.row}>
-
-              <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
-              <Text style={styles.cardTitle}>New Booking</Text>
-            </View>
-            <Text style={styles.cardValue}>{dashboardList?.bookedBeds}</Text>
-          </View>
-
-          
-          <View style={styles.cardWhite}>
-            <View style={styles.row}>
-              <Image source={MonthProfit} style={{ width: 25, height: 25 }} />
-              <Text style={styles.cardTitle}>Current Month Profit</Text>
-            </View>
-            <Text style={styles.cardValue}>₹ {dashboardList?.currentMonthProfit}</Text>
-          </View>
- <View style={styles.cardWhite}>
-            <View style={styles.row}>
-
-              <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
-              <Text style={styles.cardTitle}>Pending Invoice Count</Text>
-            </View>
-            <Text style={styles.cardValue}>{dashboardList?.pendingInvoiceCount}</Text>
-          </View>
-          
-<View style={styles.cardWhite}>
-            <View style={styles.row}>
-
-              <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
-              <Text style={styles.cardTitle}>Other Profit</Text>
-            </View>
-            <Text style={styles.cardValue}>{dashboardList?.otherProfit}</Text>
-          </View>
+                      <Image source={AdvanceHand} style={{ width: 25, height: 25 }} />
+                      <Text style={styles.cardTitle}>Advance in Hand</Text>
+                    </View>
+                    <Text style={styles.cardValue}>₹ {dashboardList?.advances}</Text>
+                  </View>
 
 
-          {/* <View style={styles.chartCard}>
+                  <View style={styles.cardWhite}>
+                    <View style={styles.row}>
+
+                      <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
+                      <Text style={styles.cardTitle}>New Booking</Text>
+                    </View>
+                    <Text style={styles.cardValue}>{dashboardList?.bookedBeds}</Text>
+                  </View>
+
+
+                  <View style={styles.cardWhite}>
+                    <View style={styles.row}>
+                      <Image source={MonthProfit} style={{ width: 25, height: 25 }} />
+                      <Text style={styles.cardTitle}>Current Month Profit</Text>
+                    </View>
+                    <Text style={styles.cardValue}>₹ {dashboardList?.currentMonthProfit}</Text>
+                  </View>
+                  <View style={styles.cardWhite}>
+                    <View style={styles.row}>
+
+                      <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
+                      <Text style={styles.cardTitle}>Pending Invoice Count</Text>
+                    </View>
+                    <Text style={styles.cardValue}>{dashboardList?.pendingInvoiceCount}</Text>
+                  </View>
+
+                  <View style={styles.cardWhite}>
+                    <View style={styles.row}>
+
+                      <Image source={ActiveCompliance} style={{ width: 25, height: 25 }} />
+                      <Text style={styles.cardTitle}>Other Profit</Text>
+                    </View>
+                    <Text style={styles.cardValue}>{dashboardList?.otherProfit}</Text>
+                  </View>
+
+
+                  {/* <View style={styles.chartCard}>
 
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Expenses Vs Revenue</Text>
@@ -1236,7 +1272,7 @@ console.log("profile", getProfileInitial);
 
 
 
-          {/* <View style={styles.card}>
+                  {/* <View style={styles.card}>
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Advance VS Advance Return</Text>
 
@@ -1350,7 +1386,7 @@ console.log("profile", getProfileInitial);
             </View>
           </View> */}
 
-          {/* <View style={styles.card}>
+                  {/* <View style={styles.card}>
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Total Cashback</Text>
 
@@ -1416,7 +1452,7 @@ console.log("profile", getProfileInitial);
 
 
 
-          {/* <View style={styles.chartCard}>
+                  {/* <View style={styles.chartCard}>
 
             <View style={styles.chartHeader}>
               <Text style={styles.chartTitle}>Expenses</Text>
@@ -1487,67 +1523,67 @@ console.log("profile", getProfileInitial);
           </View> */}
 
 
-          <View style={{ height: 50 }} />
-        </ScrollView>
-      )}
+                  <View style={{ height: 50 }} />
+                </ScrollView>
+              )}
 
-          {!canReadDashboard && !loading && (
-      <View style={styles.centerContainer}>
-        <Image source={EmptyState} style={styles.image} />
-        <Text style={styles.nodataText}>
-          You do not have access to view Dashboard
-        </Text>
-      </View>
-    ) } 
-       </>
-         )
-)}
-         {/* )} */}
-      {/* {activeTab === "Announcement" && (
+              {!canReadDashboard && !loading && (
+                <View style={styles.centerContainer}>
+                  <Image source={EmptyState} style={styles.image} />
+                  <Text style={styles.nodataText}>
+                    You do not have access to view Dashboard
+                  </Text>
+                </View>
+              )}
+            </>
+          )
+        )}
+        {/* )} */}
+        {/* {activeTab === "Announcement" && (
   <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
 )}
       {activeTab === "Updates" && <UpdatesScreen onGoBack={() => setActiveTab("Announcement")}/>} */}
 
-{activeTab === "Announcement" && (
-  !canReadAnnouncement && !loading ? (
-    <View style={styles.centerContainer}>
-      <Image source={EmptyState} style={styles.image} />
-      <Text style={styles.nodataText}>
-        You do not have access to view Announcements
-      </Text>
-    </View>
-  ) : (
-    <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
-  )
-)}
+        {activeTab === "Announcement" && (
+          !canReadAnnouncement && !loading ? (
+            <View style={styles.centerContainer}>
+              <Image source={EmptyState} style={styles.image} />
+              <Text style={styles.nodataText}>
+                You do not have access to view Announcements
+              </Text>
+            </View>
+          ) : (
+            <AnnouncementScreen onGoBack={() => setActiveTab("Dashboard")} />
+          )
+        )}
 
-{activeTab === "Updates" && (
-  !canReadUpdates && !loading ? (
-    <View style={styles.centerContainer}>
-      <Image source={EmptyState} style={styles.image} />
-      <Text style={styles.nodataText}>
-        You do not have access to view Updates
-      </Text>
-    </View>
-  ) : (
-    <UpdatesScreen onGoBack={() => setActiveTab("Announcement")} />
-  )
-)}
-
-
-      <ProfileDrawer
-        visible={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-      />
-
-    </View>
+        {activeTab === "Updates" && (
+          !canReadUpdates && !loading ? (
+            <View style={styles.centerContainer}>
+              <Image source={EmptyState} style={styles.image} />
+              <Text style={styles.nodataText}>
+                You do not have access to view Updates
+              </Text>
+            </View>
+          ) : (
+            <UpdatesScreen onGoBack={() => setActiveTab("Announcement")} />
+          )
+        )}
 
 
+        <ProfileDrawer
+          visible={drawerVisible}
+          onClose={() => setDrawerVisible(false)}
+        />
+
+      </View >
 
 
 
 
-{/* {showBanner && (
+
+
+      {/* {showBanner && (
   <SubscriptionBanner
     visible={true}
     title={copy?.title}
@@ -1559,14 +1595,14 @@ console.log("profile", getProfileInitial);
 
 
 
-{/* {showBanner && (
+      {/* {showBanner && (
   <SubscriptionBanner
     text={bannerText}
     bgColor="#DC2626" // Red
   />
 )} */}
 
- </>
+    </>
   );
 }
 
@@ -1581,93 +1617,93 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-rightIcons: {
-  flexDirection: "row",
-  alignItems: "center",
-  width: 90,        
-  justifyContent: "flex-end",
-},
+  rightIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: 90,
+    justifyContent: "flex-end",
+  },
 
 
- headerTop: {
-  flexDirection: "row",
-  // alignItems: "flex-start",
-  alignItems: "center",
-},
+  headerTop: {
+    flexDirection: "row",
+    // alignItems: "flex-start",
+    alignItems: "center",
+  },
 
 
-hostelRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  flex: 1,
-  // paddingRight: 30,   
-},
+  hostelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    // paddingRight: 30,   
+  },
 
-hostelAvatar: {
-  width: 38,
-  height: 38,
-  borderRadius: 19,
-  backgroundColor: "#EEF2FF",
-  justifyContent: "center",
-  alignItems: "center",
-  // marginRight: 10, 
-},
+  hostelAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#EEF2FF",
+    justifyContent: "center",
+    alignItems: "center",
+    // marginRight: 10, 
+  },
 
-hostelAvatarText: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Bold" ,
-  color: "black",
-},
+  hostelAvatarText: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+    color: "black",
+  },
 
-hostelAvatarImg: {
-  width: "100%",
-  height: "100%",
-  borderRadius: 19,
-  resizeMode: "cover",
-},
+  hostelAvatarImg: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 19,
+    resizeMode: "cover",
+  },
 
-addPgWrapper: {
-  marginLeft: 12,
-},
+  addPgWrapper: {
+    marginLeft: 12,
+  },
 
-addPgBtn: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#2F80ED",
-  paddingHorizontal: 8,
-  paddingVertical: 5,
-  borderRadius: 15,
-  shadowColor: "#89ec27",
-  shadowOpacity: 0.35,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 6 },
-  elevation: 8,
-},
+  addPgBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2F80ED",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 15,
+    shadowColor: "#89ec27",
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
 
-addPgIcon: {
-  color: "#fff",
-  fontSize: 22,
-  fontWeight: "800",
-  marginRight: 8,
-},
+  addPgIcon: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "800",
+    marginRight: 8,
+  },
 
-addPgText: {
-  color: "#fff",
-  fontSize: 14,
-  fontWeight: "700",
-},
-
-
-hostelTitle: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Bold" ,
-  color: "#1E293B",
-  flexWrap: "wrap",
-},
+  addPgText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
 
 
+  hostelTitle: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+    color: "#1E293B",
+    flexWrap: "wrap",
+  },
 
-  changeText: { fontSize: 12, color: "#2F80ED", marginTop: 3, fontFamily: "Gilroy-Regular"    },
+
+
+  changeText: { fontSize: 12, color: "#2F80ED", marginTop: 3, fontFamily: "Gilroy-Regular" },
 
 
   iconCircle: {
@@ -1678,10 +1714,10 @@ hostelTitle: {
 
   },
   iconCirclenoti: {
-  position: "relative",
-  padding: 6,
-  
-},
+    position: "relative",
+    padding: 6,
+
+  },
 
   tabsRow: { flexDirection: "row", marginTop: 18 },
 
@@ -1717,7 +1753,7 @@ hostelTitle: {
   bannerTitle: {
     color: "#fff",
     fontSize: 20,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   bannerSub: {
@@ -1725,8 +1761,8 @@ hostelTitle: {
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
-    fontStyle: "italic",        
-    width: 190,             
+    fontStyle: "italic",
+    width: 190,
   },
 
 
@@ -1784,7 +1820,7 @@ hostelTitle: {
     alignItems: "center",
   },
 
-  cardLabel: { color: "#42526E", marginTop: 10, fontFamily: "Gilroy-Medium"  },
+  cardLabel: { color: "#42526E", marginTop: 10, fontFamily: "Gilroy-Medium" },
 
   cardValue: { fontSize: 28, fontWeight: "800", marginTop: 6 },
 
@@ -1815,15 +1851,15 @@ hostelTitle: {
     alignItems: "center",
   },
 
-  smallLabel: { fontSize: 12, color: "#6B7280", marginTop: 6 , fontFamily: "Gilroy-Medium" },
+  smallLabel: { fontSize: 12, color: "#6B7280", marginTop: 6, fontFamily: "Gilroy-Medium" },
 
   smallValue: { fontSize: 18, fontWeight: "700", marginTop: 4 },
 
   sectionTitle: {
     marginLeft: 16,
     marginTop: 20,
-    marginBottom:4,
-    fontFamily: "Gilroy-Bold" ,
+    marginBottom: 4,
+    fontFamily: "Gilroy-Bold",
     fontSize: 17,
   },
 
@@ -1856,7 +1892,7 @@ hostelTitle: {
     backgroundColor: "#FFFFFF",
   },
 
-  quickLabel: { fontSize: 12, marginTop: 8, textAlign: "center" , fontFamily: "Gilroy-Regular" },
+  quickLabel: { fontSize: 12, marginTop: 8, textAlign: "center", fontFamily: "Gilroy-Regular" },
 
   statsGrid: {
     flexDirection: "row",
@@ -1927,9 +1963,9 @@ hostelTitle: {
   cardTitle: {
     fontSize: 14,
     color: "#6B7280",
-   fontFamily: "Gilroy-Regular",
-   marginLeft:4 ,
-   marginBottom:3
+    fontFamily: "Gilroy-Regular",
+    marginLeft: 4,
+    marginBottom: 3
   },
 
   cardValue: {
@@ -2197,24 +2233,24 @@ hostelTitle: {
   },
 
 
-badge: {
-  position: "absolute",
-  top: 2,          // 👈 IMPORTANT
-  right: 2,
-  minWidth: 16,
-  height: 16,
-  borderRadius: 8,
-  backgroundColor: "red",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  badge: {
+    position: "absolute",
+    top: 2,          // 👈 IMPORTANT
+    right: 2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
 
-badgeText: {
-  color: "#fff",
-  fontSize: 10,
-  fontWeight: "700",
-},
+  badgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "700",
+  },
 
   centerContainer: {
     flex: 1,

@@ -199,16 +199,17 @@ const handleUpdate = async () => {
             placeholder="Enter New Advance Amount"
             value={amount}
             onChangeText={(t) => {
-              setAmount(t);
+               const onlyNum = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
+              setAmount(onlyNum);
               setAmountError("");
             }}
           />
           {amountError && <ErrorMessage message={amountError} />}
 
           {/* REASON */}
-          <Text style={styles.label}>Reason</Text>
+          <Text style={[styles.label,{marginTop:15}]}>Reason</Text>
           <TextInput
-            style={[styles.input, { height: 90 }]}
+            style={[styles.input, { height: 90,marginBottom:10}]}
             multiline
             placeholder="Enter your reason"
             value={reason}
@@ -219,7 +220,8 @@ const handleUpdate = async () => {
 
           {/* ACTIONS */}
           <View style={styles.footer}>
-            <TouchableOpacity onPress={resetState}>
+            <TouchableOpacity onPress={resetState} style={{borderWidth:1,marginRight:10,borderColor:"#1D4ED8",paddingHorizontal: 36,
+                              paddingVertical: 12,borderRadius: 22,}}>
               <Text style={styles.cancel}>Cancel</Text>
             </TouchableOpacity>
 
@@ -285,12 +287,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#111827",
     backgroundColor: "#FFFFFF",
-    marginBottom: 16,
+    // marginBottom: 16,
   },
 
   footer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     marginTop: 10,
   },

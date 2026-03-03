@@ -578,7 +578,7 @@ export default function OverviewTab({ customerDetails,
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
                   {
-                    ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
+                    customerDetails?.hostelInfo?.monthlyRent &&  customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
                       <TouchableOpacity
                         disabled={!isJoiningDateEditable && !canUpdateTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
@@ -609,7 +609,7 @@ export default function OverviewTab({ customerDetails,
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
                   {
-                    ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
+                    customerDetails?.advanceInfo?.advanceAmount &&  customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
                       <TouchableOpacity
                         disabled={!isJoiningDateEditable && !canUpdateTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
