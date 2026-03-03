@@ -331,7 +331,7 @@ sheet: {
 
   title: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
 
@@ -339,6 +339,7 @@ sheet: {
     fontSize: 14,
     color: "#444",
     marginBottom: 8,
+    fontFamily: "Gilroy-Semibold"
   },
 
   input: {
@@ -347,6 +348,7 @@ sheet: {
     borderRadius: 10,
     padding: 12,
     marginBottom: 20,
+  fontFamily: "Gilroy-Regular"
   },
 
 addBtn: {
@@ -359,7 +361,7 @@ addBtn: {
   addBtnText: {
     textAlign: "center",
     color: "#fff",
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
   },
   ErrorFloor:{
     paddingBottom:30

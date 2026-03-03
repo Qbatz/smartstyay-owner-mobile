@@ -926,7 +926,7 @@ export default function PGPageFull({ route }) {
               <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                 {activeHostelName?.mainImage ? <Image source={{ uri: activeHostelName?.mainImage }} style={styles.HostelImg} /> :
                   <View style={[styles.HostelImg, { backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' }]}>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>{activeHostelName?.initials}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"}}>{activeHostelName?.initials}</Text>
                   </View>}
 
               </TouchableOpacity>
@@ -1729,7 +1729,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     flexWrap: "wrap",
     flexShrink: 1,
     marginLeft: 7
@@ -1745,7 +1745,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",    // 🔥 prevents vertical center push
   },
 
-  floorButtonText: { color: "#fff", fontWeight: "600" },
+  floorButtonText: { color: "#fff", fontFamily: "Gilroy-Semibold" },
 
   floorTab: {
     paddingVertical: 8,
@@ -1780,7 +1780,7 @@ const styles = StyleSheet.create({
   circleText: {
     color: "#333",
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
   },
 
   circleTextActive: {
@@ -1790,11 +1790,12 @@ const styles = StyleSheet.create({
   floorLabel: {
     fontSize: 12,
     color: "#777",
+    fontFamily: "Gilroy-Semibold"
   },
 
   floorLabelActive: {
     color: "#1E45E1",
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
   roomCard: {
@@ -1832,8 +1833,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  roomTitle: { fontSize: 16, fontWeight: "700" },
-  roomSubtitle: { fontSize: 12, color: "#888" },
+  roomTitle: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
+  roomSubtitle: { fontSize: 12, color: "#888" ,fontFamily: "Gilroy-Semibold"},
 
   addRoomBtn: {
     padding: 8,
@@ -1859,7 +1860,7 @@ const styles = StyleSheet.create({
     right: 12,
   },
 
-  bedLabel: { fontSize: 12 },
+  bedLabel: { fontSize: 12 ,fontFamily: "Gilroy-Medium"  },
 
   centerContainer: {
     // flex: 3,
@@ -1892,7 +1893,7 @@ const styles = StyleSheet.create({
   addFloorText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+ fontFamily: "Gilroy-Semibold",
   },
 
   addFab: {
@@ -1944,6 +1945,7 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 14,
     color: "#444",
+    fontFamily: "Gilroy-Semibold"
   },
 
   overlay: {
@@ -2032,6 +2034,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     color: "#555",
+    fontFamily: "Gilroy-Semibold"
   },
 
   multiBadge: {
@@ -2109,6 +2112,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 14,
     color: "#333",
+    fontFamily: "Gilroy-Semibold"
   },
   deleteOverlay: {
     flex: 1,
@@ -2127,7 +2131,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: '700',
+  fontFamily: "Gilroy-Bold" ,
     color: '#111',
     textAlign: 'center',
   },
@@ -2160,7 +2164,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#444',
     fontSize: 16,
-    fontWeight: '600',
+   fontFamily: "Gilroy-Semibold",
   },
 
   deleteBtn: {
@@ -2202,7 +2206,7 @@ const styles = StyleSheet.create({
   addBedText: {
     fontSize: 12,
     color: "#1E45E1",
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
   },
   addBedHead: {
     marginTop: "-4"

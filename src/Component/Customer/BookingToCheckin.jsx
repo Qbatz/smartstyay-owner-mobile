@@ -420,7 +420,12 @@ export default function BookingCheckIn({ navigation, route }) {
             }, 800);
 
         } else {
-            alert(res.message);
+            setModalType("error");
+            setMessage(res?.message);
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 800);
         }
 
 

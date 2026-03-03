@@ -240,7 +240,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                     disabled={!canUpdatePayingGuests}
                     style={[styles.popupItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                     onPress={handleEdit}>
-                    <Image source={NoticeIcon} style={styles.menuIcon} />
+                    <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.menuIcon} />
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
                 </View>
@@ -270,7 +270,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
 
             {
-              selectedBed?.newTenantInfo > 0 &&
+              selectedBed?.newTenantInfo?.length > 0  &&
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
                 <Text style={styles.sectionTitle}>Reserved by</Text>
 
@@ -370,7 +370,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                               >
                                 <Image
                                   style={styles.menuIcon}
-                                  source={require("../../../Assets/Images/Logout.png")}
+                                  source={require("../../../Assets/Images/ReAssign.png")}
                                 />
                                 <Text style={styles.menuText}>Make as Inactive</Text>
                               </TouchableOpacity>
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: { fontSize: 20, fontWeight: "700" },
+  title: { fontSize: 20, fontFamily: "Gilroy-Bold"  },
 
   dots: { width: 28, height: 28 },
 
@@ -479,33 +479,33 @@ const styles = StyleSheet.create({
 
   menuIcon: { width: 20, height: 20 },
 
-  popupText: { fontSize: 15, color: "#000" },
+  popupText: { fontSize: 14, color: "#000", fontFamily: "Gilroy-Medium"  },
 
   // TAGS
   tagRow: { flexDirection: "row", gap: 10, marginTop: 15 },
 
   tag: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 12 },
 
-  tagText: { fontSize: 12, color: "#333" },
+  tagText: { fontSize: 12, color: "#333", fontFamily: "Gilroy-Medium"  },
 
-  sub: { marginTop: 20, color: "#000", fontSize: 14 },
+  sub: { marginTop: 20, color: "#000", fontSize: 14 ,fontFamily:"Gilroy-Bold"  , marginBottom:5},
 
   userRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 10 },
 
   userImg: { width: 50, height: 50, borderRadius: 25 },
 
-  userName: { fontSize: 16, fontWeight: "700" },
+  userName: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
 
-  phone: { fontSize: 13, color: "#555" },
+  phone: { fontSize: 13, color: "#555" ,fontFamily: "Gilroy-Regular"},
 
-  label: { marginTop: 15, fontSize: 12, color: "#777" },
+  label: { marginTop: 15, fontSize: 12, color: "#777", fontFamily: "Gilroy-Regular" },
 
   rowInfo: { flexDirection: "row", alignItems: "center", marginTop: 5 },
 
   icon: { width: 20, height: 20, marginRight: 8 },
   iconImg: { width: 30, height: 30, marginRight: 8, },
 
-  value: { fontSize: 15, fontWeight: "600", color: "#000" },
+  value: { fontSize: 15, fontFamily: "Gilroy-Semibold", color: "#000" },
 
   statusBtn: {
     marginTop: 25,
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 16,
     textAlign: "center",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#24A148",
   },
   inlineMenu: {
@@ -552,12 +552,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  menuText: { fontSize: 14, fontWeight: "500" },
+  menuText: { fontSize: 14, fontFamily: "Gilroy-Medium" },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   personRow: { flexDirection: "row", alignItems: "center", flex: 1 },
-  name: { fontSize: 15, fontWeight: "600" },
+  name: { fontSize: 15, fontFamily: "Gilroy-Semibold" },
 
-  phone: { fontSize: 12, color: "#666" },
+  // phone: { fontSize: 12, color: "#666" },
 
   dotsButton: { paddingHorizontal: 8 },
   section: {
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     borderColor: "#EEE",
   },
 
-  sectionTitle: { fontSize: 13, fontWeight: "600", marginBottom: 8, color: "#555" },
+  sectionTitle: { fontSize: 13,fontFamily: "Gilroy-Bold" , marginBottom: 8, color: "#000", marginTop:16 },
   initialCircle: {
     width: 42,
     height: 42,
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#374151",
   },
 

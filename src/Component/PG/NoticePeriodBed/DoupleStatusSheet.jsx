@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  title: { fontSize: 18, fontWeight: "700" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold"  },
 
   chipRow: { flexDirection: "row", marginTop: 10, marginBottom: 10, gap: 8 },
 
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
 
-  chipText: { fontSize: 11, fontWeight: "600", color: "#A0602C" },
+  chipText: { fontSize: 11, fontFamily: "Gilroy-Semibold", color: "#A0602C" },
 
   chipSoft: { backgroundColor: "#FFEAE8" },
   chipSoftText: { color: "#BF5555" },
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     borderColor: "#EEE",
   },
 
-  sectionTitle: { fontSize: 13, fontWeight: "600", marginBottom: 8, color: "#555" },
+  sectionTitle: { fontSize: 13,fontFamily: "Gilroy-Semibold", marginBottom: 8, color: "#555" },
 
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
 
@@ -627,18 +627,18 @@ const styles = StyleSheet.create({
 
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
 
-  name: { fontSize: 15, fontWeight: "600" },
+  name: { fontSize: 15, fontFamily: "Gilroy-Semibold" },
 
-  phone: { fontSize: 12, color: "#666" },
+  phone: { fontSize: 12, color: "#666" ,   fontFamily: "Gilroy-Regular" },
 
   dotsButton: { paddingHorizontal: 8 },
   dots: { fontSize: 20, color: "#777" },
 
   infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7 },
 
-  label: { fontSize: 12, color: "#555" },
-  value: { fontSize: 13, fontWeight: "600" },
-  link: { fontSize: 13, fontWeight: "600", color: "#3562FF" },
+  label: { fontSize: 12, color: "#555" , fontFamily: "Gilroy-Regular" },
+  value: { fontSize: 13, fontFamily: "Gilroy-Semibold" },
+  link: { fontSize: 13,fontFamily: "Gilroy-Semibold", color: "#3562FF" },
 
   menuCard: {
     position: "absolute",
@@ -672,6 +672,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111",
     marginLeft: 8,
+    fontFamily: "Gilroy-Medium" 
   },
 
   menuTextDisabled: {
@@ -695,7 +696,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  noticeText: { color: "#E4503D", fontWeight: "700", fontSize: 14 },
+  noticeText: { color: "#E4503D", fontFamily: "Gilroy-Bold" , fontSize: 14 },
 
   reservedBtn: {
     flex: 1,
@@ -706,7 +707,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
-  reservedText: { color: "#1E45E1", fontWeight: "700", fontSize: 14 },
+  reservedText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" , fontSize: 14 },
   inlineMenu: {
     position: "absolute",
     top: 10,
@@ -740,8 +741,8 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#374151", // dark grey ✅
+   fontFamily: "Gilroy-Bold" ,
+    color: "#374151", 
   },
   fullMenuOverlay: {
     position: "absolute",

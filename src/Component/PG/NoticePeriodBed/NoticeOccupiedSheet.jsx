@@ -586,10 +586,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111",
     marginLeft: 8,
+    fontFamily: "Gilroy-Medium" 
   },
 
   menuTextDisabled: {
     color: "#9CA3AF",
+    fontFamily: "Gilroy-Medium" 
   },
 
 

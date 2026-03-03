@@ -13,7 +13,7 @@ import Profile from "../../../Assets/Images/Avatar.png";
 import Calendar from "../../../Assets/Images/calendar_blue.png";
 import Money from "../../../Assets/Images/money.png";
 import Checkin from "../../../Assets/Images/add-circle.png";
-import MakeUs from "../../../Assets/Images/Logout.png";
+import MakeUs from "../../../Assets/Images/ReAssign.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useNavigation } from "@react-navigation/native";
@@ -280,7 +280,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
               handleEdit();
             }}
           >
-            <Image source={Checkin} style={styles.menuIcon} />
+            <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.menuIcon} />
             <Text style={styles.menuText}>Edit</Text>
           </TouchableOpacity>
         </View>
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
 
     title: {
         fontSize: 20,
-        fontWeight: "700",
+        fontFamily: "Gilroy-Bold" ,
     },
 
     dots: {
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textAlign: "center",
         color: "#1E45E1",
-        fontWeight: "600",
+      fontFamily: "Gilroy-Semibold",
     },
     amountRow: {
         flexDirection: "row",
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
 
     amountText: {
         fontSize: 15,
-        fontWeight: "600",
+       fontFamily: "Gilroy-Semibold",
         color: "#000",
     },
 
@@ -620,7 +620,7 @@ initialsCircle: {
 initialsText: {
    color: "#374151", 
   fontSize: 18,
-  fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
 },
 
 
