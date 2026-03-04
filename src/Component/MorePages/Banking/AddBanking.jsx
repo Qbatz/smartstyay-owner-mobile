@@ -420,9 +420,9 @@ const validate = () => {
   if (activeTab === "Bank") {
     if (!beneficiary.trim())
       err.beneficiary = "Please Enter Beneficiary Name";
-    if (!bankNameRegex.test(bankName.trim())) {
-    err.bankName = "Please Enter Valid Bank Name";
-   }
+if (bankName && !bankNameRegex.test(bankName.trim())) {
+  err.bankName = "Please Enter Valid Bank Name";
+}
     const accErr = isAccountNoValid(accountNo);
     if (accErr) err.accountNo = accErr;
   }

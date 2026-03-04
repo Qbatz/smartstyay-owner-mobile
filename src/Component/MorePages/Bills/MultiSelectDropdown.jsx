@@ -37,30 +37,44 @@ const removeChip = (value) => {
     <View style={{ marginTop: 16 }}>
       <Text style={styles.label}>{label}</Text>
 
-      <TouchableOpacity style={styles.selectBox} onPress={() => setOpen(!open)}>
-        <View style={styles.chipWrap}>
-         {selected.length === 0 ? (
-  <Text style={styles.placeholder}>{placeholder}</Text>
-) : (
-  selected.map((val) => {
-    const label = options.find((o) => o.value === val)?.label;
-    return (
-      <View key={val} style={styles.chip}>
-        <Text style={styles.chipText}>{label}</Text>
-        <TouchableOpacity onPress={() => removeChip(val)}>
-         <TouchableOpacity onPress={() => removeChip(val)}>
-  <Image source={CloseIcon} style={{ width: 16, height: 16 }} />
-</TouchableOpacity>
+    <TouchableOpacity
+  style={[
+    styles.selectBox,
+    selected.length > 0 && styles.selectBoxActive
+  ]}
+  onPress={() => setOpen(!open)}
+>
+      <View style={styles.chipWrap}>
+  {selected.length === 0 ? (
+    <Text style={styles.placeholder}>{placeholder}</Text>
+  ) : selected.length === 1 ? (
+   <Text
+  style={[
+    styles.singleText,
+    selected.length > 0 && { color: "#fff" }
+  ]}
+>
+      {options.find(o => o.value === selected[0])?.label}
+    </Text>
+  ) : (
+     <Text
+  style={[
+    styles.singleText,
+    selected.length > 0 && { color: "#fff" }
+  ]}
+>
+      {options.find(o => o.value === selected[0])?.label} +{selected.length - 1} more
+    </Text>
+  )}
+</View>
 
-        </TouchableOpacity>
-      </View>
-    );
-  })
-)}
-
-        </View>
-
-        <Image source={DownArrow} style={styles.arrow} />
+     <Image
+  source={DownArrow}
+  style={[
+    styles.arrow,
+    selected.length > 0 && { tintColor: "#fff" }
+  ]}
+/>
       </TouchableOpacity>
 
       {/* DROPDOWN */}
@@ -148,14 +162,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#D9D9D9",
-    borderRadius: 12,
-    marginTop: 6,
-    maxHeight: 180,
-    backgroundColor: "#fff",
-  },
+  // dropdown: {
+  //   borderWidth: 1,
+  //   borderColor: "#D9D9D9",
+  //   borderRadius: 12,
+  //   marginTop: 6,
+  //   maxHeight: 180,
+  //   backgroundColor: "#fff",
+  // },
 
   optionRow: {
     flexDirection: "row",
@@ -195,6 +209,28 @@ tick: {
 optionText: {
   fontSize: 15,
   marginLeft: 8,
+},
+singleText: {
+  fontSize: 14,
+  fontWeight: "500",
+  color: "#111827",
+},
+dropdown: {
+  position: "absolute",
+  top: 70,
+  left: 0,
+  right: 0,
+  zIndex: 999,
+  elevation: 10,
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 12,
+  maxHeight: 200,
+  backgroundColor: "#fff",
+},
+selectBoxActive: {
+  backgroundColor: "#1D4ED8",
+  borderColor: "#1D4ED8",
 },
 
 });

@@ -1,7 +1,7 @@
 import React, { createContext, useContext,useState } from "react";
 import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
-
+import qs from "qs";
 
 const ElectricityContext = createContext();
 export const UseSetting = () => useContext(ElectricityContext);
@@ -419,7 +419,7 @@ const getReportsByHostel = async (hostelId) => {
   }
 };
 
-const GetInvoiceReports = async (hostelId) => {
+const GetInvoiceReports = async (hostelId, filters = {}) => {
   try {
     setLoading(true);
 
@@ -432,23 +432,33 @@ const GetInvoiceReports = async (hostelId) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          startDate: filters?.startDate,
+          endDate: filters?.endDate,
+          search: filters?.search,
+          paymentStatus: filters?.paymentStatus,
+          invoiceModes: filters?.invoiceModes,
+          invoiceTypes: filters?.invoiceTypes,
+          createdBy: filters?.createdBy,
+          period: filters?.period,
+          minPaidAmount: filters?.minPaidAmount,
+          maxPaidAmount: filters?.maxPaidAmount,
+          minOutstandingAmount: filters?.minOutstandingAmount,
+          maxOutstandingAmount: filters?.maxOutstandingAmount,
+          page: filters?.page ?? 0,
+          size: filters?.size ?? 10,
+        },
       }
     );
 
     setInvoiceReports(res?.data);
 
-    console.log("INVOICE REPORTS SUCCESS →", res.data);
-
     return {
       success: true,
       data: res.data,
     };
-  } catch (err) {
-    console.log(
-      "INVOICE REPORTS ERROR →",
-      err.response?.data || err.message
-    );
 
+  } catch (err) {
     return {
       success: false,
       data: err.response?.data || err.message,
@@ -458,6 +468,10 @@ const GetInvoiceReports = async (hostelId) => {
   }
 };
 
+
+
+
+
 const getReceiptRegisterReport = async (hostelId, filters = {}) => {
   try {
     setLoading(true);
@@ -465,26 +479,33 @@ const getReceiptRegisterReport = async (hostelId, filters = {}) => {
     const token = await retriveData("token");
     const axios = getAxios();
 
+    const params = {
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      invoiceType: filters?.invoiceType,
+      collectedBy: filters?.collectedBy,
+      period: filters?.period,
+      paymentMode: filters?.paymentMode,
+      page: filters?.page ?? 0,
+      size: filters?.size ?? 10,
+    };
+
+    // 🔥 Remove undefined keys
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined)
+    );
+
     const res = await axios.get(
       `/v2/reports/transaction/${hostelId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: {
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-          invoiceType: filters?.invoiceType,
-          collectedBy: filters?.collectedBy,
-          period: filters?.period,
-          paymentMode: filters?.paymentMode,
-          page: filters?.page ?? 0,
-          size: filters?.size ?? 10,
-        },
+        params: cleanParams,
+    paramsSerializer: (params) =>
+  qs.stringify(params, { arrayFormat: "repeat" })
       }
-    );
-
-    console.log("RECEIPT REGISTER SUCCESS", res.data);
+    )
 
     return {
       success: true,
@@ -492,11 +513,6 @@ const getReceiptRegisterReport = async (hostelId, filters = {}) => {
     };
 
   } catch (err) {
-    console.log(
-      "RECEIPT REGISTER ERROR →",
-      err.response?.data || err.message
-    );
-
     return {
       success: false,
       data: err.response?.data || err.message,
@@ -514,23 +530,35 @@ const getTenantRegisterReport = async (hostelId, filters = {}) => {
     const token = await retriveData("token");
     const axios = getAxios();
 
+    const params = {
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      period: filters?.period,
+      status: filters?.status,
+      floor: filters?.floor,
+      room: filters?.room,
+      search: filters?.search,
+      sharingType: filters?.sharingType,
+      page: filters?.page ?? 0,
+      size: filters?.size ?? 10,
+    };
+
+    // remove undefined values
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined)
+    );
+
     const res = await axios.get(
       `/v2/reports/tenants/${hostelId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: {
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-          period: filters?.period,
-          page: filters?.page ?? 0,
-          size: filters?.size ?? 10,
-        },
+        params: cleanParams,
+        paramsSerializer: (params) =>
+          qs.stringify(params, { arrayFormat: "repeat" }),
       }
     );
-
-    console.log("TENANT REGISTER SUCCESS →", res.data);
 
     return {
       success: true,
@@ -547,7 +575,7 @@ const getTenantRegisterReport = async (hostelId, filters = {}) => {
   } finally {
     setLoading(false);
   }
-}
+};
 
 
 const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
@@ -567,7 +595,7 @@ const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
           startDate: filters?.startDate,
           endDate: filters?.endDate,
           period: filters?.period,
-          categoryId: filters?.categoryId,
+          categoryId: filters?.category,
           paymentMode: filters?.paymentMode,
           createdBy: filters?.createdBy,
           paidTo: filters?.paidTo,

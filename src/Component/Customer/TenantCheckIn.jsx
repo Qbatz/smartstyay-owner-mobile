@@ -289,8 +289,8 @@ export default function TenantCheckIn({ navigation, route }) {
       valid = false;
     }
 
-    if (!advanceAmount || Number(advanceAmount) <= 0) {
-      setAdvanceError("Please enter advance amount");
+    if (!advanceAmount) {
+      setAdvanceError("Please Enter Advance amount");
       valid = false;
     }
 
