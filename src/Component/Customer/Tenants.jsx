@@ -839,7 +839,8 @@ export default function TenantsScreen({ route }) {
                           {item.roomName && (
                             <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
                               <Image source={room} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.roomName}</Text>
+                              <Text numberOfLines={1}
+                              style={[styles.detailText, { flexShrink: 1 }]}>{item.roomName}</Text>
 
                             </View>
 
@@ -848,7 +849,8 @@ export default function TenantsScreen({ route }) {
                           {item.bedName && (
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                               <Image source={Bed} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.bedName}</Text>
+                              <Text numberOfLines={1}
+                               style={[styles.detailText, { flexShrink: 1 }]}>{item.bedName}</Text>
                             </View>
                           )}
                         </View>

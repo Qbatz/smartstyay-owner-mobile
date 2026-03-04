@@ -42,6 +42,7 @@ import ReassignBedSheet from "../ReAssignBed";
 import MoveNoticeSheet from "../MoveToNoticePeriod";
 import InactiveTenantSheet from "../../PG/ReservedBed/MakeUsInActiveSheet";
 import CheckoutBottomSheet from "../Checkout/CheckoutTenant";
+import RecheckInIcon from "../../../Assets/Images/recheckinIcon.png"
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
@@ -284,7 +285,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   }
 
-   const handleShowTennantCheckin = () => {
+  const handleShowTennantCheckin = () => {
     // navigation.navigate("TenantCheckin")
     navigation.navigate("BookingCheckIn", {
       customerId: selectedItem.customerId,
@@ -293,8 +294,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
     setMenuVisible(false)
   }
-   const handleShowFinalSettlement = () => {
-   
+  const handleShowFinalSettlement = () => {
+
     setMenuVisible(false)
     navigation.navigate("FinalSettlement", {
       selectedItem: selectedItem
@@ -302,8 +303,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     });
   };
 
-   const handleShowFinalNew = () => {
-    
+  const handleShowFinalNew = () => {
+
     setMenuVisible(false)
     navigation.navigate("FinalSettlementScreen", {
       selectedItem: selectedItem
@@ -311,7 +312,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     });
   };
 
-   const handleShowCancelNotice = () => {
+  const handleShowCancelNotice = () => {
     setMenuVisible(false)
     navigation.navigate("CancelNotice", {
       selectedItem: selectedItem,
@@ -600,26 +601,45 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           </View>
 
           {/* ROOM DETAILS */}
-          <View style={styles.metaRowCenter}>
-            <View style={styles.floorBadge}>
-              <Text style={styles.floorText}>
-                {customerDetails?.hostelInfo?.floorName}
-              </Text>
-            </View>
+          {
+            customerDetails?.customerCurrentStatus !== "VACATED" && (
+              <View style={styles.metaRowCenter}>
+                <View style={styles.floorBadge}>
+                  <Text style={styles.floorText}>
+                    {customerDetails?.hostelInfo?.floorName}
+                  </Text>
+                </View>
 
-            <Image source={Room_Icon} style={styles.icon} />
-            <Text style={styles.metaText}>
-              {customerDetails?.hostelInfo?.roomName}
-            </Text>
+                <Image source={Room_Icon} style={styles.icon} />
+                <Text style={styles.metaText}>
+                  {customerDetails?.hostelInfo?.roomName}
+                </Text>
 
-            <Image source={BedIcon} style={styles.icon} />
-            <Text style={styles.metaText}>
-              {customerDetails?.hostelInfo?.bedName}
-            </Text>
-          </View>
+                <Image source={BedIcon} style={styles.icon} />
+                <Text style={styles.metaText}>
+                  {customerDetails?.hostelInfo?.bedName}
+                </Text>
+              </View>
+
+            )
+          }
+
+          {
+            customerDetails?.customerCurrentStatus == "VACATED" && (
+              <View style={{paddingVertical:8,paddingHorizontal:10,backgroundColor:"#fbd5d2",borderRadius:10,
+                          flexDirection:'row',alignItems:'center',marginBottom:10}}>
+                <View style={{width: 8,height: 8,borderRadius: 4,backgroundColor:'#f00800',marginRight:4}}/>
+                <Text style={{fontSize:13,fontFamily:'Gilroy-Bold',color:'#f00800'}}>Vacated</Text>
+              </View>
+            )
+          }
+
 
           {/* BUTTON ROW */}
-          <View style={styles.actionRow}>
+
+          {
+             customerDetails?.customerCurrentStatus !== "VACATED" && (
+              <View style={styles.actionRow}>
             <TouchableOpacity style={styles.walletBtn}>
               <Text style={styles.walletText}>Wallet</Text>
             </TouchableOpacity>
@@ -631,6 +651,20 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               <Text style={styles.stayText}>Stay History</Text>
             </TouchableOpacity>
           </View>
+             )
+          }
+
+          {
+            customerDetails?.customerCurrentStatus == "VACATED" && (
+              <TouchableOpacity style={{backgroundColor:'#1E45E1',paddingVertical: 12,alignItems:'center',width:"100%",
+                                       borderRadius: 12,flexDirection:'row',justifyContent:'center',marginTop:12}}
+                                       disabled>
+                <Image source={RecheckInIcon} style={{width:20,height:20}}/>
+                <Text style={{fontSize:16,fontFamily:'Gilroy-Medium',color:'#ffffff',marginLeft:5}}>Re Check in</Text>
+              </TouchableOpacity>
+            )
+          }
+          
 
         </View>
 
@@ -734,7 +768,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         styles.popupRow,
                         !canUpdateTenant && { opacity: 0.4 }]}
                       disabled={!canUpdateTenant}
-                    onPress={handleMakeUsInActive}
+                      onPress={handleMakeUsInActive}
                     >
                       <Image source={ReAssignIcon} style={styles.popupIcon} />
                       <Text style={styles.popupText}>Make Us InActive</Text>
@@ -745,7 +779,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         styles.popupRow,
                         !canUpdateTenant && { opacity: 0.4 }]}
                       disabled={!canUpdateTenant}
-                    onPress={handleShowTennantCheckin}
+                      onPress={handleShowTennantCheckin}
                     // onPress={() => {
                     //   setShowDetailsMenu(false);
                     //   // setShowNotice(true);
@@ -780,7 +814,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                           styles.popupRow,
                           !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
-                      onPress={handleShowFinalNew}
+                        onPress={handleShowFinalNew}
                       >
                         <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Generate</Text>
@@ -792,7 +826,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                           styles.popupRow,
                           !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
-                      onPress={handleShowCancelNotice} 
+                        onPress={handleShowCancelNotice}
                       >
                         <Image
                           source={require("../../../Assets/Images/ReAssign.png")}
@@ -864,17 +898,17 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       />
 
       {
-              showCheckout &&
-              <CheckoutBottomSheet
-                visible={showCheckout}
-                onClose={() => setShowCheckout(false)}
-                reason={reason}
-                setReason={setReason}
-                selectedItem={selectedItem}
-                onSuccess={handleCheckoutSuccess}
-      
-              />
-            }
+        showCheckout &&
+        <CheckoutBottomSheet
+          visible={showCheckout}
+          onClose={() => setShowCheckout(false)}
+          reason={reason}
+          setReason={setReason}
+          selectedItem={selectedItem}
+          onSuccess={handleCheckoutSuccess}
+
+        />
+      }
 
       <EditBasicDetailsSheet
         visible={showEdit}
@@ -988,7 +1022,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  name: { fontSize: 16, fontWeight: "600",textAlign:'center' },
+  name: { fontSize: 16, fontWeight: "600", textAlign: 'center' },
   verified: { color: "green", marginLeft: 6 },
 
   metaRow: {
@@ -1050,6 +1084,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
+    
   },
 
   walletText: {
