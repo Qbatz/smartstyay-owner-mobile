@@ -750,7 +750,9 @@ export default function GeneralDetailsScreen({ navigation }) {
           )}
 
           {/* ----Main profile-- */}
-          <View style={styles.cards}>
+          
+         {canReadProfile && (
+            <View style={styles.cards}>
             <View style={styles.row}>
               <View style={styles.avatar}>
                 {profileDetails?.profileImage ? (
@@ -829,6 +831,7 @@ export default function GeneralDetailsScreen({ navigation }) {
 
 
           </View>
+          )}
 
           {canReadProfile && (
             <View style={{ flex: 1, marginTop: 8 }}>

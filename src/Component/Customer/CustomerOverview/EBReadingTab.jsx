@@ -125,12 +125,12 @@ export default function EBReadingTab(customerDetails) {
 
                   <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                     <Image source={RoomIcon} style={{ width: 21, height: 17, resizeMode: 'contain' }} />
-                    <Text style={[styles.iconText, { flexShrink: 1 }]}> {item.roomName}</Text>
+                    <Text numberOfLines={1} style={[styles.iconText, { flexShrink: 1 }]}> {item.roomName}</Text>
                   </View>
 
                   <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                     <Image source={RoomIcon} style={{ width: 21, height: 17, resizeMode: 'contain' }} />
-                    <Text style={[styles.iconText, { flexShrink: 1 }]}> {item.bedName}</Text>
+                    <Text numberOfLines={1} style={[styles.iconText, { flexShrink: 1 }]}> {item.bedName}</Text>
                   </View>
 
                 </View>
@@ -139,7 +139,7 @@ export default function EBReadingTab(customerDetails) {
               {/* RIGHT */}
               <View style={styles.rightBox}>
                 <Text style={styles.amount}>₹{item?.amount}</Text>
-                <Text style={[styles.range,{marginTop:10}]}>
+                <Text style={[styles.range,{marginTop:12}]}>
                   {formatDate(item.startDate)} → {formatDate(item.endDate)}
                 </Text>
               </View>

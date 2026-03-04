@@ -562,8 +562,26 @@ export default function OverviewTab({ customerDetails,
                 </View>
               </View>
 
+              {
+                customerDetails?.customerCurrentStatus === "VACATED" && (
+                  <View style={styles.detailBox}>
+                    <Text style={styles.detailLabel}>Checkout Date</Text>
+                    <View style={styles.valueWithIcon}>
+                      <Image source={Home} style={styles.detailIcon} />
+                      <Text style={styles.detailValue}>
+                        {customerDetails?.checkoutInfo?.checkoutDate || "N/A"}
+                      </Text>
+                    </View>
+                  </View>
+                )
+              }
+
+
+
+
+
               {/* empty box to keep alignment */}
-              <View style={styles.detailBox} />
+              {/* <View style={styles.detailBox} /> */}
             </View>
 
 
@@ -578,7 +596,7 @@ export default function OverviewTab({ customerDetails,
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
                   {
-                    customerDetails?.hostelInfo?.monthlyRent &&  customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
+                    customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
                       <TouchableOpacity
                         disabled={!isJoiningDateEditable && !canUpdateTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
@@ -600,7 +618,7 @@ export default function OverviewTab({ customerDetails,
 
                 </View>
                 <Text style={styles.amountLabel}>
-                  ₹ {customerDetails?.hostelInfo?.monthlyRent || "N/A"}
+                  ₹ {customerDetails?.hostelInfo?.monthlyRent || 0}
                 </Text>
               </View>
 
@@ -609,7 +627,7 @@ export default function OverviewTab({ customerDetails,
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
                   {
-                    customerDetails?.advanceInfo?.advanceAmount &&  customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
+                    customerDetails?.advanceInfo?.advanceAmount && customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
                       <TouchableOpacity
                         disabled={!isJoiningDateEditable && !canUpdateTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
@@ -630,7 +648,7 @@ export default function OverviewTab({ customerDetails,
 
                 </View>
                 <Text style={styles.amountLabel}>
-                  ₹ {customerDetails?.advanceInfo?.advanceAmount || "N/A"}
+                  ₹ {customerDetails?.advanceInfo?.advanceAmount || 0}
                 </Text>
               </View>
             </View>
@@ -641,7 +659,7 @@ export default function OverviewTab({ customerDetails,
               <View style={styles.amountBox}>
                 <Text style={styles.amountValue}>Booking Amount</Text>
                 <Text style={styles.amountLabel}>
-                  ₹ {customerDetails?.bookingInfo?.bookingAmount || "N/A"}
+                  ₹ {customerDetails?.bookingInfo?.bookingAmount || 0}
                 </Text>
               </View>
 
@@ -767,56 +785,62 @@ export default function OverviewTab({ customerDetails,
 
               {docTab === "KYC" && (
                 <>
-
-                  <View style={styles.docRow}>
-                    <View style={styles.docLeft}>
-                      <Image
-                        source={require("../../../Assets/Images/profile.png")}
-                        style={styles.pdfIcon}
-                      />
-                      <View>
-                        <Text style={styles.docTitle}>Rental Agreement.pdf</Text>
-                        <Text style={styles.docMeta}>180 KB · PDF</Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.docActions}>
-                      <Image
-                        source={require("../../../Assets/Images/Eye.png")}
-                        style={styles.actionIcon}
-                      />
-                      <Image
-                        source={require("../../../Assets/Images/download.png")}
-                        style={styles.actionIcon}
-                      />
-                    </View>
-                  </View>
-
-                  {/* Aadhar */}
-                  <View style={styles.docRow}>
-                    <View style={styles.docLeft}>
-                      <Image
-                        source={require("../../../Assets/Images/profile.png")}
-                        style={styles.pdfIcon}
-                      />
-                      <View>
-                        <Text style={styles.docTitle}>Aadhar.pdf</Text>
-                        <Text style={styles.docMeta}>180 KB · PDF</Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.docActions}>
-                      <Image
-                        source={require("../../../Assets/Images/Eye.png")}
-                        style={styles.actionIcon}
-                      />
-                      <Image
-                        source={require("../../../Assets/Images/download.png")}
-                        style={styles.actionIcon}
-                      />
-                    </View>
-                  </View>
+                <View style={{justifyContent:'center',alignItems:'center'}}>
+                  <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',color: "#9CA3AF" }}>
+                    No KYC documents are there!</Text>
+                </View>
                 </>
+                // <>
+
+                //   <View style={styles.docRow}>
+                //     <View style={styles.docLeft}>
+                //       <Image
+                //         source={require("../../../Assets/Images/profile.png")}
+                //         style={styles.pdfIcon}
+                //       />
+                //       <View>
+                //         <Text style={styles.docTitle}>Rental Agreement.pdf</Text>
+                //         <Text style={styles.docMeta}>180 KB · PDF</Text>
+                //       </View>
+                //     </View>
+
+                //     <View style={styles.docActions}>
+                //       <Image
+                //         source={require("../../../Assets/Images/Eye.png")}
+                //         style={styles.actionIcon}
+                //       />
+                //       <Image
+                //         source={require("../../../Assets/Images/download.png")}
+                //         style={styles.actionIcon}
+                //       />
+                //     </View>
+                //   </View>
+
+                //   {/* Aadhar */}
+                //   <View style={styles.docRow}>
+                //     <View style={styles.docLeft}>
+                //       <Image
+                //         source={require("../../../Assets/Images/profile.png")}
+                //         style={styles.pdfIcon}
+                //       />
+                //       <View>
+                //         <Text style={styles.docTitle}>Aadhar.pdf</Text>
+                //         <Text style={styles.docMeta}>180 KB · PDF</Text>
+                //       </View>
+                //     </View>
+
+                //     <View style={styles.docActions}>
+                //       <Image
+                //         source={require("../../../Assets/Images/Eye.png")}
+                //         style={styles.actionIcon}
+                //       />
+                //       <Image
+                //         source={require("../../../Assets/Images/download.png")}
+                //         style={styles.actionIcon}
+                //       />
+                //     </View>
+                //   </View>
+                // </>
               )}
 
               {/* 

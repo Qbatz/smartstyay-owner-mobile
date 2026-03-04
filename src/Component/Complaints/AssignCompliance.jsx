@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState , useContext } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -31,19 +31,19 @@ export default function AssignBottomSheet({
   complaint
 }) {
 
-               const { activeHostelId } = useContext(CommonContexts);
-               const { getUsersByHostel, } = UseSetting();
-               const { assignComplaint , GetComplaintListDetails } = useContext(ComplaintContext);
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getUsersByHostel, } = UseSetting();
+  const { assignComplaint, GetComplaintListDetails } = useContext(ComplaintContext);
 
-           const [dropdownVisible, setDropdownVisible] = useState(false);
-           const [users, setUsers] = useState([])
-           const [userError , setUserError] = useState("")
-           const [initialAssigneeId, setInitialAssigneeId] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [users, setUsers] = useState([])
+  const [userError, setUserError] = useState("")
+  const [initialAssigneeId, setInitialAssigneeId] = useState(null);
 
 
-         const [showSuccessModal, setShowSuccessModal] = useState(false);
-         const [modalMessage, setModalMessage] = useState("");
-         const [modalType, setModalType] = useState("success");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
   //  const [selectedUser, setSelectedUser] = useState(null);
 
@@ -52,57 +52,57 @@ export default function AssignBottomSheet({
 
   const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
 
-   useEffect(() => {
-      if (!activeHostelId) return;
-  
-      loadUsers();
-    }, [activeHostelId]);
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    loadUsers();
+  }, [activeHostelId]);
 
 
-  
-const loadUsers = async () => {
-  const res = await getUsersByHostel(activeHostelId);
 
-  console.log("getUsersByHostel res:", res);
+  const loadUsers = async () => {
+    const res = await getUsersByHostel(activeHostelId);
 
-  if (res?.success && Array.isArray(res?.data)) {
-    const mappedUsers = res.data.map((u) => ({
-      label: `${u?.firstName || ""} ${u?.lastName || ""}`.trim(),
-      value: u?.userId,
-      raw: u,
-    }));
+    console.log("getUsersByHostel res:", res);
 
-    setUsers(mappedUsers);
-  } else {
-    setUsers([]); 
-  }
-};
+    if (res?.success && Array.isArray(res?.data)) {
+      const mappedUsers = res.data.map((u) => ({
+        label: `${u?.firstName || ""} ${u?.lastName || ""}`.trim(),
+        value: u?.userId,
+        raw: u,
+      }));
 
-useEffect(() => {
-  if (visible && complaint) {
-    if (complaint?.assigneeId) {
-      const existingUser = users.find(
-        (u) => u.value === complaint.assigneeId
-      );
+      setUsers(mappedUsers);
+    } else {
+      setUsers([]);
+    }
+  };
 
-      if (existingUser) {
-        setSelectedUser(existingUser);
+  useEffect(() => {
+    if (visible && complaint) {
+      if (complaint?.assigneeId) {
+        const existingUser = users.find(
+          (u) => u.value === complaint.assigneeId
+        );
+
+        if (existingUser) {
+          setSelectedUser(existingUser);
+        }
+
+        setInitialAssigneeId(complaint.assigneeId);
+      } else {
+        setSelectedUser(null);
+        setInitialAssigneeId(null);
       }
 
-      setInitialAssigneeId(complaint.assigneeId);
-    } else {
-      setSelectedUser(null);
-      setInitialAssigneeId(null);
+      setUserError("");
     }
-
-    setUserError("");
-  }
-}, [visible, complaint, users]);
+  }, [visible, complaint, users]);
 
 
 
-  
-    console.log("users", users);
+
+  console.log("users", users);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -125,8 +125,8 @@ useEffect(() => {
   };
 
   const handleClose = () => {
-    setDropdownVisible(false);   
-  setUserError("");   
+    setDropdownVisible(false);
+    setUserError("");
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
       duration: 200,
@@ -152,48 +152,48 @@ useEffect(() => {
 
   if (!visible) return null;
 
-  console.log("complaint" , complaint);
-  
-const handleAssign = async (userId) => {
-  setUserError("");
+  console.log("complaint", complaint);
 
-  if (!userId) {
-    setUserError("Please select user");
-    return;
-  }
+  const handleAssign = async (userId) => {
+    setUserError("");
 
-  if (initialAssigneeId && userId === initialAssigneeId) {
-    setModalType("warning");
-    setModalMessage("No changes detected");
-    setShowSuccessModal(true);
+    if (!userId) {
+      setUserError("Please select user");
+      return;
+    }
 
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 800);
+    if (initialAssigneeId && userId === initialAssigneeId) {
+      setModalType("warning");
+      setModalMessage("No changes detected");
+      setShowSuccessModal(true);
 
-    return;
-  }
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 800);
 
-  const res = await assignComplaint({
-    complaintId: complaint.complaintId,
-    userId,
-  });
+      return;
+    }
 
-  if (res.success) {
-    await GetComplaintListDetails(activeHostelId);
+    const res = await assignComplaint({
+      complaintId: complaint.complaintId,
+      userId,
+    });
 
-    setModalType("success");
-    setModalMessage(res?.message || "Assigned Successfully");
-    setShowSuccessModal(true);
+    if (res.success) {
+      await GetComplaintListDetails(activeHostelId);
 
-    setTimeout(() => {
-      setShowSuccessModal(false);
-      onClose();
-    }, 800);
-  } else {
-    setUserError(res?.message || "Something went wrong")
-  }
-};
+      setModalType("success");
+      setModalMessage(res?.message || "Assigned Successfully");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        onClose();
+      }, 800);
+    } else {
+      setUserError(res?.message || "Something went wrong")
+    }
+  };
 
 
 
@@ -201,12 +201,12 @@ const handleAssign = async (userId) => {
   return (
     <>
 
-            <SuccessModal
-  visible={showSuccessModal}
-  onClose={() => setShowSuccessModal(false)}
-  message={modalMessage}
-  type={modalType}
-/>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
 
       <TouchableOpacity
         style={styles.overlay}
@@ -243,29 +243,29 @@ const handleAssign = async (userId) => {
                 nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
               >
-  {Array.isArray(users) && users?.map((item) => (
-  <TouchableOpacity
-    key={item?.value}
-    style={styles.option}
-    onPress={() => {
-      setSelectedUser(item);
-      setDropdownVisible(false);
-      setUserError("")
-    }}
-  >
-    <Text style={styles.optionText}>{item?.label}</Text>
-  </TouchableOpacity>
-))}
+                {Array.isArray(users) && users?.map((item) => (
+                  <TouchableOpacity
+                    key={item?.value}
+                    style={styles.option}
+                    onPress={() => {
+                      setSelectedUser(item);
+                      setDropdownVisible(false);
+                      setUserError("")
+                    }}
+                  >
+                    <Text style={styles.optionText}>{item?.label}</Text>
+                  </TouchableOpacity>
+                ))}
 
 
               </ScrollView>
             </View>
           )}
         </View>
-{userError && <ErrorMessage message={userError} type="error" />}
+        {userError && <ErrorMessage message={userError} type="error" />}
         <TouchableOpacity
           style={styles.submitBtn}
-       onPress={() => handleAssign(selectedUser?.value)}
+          onPress={() => handleAssign(selectedUser?.value)}
         >
           <Text style={styles.submitText}>Assign complaint</Text>
         </TouchableOpacity>
