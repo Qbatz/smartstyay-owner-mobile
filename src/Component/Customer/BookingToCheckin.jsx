@@ -292,27 +292,27 @@ export default function BookingCheckIn({ navigation, route }) {
         setRentError("");
 
         if (!selectedFloor) {
-            setFloorError("Please select a floor");
+            setFloorError("Please Select a Floor");
             valid = false;
         }
 
         if (!selectedRoom) {
-            setRoomError("Please select a room");
+            setRoomError("Please Select a Room");
             valid = false;
         }
 
         if (!selectedBed) {
-            setBedError("Please select a bed");
+            setBedError("Please Select a Bed");
             valid = false;
         }
 
-        if (!advanceAmount || Number(advanceAmount) <= 0) {
-            setAdvanceError("Please enter advance amount");
+        if (!advanceAmount) {
+            setAdvanceError("Please Enter Advance Amount");
             valid = false;
         }
 
         if (!rentalAmount || Number(rentalAmount) <= 0) {
-            setRentError("Please enter rental amount");
+            setRentError("Please Enter Rental Amount");
             valid = false;
         }
 

@@ -1,10 +1,10 @@
-import React , {useState ,useEffect, useContext, } from "react";
+import React, { useState, useEffect, useContext, } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,Image
+  TouchableOpacity, Image
 } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import LinearGradient from "react-native-linear-gradient";
@@ -15,96 +15,152 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import Loader from "../../../Component/Loader/Loader"
 import { NativeModules } from "react-native";
-import {getAxios} from "../../../Config/AxiosConfig";
+import { getAxios } from "../../../Config/AxiosConfig";
 import { retriveData } from "../../../Utils/Storage";
+import DownArrow from "../../../Assets/Images/direction-down.png";
+import FilterBottomSheet from "./FilterBottomSheet";
 
 
-const TenantRegister = ({navigation}) => {
+const TenantRegister = ({ navigation }) => {
 
   const { CommonModule } = NativeModules;
 
-    // const {  Reportsdetails} = UseSetting();
+  // const {  Reportsdetails} = UseSetting();
 
-         const {loading,  Reportsdetails , GetInvoiceReports  ,
-           invoiceReports , getTenantRegisterReport}   = UseSetting();
-        const { activeHostelId } = useContext(CommonContexts);
+  const { loading, Reportsdetails, GetInvoiceReports,
+    invoiceReports, getTenantRegisterReport } = UseSetting();
+  const { activeHostelId } = useContext(CommonContexts);
 
-        const [tenantData, setTenantData] = useState(null);
+  const [tenantData, setTenantData] = useState(null);
+
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [tempMonth, setTempMonth] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState([]);
+  const [tempStatus, setTempStatus] = useState([]);
+
+  const [selectedSharing, setSelectedSharing] = useState([]);
+  const [tempSharing, setTempSharing] = useState([]);
+
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [sharingSheetOpen, setSharingSheetOpen] = useState(false);
+  const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+
+  const {
+    canWriteModule: canWriteReports,
+    canReadModule: canReadReports,
+    canUpdateModule: canUpdateReports,
+    canDeleteModule: canDeleteReports,
+  } = useHasPermission("Reports")
+
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    const fetchTenantRegister = async () => {
+      const response = await getTenantRegisterReport(activeHostelId, {
+        page: 0,
+        size: 10,
+      });
+
+      if (response.success) {
+        setTenantData(response.data);
+      }
+    };
+
+    fetchTenantRegister();
+  }, [activeHostelId]);
+
+  console.log("tenantdata", tenantData);
 
 
-          const {
-            canWriteModule: canWriteReports,
-            canReadModule: canReadReports,
-            canUpdateModule: canUpdateReports,
-            canDeleteModule: canDeleteReports,
-          } = useHasPermission("Reports")
 
-          useEffect(() => {
-  if (!activeHostelId) return;
 
-  const fetchTenantRegister = async () => {
-    const response = await getTenantRegisterReport(activeHostelId, {
-      page: 0,
-      size: 10,
-    });
 
-    if (response.success) {
-      setTenantData(response.data);  
+  const handleDownloadReport = async () => {
+    try {
+      const token = await retriveData("token")
+      const axios = getAxios();
+
+      const startDate = tenantData?.dateRange?.from
+      const endDate = tenantData?.dateRange?.to
+
+      const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            startDate,
+            endDate,
+          },
+        }
+      )
+
+      console.log("DOWNLOAD API RESPONSE →", res.data);
+
+      const fileUrl = res.data;
+
+      if (!fileUrl) {
+        console.log("No file URL received");
+        return;
+      }
+
+      await CommonModule.downloadAndViewDocument(fileUrl);
+
+    } catch (error) {
+      console.log("Download error →", error);
     }
   };
 
-  fetchTenantRegister();
-}, [activeHostelId]);
+  const filterOptions = tenantData?.filters;
 
-console.log("tenantdata", tenantData);
+const monthOptions =
+  filterOptions?.period?.map(i => ({
+    label: i.label,
+    value: i.id,
+  })) || [];
+
+const statusOptions =
+  filterOptions?.tenantStatus?.map(i => ({
+    label: i.label,
+    value: i.id,
+  })) || [];
+
+const sharingOptions =
+  filterOptions?.sharingType?.map(i => ({
+    label: i.label,
+    value: i.id,
+  })) || [];
 
 
+const applyTenantFilters = (
+  month = selectedMonth,
+  status = selectedStatus,
+  sharing = selectedSharing
+) => {
 
+  const filters = {
+    period: month || undefined,
+    status: status.length ? status : undefined,
+    sharingType: sharing.length ? sharing : undefined,
+    page: 0,
+    size: 10
+  };
 
-
-const handleDownloadReport = async () => {
-  try {
-    const token = await retriveData("token")
-    const axios = getAxios();
-
-    const startDate = tenantData?.dateRange?.from
-    const endDate = tenantData?.dateRange?.to
-
-    const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          startDate,
-          endDate,
-        },
+  getTenantRegisterReport(activeHostelId, filters)
+    .then(res => {
+      if (res.success) {
+        setTenantData(res.data);
       }
-    )
+    });
 
-    console.log("DOWNLOAD API RESPONSE →", res.data);
-
-    const fileUrl = res.data;
-
-    if (!fileUrl) {
-      console.log("No file URL received");
-      return;
-    }
-
-    await CommonModule.downloadAndViewDocument(fileUrl);
-
-  } catch (error) {
-    console.log("Download error →", error);
-  }
 };
 
-
   return (
-         <>
-           {loading && <Loader />}
-<SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-         <View style={styles.container}>
-             {/* <View style={styles.headerRow}>
+    <>
+      {loading && <Loader />}
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={styles.container}>
+          {/* <View style={styles.headerRow}>
                    <TouchableOpacity  onPress={() => {navigation.goBack()}}>
                      <Image source={ArrowLeft} style={styles.backIcon} />
                    </TouchableOpacity>
@@ -112,92 +168,210 @@ const handleDownloadReport = async () => {
            </Text>
                  </View> */}
 
-                 
-                                          <View style={styles.headerRow}>
-                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                      <TouchableOpacity onPress={() => navigation.goBack()}>
-                                        <Image source={ArrowLeft} style={styles.backIcon} />
-                                      </TouchableOpacity>
-                                      <Text style={styles.title}>Tenant Register</Text>
-                                    </View>
-                                  
-                                    <TouchableOpacity style={styles.monthBtn}>
-                                      <Text style={styles.monthText}>This Month ▼</Text>
-                                    </TouchableOpacity>
-                                  </View>
-           <LinearGradient
-  colors={["#E7F1FF", "#FFFFFF"]}
-  start={{ x: 1, y: 0 }}
-  end={{ x: 0, y: 1 }}
-  style={styles.summaryCard}
+
+          <View style={styles.headerRow}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Image source={ArrowLeft} style={styles.backIcon} />
+              </TouchableOpacity>
+              <Text style={styles.title}>Tenant Register</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.monthBtn}
+              onPress={() => {
+                setTempMonth(selectedMonth);
+                setMonthSheetOpen(true);
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.monthText}> {selectedMonth
+                  ? monthOptions.find(m => m?.value === selectedMonth)?.label
+                  : "Select Month"}</Text>
+                <Image
+                  source={DownArrow}
+                  style={{ width: 14, height: 14, marginLeft: 5 }}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <LinearGradient
+            colors={["#E7F1FF", "#FFFFFF"]}
+            start={{ x: 1, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.summaryCard}
+          >
+            <View style={styles.row}>
+              <Text style={styles.label}>Total Tenants </Text>
+              <Text style={styles.totalValue}>{tenantData?.summary?.totalTenants}</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.row}>
+              <Text style={styles.label}>Active Tenants</Text>
+              <Text style={styles.value}>{tenantData?.summary?.activeTenants?.count}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Notice Period</Text>
+              <Text style={styles.value}>{tenantData?.summary?.noticePeriod?.count}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Check out</Text>
+              <Text style={styles.value}>{tenantData?.summary?.checkoutMTD?.count}</Text>
+            </View>
+          </LinearGradient>
+
+<View style={styles.filterRow}>
+
+{/* STATUS */}
+<TouchableOpacity
+  style={[
+    styles.filterBtn,
+    selectedStatus.length > 0 && styles.activeFilter
+  ]}
+  onPress={() => {
+    setTempStatus(selectedStatus);
+    setStatusSheetOpen(true);
+  }}
 >
-  <View style={styles.row}>
-    <Text style={styles.label}>Total Tenants </Text>
-    <Text style={styles.totalValue}>{tenantData?.summary?.totalTenants}</Text>
-  </View>
-<View style={styles.divider} />   
-  <View style={styles.row}>
-    <Text style={styles.label}>Active Tenants</Text>
-    <Text style={styles.value}>{tenantData?.summary?.activeTenants?.count}</Text>
-  </View>
+<Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
+{selectedStatus.length === 0
+  ? "All"
+  : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
+     ${selectedStatus.length > 1 ? `+${selectedStatus.length - 1} more` : ""}`
+}
+</Text>
 
-  <View style={styles.row}>
-    <Text style={styles.label}>Notice Period</Text>
-    <Text style={styles.value}>{tenantData?.summary?.noticePeriod?.count}</Text>
-  </View>
-   <View style={styles.row}>
-    <Text style={styles.label}>Check out</Text>
-    <Text style={styles.value}>{tenantData?.summary?.checkoutMTD?.count}</Text>
-  </View>
-</LinearGradient>
-
- <View style={styles.filterRow}>
-        <TouchableOpacity style={[styles.filterBtn, styles.activeFilter]}>
-          <Text style={styles.activeFilterText}>All ▼</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Type ▼</Text>
-        </TouchableOpacity>
-      </View>
+<Image source={DownArrow} style={{width:16,height:16,marginLeft:6}}/>
+</TouchableOpacity>
 
 
-    <ScrollView
-  showsVerticalScrollIndicator={false}
-   contentContainerStyle={{ paddingBottom: 140 }}
-    >
-     
-    {tenantData && tenantData?.tenants?.map((item, index) => (
-  <View key={index} style={styles.listItem}>
-    <View>
-      <Text style={styles.name}>{item?.name}</Text>
-      <Text style={styles.sub}>{item?.mobileNo}</Text>
-    </View>
+{/* SHARING TYPE */}
+<TouchableOpacity
+  style={[
+    styles.filterBtn,
+    selectedSharing.length > 0 && styles.activeFilter
+  ]}
+  onPress={() => {
+    setTempSharing(selectedSharing);
+    setSharingSheetOpen(true);
+  }}
+>
+<Text style={selectedSharing.length ? styles.activeFilterText : styles.filterText}>
+{selectedSharing.length === 0
+  ? "Type"
+  : `${sharingOptions.find(s => s.value === selectedSharing[0])?.label}
+     ${selectedSharing.length > 1 ? `+${selectedSharing.length - 1} more` : ""}`
+}
+</Text>
 
-    <Text style={styles.amount}>₹ {item?.checkInAmount}</Text>
-  </View>
-))}
+<Image source={DownArrow} style={{width:16,height:16,marginLeft:6}}/>
+</TouchableOpacity>
 
-{tenantData?.tenants?.length === 0 && (
-   <View style={styles.emptyContainer}>
-           <Image source={EmptyState} style={styles.emptyImage} />
-           <Text style={styles.emptyText}>No Expenses are there!</Text>
-         </View>
-)}
+</View>
 
-    
-    </ScrollView>
 
-    </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 140 }}
+          >
 
-      <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadReport}>
-      <Text style={styles.exportText}>Export PDF</Text>
-    </TouchableOpacity>
-  </View>
+            {tenantData && tenantData?.tenants?.map((item, index) => (
+              <View key={index} style={styles.listItem}>
+                <View>
+                  <Text style={styles.name}>{item?.name}</Text>
+                  <Text style={styles.sub}>{item?.mobileNo}</Text>
+                </View>
 
-    </SafeAreaView>
-      </>
+                <Text style={styles.amount}>₹ {item?.checkInAmount}</Text>
+              </View>
+            ))}
+
+            {tenantData?.tenants?.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Image source={EmptyState} style={styles.emptyImage} />
+                <Text style={styles.emptyText}>No Tenants  are there!</Text>
+              </View>
+            )}
+
+
+          </ScrollView>
+
+        </View>
+
+        <View style={styles.exportWrapper}>
+          <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadReport}>
+            <Text style={styles.exportText}>Export PDF</Text>
+          </TouchableOpacity>
+        </View>
+
+      </SafeAreaView>
+
+  <FilterBottomSheet
+  visible={monthSheetOpen}
+  title="Select Period"
+  options={monthOptions}
+  selectedValues={tempMonth ? [tempMonth] : []}
+  setSelectedValues={(val) => setTempMonth(val[0])}
+  isSingleSelect={true}
+  onReset={() => {
+    setTempMonth("");
+    setSelectedMonth("");
+    setMonthSheetOpen(false);
+    applyTenantFilters("", selectedStatus, selectedSharing);
+  }}
+onApply={() => {
+  setSelectedMonth(tempMonth);
+  setMonthSheetOpen(false);
+  applyTenantFilters(tempMonth, selectedStatus, selectedSharing);
+}}
+  onClose={() => setMonthSheetOpen(false)}
+/>
+
+
+      <FilterBottomSheet
+  visible={statusSheetOpen}
+  title="Tenant Status"
+  options={statusOptions}
+  selectedValues={tempStatus}
+  setSelectedValues={setTempStatus}
+  onReset={() => {
+    setTempStatus([]);
+    setSelectedStatus([]);
+    setStatusSheetOpen(false);
+    applyTenantFilters(selectedMonth, [], selectedSharing);
+  }}
+  onApply={() => {
+    setSelectedStatus(tempStatus);
+    setStatusSheetOpen(false);
+    applyTenantFilters(selectedMonth, tempStatus, selectedSharing);
+  }}
+  onClose={() => setStatusSheetOpen(false)}
+/>
+
+
+<FilterBottomSheet
+  visible={sharingSheetOpen}
+  title="Sharing Type"
+  options={sharingOptions}
+  selectedValues={tempSharing}
+  setSelectedValues={setTempSharing}
+  onReset={() => {
+    setTempSharing([]);
+    setSelectedSharing([]);
+    setSharingSheetOpen(false);
+    applyTenantFilters(selectedMonth, selectedStatus, []);
+  }}
+  onApply={() => {
+    setSelectedSharing(tempSharing);
+    setSharingSheetOpen(false);
+    applyTenantFilters(selectedMonth, selectedStatus, tempSharing);
+  }}
+  onClose={() => setSharingSheetOpen(false)}
+/>
+
+
+    </>
   );
 };
 
@@ -205,31 +379,34 @@ export default TenantRegister;
 
 
 const styles = StyleSheet.create({
- container: {
-  flex: 1,
-  paddingHorizontal: 16,
-  paddingTop: 60,
-  backgroundColor: "#fff",
-},
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    backgroundColor: "#fff",
+  },
 
 
- headerRow: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:'space-between',
-    marginBottom:6
+    justifyContent: 'space-between',
+    marginBottom: 6
   },
   monthBtn: {
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  borderRadius: 8,
-},
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+  },
 
-monthText: {
-  fontSize: 13,
-  color: "#374151",
-  fontWeight: "500",
-},
+  monthText: {
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "500",
+  },
   backIcon: { width: 22, height: 22, marginRight: 10 },
 
   title: { fontSize: 18, fontWeight: "700" },
@@ -237,28 +414,28 @@ monthText: {
 
 
   summaryCard: {
-  borderRadius: 14,
-  padding: 16,
-  marginBottom: 14,
-},
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 14,
+  },
 
-divider: {
-  height: 1,
-  backgroundColor: "rgba(0,0,0,0.06)", 
-  marginVertical: 2,
-  marginBottom:4
-},
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.06)",
+    marginVertical: 2,
+    marginBottom: 4
+  },
 
-totalValue: {
-  fontSize: 20,      
-  fontWeight: "700",
-  color: "#111827",
-},
-sub: {
-  fontSize: 12,
-  color: "#9CA3AF",   
-  marginTop: 4,
-},
+  totalValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  sub: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 4,
+  },
 
 
   row: {
@@ -291,6 +468,7 @@ sub: {
     paddingVertical: 6,
     marginRight: 10,
     backgroundColor: "#fff",
+    flexDirection: "row", justifyContent: "center", alignItems: "center" 
   },
 
   activeFilter: {
@@ -313,7 +491,7 @@ sub: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,   
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: "#F1F5F9",
   },
@@ -335,7 +513,7 @@ sub: {
     fontWeight: "600",
   },
 
-     emptyContainer: {
+  emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -355,22 +533,22 @@ sub: {
   },
 
 
-exportWrapper: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  paddingHorizontal: 16,
-  paddingBottom: 45, 
-  backgroundColor: "#fff",
-},
+  exportWrapper: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 45,
+    backgroundColor: "#fff",
+  },
 
-exportBtn: {
-  backgroundColor: "#1D4ED8",
-  borderRadius: 12,
-  paddingVertical: 14,
-  alignItems: "center",
-},
+  exportBtn: {
+    backgroundColor: "#1D4ED8",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
   exportText: {
     color: "#fff",
     fontWeight: "600",

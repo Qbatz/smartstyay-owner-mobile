@@ -12,9 +12,11 @@ import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
-import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import ArrowLeft from "../../../Assets/Images/Arrow_left.png"; 
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import Loader from "../../../Component/Loader/Loader"
+import DownArrow from "../../../Assets/Images/direction-down.png";
+import FilterBottomSheet from "./FilterBottomSheet";
 
 const ExpenseRegister = ({navigation}) => {
 
@@ -22,9 +24,23 @@ const ExpenseRegister = ({navigation}) => {
   const {loading,  Reportsdetails , GetExpenseRegisterReport , downloadExpenseReport} = UseSetting();
 
   // const { getExpenseRegisterReport } = UseSetting();
-const { activeHostelId } = useContext(CommonContexts);
+const { activeHostelId } = useContext(CommonContexts)
+const [expenseData, setExpenseData] = useState(null)
 
-const [expenseData, setExpenseData] = useState(null);
+const [selectedMonth, setSelectedMonth] = useState("");
+const [tempMonth, setTempMonth] = useState("");
+
+const [selectedCategory, setSelectedCategory] = useState([]);
+const [tempCategory, setTempCategory] = useState([]);
+
+const [selectedPayment, setSelectedPayment] = useState([]);
+const [tempPayment, setTempPayment] = useState([]);
+
+const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
+
+
 
 useEffect(() => {
   if (!activeHostelId) return;
@@ -55,6 +71,48 @@ console.log("expensesdata", expenseData);
           canUpdateModule: canUpdateReports,
           canDeleteModule: canDeleteReports,
         } = useHasPermission("Reports")
+
+
+        const filterOptions = expenseData?.filtersData;
+
+const monthOptions =
+  filterOptions?.period?.map(i => ({
+    label: i.label,
+    value: i.id,
+  })) || [];
+
+const categoryOptions =
+  filterOptions?.category?.map(i => ({
+    label: i.categoryName,
+    value: i.categoryId,
+  })) || [];
+
+const paymentOptions =
+  filterOptions?.paymentMode?.map(i => ({
+    label: i,
+    value: i,
+  })) || [];
+
+  const applyExpenseFilters = (
+  month = selectedMonth,
+  category = selectedCategory,
+  payment = selectedPayment
+) => {
+  const filters = {
+    period: month || undefined,
+    category: category.length ? category : undefined,
+    paymentMode: payment.length ? payment : undefined,
+    page: 0,
+    size: 10,
+  };
+
+  GetExpenseRegisterReport(activeHostelId, filters)
+    .then(res => {
+      if (res.success) {
+        setExpenseData(res.data);
+      }
+    });
+};
 
 const expenseList = [
   {
@@ -126,9 +184,23 @@ const handleDownloadExpenseReport = async () => {
     <Text style={styles.title}>Expense Register</Text>
   </View>
 
-  <TouchableOpacity style={styles.monthBtn}>
-    <Text style={styles.monthText}>This Month ▼</Text>
-  </TouchableOpacity>
+             <TouchableOpacity
+  style={styles.monthBtn}
+  onPress={() => {
+    setTempMonth(selectedMonth);
+    setMonthSheetOpen(true);
+  }}
+>
+  <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <Text style={styles.monthText}> {selectedMonth
+    ? monthOptions.find(m => m?.value === selectedMonth)?.label
+    : "Select Month"}</Text>
+    <Image
+      source={DownArrow}
+      style={{ width: 14, height: 14, marginLeft: 5 }}
+    />
+  </View>
+</TouchableOpacity>
 </View>
 
            <LinearGradient
@@ -150,15 +222,59 @@ const handleDownloadExpenseReport = async () => {
 
 </LinearGradient>
 
-  <View style={styles.filterRow}>
-        <TouchableOpacity style={[styles.filterBtn, styles.activeFilter]}>
-          <Text style={styles.activeFilterText}>Cash ▼</Text>
-        </TouchableOpacity>
+ <View style={styles.filterRow}>
 
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Category ▼</Text>
-        </TouchableOpacity>
-      </View>
+  {/* Payment */}
+  <TouchableOpacity
+    style={[
+      styles.filterBtn,
+      selectedPayment.length > 0 && styles.activeFilter
+    ]}
+    onPress={() => {
+      setTempPayment(selectedPayment);
+      setPaymentSheetOpen(true);
+    }}
+  >
+    <Text style={selectedPayment.length ? styles.activeFilterText : styles.filterText}>
+   {selectedPayment.length === 0
+  ? "Payment"
+  : `${selectedPayment[0]} ${
+      selectedPayment.length > 1
+        ? `+${selectedPayment.length - 1} more`
+        : ""
+    }`}
+    </Text>
+          <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+  </TouchableOpacity>
+
+  {/* Category */}
+  <TouchableOpacity
+    style={[
+      styles.filterBtn,
+      selectedCategory.length > 0 && styles.activeFilter
+    ]}
+    onPress={() => {
+      setTempCategory(selectedCategory);
+      setCategorySheetOpen(true);
+    }}
+  >
+    <Text style={selectedCategory.length ? styles.activeFilterText : styles.filterText}>
+    {selectedCategory.length === 0
+  ? "Category"
+  : `${
+      categoryOptions.find(
+        c => c.value === selectedCategory[0]
+      )?.label
+    } ${
+      selectedCategory.length > 1
+        ? `+${selectedCategory.length - 1} more`
+        : ""
+    }`}
+    </Text>
+          <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+  </TouchableOpacity>
+
+</View>
 
     <ScrollView
   showsVerticalScrollIndicator={false}
@@ -206,6 +322,67 @@ const handleDownloadExpenseReport = async () => {
   </View>
 
     </SafeAreaView>
+
+    <FilterBottomSheet
+  visible={monthSheetOpen}
+  title="Select Period"
+  options={monthOptions}
+  selectedValues={tempMonth ? [tempMonth] : []}
+  setSelectedValues={(val) => setTempMonth(val[0])}
+  isSingleSelect={true}
+  onReset={() => {
+    setTempMonth("");
+    setSelectedMonth("");
+    setMonthSheetOpen(false);
+    applyExpenseFilters("", selectedCategory, selectedPayment);
+  }}
+  onApply={() => {
+    setSelectedMonth(tempMonth);
+    setMonthSheetOpen(false);
+    applyExpenseFilters(tempMonth, selectedCategory, selectedPayment);
+  }}
+  onClose={() => setMonthSheetOpen(false)}
+/>
+
+<FilterBottomSheet
+  visible={categorySheetOpen}
+  title="Category"
+  options={categoryOptions}
+  selectedValues={tempCategory}
+  setSelectedValues={setTempCategory}
+  onReset={() => {
+    setTempCategory([]);
+    setSelectedCategory([]);
+    setCategorySheetOpen(false);
+    applyExpenseFilters(selectedMonth, [], selectedPayment);
+  }}
+  onApply={() => {
+    setSelectedCategory(tempCategory);
+    setCategorySheetOpen(false);
+    applyExpenseFilters(selectedMonth, tempCategory, selectedPayment);
+  }}
+  onClose={() => setCategorySheetOpen(false)}
+/>
+
+<FilterBottomSheet
+  visible={paymentSheetOpen}
+  title="Payment Mode"
+  options={paymentOptions}
+  selectedValues={tempPayment}
+  setSelectedValues={setTempPayment}
+  onReset={() => {
+    setTempPayment([]);
+    setSelectedPayment([]);
+    setPaymentSheetOpen(false);
+    applyExpenseFilters(selectedMonth, selectedCategory, []);
+  }}
+  onApply={() => {
+    setSelectedPayment(tempPayment);
+    setPaymentSheetOpen(false);
+    applyExpenseFilters(selectedMonth, selectedCategory, tempPayment);
+  }}
+  onClose={() => setPaymentSheetOpen(false)}
+/>
       </>
   );
 };
@@ -234,6 +411,9 @@ const styles = StyleSheet.create({
   paddingHorizontal: 10,
   paddingVertical: 4,
   borderRadius: 8,
+      borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
 },
 
 monthText: {
@@ -316,6 +496,7 @@ sub: {
     paddingVertical: 6,
     marginRight: 10,
     backgroundColor: "#fff",
+      flexDirection: "row", justifyContent: "center", alignItems: "center" 
   },
 
   activeFilter: {
@@ -406,4 +587,29 @@ exportBtn: {
     fontWeight: "600",
     fontSize: 15,
   },
+
+    filterBox: {
+  flex: 1,
+  padding: 12,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  marginRight: 8,
+  backgroundColor: "#fff",
+  flexDirection: "row", justifyContent: "center", alignItems: "center" 
+},
+
+filterBoxActive: {
+  backgroundColor: "#1D4ED8",
+  borderColor: "#1D4ED8",
+},
+
+filterText: {
+  textAlign: "center",
+  color: "#374151",
+},
+
+filterTextActive: {
+  color: "#fff",
+},
 });
