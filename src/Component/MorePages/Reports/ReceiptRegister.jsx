@@ -15,6 +15,8 @@ import { SafeAreaView } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import { NativeModules } from "react-native";
+import DownArrow from "../../../Assets/Images/direction-down.png";
+import FilterBottomSheet from "./FilterBottomSheet";
 
 const ReceiptRegister = ({navigation}) => {
 
@@ -30,6 +32,19 @@ const ReceiptRegister = ({navigation}) => {
         canDeleteModule: canDeleteReports,
       } = useHasPermission("Reports")
 
+      const [selectedMonth, setSelectedMonth] = useState("");
+const [tempMonth, setTempMonth] = useState("");
+
+const [selectedType, setSelectedType] = useState([]);
+const [tempType, setTempType] = useState([]);
+
+const [selectedPayment, setSelectedPayment] = useState([]);
+const [tempPayment, setTempPayment] = useState([]);
+
+const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+const [typeSheetOpen, setTypeSheetOpen] = useState(false);
+const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
+
   useEffect(() => {
   if (activeHostelId) {
     loadReceipts();
@@ -37,11 +52,7 @@ const ReceiptRegister = ({navigation}) => {
 }, [activeHostelId]);
 
 const loadReceipts = async () => {
-  const res = await getReceiptRegisterReport(activeHostelId, {
-    period: "THIS_MONTH",
-    page: 0,
-    size: 20,
-  });
+  const res = await getReceiptRegisterReport(activeHostelId);
 
   if (res?.success) {
     setReceiptData(res.data);
@@ -50,6 +61,65 @@ const loadReceipts = async () => {
     setReceiptData(null)
   }
 }
+
+const filterOptions = receiptData?.filters;
+
+const monthOptions =
+  filterOptions?.period?.map(i => ({
+    label: i.label,
+    value: i.id,
+  })) || [];
+
+const typeOptions =
+  filterOptions?.invoiceType?.map(i => ({
+    label: i.label,
+    value: i.id,
+  })) || [];
+
+  const firstTypeLabel =
+  typeOptions?.find(t => t.value === selectedType?.[0])?.label || "";
+
+
+const paymentOptions =
+  filterOptions?.paymentMode?.map(i => ({
+    label: i.label,
+    value: i.id, 
+  })) || [];
+
+const firstPaymentLabel =
+  paymentOptions?.find(p => p.value === selectedPayment?.[0])?.label || "";
+
+  const selectedPaymentValue =
+  typeof selectedPayment?.[0] === "object"
+    ? selectedPayment?.[0]?.value
+    : selectedPayment?.[0];
+
+// const firstPaymentLabel =
+//   paymentOptions?.find(p => p.value === selectedPaymentValue)?.label || "";
+
+  console.log(selectedType)
+console.log(typeOptions)
+
+console.log("selectpayment", selectedPayment);
+
+
+  const applyReceiptFilters = (
+  month = selectedMonth,
+  type = selectedType,
+  payment = selectedPayment
+) => {
+const filters = {
+  period: month || undefined,
+  invoiceType: type?.length ? type[0] : undefined,
+ paymentMode: payment?.length ? payment : undefined,
+};
+  getReceiptRegisterReport(activeHostelId, filters)
+    .then(res => {
+      if (res?.success) {
+        setReceiptData(res.data);
+      }
+    });
+};
 
 const handleDownloadReceiptReport = async () => {
   const res = await downloadReceiptReport(activeHostelId);
@@ -84,9 +154,23 @@ console.log("receiptData", receiptData);
                      <Text style={styles.title}>Receipt Register</Text>
                    </View>
                  
-                   <TouchableOpacity style={styles.monthBtn}>
-                     <Text style={styles.monthText}>This Month ▼</Text>
-                   </TouchableOpacity>
+                    <TouchableOpacity
+          style={styles.monthBtn}
+          onPress={() => {
+            setTempMonth(selectedMonth);
+            setMonthSheetOpen(true);
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.monthText}> {selectedMonth
+            ? monthOptions.find(m => m?.value === selectedMonth)?.label
+            : "Select Month"}</Text>
+            <Image
+              source={DownArrow}
+              style={{ width: 14, height: 14, marginLeft: 5 }}
+            />
+          </View>
+        </TouchableOpacity>
                  </View>
            <LinearGradient
   colors={["#E7F1FF", "#FFFFFF"]}
@@ -111,13 +195,49 @@ console.log("receiptData", receiptData);
 </LinearGradient>
 
   <View style={styles.filterRow}>
-        <TouchableOpacity style={[styles.filterBtn, styles.activeFilter]}>
-          <Text style={styles.activeFilterText}>All ▼</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+  style={[
+    styles.filterBtn,
+    selectedType.length > 0 && styles.activeFilter
+  ]}
+  onPress={() => {
+    setTempType(selectedType);
+    setTypeSheetOpen(true);
+  }}
+>
+  <Text style={selectedType.length ? styles.activeFilterText : styles.filterText}>
+  {selectedType.length === 0
+    ? "Type"
+    : `${firstTypeLabel}${
+        selectedType.length > 1
+          ? ` +${selectedType.length - 1} more`
+          : ""
+      }`}
+</Text>
+  <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+</TouchableOpacity>
 
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Type ▼</Text>
-        </TouchableOpacity>
+       <TouchableOpacity
+  style={[
+    styles.filterBtn,
+    selectedPayment.length > 0 && styles.activeFilter
+  ]}
+  onPress={() => {
+    setTempPayment(selectedPayment);
+    setPaymentSheetOpen(true);
+  }}
+>
+<Text style={selectedPayment.length ? styles.activeFilterText : styles.filterText}>
+  {selectedPayment.length === 0
+    ? "Payment"
+    : `${firstPaymentLabel}${
+        selectedPayment.length > 1
+          ? ` +${selectedPayment.length - 1} more`
+          : ""
+      }`}
+</Text>
+  <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+</TouchableOpacity>
       </View>
 
 
@@ -168,6 +288,68 @@ console.log("receiptData", receiptData);
   </View>
 
     </SafeAreaView>
+
+    <FilterBottomSheet
+  visible={monthSheetOpen}
+  title="Select Period"
+  options={monthOptions}
+  selectedValues={tempMonth ? [tempMonth] : []}
+  setSelectedValues={(val) => setTempMonth(val[0])}
+  isSingleSelect={true}
+  onReset={() => {
+    setTempMonth("");
+    setSelectedMonth("");
+    setMonthSheetOpen(false);
+    applyReceiptFilters("", selectedType, selectedPayment);
+  }}
+  onApply={() => {
+    setSelectedMonth(tempMonth);
+    setMonthSheetOpen(false);
+    applyReceiptFilters(tempMonth, selectedType, selectedPayment);
+  }}
+  onClose={() => setMonthSheetOpen(false)}
+/>
+
+
+<FilterBottomSheet
+  visible={typeSheetOpen}
+  title="Invoice Type"
+  options={typeOptions}
+  selectedValues={tempType}
+  setSelectedValues={setTempType}
+  onReset={() => {
+    setTempType([]);
+    setSelectedType([]);
+    setTypeSheetOpen(false);
+    applyReceiptFilters(selectedMonth, [], selectedPayment);
+  }}
+  onApply={() => {
+    setSelectedType(tempType);
+    setTypeSheetOpen(false);
+    applyReceiptFilters(selectedMonth, tempType, selectedPayment);
+  }}
+  onClose={() => setTypeSheetOpen(false)}
+/>
+
+<FilterBottomSheet
+  visible={paymentSheetOpen}
+  title="Payment Mode"
+  options={paymentOptions}
+  selectedValues={tempPayment}
+  setSelectedValues={setTempPayment}
+  onReset={() => {
+    setTempPayment([]);
+    setSelectedPayment([]);
+    setPaymentSheetOpen(false);
+    applyReceiptFilters(selectedMonth, selectedType, []);
+  }}
+  onApply={() => {
+    setSelectedPayment(tempPayment);
+    setPaymentSheetOpen(false);
+    applyReceiptFilters(selectedMonth, selectedType, tempPayment);
+  }}
+  onClose={() => setPaymentSheetOpen(false)}
+/>
       </>
   );
 };
@@ -196,6 +378,9 @@ headerRow: {
   paddingHorizontal: 10,
   paddingVertical: 4,
   borderRadius: 8,
+  borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
 },
 
 monthText: {
@@ -271,6 +456,7 @@ totalValue: {
     paddingVertical: 6,
     marginRight: 10,
     backgroundColor: "#fff",
+          flexDirection: "row", justifyContent: "center", alignItems: "center" 
   },
 
   activeFilter: {
@@ -361,4 +547,28 @@ exportBtn: {
     fontWeight: "600",
     fontSize: 15,
   },
+   filterBox: {
+  flex: 1,
+  padding: 12,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  marginRight: 8,
+  backgroundColor: "#fff",
+  flexDirection: "row", justifyContent: "center", alignItems: "center" 
+},
+
+filterBoxActive: {
+  backgroundColor: "#1D4ED8",
+  borderColor: "#1D4ED8",
+},
+
+filterText: {
+  textAlign: "center",
+  color: "#374151",
+},
+
+filterTextActive: {
+  color: "#fff",
+},
 });
