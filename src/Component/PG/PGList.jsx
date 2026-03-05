@@ -506,6 +506,23 @@ export default function PGPageFull({ route }) {
     }, [isAnySheetOpen])
   );
 
+   useFocusEffect(
+  React.useCallback(() => {
+    setShowFloorMenu(false);
+    setOpenMenuRoomId(null);
+  }, [])
+);
+
+useFocusEffect(
+  React.useCallback(() => {
+    setShowFloorMenu(false);
+    setOpenMenuRoomId(null);
+    setShowActionSheet(false);
+    setShowAddBed(false);
+    setShowManageBed(false);
+  }, [])
+)
+
 
 
   // const getBedStatus = (bed) => {
@@ -687,6 +704,8 @@ export default function PGPageFull({ route }) {
   ]);
 
 
+ 
+
   useEffect(() => {
     const onBack = () => {
       if (showAddFloor) {
@@ -844,6 +863,8 @@ export default function PGPageFull({ route }) {
     });
   }
   const handleAddBed = (roomId) => {
+    setShowFloorMenu(false);
+    setOpenMenuRoomId(null);
     setSelectedBedRoomId(roomId);
     setShowAddBed(true);
 
@@ -941,7 +962,13 @@ export default function PGPageFull({ route }) {
               // style={styles.floorButton}
               disabled={!canWritePayingGuests}
               style={[styles.floorButton, !canWritePayingGuests && { opacity: 0.4 }]}
-              onPress={() => setShowAddFloor(true)}
+              onPress={() =>
+              {
+                   setOpenMenuRoomId(null);
+                  // setShowAddRoom(false);
+                  setShowAddFloor(true)
+              }
+                }
             >
               <Text style={styles.floorButtonText}>+ Floor</Text>
             </TouchableOpacity>
@@ -1346,7 +1373,12 @@ export default function PGPageFull({ route }) {
                     <View style={styles.addBedHead}>
                       <TouchableOpacity
                         style={styles.addBedBox}
-                        onPress={() => handleAddBed(item.id)}
+                        onPress={() =>
+                        {
+                          setShowFloorMenu(false)
+                          handleAddBed(item.id)
+                        }
+                       }
                       >
                         <View style={styles.addIconBox}>
                           <Image source={AddIcon} style={styles.addIconImg} />
