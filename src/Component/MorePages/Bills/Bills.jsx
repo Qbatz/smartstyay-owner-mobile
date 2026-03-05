@@ -39,6 +39,9 @@ import CheckoutIcon from "../../../Assets/Images/checkout.png";
 import ActiveWalkin from "../../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../../Assets/Images/walkin.png";
 import WhatsappIcon from "../../../Assets/Images/whatsapp_blue.png";
+import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
+import PlusIcon from "../../../Assets/Images/add.png";
+import ShareIcon from "../../../Assets/Images/share.png";
 // import TenAntAdd from "../../../Assets/Images/TenantAdd.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -147,7 +150,7 @@ export default function BillsDesign({ route }) {
   console.log("recurringBills", recurringBills);
 
 
-  const [activeTab, setActiveTab] = useState("All Bills");
+  const [activeTab, setActiveTab] = useState("Invoices");
   const navigation = useNavigation();
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [refundInitDetails, setRefundInitDetails] = useState(null);
@@ -265,7 +268,6 @@ export default function BillsDesign({ route }) {
   useLayoutEffect(() => {
     const backAction = () => {
 
-      // ✅ 1) First close all opened sheets / modals
       if (showDetailModal) {
         setShowDetailModal(false);
         return true;
@@ -330,7 +332,7 @@ export default function BillsDesign({ route }) {
         return true;
       }
       if (activeTab === "Bookings") {
-        setActiveTab("All Bills");
+        setActiveTab("Invoices");
         return true;
       }
 
@@ -898,7 +900,7 @@ export default function BillsDesign({ route }) {
 
 
   const tabs = [
-    { key: "All Bills", active: Profile, inactive: InProfile },
+    { key: "Invoices", active: Profile, inactive: InProfile },
     { key: "Bookings", active: ActiveWalkin, inactive: WalkinIcon },
     { key: "RecurringBills", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
@@ -1070,7 +1072,7 @@ export default function BillsDesign({ route }) {
 
       if (res.success) {
         await GetAllBillDetails(activeHostelId);
-
+        setShowBillDetails(false)
         setShowRecordPayment(false);
 
         setModalType("success");
@@ -1589,15 +1591,16 @@ const handleShareReceipt = async () => {
   // };
   
 
-  const handleDownloadReceipt = async () => {
-    console.log("bijuroy")
-    if (!activeHostelId) return;
+  const handleDownloadReceipt = async (item) => {
+  if (!activeHostelId || !item?.transactionId) return;
 
-    const response = await downloadReceipt(activeHostelId, selecetedTenantReceipt?.transactionId);
-    console.log("downloadReceipt", response)
+  const response = await downloadReceipt(
+    activeHostelId,
+    item.transactionId
+  );
 
-    CommonModule.downloadAndViewDocument(response.url)
-  }
+  CommonModule.downloadAndViewDocument(response.url);
+};
   // const handleDownloadReceipt = async (item) => {
   //   if (!activeHostelId) return;
 
@@ -1825,7 +1828,7 @@ const handleShareReceipt = async () => {
         message={modalMessage}
         type={modalType}
       />
-      {loading && <Loader />}
+     
       <View style={[styles.safe, { paddingTop: insets.top }]}>
 
         <SafeAreaView style={styles.container}>
@@ -1841,7 +1844,7 @@ const handleShareReceipt = async () => {
               <Image source={SearchIcon} style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Search Bills"
+                placeholder="Search Invoices"
                 placeholderTextColor="#9CA3AF"
                 value={searchText}
                 onChangeText={(text) => {
@@ -1878,7 +1881,7 @@ const handleShareReceipt = async () => {
             ))}
           </View>
 
-          {activeTab === "All Bills" && (
+          {activeTab === "Invoices" && (
             <View style={{ flex: 1 }}>
 
               {!canReadInvoice && (
@@ -1993,8 +1996,8 @@ const handleShareReceipt = async () => {
 
 
                             <View style={[styles.detailRow, { flex: 1 }]}>
-                              <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
-                                <Text style={styles.floorText}>{item.invoiceType}-{item?.invoiceMode}</Text>
+                              <View style={[styles.floorBadge, { alignItems: 'center' }]}>
+                                <Text style={styles.floorText}>{item.invoiceType}</Text>
                               </View>
 
                               <Image source={Bills_Black_Icon} style={styles.iconSmall} />
@@ -2190,6 +2193,21 @@ const handleShareReceipt = async () => {
                       </View>
                     </View>
                   </View>
+  {isPartial && (
+                  <View style={styles.actionRow}>
+
+  <TouchableOpacity style={styles.reminderBtn} onPress={handleShareBill}>
+    <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+    <Text style={styles.reminderText}>Remainder</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.callBtn}>
+    <Image source={Call} style={styles.actionIcon} />
+    <Text style={styles.callText}>Call</Text>
+  </TouchableOpacity>
+
+</View>
+  )}
 
                   <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View>
@@ -2453,44 +2471,57 @@ const handleShareReceipt = async () => {
                     </View>
                   )}
 
-                  <View style={{ marginTop: 30 }}>
-
-                    {isPending && (
-                      <TouchableOpacity
-                        style={styles.primaryBtn}
-                        onPress={handleShowRecordPayment}
-                      >
-                        <Text style={styles.primaryBtnText}>
-                          + Record Payment
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-
-
-                    {isPartial && (
-                      <TouchableOpacity
-                        style={styles.primaryBtn}
-                        onPress={handleShowRecordPayment}
-                      >
-                        <Text style={styles.primaryBtnText}>
-                          + Record Payment
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity style={styles.previewBtn} onPress={handleShowBillPdf}>
-                      <View style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Image source={PreviewIcon} style={{
-                          width: 18,
-                          height: 18, marginTop: 3, marginRight: 12
-                        }} />
-                        <Text style={styles.previewText}>Preview</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
+                
 
 
                 </ScrollView>
+
+       
+
+      
+
+ <View style={styles.fixedBottomBar}>
+
+{isPaid && (
+<>
+  <TouchableOpacity style={styles.paidBtn} >
+    <Image source={ShareIcon} style={styles.iconDark} />
+    <Text style={styles.paidText}>Share</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.paidBtn}    onPress={handleDownloadBillsPdf}>
+    <Image source={DownloadIcon} style={styles.iconDark} />
+    <Text style={styles.paidText}>Download</Text>
+  </TouchableOpacity>
+</>
+)}
+
+{(isPending || isPartial) && (
+<>
+  <View style={styles.bottomActionItem}>
+    <TouchableOpacity style={styles.iconBtn}  >
+      <Image source={ShareIcon} style={styles.iconDark} />
+    </TouchableOpacity>
+    <Text style={styles.bottomText}>Share</Text>
+  </View>
+
+  <View style={styles.bottomActionItem}>
+    <TouchableOpacity style={styles.iconBtn}   onPress={handleDownloadBillsPdf}>
+      <Image source={DownloadIcon} style={styles.iconDark} />
+    </TouchableOpacity>
+    <Text style={styles.bottomText}>Download</Text>
+  </View>
+
+  <View style={styles.bottomActionItem}>
+    <TouchableOpacity style={styles.recordBtn}  onPress={handleShowRecordPayment}>
+      <Image source={PlusIcon} style={styles.iconWhite} />
+    </TouchableOpacity>
+    <Text style={styles.bottomText}>Record</Text>
+  </View>
+</>
+)}
+
+</View>
 
 
               </Animated.View>
@@ -2530,7 +2561,6 @@ const handleShareReceipt = async () => {
                         gap: 10,
                       }}
                     >
-                      {/* STATUS BADGE */}
                       <View
                         style={[
                           styles.statusBadge,
@@ -2566,7 +2596,6 @@ const handleShareReceipt = async () => {
 
 
                   <View style={styles.userRow}>
-                    {/* <Image source={ProfileImage} style={styles.userImg} /> */}
                     {selectedReceipt?.profilePic ? (
                       <Image
                         source={{ uri: selectedReceipt.profilePic }}
@@ -2613,14 +2642,9 @@ const handleShareReceipt = async () => {
                     <Text style={{ fontSize: 17, fontFamily: "Gilroy-Semibold"  }}>₹{selectedReceipt?.paidAmount ?? "--"}</Text>
                   </View>
 
-                  {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>Refund</Text>
-                    <Text style={{ fontSize: 14, fontWeight: 600 }}>₹2500</Text>
-                  </View> */}
-
                   <View style={{ borderWidth: 0.8, marginVertical: 20, borderColor: '#E3E3E3' }} />
 
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
                     <Text style={{ fontSize: 14,fontFamily: "Gilroy-Medium" ,color: '#3C3C4399' }}>Payment date</Text>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{formatApiDate(selectedReceipt?.paidAt)}</Text>
                   </View>
@@ -2641,78 +2665,34 @@ const handleShareReceipt = async () => {
                     <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy}</Text>
                   </View>
 
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom:9 }}>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Transaction Id</Text>
                     <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceipt?.transactionNumber || "--"}</Text>
                   </View>
 
 
 
-                  {/* <View style={styles.twoColRow}>
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Payment date</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-                      <Text style={styles.value}>  {formatApiDate(selectedReceipt?.paidAt)}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Payment Mode</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={Payment} style={styles.iconSmall} />
-                      <Text style={styles.value}> {selectedReceipt?.invoiceMode || "--"}</Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.twoColRow}>
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Payment to</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={Payment} style={{
-                        width: 18,
-                        height: 18, marginTop: 5, marginRight: 5
-                      }} />
-                      <Text style={styles.amountValue}>  {selectedReceipt?.bankName || "--"}</Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.twoColRow}>
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Amount</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={MoneyCheckIcon} style={{
-                        width: 18,
-                        height: 18, marginTop: 5, marginRight: 5
-                      }} />
-                      <Text style={styles.amountValue}> ₹{selectedReceipt?.paidAmount ?? "--"}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.colItem}>
-                    <Text style={styles.label}>Transaction Id</Text>
-                    <View style={styles.rowAlign}>
-                      <Image source={Telegram} style={{
-                        width: 18,
-                        height: 18, marginTop: 2, marginRight: 5
-                      }} />
-                      <Text style={styles.amountValue}>{selectedReceipt?.transactionNumber || "--"}</Text>
-                    </View>
-                  </View>
+              
 
 
-                </View> */}
+                 <View style={styles.fixedBottomBar}>
 
-                  <TouchableOpacity style={styles.previewBtn} onPress={handleShowReceiptPdf} >
-                    <View style={{ display: 'flex', flexDirection: 'row' }}>
-                      <Image source={PreviewIcon} style={{
-                        width: 18,
-                        height: 18, marginTop: 3, marginRight: 12
-                      }} />
-                      <Text style={styles.previewText}>Preview</Text>
-                    </View>
-                  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.paidBtn} >
+    <Image source={ShareIcon} style={styles.iconDark} />
+    <Text style={styles.paidText}>Share</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+     style={[styles.paidBtn, !canReadReceipt && { opacity: 0.4 }]}
+     disabled={!canReadReceipt}
+     onPress={()=> handleDownloadReceipt(selectedReceipt)}>
+    <Image source={DownloadIcon} style={styles.iconDark} />
+    <Text style={styles.paidText}>Download</Text>
+  </TouchableOpacity>
+  </View>
+
+              
 
                 </ScrollView>
                 {showReceiptMenu && (
@@ -2728,9 +2708,9 @@ const handleShareReceipt = async () => {
                       ]}
                     >
                       <TouchableOpacity
-                        style={[styles.popupRow, !canUpdateReceipt && { opacity: 0.4 }]}
-                        disabled={!canUpdateReceipt}
-                        onPress={handleDownloadReceipt}
+                        style={[styles.popupRow, !canReadReceipt && { opacity: 0.4 }]}
+                        disabled={!canReadReceipt}
+                        onPress={() => handleDownloadReceipt(selecetedTenantReceipt)}
                       >
                         <Image source={DownloadIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Download</Text>
@@ -3524,7 +3504,7 @@ const handleShareReceipt = async () => {
 
                   {/* Buttons */}
                   <View style={styles.btnRow}>
-                    <TouchableOpacity style={styles.cancelBtn} >
+                    <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowRecordPayment(false)}>
                       <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
 
@@ -4257,6 +4237,7 @@ const handleShareReceipt = async () => {
 
         </SafeAreaView>
       </View>
+       {loading && <Loader />}
     </>
   );
 }
@@ -5158,8 +5139,8 @@ fontFamily: "Gilroy-Semibold",
   },
 
   iconSmall: {
-    width: 18,
-    height: 18,
+    width: 13,
+    height: 13,
     marginRight: 6,
   },
 
@@ -5428,5 +5409,156 @@ fontFamily: "Gilroy-Bold",
  fontFamily: "Gilroy-Semibold" ,
     color: "#111",
   },
+
+  actionRow:{
+flexDirection:"row",
+marginTop:14,
+gap:10
+},
+
+reminderBtn:{
+  display:'flex',
+flexDirection:"row",
+alignItems:"center",
+justifyContent:'center',
+backgroundColor:"#E8F7EE",
+paddingVertical:10,
+paddingHorizontal:16,
+borderRadius:10,
+flex:1
+},
+
+callBtn:{
+flexDirection:"row",
+alignItems:"center",
+justifyContent:'center',
+backgroundColor:"#E8F0FF",
+paddingVertical:10,
+paddingHorizontal:16,
+borderRadius:10,
+flex:1
+},
+
+reminderText:{
+color:"#00A653",
+fontFamily:"Gilroy-Semibold",
+marginLeft:6
+},
+
+callText:{
+color:"#1E45E1",
+fontFamily:"Gilroy-Semibold",
+marginLeft:6
+},
+
+actionIcon:{
+width:18,
+height:18
+},
+
+bottomActionBar:{
+flexDirection:"row",
+// justifyContent:"space-between",
+marginTop:20,
+alignItems:"center"
+},
+
+fixedBottomBar:{
+flexDirection:"row",
+justifyContent:"space-between",
+alignItems:"center",
+paddingHorizontal:20,
+paddingVertical:14,
+borderTopWidth:1,
+borderColor:"#E5E7EB",
+backgroundColor:"#fff"
+},
+
+/* PAID BUTTON */
+paidBtn:{
+flex:1,
+flexDirection:"row",
+alignItems:"center",
+justifyContent:"center",
+backgroundColor:"#F3F4F6",
+paddingVertical:12,
+borderRadius:10,
+marginHorizontal:6
+},
+
+paidText:{
+marginLeft:6,
+fontFamily:"Gilroy-Semibold"
+},
+
+/* ICON BUTTONS */
+bottomActionItem:{
+alignItems:"center",
+flex:1
+},
+
+iconBtn:{
+backgroundColor:"#F3F4F6",
+// padding:14,
+paddingVertical:14, 
+paddingHorizontal:37,
+borderRadius:10
+},
+
+recordBtn:{
+backgroundColor:"#00A32E",
+paddingVertical:14, 
+paddingHorizontal:37,
+borderRadius:10
+},
+
+bottomText:{
+marginTop:6,
+fontSize:12,
+fontFamily:"Gilroy-Semibold"
+},
+
+iconDark:{
+width:20,
+height:20
+},
+
+iconWhite:{
+width:20,
+height:20,
+tintColor:"#fff"
+},
+bottomBtn:{
+flex:1,
+flexDirection:"row",
+justifyContent:"center",
+alignItems:"center",
+backgroundColor:"#F4F4F4",
+paddingVertical:12,
+borderRadius:10,
+marginHorizontal:5
+},
+
+
+
+recordText:{
+color:"#fff",
+marginLeft:6,
+fontFamily:"Gilroy-Semibold"
+},
+
+// bottomText:{
+// fontSize:12,
+// fontFamily:"Gilroy-Semibold"
+// },
+
+
+
+recordIcon:{
+width:24,
+height:24,
+marginRight:10
+// tintColor:"#fff"
+}
 
 });
