@@ -198,12 +198,18 @@ export default function OverviewTab({ customerDetails,
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Basic Details</Text>
               {/* <Image source={EditIcon} style={styles.editIcon} /> */}
-              <TouchableOpacity
-                disabled={!canUpdateTenant}
-                style={!canUpdateTenant && { opacity: 0.4 }}
-                onPress={handleEdit}>
-                <Image source={EditIcon} style={styles.editIcon} />
-              </TouchableOpacity>
+
+              {
+                customerDetails?.customerCurrentStatus != "VACATED" && (
+                  <TouchableOpacity
+                    disabled={!canUpdateTenant}
+                    style={!canUpdateTenant && { opacity: 0.4 }}
+                    onPress={handleEdit}>
+                    <Image source={EditIcon} style={styles.editIcon} />
+                  </TouchableOpacity>
+                )
+              }
+
             </View>
             {/* First Name */}
             <View style={styles.detailRow}>
@@ -309,12 +315,18 @@ export default function OverviewTab({ customerDetails,
 
               {/* RIGHT : Edit Icon */}
               {addressTab === "MANUAL" && (
-                <TouchableOpacity
-                  disabled={!canUpdateTenant}
-                  style={!canUpdateTenant && { opacity: 0.4 }}
-                  onPress={handleAdressEdit}>
-                  <Image source={EditIcon} style={styles.editIcon} />
-                </TouchableOpacity>
+
+                
+                  customerDetails?.customerCurrentStatus !== "VACATED" && (
+                  <TouchableOpacity
+                    disabled={!canUpdateTenant}
+                    style={!canUpdateTenant && { opacity: 0.4 }}
+                    onPress={handleAdressEdit}>
+                    <Image source={EditIcon} style={styles.editIcon} />
+                  </TouchableOpacity>
+                )
+                
+               
               )}
             </View>
 
@@ -596,7 +608,7 @@ export default function OverviewTab({ customerDetails,
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
                   {
-                    customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
+                  !["VACATED","NOTICE"].includes (customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus ) && (
                       <TouchableOpacity
                         disabled={!isJoiningDateEditable && !canUpdateTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
@@ -627,7 +639,7 @@ export default function OverviewTab({ customerDetails,
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
                   {
-                    customerDetails?.advanceInfo?.advanceAmount && customerDetails?.hostelInfo?.currentStatus !== "NOTICE" && (
+                   !["VACATED","NOTICE"].includes (customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus )  && (
                       <TouchableOpacity
                         disabled={!isJoiningDateEditable && !canUpdateTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
@@ -785,10 +797,10 @@ export default function OverviewTab({ customerDetails,
 
               {docTab === "KYC" && (
                 <>
-                <View style={{justifyContent:'center',alignItems:'center'}}>
-                  <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',color: "#9CA3AF" }}>
-                    No KYC documents are there!</Text>
-                </View>
+                  <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: "#9CA3AF" }}>
+                      No KYC documents are there!</Text>
+                  </View>
                 </>
                 // <>
 

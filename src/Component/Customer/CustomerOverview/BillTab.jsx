@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet ,TouchableOpacity,Image} from "react-native";
+import { View, Text, StyleSheet ,TouchableOpacity,Image, ScrollView} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import AddIcon from "../../../Assets/Images/add-circle.png";
@@ -33,7 +33,7 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
     
    
     <View style={{ paddingBottom: 30 }}>
-      
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:100}}>
       {invoiceList.map((item, index) => (
         <View key={index} style={styles.row}>
           {/* LEFT */}
@@ -72,6 +72,7 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
           </View>
         </View>
       ))}
+      </ScrollView>
     
     </View>
 
