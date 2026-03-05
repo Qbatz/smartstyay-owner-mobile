@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet ,TouchableOpacity,Image, ScrollView} from "react-native";
+import { View, Text, StyleSheet ,TouchableOpacity,Image , ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import AddIcon from "../../../Assets/Images/add-circle.png";
@@ -32,8 +32,9 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
     <>
     
    
-    <View style={{ paddingBottom: 30 }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:100}}>
+    <View style={{ flex: 1 }}>
+      <ScrollView     showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ paddingBottom: 120 }} >
       {invoiceList.map((item, index) => (
         <View key={index} style={styles.row}>
           {/* LEFT */}
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
 
   billId: {
     fontSize: 14,
-    fontWeight: "600",
+  fontFamily:"Gilroy-Semibold",
     color: "#111827",
     marginBottom: 6,
   },
@@ -111,6 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     marginRight: 8,
+    fontFamily: "Gilroy-Medium" 
   },
 
   statusBadge: {
@@ -129,7 +131,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
   },
 
   overdueText: {
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
 
   amount: {
     fontSize: 15,
-    fontWeight: "600",
+   fontFamily:"Gilroy-Semibold",
     color: "#111827",
   },
 
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#6B7280",
     marginTop: 6,
+    fontFamily:"Gilroy-Semibold"
   },
   addBtn: {
     // position: "absolute",

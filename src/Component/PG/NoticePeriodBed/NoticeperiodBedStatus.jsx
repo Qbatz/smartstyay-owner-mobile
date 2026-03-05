@@ -10,6 +10,8 @@ import {
   PanResponder, BackHandler
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
+import CheckoutIcon from "../../../Assets/Images/Checkout_icon.png";
+import ReserveIcon from "../../../Assets/Images/user-square.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -243,7 +245,7 @@ export default function NoticePeriodBedSheet({
                     style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                     onPress={handleCheckoutSheet}>
                     <Image
-                      source={require("../../../Assets/Images/NewBook.png")}
+                      source={CheckoutIcon}
                       style={styles.menuIcon}
                     />
                     <Text style={styles.menuText}>Checkout</Text>
@@ -258,7 +260,7 @@ export default function NoticePeriodBedSheet({
                       onPress={handleNoticeToBooking}
                     >
                       <Image
-                        source={require("../../../Assets/Images/NewBook.png")}
+                        source={ReserveIcon}
                         style={styles.menuIcon}
                       />
                       <Text style={styles.menuText}>New Booking</Text>

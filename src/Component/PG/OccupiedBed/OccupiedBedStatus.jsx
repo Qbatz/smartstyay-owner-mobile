@@ -111,6 +111,8 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
   } = useHasPermission("Paying Guests");
 
+  const hasReserved = selectedBed?.newTenantInfo?.length > 0;
+
   if (!visible) return null;
 
   return (
@@ -127,7 +129,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
             styles.sheet,
             {
               transform: [{ translateY }],
-              maxHeight: "70%",
+              maxHeight: hasReserved ? "84%" : "70%",
             },
           ]}
           {...panResponder.panHandlers}
@@ -190,7 +192,8 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                   </View>
                 )}
                 <View>
-                  <TouchableOpacity onPress={() =>
+                  <TouchableOpacity
+                   onPress={() =>
                         navigation.navigate("CustomerOverviewScreen", {
                           customerId: selectedBed.currentTenantInfo[0]?.tenetId,
                           customer: selectedBed.currentTenantInfo[0],
@@ -306,7 +309,18 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                             )}
 
                             <View>
-                              <Text style={styles.name}>{item.tenantFullName}</Text>
+                       
+
+                       <TouchableOpacity
+                   onPress={() =>
+                        navigation.navigate("CustomerOverviewScreen", {
+                          customerId: selectedBed.newTenantInfo[0]?.tenetId,
+                          customer: selectedBed.newTenantInfo[0],
+                        })
+                      }>
+                <Text style={styles.name}>{item.tenantFullName}</Text>
+                  </TouchableOpacity >
+                            
                               <Text style={styles.phone}>+91 {item.mobile}</Text>
                             </View>
                           </View>
@@ -391,10 +405,25 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
           </ScrollView>
 
-          <TouchableOpacity style={styles.statusBtn}>
-            <Text style={styles.statusText}>Occupied</Text>
-          </TouchableOpacity>
+    <View style={styles.statusRow}>
 
+  <TouchableOpacity
+    style={[
+      styles.statusBtn,
+      hasReserved && { flex: 1 },
+      !hasReserved && { width: "100%" }
+    ]}
+  >
+    <Text style={styles.statusText}>Occupied</Text>
+  </TouchableOpacity>
+
+  {hasReserved && (
+    <TouchableOpacity style={[styles.reservedBtn, { flex: 1 , }]}>
+      <Text style={styles.reservedText}>Reserved</Text>
+    </TouchableOpacity>
+  )}
+
+</View>
 
 
         </Animated.View>
@@ -506,13 +535,38 @@ const styles = StyleSheet.create({
   iconImg: { width: 30, height: 30, marginRight: 8, },
 
   value: { fontSize: 15, fontFamily: "Gilroy-Semibold", color: "#000" },
+statusRow: {
+  flexDirection: "row",
+  gap: 10,
+  marginTop: 25,
+},
 
-  statusBtn: {
-    marginTop: 25,
-    backgroundColor: "#E6F9EC",
-    paddingVertical: 14,
-    borderRadius: 15,
-  },
+statusBtn: {
+  flex: 1,
+  backgroundColor: "#E6F9EC",
+  paddingVertical: 14,
+  borderRadius: 22,
+},
+
+reservedBtn: {
+  flex: 1,
+  backgroundColor: "#EAF0FF",
+  paddingVertical: 14,
+  borderRadius: 22,
+},
+
+reservedText: {
+  fontSize: 16,
+  textAlign: "center",
+  fontFamily: "Gilroy-Semibold",
+   color: "#1E45E1",
+},
+  // statusBtn: {
+  //   marginTop: 25,
+  //   backgroundColor: "#E6F9EC",
+  //   paddingVertical: 14,
+  //   borderRadius: 15,
+  // },
 
   statusText: {
     fontSize: 16,

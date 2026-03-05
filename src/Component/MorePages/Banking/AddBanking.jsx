@@ -310,15 +310,18 @@ useEffect(() => {
 
 useEffect(() => {
   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-if (
-  ifscRef.current?.isFocused() ||
-  descriptionRef.current?.isFocused() || 
-  cardRef.current?.isFocused() || 
-  acnoRef.current?.isFocused()
-) {
+
+    if (
+      ifscRef.current?.isFocused() ||
+      descriptionRef.current?.isFocused() ||
+      cardRef.current?.isFocused() ||
+      acnoRef.current?.isFocused()
+    ) {
+
+      const maxMove = 280;
+
       Animated.timing(translateY, {
-          toValue: -e.endCoordinates.height + 90,
-        // toValue: -Math.min(e.endCoordinates.height - 100, 250),
+        toValue: -Math.min(e.endCoordinates.height - 100, maxMove),
         duration: 180,
         useNativeDriver: true,
       }).start();

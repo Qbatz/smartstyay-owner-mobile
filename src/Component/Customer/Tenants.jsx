@@ -1453,8 +1453,8 @@ export default function TenantsScreen({ route }) {
                           setShowCheckout(true);
                           setMenuVisible(false)
                         }}
-                      >
-                        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                      > 
+                        <Image source={require("../../Assets/Images/Checkout_icon.png")} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Checkout</Text>
                       </TouchableOpacity>
 
