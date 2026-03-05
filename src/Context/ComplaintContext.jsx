@@ -281,7 +281,6 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
 
 
  const assignComplaint = async ({ complaintId, userId }) => {
-  console.log("pap",complaintId,userId)
     try {
       // setLoading(true);
       setAssignError("");
@@ -301,7 +300,6 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
 
       return { success: false, message: "Something went wrong" };
     } catch (error) {
-      console.log("err",error.message)
       const msg =
         error?.response?.data?.message ||
         error?.response?.data ||

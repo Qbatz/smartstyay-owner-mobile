@@ -22,6 +22,8 @@ import { useCustomer } from '../../Context/CustomerContext';
 import { useFloor } from "../../Context/PayingGuestContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
+import RoomIcon from "../../Assets/Images/Room_Icon.png"
+import BedIcon from "../../Assets/Images/Bed_Icon.png"
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -73,8 +75,8 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     }
   }, [visible, customer]);
   const toggleDropdown = (type) => {
-  setOpenDropdown((prev) => (prev === type ? null : type));
-};
+    setOpenDropdown((prev) => (prev === type ? null : type));
+  };
 
 
   const fetchCustomerDetails = async () => {
@@ -88,119 +90,119 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
       setCurrentRoomName(res.data.hostelInfo.roomName)
       setCurrentBedName(res.data.hostelInfo.bedName)
 
-    } 
+    }
     // else {
     //   alert(res.message);
     // }
   };
 
-  
+
 
   const today = dayjs().startOf("day");
 
-const joiningDate = customerDetails?.hostelInfo?.joiningDate
-  ? dayjs(customerDetails.hostelInfo.joiningDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
-  : null;
+  const joiningDate = customerDetails?.hostelInfo?.joiningDate
+    ? dayjs(customerDetails.hostelInfo.joiningDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+    : null;
 
-const bedHistory = customerDetails?.bedHistory || [];
-const invoices = customerDetails?.invoiceResponseList || [];
+  const bedHistory = customerDetails?.bedHistory || [];
+  const invoices = customerDetails?.invoiceResponseList || [];
 
-// Last invoice date
-const lastBillDate =
-  invoices.length > 0
-    ? dayjs(
+  // Last invoice date
+  const lastBillDate =
+    invoices.length > 0
+      ? dayjs(
         invoices[invoices.length - 1].invoiceGeneratedDate,
         ["DD/MM/YYYY", "DD-MM-YYYY"]
       )
-    : null;
+      : null;
 
-// Latest bed change date
-let latestBedChangeDate = null;
+  // Latest bed change date
+  let latestBedChangeDate = null;
 
-if (bedHistory.length > 0) {
-  const lastRecord = bedHistory[bedHistory.length - 1];
+  if (bedHistory.length > 0) {
+    const lastRecord = bedHistory[bedHistory.length - 1];
 
-  if (lastRecord.endDate === "Till date") {
-    latestBedChangeDate = dayjs(
-      lastRecord.startDate,
-      ["DD/MM/YYYY", "DD-MM-YYYY"]
-    );
-  } else {
-    const validDates = bedHistory
-      .filter(b => b.startDate)
-      .map(b =>
-        dayjs(b.startDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+    if (lastRecord.endDate === "Till date") {
+      latestBedChangeDate = dayjs(
+        lastRecord.startDate,
+        ["DD/MM/YYYY", "DD-MM-YYYY"]
       );
+    } else {
+      const validDates = bedHistory
+        .filter(b => b.startDate)
+        .map(b =>
+          dayjs(b.startDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+        );
 
-    if (validDates.length > 0) {
-      latestBedChangeDate = dayjs.max(validDates);
+      if (validDates.length > 0) {
+        latestBedChangeDate = dayjs.max(validDates);
+      }
     }
   }
-}
 
-// Joined this month logic
-const joinedThisMonth =
-  joiningDate &&
-  joiningDate.month() === today.month() &&
-  joiningDate.year() === today.year();
+  // Joined this month logic
+  const joinedThisMonth =
+    joiningDate &&
+    joiningDate.month() === today.month() &&
+    joiningDate.year() === today.year();
 
-let compareDate;
+  let compareDate;
 
-if (joinedThisMonth) {
-  compareDate = latestBedChangeDate || joiningDate;
-} else {
-  compareDate =
-    latestBedChangeDate || lastBillDate || joiningDate;
-}
+  if (joinedThisMonth) {
+    compareDate = latestBedChangeDate || joiningDate;
+  } else {
+    compareDate =
+      latestBedChangeDate || lastBillDate || joiningDate;
+  }
 
-const isDisabledReassignDate = (dateStr) => {
-  const d = dayjs(dateStr, "YYYY-MM-DD");
+  const isDisabledReassignDate = (dateStr) => {
+    const d = dayjs(dateStr, "YYYY-MM-DD");
 
-  if (d.isAfter(today, "day")) return true;
+    if (d.isAfter(today, "day")) return true;
 
-  if (compareDate && d.isBefore(compareDate, "day"))
-    return true;
+    if (compareDate && d.isBefore(compareDate, "day"))
+      return true;
 
-  return false;
-};
+    return false;
+  };
 
-const markedDates = React.useMemo(() => {
-  const marks = {};
+  const markedDates = React.useMemo(() => {
+    const marks = {};
 
-  for (let i = -365; i <= 365; i++) {
-    const d = dayjs().add(i, "day");
-    const key = d.format("YYYY-MM-DD");
+    for (let i = -365; i <= 365; i++) {
+      const d = dayjs().add(i, "day");
+      const key = d.format("YYYY-MM-DD");
 
-    if (isDisabledReassignDate(key)) {
-      marks[key] = {
-        disabled: true,
-        disableTouchEvent: true,
-        customStyles: {
-          container: {
-            backgroundColor: "#F3F4F6",
-            opacity: 0.4,
-            borderRadius: 8,
+      if (isDisabledReassignDate(key)) {
+        marks[key] = {
+          disabled: true,
+          disableTouchEvent: true,
+          customStyles: {
+            container: {
+              backgroundColor: "#F3F4F6",
+              opacity: 0.4,
+              borderRadius: 8,
+            },
+            text: {
+              color: "#9CA3AF",
+            },
           },
-          text: {
-            color: "#9CA3AF",
-          },
-        },
+        };
+      }
+    }
+
+    if (date) {
+      const selectedKey = dayjs(date).format("YYYY-MM-DD");
+      marks[selectedKey] = {
+        ...marks[selectedKey],
+        selected: true,
+        selectedColor: "#2563EB",
+        selectedTextColor: "#fff",
       };
     }
-  }
 
-  if (date) {
-    const selectedKey = dayjs(date).format("YYYY-MM-DD");
-    marks[selectedKey] = {
-      ...marks[selectedKey],
-      selected: true,
-      selectedColor: "#2563EB",
-      selectedTextColor: "#fff",
-    };
-  }
-
-  return marks;
-}, [date, compareDate]);
+    return marks;
+  }, [date, compareDate]);
 
 
   const scrollRef = useRef(null);
@@ -362,7 +364,7 @@ const markedDates = React.useMemo(() => {
     }
   };
 
-  
+
 
 
   const filteredBeds = beds.filter(bed => {
@@ -442,7 +444,7 @@ const markedDates = React.useMemo(() => {
       }, 800);
 
 
-    } 
+    }
     else {
       console.log(res.message || "Change bed failed")
     }
@@ -511,10 +513,10 @@ const markedDates = React.useMemo(() => {
               //       : dayjs().format("YYYY-MM-DD")
               // }
               current={
-  date
-    ? dayjs(date).format("YYYY-MM-DD")
-    : today.format("YYYY-MM-DD")
-}
+                date
+                  ? dayjs(date).format("YYYY-MM-DD")
+                  : today.format("YYYY-MM-DD")
+              }
               onDayPress={(day) => {
                 if (isDisabledReassignDate(day.dateString)) return;
 
@@ -558,17 +560,49 @@ const markedDates = React.useMemo(() => {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 20}
         >
-         <ScrollView
-  ref={scrollRef}
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="handled"
-  scrollEnabled={!disableSheetScroll}   // ✅ important
-  contentContainerStyle={{ paddingBottom: 80 }}
->
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            scrollEnabled={!disableSheetScroll}   // ✅ important
+            contentContainerStyle={{ paddingBottom: 80 }}
+          >
 
-            <Text style={styles.title}>Change Bed</Text>
+            <Text style={styles.title}>Re Assign Bed</Text>
 
-            <Text style={styles.label}>Current Floor</Text>
+            <View style={{ marginTop: 15, flexDirection: 'row' }}>
+
+              {
+                customerDetails?.profilePic ? <Image source={{ uri: customerDetails?.profilePic }} style={{ width: 50, height: 50, borderRadius: 25 }} />
+                  : <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: "#E5E7EB", alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Bold', color: "#374151", }}>
+                      {customerDetails?.initials}</Text>
+                  </View>
+              }
+
+              <View style={{ marginLeft: 10 }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>{customerDetails?.fullName}</Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                  <View style={{ paddingVertical: 5, paddingHorizontal: 4, backgroundColor: '#FFEFCF', borderRadius: 10 }}>
+                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Medium" }}>{currentFloorName}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                    <Image source={RoomIcon} style={{ width: 16, height: 16 }} />
+                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Medium", marginLeft: 4 }}>{currentRoomName}</Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                    <Image source={BedIcon} style={{ width: 16, height: 16 }} />
+                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Medium", marginLeft: 4 }}>{currentBedName}</Text>
+                  </View>
+
+                </View>
+              </View>
+
+            </View>
+
+            {/* <Text style={styles.label}>Current Floor</Text>
             <View style={styles.inputBox}>
               <TextInput
                 placeholder="Enter Floor"
@@ -598,8 +632,10 @@ const markedDates = React.useMemo(() => {
 
                 style={{ flex: 1 }}
               />
-            </View>
-            <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
+            </View> */}
+
+
+              <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBoxdate}
               onPress={() => setOpenDatePicker(true)}
@@ -616,35 +652,36 @@ const markedDates = React.useMemo(() => {
 
 
 
-            <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
+
+            <Text style={styles.label}>Reassign Floor <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
-             <TouchableOpacity
-  style={[styles.select, isFloorDisabled && styles.disabledSelect]}
-  disabled={isFloorDisabled}
-  onPress={() => toggleDropdown("floor")}
->
-  <Text style={styles.selectText}>
-    {floorSelected ? floorSelected.name : "Select a Floor"}
-  </Text>
-  <Image source={DownArrow} style={styles.arrow} />
-</TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.select, isFloorDisabled && styles.disabledSelect]}
+                disabled={isFloorDisabled}
+                onPress={() => toggleDropdown("floor")}
+              >
+                <Text style={styles.selectText}>
+                  {floorSelected ? floorSelected.name : "Select a Floor"}
+                </Text>
+                <Image source={DownArrow} style={styles.arrow} />
+              </TouchableOpacity>
 
 
 
               {openDropdown === "floor" && (
                 <View style={styles.dropdownMenu}>
                   {openDropdown && (
-  <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-    <View style={styles.dropdownOverlay} />
-  </TouchableWithoutFeedback>
-)}
-                   <ScrollView
-      style={{ maxHeight: 160 }}
-      nestedScrollEnabled={true}          // ✅ Android fix
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+                    <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
+                      <View style={styles.dropdownOverlay} />
+                    </TouchableWithoutFeedback>
+                  )}
+                  <ScrollView
+                    style={{ maxHeight: 160 }}
+                    nestedScrollEnabled={true}          // ✅ Android fix
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
                     {floors.map((f) => (
                       <TouchableOpacity
                         key={f.id}
@@ -674,19 +711,19 @@ const markedDates = React.useMemo(() => {
             {floorError && (
               <ErrorMessage message={floorError} type="error" />
             )}
-            <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
+            <Text style={styles.label}>Reassign Room <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-  style={[styles.select, isRoomDisabled && styles.disabledSelect]}
-  disabled={isRoomDisabled}
-  onPress={() => toggleDropdown("room")}
->
-  <Text style={styles.selectText}>
-    {roomSelected ? roomSelected.name : "Select a Room"}
-  </Text>
-  <Image source={DownArrow} style={styles.arrow} />
-</TouchableOpacity>
+                style={[styles.select, isRoomDisabled && styles.disabledSelect]}
+                disabled={isRoomDisabled}
+                onPress={() => toggleDropdown("room")}
+              >
+                <Text style={styles.selectText}>
+                  {roomSelected ? roomSelected.name : "Select a Room"}
+                </Text>
+                <Image source={DownArrow} style={styles.arrow} />
+              </TouchableOpacity>
 
 
 
@@ -694,17 +731,17 @@ const markedDates = React.useMemo(() => {
               {openDropdown === "room" && (
                 <View style={styles.dropdownMenu}>
                   {openDropdown && (
-  <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-    <View style={styles.dropdownOverlay} />
-  </TouchableWithoutFeedback>
-)}
+                    <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
+                      <View style={styles.dropdownOverlay} />
+                    </TouchableWithoutFeedback>
+                  )}
 
                   <ScrollView
-      style={{ maxHeight: 160 }}
-      nestedScrollEnabled={true}          // ✅ Android fix
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+                    style={{ maxHeight: 160 }}
+                    nestedScrollEnabled={true}          // ✅ Android fix
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
 
                     {!hasRooms ? (
                       <View style={styles.emptyOption}>
@@ -735,36 +772,36 @@ const markedDates = React.useMemo(() => {
             {roomError && (
               <ErrorMessage message={roomError} type="error" />
             )}
-            <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
+            <Text style={styles.label}>Reassign Bed <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
-             <TouchableOpacity
-  style={[styles.select, isBedDisabled && styles.disabledSelect]}
-  disabled={isBedDisabled}
-  onPress={() => toggleDropdown("bed")}
->
-  <Text style={styles.selectText}>
-    {bedSelected ? bedSelected.bedName : "Select a Bed"}
-  </Text>
-  <Image source={DownArrow} style={styles.arrow} />
-</TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.select, isBedDisabled && styles.disabledSelect]}
+                disabled={isBedDisabled}
+                onPress={() => toggleDropdown("bed")}
+              >
+                <Text style={styles.selectText}>
+                  {bedSelected ? bedSelected.bedName : "Select a Bed"}
+                </Text>
+                <Image source={DownArrow} style={styles.arrow} />
+              </TouchableOpacity>
 
 
 
               {openDropdown === "bed" && (
                 <View style={styles.dropdownMenu}>
                   {openDropdown && (
-  <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-    <View style={styles.dropdownOverlay} />
-  </TouchableWithoutFeedback>
-)}
+                    <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
+                      <View style={styles.dropdownOverlay} />
+                    </TouchableWithoutFeedback>
+                  )}
 
-                 <ScrollView
-      style={{ maxHeight: 160 }}
-      nestedScrollEnabled={true}          // ✅ Android fix
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+                  <ScrollView
+                    style={{ maxHeight: 160 }}
+                    nestedScrollEnabled={true}          // ✅ Android fix
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
 
                     {!hasBeds ? (
                       <View style={styles.emptyOption}>
@@ -803,6 +840,8 @@ const markedDates = React.useMemo(() => {
               <ErrorMessage message={bedError} type="error" />
             )}
 
+
+           
             <View style={styles.rentHeader}>
               <Text style={styles.label}>
                 New Rent Amount <Text style={{ color: "red" }}>*</Text>

@@ -268,17 +268,41 @@ export default function ReserveToCheckin({ route, navigation }) {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 20 }}
           >
-            <Text style={styles.label}>Tenant</Text>
+            {/* <Text style={styles.label}>Tenant</Text>
             <View style={styles.box}>
               <Text>{selectedBed?.newTenantInfo[0]?.tenantFullName || selectedBedReserv?.tenantFullName}</Text>
+            </View> */}
+
+            <View style={{flexDirection:'row',alignItems:'center',marginBottom:5}}>
+
+              {selectedBedReserv?.profilePic ? <Image source={{uri:selectedBedReserv?.profilePic }} style={{width:50,height:50,borderRadius:25}} />
+            :<View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: "#E5E7EB", alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{fontSize:16,fontFamily:'Gilroy-Bold',color: "#374151"}}>
+                 {selectedBedReserv?.tenantInitials}</Text>
+              </View>}
+
+              <View style={{marginLeft:10,}}>
+                <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold'}}>{selectedBedReserv?.tenantFullName}</Text>
+                <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',marginTop:5}}>+91 {selectedBedReserv?.mobile}</Text>
+              </View>
+
             </View>
 
+            
+
             {/* Booking Date */}
-            <Text style={styles.label}>Booking Date</Text>
+            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginTop:16}}>
+                <Text style={{fontSize: 14,fontWeight: "600",}}>
+                  Booking Date</Text>
+                 <Text style={styles.placeholder}>
+                {bookingDetails?.bookedDate}
+              </Text>
+            </View>
+            
             {/* <View style={styles.box}>
             <Text>{dayjs().format("DD/MM/YYYY")}</Text>
           </View> */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               // style={styles.dateBox}
               style={[
                 styles.dateBox,
@@ -290,13 +314,18 @@ export default function ReserveToCheckin({ route, navigation }) {
                 {bookingDetails?.bookedDate}
               </Text>
               <Image source={Calendarimg} style={styles.calendarIcon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Booking Amount */}
-            <Text style={styles.label}>Booking Amount</Text>
-            <View style={styles.box}>
+            <View style={{marginTop:16,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+              <Text style={{ fontSize: 14,fontWeight: "600",color: "#333",}}>
+                 Booking Amount</Text>
               <Text>₹{selectedBed?.newTenantInfo[0]?.bookingAmount || selectedBedReserv?.bookingAmount}</Text>
             </View>
+           
+            {/* <View style={styles.box}>
+              <Text>₹{selectedBed?.newTenantInfo[0]?.bookingAmount || selectedBedReserv?.bookingAmount}</Text>
+            </View> */}
 
             <Text style={styles.label}>Stay Type <Text style={{ color: "red" }}>*</Text></Text>
 

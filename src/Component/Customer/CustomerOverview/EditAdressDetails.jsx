@@ -186,6 +186,7 @@ export default function EditManualAddressSheet({
   }, [visible]);
 
   const closeSheet = () => {
+    Keyboard.dismiss()
     Animated.timing(translateY, {
       toValue: SHEET_HEIGHT,
       duration: 250,

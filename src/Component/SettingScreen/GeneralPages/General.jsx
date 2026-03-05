@@ -582,7 +582,7 @@ export default function GeneralDetailsScreen({ navigation }) {
         return (
           <View style={{ flex: 1 }}>
             <FlatList
-              data={yourActivity} style={{ marginTop: 18, marginHorizontal: 10 }}
+              data={!yourActivity} style={{ marginTop: 18, marginHorizontal: 10 }}
               contentContainerStyle={{ paddingBottom: 65 }}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderItem}

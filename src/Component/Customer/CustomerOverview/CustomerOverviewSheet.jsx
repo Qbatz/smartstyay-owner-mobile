@@ -481,7 +481,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Tenant Profile</Text>
-          <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
+          
+          {
+            customerDetails?.customerCurrentStatus !=="VACATED" && (
+               <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
+            )
+          }
+         
           {/* <View style={styles.notificationDot} /> */}
         </View>
 
@@ -596,7 +602,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               {customerDetails?.fullName}
             </Text>
 
-            <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
+            {
+              customerDetails?.customerCurrentStatus !== "VACATED" && (
+                   <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
+              )
+            }
+
+           
             {/* <Text style={styles.verified}>✔</Text> */}
           </View>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { View,Text, StyleSheet } from "react-native";
+import { View,Text, StyleSheet, ScrollView } from "react-native";
 
 export default function CustomerTransactions({customerDetails}){
 
@@ -9,6 +9,7 @@ export default function CustomerTransactions({customerDetails}){
     return(
         <>
             <View style={{ paddingBottom: 30 }}>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:50}}>
                   
                   {transactionList.map((item, index) => (
                     <View key={index} style={styles.row}>
@@ -53,7 +54,7 @@ export default function CustomerTransactions({customerDetails}){
                                
                               ]}
                             >
-                              {item.referenceNumber}dfsdfsdf
+                              {item.referenceNumber}
                             </Text>
                         </View>
                       </View>
@@ -65,6 +66,7 @@ export default function CustomerTransactions({customerDetails}){
                       </View>
                     </View>
                   ))}
+                  </ScrollView>
                 
                 </View>
         </>

@@ -2651,18 +2651,18 @@ const handleShareReceipt = async () => {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
                     <Text style={{ fontSize: 14,fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment mode</Text>
-                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"  }}>N/A</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.accountDetails?.bankName || "N/A"}</Text>
                   </View>
 
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Invoice No</Text>
-                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceipt?.invoiceNumber}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceipt?.invoiceNumber || "N/A"}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment to</Text>
-                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy}</Text>
+                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy || "N/A"}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom:9 }}>
