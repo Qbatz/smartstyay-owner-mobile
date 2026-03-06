@@ -447,8 +447,10 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     // backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     alignItems: "center",
+    zIndex: 10000,   // 🔥 must be higher than overlay
+    elevation: 10000
 
   },
 

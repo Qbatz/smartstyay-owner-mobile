@@ -83,6 +83,7 @@ import PartiallypaidIcon from "../../../Assets/Images/Orange_tick.png"
 import TickIcon from "../../../Assets/Images/check.png";
 import { Dimensions } from "react-native";
 import BillBookings from "./Bill_Bookings";
+import { s, vs } from "../../../Utils/rnScale";
 
 
 
@@ -99,8 +100,8 @@ export default function BillsDesign({ route }) {
 
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
-    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt ,
-  downloadBill , shareBillOnWhatsapp , shareReceiptOnWhatsapp} = useContext(BillContext);
+    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
 
@@ -234,11 +235,14 @@ export default function BillsDesign({ route }) {
   const [filterError, setFilterError] = useState("");
 
 
+  const [showRecuringBillDetail,setShowRecuringBillDetail]=useState(false)
+  const [selectedRecurringBill,setSelectedRecurringBill]=useState("")
+
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
 
-  const {CommonModule}=NativeModules;
+  const { CommonModule } = NativeModules;
 
 
 
@@ -318,6 +322,11 @@ export default function BillsDesign({ route }) {
         return true;
       }
 
+      if(showRecuringBillDetail){
+        setShowRecuringBillDetail(false);
+        return true;
+      }
+
       // ✅ 2) Tab navigation back order
 
 
@@ -359,6 +368,7 @@ export default function BillsDesign({ route }) {
     deleteTenants,
     showMenu,
     activeTab,
+    showRecuringBillDetail
   ]);
 
 
@@ -371,6 +381,7 @@ export default function BillsDesign({ route }) {
   const detailsSheetY = useRef(new Animated.Value(0)).current;
   const writeoffSheetY = useRef(new Animated.Value(0)).current;
   const receiptdetailsSheetY = useRef(new Animated.Value(0)).current;
+  const recurringSheetY = useRef(new Animated.Value(0)).current;
 
 
   const handleRefundRecord = () => {
@@ -895,6 +906,34 @@ export default function BillsDesign({ route }) {
     })
   ).current;
 
+  const recurringDetailsPan = useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) recurringSheetY.setValue(g.dy);
+    },
+
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(recurringSheetY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowRecuringBillDetail(false);
+          recurringSheetY.setValue(0);
+        });
+      } else {
+        Animated.spring(recurringSheetY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current;
+
   const toggleAmountDropdown = () => {
     setAmountDropdownVisible((v) => !v);
   };
@@ -990,6 +1029,12 @@ export default function BillsDesign({ route }) {
     setSelectedReceiptFull(res.data)
     setShowReceiptDetails(true);
   };
+
+  const handleRecurringBill=(item)=>{
+    console.log("billa",item)
+    setSelectedRecurringBill(item)
+    setShowRecuringBillDetail(true)
+  }
 
   const handleShowReceiptPdf = async () => {
     navigation.navigate("ReceiptPdf")
@@ -1504,65 +1549,65 @@ export default function BillsDesign({ route }) {
     // });
   }
 
- const handleDownloadBillsPdf = async () => {
-  if (!activeHostelId || !selectedBill?.invoiceId) return;
+  const handleDownloadBillsPdf = async () => {
+    if (!activeHostelId || !selectedBill?.invoiceId) return;
 
-  const res = await downloadBill(activeHostelId, selectedBill.invoiceId);
+    const res = await downloadBill(activeHostelId, selectedBill.invoiceId);
 
-  if (res?.success && res?.url) {
-    await CommonModule.downloadAndViewDocument(res.url);
-    setShowMenu(false)
-    setShowBillDetails(false)
-  } else {
-    console.log(res?.message);
-    setShowMenu(false)
-    
+    if (res?.success && res?.url) {
+      await CommonModule.downloadAndViewDocument(res.url);
+      setShowMenu(false)
+      setShowBillDetails(false)
+    } else {
+      console.log(res?.message);
+      setShowMenu(false)
+
+    }
+  };
+
+  const handleShareBill = async () => {
+    const res = await shareBillOnWhatsapp(activeHostelId, selectedBill?.invoiceId);
+
+    if (res?.success) {
+      setShowMenu(false)
+      setShowBillDetails(false)
+      setModalType("success");
+      setModalMessage("Bill shared successfully");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+
+      // console.log("WhatsApp shared successfully");
+    } else {
+      console.log(res?.message);
+      setShowMenu(false)
+    }
   }
-};
-
-const handleShareBill = async () => {
-  const res = await shareBillOnWhatsapp(activeHostelId, selectedBill?.invoiceId);
- 
-  if (res?.success) {
-        setShowMenu(false)
-        setShowBillDetails(false)
-        setModalType("success");
-        setModalMessage("Bill shared successfully");
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
-   
-    // console.log("WhatsApp shared successfully");
-  } else {
-    console.log(res?.message);
-    setShowMenu(false)
-  }
-}
 
 
-const handleShareReceipt = async () => {
+  const handleShareReceipt = async () => {
 
-  const res = await shareReceiptOnWhatsapp(activeHostelId, selectedReceipt?.transactionId);
+    const res = await shareReceiptOnWhatsapp(activeHostelId, selectedReceipt?.transactionId);
 
-  if (res?.success) {
-        setShowReceiptMenu(false)
-        setShowReceiptDetails(false)
-        setModalType("success");
-        setModalMessage("Receipt shared successfully");
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
+    if (res?.success) {
+      setShowReceiptMenu(false)
+      setShowReceiptDetails(false)
+      setModalType("success");
+      setModalMessage("Receipt shared successfully");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
 
-    // console.log("WhatsApp shared successfully");
-  } else {
-    console.log(res?.message);
-    setShowMenu(false)
-  }
-};
+      // console.log("WhatsApp shared successfully");
+    } else {
+      console.log(res?.message);
+      setShowMenu(false)
+    }
+  };
 
-  
+
   // const handleDownloadReport = async () => {
   //   try {
-   
-  
+
+
   //     const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
   //       {
   //         headers: {
@@ -1574,34 +1619,34 @@ const handleShareReceipt = async () => {
   //         },
   //       }
   //     )
-  
+
   //     console.log("DOWNLOAD API RESPONSE →", res.data);
-  
+
   //     const fileUrl = res.data;
-  
+
   //     if (!fileUrl) {
   //       console.log("No file URL received");
   //       return;
   //     }
-  
+
   //     await CommonModule.downloadAndViewDocument(fileUrl);
-  
+
   //   } catch (error) {
   //     console.log("Download error →", error);
   //   }
   // };
-  
+
 
   const handleDownloadReceipt = async (item) => {
-  if (!activeHostelId || !item?.transactionId) return;
+    if (!activeHostelId || !item?.transactionId) return;
 
-  const response = await downloadReceipt(
-    activeHostelId,
-    item.transactionId
-  );
+    const response = await downloadReceipt(
+      activeHostelId,
+      item.transactionId
+    );
 
-  CommonModule.downloadAndViewDocument(response.url);
-};
+    CommonModule.downloadAndViewDocument(response.url);
+  };
   // const handleDownloadReceipt = async (item) => {
   //   if (!activeHostelId) return;
 
@@ -1635,7 +1680,7 @@ const handleShareReceipt = async () => {
   //   }
   // };
 
-   const handleEditReceipt = () => {
+  const handleEditReceipt = () => {
 
     navigation.navigate("CreateReceipt", {
       mode: "edit",
@@ -1836,7 +1881,7 @@ const handleShareReceipt = async () => {
         message={modalMessage}
         type={modalType}
       />
-     
+
       <View style={[styles.safe, { paddingTop: insets.top }]}>
 
         <SafeAreaView style={styles.container}>
@@ -2089,7 +2134,7 @@ const handleShareReceipt = async () => {
           )}
 
           {activeTab === "RecurringBills" && (
-            <RecurringBills />
+            <RecurringBills onSelectRecurringBill={handleRecurringBill}/>
           )}
           {activeTab === "Receipt" && (
             <Receipt onSelectReceipt={handleOpenReceiptSheet} />
@@ -2203,21 +2248,21 @@ const handleShareReceipt = async () => {
                       </View>
                     </View>
                   </View>
-  {isPartial && (
-                  <View style={styles.actionRow}>
+                  {isPartial && (
+                    <View style={styles.actionRow}>
 
-  <TouchableOpacity style={styles.reminderBtn} onPress={handleShareBill}>
-    <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-    <Text style={styles.reminderText}>Remainder</Text>
-  </TouchableOpacity>
+                      <TouchableOpacity style={styles.reminderBtn} onPress={handleShareBill}>
+                        <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                        <Text style={styles.reminderText}>Remainder</Text>
+                      </TouchableOpacity>
 
-  <TouchableOpacity style={styles.callBtn}>
-    <Image source={Call} style={styles.actionIcon} />
-    <Text style={styles.callText}>Call</Text>
-  </TouchableOpacity>
+                      <TouchableOpacity style={styles.callBtn}>
+                        <Image source={Call} style={styles.actionIcon} />
+                        <Text style={styles.callText}>Call</Text>
+                      </TouchableOpacity>
 
-</View>
-  )}
+                    </View>
+                  )}
 
                   <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View>
@@ -2233,7 +2278,7 @@ const handleShareReceipt = async () => {
                           <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
                             <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
-                            <Text style={{ fontSize: 13,fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
 
                           </View>
                         )}
@@ -2245,7 +2290,7 @@ const handleShareReceipt = async () => {
                   {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
                     <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={{ fontSize: 13,  fontFamily: "Gilroy-Medium" }}>{pay?.description ?? "N/A"}</Text>
+                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>{pay?.description ?? "N/A"}</Text>
                       </View>
                       <View>
                         <Text style={styles.amountValue}>
@@ -2260,7 +2305,7 @@ const handleShareReceipt = async () => {
                   {isPartial && (
                     <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold"}}>Due Pending</Text>
+                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
                       </View>
                       <View>
                         <Text
@@ -2317,12 +2362,12 @@ const handleShareReceipt = async () => {
 
                               <View style={styles.divider} />
 
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1 , }}>
+                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1, }}>
                                 <View style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}> Date</Text>
+                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> Date</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
+                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.paidDate ?? "N/A"}
                                   </Text>
                                 </View>
@@ -2332,20 +2377,20 @@ const handleShareReceipt = async () => {
 
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Mode</Text>
+                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12,  fontFamily: "Gilroy-Semibold" }}>
+                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.mode ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Transaction ID</Text>
+                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold" }}>
+                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.referenceNumber ?? "N/A"}
                                   </Text>
                                 </View>
@@ -2399,27 +2444,27 @@ const handleShareReceipt = async () => {
 
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}> date</Text>
+                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> date</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
+                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.date ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Mode</Text>
+                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
                                 </View>
                                 <View>
-                                  <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
+                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                                     {pay?.paymentMode ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
                               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View>
-                                  <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Transaction ID</Text>
+                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
                                 </View>
                                 <View>
                                   <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
@@ -2440,10 +2485,10 @@ const handleShareReceipt = async () => {
 
                   <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View>
-                      <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Invoice date</Text>
+                      <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Invoice date</Text>
                     </View>
                     <View>
-                      <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold"}}>
+                      <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                         {BillPdfdetails?.invoiceDate ?? "--"}
                       </Text>
                     </View>
@@ -2458,10 +2503,10 @@ const handleShareReceipt = async () => {
                         alignItems: "flex-start",
                       }}
                     >
-                      <Text style={[styles.label,{   fontFamily: "Gilroy-Semibold"}]}>Due date</Text>
+                      <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Due date</Text>
 
                       <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ fontSize: 12 , fontFamily: "Gilroy-Semibold" }}>
+                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
                           {BillPdfdetails?.dueDate ?? "--"}
                         </Text>
 
@@ -2481,57 +2526,57 @@ const handleShareReceipt = async () => {
                     </View>
                   )}
 
-                
+
 
 
                 </ScrollView>
 
-       
 
-      
 
- <View style={styles.fixedBottomBar}>
 
-{isPaid && (
-<>
-  <TouchableOpacity style={styles.paidBtn} >
-    <Image source={ShareIcon} style={styles.iconDark} />
-    <Text style={styles.paidText}>Share</Text>
-  </TouchableOpacity>
 
-  <TouchableOpacity style={styles.paidBtn}    onPress={handleDownloadBillsPdf}>
-    <Image source={DownloadIcon} style={styles.iconDark} />
-    <Text style={styles.paidText}>Download</Text>
-  </TouchableOpacity>
-</>
-)}
+                <View style={styles.fixedBottomBar}>
 
-{(isPending || isPartial) && (
-<>
-  <View style={styles.bottomActionItem}>
-    <TouchableOpacity style={styles.iconBtn}  >
-      <Image source={ShareIcon} style={styles.iconDark} />
-    </TouchableOpacity>
-    <Text style={styles.bottomText}>Share</Text>
-  </View>
+                  {isPaid && (
+                    <>
+                      <TouchableOpacity style={styles.paidBtn} >
+                        <Image source={ShareIcon} style={styles.iconDark} />
+                        <Text style={styles.paidText}>Share</Text>
+                      </TouchableOpacity>
 
-  <View style={styles.bottomActionItem}>
-    <TouchableOpacity style={styles.iconBtn}   onPress={handleDownloadBillsPdf}>
-      <Image source={DownloadIcon} style={styles.iconDark} />
-    </TouchableOpacity>
-    <Text style={styles.bottomText}>Download</Text>
-  </View>
+                      <TouchableOpacity style={styles.paidBtn} onPress={handleDownloadBillsPdf}>
+                        <Image source={DownloadIcon} style={styles.iconDark} />
+                        <Text style={styles.paidText}>Download</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
 
-  <View style={styles.bottomActionItem}>
-    <TouchableOpacity style={styles.recordBtn}  onPress={handleShowRecordPayment}>
-      <Image source={PlusIcon} style={styles.iconWhite} />
-    </TouchableOpacity>
-    <Text style={styles.bottomText}>Record</Text>
-  </View>
-</>
-)}
+                  {(isPending || isPartial) && (
+                    <>
+                      <View style={styles.bottomActionItem}>
+                        <TouchableOpacity style={styles.iconBtn}  >
+                          <Image source={ShareIcon} style={styles.iconDark} />
+                        </TouchableOpacity>
+                        <Text style={styles.bottomText}>Share</Text>
+                      </View>
 
-</View>
+                      <View style={styles.bottomActionItem}>
+                        <TouchableOpacity style={styles.iconBtn} onPress={handleDownloadBillsPdf}>
+                          <Image source={DownloadIcon} style={styles.iconDark} />
+                        </TouchableOpacity>
+                        <Text style={styles.bottomText}>Download</Text>
+                      </View>
+
+                      <View style={styles.bottomActionItem}>
+                        <TouchableOpacity style={styles.recordBtn} onPress={handleShowRecordPayment}>
+                          <Image source={PlusIcon} style={styles.iconWhite} />
+                        </TouchableOpacity>
+                        <Text style={styles.bottomText}>Record</Text>
+                      </View>
+                    </>
+                  )}
+
+                </View>
 
 
               </Animated.View>
@@ -2649,19 +2694,19 @@ const handleShareReceipt = async () => {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, marginTop: 22 }}>
                     <Text style={{ fontSize: 17, fontFamily: "Gilroy-Semibold" }}>Amount Paid</Text>
-                    <Text style={{ fontSize: 17, fontFamily: "Gilroy-Semibold"  }}>₹{selectedReceipt?.paidAmount ?? "--"}</Text>
+                    <Text style={{ fontSize: 17, fontFamily: "Gilroy-Semibold" }}>₹{selectedReceipt?.paidAmount ?? "--"}</Text>
                   </View>
 
                   <View style={{ borderWidth: 0.8, marginVertical: 20, borderColor: '#E3E3E3' }} />
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
-                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Medium" ,color: '#3C3C4399' }}>Payment date</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment date</Text>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{formatApiDate(selectedReceipt?.paidAt)}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
-                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment mode</Text>
-                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.accountDetails?.bankName || "N/A"}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment mode</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceiptFullDetail?.accountDetails?.bankName || "N/A"}</Text>
                   </View>
 
 
@@ -2672,37 +2717,37 @@ const handleShareReceipt = async () => {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Payment to</Text>
-                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy || "N/A"}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceiptFullDetail?.receiptInfo?.receivedBy || "N/A"}</Text>
                   </View>
 
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom:9 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom: 9 }}>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Transaction Id</Text>
-                    <Text style={{ fontSize: 14,fontFamily: "Gilroy-Semibold"  }}>{selectedReceipt?.transactionNumber || "--"}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceipt?.transactionNumber || "--"}</Text>
                   </View>
 
 
 
-              
 
 
-                 <View style={styles.fixedBottomBar}>
+
+                  <View style={styles.fixedBottomBar}>
 
 
-  <TouchableOpacity style={styles.paidBtn} >
-    <Image source={ShareIcon} style={styles.iconDark} />
-    <Text style={styles.paidText}>Share</Text>
-  </TouchableOpacity>
+                    <TouchableOpacity style={styles.paidBtn} >
+                      <Image source={ShareIcon} style={styles.iconDark} />
+                      <Text style={styles.paidText}>Share</Text>
+                    </TouchableOpacity>
 
-  <TouchableOpacity
-     style={[styles.paidBtn, !canReadReceipt && { opacity: 0.4 }]}
-     disabled={!canReadReceipt}
-     onPress={()=> handleDownloadReceipt(selectedReceipt)}>
-    <Image source={DownloadIcon} style={styles.iconDark} />
-    <Text style={styles.paidText}>Download</Text>
-  </TouchableOpacity>
-  </View>
+                    <TouchableOpacity
+                      style={[styles.paidBtn, !canReadReceipt && { opacity: 0.4 }]}
+                      disabled={!canReadReceipt}
+                      onPress={() => handleDownloadReceipt(selectedReceipt)}>
+                      <Image source={DownloadIcon} style={styles.iconDark} />
+                      <Text style={styles.paidText}>Download</Text>
+                    </TouchableOpacity>
+                  </View>
 
-              
+
 
                 </ScrollView>
                 {showReceiptMenu && (
@@ -2748,7 +2793,7 @@ const handleShareReceipt = async () => {
                         <Text style={styles.popupText}>Delete</Text>
                       </TouchableOpacity>
 
-                                        <TouchableOpacity
+                      <TouchableOpacity
                         style={[styles.popupRow, !canReadReceipt && { opacity: 0.4 }]}
                         disabled={!canReadReceipt}
                         onPress={handleShareReceipt}
@@ -2756,7 +2801,7 @@ const handleShareReceipt = async () => {
                         <Image source={WhatsappIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>share</Text>
                       </TouchableOpacity>
-                     
+
                     </View>
                   </TouchableOpacity>
                 )}
@@ -2890,7 +2935,7 @@ const handleShareReceipt = async () => {
         <Text style={styles.popupText}>Download</Text> 
       </TouchableOpacity> */}
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                   onPress={handleDownloadBillsPdf}
                   disabled={!canWriteInvoice}
@@ -2900,7 +2945,7 @@ const handleShareReceipt = async () => {
                 // }}
                 >
                   <Image
-                   source={DownloadIcon} 
+                    source={DownloadIcon}
                     style={styles.popupIcon}
                   />
                   <Text
@@ -2917,7 +2962,7 @@ const handleShareReceipt = async () => {
                   <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                     onPress={handleShowRefundPayment} disabled={!canWriteInvoice}>
                     <Image
-                       source={PaymentIcon}
+                      source={PaymentIcon}
                       style={styles.popupIcon}
                     />
                     <Text style={styles.popupText}>Refund Amount</Text>
@@ -3031,14 +3076,14 @@ const handleShareReceipt = async () => {
                   </Text>
                 </TouchableOpacity>
 
-                  <TouchableOpacity
-                        style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
-                        disabled={!canReadInvoice}
-                        onPress={handleShareBill}
-                      >
-                        <Image source={WhatsappIcon} style={styles.popupIcon} />
-                        <Text style={styles.popupText}>share</Text>
-                      </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
+                  disabled={!canReadInvoice}
+                  onPress={handleShareBill}
+                >
+                  <Image source={WhatsappIcon} style={styles.popupIcon} />
+                  <Text style={styles.popupText}>share</Text>
+                </TouchableOpacity>
 
 
                 {/* <TouchableOpacity
@@ -3106,7 +3151,7 @@ const handleShareReceipt = async () => {
                             marginRight: 7,
                           }}
                         >
-                          <Text style={{ color: "#C67506", fontSize: 11, fontFamily: "Gilroy-Semibold"  }}>
+                          <Text style={{ color: "#C67506", fontSize: 11, fontFamily: "Gilroy-Semibold" }}>
                             Checkout Inv
                           </Text>
                         </View>
@@ -3134,7 +3179,7 @@ const handleShareReceipt = async () => {
                   </View>
 
                   {/* COMMENT BOX */}
-                  <Text style={{ marginBottom: 6, fontFamily: "Gilroy-Semibold" , color: "#444" }}>
+                  <Text style={{ marginBottom: 6, fontFamily: "Gilroy-Semibold", color: "#444" }}>
                     Reason (Comments)
                   </Text>
 
@@ -3229,7 +3274,7 @@ const handleShareReceipt = async () => {
                             marginRight: 8,
                           }}
                         >
-                          <Text style={{ color: "#C67506", fontFamily: "Gilroy-Semibold" , fontSize: 12 }}>
+                          <Text style={{ color: "#C67506", fontFamily: "Gilroy-Semibold", fontSize: 12 }}>
                             {selectedBill?.invoiceType || "-"}
                           </Text>
                         </View>
@@ -3583,7 +3628,7 @@ const handleShareReceipt = async () => {
                             marginRight: 8,
                           }}
                         >
-                          <Text style={{ color: "#C67506", fontSize: 11, fontFamily: "Gilroy-Semibold"  }}>
+                          <Text style={{ color: "#C67506", fontSize: 11, fontFamily: "Gilroy-Semibold" }}>
                             {selectedBill?.invoiceType || "-"}
                           </Text>
                         </View>
@@ -4226,6 +4271,159 @@ const handleShareReceipt = async () => {
             </Modal>
           )}
 
+           {showRecuringBillDetail && (
+                    <View style={styles.sheetOverlay}>
+          
+                      <TouchableWithoutFeedback onPress={() => setShowRecuringBillDetail(false)}>
+                        <View style={{ flex: 1 }} />
+                      </TouchableWithoutFeedback>
+          
+                      <Animated.View
+                        style={[
+                          styles.recurringTransactionSheet,
+                          { minHeight: vs(280), maxHeight: vs(420), transform: [{ translateY: recurringSheetY }] }
+                        ]}
+                        {...recurringDetailsPan.panHandlers}
+                      >
+                        <View style={styles.sheetHandle} />
+          
+                        <ScrollView showsVerticalScrollIndicator={false}>
+          
+                          <View style={styles.billHeaderRow}>
+                            <Text style={styles.billHeaderText}>Bill Details</Text>
+          
+          
+                            <View style={{ display: 'flex', flexDirection: 'row' }}>
+                              {/* <Image
+                          source={Download}
+                          style={{ width: 23, height: 23, marginRight:10 }}
+                        /> */}
+          
+          
+                              {/* <TouchableOpacity>
+                        <Image
+                          source={Dots}
+                          style={{ width: 28, height: 28,  }}
+                        />
+                      </TouchableOpacity> */}
+                            </View>
+                          </View>
+          
+                          <View style={styles.userRow}>
+          
+                            {selectedRecurringBill.profilePic ? (
+                              <Image
+                                source={{ uri: selectedRecurringBill.profilePic }}
+                                style={styles.avatar}
+                              />
+                            ) : (
+                              <View style={styles.initialCircle}>
+                                <Text style={styles.initialText}>
+                                  {selectedRecurringBill.initials}
+                                </Text>
+                              </View>
+                            )}
+          
+          
+          
+                            <View style={{ flex: 1, marginLeft: 12 }}>
+                              <Text style={styles.userName}>{selectedRecurringBill?.fullName || "--"}</Text>
+          
+                              <View style={{ flexDirection: "row", marginTop: vs(4) }}>
+                                <View style={styles.invTypeBadge}>
+                                  <Text style={styles.invTypeText}>Recurring Inv</Text>
+                                </View>
+          
+                                <Image source={Bills_Black_Icon} style={{
+                                  width: 12,
+                                  height: 12, marginTop: vs(5), marginRight: s(5)
+                                }} />
+                                <Text style={styles.billNumber}> #{selectedRecurringBill?.lastInvoiceNumber || "--"}</Text>
+                              </View>
+                            </View>
+                          </View>
+          
+                          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: vs(10) }}>
+                            <View><Text style={{ fontSize: 16, fontFamily: "Gilroy-Medium"}}>Recurring</Text></View>
+                            <View style={{ display: 'flex', flexDirection: 'row', alignItems: "center" }}>
+                              <Text style={styles.labelOn}>
+                                {selectedRecurringBill?.currentStatus ? "On" : "Off"}
+                              </Text>
+          
+                              <TouchableOpacity>
+                                <View
+                                  style={[
+                                    styles.switch,
+                                    { backgroundColor: selectedRecurringBill?.currentStatus ? "#3562FF" : "#A68DE3" },
+                                  ]}
+                                >
+                                  <View
+                                    style={[
+                                      styles.knob,
+                                      { transform: [{ translateX: selectedRecurringBill?.currentStatus ? s(18) : 0 }] },
+                                    ]}
+                                  >
+                                    <Text style={{ fontSize: 10, fontFamily: "Gilroy-Bold"  }}>
+                                      {selectedRecurringBill?.currentStatus ? "✓" : "✕"}
+                                    </Text>
+                                  </View>
+                                </View>
+                              </TouchableOpacity>
+          
+          
+          
+                            </View>
+                          </View>
+          
+                          <View style={[styles.twoColRow]}>
+                            <View >
+                              <Text style={styles.label}>Last Invoice date</Text>
+                              <View style={styles.rowAlign}>
+                                <Image source={CalendarBlueIcon} style={styles.iconSmall} />
+                                <Text style={styles.value}> {formatApiDate(selectedRecurringBill?.lastInvoiceDate)}</Text>
+                              </View>
+                            </View>
+          
+                            <View >
+                              <Text style={styles.label}>Next Invoice date</Text>
+                              <View style={styles.rowAlign}>
+                                <Image source={CalendarBlueIcon} style={styles.iconSmall} />
+                                <Text style={styles.value}> {formatApiDate(selectedRecurringBill?.nextInvoiceDate)}</Text>
+                              </View>
+                            </View>
+                          </View>
+          
+                          <View style={styles.twoColRow}>
+                            <View style={styles.colItem}>
+                              <Text style={styles.label}>Amount</Text>
+                              <View style={styles.rowAlign}>
+                                <Image source={MoneyCheckIcon} style={{
+                                  width: 18,
+                                  height: 18, marginTop: vs(5), marginRight: s(5)
+                                }} />
+                                <Text style={styles.amountValue}>₹{selectedRecurringBill?.invoiceAmount ?? "--"}</Text>
+                              </View>
+                            </View>
+          
+          
+                          </View>
+          
+                          {/* <TouchableOpacity style={styles.previewBtn} >
+                      <View style={{display:'flex', flexDirection:'row'}}>
+                                 <Image source={PreviewIcon} style={{   width: 18,
+                      height: 18, marginTop:3 , marginRight:12
+                    }} />
+                      <Text style={styles.previewText}>Preview</Text>
+                      </View>
+                    </TouchableOpacity> */}
+          
+                        </ScrollView>
+          
+          
+                      </Animated.View>
+                    </View>
+                  )}
+
 
 
           {/* {showNotice && (
@@ -4279,7 +4477,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: "#111827",
-  fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
   },
 
   backIcon: {
@@ -4469,7 +4667,7 @@ const styles = StyleSheet.create({
   floorText: {
     fontSize: 11,
     color: "black",
-  fontFamily: "Gilroy-Medium",
+    fontFamily: "Gilroy-Medium",
   },
   iconSmall: {
     width: 12,
@@ -4575,7 +4773,7 @@ const styles = StyleSheet.create({
 
   modalName: {
     fontSize: 17,
- fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
     color: "#111",
   },
 
@@ -4602,7 +4800,7 @@ const styles = StyleSheet.create({
 
   unassignText: {
     fontSize: 15,
-fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
   },
   // popupOverlay: {
   //   position: "absolute",
@@ -4661,12 +4859,12 @@ fontFamily: "Gilroy-Semibold" ,
   popupText: {
     fontSize: 14,
     color: "#333",
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   popupTextDisabled: {
     color: "#9CA3AF",
-  fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   filterOverlay: {
@@ -4769,7 +4967,7 @@ fontFamily: "Gilroy-Semibold" ,
   dropdownTextSelected: {
     color: "#fff", // 👈 WHITE
     fontSize: 15,
- fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -4824,7 +5022,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   resetText: {
     color: "#2D6CDF",
-fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
   },
 
   applyBtn: {
@@ -4837,7 +5035,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   applyText: {
     color: "#fff",
-fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -4900,7 +5098,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   cancelText: {
     fontSize: 16,
-  fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -4917,7 +5115,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   deleteBtnText: {
     fontSize: 16,
- fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
     color: "#fff",
   },
 
@@ -4953,7 +5151,7 @@ fontFamily: "Gilroy-Semibold" ,
   addFloorText: {
     color: "#fff",
     fontSize: 15,
-fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
   },
 
   sheetOverlay: {
@@ -4977,6 +5175,15 @@ fontFamily: "Gilroy-Semibold" ,
     borderTopRightRadius: 25,
     paddingBottom: 30,
     minHeight: 400,
+  },
+  recurringTransactionSheet:{
+       backgroundColor: "#fff",
+    padding: s(20),
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    paddingBottom: vs(50),
+    minHeight: vs(280),
+    maxHeight: vs(420),
   },
 
   sheetHandle: {
@@ -5019,7 +5226,7 @@ fontFamily: "Gilroy-Semibold" ,
   optionText: { fontSize: 15, color: "#000" },
 
   filterTitle: { fontSize: 20, fontWeight: "700" },
-  resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold" , marginLeft: 10 },
+  resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold", marginLeft: 10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
@@ -5041,12 +5248,12 @@ fontFamily: "Gilroy-Semibold" ,
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111",fontFamily: "Gilroy-Medium"  },
+  quickText: { color: "#111", fontFamily: "Gilroy-Medium" },
   //  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1",fontFamily: "Gilroy-Bold"  },
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff",fontFamily: "Gilroy-Bold"  },
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" },
   billHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -5057,7 +5264,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   billHeaderText: {
     fontSize: 20,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
@@ -5084,7 +5291,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   statusText: {
     fontSize: 12,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
 
@@ -5102,7 +5309,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   userName: {
     fontSize: 17,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
@@ -5116,7 +5323,7 @@ fontFamily: "Gilroy-Semibold" ,
 
   invTypeText: {
     color: "#C67506",
-fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     fontSize: 12,
   },
 
@@ -5156,19 +5363,19 @@ fontFamily: "Gilroy-Semibold",
 
   value: {
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
   amountValue: {
     fontSize: 15,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
   dueValue: {
     fontSize: 16,
- fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "red",
   },
 
@@ -5178,7 +5385,7 @@ fontFamily: "Gilroy-Semibold",
     paddingVertical: 14,
     borderRadius: 12,
     marginTop: 2,
-    marginBottom:10,
+    marginBottom: 10,
     alignItems: "center",
     backgroundColor: "#fff",
   },
@@ -5187,7 +5394,7 @@ fontFamily: "Gilroy-Semibold",
   previewText: {
     color: "#111",
     fontSize: 16,
-fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -5202,7 +5409,7 @@ fontFamily: "Gilroy-Semibold",
   primaryBtnText: {
     color: "#fff",
     fontSize: 16,
-fontFamily: "Gilroy-Bold"  ,
+    fontFamily: "Gilroy-Bold",
   },
 
   btnRow: {
@@ -5233,7 +5440,7 @@ fontFamily: "Gilroy-Bold"  ,
   saveText: {
     color: "#fff",
     fontSize: 15,
-  fontFamily: "Gilroy-Semibold"  ,
+    fontFamily: "Gilroy-Semibold",
   },
   inputBox: {
     height: 50,
@@ -5312,7 +5519,7 @@ fontFamily: "Gilroy-Bold"  ,
 
   initialText: {
     fontSize: 13,
-  fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#4B5563",
   },
 
@@ -5365,7 +5572,7 @@ fontFamily: "Gilroy-Bold"  ,
 
   paymentHeaderText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -5387,13 +5594,13 @@ fontFamily: "Gilroy-Bold"  ,
 
   receiptText: {
     fontSize: 14,
-  fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
   paymentAmount: {
     fontSize: 16,
-fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -5416,159 +5623,174 @@ fontFamily: "Gilroy-Bold",
 
   paymentValue: {
     fontSize: 13,
- fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
     color: "#111",
   },
 
-  actionRow:{
-flexDirection:"row",
-marginTop:14,
-gap:10
-},
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    gap: 10
+  },
 
-reminderBtn:{
-  display:'flex',
-flexDirection:"row",
-alignItems:"center",
-justifyContent:'center',
-backgroundColor:"#E8F7EE",
-paddingVertical:10,
-paddingHorizontal:16,
-borderRadius:10,
-flex:1
-},
+  reminderBtn: {
+    display: 'flex',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F7EE",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
 
-callBtn:{
-flexDirection:"row",
-alignItems:"center",
-justifyContent:'center',
-backgroundColor:"#E8F0FF",
-paddingVertical:10,
-paddingHorizontal:16,
-borderRadius:10,
-flex:1
-},
+  callBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F0FF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
 
-reminderText:{
-color:"#00A653",
-fontFamily:"Gilroy-Semibold",
-marginLeft:6
-},
+  reminderText: {
+    color: "#00A653",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
 
-callText:{
-color:"#1E45E1",
-fontFamily:"Gilroy-Semibold",
-marginLeft:6
-},
+  callText: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
 
-actionIcon:{
-width:18,
-height:18
-},
+  actionIcon: {
+    width: 18,
+    height: 18
+  },
 
-bottomActionBar:{
-flexDirection:"row",
-// justifyContent:"space-between",
-marginTop:20,
-alignItems:"center"
-},
+  bottomActionBar: {
+    flexDirection: "row",
+    // justifyContent:"space-between",
+    marginTop: 20,
+    alignItems: "center"
+  },
 
-fixedBottomBar:{
-flexDirection:"row",
-justifyContent:"space-between",
-alignItems:"center",
-paddingHorizontal:20,
-paddingVertical:14,
-borderTopWidth:1,
-borderColor:"#E5E7EB",
-backgroundColor:"#fff"
-},
+  fixedBottomBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff"
+  },
 
-/* PAID BUTTON */
-paidBtn:{
-flex:1,
-flexDirection:"row",
-alignItems:"center",
-justifyContent:"center",
-backgroundColor:"#F3F4F6",
-paddingVertical:12,
-borderRadius:10,
-marginHorizontal:6
-},
+  /* PAID BUTTON */
+  paidBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginHorizontal: 6
+  },
 
-paidText:{
-marginLeft:6,
-fontFamily:"Gilroy-Semibold"
-},
+  paidText: {
+    marginLeft: 6,
+    fontFamily: "Gilroy-Semibold"
+  },
 
-/* ICON BUTTONS */
-bottomActionItem:{
-alignItems:"center",
-flex:1
-},
+  /* ICON BUTTONS */
+  bottomActionItem: {
+    alignItems: "center",
+    flex: 1
+  },
 
-iconBtn:{
-backgroundColor:"#F3F4F6",
-// padding:14,
-paddingVertical:14, 
-paddingHorizontal:37,
-borderRadius:10
-},
+  iconBtn: {
+    backgroundColor: "#F3F4F6",
+    // padding:14,
+    paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10
+  },
 
-recordBtn:{
-backgroundColor:"#00A32E",
-paddingVertical:14, 
-paddingHorizontal:37,
-borderRadius:10
-},
+  recordBtn: {
+    backgroundColor: "#00A32E",
+    paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10
+  },
 
-bottomText:{
-marginTop:6,
-fontSize:12,
-fontFamily:"Gilroy-Semibold"
-},
+  bottomText: {
+    marginTop: 6,
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold"
+  },
 
-iconDark:{
-width:20,
-height:20
-},
+  iconDark: {
+    width: 20,
+    height: 20
+  },
 
-iconWhite:{
-width:20,
-height:20,
-tintColor:"#fff"
-},
-bottomBtn:{
-flex:1,
-flexDirection:"row",
-justifyContent:"center",
-alignItems:"center",
-backgroundColor:"#F4F4F4",
-paddingVertical:12,
-borderRadius:10,
-marginHorizontal:5
-},
-
-
-
-recordText:{
-color:"#fff",
-marginLeft:6,
-fontFamily:"Gilroy-Semibold"
-},
-
-// bottomText:{
-// fontSize:12,
-// fontFamily:"Gilroy-Semibold"
-// },
+  iconWhite: {
+    width: 20,
+    height: 20,
+    tintColor: "#fff"
+  },
+  bottomBtn: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F4F4F4",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginHorizontal: 5
+  },
 
 
 
-recordIcon:{
-width:24,
-height:24,
-marginRight:10
-// tintColor:"#fff"
-}
+  recordText: {
+    color: "#fff",
+    marginLeft: 6,
+    fontFamily: "Gilroy-Semibold"
+  },
 
+  // bottomText:{
+  // fontSize:12,
+  // fontFamily:"Gilroy-Semibold"
+  // },
+
+
+
+  recordIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 10
+    // tintColor:"#fff"
+  },
+  labelOn: { fontSize: s(12), color: "#3562FF", marginBottom: 2, marginRight: s(5) , fontFamily: "Gilroy-Medium"},
+  switch: {
+    width: s(42),
+    height: s(24),
+    borderRadius: 20,
+    padding: s(3),
+    justifyContent: "center",
+  },
+  knob: {
+    width: s(18),
+    height: s(18),
+    backgroundColor: "#fff",
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
