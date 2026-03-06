@@ -25,6 +25,7 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
 import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
+import SmLoader from "../../../Component/Loader/SmartStayLoader"
 // import CatLoader from "../../../Component/Loader/CatLoader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
@@ -1816,12 +1817,19 @@ const handleShareReceipt = async () => {
     }
   };
 
+        //  
+
+//          if(loading){
+//           <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+//    <SmLoader/>
+// </View>
+//          }
 
 
   return (
 
     <>
-    
+             {loading && <Loader  />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -1833,7 +1841,7 @@ const handleShareReceipt = async () => {
 
         <SafeAreaView style={styles.container}>
 
-
+ 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
 
             <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -1880,6 +1888,8 @@ const handleShareReceipt = async () => {
               </TouchableOpacity>
             ))}
           </View>
+
+
 
           {activeTab === "Invoices" && (
             <View style={{ flex: 1 }}>
@@ -3889,7 +3899,7 @@ const handleShareReceipt = async () => {
                       style={styles.saveBtn}
                       onPress={handleSaveRefund}
                     >
-                      <Text style={styles.saveText}>Record</Text>
+                      <Text style={styles.saveText}>Refund</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -4237,7 +4247,7 @@ const handleShareReceipt = async () => {
 
         </SafeAreaView>
       </View>
-       {loading && <Loader />}
+
     </>
   );
 }

@@ -321,7 +321,7 @@ export default function DoubleStatusSheet({
                           // style={styles.menuItem} 
                           onPress={handleCheckoutSheet}>
                             <Image
-                              source={require("../../../Assets/Images/NewBook.png")}
+                            source={require("../../../Assets/Images/checkout_red.png")}
                               style={styles.menuIcon}
                             />
                             <Text style={styles.menuText}>Checkout</Text>
@@ -335,7 +335,7 @@ export default function DoubleStatusSheet({
                               disabled={!canWriteCustomers}
                           style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                           onPress={handleNewReserve}>
-                            <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
+                            <Image style={styles.menuIcon} source={require("../../../Assets/Images/user-square.png")} />
                             <Text style={styles.menuText}>New Booking</Text>
                           </TouchableOpacity>
 
