@@ -932,16 +932,21 @@ if (!canReadElectricity && !loading) {
   }}>
   {!loading && !hostelBased && EbRoomReading?.length > 0 && (
   EbRoomReading.map((item, index) => (
-    <View key={index} style={styles.row}>
+   <TouchableOpacity
+  key={index}
+  style={styles.row}
+  onPress={() => handleClickRoomDetails(item)}
+  activeOpacity={0.7}
+>
 
       <View style={styles.iconCircle}>
         <Image source={RoomIcon} style={styles.iconImg} />
       </View>
 
       <View style={{ flex: 1 }}>
-        <TouchableOpacity onPress={() => handleClickRoomDetails(item)}>
+        {/* <TouchableOpacity onPress={() => handleClickRoomDetails(item)}> */}
           <Text style={styles.roomName}>{item.roomName}</Text>
-        </TouchableOpacity>
+        {/* </TouchableOpacity> */}
 
         <View style={styles.subRow}>
           <View style={styles.tag}>
@@ -962,7 +967,7 @@ if (!canReadElectricity && !loading) {
         </Text>
       </View>
 
-    </View>
+    </TouchableOpacity>
   ))
 )}
 

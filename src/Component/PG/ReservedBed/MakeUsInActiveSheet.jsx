@@ -24,12 +24,12 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems, onBedAdded }) {
   const translateY = useRef(new Animated.Value(400)).current;
   const [joiningDate, setJoiningDate] = useState(null);
-  const [bookingDetails, setBookingDetails] = useState("")
+  const [bookingDetails, setBookingDetails] = useState({})
   const [comments, setComments] = useState("");
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllBedsByRoom } = useFloor();
   const { cancelCheckout, initializeCheckIn, initializeCancelBooking, cancelBooking, getCustomersByHostel } = useCustomer();
-  const [openJoinDatePic, setOpenJoinDatePic] = useState("");
+  const [openJoinDatePic, setOpenJoinDatePic] = useState(false);
   const [bankdetails, setBankDetails] = useState("")
   const [commentError, setCommentError] = useState("")
   const [joiningDateError, setJoiningDateError] = useState("")
@@ -41,9 +41,15 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [customers, setCustomers] = useState([]);
   const scrollRef = useRef(null);
   const commentRef = useRef(null);
-  const minDate = bookingDetails?.bookedDate
-    ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
-    : today;
+
+  // const minDate = bookingDetails?.bookedDate
+  //   ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
+  //   : today;
+
+    const minDate = bookingDetails?.bookedDate
+  ? dayjs(bookingDetails.bookedDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+  : today;
+
   const customerId =
     selectedItem?.customerId || bookedItems?.tenetId;
 
@@ -142,6 +148,10 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   }, [visible]);
   console.log("bookedItems", bookedItems)
   console.log("selectedItempr", selectedItem)
+
+
+  console.log("dateopen", openJoinDatePic);
+  
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 400,
@@ -254,9 +264,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={handleClose}>
+        {/* <TouchableWithoutFeedback onPress={handleClose}>
           <View style={{ flex: 1 }} />
-        </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback> */}
 
 
         <Animated.View
@@ -371,9 +381,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             setOpenJoinDatePic(false);
           }}
         >
-          <View style={styles.sheetOverlay}>
+          <View style={[StyleSheet.absoluteFillObject, styles.calendarOverlay]}>
 
-            <TouchableWithoutFeedback onPress={() => { }}>
+            <TouchableWithoutFeedback onPress={() => {  setOpenJoinDatePic(false);}}>
               <View style={styles.datePickerBox}>
                 <Calendar
                   minDate={minDate}
@@ -516,7 +526,13 @@ const styles = StyleSheet.create({
   },
 
 
-
+calendarOverlay: {
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 99999,
+  elevation: 99999,
+},
 
 
   datePickerBox: {

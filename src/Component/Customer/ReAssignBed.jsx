@@ -30,6 +30,9 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function ReassignBedSheet({ visible, onClose, customer, onSuccess }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
+  console.log("customer", customer);
+  
+
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
@@ -450,8 +453,9 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     }
   };
 
-
-
+  console.log("customerDetails", customerDetails);
+  
+  
   const hasRooms = rooms && rooms.length > 0;
   const hasBeds = filteredBeds && filteredBeds.length > 0;
 

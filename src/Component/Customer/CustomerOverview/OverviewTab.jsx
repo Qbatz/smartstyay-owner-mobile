@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image, ScrollView, Modal, TouchableWithoutFeedback
+  Image, ScrollView, Modal, TouchableWithoutFeedback , Linking 
 } from "react-native";
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
@@ -27,6 +27,7 @@ import Pin from "../../../Assets/Images/pin.png"
 import Street from "../../../Assets/Images/Street.png"
 import Building from "../../../Assets/Images/buildings.png"
 import Location from "../../../Assets/Images/location.png"
+import DocumentViewer from "./DocumentViewer"
 // import RNFS from "react-native-fs";
 
 
@@ -39,6 +40,8 @@ export default function OverviewTab({ customerDetails,
   const { activeHostelId } = useContext(CommonContexts);
   const { AddManualDocument, ParticularcustomerDetails,
     GetParticularCustomerDetails, deleteManualDocument } = useCustomer();
+    const [viewerVisible, setViewerVisible] = useState(false);
+const [viewerIndex, setViewerIndex] = useState(0);
 
   const [deletePopup, setDeletePopup] = useState(false)
   const [deleteDocumentId, setDeleteDocumentId] = useState(null);
@@ -913,7 +916,29 @@ export default function OverviewTab({ customerDetails,
                             </View>
 
                             <View style={styles.docActions}>
-                              <TouchableOpacity onPress={() => console.log("View:", doc.url)}>
+                              <TouchableOpacity  
+  //                              onPress={() => {
+  //   const index = manualDocs.findIndex(
+  //     (item) => item.documentId === doc.documentId
+  //   )
+
+  //   setViewerIndex(index);
+  //   setViewerVisible(true);
+  // }}
+
+   onPress={() => {
+    if (doc.type === "PDF") {
+      Linking.openURL(doc.url);   // 🔥 open in drive / browser / pdf viewer
+    } else {
+      const index = manualDocs.findIndex(
+        (item) => item.documentId === doc.documentId
+      );
+
+      setViewerIndex(index);
+      setViewerVisible(true);     // 🔥 open custom viewer
+    }
+  }}
+  >
                                 <Image
                                   source={require("../../../Assets/Images/Eye.png")}
                                   style={styles.actionIcon}
@@ -939,6 +964,13 @@ export default function OverviewTab({ customerDetails,
                         </Text>
                       )}
                     </ScrollView>
+                    <DocumentViewer
+   visible={viewerVisible}
+  documents={manualDocs}
+  initialIndex={viewerIndex}
+  onClose={() => setViewerVisible(false)}
+  customerdetails={customerDetails}
+/>
                   </View>
                 </>
               )}
