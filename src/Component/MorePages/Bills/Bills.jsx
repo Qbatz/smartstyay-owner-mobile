@@ -25,6 +25,7 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
 import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
+import SmLoader from "../../../Component/Loader/SmartStayLoader"
 // import CatLoader from "../../../Component/Loader/CatLoader"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import MultiSelectDropdown from "./MultiSelectDropdown"
@@ -1861,12 +1862,19 @@ export default function BillsDesign({ route }) {
     }
   };
 
+        //  
+
+//          if(loading){
+//           <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+//    <SmLoader/>
+// </View>
+//          }
 
 
   return (
 
     <>
-
+             {loading && <Loader  />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -1878,7 +1886,7 @@ export default function BillsDesign({ route }) {
 
         <SafeAreaView style={styles.container}>
 
-
+ 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
 
             <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -1925,6 +1933,8 @@ export default function BillsDesign({ route }) {
               </TouchableOpacity>
             ))}
           </View>
+
+
 
           {activeTab === "Invoices" && (
             <View style={{ flex: 1 }}>
@@ -3934,7 +3944,7 @@ export default function BillsDesign({ route }) {
                       style={styles.saveBtn}
                       onPress={handleSaveRefund}
                     >
-                      <Text style={styles.saveText}>Record</Text>
+                      <Text style={styles.saveText}>Refund</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -4435,7 +4445,7 @@ export default function BillsDesign({ route }) {
 
         </SafeAreaView>
       </View>
-      {loading && <Loader />}
+
     </>
   );
 }

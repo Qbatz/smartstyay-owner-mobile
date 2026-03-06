@@ -24,6 +24,8 @@ import ActiveWalkin from "../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
+import CallIcon from "../../Assets/Images/call_black_icon.png";
+import MobileIcon from "../../Assets/Images/mobile.png";
 import MoveNoticeSheet from '../Customer/MoveToNoticePeriod';
 import ReassignBedSheet from '../Customer/ReAssignBed';
 import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -45,7 +47,7 @@ import InactiveTenantSheet from "../PG/ReservedBed/MakeUsInActiveSheet";
 import CustomerOverviewScreen from "./CustomerOverview/CustomerOverviewSheet";
 import moment from "moment";
 import RentMoney from "../../Assets/Images/RentMoney.png"
-import Checkin from "../../Assets/Images/add-circle.png";
+import DirectionImage from "../../Assets/Images/direction-down.png"
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
@@ -66,6 +68,8 @@ export default function TenantsScreen({ route }) {
   const [overviewScreen, setOverviewScreen] = useState(false)
   const [searchText, setSearchText] = useState("");
   console.log("activeHostelId", activeHostelId)
+  console.log("reassignCustomer", reassignCustomer);
+  
 
   const sheetTranslateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -138,8 +142,9 @@ export default function TenantsScreen({ route }) {
       duration: 200,
       useNativeDriver: true,
     }).start(() => {
-      sheetTranslateY.setValue(SHEET_HEIGHT); // 🔥 RESET
+      sheetTranslateY.setValue(SHEET_HEIGHT);
       setShowDetailModal(false);
+      setShowDetailsMenu(false);
     });
   };
 
@@ -220,6 +225,9 @@ export default function TenantsScreen({ route }) {
     setShowDetailModal(false)
 
   }
+
+  console.log("selectedItem", selectedItem);
+  
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -402,13 +410,19 @@ export default function TenantsScreen({ route }) {
 
   const openCustomerDetails = async (customer) => {
 
+      setShowDetailsMenu(false);
     const res = await GetParticularCustomerDetails(customer.customerId)
     console.log("customerfull", res)
     console.log("roman", customer)
     setexpectedJoiiningDate(customer)
-    setSelectedCustomer(res.data);
+    setSelectedCustomer(res?.data)
+    setSelectedItem(customer)
     setShowDetailModal(true);
   };
+
+
+  console.log("selecteditem", selectedItem);
+   console.log("selectedcustomer", selectedCustomer);
 
   const handleShowReAssignBed = () => {
     setShowReAssignBed(true)
@@ -609,12 +623,49 @@ export default function TenantsScreen({ route }) {
                     </Text>
                   </View>
                 )}
+                   { customers?.listCustomers?.length > 0 && (
+        <View style={styles.filterRow}>
+  <TouchableOpacity style={styles.filterChipActive}>
+    <Text style={styles.filterChipTextActive}>All</Text>
+  </TouchableOpacity>
 
+<TouchableOpacity style={styles.filterChip}>
+  <View style={styles.chipContent}>
+    <Text style={styles.filterChipText}>Type</Text>
+    <Image
+      source={DirectionImage}
+      style={styles.chipArrow}
+      resizeMode="contain"
+    />
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.filterChip}>
+  <View style={styles.chipContent}>
+    <Text style={styles.filterChipText}>Status</Text>
+    <Image
+      source={DirectionImage}
+      style={styles.chipArrow}
+      resizeMode="contain"
+    />
+  </View>
+</TouchableOpacity>
+
+  <TouchableOpacity style={styles.filterIconBtn}  disabled={!canReadTenant}
+                onPress={() => setShowFilter(true)}>
+    <Image source={Filter} style={{ width: 18, height: 18 }} />
+  </TouchableOpacity>
+</View>
+                    )
+                  }
+    
 
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 50 }}
                 >
+
+      
                   {
                     customers?.listCustomers?.length > 0 &&
                     <Text style={styles.sectionTitle}>This Month</Text>
@@ -763,34 +814,16 @@ export default function TenantsScreen({ route }) {
                     //     </Text>
                     //   </View>
                     // </TouchableOpacity>
-                    <View key={item.customerId} style={styles.tenantRow}>
+                    <TouchableOpacity key={item.customerId} style={styles.tenantRow}   activeOpacity={0.7}
+  onPress={() => openCustomerDetails(item)}>
 
 
 
-                      {/* <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => openCustomerDetails(item)}
-                      >
-                        {item?.profilePic ? (
-                          <Image
-                            source={{ uri: item.profilePic }}
-                            style={styles.profileImg}
-                          />
-                        ) : (
-                          <View style={styles.initialCircle}>
-                            <Text style={styles.initialText}>
-                              {item?.initials ||
-                                item?.fullName?.slice(0, 2)?.toUpperCase() ||
-                                "--"}
-                            </Text>
-                          </View>
-                        )}
-                      </TouchableOpacity> */}
 
 
                       <TouchableOpacity
                         activeOpacity={0.7}
-                        onPress={() => openCustomerDetails(item)}
+                        // onPress={() => openCustomerDetails(item)}
                         style={{ position: "relative" }}
                       >
                         {item?.profilePic ? (
@@ -822,10 +855,10 @@ export default function TenantsScreen({ route }) {
 
 
                       {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
-                      <TouchableOpacity
+                      <View 
                         style={{ flex: 1 }}
-                        activeOpacity={0.7}
-                        onPress={() => handleOverViewScrren(item)}
+                        // activeOpacity={0.7}
+                        // onPress={() => handleOverViewScrren(item)}
                       >
                         <Text style={styles.name}>{item.fullName}</Text>
 
@@ -839,8 +872,7 @@ export default function TenantsScreen({ route }) {
                           {item.roomName && (
                             <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
                               <Image source={room} style={styles.iconSmall} />
-                              <Text numberOfLines={1}
-                              style={[styles.detailText, { flexShrink: 1 }]}>{item.roomName}</Text>
+                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.roomName}</Text>
 
                             </View>
 
@@ -849,18 +881,16 @@ export default function TenantsScreen({ route }) {
                           {item.bedName && (
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                               <Image source={Bed} style={styles.iconSmall} />
-                              <Text numberOfLines={1}
-                               style={[styles.detailText, { flexShrink: 1 }]}>{item.bedName}</Text>
+                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.bedName}</Text>
                             </View>
                           )}
                         </View>
-                      </TouchableOpacity>
+                      </View >
 
-                      {/* 3️⃣ DOT MENU ONLY */}
                       <View style={styles.rightSection}>
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                           onPress={(e) => {
-                            e.stopPropagation();   // 🔥 prevents other clicks
+                            e.stopPropagation();   
                             openMenu(e, item);
                           }}
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -869,10 +899,17 @@ export default function TenantsScreen({ route }) {
                             source={Dots}
                             style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
                           />
+                        </TouchableOpacity> */}
+
+                        <TouchableOpacity>
+                          <Image
+                            source={CallIcon}
+                            style={{ width: 20, height: 20, }}
+                          />
                         </TouchableOpacity>
 
 
-                        <Text style={styles.dateText}>
+                        {/* <Text style={styles.dateText}>
                           {item?.actualJoining && item.actualJoining !== "0000-00-00"
                             ? item.actualJoining
                             : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
@@ -881,21 +918,12 @@ export default function TenantsScreen({ route }) {
                                 ? item.RecheckIn_Date
                                 : "-"
                           }
-                        </Text>
+                        </Text> */}
 
 
-                        {/* <Text style={styles.dateText}>
-                      {item?.actualJoining && item.actualJoining !== "0000-00-00"
-                        ? moment(item.actualJoining, "DD/MM/YYYY").format("D MMMM YYYY")
-                        : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
-                          ? moment(item.expectedJoiningDate, "DD/MM/YYYY").format("D MMMM YYYY")
-                          : item?.RecheckIn_Date && item.RecheckIn_Date !== "0000-00-00"
-                            ? moment(item.RecheckIn_Date).format("D MMMM YYYY")
-                            : "-"
-                      }
-                    </Text> */}
+                      
                       </View>
-                    </View>
+                    </TouchableOpacity>
 
 
                   ))}
@@ -907,7 +935,7 @@ export default function TenantsScreen({ route }) {
               </>
             )}
 
-            {customers?.listCustomers?.length > 0 &&
+            {/* {customers?.listCustomers?.length > 0 &&
               <TouchableOpacity
                 style={[
                   styles.editButton,
@@ -917,7 +945,7 @@ export default function TenantsScreen({ route }) {
                 onPress={() => setShowFilter(true)}>
                 <Image source={Filter} style={{ width: 30, height: 30 }} />
               </TouchableOpacity>
-            }
+            } */}
 
 
 
@@ -964,6 +992,7 @@ export default function TenantsScreen({ route }) {
                 <TouchableOpacity
                   ref={detailDotsRef}
                   onPress={() => {
+                    //  setSelectedItem(selectedCustomer); 
                     detailDotsRef.current.measureInWindow((x, y, w, h) => {
                       setPopupPosition({ x, y, w, h });
                       setShowDetailsMenu(true);
@@ -997,15 +1026,27 @@ export default function TenantsScreen({ route }) {
 
 
                 <View style={{ marginLeft: 12 }}>
-                  <Text style={styles.modalName}>{selectedCustomer?.fullName} </Text>
+                  <TouchableOpacity
+  onPress={() => {
+    closeDetailSheet();
+    navigation.navigate("CustomerOverviewScreen", {
+      customer: selectedCustomer,
+    });
+  }}
+>
+  <Text style={styles.modalName}>
+    {selectedCustomer?.fullName}
+  </Text>
+</TouchableOpacity>
+                  {/* <Text style={styles.modalName}>{selectedCustomer?.fullName} </Text> */}
 
                   <View style={styles.detailRow}>
                     <View style={styles.floorBadge}>
                       <Text style={styles.floorText}>{selectedCustomer?.hostelInfo?.floorName}</Text>
                     </View>
-                    <Image source={room} style={{ width: 18, height: 18, marginRight:4 }} />
+                    <Image source={room} style={{ width: 18, height: 18 }} />
                     <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.roomName}</Text>
-                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8 , marginRight:4}} />
+                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8 }} />
                     <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.bedName}</Text>
                   </View>
                 </View>
@@ -1022,21 +1063,49 @@ export default function TenantsScreen({ route }) {
                 <Text style={styles.infoValue}>{selectedCustomer?.emailId ? selectedCustomer?.emailId : "N/A"}</Text>
               </View>
 
+              
+             <View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    // marginTop: 15,
+  }}
+>
+  {/* LEFT SIDE */}
+  <View style={{ flex: 1 }}>
+    <Text style={styles.infoLabel}>Contact Number</Text>
 
-              <Text style={styles.infoLabel}>Contact Number</Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image
-                  source={Call}
-                  style={{ width: 15, height: 15, marginRight: 5 }}
-                  resizeMode="contain"
-                />
-                <Text style={styles.infoValue}>{selectedCustomer?.mobileNo}</Text>
-              </View>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Image
+        source={MobileIcon}
+        style={{ width: 15, height: 15, marginRight: 5 }}
+        resizeMode="contain"
+      />
+      <Text style={styles.infoValue}>
+        {selectedCustomer?.mobileNo}
+      </Text>
+    </View>
+  </View>
 
+  {/* RIGHT SIDE ICON */}
+  <TouchableOpacity
+    style={{
+      padding: 10,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Image
+      source={CallIcon}
+      style={{ width: 24, height: 24 }}
+      resizeMode="contain"
+    />
+  </TouchableOpacity>
+</View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ marginTop: 15, }}>
-                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Regular"}}>
-                    {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"}
+                  <Text style={{ fontSize: 13, color: "#6B7280", }}>
+                    {selectedCustomer?.customerCurrentStatus ==  "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
                   </Text>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Image
@@ -1052,14 +1121,14 @@ export default function TenantsScreen({ route }) {
                 {
                   selectedCustomer?.customerCurrentStatus == "BOOKED" && (
                     <View style={{ marginTop: 15, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280",fontFamily: "Gilroy-Regular" }}>Booking Date</Text>
+                      <Text style={{ fontSize: 13, color: "#6B7280", }}>Booking Date</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
                           source={dateImg}
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, fontFamily: "Gilroy-Semibold"}}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
                           {selectedCustomer?.bookingInfo?.bookingDate}
                         </Text>
                       </View>
@@ -1073,7 +1142,7 @@ export default function TenantsScreen({ route }) {
                 ["CHECK_IN", "OCCUPIED", "NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View style={{ marginTop: 15, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280",fontFamily: "Gilroy-Regular" }}>
+                      <Text style={{ fontSize: 13, color: "#6B7280", }}>
                         Rental Amount
                         {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
                       </Text>
@@ -1083,20 +1152,20 @@ export default function TenantsScreen({ route }) {
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Semibold" }}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
                           ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.hostelInfo?.monthlyRent)}</Text>
                       </View>
                     </View>
 
                     <View style={{ marginTop: 15, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280",fontFamily: "Gilroy-Regular" }}>Advance Amount</Text>
+                      <Text style={{ fontSize: 13, color: "#6B7280", }}>Advance Amount</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
                           source={dateImg}
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, fontFamily: "Gilroy-Semibold"}}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
                           ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.advanceInfo?.advanceAmount)}
                         </Text>
                       </View>
@@ -1109,7 +1178,7 @@ export default function TenantsScreen({ route }) {
               {
                 selectedCustomer?.customerCurrentStatus == "BOOKED" && (
                   <View style={{ marginTop: 15, }}>
-                    <Text style={{ fontSize: 13, color: "#6B7280",fontFamily: "Gilroy-Regular" }}>
+                    <Text style={{ fontSize: 13, color: "#6B7280", }}>
                       Booking Amount
                       {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
                     </Text>
@@ -1119,7 +1188,7 @@ export default function TenantsScreen({ route }) {
                         style={{ width: 15, height: 15, marginRight: 5 }}
                         resizeMode="contain"
                       />
-                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Semibold"}}>
+                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
                         ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.bookingInfo?.bookingAmount)}</Text>
                     </View>
                   </View>
@@ -1192,7 +1261,7 @@ export default function TenantsScreen({ route }) {
                     }}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Change Bed </Text>
+                    <Text style={styles.popupText}>Re-Assign Bed</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -1226,7 +1295,7 @@ export default function TenantsScreen({ route }) {
                     setShowDetailModal(false)
                   }}
                 >
-                  <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                  <Image source={require("../../Assets/Images/checkout_red.png")} style={styles.popupIcon} />
                   <Text style={styles.popupText}>Checkout</Text>
                 </TouchableOpacity>
               }
@@ -1241,8 +1310,8 @@ export default function TenantsScreen({ route }) {
                     disabled={!canUpdateTenant}
                     onPress={handleShowTennantCheckin}
                   >
-                    <Image source={Checkin} style={[styles.popupIcon , {  tintColor: "#1E45E1",}]} />
-                    <Text style={styles.popupText}>CheckIn</Text>
+                    <Image source={require("../../Assets/Images/blue_circle.png")} style={styles.popupIcon} />
+                    <Text style={styles.popupText}>Check-in</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -1254,7 +1323,7 @@ export default function TenantsScreen({ route }) {
                     onPress={handleMakeUsInActive}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Make as InActive</Text>
+                    <Text style={styles.popupText}>Make as Inactive</Text>
                   </TouchableOpacity>
                 </>
 
@@ -1321,7 +1390,7 @@ export default function TenantsScreen({ route }) {
                 >
 
                   {
-                    selectedItem && selectedItem.currentStatus === "Checked In" &&
+                    selectedItem && selectedItem?.customerCurrentStatus === "CHECK_IN" &&
                     <>
                       <TouchableOpacity
                         // style={styles.popupRow}
@@ -1330,6 +1399,8 @@ export default function TenantsScreen({ route }) {
                           !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
                         onPress={() => {
+                          console.log("allwin", selectedItem);
+                          
                           setReassignCustomer(selectedItem);
                           handleShowReAssignBed();
                         }}
@@ -1366,23 +1437,8 @@ export default function TenantsScreen({ route }) {
 
                   }
                   {
-                    selectedItem && selectedItem.currentStatus === "Booked" &&
+                    selectedItem && selectedItem?.customerCurrentStatus === "BOOKED" &&
                     <>
-                                          <TouchableOpacity
-                        // style={styles.popupRow}
-                        style={[
-                          styles.popupRow,
-                          !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
-                        onPress={handleShowTennantCheckin}
-                      // onPress={() => {
-                      //   setShowDetailsMenu(false);
-                      //   // setShowNotice(true);
-                      // }}
-                      >
-                        <Image source={Checkin} style={[styles.popupIcon , {  tintColor: "#1E45E1",}]} />
-                        <Text style={styles.popupText}>Checkin</Text>
-                      </TouchableOpacity>
                       <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
@@ -1394,11 +1450,25 @@ export default function TenantsScreen({ route }) {
                         <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Make Us InActive</Text>
                       </TouchableOpacity>
-
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                        onPress={handleShowTennantCheckin}
+                      // onPress={() => {
+                      //   setShowDetailsMenu(false);
+                      //   // setShowNotice(true);
+                      // }}
+                      >
+                        <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Checkin</Text>
+                      </TouchableOpacity>
                     </>
                   }
                   {selectedItem &&
-                    !["Checked In", "Settlement Generated", "Booked"].includes(selectedItem.currentStatus) && (
+                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem?.customerCurrentStatus) && (
 
                       <>
                         {/* <TouchableOpacity
@@ -1413,6 +1483,7 @@ export default function TenantsScreen({ route }) {
                           />
                           <Text style={styles.popupText}>Generate</Text>
                         </TouchableOpacity> */}
+
                         <TouchableOpacity
                           // style={styles.popupRow}
                           style={[
@@ -1421,8 +1492,8 @@ export default function TenantsScreen({ route }) {
                           disabled={!canUpdateTenant}
                           onPress={handleShowFinalNew}
                         >
-                          <Image source={require("../../Assets/Images/fsi.png")} style={styles.popupIcon} />
-                          <Text style={styles.popupText}>Generate</Text>
+                          <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                          <Text style={styles.popupText}>Generate </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -1441,7 +1512,7 @@ export default function TenantsScreen({ route }) {
                       </>
                     )}
                   {selectedItem &&
-                    !["Checked In", "Notice Period", "Booked"].includes(selectedItem.currentStatus) && (
+                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem?.customerCurrentStatus) && (
                       <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
@@ -1453,7 +1524,7 @@ export default function TenantsScreen({ route }) {
                           setShowCheckout(true);
                           setMenuVisible(false)
                         }}
-                      > 
+                      >
                         <Image source={require("../../Assets/Images/Checkout_icon.png")} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Checkout</Text>
                       </TouchableOpacity>
@@ -1893,6 +1964,8 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E5E7EB",
     paddingBottom: 6,
   },
+
+
   // dropdownMenu: {
   //   backgroundColor: "#fff",
   //   borderRadius: 10,
@@ -1991,7 +2064,7 @@ const styles = StyleSheet.create({
 
   activeText: {
     color: "#2D6CDF",
-   fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
   },
 
   sectionTitle: {
@@ -2012,7 +2085,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
     color: "#111827",
   },
   detailRow: {
@@ -2030,7 +2103,7 @@ const styles = StyleSheet.create({
   floorText: {
     fontSize: 11,
     color: "#222222",
-      fontFamily: "Gilroy-Regular",
+    fontWeight: "500",
   },
   iconSmall: {
     width: 18,
@@ -2040,7 +2113,6 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 12,
     color: "#4B5563",
-    fontFamily: "Gilroy-Regular"
   },
   rightSection: {
     alignItems: "flex-end",
@@ -2049,7 +2121,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#6B7280",
     marginBottom: 3,
-    fontFamily: "Gilroy-Regular"
   },
   dots: {
     fontSize: 22,
@@ -2106,7 +2177,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 18,
-  fontFamily: "Gilroy-Bold",
+    fontWeight: "700",
     color: "#111",
   },
 
@@ -2124,7 +2195,7 @@ const styles = StyleSheet.create({
 
   modalName: {
     fontSize: 17,
-    fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
     color: "#111",
   },
 
@@ -2132,14 +2203,12 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "Gilroy-Regular"
   },
 
   infoValue: {
     fontSize: 14,
     color: "#111",
     marginTop: 3,
-    fontFamily: "Gilroy-Semibold"
   },
 
   unassignBtn: {
@@ -2153,7 +2222,7 @@ const styles = StyleSheet.create({
 
   unassignText: {
     fontSize: 15,
-    fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
   },
   popupOverlay: {
     position: "absolute",
@@ -2189,7 +2258,6 @@ const styles = StyleSheet.create({
   popupText: {
     fontSize: 14,
     color: "#333",
-    fontFamily: "Gilroy-Medium"
   },
 
 
@@ -2227,7 +2295,7 @@ const styles = StyleSheet.create({
 
   filterTitle: {
     fontSize: 18,
-     fontFamily: "Gilroy-Bold",
+    fontWeight: "700",
   },
 
   label: {
@@ -2284,12 +2352,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  quickText: { color: "#111",  fontFamily: "Gilroy-Regular" },
+  quickText: { color: "#111", fontWeight: "500" },
 
   bottomButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 25,
+    marginTop: 20,
+    marginBottom:30
   },
 
   resetBtn: {
@@ -2302,7 +2371,7 @@ const styles = StyleSheet.create({
 
   resetText: {
     color: "#2D6CDF",
-    fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
   },
 
   applyBtn: {
@@ -2315,7 +2384,7 @@ const styles = StyleSheet.create({
 
   applyText: {
     color: "#fff",
-   fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
   },
 
 
@@ -2337,7 +2406,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontFamily: "Gilroy-Bold",
+    fontWeight: "700",
     color: "#111",
     marginBottom: 10,
   },
@@ -2367,7 +2436,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-    fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
     color: "#2D6CDF",
   },
 
@@ -2381,7 +2450,7 @@ const styles = StyleSheet.create({
 
   deleteBtnText: {
     fontSize: 16,
-    fontFamily: "Gilroy-Semibold",
+    fontWeight: "600",
     color: "#fff",
   },
   menuOverlay: {
@@ -2436,7 +2505,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    fontFamily: "Gilroy-Regular",
+    fontWeight: "500",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
@@ -2455,7 +2524,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 13,
-   fontFamily: "Gilroy-Bold",
+    fontWeight: "700",
     color: "#374151",
   },
   modalInitialCircle: {
@@ -2469,7 +2538,7 @@ const styles = StyleSheet.create({
 
   modalInitialText: {
     fontSize: 16,
-    fontFamily: "Gilroy-Bold",
+    fontWeight: "700",
     color: "#374151",
   },
   statusDot: {
@@ -2483,7 +2552,59 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#fff",
   },
+filterRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginTop: 12,
+  marginBottom: 8,
+},
 
+filterChip: {
+  backgroundColor: "#F3F4F6",
+  paddingVertical: 8,
+  paddingHorizontal: 34,
+  borderRadius: 20,
+},
 
+filterChipActive: {
+  backgroundColor: "#E6F0FF",
+  paddingVertical: 8,
+  paddingHorizontal: 24,
+  borderRadius: 20,
+},
+
+filterChipText: {
+  fontSize: 13,
+  color: "#374151",
+},
+
+filterChipTextActive: {
+  fontSize: 13,
+  color: "#2D6CDF",
+  fontWeight: "600",
+},
+
+filterIconBtn: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  // backgroundColor: "#F3F4F6",
+  justifyContent: "center",
+  alignItems: "center",
+      borderWidth: 1,
+    borderColor: "#F3F4F6",
+},
+chipContent: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+chipArrow: {
+  width: 14,
+  height: 14,
+  marginLeft: 6,
+},
 
 });
