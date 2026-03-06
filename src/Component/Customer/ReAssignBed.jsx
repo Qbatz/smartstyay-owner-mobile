@@ -653,7 +653,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
 
 
-            <Text style={styles.label}>Reassign Floor <Text style={{ color: "red" }}>*</Text></Text>
+            <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
@@ -711,7 +711,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             {floorError && (
               <ErrorMessage message={floorError} type="error" />
             )}
-            <Text style={styles.label}>Reassign Room <Text style={{ color: "red" }}>*</Text></Text>
+            <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
@@ -772,7 +772,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             {roomError && (
               <ErrorMessage message={roomError} type="error" />
             )}
-            <Text style={styles.label}>Reassign Bed <Text style={{ color: "red" }}>*</Text></Text>
+            <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
@@ -883,7 +883,8 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                 value={amount}
 
                 onChangeText={(text) => {
-                  setAmount(text);
+                  const onlyNum =text.replace(/[^0-9]/g, "");
+                  setAmount(onlyNum);
                   setRentError("");
                 }}
                 onFocus={() => {

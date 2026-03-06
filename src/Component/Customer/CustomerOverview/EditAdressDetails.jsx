@@ -14,6 +14,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { SafeAreaView } from "react-native-safe-area-context";
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.85;
 
@@ -47,10 +48,13 @@ export default function EditManualAddressSheet({
   const [initialAddress, setInitialAddress] = useState(null);
   const [formError, setFormError] = useState("");
   const pincodeRef = useRef(null);
+  const cityRef = useRef(null);
   const [pincodeError, setPincodeError] = useState("")
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [cityError, setCityError] = useState("");
+  const [stateError, setStateError] = useState("");
 
   const stateList = [
     { label: "Andhra Pradesh", value: "Andhra Pradesh" },
@@ -171,6 +175,8 @@ export default function EditManualAddressSheet({
       setInitialAddress(null);
       setFormError("");
       setPincodeError("");
+      setCityError("");
+      setStateError("")
     }
   }, [visible]);
 
@@ -215,6 +221,17 @@ export default function EditManualAddressSheet({
     let hasError = false;
     setFormError("");
 
+    if (!city) {
+      setCityError("Please enter City");
+      if (!focused) {
+        cityRef.current?.focus();
+        focused = true;
+      }
+      hasError = true;
+    } else {
+      setCityError("")
+    }
+
     const pinString = String(pincode || "").trim();
 
     // 🔴 PINCODE VALIDATION
@@ -225,7 +242,15 @@ export default function EditManualAddressSheet({
         focused = true;
       }
       hasError = true;
-    } else if (pinString === "000000") {
+    } else if (!pinString) {
+      setPincodeError("Pin Code is required");
+      if (!focused) {
+        pincodeRef.current?.focus();
+        focused = true;
+      }
+      hasError = true;
+    }
+    else if (pinString === "000000") {
       setPincodeError("Pin Code cannot be all zeros");
       if (!focused) {
         pincodeRef.current?.focus();
@@ -249,6 +274,26 @@ export default function EditManualAddressSheet({
     } else {
       setPincodeError("");
     }
+
+    // if (!stateError) {
+    //   setStateError("Please select state")
+    //   if (!focused) {
+    //     focused = true;
+    //   }
+    //   hasError = true;
+    // } else {
+    //   setStateError("")
+    // }
+
+    if (!selectedState?.trim()) {
+  setStateError("Please select state");
+  if (!focused) {
+    focused = true;
+  }
+  hasError = true;
+} else {
+  setStateError("");
+}
 
     if (hasError) return;
 
@@ -334,162 +379,174 @@ export default function EditManualAddressSheet({
             },
           ]}
         >
+           <View style={styles.handle} />
+          <SafeAreaView >
 
+           
+            <Text style={styles.title}>Edit Manual Address</Text>
 
-          <View style={styles.handle} />
-          <Text style={styles.title}>Edit Manual Address</Text>
-
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: 100,   // 🔥 IMPORTANT
-            }}
-          >
-            <Text style={styles.label}>Flat , House no , Building , Company , Apartment</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="House No / Apartment"
-              value={flat}
-              onChangeText={(text) => {
-                const filtered = text.replace(/[^a-zA-Z0-9\s.,\-/&]/g, "");
-                setFlat(filtered);
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingBottom: 100,   // 🔥 IMPORTANT
               }}
-            />
-            <Text style={styles.label}>Area , Street , Sector , Village</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Street / Area"
-              value={area}
-              onChangeText={(text)=>{
-                const filtered = text.replace(/[^a-zA-Z0-9\s.,\-/]/g, "");
-                setArea(filtered);
-              }}
-            />
-            <Text style={styles.label}>Landmark</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Landmark"
-              value={landmark}
-              onChangeText={(text)=>{
-                const filtered = text.replace(/[^a-zA-Z0-9\s.,\-/]/g, "");
-                setLandmark(filtered)
-              }}
-            />
-            <Text style={styles.label}>City<Text style={{marginRight:3,color: "red",}}>*</Text></Text>
-            <TextInput
-              style={styles.input}
-              placeholder="City"
-              value={city}
-              onChangeText={(text)=>{
-                const filtered = text.replace(/[^a-zA-Z0-9\s]/g, "");
-                setCity(filtered);
-              }}
-            />
-            <Text style={styles.label}>Pincode  <Text style={{marginRight:3,color: "red",}}>*</Text></Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Pincode"
-              keyboardType="numeric"
-              value={pincode}
-              onChangeText={(text) => {
-                const numeric = text.replace(/[^0-9]/g, "");
-                if (numeric.length <= 6) {
-                  setPincode(numeric);
-                }
-                setPincodeError("")
-              }}
-
-            />
-            {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
-
-            {/* STATE DROPDOWN */}
-            <Text style={styles.label}>State<Text style={{marginRight:3,color: "red",}}>*</Text></Text>
-
-            <View style={{ position: "relative" }}>
+            >
+              <Text style={styles.label}>Flat , House no , Building , Company , Apartment</Text>
               <TextInput
-                style={styles.select}
-                placeholder="Select state"
-                placeholderTextColor="#9CA3AF"
-                value={stateOpen ? stateQuery || selectedState : selectedState}
-                onFocus={() => setStateOpen(true)}
-                onChangeText={(t) => {
-                  setStateQuery(t);
-                  setStateOpen(true);
+                style={styles.input}
+                placeholder="House No / Apartment"
+                value={flat}
+                onChangeText={(text) => {
+                  const filtered = text.replace(/[^a-zA-Z0-9\s.,\-/&]/g, "");
+                  setFlat(filtered);
                 }}
               />
+              <Text style={styles.label}>Area , Street , Sector , Village</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Street / Area"
+                value={area}
+                onChangeText={(text) => {
+                  const filtered = text.replace(/[^a-zA-Z0-9\s.,\-/]/g, "");
+                  setArea(filtered);
+                }}
+              />
+              <Text style={styles.label}>Landmark</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Landmark"
+                value={landmark}
+                onChangeText={(text) => {
+                  const filtered = text.replace(/[^a-zA-Z0-9\s.,\-/]/g, "");
+                  setLandmark(filtered)
+                }}
+              />
+              <Text style={styles.label}>City<Text style={{ marginRight: 3, color: "red", }}>*</Text></Text>
+              <TextInput
+                style={{ borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 10, padding: 12, }}
+                placeholder="City"
+                value={city}
+                onChangeText={(text) => {
+                  const filtered = text.replace(/[^a-zA-Z0-9\s]/g, "");
+                  setCity(filtered);
+                  if (filtered.trim()) {
+                    setCityError("");
+                  }
+                }}
+              />
+              {cityError && <ErrorMessage message={cityError} type="error" />}
+
+              <Text style={[styles.label, { marginTop: 12 }]}>Pincode  <Text style={{ marginRight: 3, color: "red", }}>*</Text></Text>
+              <TextInput
+                style={{ borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 10, padding: 12, }}
+                placeholder="Pincode"
+                keyboardType="numeric"
+                value={pincode}
+                onChangeText={(text) => {
+                  const numeric = text.replace(/[^0-9]/g, "");
+                  if (numeric.length <= 6) {
+                    setPincode(numeric);
+                  }
+                  setPincodeError("")
+                }}
+
+              />
+              {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
+
+              {/* STATE DROPDOWN */}
+              <Text style={[styles.label, { marginTop: 12 }]}>State<Text style={{ marginRight: 3, color: "red", }}>*</Text></Text>
+
+              <View style={{ position: "relative" }}>
+                <TextInput
+                  style={styles.select}
+                  placeholder="Select state"
+                  placeholderTextColor="#9CA3AF"
+                  value={stateOpen ? stateQuery || selectedState : selectedState}
+                  onFocus={() => setStateOpen(true)}
+                  onChangeText={(t) => {
+                    setStateQuery(t);
+                    setStateOpen(true);
+                    if(t){
+                      setStateError("")
+                    }
+                  }}
+                />
+                {stateError && <ErrorMessage message={stateError} type="error" />}
 
 
 
-              <Image source={DownArrow} style={styles.arrowIcon} />
+                <Image source={DownArrow} style={styles.arrowIcon} />
 
-              {stateOpen && (
-                <>
-                  <TouchableWithoutFeedback
-                    onPress={() => {
-                      setStateOpen(false);
-                      setStateQuery("");
-                    }}
-                  >
-                    <View style={styles.dropdownOverlay} />
-                  </TouchableWithoutFeedback>
-
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView
-                      keyboardShouldPersistTaps="always"
-                      nestedScrollEnabled={true}
-                      showsVerticalScrollIndicator={true}
+                {stateOpen && (
+                  <>
+                    <TouchableWithoutFeedback
+                      onPress={() => {
+                        setStateOpen(false);
+                        setStateQuery("");
+                      }}
                     >
-                      {filteredStateList.length > 0 ? (
-                        filteredStateList.map((v, index) => (
+                      <View style={styles.dropdownOverlay} />
+                    </TouchableWithoutFeedback>
+
+                    <View style={styles.dropdownMenu}>
+                      <ScrollView
+                        keyboardShouldPersistTaps="always"
+                        nestedScrollEnabled={true}
+                        showsVerticalScrollIndicator={true}
+                      >
+                        {filteredStateList.length > 0 ? (
+                          filteredStateList.map((v, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={styles.option}
+                              onPress={() => {
+                                setSelectedState(v.label);
+                                setStateQuery("");
+                                setStateOpen(false);
+                                setStateError("")
+                              }}
+                            >
+                              <Text style={styles.optionText}>{v.label}</Text>
+                            </TouchableOpacity>
+                          ))
+                        ) : (
+                          <Text style={styles.noResult}>No state found</Text>
+                        )}
+
+                        {/* 🔴 CLEAR OPTION */}
+                        {selectedState && (
                           <TouchableOpacity
-                            key={index}
-                            style={styles.option}
+                            style={{ padding: 12, alignItems: "center" }}
                             onPress={() => {
-                              setSelectedState(v.label);
+                              setSelectedState("");
                               setStateQuery("");
                               setStateOpen(false);
                             }}
                           >
-                            <Text style={styles.optionText}>{v.label}</Text>
+                            <Text style={{ color: "red", fontWeight: "600" }}>
+                              Clear selection
+                            </Text>
                           </TouchableOpacity>
-                        ))
-                      ) : (
-                        <Text style={styles.noResult}>No state found</Text>
-                      )}
+                        )}
+                      </ScrollView>
+                    </View>
+                  </>
+                )}
 
-                      {/* 🔴 CLEAR OPTION */}
-                      {selectedState && (
-                        <TouchableOpacity
-                          style={{ padding: 12, alignItems: "center" }}
-                          onPress={() => {
-                            setSelectedState("");
-                            setStateQuery("");
-                            setStateOpen(false);
-                          }}
-                        >
-                          <Text style={{ color: "red", fontWeight: "600" }}>
-                            Clear selection
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </ScrollView>
-                  </View>
-                </>
-              )}
+              </View>
+              {formError && <ErrorMessage message={formError} type="error" />}
+              <View style={styles.footer}>
+                <TouchableOpacity style={[styles.saveBtn, { marginRight: 14 }]} onPress={closeSheet}>
+                  <Text style={styles.saveText}>Cancel</Text>
+                </TouchableOpacity>
 
-            </View>
-            {formError && <ErrorMessage message={formError} type="error" />}
-            <View style={styles.footer}>
-              <TouchableOpacity style={[styles.saveBtn,{marginRight:14}]} onPress={closeSheet}>
-                <Text style={styles.saveText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                <Text style={styles.saveText}>Update</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+                <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+                  <Text style={styles.saveText}>Update</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </SafeAreaView>
         </Animated.View>
       </View>
     </>
@@ -537,14 +594,14 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     backgroundColor: "#2563EB",
-    paddingVertical: 14,paddingHorizontal:14,
+    paddingVertical: 14, paddingHorizontal: 14,
     borderRadius: 12,
     alignItems: "center",
   },
   footer: {
     paddingTop: 20,
-    flexDirection:'row',
-    justifyContent:'flex-end'
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
   },
   saveText: {
     color: "#fff",
@@ -571,7 +628,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 12,
     zIndex: 1000,
-    marginTop:5,
+    marginTop: 5,
 
     maxHeight: 150,        // 🔥 increase
   },

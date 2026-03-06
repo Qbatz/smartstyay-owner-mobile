@@ -35,7 +35,7 @@ import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import Download from "../../../Assets/Images/download.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 
-const RecurringBills = () => {
+const RecurringBills = ({onSelectRecurringBill}) => {
 
 
   const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError,
@@ -280,6 +280,10 @@ const RecurringBills = () => {
     </View>
   );
 
+  const handleViewRecurring=(item)=>{
+    onSelectRecurringBill(item)
+  }
+
 
   const renderItem = ({ item }) => {
     const isActive = item.currentStatus;
@@ -288,8 +292,10 @@ const RecurringBills = () => {
       <View style={styles.row}>
         <TouchableOpacity onPress={() => {
           if (!canReadRecurringBills) return;
-          setSelectedBill(item);
-          setShowBillDetails(true);
+          handleViewRecurring(item)
+          {console.log("papa",item)}
+          // setSelectedBill(item);
+          // setShowBillDetails(true);
         }}>
 
 
