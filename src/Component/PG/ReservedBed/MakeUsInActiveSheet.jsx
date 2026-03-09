@@ -264,9 +264,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.overlay}>
-        {/* <TouchableWithoutFeedback onPress={handleClose}>
+        <TouchableWithoutFeedback onPress={handleClose}>
           <View style={{ flex: 1 }} />
-        </TouchableWithoutFeedback> */}
+        </TouchableWithoutFeedback>
 
 
         <Animated.View
@@ -341,7 +341,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             </Text>
 
             <TextInput
-              ref={commentRef}
+              // ref={commentRef}
               style={styles.textArea}
               multiline
               placeholder="Enter comments..."

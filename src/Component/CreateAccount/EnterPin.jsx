@@ -10,6 +10,7 @@ import LottieView from "lottie-react-native";
 import WaveIcon from "../../Assets/Images/login_Rectangle.png";
 import { updateFcmToken } from "../../Action/LoginAction";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import SmartstayNewLogo from "../../Assets/Images/SmartstayNewLogo.png"
 
 
 const EnterMPin = (props) => {
@@ -35,7 +36,8 @@ const EnterMPin = (props) => {
     const translateY = useRef(new Animated.Value(80)).current;
     const BOTTOM_IMAGE_HEIGHT = 200;
     const [fcmToken, setFcmToken] = useState();
-    const [enterPinError, setEnterPinError] = useState()
+    const [enterPinError, setEnterPinError] = useState();
+    const [incorrectMpin, setIncorrectMpin] = useState(false);
 
     const showSuccessPopup = () => {
         setShowPopup(true);
@@ -144,35 +146,64 @@ const EnterMPin = (props) => {
             console.log(pinNumber)
 
             const res = await verifyMpin(Number(pinNumber));
-        console.log(res)
+            console.log(res)
 
-        if (res.status == 200) {
-            fetchFcmToken(res.data)
-            setType("success");
-            setMessage("Login Successfully");
-            setShowModal(true);
-            // showSuccessPopup()
-            
+            if (res.status == 200) {
+                fetchFcmToken(res.data)
+                setType("success");
+                setMessage("Login Successfully");
+                setShowModal(true);
+                // showSuccessPopup()
 
-            setTimeout(() => {
-                setShowModal(false);
-                updatePinSetupStatus(true)
 
-            }, 500);
-        } else {
-            setType("error");
-            setMessage("Incorrect MPIN");
-            setShowModal(true);
-            setTimeout(() => {
-                setShowModal(false);
-            }, 1500);
-        }
+                setTimeout(() => {
+                    setShowModal(false);
+                    updatePinSetupStatus(true)
+                    setIncorrectMpin(false)
+
+                }, 500);
+            } else {
+                setEnterPinError("Incorrect MPIN. Try Again");
+                setIncorrectMpin(true)
+                setCreateMpin(["", "", "", ""])
+                // setType("error");
+
+                // setShowModal(true);
+                setTimeout(() => {
+                    inputs.current[0]?.focus();
+                    // setShowModal(false);
+                }, 100);
+            }
         }
     }
 
+    // const handleKeyPress = (e, index) => {
+    //     if (e.nativeEvent.key === "Backspace" && createMpin[index] === "" && index > 0) {
+    //         inputs.current[index - 1].focus();
+    //     }
+    // };
+
     const handleKeyPress = (e, index) => {
-        if (e.nativeEvent.key === "Backspace" && createMpin[index] === "" && index > 0) {
-            inputs.current[index - 1].focus();
+        if (e.nativeEvent.key === "Backspace") {
+            const newPin = [...createMpin];
+
+            if (newPin[index] === "" && index > 0) {
+                inputs.current[index - 1].focus();
+
+                newPin[index - 1] = "";
+                setCreateMpin(newPin)
+            } else {
+                newPin[index] = "";
+                setCreateMpin(newPin)
+            }
+        }
+    }
+
+    const handleFocus = (index) => {
+        const firstEmptyIndex = createMpin.findIndex((digit) => digit === "");
+
+        if (firstEmptyIndex !== -1 && index > firstEmptyIndex) {
+            inputs.current[firstEmptyIndex].focus();
         }
     };
 
@@ -237,8 +268,8 @@ const EnterMPin = (props) => {
 
     return <View style={{ paddingHorizontal: 20, flex: 1 }}>
         <SuccessModal visible={showModal} message={message} type={type} />
-        <View style={{ paddingTop: 70 }} >
-            <Image source={Sm_logo} style={style.logo} />
+        <View style={{ paddingTop: 70, alignItems: 'center', flex: 1 }} >
+            <Image source={SmartstayNewLogo} style={style.logo} />
 
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 15 }}>
                 <Text style={style.title}>Welcome Back</Text>
@@ -259,17 +290,18 @@ const EnterMPin = (props) => {
 
             </View>
 
-            <Text style={style.createText}>Enter mPIN</Text>
+            {/* <Text style={style.createText}>Enter mPIN</Text> */}
 
-            <Text style={style.subtitle}>Please enter the mPIN </Text>
+            <Text style={style.subtitle}>Enter your 4 Digit mPin</Text>
 
             <View style={style.pinContainer}>
                 {createMpin.map((digit, index) => (
                     <TextInput
                         key={index}
                         ref={(ref) => (inputs.current[index] = ref)}
+                        secureTextEntry
                         keyboardType="number-pad"
-                        style={style.pinBox}
+                        style={[style.pinBox, enterPinError && { borderColor: 'red' },  showModal && {borderColor:'green'}]}
                         maxLength={1}
                         value={digit}
 
@@ -277,19 +309,27 @@ const EnterMPin = (props) => {
                             handlePinChange(text, index);
                             setEnterPinError("");
                         }}
+                        onFocus={() => handleFocus(index)}
 
                         onKeyPress={(e) => handleKeyPress(e, index)}
                     />
                 ))}
             </View>
-            {enterPinError && <ErrorMessage message={enterPinError} type="error" />}
-            <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
-                <TouchableOpacity onPress={forgotMpinClick}
-                >
-                    <Text style={{ color: '#1E45E1', fontSize: 14, fontFamily: "Gilroy-Regular", textDecorationLine: 'underline', }}>
-                        Forgot Mpin</Text>
-                </TouchableOpacity>
-            </View>
+            {enterPinError && <View style={{ marginTop: 18 }}>
+                <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#FF0000' }}>{enterPinError}</Text>
+            </View>}
+
+            {
+                incorrectMpin &&
+                <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
+                    <TouchableOpacity onPress={forgotMpinClick}
+                    >
+                        <Text style={{ color: '#1E45E1', fontSize: 14, fontFamily: "Gilroy-Regular", textDecorationLine: 'underline', }}>
+                            Forgot Mpin</Text>
+                    </TouchableOpacity>
+                </View>
+            }
+
 
 
 
@@ -333,19 +373,19 @@ const EnterMPin = (props) => {
 }
 
 const style = StyleSheet.create({
-    logo: { width: 151, height: 28.22 },
+    logo: { width: 66.30, height: 66.25 },
     createText: { fontSize: 23, fontFamily: "Gilroy-Bold", color: '#222222', marginTop: 20 },
     subtitle: { fontSize: 14, fontFamily: "Gilroy-Regular", color: '#4B4B4B', marginTop: 15 },
-    pinContainer: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20, paddingLeft: 10, paddingRight: 10 },
+    pinContainer: { width: "100%", flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20, paddingLeft: 10, paddingRight: 10 },
     pinBox: {
-        width: 60, heiht: 70, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
+        width: 60, height: 55, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
         fontSize: 20, color: "#000"
     },
     nextButton: { backgroundColor: '#1A73E8', borderRadius: 8, paddingVertical: 20, alignItems: 'center' },
-    nextText: { color: '#ffffff', fontSize: 16, fontFamily: "Gilroy-Bold"},
+    nextText: { color: '#ffffff', fontSize: 16, fontFamily: "Gilroy-Bold" },
     title: {
         fontSize: 28,
-        fontFamily:"Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
         marginTop: 10,
     },
 
@@ -372,14 +412,14 @@ const style = StyleSheet.create({
 
     popupText: {
         fontSize: 18,
-        fontFamily:  "Gilroy-Medium",
+        fontFamily: "Gilroy-Medium",
         color: "#333",
         marginTop: 5,
     },
     popupSubText: {
         fontSize: 14,
         color: "#777",
-        fontFamily:  "Gilroy-Medium",
+        fontFamily: "Gilroy-Medium",
         marginTop: 6,
     },
 

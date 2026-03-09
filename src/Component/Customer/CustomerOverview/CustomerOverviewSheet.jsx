@@ -43,6 +43,10 @@ import MoveNoticeSheet from "../MoveToNoticePeriod";
 import InactiveTenantSheet from "../../PG/ReservedBed/MakeUsInActiveSheet";
 import CheckoutBottomSheet from "../Checkout/CheckoutTenant";
 import RecheckInIcon from "../../../Assets/Images/recheckinIcon.png"
+import MakeCheckInIcon from "../../../Assets/Images/blue_circle.png";
+import MoveToNoticeIcon from "../../../Assets/Images/Logout.png";
+import CheckoutIcon from "../../../Assets/Images/checkout_red.png"
+import Generate from "../../../Assets/Images/fsi.png"
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
@@ -763,7 +767,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
                     >
                       <Image
-                        source={ReAssignIcon}
+                        source={MoveToNoticeIcon}
                         style={styles.popupIcon}
                       />
                       <Text style={styles.popupText}>Move to Notice Period</Text>
@@ -797,7 +801,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                     //   // setShowNotice(true);
                     // }}
                     >
-                      <Image source={ReAssignIcon} style={styles.popupIcon} />
+                      <Image source={MakeCheckInIcon} style={styles.popupIcon} />
                       <Text style={styles.popupText}>Checkin</Text>
                     </TouchableOpacity>
                   </>
@@ -828,7 +832,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         disabled={!canUpdateTenant}
                         onPress={handleShowFinalNew}
                       >
-                        <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                        <Image source={Generate} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Generate</Text>
                       </TouchableOpacity>
 
@@ -860,7 +864,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         setMenuVisible(false)
                       }}
                     >
-                      <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
+                      <Image source={CheckoutIcon} style={styles.popupIcon} />
                       <Text style={styles.popupText}>Checkout</Text>
                     </TouchableOpacity>
 
@@ -887,6 +891,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           </View>
         </TouchableWithoutFeedback>
       )}
+
+     
 
       {
         showReAssignbed &&

@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useRef , useContext , useCallback , useMemo} from "react";
+import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,10 @@ import {
   TouchableOpacity,
   Image,
   ScrollView, Modal,
-  Animated,PanResponder, TextInput , BackHandler , TouchableWithoutFeedback , Keyboard
+  Animated, PanResponder, TextInput, BackHandler, TouchableWithoutFeedback, Keyboard,
+  FlatList
 } from "react-native";
-import {ElectricityContext} from "../../../Context/ElectricityContext";
+import { ElectricityContext } from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import AddRoomReadingForm from "./AddRoomReading"
@@ -27,229 +28,229 @@ import FilterIcon from "../../../Assets/Images/filter.png";
 import UserProfile from "../../../Assets/Images/profileElec.png";
 import calendarCheck from "../../../Assets/Images/calendarcheck.png";
 import Add from "../../../Assets/Images/ElectricityAdd.png";
-import DeleteIcon from  "../../../Assets/Images/trash.png"
-import EditIcon from  "../../../Assets/Images/editIcon.png"  
+import DeleteIcon from "../../../Assets/Images/trash.png"
+import EditIcon from "../../../Assets/Images/editIcon.png"
 import Dots from "../../../Assets/Images/3dots.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 
-export default function RoomDetails({route, navigation }) {
+export default function RoomDetails({ route, navigation }) {
   const { activeHostelId } = useContext(CommonContexts);
-  const { EbRoomReading , 
-            EbTenantReading,
-            loading,
-            error, 
-            errorMsg,
-            GetEBRoomReading,
-            GetEBTenantReading , 
-            ParticularRoomReadingDetails , particular_EbRoomReading ,
-            AddRoomReading,   UpdateRoomReading,
-            DeleteRoomReading,} = useContext(ElectricityContext);
+  const { EbRoomReading,
+    EbTenantReading,
+    loading,
+    error,
+    errorMsg,
+    GetEBRoomReading,
+    GetEBTenantReading,
+    ParticularRoomReadingDetails, particular_EbRoomReading,
+    AddRoomReading, UpdateRoomReading,
+    DeleteRoomReading, } = useContext(ElectricityContext);
 
-                const { roomData } = route.params || {};
+  const { roomData } = route.params || {};
 
-     console.log("particular_EbRoomReading", particular_EbRoomReading);
-     console.log("EbRoomReading", EbRoomReading);
-     
-     
-       const {
-         canWriteModule: canWriteElectricity,
-         canReadModule: canReadElectricity,
-         canUpdateModule: canUpdateElectricity,
-         canDeleteModule: canDeleteElectricity,
-       } = useHasPermission("Electricity");
+  console.log("particular_EbRoomReading", particular_EbRoomReading);
+  console.log("EbRoomReading", EbRoomReading);
+
+
+  const {
+    canWriteModule: canWriteElectricity,
+    canReadModule: canReadElectricity,
+    canUpdateModule: canUpdateElectricity,
+    canDeleteModule: canDeleteElectricity,
+  } = useHasPermission("Electricity");
 
   //    const currentReadingData =
   // particular_EbRoomReading?.readings?.[0] ?? null;
 
   const currentReadingData =
-  particular_EbRoomReading?.readings?.length > 0
-    ? particular_EbRoomReading.readings[
-        particular_EbRoomReading.readings.length - 1
+    particular_EbRoomReading?.readings?.length > 0
+      ? particular_EbRoomReading.readings[
+      particular_EbRoomReading.readings.length - 1
       ]
-    : null;
+      : null;
 
-    console.log("currentreading", roomData );
+  console.log("currentreading", roomData);
 
-const matchedRoomData = useMemo(() => {
-  if (!Array.isArray(EbRoomReading) || EbRoomReading.length === 0 || !roomData) {
-    return null;
-  }
+  const matchedRoomData = useMemo(() => {
+    if (!Array.isArray(EbRoomReading) || EbRoomReading.length === 0 || !roomData) {
+      return null;
+    }
 
-  return EbRoomReading.find(
-    (item) =>
-      item.hostelId === roomData.hostelId &&
-      item.floorId === roomData.floorId &&
-      item.roomId === roomData.roomId
-  );
-}, [EbRoomReading, roomData]);
-
-
-console.log("matchedRoom:", matchedRoomData);
-
-    
+    return EbRoomReading.find(
+      (item) =>
+        item.hostelId === roomData.hostelId &&
+        item.floorId === roomData.floorId &&
+        item.roomId === roomData.roomId
+    );
+  }, [EbRoomReading, roomData]);
 
 
-    const [activeTab, setActiveTab] = useState("Previous Reading");
-    const [underlineWidth, setUnderlineWidth] = useState(0);
-
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [editReadingData, setEditReadingData] = useState(null);
+  console.log("matchedRoom:", matchedRoomData);
 
 
-     dayjs.extend(customParseFormat);
 
-    console.log("roomData", roomData);
 
-    const [readings , setReadings] = useState([])
-    const [occupants , setOccupants] = useState([])
-    const [openReadingDatePic, setOpenReadingDatePic] = useState(false);
-    const [readingDate, setReadingDate] = useState(null);
-    const [readingDateError, setReadingDateError] = useState("");
-    const [modalType, setModalType] = useState("success");
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [message, setMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("Previous Reading");
+  const [underlineWidth, setUnderlineWidth] = useState(0);
 
-    const [currentReading, setCurrentReading] = useState("");
-    const [readingError, setReadingError] = useState("");
-    const [apiError, setApiError] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editReadingData, setEditReadingData] = useState(null);
 
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deleteData, setDeleteData] = useState(null);
-    const [ showActionMenu, setShowActionMenu] = useState(false)
-    const [initialValues, setInitialValues] = useState(null);
-const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+
+  dayjs.extend(customParseFormat);
+
+  console.log("roomData", roomData);
+
+  const [readings, setReadings] = useState([])
+  const [occupants, setOccupants] = useState([])
+  const [openReadingDatePic, setOpenReadingDatePic] = useState(false);
+  const [readingDate, setReadingDate] = useState(null);
+  const [readingDateError, setReadingDateError] = useState("");
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const [currentReading, setCurrentReading] = useState("");
+  const [readingError, setReadingError] = useState("");
+  const [apiError, setApiError] = useState("");
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteData, setDeleteData] = useState(null);
+  const [showActionMenu, setShowActionMenu] = useState(false)
+  const [initialValues, setInitialValues] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
-    const today = dayjs();
+  const today = dayjs();
 
-    const isDisabledReadingDate = (d) => {
-  if (!d) return false;
+  const isDisabledReadingDate = (d) => {
+    if (!d) return false;
 
-  // ❌ future dates disable
-  if (d.isAfter(today, "day")) return true;
+    // ❌ future dates disable
+    if (d.isAfter(today, "day")) return true;
 
-  return false; // ✅ past & today allowed
-};
+    return false; // ✅ past & today allowed
+  };
 
 
-   const readingMarkedDates = {};
+  const readingMarkedDates = {};
 
-for (let i = -180; i <= 180; i++) {
-  const d = dayjs().add(i, "day");
-  const key = d.format("YYYY-MM-DD");
+  for (let i = -180; i <= 180; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
 
-  if (isDisabledReadingDate(d)) {
-    readingMarkedDates[key] = {
-      disabled: true,
-      disableTouchEvent: true,
-      customStyles: {
-        container: {
-          backgroundColor: "#F3F4F6",
-          opacity: 0.4,
-          borderRadius: 8,
+    if (isDisabledReadingDate(d)) {
+      readingMarkedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
         },
-        text: {
-          color: "#9CA3AF",
-        },
-      },
-    };
+      };
+    }
   }
-}
 
 
- 
 
-  useEffect(()=> {
-    if(particular_EbRoomReading?.readings?.length> 0){
+
+  useEffect(() => {
+    if (particular_EbRoomReading?.readings?.length > 0) {
       setReadings(particular_EbRoomReading?.readings)
     }
-  },[particular_EbRoomReading])
+  }, [particular_EbRoomReading])
 
-    useEffect(()=> {
-    if(particular_EbRoomReading?.customers?.length> 0){
+  useEffect(() => {
+    if (particular_EbRoomReading?.customers?.length > 0) {
       setOccupants(particular_EbRoomReading?.customers)
     }
-  },[particular_EbRoomReading])
+  }, [particular_EbRoomReading])
 
 
 
   // ⭐ Bottom Sheet State
-const [showAddSheet, setShowAddSheet] = useState(false);
+  const [showAddSheet, setShowAddSheet] = useState(false);
 
-// ⭐ Animated value for swipe sheet
-const translateY = useRef(new Animated.Value(500)).current;
+  // ⭐ Animated value for swipe sheet
+  const translateY = useRef(new Animated.Value(500)).current;
 
-// ⭐ Animate open
-const openSheet = () => {
-  setShowAddSheet(true);
-  setIsEditMode(false);
-  setCurrentReading("");
-  setReadingDate(null);
-  Animated.timing(translateY, {
-    toValue: 0,
-    duration: 200,
-    useNativeDriver: true,
-  }).start();
-};
+  // ⭐ Animate open
+  const openSheet = () => {
+    setShowAddSheet(true);
+    setIsEditMode(false);
+    setCurrentReading("");
+    setReadingDate(null);
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
 
-// ⭐ Animate close
-const closeSheet = () => {
+  // ⭐ Animate close
+  const closeSheet = () => {
 
-   setReadingDate(null)
-   setCurrentReading("")
-   setReadingError("")
-   setApiError("")
-   setReadingDateError("")
+    setReadingDate(null)
+    setCurrentReading("")
+    setReadingError("")
+    setApiError("")
+    setReadingDateError("")
     setIsEditMode(false);
 
-  Animated.timing(translateY, {
-    toValue: 500,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => setShowAddSheet(false));
-};
+    Animated.timing(translateY, {
+      toValue: 500,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setShowAddSheet(false));
+  };
 
-// ⭐ PanResponder (Swipe down)
-const panResponder = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-    onPanResponderMove: (_, g) => {
-      if (g.dy > 0) translateY.setValue(g.dy);
-    },
-    onPanResponderRelease: (_, g) => {
-      if (g.dy > 120) {
-        closeSheet();
-      } else {
-        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+  // ⭐ PanResponder (Swipe down)
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) translateY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          closeSheet();
+        } else {
+          Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+        }
       }
-    }
-  })
-).current;
+    })
+  ).current;
 
   useFocusEffect(
-  useCallback(() => {
-    const onBackPress = () => {
-      if (openReadingDatePic) {
-        setOpenReadingDatePic(false);
+    useCallback(() => {
+      const onBackPress = () => {
+        if (openReadingDatePic) {
+          setOpenReadingDatePic(false);
+          return true;
+        }
+
+        if (showAddSheet) {
+          closeSheet();
+          return true;
+        }
+
+        navigation.goBack();
         return true;
-      }
+      };
 
-      if (showAddSheet) {
-        closeSheet();
-        return true;
-      }
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
 
-      navigation.goBack();
-      return true;
-    };
-
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
-
-    return () => subscription.remove();
-  }, [openReadingDatePic, showAddSheet])
-);
+      return () => subscription.remove();
+    }, [openReadingDatePic, showAddSheet])
+  );
 
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -275,219 +276,219 @@ const panResponder = useRef(
   }, []);
 
 
-// const handleEditRoomReading = (data) => {
-//   if (!data) return;
+  // const handleEditRoomReading = (data) => {
+  //   if (!data) return;
 
-//   setIsEditMode(true);
-//   setEditReadingData(data);
+  //   setIsEditMode(true);
+  //   setEditReadingData(data);
 
-//   setInitialValues({
-//     reading: data.reading,
-//     date: data.entryDate,
-//   });
+  //   setInitialValues({
+  //     reading: data.reading,
+  //     date: data.entryDate,
+  //   });
 
-//   setCurrentReading(String(data.reading));
+  //   setCurrentReading(String(data.reading));
 
-//   setReadingDate(
-//     dayjs(data.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
-//   );
+  //   setReadingDate(
+  //     dayjs(data.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
+  //   );
 
-//   openSheet();
-// };
+  //   openSheet();
+  // };
 
-const [showSheet, setShowSheet] = useState(false);
-// const [isEditMode, setIsEditMode] = useState(false);
-// const [currentReading, setCurrentReading] = useState("");
-// const [readingDate, setReadingDate] = useState(null);
-
-
-const openAdd = () => {
-  setIsEditMode(false);
-  setCurrentReading("");
-  setReadingDate(null);
-  setShowSheet(true);
-};
+  const [showSheet, setShowSheet] = useState(false);
+  // const [isEditMode, setIsEditMode] = useState(false);
+  // const [currentReading, setCurrentReading] = useState("");
+  // const [readingDate, setReadingDate] = useState(null);
 
 
-const handleEditRoomReading = (data) => {
-  // setIsEditMode(true);
-  // setCurrentReading(String(data.currentReading));
-  // setReadingDate(data.entryDate);
-
-  setIsEditMode(true);
-  setEditReadingData(matchedRoomData);
-
-  console.log("editdata", data);
-  
-
-  setInitialValues({
-    reading: matchedRoomData?.currentReading,
-    date: matchedRoomData.entryDate,
-  });
-
-  setCurrentReading(String(matchedRoomData?.currentReading));
-
-  setReadingDate(
-    dayjs(matchedRoomData.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
-  );
-
-  setShowAddSheet(true);
-};
-
-
-
-// const handleEditRoomReading = (data) => {
-//   if (!data?.ebId) {
-//     console.log("Edit failed  invalid reading", data);
-//     return;
-//   }
-
-//   setIsEditMode(true);
-//   setEditReadingData(matchedRoomData);
-
-//   console.log("editdata", data);
-  
-
-//   setInitialValues({
-//     reading: matchedRoomData?.currentReading,
-//     date: matchedRoomData.entryDate,
-//   });
-
-//   setCurrentReading(String(matchedRoomData?.currentReading));
-
-//   setReadingDate(
-//     dayjs(matchedRoomData.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
-//   );
-
-//   openSheet();
-// };
-
-
-
-
-
-
-
-
-// const hasReading =
-//   roomData?.currentReading !== null &&
-//   roomData?.currentReading !== undefined &&
-//   Number(roomData.currentReading) > 0;
-
-  const hasReading =
-  particular_EbRoomReading?.readings?.length > 0;
-
-
-
-
-   const formatApiMonth = (date) => {
-   if (!date || date === "N/A") return "--";
- 
-   return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY", "DD-MM-YYYY"])
-     .format("MMMM YYYY");
- };
-
- const handleSubmit = async () => {
-  let hasError = false;
-
-  setReadingError("");
-  setReadingDateError("");
-  setApiError("");
-
-  if (!readingDate) {
-    setReadingDateError("Please Select Reading Date");
-    hasError = true;
-  }
-
-  if (!currentReading || Number(currentReading) <= 0) {
-    setReadingError("Please Enter Valid Current Reading");
-    hasError = true;
-  }
-
-  if (isEditMode && initialValues) {
-  const isReadingChanged =
-    Number(currentReading) !== Number(initialValues.reading);
-
-  const isDateChanged = !dayjs(readingDate).isSame(
-    dayjs(initialValues.date, ["DD/MM/YYYY", "DD-MM-YYYY"]),
-    "day"
-  );
-
-  if (!isReadingChanged && !isDateChanged) {
-    setApiError("No changes detected");
-    return;
-  }
-}
-
-
-  if (hasError) return;
-
-  const payload = {
-    hostelId: activeHostelId,
-    reading: Number(currentReading),
-    readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
-    roomId: roomData?.roomId,
-    floorId: roomData?.floorId,
-    readingId: editReadingData?.ebId,
+  const openAdd = () => {
+    setIsEditMode(false);
+    setCurrentReading("");
+    setReadingDate(null);
+    setShowSheet(true);
   };
 
-  const res = isEditMode
-    ? await UpdateRoomReading(payload)   
-    : await AddRoomReading(payload);
+
+  const handleEditRoomReading = (data) => {
+    // setIsEditMode(true);
+    // setCurrentReading(String(data.currentReading));
+    // setReadingDate(data.entryDate);
+
+    setIsEditMode(true);
+    setEditReadingData(matchedRoomData);
+
+    console.log("editdata", data);
+
+
+    setInitialValues({
+      reading: matchedRoomData?.currentReading,
+      date: matchedRoomData.entryDate,
+    });
+
+    setCurrentReading(String(matchedRoomData?.currentReading));
+
+    setReadingDate(
+      dayjs(matchedRoomData.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
+    );
+
+    setShowAddSheet(true);
+  };
+
+
+
+  // const handleEditRoomReading = (data) => {
+  //   if (!data?.ebId) {
+  //     console.log("Edit failed  invalid reading", data);
+  //     return;
+  //   }
+
+  //   setIsEditMode(true);
+  //   setEditReadingData(matchedRoomData);
+
+  //   console.log("editdata", data);
+
+
+  //   setInitialValues({
+  //     reading: matchedRoomData?.currentReading,
+  //     date: matchedRoomData.entryDate,
+  //   });
+
+  //   setCurrentReading(String(matchedRoomData?.currentReading));
+
+  //   setReadingDate(
+  //     dayjs(matchedRoomData.entryDate, ["DD/MM/YYYY", "DD-MM-YYYY"]).format("YYYY-MM-DD")
+  //   );
+
+  //   openSheet();
+  // };
+
+
+
+
+
+
+
+
+  // const hasReading =
+  //   roomData?.currentReading !== null &&
+  //   roomData?.currentReading !== undefined &&
+  //   Number(roomData.currentReading) > 0;
+
+  const hasReading =
+    particular_EbRoomReading?.readings?.length > 0;
+
+
+
+
+  const formatApiMonth = (date) => {
+    if (!date || date === "N/A") return "--";
+
+    return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY", "DD-MM-YYYY"])
+      .format("MMMM YYYY");
+  };
+
+  const handleSubmit = async () => {
+    let hasError = false;
+
+    setReadingError("");
+    setReadingDateError("");
+    setApiError("");
+
+    if (!readingDate) {
+      setReadingDateError("Please Select Reading Date");
+      hasError = true;
+    }
+
+    if (!currentReading || Number(currentReading) <= 0) {
+      setReadingError("Please Enter Valid Current Reading");
+      hasError = true;
+    }
+
+    if (isEditMode && initialValues) {
+      const isReadingChanged =
+        Number(currentReading) !== Number(initialValues.reading);
+
+      const isDateChanged = !dayjs(readingDate).isSame(
+        dayjs(initialValues.date, ["DD/MM/YYYY", "DD-MM-YYYY"]),
+        "day"
+      );
+
+      if (!isReadingChanged && !isDateChanged) {
+        setApiError("No changes detected");
+        return;
+      }
+    }
+
+
+    if (hasError) return;
+
+    const payload = {
+      hostelId: activeHostelId,
+      reading: Number(currentReading),
+      readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+      roomId: roomData?.roomId,
+      floorId: roomData?.floorId,
+      readingId: editReadingData?.ebId,
+    };
+
+    const res = isEditMode
+      ? await UpdateRoomReading(payload)
+      : await AddRoomReading(payload);
 
     console.log("res", res);
-    
-
-  if (res.success) {
-     GetEBRoomReading(activeHostelId);
-    ParticularRoomReadingDetails(activeHostelId, roomData?.roomId);
-
-    setModalType("success");
-    setMessage(isEditMode ? "Reading Updated" : "Reading Added");
-    setShowSuccess(true);
-
-    setTimeout(() => {
-      setShowSuccess(false);
-      closeSheet();
-      setIsEditMode(false);
-      setEditReadingData(null);
-      setCurrentReading("");
-      setReadingDate(null);
-    }, 800);
-  } else {
-    setApiError(res.message || "Something went wrong");
-  }
-};
-
-// const handleDeleteRoomReading = (data) => {
-//   if (!data?.readingId) return;
-
-//   setDeleteData(data);
-//   setShowDeleteModal(true);
-//   setShowActionMenu(false);
-// };
 
 
-const handleDeleteRoomReading = (data) => {
+    if (res.success) {
+      GetEBRoomReading(activeHostelId);
+      ParticularRoomReadingDetails(activeHostelId, roomData?.roomId);
 
-  console.log("deletedata", data);
+      setModalType("success");
+      setMessage(isEditMode ? "Reading Updated" : "Reading Added");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        closeSheet();
+        setIsEditMode(false);
+        setEditReadingData(null);
+        setCurrentReading("");
+        setReadingDate(null);
+      }, 800);
+    } else {
+      setApiError(res.message || "Something went wrong");
+    }
+  };
+
+  // const handleDeleteRoomReading = (data) => {
+  //   if (!data?.readingId) return;
+
+  //   setDeleteData(data);
+  //   setShowDeleteModal(true);
+  //   setShowActionMenu(false);
+  // };
+
+
+  const handleDeleteRoomReading = (data) => {
+
+    console.log("deletedata", data);
     console.log("deletedata", matchedRoomData);
-  
-  if (!data) {
-    console.log("Invalid delete data", data);
-    return;
-  }
 
-  setDeleteData(data);
-  setShowDeleteModal(true);
-  setShowActionMenu(false);
-};
+    if (!data) {
+      console.log("Invalid delete data", data);
+      return;
+    }
 
-
-console.log("deleteData", deleteData);
+    setDeleteData(data);
+    setShowDeleteModal(true);
+    setShowActionMenu(false);
+  };
 
 
-const handleConfirmReadingDelete = async () => {
+  console.log("deleteData", deleteData);
+
+
+  const handleConfirmReadingDelete = async () => {
     const res = await DeleteRoomReading({
       hostelId: activeHostelId,
       // readingId: deleteData?.ebId,
@@ -495,11 +496,11 @@ const handleConfirmReadingDelete = async () => {
 
     })
     console.log("res", res);
-    
+
 
     if (res.success) {
       setShowDeleteModal(false);
-       GetEBRoomReading(activeHostelId);
+      GetEBRoomReading(activeHostelId);
       ParticularRoomReadingDetails(activeHostelId, roomData?.roomId);
 
       setModalType("success");
@@ -508,8 +509,8 @@ const handleConfirmReadingDelete = async () => {
 
       setTimeout(() => setShowSuccess(false), 1200);
     }
-    else{
-          console.log("res", res.message);
+    else {
+      console.log("res", res.message);
       setModalType("warning");
       setMessage(res?.message || "something went wrong");
       setShowSuccess(true);
@@ -519,233 +520,233 @@ const handleConfirmReadingDelete = async () => {
 
 
 
-//  const handleSubmit = async () => {
-//   let hasError = false;
+  //  const handleSubmit = async () => {
+  //   let hasError = false;
 
-//   setReadingError("");
-//   setReadingDateError("");
-//   setApiError("");
+  //   setReadingError("");
+  //   setReadingDateError("");
+  //   setApiError("");
 
-//   if (!readingDate) {
-//     setReadingDateError("Please Select Reading Date");
-//     hasError = true;
-//   }
+  //   if (!readingDate) {
+  //     setReadingDateError("Please Select Reading Date");
+  //     hasError = true;
+  //   }
 
-//   if (!currentReading || Number(currentReading) <= 0) {
-//     setReadingError("Please Enter Valid Current Reading");
-//     hasError = true;
-//   }
+  //   if (!currentReading || Number(currentReading) <= 0) {
+  //     setReadingError("Please Enter Valid Current Reading");
+  //     hasError = true;
+  //   }
 
-//   if (hasError) return;
+  //   if (hasError) return;
 
-//   const payload = {
-//     hostelId: activeHostelId,
-//     reading: Number(currentReading),
-//     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
-//     roomId: roomData?.roomId,
-//     floorId: roomData?.floorId,
-//   };
+  //   const payload = {
+  //     hostelId: activeHostelId,
+  //     reading: Number(currentReading),
+  //     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+  //     roomId: roomData?.roomId,
+  //     floorId: roomData?.floorId,
+  //   };
 
-//   const res = await AddRoomReading(payload);
+  //   const res = await AddRoomReading(payload);
 
-//   console.log("response", res);
-  
-
-//   if (res.success) {
-//     ParticularRoomReadingDetails(activeHostelId, roomData?.roomId);
-//     setModalType("success");
-//     setMessage(res.data || "Reading Added successfully");
-//     setShowSuccess(true);
-
-//     setTimeout(() => {
-//       setShowSuccess(false);
-//       closeSheet();
-//       setCurrentReading("");
-//       setReadingDate(null);
-//     }, 800);
-//   } else {
-
-//     setApiError(res.message || "Something went wrong");
-//   }
-// };
+  //   console.log("response", res);
 
 
- //    const handleSubmit = async () => {
-//   let hasError = false;
+  //   if (res.success) {
+  //     ParticularRoomReadingDetails(activeHostelId, roomData?.roomId);
+  //     setModalType("success");
+  //     setMessage(res.data || "Reading Added successfully");
+  //     setShowSuccess(true);
 
-//   if (!currentReading) {
-//     setReadingError("Please enter reading");
-//     hasError = true;
-//   } else {
-//     setReadingError("");
-//   }
+  //     setTimeout(() => {
+  //       setShowSuccess(false);
+  //       closeSheet();
+  //       setCurrentReading("");
+  //       setReadingDate(null);
+  //     }, 800);
+  //   } else {
 
-//   if (!readingDate) {
-//     setDateError("Please select reading date");
-//     hasError = true;
-//   } else {
-//     setDateError("");
-//   }
+  //     setApiError(res.message || "Something went wrong");
+  //   }
+  // };
 
-//   if (hasError) return;
 
-//   const payload = {
-//     hostelId: activeHostelId,
-//     reading: currentReading,
-//     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
-//     roomId: selectedRowDetails?.roomId,
-//     floorId: selectedRowDetails?.floorId,
-//   };
+  //    const handleSubmit = async () => {
+  //   let hasError = false;
 
-//   const res = await AddRoomReading(payload);
+  //   if (!currentReading) {
+  //     setReadingError("Please enter reading");
+  //     hasError = true;
+  //   } else {
+  //     setReadingError("");
+  //   }
 
-//   if (res.success) {
-      // setModalType("success");
-      // setMessage(res.data || "Reading added successfully");
-      // setShowSuccess(true);
+  //   if (!readingDate) {
+  //     setDateError("Please select reading date");
+  //     hasError = true;
+  //   } else {
+  //     setDateError("");
+  //   }
 
-      // setTimeout(() => {
-      //    setShowSuccess(false);
-      // }, 1000);
-//     setCurrentReading("");
-//     setReadingDate(null);
-//   } else {
-//     Alert.alert("Error", res.message || "Something went wrong");
-//   }
-// };
-  
+  //   if (hasError) return;
+
+  //   const payload = {
+  //     hostelId: activeHostelId,
+  //     reading: currentReading,
+  //     readingDate: dayjs(readingDate).format("DD-MM-YYYY"),
+  //     roomId: selectedRowDetails?.roomId,
+  //     floorId: selectedRowDetails?.floorId,
+  //   };
+
+  //   const res = await AddRoomReading(payload);
+
+  //   if (res.success) {
+  // setModalType("success");
+  // setMessage(res.data || "Reading added successfully");
+  // setShowSuccess(true);
+
+  // setTimeout(() => {
+  //    setShowSuccess(false);
+  // }, 1000);
+  //     setCurrentReading("");
+  //     setReadingDate(null);
+  //   } else {
+  //     Alert.alert("Error", res.message || "Something went wrong");
+  //   }
+  // };
+
 
   return (
     <>
- { loading && <Loader />}
-     <SuccessModal visible={showSuccess} message={message} type={modalType} />
-    <View style={styles.container}>
+      {loading && <Loader />}
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <View style={styles.container}>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={BackIcon} style={styles.backIcon} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Room Overview</Text>
-      </View>
-
-      {/* Room Card */}
-      <View style={styles.card}>
-        <View style={styles.cardRow}>
-          <View style={styles.iconCircle}>
-            <Image source={RoomIcon} style={styles.iconImg} />
-          </View>
-
-          <View>
-            <Text style={styles.roomName}> {roomData?.roomName}</Text>
-            <Text style={styles.floorText}>{roomData?.floorName}</Text>
-          </View>
-
-      <TouchableOpacity 
-          style={[ styles.addBtn,
-      !canWriteElectricity && { opacity: 0.4 }]}
-      disabled={!canWriteElectricity}
-      onPress={openSheet}>
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
-    <Image source={Add} style={styles.AddPeple} />
-    <Text style={styles.addText}>Add</Text>
-  </View>
-</TouchableOpacity>
-
-<TouchableOpacity
-  ref={(ref) => (dotsRefs.current["room"] = ref)}
-  disabled={!hasReading}
-  // onPress={() => {
-  //   dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
-  //     setPopupPosition({
-  //       x: x + width,
-  //       y: y + height,
-  //     });
-  //     setShowActionMenu(true);
-  //   });
-  // }}
-
-  onPress={() => {
-  if (!hasReading || !currentReadingData) return;
-
-  dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
-    setPopupPosition({
-      x: x + width,
-      y: y + height,
-    });
-    setShowActionMenu(true);
-  });
-}}
-
-  activeOpacity={hasReading ? 0.6 : 1}
->
-  <Image
-    source={Dots}
-    style={{
-      width: 25,
-      height: 25,
-      tintColor: hasReading ? "#1E45E1" : "#BDBDBD",
-      opacity: hasReading ? 1 : 0.4,
-      marginLeft: 20,
-    }}
-  />
-</TouchableOpacity>
-
-<Modal
-  transparent
-  visible={showActionMenu}
-  animationType="fade"
-  onRequestClose={() => setShowActionMenu(false)}
->
-  {/* FULL SCREEN OVERLAY */}
-  <TouchableWithoutFeedback onPress={() => setShowActionMenu(false)}>
-    <View style={styles.popupBackdrop}>
-      {/* STOP touch propagation inside popup */}
-      <TouchableWithoutFeedback>
-        <View
-          style={[
-            styles.popupBox,
-            {
-              top: popupPosition.y - 10,
-              left: Math.max(10, popupPosition.x - 140),
-            },
-          ]}
-        >
-          <TouchableOpacity
-            // style={styles.popupRow}
-                 style={[ styles.popupRow,
-      !canUpdateElectricity && { opacity: 0.4 }]}
-      disabled={!canUpdateElectricity}
-            onPress={() => {
-              setShowActionMenu(false);
-              handleEditRoomReading(matchedRoomData);
-            }}
-          >
-            <Image source={EditIcon} style={styles.popupIcon} />
-            <Text style={styles.popupText}>Edit</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={BackIcon} style={styles.backIcon} />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            // style={styles.popupRow}
-                     style={[ styles.popupRow,
-      !canDeleteElectricity && { opacity: 0.4 }]}
-      disabled={!canDeleteElectricity}
-            onPress={() => {
-              setShowActionMenu(false);
-              handleDeleteRoomReading(matchedRoomData);
-            }}
-          >
-            <Image source={DeleteIcon} style={styles.popupIcon} />
-            <Text style={styles.popupText}>Delete</Text>
-          </TouchableOpacity>
+          <Text style={styles.title}>Room Overview</Text>
         </View>
-      </TouchableWithoutFeedback>
-    </View>
-  </TouchableWithoutFeedback>
-</Modal>
+
+        {/* Room Card */}
+        <View style={styles.card}>
+          <View style={styles.cardRow}>
+            <View style={styles.iconCircle}>
+              <Image source={RoomIcon} style={styles.iconImg} />
+            </View>
+
+            <View>
+              <Text style={styles.roomName}> {roomData?.roomName}</Text>
+              <Text style={styles.floorText}>{roomData?.floorName}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.addBtn,
+              !canWriteElectricity && { opacity: 0.4 }]}
+              disabled={!canWriteElectricity}
+              onPress={openSheet}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image source={Add} style={styles.AddPeple} />
+                <Text style={styles.addText}>Add</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              ref={(ref) => (dotsRefs.current["room"] = ref)}
+              disabled={!hasReading}
+              // onPress={() => {
+              //   dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
+              //     setPopupPosition({
+              //       x: x + width,
+              //       y: y + height,
+              //     });
+              //     setShowActionMenu(true);
+              //   });
+              // }}
+
+              onPress={() => {
+                if (!hasReading || !currentReadingData) return;
+
+                dotsRefs.current["room"]?.measureInWindow((x, y, width, height) => {
+                  setPopupPosition({
+                    x: x + width,
+                    y: y + height,
+                  });
+                  setShowActionMenu(true);
+                });
+              }}
+
+              activeOpacity={hasReading ? 0.6 : 1}
+            >
+              <Image
+                source={Dots}
+                style={{
+                  width: 25,
+                  height: 25,
+                  tintColor: hasReading ? "#1E45E1" : "#BDBDBD",
+                  opacity: hasReading ? 1 : 0.4,
+                  marginLeft: 20,
+                }}
+              />
+            </TouchableOpacity>
+
+            <Modal
+              transparent
+              visible={showActionMenu}
+              animationType="fade"
+              onRequestClose={() => setShowActionMenu(false)}
+            >
+              {/* FULL SCREEN OVERLAY */}
+              <TouchableWithoutFeedback onPress={() => setShowActionMenu(false)}>
+                <View style={styles.popupBackdrop}>
+                  {/* STOP touch propagation inside popup */}
+                  <TouchableWithoutFeedback>
+                    <View
+                      style={[
+                        styles.popupBox,
+                        {
+                          top: popupPosition.y - 10,
+                          left: Math.max(10, popupPosition.x - 140),
+                        },
+                      ]}
+                    >
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[styles.popupRow,
+                        !canUpdateElectricity && { opacity: 0.4 }]}
+                        disabled={!canUpdateElectricity}
+                        onPress={() => {
+                          setShowActionMenu(false);
+                          handleEditRoomReading(matchedRoomData);
+                        }}
+                      >
+                        <Image source={EditIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Edit</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[styles.popupRow,
+                        !canDeleteElectricity && { opacity: 0.4 }]}
+                        disabled={!canDeleteElectricity}
+                        onPress={() => {
+                          setShowActionMenu(false);
+                          handleDeleteRoomReading(matchedRoomData);
+                        }}
+                      >
+                        <Image source={DeleteIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
 
 
-          {/* {showActionMenu && (
+            {/* {showActionMenu && (
   <TouchableOpacity
     activeOpacity={1}
     onPress={() => setShowActionMenu(false)}
@@ -776,228 +777,237 @@ const handleConfirmReadingDelete = async () => {
   </TouchableOpacity>
 )} */}
 
- {showDeleteModal && (
-                <Modal
-                  transparent
-                  animationType="fade"
-                  visible={showDeleteModal}
-                  onRequestClose={() => setShowDeleteModal(false)}
-                >
-                  <View style={styles.deleteOverlay}>
-                    <View style={styles.deleteBox}>
-              
-                      <Text style={styles.deleteTitle}>Delete Reading?</Text>
-                      <Text style={styles.deleteSub}>
-                        Are you sure you want to delete this Reading?
-                      </Text>
-              
-                      <View style={styles.deleteBtnRow}>
-                        <TouchableOpacity
-                          style={styles.cancelBtn}
-                          onPress={() => setShowDeleteModal(false)}
-                        >
-                          <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
-              
-                        <TouchableOpacity
-                          style={styles.deleteBtn}
-                         onPress={handleConfirmReadingDelete}
-                        >
-                          <Text style={styles.deleteBtnText}>Delete</Text>
-                        </TouchableOpacity>
+            {showDeleteModal && (
+              <Modal
+                transparent
+                animationType="fade"
+                visible={showDeleteModal}
+                onRequestClose={() => setShowDeleteModal(false)}
+              >
+                <View style={styles.deleteOverlay}>
+                  <View style={styles.deleteBox}>
+
+                    <Text style={styles.deleteTitle}>Delete Reading?</Text>
+                    <Text style={styles.deleteSub}>
+                      Are you sure you want to delete this Reading?
+                    </Text>
+
+                    <View style={styles.deleteBtnRow}>
+                      <TouchableOpacity
+                        style={styles.cancelBtn}
+                        onPress={() => setShowDeleteModal(false)}
+                      >
+                        <Text style={styles.cancelText}>Cancel</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.deleteBtn}
+                        onPress={handleConfirmReadingDelete}
+                      >
+                        <Text style={styles.deleteBtnText}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                  </View>
+                </View>
+              </Modal>
+            )}
+
+
+
+
+
+
+
+
+          </View>
+
+          <View style={styles.detailsRow}>
+            <View>
+              <Text style={styles.label}>Previous</Text>
+              <Text style={styles.value}>{matchedRoomData?.previousReading}</Text>
+            </View>
+
+            <View>
+              <Text style={styles.label}>Current</Text>
+              <Text style={styles.value}>{matchedRoomData?.currentReading}</Text>
+            </View>
+
+            <View>
+              <Text style={styles.label}>Total Units</Text>
+              <Text style={styles.value}>{matchedRoomData?.consumption}</Text>
+            </View>
+
+
+          </View>
+          <View style={styles.detailsRow}>
+
+
+
+
+            {/* Middle : People Count + Month */}
+            <View style={styles.middleBoxRow}>
+
+              {/* People Count box */}
+              <View style={styles.peopleBox}>
+                <Image source={UserProfile} style={styles.peopleIcon} />
+                <Text style={styles.peopleText}>{matchedRoomData?.noOfTenants}</Text>
+              </View>
+
+              {/* Month Box */}
+              <View style={styles.monthBox}>
+                <Image source={calendarCheck} style={styles.calendarIcon} />
+                <Text style={styles.monthText}> {formatApiMonth(matchedRoomData?.entryDate)}</Text>
+              </View>
+
+            </View>
+
+
+            <View>
+              <Text style={styles.value}>₹ {matchedRoomData?.totalPrice}</Text>
+            </View>
+          </View>
+
+        </View>
+
+        {/* Tabs */}
+        <View style={styles.tabsRow}>
+          {["Previous Reading", "Occupants"].map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={styles.tabBtn}
+              onPress={() => setActiveTab(tab)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === tab && styles.tabActive,
+                ]}
+                onLayout={(event) => {
+                  if (activeTab === tab) {
+                    setUnderlineWidth(event.nativeEvent.layout.width);
+                  }
+                }}
+              >
+                {tab}
+              </Text>
+
+              {activeTab === tab && (
+                <View
+                  style={[
+                    styles.tabUnderline,
+                    { width: underlineWidth },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+
+
+          {/* ===== PREVIOUS READING TAB ===== */}
+          {activeTab === "Previous Reading" && (
+            <>
+              {readings && readings.length > 0 ? (
+                <FlatList
+                  data={readings}
+                  keyExtractor={(item, index) => index.toString()}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={({ item, index }) => (
+                    <View key={index} style={styles.listRow}>
+                      <View style={styles.arrowCircle}>
+                        <Text style={{ color: "#3F6AFF" }}>➤</Text>
                       </View>
-              
+
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.monthText}>{formatApiMonth(item?.entryDate)}</Text>
+                        <View style={styles.unitTag}>
+                          <Text style={styles.unitText}>
+                            {item?.consumption} Units
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={{ alignItems: "flex-end" }}>
+                        <Text style={styles.price}>
+                          ₹ {item?.amount ?? 0}
+                        </Text>
+                        <Text style={styles.date}>{item?.entryDate}</Text>
+                      </View>
+                    </View>
+                  )} />
+              ) : (
+                activeTab === "Previous Reading" && (
+                  <View style={styles.centerContainer}>
+                    <Image source={EmptyState} style={styles.image} />
+                    <Text style={styles.noFloorText}>No Room Reading Found!</Text>
+                  </View>
+                )
+
+              )}
+            </>
+          )}
+
+
+          {/* ===== OCCUPANTS TAB ===== */}
+          {activeTab === "Occupants" && (
+            occupants && occupants.length > 0 ? (
+              <FlatList
+                data={occupants} 
+                keyExtractor={(item, index) => index.toString()}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{paddingBottom:120}}
+                renderItem={({ item, index }) =>
+                (
+
+                  <View key={index} style={styles.listRow}>
+                    <Image source={ProfileIcon} style={styles.avatar} />
+
+                    <View style={{ flex: 1, paddingLeft: 10 }}>
+                      <Text style={styles.monthText}>{item?.fullName}</Text>
+
+                      <View style={styles.occRow}>
+                        <Image source={RoomIcon} style={styles.smallIcon} />
+                        <Text style={styles.bedText}>{item?.bedName}</Text>
+
+                        <View style={styles.unitTag2}>
+                          <Text style={styles.unitText}>{item?.totalUnits} Units</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    <View style={{ alignItems: "flex-end" }}>
+                      <Text style={styles.price}>₹ {item?.totalAmount}</Text>
+                      <Text style={styles.date}>{item?.billingDate}</Text>
                     </View>
                   </View>
-                </Modal>
-              )}
+                )} />
+            ) : (
+
+              <View style={styles.centerContainer}>
+                <Image source={EmptyState} style={styles.image} />
+                <Text style={styles.noFloorText}> No Occupants Found!</Text>
+
+
+              </View>
+            )
+          )}
 
 
 
-
-
-
-
-
-        </View>
-
-        <View style={styles.detailsRow}>
-          <View>
-            <Text style={styles.label}>Previous</Text>
-            <Text style={styles.value}>{matchedRoomData?.previousReading}</Text>
-          </View>
-
-          <View>
-            <Text style={styles.label}>Current</Text>
-            <Text style={styles.value}>{matchedRoomData?.currentReading}</Text>
-          </View>
-
-          <View>
-            <Text style={styles.label}>Total Units</Text>
-            <Text style={styles.value}>{matchedRoomData?.consumption}</Text>
-          </View>
-
-         
-        </View>
-       <View style={styles.detailsRow}>
-  
- 
-
-
-  {/* Middle : People Count + Month */}
-  <View style={styles.middleBoxRow}>
-
-    {/* People Count box */}
-    <View style={styles.peopleBox}>
-      <Image source={UserProfile} style={styles.peopleIcon} />
-      <Text style={styles.peopleText}>{matchedRoomData?.noOfTenants}</Text>
-    </View>
-
-    {/* Month Box */}
-    <View style={styles.monthBox}>
-      <Image source={calendarCheck} style={styles.calendarIcon} />
-      <Text style={styles.monthText}> {formatApiMonth(matchedRoomData?.entryDate)}</Text>
-    </View>
-
-  </View>
-
- 
-  <View>
-    <Text style={styles.value}>₹ {matchedRoomData?.totalPrice}</Text>
-  </View>
-</View>
-
+        {/* Floating Button */}
+        <TouchableOpacity
+          style={[styles.fab,
+          !canReadElectricity && { opacity: 0.4 }]}
+          disabled={!canReadElectricity}
+        >
+          <Image source={FilterIcon} style={styles.fabIcon} />
+        </TouchableOpacity>
       </View>
 
-      {/* Tabs */}
-     <View style={styles.tabsRow}>
-  {["Previous Reading", "Occupants"].map((tab) => (
-    <TouchableOpacity
-      key={tab}
-      style={styles.tabBtn}
-      onPress={() => setActiveTab(tab)}
-    >
-      <Text
-        style={[
-          styles.tabText,
-          activeTab === tab && styles.tabActive,
-        ]}
-        onLayout={(event) => {
-          if (activeTab === tab) {
-            setUnderlineWidth(event.nativeEvent.layout.width);
-          }
-        }}
-      >
-        {tab}
-      </Text>
 
-      {activeTab === tab && (
-        <View
-          style={[
-            styles.tabUnderline,
-            { width: underlineWidth },
-          ]}
-        />
-      )}
-    </TouchableOpacity>
-  ))}
-</View>
-
-
-  <ScrollView>
-
-  {/* ===== PREVIOUS READING TAB ===== */}
-{activeTab === "Previous Reading" && (
-  <>
-    {readings && readings.length > 0 ? (
-      readings.map((item, index) => (
-        <View key={index} style={styles.listRow}>
-          <View style={styles.arrowCircle}>
-            <Text style={{ color: "#3F6AFF" }}>➤</Text>
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.monthText}>{formatApiMonth(item?.entryDate)}</Text>
-            <View style={styles.unitTag}>
-              <Text style={styles.unitText}>
-                {item?.consumption} Units
-              </Text>
-            </View>
-          </View>
-
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.price}>
-              ₹ {item?.amount ?? 0}
-            </Text>
-            <Text style={styles.date}>{item?.entryDate}</Text>
-          </View>
-        </View>
-      ))
-    ) : (
-    activeTab === "Previous Reading" && (
-  <View style={styles.centerContainer}>
-    <Image source={EmptyState} style={styles.image} />
-    <Text style={styles.noFloorText}>No Room Reading Found!</Text>
-  </View>
-)
-
-    )}
-  </>
-)}
-
-
-  {/* ===== OCCUPANTS TAB ===== */}
-  {activeTab === "Occupants" && (
-    occupants && occupants.length > 0 ? (
-      occupants.map((item, index) => (
-        <View key={index} style={styles.listRow}>
-          <Image source={ProfileIcon} style={styles.avatar} />
-
-          <View style={{ flex: 1, paddingLeft: 10 }}>
-            <Text style={styles.monthText}>{item?.fullName}</Text>
-
-            <View style={styles.occRow}>
-              <Image source={RoomIcon} style={styles.smallIcon} />
-              <Text style={styles.bedText}>{item?.bedName}</Text>
-
-              <View style={styles.unitTag2}>
-                <Text style={styles.unitText}>{item?.totalUnits} Units</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.price}>₹ {item?.totalAmount}</Text>
-            <Text style={styles.date}>{item?.billingDate}</Text>
-          </View>
-        </View>
-      ))
-    ) : (
-      
-        <View style={styles.centerContainer}>
-                    <Image source={EmptyState} style={styles.image} />
-                    <Text style={styles.noFloorText}> No Occupants Found!</Text>
-            
-                    
-                  </View>
-    )
-  )}
-
-</ScrollView>
-
-
-      {/* Floating Button */}
-      <TouchableOpacity 
-                    style={[ styles.fab,
-      !canReadElectricity && { opacity: 0.4 }]}
-      disabled={!canReadElectricity}
-      >
-        <Image source={FilterIcon} style={styles.fabIcon} />
-      </TouchableOpacity>
-    </View>
-
-    
-    {/* {showAddSheet && (
+      {/* {showAddSheet && (
   <View style={styles.sheetOverlay}>
     
     <TouchableOpacity style={styles.overlayTouchable} onPress={closeSheet} />
@@ -1136,31 +1146,31 @@ const handleConfirmReadingDelete = async () => {
   </View>
 )} */}
 
-<AddRoomReadingForm
-  visible={showAddSheet}
-  onClose={() => setShowAddSheet(false)}
-  isEditMode={isEditMode}
-  roomInfo={{
-    roomName: roomData?.roomName,
-    floorName: roomData?.floorName,
-  }}
-  reading={currentReading}
-  setReading={setCurrentReading}
-  readingDate={readingDate}
-  setReadingDate={setReadingDate}
-  readingError={readingError}
-  dateError={readingDateError}
-  apiError={apiError}
-  setApiError={setApiError}
-  initialValues = {matchedRoomData}
-/>
+      <AddRoomReadingForm
+        visible={showAddSheet}
+        onClose={() => setShowAddSheet(false)}
+        isEditMode={isEditMode}
+        roomInfo={{
+          roomName: roomData?.roomName,
+          floorName: roomData?.floorName,
+        }}
+        reading={currentReading}
+        setReading={setCurrentReading}
+        readingDate={readingDate}
+        setReadingDate={setReadingDate}
+        readingError={readingError}
+        dateError={readingDateError}
+        apiError={apiError}
+        setApiError={setApiError}
+        initialValues={matchedRoomData}
+      />
 
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45 ,  fontFamily:'Gilroy-Semibold'},
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 45, fontFamily: 'Gilroy-Semibold' },
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
@@ -1243,7 +1253,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  monthText: { fontSize: 15, fontWeight: "700",  fontFamily:'sans-serif' },
+  monthText: { fontSize: 15, fontWeight: "700", fontFamily: 'sans-serif' },
   unitTag: {
     backgroundColor: "#FFF4D7",
     alignSelf: "flex-start",
@@ -1273,229 +1283,229 @@ const styles = StyleSheet.create({
 
   fab: {
     position: "absolute",
-  bottom: 120,
-  right:30,
-  width: 50,
-  height: 50,
-  backgroundColor: "#fff",
-  borderRadius: 55,
-  justifyContent: "center",
-  alignItems: "center",
-  elevation: 6, 
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowRadius: 5,
-  shadowOffset: { width: 0, height: 2 },
+    bottom: 120,
+    right: 30,
+    width: 50,
+    height: 50,
+    backgroundColor: "#fff",
+    borderRadius: 55,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
   },
   fabIcon: { width: 30, height: 30 },
   middleBoxRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
 
-peopleBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#FFF3D6",
-  paddingVertical: 5,
-  paddingHorizontal: 10,
-  borderRadius: 10,
-},
+  peopleBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF3D6",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+  },
 
-peopleIcon: {
-  width: 16,
-  height: 16,
-  marginRight: 6,
-},
-AddPeple:{
- width: 12,
-  height: 12,
-  marginRight: 8,
-},
+  peopleIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
+  },
+  AddPeple: {
+    width: 12,
+    height: 12,
+    marginRight: 8,
+  },
 
-peopleText: {
-  fontSize: 14,
-  color: "#8A5A00",
-  fontWeight: "600",
-},
+  peopleText: {
+    fontSize: 14,
+    color: "#8A5A00",
+    fontWeight: "600",
+  },
 
-monthBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#E9EDFF",
-  paddingVertical: 5,
-  paddingHorizontal: 10,
-  borderRadius: 10,
-},
+  monthBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E9EDFF",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+  },
 
-calendarIcon: {
-  width: 16,
-  height: 16,
-  marginRight: 6,
-  tintColor: "#1E45E1",
-},
+  calendarIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
+    tintColor: "#1E45E1",
+  },
 
-sheetOverlay: {
-  position: "absolute",
-  top: 0, left: 0, right: 0, bottom: 10,
-  backgroundColor: "rgba(0,0,0,0.3)",
-  justifyContent: "flex-end",
-},
+  sheetOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 10,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "flex-end",
+  },
 
-overlayTouchable: {
-  ...StyleSheet.absoluteFillObject,
-},
+  overlayTouchable: {
+    ...StyleSheet.absoluteFillObject,
+  },
 
-sheetContainer: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
- paddingBottom: 60,
-},
+  sheetContainer: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    paddingBottom: 60,
+  },
 
-sheetHandle: {
-  width: 50,
-  height: 5,
-  backgroundColor: "#ccc",
-  borderRadius: 3,
-  alignSelf: "center",
-  marginBottom: 15,
-},
+  sheetHandle: {
+    width: 50,
+    height: 5,
+    backgroundColor: "#ccc",
+    borderRadius: 3,
+    alignSelf: "center",
+    marginBottom: 15,
+  },
 
-sheetTitle: {
-  fontSize: 20,
-  fontWeight: "700",
-  marginBottom: 20,
-  color: "#000",
-},
+  sheetTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#000",
+  },
 
-sheetRoomRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 25,
-},
+  sheetRoomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 25,
+  },
 
-sheetRoomIcon: { width: 40, height: 40, marginRight: 12 },
+  sheetRoomIcon: { width: 40, height: 40, marginRight: 12 },
 
-sheetRoomName: { fontSize: 16, fontWeight: "700" },
-sheetFloor: { color: "#777", marginTop: 3 },
+  sheetRoomName: { fontSize: 16, fontWeight: "700" },
+  sheetFloor: { color: "#777", marginTop: 3 },
 
-sheetDateLabel: { color: "#555", fontSize: 12 },
-sheetDateValue: { fontSize: 14, fontWeight: "700", color: "#000" },
+  sheetDateLabel: { color: "#555", fontSize: 12 },
+  sheetDateValue: { fontSize: 14, fontWeight: "700", color: "#000" },
 
-sheetLabel: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#000",
-  marginBottom: 8,
-},
+  sheetLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
+  },
 
-sheetReadingRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: 30,
-},
+  sheetReadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 30,
+  },
 
-sheetInput: {
-  borderWidth: 1,
-  borderColor: "#DADADA",
-  borderRadius: 10,
-  paddingHorizontal: 14,
-  paddingVertical: 12,
-  fontSize: 16,
-  color: "#000",
-  marginTop: 6,
-  backgroundColor: "#fff",
-},
+  sheetInput: {
+    borderWidth: 1,
+    borderColor: "#DADADA",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#000",
+    marginTop: 6,
+    backgroundColor: "#fff",
+  },
 
-lastReading: { color: "#1E45E1", fontWeight: "600" },
+  lastReading: { color: "#1E45E1", fontWeight: "600" },
 
-sheetBtnRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop:20
-},
+  sheetBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20
+  },
 
-sheetCancel: {
-  width: "48%",
-  paddingVertical: 12,
-  borderWidth: 1,
-  borderRadius: 10,
-  borderColor: "#ccc",
-  alignItems: "center",
-},
+  sheetCancel: {
+    width: "48%",
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: "#ccc",
+    alignItems: "center",
+  },
 
-sheetAdd: {
-  width: "48%",
-  backgroundColor: "#1E45E1",
-  paddingVertical: 12,
-  borderRadius: 10,
-  alignItems: "center",
-},
+  sheetAdd: {
+    width: "48%",
+    backgroundColor: "#1E45E1",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
 
-sheetCancelTxt: { color: "#000", fontSize: 16, fontWeight: "600" },
-sheetAddTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },
-readingRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "flex-start",   // ⭐ VERY IMPORTANT — aligns last reading to top
-  marginTop: 8,
-},
+  sheetCancelTxt: { color: "#000", fontSize: 16, fontWeight: "600" },
+  sheetAddTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  readingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",   // ⭐ VERY IMPORTANT — aligns last reading to top
+    marginTop: 8,
+  },
 
-readingInput: {
-  flex: 1,
-  borderWidth: 1,
-  borderColor: "#D8D8D8",
-  borderRadius: 10,
-  padding: 12,
-  fontSize: 16,
-  color: "#000",
-  marginRight: 10,             // space between input & last reading
-},
+  readingInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#D8D8D8",
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    color: "#000",
+    marginRight: 10,             // space between input & last reading
+  },
 
-lastReadingText: {
-  fontSize: 14,
-  color: "#1E45E1",
-  fontWeight: "600",
-  marginTop: 4,                // aligns exactly like Figma
-},
+  lastReadingText: {
+    fontSize: 14,
+    color: "#1E45E1",
+    fontWeight: "600",
+    marginTop: 4,                // aligns exactly like Figma
+  },
 
-emptyText: {
-  textAlign: "center",
-  marginTop: 40,
-  color: "#9CA3AF",
-  fontSize: 14,
-},
-tabsRow: {
-  flexDirection: "row",
-  justifyContent: "space-around",
-  marginTop: 10,
-  marginBottom: 15,
-},
+  emptyText: {
+    textAlign: "center",
+    marginTop: 40,
+    color: "#9CA3AF",
+    fontSize: 14,
+  },
+  tabsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10,
+    marginBottom: 15,
+  },
 
-tabBtn: {
-  alignItems: "center",
-},
+  tabBtn: {
+    alignItems: "center",
+  },
 
-tabText: {
-  fontSize: 16,
-  color: "#7A7A7A",
-  fontWeight: "600",
-},
+  tabText: {
+    fontSize: 16,
+    color: "#7A7A7A",
+    fontWeight: "600",
+  },
 
-tabActive: {
-  color: "#1E45E1",
-},
+  tabActive: {
+    color: "#1E45E1",
+  },
 
-tabUnderline: {
-  marginTop: 6,
-  height: 3,
-  backgroundColor: "#1E45E1",
-  borderRadius: 10,
-},
+  tabUnderline: {
+    marginTop: 6,
+    height: 3,
+    backgroundColor: "#1E45E1",
+    borderRadius: 10,
+  },
 
   centerContainer: {
     flex: 1,
@@ -1516,8 +1526,8 @@ tabUnderline: {
     color: "#777",
     marginTop: 10,
   },
-  
-datePickerBox: {
+
+  datePickerBox: {
     backgroundColor: "#fff",
     width: "80%",
     borderColor: "#DCDCDC",
@@ -1528,215 +1538,215 @@ datePickerBox: {
   },
 
   dateInputWrapper: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 12,
-  height: 48,
-  paddingHorizontal: 12,
-  marginTop: 6,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    height: 48,
+    paddingHorizontal: 12,
+    marginTop: 6,
+  },
 
-dateInput: {
-  flex: 1,
-  fontSize: 14,
-  color: "#111827",
-},
+  dateInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#111827",
+  },
 
-calendarIconWrapper: {
-  padding: 6,
-},
+  calendarIconWrapper: {
+    padding: 6,
+  },
 
-calendarIcon: {
-  width: 20,
-  height: 20,
-  tintColor: "#6B7280",
-},
+  calendarIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#6B7280",
+  },
 
-/* Calendar modal */
+  /* Calendar modal */
 
-dateOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 9999,
-},
+  dateOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
 
-overlayBg: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: "rgba(0,0,0,0.3)",
-},
+  overlayBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
 
-calendarContainer: {
-  backgroundColor: "#fff",
-  borderRadius: 20,
-  padding: 10,
-  width: "85%",
-  elevation: 10,
-},
-actionPopup: {
-  position: "absolute",
-  top: 60,
-  right: 10,
-  backgroundColor: "#F9F9F9",
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#EBEBEB",
-  width: 130,
-  zIndex: 999,
-},
+  calendarContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 10,
+    width: "85%",
+    elevation: 10,
+  },
+  actionPopup: {
+    position: "absolute",
+    top: 60,
+    right: 10,
+    backgroundColor: "#F9F9F9",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#EBEBEB",
+    width: 130,
+    zIndex: 999,
+  },
 
-actionItem: {
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-},
+  actionItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
 
-editText: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#1E45E1",
-},
+  editText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1E45E1",
+  },
 
-deleteText: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#FF0000",
-},
+  deleteText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FF0000",
+  },
 
-deleteOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-deleteBox: {
-  width: "90%",
-  backgroundColor: "#fff",
-  padding: 25,
-  borderRadius: 15,
-  alignItems: "center",
-  elevation: 10,
-},
+  deleteBox: {
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 25,
+    borderRadius: 15,
+    alignItems: "center",
+    elevation: 10,
+  },
 
-deleteTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  color: "#111",
-  marginBottom: 10,
-  fontFamily:'Gilroy-Semibold'
-},
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111",
+    marginBottom: 10,
+    fontFamily: 'Gilroy-Semibold'
+  },
 
-deleteSub: {
-  fontSize: 14,
-  color: "#555",
-  textAlign: "center",
-  marginBottom: 25,
-},
+  deleteSub: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 25,
+  },
 
-deleteBtnRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  width: "100%",
-},
+  deleteBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
 
-cancelBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#2D6CDF",
-  marginRight: 10,
-  alignItems: "center",
-},
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#2D6CDF",
+    marginRight: 10,
+    alignItems: "center",
+  },
 
-cancelText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#2D6CDF",
-},
+  cancelText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2D6CDF",
+  },
 
-deleteBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 10,
-  backgroundColor: "#2D6CDF",
-  alignItems: "center",
-},
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+  },
 
-deleteBtnText: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#fff",
-},
-
-
- popupOverlay: {
-  position: "absolute",
-  top: 10,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "transparent",
-},
+  deleteBtnText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
 
 
-popupBackdrop: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.25)", 
-},
+  popupOverlay: {
+    position: "absolute",
+    top: 10,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+  },
 
-popupBox: {
-  position: "absolute",
-  width: 140,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  elevation: 20,
-  paddingVertical: 8,
-},
 
-// popupBox: {
-//   position: "absolute",
-//   width: 120,
-//   backgroundColor: "#fff",
-//   borderRadius: 12,
-//   elevation: 20,
-//   paddingVertical: 10,
-//   zIndex: 10000,
-// },
+  popupBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
+
+  popupBox: {
+    position: "absolute",
+    width: 140,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    elevation: 20,
+    paddingVertical: 8,
+  },
+
+  // popupBox: {
+  //   position: "absolute",
+  //   width: 120,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 12,
+  //   elevation: 20,
+  //   paddingVertical: 10,
+  //   zIndex: 10000,
+  // },
 
   popupRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
 
-popupIcon: {
-  width: 20,
-  height: 20,
-  marginRight: 10,
-},
+  popupIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
 
-popupText: {
-  fontSize: 14,
-  color: "#333",
-},
+  popupText: {
+    fontSize: 14,
+    color: "#333",
+  },
 
 
-actionOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 998,
-},
+  actionOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998,
+  },
 
 
 });

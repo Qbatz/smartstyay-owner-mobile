@@ -9,7 +9,8 @@ import {
   TextInput,
   Image,
   TouchableWithoutFeedback,
-  Modal, Animated, BackHandler, PanResponder
+  Modal, Animated, BackHandler, PanResponder,
+  NativeModules
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -67,6 +68,7 @@ export default function TenantsScreen({ route }) {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [overviewScreen, setOverviewScreen] = useState(false)
   const [searchText, setSearchText] = useState("");
+  const {CommonModule}=NativeModules;
   console.log("activeHostelId", activeHostelId)
   console.log("reassignCustomer", reassignCustomer);
   
@@ -159,11 +161,19 @@ export default function TenantsScreen({ route }) {
     }, [activeHostelId])
   );
 
+  const handleCallPhone=(mobile)=>{
+    console.log("mobile",mobile)
+    if(mobile){
+      CommonModule.makeCall(mobile)
+    }
+    
+  }
 
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data || []);
+    console.log("billa",data)
   };
   const handleCheckoutSuccess = async () => {
     await fetchCustomers();
@@ -483,6 +493,7 @@ export default function TenantsScreen({ route }) {
       selectedItem: selectedItem,
     });
   };
+  console.log("bala",customers)
   const filteredTenants = customers?.listCustomers?.filter((item) => {
     const search = searchText.trim().toLowerCase();
 
@@ -507,6 +518,8 @@ export default function TenantsScreen({ route }) {
         return "#D1D5DB"; // Grey fallback
     }
   };
+
+  {console.log("bala",filteredTenants)}
 
 
 
@@ -709,6 +722,7 @@ export default function TenantsScreen({ route }) {
         </View>
           })
         } */}
+        
                   {filteredTenants?.map((item) => (
                     // <View key={item.customerId} style={styles.tenantRow}>
 
@@ -901,7 +915,9 @@ export default function TenantsScreen({ route }) {
                           />
                         </TouchableOpacity> */}
 
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={()=>{
+                            handleCallPhone(item.mobile)
+                        }}>
                           <Image
                             source={CallIcon}
                             style={{ width: 20, height: 20, }}
@@ -1088,7 +1104,7 @@ export default function TenantsScreen({ route }) {
   </View>
 
   {/* RIGHT SIDE ICON */}
-  <TouchableOpacity
+  <TouchableOpacity onPress={()=>handleCallPhone(selectedCustomer?.mobileNo)}
     style={{
       padding: 10,
       justifyContent: "center",
@@ -1256,6 +1272,7 @@ export default function TenantsScreen({ route }) {
                       !canUpdateTenant && { opacity: 0.4 }]}
                     disabled={!canUpdateTenant}
                     onPress={() => {
+                      setReassignCustomer(selectedCustomer)
                       setShowDetailsMenu(false);
                       setShowReAssignBed(true);
                     }}

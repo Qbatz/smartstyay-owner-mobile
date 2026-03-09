@@ -1113,7 +1113,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
             </View>
 
             {Array.isArray(customerDetails?.assignedAmenities) &&
-              customerDetails.assignedAmenities.length > 0 ? (
+              customerDetails?.assignedAmenities?.length > 0 ? (
 
               customerDetails.assignedAmenities.map((item, index) => (
                 <View style={styles.amenityItem} key={item.amenityId || index}>
