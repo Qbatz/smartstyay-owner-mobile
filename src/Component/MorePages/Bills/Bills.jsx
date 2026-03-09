@@ -20,6 +20,7 @@ import { NativeModules } from "react-native";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
+import { PGContext } from "../../../Context/PGContext";
 import { Calendar } from "react-native-calendars";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
@@ -91,6 +92,7 @@ import { s, vs } from "../../../Utils/rnScale";
 
 
 
+
 export default function BillsDesign({ route }) {
 
   const insets = useSafeAreaInsets();
@@ -104,6 +106,7 @@ export default function BillsDesign({ route }) {
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
+    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -149,7 +152,7 @@ export default function BillsDesign({ route }) {
 
 
   console.log("bills", BillDetails, filterOptions);
-  console.log("recurringBills", recurringBills);
+  console.log("PGDetails", PGDetails);
 
 
   const [activeTab, setActiveTab] = useState("Invoices");
@@ -268,7 +271,13 @@ export default function BillsDesign({ route }) {
     if (activeHostelId) {
       GetRecurringBills(activeHostelId);
     }
-  }, [activeHostelId]);
+  }, [activeHostelId])
+
+    useEffect(() => {
+      if (activeHostelId) {
+        getParticularHostelDetails(activeHostelId);
+      }
+    }, [activeHostelId])
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -1825,6 +1834,11 @@ export default function BillsDesign({ route }) {
   const isPending = selectedBill?.paymentStatus === "Pending";
 
 
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isExportAllow = isValidSubscription && canReadInvoice;
+const isReceiptExportAllow = isValidSubscription && canReadReceipt;
+
+
   const getOverdueDays = (dueDate) => {
     if (!dueDate) return 0;
 
@@ -2248,10 +2262,10 @@ export default function BillsDesign({ route }) {
                       </View>
                     </View>
                   </View>
-                  {isPartial && (
+                  {(isPending || isPartial) && (
                     <View style={styles.actionRow}>
 
-                      <TouchableOpacity style={styles.reminderBtn} onPress={handleShareBill}>
+                      <TouchableOpacity style={styles.reminderBtn} >
                         <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                         <Text style={styles.reminderText}>Remainder</Text>
                       </TouchableOpacity>
@@ -2539,12 +2553,18 @@ export default function BillsDesign({ route }) {
 
                   {isPaid && (
                     <>
-                      <TouchableOpacity style={styles.paidBtn} >
+                      <TouchableOpacity
+                        style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow}
+                        onPress={handleShareBill}>
                         <Image source={ShareIcon} style={styles.iconDark} />
                         <Text style={styles.paidText}>Share</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.paidBtn} onPress={handleDownloadBillsPdf}>
+                      <TouchableOpacity 
+                        style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow}
+                        onPress={handleDownloadBillsPdf}>
                         <Image source={DownloadIcon} style={styles.iconDark} />
                         <Text style={styles.paidText}>Download</Text>
                       </TouchableOpacity>
@@ -2554,21 +2574,29 @@ export default function BillsDesign({ route }) {
                   {(isPending || isPartial) && (
                     <>
                       <View style={styles.bottomActionItem}>
-                        <TouchableOpacity style={styles.iconBtn}  >
-                          <Image source={ShareIcon} style={styles.iconDark} />
+                        <TouchableOpacity
+                        style={[styles.iconBtn, !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow} onPress={handleShareBill}
+                    >
+                          <Image source={ShareIcon} style={styles.iconDark}  />
                         </TouchableOpacity>
                         <Text style={styles.bottomText}>Share</Text>
                       </View>
 
                       <View style={styles.bottomActionItem}>
-                        <TouchableOpacity style={styles.iconBtn} onPress={handleDownloadBillsPdf}>
+                        <TouchableOpacity
+                        style={[styles.iconBtn, !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow} onPress={handleDownloadBillsPdf}>
                           <Image source={DownloadIcon} style={styles.iconDark} />
                         </TouchableOpacity>
                         <Text style={styles.bottomText}>Download</Text>
                       </View>
 
                       <View style={styles.bottomActionItem}>
-                        <TouchableOpacity style={styles.recordBtn} onPress={handleShowRecordPayment}>
+                        <TouchableOpacity
+                      style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                    onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
+                     >
                           <Image source={PlusIcon} style={styles.iconWhite} />
                         </TouchableOpacity>
                         <Text style={styles.bottomText}>Record</Text>
@@ -2733,14 +2761,16 @@ export default function BillsDesign({ route }) {
                   <View style={styles.fixedBottomBar}>
 
 
-                    <TouchableOpacity style={styles.paidBtn} >
+                    <TouchableOpacity
+                     style={[styles.paidBtn, !isReceiptExportAllow && { opacity: 0.4 }]}
+                      disabled={!isReceiptExportAllow} onPress={handleShareReceipt}>
                       <Image source={ShareIcon} style={styles.iconDark} />
                       <Text style={styles.paidText}>Share</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.paidBtn, !canReadReceipt && { opacity: 0.4 }]}
-                      disabled={!canReadReceipt}
+                      style={[styles.paidBtn, !isReceiptExportAllow && { opacity: 0.4 }]}
+                      disabled={!isReceiptExportAllow}
                       onPress={() => handleDownloadReceipt(selectedReceipt)}>
                       <Image source={DownloadIcon} style={styles.iconDark} />
                       <Text style={styles.paidText}>Download</Text>
@@ -2762,14 +2792,14 @@ export default function BillsDesign({ route }) {
                         { bottom: popupPosition.y - 50, left: popupPosition.x - 180 },
                       ]}
                     >
-                      <TouchableOpacity
+                      {/* <TouchableOpacity
                         style={[styles.popupRow, !canReadReceipt && { opacity: 0.4 }]}
                         disabled={!canReadReceipt}
                         onPress={() => handleDownloadReceipt(selecetedTenantReceipt)}
                       >
                         <Image source={DownloadIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Download</Text>
-                      </TouchableOpacity>
+                      </TouchableOpacity> */}
 
                       <TouchableOpacity
                         style={[styles.popupRow, !canUpdateReceipt && { opacity: 0.4 }]}
@@ -2793,14 +2823,14 @@ export default function BillsDesign({ route }) {
                         <Text style={styles.popupText}>Delete</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity
+                      {/* <TouchableOpacity
                         style={[styles.popupRow, !canReadReceipt && { opacity: 0.4 }]}
                         disabled={!canReadReceipt}
                         onPress={handleShareReceipt}
                       >
                         <Image source={WhatsappIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>share</Text>
-                      </TouchableOpacity>
+                      </TouchableOpacity> */}
 
                     </View>
                   </TouchableOpacity>
@@ -2935,14 +2965,10 @@ export default function BillsDesign({ route }) {
         <Text style={styles.popupText}>Download</Text> 
       </TouchableOpacity> */}
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                   onPress={handleDownloadBillsPdf}
                   disabled={!canWriteInvoice}
-                // onPress={() => {
-                //   setShowMenu(false);
-                //   setDeleteTenants(true);
-                // }}
                 >
                   <Image
                     source={DownloadIcon}
@@ -2951,12 +2977,11 @@ export default function BillsDesign({ route }) {
                   <Text
                     style={[
                       styles.popupText,
-                      //  styles.popupTextDisabled,
                     ]}
                   >
                     Download
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 {selectedBill?.invoiceAmount < 0 && selectedBill?.paymentStatus !== "Refunded" && selectedBill?.paymentStatus !== "Cancelled" && (
                   <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
@@ -2970,7 +2995,7 @@ export default function BillsDesign({ route }) {
                 )}
 
 
-                {(selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") && (
+                {/* {(selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") && (
                   <TouchableOpacity
                     style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                     onPress={handleShowRecordPayment} disabled={!canWriteInvoice}>
@@ -2981,7 +3006,7 @@ export default function BillsDesign({ route }) {
                     <Text style={styles.popupText}>Record Payment</Text>
                   </TouchableOpacity>
 
-                )}
+                )} */}
 
                 {/* <TouchableOpacity
                   style={[
@@ -3076,14 +3101,14 @@ export default function BillsDesign({ route }) {
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
                   disabled={!canReadInvoice}
                   onPress={handleShareBill}
                 >
                   <Image source={WhatsappIcon} style={styles.popupIcon} />
                   <Text style={styles.popupText}>share</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
 
                 {/* <TouchableOpacity
@@ -3660,20 +3685,20 @@ export default function BillsDesign({ route }) {
                     keyboardType="numeric"
                     value={refundAmount}
                     onChangeText={(val) => {
-                      // if (!/^\d*$/.test(val)) return;
 
+                      const numericValue = val.replace(/[^0-9]/g, "");
                       const max = Math.abs(
                         Number(refundInitDetails?.pendingRefund || 0)
                       );
 
-                      const num = Number(val || 0);
+                      const num = Number(numericValue || 0);
 
                       if (num > max) {
                         setRefundAmountError(`Amount cannot exceed ₹${max}`);
                         return;
                       }
 
-                      setRefundAmount(val);
+                      setRefundAmount(numericValue);
                       setRefundAmountError("");
                     }}
                   />
@@ -4345,7 +4370,7 @@ export default function BillsDesign({ route }) {
           
                           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: vs(10) }}>
                             <View><Text style={{ fontSize: 16, fontFamily: "Gilroy-Medium"}}>Recurring</Text></View>
-                            <View style={{ display: 'flex', flexDirection: 'row', alignItems: "center" }}>
+                            {/* <View style={{ display: 'flex', flexDirection: 'row', alignItems: "center" }}>
                               <Text style={styles.labelOn}>
                                 {selectedRecurringBill?.currentStatus ? "On" : "Off"}
                               </Text>
@@ -4372,7 +4397,7 @@ export default function BillsDesign({ route }) {
           
           
           
-                            </View>
+                            </View> */}
                           </View>
           
                           <View style={[styles.twoColRow]}>

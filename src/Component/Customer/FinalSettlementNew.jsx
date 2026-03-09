@@ -530,7 +530,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   <Text style={styles.smallLabel}>Joined Date</Text>
                   <Text style={styles.value}>{settlementDetails?.customerInfo?.joiningDate}</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={[styles.gridCol, { marginLeft: 23 }]}>
                   <Text style={styles.smallLabel}>Req Checkout Date</Text>
                   <Text style={styles.value}>{settlementDetails?.stayInfo?.noticeDate}</Text>
                 </View>
@@ -541,7 +541,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   <Text style={styles.smallLabel}>Advance Amount</Text>
                   <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.advanceAmount}</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={[styles.gridCol, { marginLeft: 23 }]}>
                   <Text style={styles.smallLabel}>Monthly Rent</Text>
                   <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.rentAmount}</Text>
                 </View>
@@ -552,17 +552,14 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   <Text style={styles.smallLabel}>Booking Amount</Text>
                   <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.bookingAmount}</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={[styles.gridCol, { marginLeft: 23 }]}>
                   <Text style={styles.smallLabel}>Advance paid</Text>
                   <Text style={styles.value}>₹ {settlementDetails?.customerInfo?.advancePaidAmount}</Text>
                 </View>
               </View>
 
               <View style={styles.rowBetween}>
-                {/* <View>
-              <Text style={styles.smallLabel}>Actual Checkout Date</Text>
-              <Text style={styles.value}>30/11/2025</Text>
-            </View> */}
+           
                 <View style={styles.gridCol}>
                   <Text style={styles.gridLabel}>Actual Checkout Date</Text>
 
@@ -594,6 +591,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   </Text>
                 </View>
               </View>
+
+
+              
             </View>
 
             {/* ✅ UNPAID INVOICES (INLINE ACCORDION) */}
@@ -960,8 +960,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   {/* Total Deductions */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Total Deductions</Text>
-                    <Text style={styles.negative}>
-                      - ₹ {Number(
+                    <Text style={styles.negativeamountlabel}>
+                     ₹ - {Number(
                         settlementDetails?.settlementInfo?.totalDeductions || 0
                       ).toFixed(2)}
                     </Text>
@@ -970,7 +970,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   {/* Electricity */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Electricity</Text>
-                    <Text style={styles.negative}>
+                    <Text style={styles.negativeamountlabel}>
                       ₹{" " + settlementDetails?.settlementInfo?.electricityAmount}
                     </Text>
                   </View>
@@ -978,7 +978,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   {/* Unpaid Invoices */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Unpaid Invoices</Text>
-                    <Text style={styles.negative}>
+                    <Text style={styles.negativeamountlabel}>
                       ₹ {Number(
                         settlementDetails?.settlementInfo?.unpaidInvoiceAmount || 0
                       ).toFixed(2)}
@@ -992,7 +992,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
             <View style={styles.nonRefund}>
               <View style={styles.extraHeader}>
-                <Text style={styles.label}>Non Refundable Amount</Text>
+                <Text style={styles.label}>Deductions</Text>
 
                 <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
                   <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
@@ -1402,10 +1402,11 @@ const styles = StyleSheet.create({
   extraHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 18,
+    alignItems:'center',
+    marginTop: 5,
   },
 
-  label: { fontWeight: "700" },
+  label: {fontFamily: "Gilroy-Semibold" },
 
   addBtn: {
     backgroundColor: "#2D6CDF",
@@ -1703,13 +1704,18 @@ const styles = StyleSheet.create({
 
   rowBetween: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 9,
+    marginTop:5
   },
 
-
-
+negativeamountlabel : {
+  fontSize:12,
+  fontFamily: "Gilroy-Bold",
+  color:"red"
+}
+,
 
 
 
@@ -1738,6 +1744,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     flexWrap: "wrap",
   },
+  sectionTitle : {
+    fontSize:17,
+   fontFamily: "Gilroy-Bold" ,
+   marginBottom:5
+  }
 
 
   // rightMuted: {
