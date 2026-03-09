@@ -289,14 +289,13 @@ const RecurringBills = ({onSelectRecurringBill}) => {
     const isActive = item.currentStatus;
 
     return (
-      <View style={styles.row}>
+     
         <TouchableOpacity onPress={() => {
           if (!canReadRecurringBills) return;
           handleViewRecurring(item)
-          {console.log("papa",item)}
-          // setSelectedBill(item);
-          // setShowBillDetails(true);
-        }}>
+        }}
+        style={styles.row}
+        >
 
 
           {item.profilePic ? (
@@ -312,7 +311,7 @@ const RecurringBills = ({onSelectRecurringBill}) => {
             </View>
           )}
 
-        </TouchableOpacity>
+     
 
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{item.fullName}</Text>
@@ -333,8 +332,8 @@ const RecurringBills = ({onSelectRecurringBill}) => {
           </View>
         </View>
 
-        <View style={{ flexDirection: "column" }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "column" , justifyContent:'center'}}>
+          {/* <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={styles.labelOn}>
               {isActive ? "On" : "Off"}
             </Text>
@@ -362,13 +361,14 @@ const RecurringBills = ({onSelectRecurringBill}) => {
                 </View>
               </View>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <Text style={styles.date}>
             {formatApiDate(item?.lastInvoiceDate)}
           </Text>
         </View>
-      </View>
+           </TouchableOpacity>
+     
     );
   };
 

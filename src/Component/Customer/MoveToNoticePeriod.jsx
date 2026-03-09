@@ -319,18 +319,28 @@ export default function MoveNoticeSheet({
       };
     }
   }
+  // const isCheckoutDisabled = (date) => {
+  //   if (!date) return false;
+
+
+  //   if (reqDate && dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
+
+  //   return false;
+  // };
+
   const isCheckoutDisabled = (date) => {
-    if (!date) return false;
+  if (!date) return true;
 
+  if (!reqDate) return true;
 
-    if (reqDate && dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
+  if (dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
 
-    return false;
-  };
+  return false;
+};
+
 
   const checkoutMarkedDates = {};
 
-  // show +- 90 days (safe window)
   for (let i = -90; i <= 90; i++) {
     const d = dayjs().add(i, "day");
     const key = d.format("YYYY-MM-DD");

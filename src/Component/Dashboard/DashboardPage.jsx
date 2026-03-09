@@ -64,7 +64,7 @@ import {
 import { getHostels } from "../../Action/HostelAction";
 import { retriveData } from "../../Utils/Storage";
 import SuccessModal from "../../ToastFile/ToastPage";
-
+import SubscriptionFullScreenAlert from "./SubscriptionBannerAlert";
 
 
 
@@ -88,6 +88,10 @@ export default function DashboardScreen({ initialParams }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+
+  const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+const [showExpiryModal, setShowExpiryModal] = useState(false);
+const [showExpiryBanner, setShowExpiryBanner] = useState(false);
 
   const categoryList = IntializeexpensesList?.listExpenses || [];
 
@@ -152,6 +156,30 @@ export default function DashboardScreen({ initialParams }) {
   }, [profileDetails?.roleId]);
 
 
+//   useEffect(() => {
+//   if (!PGDetails) return;
+
+//   setSubscriptionChecked(true);
+
+//   if (!PGDetails.isSubscriptionActive) {
+//     setShowExpiryModal(true); 
+//   }
+// }, [PGDetails]);
+
+// const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+
+// useEffect(() => {
+//   if (!PGDetails) return;
+
+//   if (!subscriptionChecked) {
+//     setSubscriptionChecked(true);
+
+//     if (PGDetails.isSubscriptionActive === false) {
+//       navigation.replace("SubscriptionExpired");
+//     }
+//   }
+// }, [PGDetails]);
+
   console.log("rolepermission", rolePermission);
 
   console.log("PGdetails", PGDetails);
@@ -171,6 +199,60 @@ export default function DashboardScreen({ initialParams }) {
   const {
     canReadModule: canReadUpdates,
   } = useHasPermission("Updates");
+
+    const {
+      canWriteModule: canWriteWalkin,
+      canReadModule: canReadWalkin,
+      // canUpdateModule: canUpdateWalkin,
+      canDeleteModule: canDeleteWalkin,
+    } = useHasPermission("Walk in");
+
+      const {
+        canWriteModule: canWriteExpense,
+        canReadModule: canReadExpense,
+        canUpdateModule: canUpdateExpense,
+        canDeleteModule: canDeleteExpense,
+      } = useHasPermission("Expense");
+
+        const {
+          canWriteModule: canWriteInvoice,
+          canReadModule: canReadInvoice,
+          canUpdateModule: canUpdateInvoice,
+          canDeleteModule: canDeleteInvoice,
+        } = useHasPermission("Bills")
+
+
+    const quickActions = [
+  {
+    label: "Add Tenant",
+    icon: Usercircle,
+    color: "#7C3AED",
+    route: "AddTenant",
+    permission: canWriteWalkin
+  },
+  {
+    label: "Add Expense",
+    icon: ExpenseImg,
+    color: "#EF4444",
+    route: "AddExpenses",
+    permission: canWriteExpense
+  },
+  {
+    label: "Create Bills",
+    icon: CrateBill,
+    color: "#F59E0B",
+    route: "CreateBills",
+    permission: canWriteInvoice
+  },
+
+  {
+    label: "Make agreement",
+    icon: AgreementImg,
+    color: "#10B981",
+    route: "Agreement",
+    permission: canReadDashboard
+  },
+];
 
 
 
@@ -1037,7 +1119,7 @@ export default function DashboardScreen({ initialParams }) {
 
 
                   <View style={styles.quickGrid}>
-                    {[
+                    {/* {[
                       { label: "Add Tenant", icon: Usercircle, color: "#7C3AED", route: "AddTenant" },
                       { label: "Add Expense", icon: ExpenseImg, color: "#EF4444", route: "AddExpenses" },
                       { label: "Create Bills", icon: CrateBill, color: "#F59E0B", route: "CreateBills" },
@@ -1064,8 +1146,38 @@ export default function DashboardScreen({ initialParams }) {
                             navigation.navigate(x.route)
                           }
 
-                        }}   // 👈 Navigate on press
-                      >
+                        }}   
+                      > */}
+                      {quickActions.map((x, i) => (
+  <TouchableOpacity
+    key={i}
+    style={[
+      styles.quickCard,
+      !x.permission && { opacity: 0.4 }
+    ]}
+    disabled={!x.permission}
+    onPress={() => {
+      if (!x.permission) return;
+
+      if (x.label === "Add Expense") {
+        if (categoryList && categoryList.length > 0) {
+          navigation.navigate(x.route);
+        } else {
+          setShowSuccessModal(true);
+          setModalMessage(
+            "Please add a Category option in Settings before adding expense"
+          );
+          setModalType("warning");
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 1000);
+        }
+      } else {
+        navigation.navigate(x.route);
+      }
+    }}
+  >
                         <View style={[styles.iconWrapper, { borderColor: x.color }]}>
                           <Image
                             source={x.icon}
@@ -1578,7 +1690,16 @@ export default function DashboardScreen({ initialParams }) {
 
       </View >
 
+{/* {showExpiryModal && (
+  <SubscriptionFullScreenAlert
+    visible={true}
+    onClose={() => {
+      setShowExpiryModal(false);
+      setShowExpiryBanner(true);
+    }}
+  />
 
+)} */}
 
 
 
