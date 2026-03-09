@@ -1,7 +1,9 @@
 package com.qbatz.smartstay;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -9,6 +11,8 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.facebook.react.bridge.Promise;
@@ -43,6 +47,8 @@ public class CommonModule extends ReactContextBaseJavaModule {
 
     private final ReactApplicationContext reactContext;
     private final ConnectivityManager connectivityManager;
+
+    private static final int REQUEST_CALL =1;
 
     CommonModule(ReactApplicationContext context) {
         super(context);
@@ -238,5 +244,22 @@ public class CommonModule extends ReactContextBaseJavaModule {
             type = "*/*";
         }
         return type;
+    }
+
+
+    @ReactMethod
+    public void makeCall(String phn_number){
+        if(ContextCompat.checkSelfPermission(reactContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(reactContext.getCurrentActivity(),
+                    new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+        }else {
+            String dial = "tel:" + phn_number;
+
+            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse(dial));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            reactContext.startActivity(intent);
+
+        }
     }
 }

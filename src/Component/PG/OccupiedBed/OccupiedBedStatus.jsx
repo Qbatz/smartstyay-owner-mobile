@@ -193,13 +193,13 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                 )}
                 <View>
                   <TouchableOpacity
-                   onPress={() =>
-                        navigation.navigate("CustomerOverviewScreen", {
-                          customerId: selectedBed.currentTenantInfo[0]?.tenetId,
-                          customer: selectedBed.currentTenantInfo[0],
-                        })
-                      }>
-                  <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+                    onPress={() =>
+                      navigation.navigate("CustomerOverviewScreen", {
+                        customerId: selectedBed.currentTenantInfo[0]?.tenetId,
+                        customer: selectedBed.currentTenantInfo[0],
+                      })
+                    }>
+                    <Text style={styles.name}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
                   </TouchableOpacity >
                   <Text style={styles.phone}>+91 {selectedBed.currentTenantInfo[0]?.mobile}</Text>
                 </View>
@@ -273,7 +273,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
 
             {
-              selectedBed?.newTenantInfo?.length > 0  &&
+              selectedBed?.newTenantInfo?.length > 0 &&
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
                 <Text style={styles.sectionTitle}>Reserved by</Text>
 
@@ -309,18 +309,18 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                             )}
 
                             <View>
-                       
 
-                       <TouchableOpacity
-                   onPress={() =>
-                        navigation.navigate("CustomerOverviewScreen", {
-                          customerId: selectedBed.newTenantInfo[0]?.tenetId,
-                          customer: selectedBed.newTenantInfo[0],
-                        })
-                      }>
-                <Text style={styles.name}>{item.tenantFullName}</Text>
-                  </TouchableOpacity >
-                            
+
+                              <TouchableOpacity
+                                onPress={() =>
+                                  navigation.navigate("CustomerOverviewScreen", {
+                                    customerId: selectedBed.newTenantInfo[0]?.tenetId,
+                                    customer: selectedBed.newTenantInfo[0],
+                                  })
+                                }>
+                                <Text style={styles.name}>{item.tenantFullName}</Text>
+                              </TouchableOpacity >
+
                               <Text style={styles.phone}>+91 {item.mobile}</Text>
                             </View>
                           </View>
@@ -388,6 +388,15 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                                 />
                                 <Text style={styles.menuText}>Make as Inactive</Text>
                               </TouchableOpacity>
+
+                              <TouchableOpacity
+                                // style={styles.popupItem}
+                                disabled={!canUpdatePayingGuests}
+                                style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                                onPress={handleEdit}>
+                                <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.menuIcon} />
+                                <Text style={styles.popupText}>Edit</Text>
+                              </TouchableOpacity>
                             </View>
                           </>
                         )}
@@ -405,25 +414,25 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
           </ScrollView>
 
-    <View style={styles.statusRow}>
+          <View style={styles.statusRow}>
 
-  <TouchableOpacity
-    style={[
-      styles.statusBtn,
-      hasReserved && { flex: 1 },
-      !hasReserved && { width: "100%" }
-    ]}
-  >
-    <Text style={styles.statusText}>Occupied</Text>
-  </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.statusBtn,
+                hasReserved && { flex: 1 },
+                !hasReserved && { width: "100%" }
+              ]}
+            >
+              <Text style={styles.statusText}>Occupied</Text>
+            </TouchableOpacity>
 
-  {hasReserved && (
-    <TouchableOpacity style={[styles.reservedBtn, { flex: 1 , }]}>
-      <Text style={styles.reservedText}>Reserved</Text>
-    </TouchableOpacity>
-  )}
+            {hasReserved && (
+              <TouchableOpacity style={[styles.reservedBtn, { flex: 1, }]}>
+                <Text style={styles.reservedText}>Reserved</Text>
+              </TouchableOpacity>
+            )}
 
-</View>
+          </View>
 
 
         </Animated.View>
@@ -471,7 +480,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: { fontSize: 20, fontFamily: "Gilroy-Bold"  },
+  title: { fontSize: 20, fontFamily: "Gilroy-Bold" },
 
   dots: { width: 28, height: 28 },
 
@@ -508,24 +517,24 @@ const styles = StyleSheet.create({
 
   menuIcon: { width: 20, height: 20 },
 
-  popupText: { fontSize: 14, color: "#000", fontFamily: "Gilroy-Medium"  },
+  popupText: { fontSize: 14, color: "#000", fontFamily: "Gilroy-Medium" },
 
   // TAGS
   tagRow: { flexDirection: "row", gap: 10, marginTop: 15 },
 
   tag: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 12 },
 
-  tagText: { fontSize: 12, color: "#333", fontFamily: "Gilroy-Medium"  },
+  tagText: { fontSize: 12, color: "#333", fontFamily: "Gilroy-Medium" },
 
-  sub: { marginTop: 20, color: "#000", fontSize: 14 ,fontFamily:"Gilroy-Bold"  , marginBottom:5},
+  sub: { marginTop: 20, color: "#000", fontSize: 14, fontFamily: "Gilroy-Bold", marginBottom: 5 },
 
   userRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 10 },
 
   userImg: { width: 50, height: 50, borderRadius: 25 },
 
-  userName: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
+  userName: { fontSize: 16, fontFamily: "Gilroy-Bold" },
 
-  phone: { fontSize: 13, color: "#555" ,fontFamily: "Gilroy-Regular"},
+  phone: { fontSize: 13, color: "#555", fontFamily: "Gilroy-Regular" },
 
   label: { marginTop: 15, fontSize: 12, color: "#777", fontFamily: "Gilroy-Regular" },
 
@@ -535,32 +544,32 @@ const styles = StyleSheet.create({
   iconImg: { width: 30, height: 30, marginRight: 8, },
 
   value: { fontSize: 15, fontFamily: "Gilroy-Semibold", color: "#000" },
-statusRow: {
-  flexDirection: "row",
-  gap: 10,
-  marginTop: 25,
-},
+  statusRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 25,
+  },
 
-statusBtn: {
-  flex: 1,
-  backgroundColor: "#E6F9EC",
-  paddingVertical: 14,
-  borderRadius: 22,
-},
+  statusBtn: {
+    flex: 1,
+    backgroundColor: "#E6F9EC",
+    paddingVertical: 14,
+    borderRadius: 22,
+  },
 
-reservedBtn: {
-  flex: 1,
-  backgroundColor: "#EAF0FF",
-  paddingVertical: 14,
-  borderRadius: 22,
-},
+  reservedBtn: {
+    flex: 1,
+    backgroundColor: "#EAF0FF",
+    paddingVertical: 14,
+    borderRadius: 22,
+  },
 
-reservedText: {
-  fontSize: 16,
-  textAlign: "center",
-  fontFamily: "Gilroy-Semibold",
-   color: "#1E45E1",
-},
+  reservedText: {
+    fontSize: 16,
+    textAlign: "center",
+    fontFamily: "Gilroy-Semibold",
+    color: "#1E45E1",
+  },
   // statusBtn: {
   //   marginTop: 25,
   //   backgroundColor: "#E6F9EC",
@@ -621,7 +630,7 @@ reservedText: {
     borderColor: "#EEE",
   },
 
-  sectionTitle: { fontSize: 13,fontFamily: "Gilroy-Bold" , marginBottom: 8, color: "#000", marginTop:16 },
+  sectionTitle: { fontSize: 13, fontFamily: "Gilroy-Bold", marginBottom: 8, color: "#000", marginTop: 16 },
   initialCircle: {
     width: 42,
     height: 42,
@@ -634,7 +643,7 @@ reservedText: {
 
   initialText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#374151",
   },
 

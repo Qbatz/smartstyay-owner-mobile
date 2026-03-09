@@ -72,6 +72,8 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const [reAssignBedDate, setReAssignBedDate] = useState("")
   const [customerDetails, setCustomerDetails] = useState(null);
 
+  console.log(customer)
+
   useEffect(() => {
     if (visible && customer?.customerId) {
       fetchCustomerDetails();
