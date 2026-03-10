@@ -3262,7 +3262,8 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
               >
                 <View style={styles.sheetHandle} />
 
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled">
 
                   {/* Header */}
                   <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>

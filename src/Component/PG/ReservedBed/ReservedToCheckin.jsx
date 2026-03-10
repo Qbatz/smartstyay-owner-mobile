@@ -125,13 +125,13 @@ export default function ReserveToCheckin({ route, navigation }) {
 
   const updateTitle = (id, title) => {
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, title } : i))
+      prev.map(i => (i.id === id ? { ...i, title,titleError:"" } : i))
     );
   };
 
   const updateAmount = (id, amount) => {
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, amount } : i))
+      prev.map(i => (i.id === id ? { ...i, amount, amountError: "" } : i))
     );
   };
 
@@ -146,9 +146,73 @@ export default function ReserveToCheckin({ route, navigation }) {
   //   const deductions = convertToDeductions(extraCharges);
   //   console.log("Final Deductions:", deductions);
   // };
+
+   const validateExtraCharges = () => {
+    let valid = true;
+
+    const updated = extraCharges.map((e) => {
+      let titleError = "";
+      let amountError = "";
+
+      const titleFilled = e.title?.trim()?.length > 0;
+      const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+      const amt = Number(e.amount);
+
+      // ✅ CASE 1: type not selected -> ignore row (no validation)
+      if (!e.type) {
+        return { ...e, titleError: "", amountError: "" };
+      }
+
+      // ✅ CASE 2: Maintenance -> amount mandatory
+      if (e.type === "Maintenance") {
+        if (!amountFilled) {
+          amountError = "Please enter maintenance amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, titleError: "", amountError };
+      }
+
+      // ✅ CASE 3: Others -> reason + amount both mandatory
+      if (e.type === "Others") {
+        // both empty -> ok (optional row)
+        if (!titleFilled && !amountFilled) {
+          return { ...e, titleError: "", amountError: "" };
+        }
+
+        if (!titleFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        if (!amountFilled) {
+          amountError = "Please enter amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, titleError, amountError };
+      }
+
+      return { ...e, titleError: "", amountError: "" };
+    });
+
+    setExtraCharges(updated);
+    return valid;
+  };
+
   const onSave = async () => {
 
     let valid = true;
+
+     const chargeValid = validateExtraCharges();
+    if (!chargeValid) return;
 
     // reset errors
     setStayTypeError("");
@@ -480,6 +544,15 @@ export default function ReserveToCheckin({ route, navigation }) {
                     )}
 
                   </View>
+
+                   {item.titleError && (
+                        <ErrorMessage message={item.titleError} type="error" />
+                      )}
+                    
+                      {item.amountError && (
+                        <ErrorMessage message={item.amountError} type="error" />
+                      )}
+
 
 
                   {openDropdownId === item.id && item.type === "" && (
