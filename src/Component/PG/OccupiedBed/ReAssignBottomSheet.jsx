@@ -442,15 +442,15 @@ useEffect(() => {
 
           <Text style={styles.sectionLabel1}>Current Bed</Text>
           <View style={styles.row}>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
+            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center'}}>
               <Image source={FloorIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedBed.floorName}</Text>
             </View>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
+            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center',}}>
               <Image source={RoomIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedBed.roomName}</Text>
             </View>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
+            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center'}}>
               <Image source={BedIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedBed.bedName}</Text>
             </View>
@@ -463,15 +463,15 @@ useEffect(() => {
 
           <Text style={styles.sectionLabel1}>New Bed</Text>
           <View style={styles.row1}>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
+            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
               <Image source={FloorIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedNewBed.bed.floorName}</Text>
             </View>
 
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
+            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
               <Image source={RoomIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedNewBed.bed.roomName}</Text></View>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
+            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
               <Image source={BedIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedNewBed.bed.bedName}</Text></View>
           </View>
@@ -722,6 +722,7 @@ sheet: {
   valueText: {
     fontSize: 15,
     fontWeight: "600",
+    flexShrink:1,
   },
 
   swapIcon: {

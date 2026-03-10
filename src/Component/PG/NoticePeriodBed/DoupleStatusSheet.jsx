@@ -282,8 +282,11 @@ export default function DoubleStatusSheet({
               <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Check-In Date</Text>
-              <Text style={styles.value}> {selectedBed.currentTenantInfo[0]?.joiningDate
+              <Text style={styles.label}>
+                {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? "Checkout Date" : "Check-In Date"}</Text>
+              <Text style={styles.value}> 
+                {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? selectedBed.currentTenantInfo[0]?.leavingDate : 
+                selectedBed.currentTenantInfo[0]?.joiningDate
               }</Text>
             </View>
             <View style={styles.infoRow}>

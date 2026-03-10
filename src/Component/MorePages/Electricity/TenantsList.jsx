@@ -55,6 +55,8 @@ export default function TenantsList() {
     return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY"]).format("MMMM");
   };
 
+  console.log("pattit",EbTenantReading)
+
 
   return (
 
@@ -75,7 +77,14 @@ export default function TenantsList() {
           onPress={()=> handleCustomerReading(item)}
         >
           {/* Profile Image */}
-          <Image source={ProfileIcon} style={styles.profileImg} />
+          
+
+          {
+            item?.profilePic ? <Image source={{uri: item?.profilePic }} style={styles.profileImg} /> : 
+            <View style={[styles.profileImg,{backgroundColor:"#E5E7EB",alignItems:'center',justifyContent:'center'}]}>
+                <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold',color: "#374151"}}>{item?.initials}</Text>
+            </View>
+          }
 
           {/* Middle */}
           <View style={{ flex: 1 }}>
@@ -93,7 +102,8 @@ export default function TenantsList() {
 
               <View style={styles.inline}>
                 <Image source={RoomIcon} style={styles.icon} />
-                <Text style={styles.value}>{item?.bedName}</Text>
+                <Text style={[styles.value,{flexShrink:1}]}
+                numberOfLines={2}>{item?.bedName}</Text>
               </View>
             </View>
           </View>
@@ -138,7 +148,7 @@ const styles = StyleSheet.create({
 
   name: { fontSize: 16, fontWeight: "700", color: "#000" },
 
-  inline: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  inline: { flexDirection: "row", alignItems: "center", marginTop: 4,flex:1 },
 
   tag: {
     backgroundColor: "#FFF4D7",

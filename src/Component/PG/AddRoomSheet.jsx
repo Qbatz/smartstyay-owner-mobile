@@ -183,7 +183,7 @@ useEffect(() => {
     <Text style={styles.title}>{isEdit ? "Edit Room" : "Add Room"}</Text>
 
     <Text style={styles.label}>
-      Room Name / No <Text style={{ color: "red" }}>*</Text>
+      Room Name or No <Text style={{ color: "red" }}>*</Text>
     </Text>
 
   <TextInput

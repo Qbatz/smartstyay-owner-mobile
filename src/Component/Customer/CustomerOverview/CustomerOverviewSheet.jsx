@@ -486,11 +486,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Tenant Profile</Text>
           
-          {
+          {/* {
             customerDetails?.customerCurrentStatus !=="VACATED" && (
                <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
             )
-          }
+          } */}
          
           {/* <View style={styles.notificationDot} /> */}
         </View>
@@ -656,9 +656,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           {
              customerDetails?.customerCurrentStatus !== "VACATED" && (
               <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.walletBtn}>
+            {/* <TouchableOpacity style={styles.walletBtn}>
               <Text style={styles.walletText}>Wallet</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={styles.stayBtn}
