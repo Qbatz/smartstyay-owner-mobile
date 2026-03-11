@@ -750,24 +750,44 @@ export default function GeneralDetailsScreen({ navigation }) {
           )}
 
           {/* ----Main profile-- */}
-          
-         {canReadProfile && (
-            <View style={styles.cards}>
-            <View style={styles.row}>
-              <View style={styles.avatar}>
-                {profileDetails?.profileImage ? (
-                  <Image
-                    source={{ uri: profileDetails.profileImage }}
-                    style={styles.profileImg}
-                  />
-                ) : (
-                  <Text style={styles.avatarText}>
-                    {getInitials(profileDetails)}
-                  </Text>
-                )}
-              </View>
 
-              <View style={{ flex: 1, marginLeft: 7 }}>
+          {canReadProfile && (
+            <View style={styles.cards}>
+              <View style={{  flexDirection: 'row',width:'100%'}}>
+                <View style={{flex: 1, alignItems: 'center', paddingLeft: 10}}>
+                  <View style={styles.avatar}>
+                    {profileDetails?.profileImage ? (
+                      <Image
+                        source={{ uri: profileDetails.profileImage }}
+                        style={styles.profileImg}
+                      />
+                    ) : (
+                      <Text style={styles.avatarText}>
+                        {getInitials(profileDetails)}
+                      </Text>
+                    )}
+                  </View>
+
+                 
+                  <Text style={[styles.name,{marginTop:10}]}>
+                    {getFullName(profileDetails)}
+                  </Text>
+
+                <TouchableOpacity
+                  style={[styles.changePwdRow,{marginTop:10,paddingHorizontal:4,backgroundColor:'#FFFAF1',borderRadius:4,paddingVertical:2}]}
+                  onPress={() => setShowPasswordSheet(true)}
+                >
+                  <Image
+                    source={require("../../../Assets/Images/Eye.png")}
+                    style={styles.eyeIcon}
+                  />
+                  <Text style={styles.changePwdText}>
+                    {profileDetails.roleName}
+                  </Text>
+                </TouchableOpacity>
+                </View>
+
+                {/* <View style={{ flex: 1, marginLeft: 7 }}>
                 <View style={styles.nameWrapper}>
                   <Text style={styles.name}>
                     {getFullName(profileDetails)}
@@ -786,51 +806,55 @@ export default function GeneralDetailsScreen({ navigation }) {
                     {profileDetails.roleName}
                   </Text>
                 </TouchableOpacity>
+              </View> */}
+            
+                  <TouchableOpacity style={{marginTop:3}}
+                    ref={DotsTopRef}
+                    onPress={() => {
+                      DotsTopRef.current.measureInWindow(
+                        (x, y, width, height) => {
+                          setPopupPo({
+                            top: y + height - 100,
+                            right: SCREEN_WIDTH - (x + width),
+                          });
+                        }
+                      );
+                      setActiveMenuProfile("box");
+                    }}
+                  >
+                    <Image
+                      source={ThreeDots}
+                      style={styles.dotsIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                 
+               <View style={{borderWidth:0.8,marginTop:15,marginBottom:5,borderColor:'#E5E5E5'}}/> 
+              
+
+              <View style={styles.infoRow}>
+                <Image
+                  source={require("../../../Assets/Images/call.png")}
+                  style={styles.infoIcon}
+                />
+                <Text style={[styles.infoText,{fontFamily:'Gilroy-Semibold'}]}>
+                  +91 {profileDetails?.mobileNo || "N/A"}
+                </Text>
               </View>
 
-              <TouchableOpacity
-                ref={DotsTopRef}
-                onPress={() => {
-                  DotsTopRef.current.measureInWindow(
-                    (x, y, width, height) => {
-                      setPopupPo({
-                        top: y + height + 20,
-                        right: SCREEN_WIDTH - (x + width),
-                      });
-                    }
-                  );
-                  setActiveMenuProfile("box");
-                }}
-              >
+              <View style={styles.infoRow}>
                 <Image
-                  source={ThreeDots}
-                  style={styles.dotsIcon}
+                  source={require("../../../Assets/Images/sms.png")}
+                  style={styles.infoIcon}
                 />
-              </TouchableOpacity>
+                <Text style={[styles.infoText,{fontFamily:'Gilroy-Medium'}]}>
+                  {profileDetails?.mailId || "N/A"}
+                </Text>
+              </View>
+
+
             </View>
-
-            <View style={styles.infoRow}>
-              <Image
-                source={require("../../../Assets/Images/call.png")}
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoText}>
-                +91 {profileDetails?.mobileNo || "N/A"}
-              </Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Image
-                source={require("../../../Assets/Images/sms.png")}
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoText}>
-                {profileDetails?.mailId || "N/A"}
-              </Text>
-            </View>
-
-
-          </View>
           )}
 
           {canReadProfile && (
@@ -935,7 +959,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                 // style={styles.menuRow}
                 style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
                 disabled={!canDeleteProfile}
-                onPress={ 
+                onPress={
                   handleLogout
                   // console.log(activeMenu + " DELETE");
                   // setActiveMenuProfile(null);
@@ -1311,7 +1335,7 @@ const styles = StyleSheet.create({
 
   infoIcon: { width: 18, height: 18, marginRight: 8 },
 
-  infoText: { fontSize: 14, color: "#333", flex: 1 },
+  
   menuOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
@@ -1454,9 +1478,9 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
@@ -1469,9 +1493,9 @@ const styles = StyleSheet.create({
   },
 
   profileImg: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
 
   row: {
@@ -1487,7 +1511,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily:'Gilroy-Semibold',
     color: "#111",
     flexShrink: 1,
     flexWrap: "wrap",
@@ -1504,13 +1528,13 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     marginRight: 6,
-    tintColor: "#2F80ED",
+    tintColor: "#FF9900",
   },
 
   changePwdText: {
-    color: "#2F80ED",
+    color: "#FF9900",
     fontSize: 13,
-    fontWeight: "500",
+    fontFamily:'Gilroy-Medium',
   },
 
   dotsIcon: {

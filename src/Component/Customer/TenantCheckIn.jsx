@@ -821,7 +821,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
                 <View style={styles.BtnRow}>
-                  <TouchableOpacity style={styles.CancelBtn}>
+                  <TouchableOpacity style={styles.CancelBtn} onPress={() => navigation.goBack()}>
                     <Text style={{ color: "grey", fontWeight: "600" }}>
                       Cancel
                     </Text>
