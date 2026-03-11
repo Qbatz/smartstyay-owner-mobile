@@ -1248,7 +1248,7 @@ export default function AssignTenant({ navigation, route }) {
 
 
             <View style={styles.footer}>
-              <TouchableOpacity style={styles.cancelBtn}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 

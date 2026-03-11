@@ -34,6 +34,7 @@ import EditIcon from "../../../Assets/Images/editIcon.png";
 import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import EmptyIcon from "../../../Assets/Images/Empty_state.png";
 import PlusIcon from "../../../Assets/Images/blue_circle.png"
+import OrangeLocationIcon from "../../../Assets/Images/OrangeLocationIcon.png"
 
 export default function SettingsPG({ navigation }) {
   const { hostelList, updateHostelList, setActiveHostelId, activeHostelId } = useContext(CommonContexts);
@@ -62,6 +63,7 @@ export default function SettingsPG({ navigation }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+  const [showHeader, setShowHeader] = useState(false);
 
   const [deletePGShow, setDeletePG] = useState(false);
 
@@ -82,7 +84,7 @@ export default function SettingsPG({ navigation }) {
     totalRooms: h.noOfRooms,
     availableBeds: h.noOfAvailableBeds,
     profilePhoto: h.mainImage ? { uri: h.mainImage } : null,
-    profileIntials:h.initials,
+    profileIntials: h.initials,
     images: h.images?.length
       ? h.images.map((i) => ({ uri: i }))
       : [],
@@ -99,16 +101,16 @@ export default function SettingsPG({ navigation }) {
 
 
 
-  const openPopup = (id) => {
-    const pos = dotRefs.current[id];
-    if (!pos) return;
+  // const openPopup = (id) => {
+  //   const pos = dotRefs.current[id];
+  //   if (!pos) return;
 
-    setPopupPos({
-      x: pos.x - 130,
-      y: pos.y + pos.height + 5,
-    });
-    setVisiblePopup(id);
-  };
+  //   setPopupPos({
+  //     x: pos.x - 130,
+  //     y: pos.y + pos.height + 5,
+  //   });
+  //   setVisiblePopup(id);
+  // };
 
 
 
@@ -214,6 +216,17 @@ export default function SettingsPG({ navigation }) {
       else openSheet();
     },
   });
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const HEADER_MAXHEIGHT = 500;
+  const HEADER_MINHEIGHT = 50;
+
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, HEADER_MAXHEIGHT - HEADER_MINHEIGHT],
+    outputRange: [HEADER_MAXHEIGHT, HEADER_MINHEIGHT],
+    extrapolate: "clamp",
+  })
 
 
   const handleEdit = (id) => {
@@ -449,7 +462,33 @@ export default function SettingsPG({ navigation }) {
     );
   }
 
+  
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
 
+  const headerTranslate = scrollY.interpolate({
+  inputRange: [0, 80],
+  outputRange: [-60, 0],
+  extrapolate: "clamp",
+});
+
+
+  const cardDotRef = useRef(null);
+  const openPopup = (id, ref) => {
+    if (!ref) return;
+
+    ref.measureInWindow((x, y, width, height) => {
+      setPopupPos({
+        x: x - 130,
+        y: y + height + 5,
+      });
+
+      setVisiblePopup(id);
+    });
+  };
 
   return (
 
@@ -489,10 +528,121 @@ export default function SettingsPG({ navigation }) {
   </View>
 )} */}
 
-      {/* {canReadPayingGuests && ( */}
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        {showHeader && (
+           <Animated.View
+          style={{
+           
+            height: 100,
+            // flexDirection: "row",
+            // alignItems: "center",
+            // paddingHorizontal: 16,
+            // backgroundColor: "red",
+            // borderBottomWidth: 0.5,
+            borderColor: "#ddd",
+            opacity: headerOpacity,
+            transform: [{ translateY: headerTranslate }],
+            zIndex: 10,
+            // elevation:6
 
-          <View style={styles.card}>
+          }}
+        >
+          <View >
+            {/* <View style={[styles.header]}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Image source={ArrowLeft} style={styles.backArrow} />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Manage PG</Text>
+            </View> */}
+            <View style={{ backgroundColor: '#fff', }}>
+              <View style={{
+                flexDirection: 'row', borderWidth: 1, padding: 20, borderRadius: 10, alignItems: 'center',
+                backgroundColor: "#fff", borderColor: "#E8ECF8", marginHorizontal: 16,
+              }}>
+                <View style={styles.topRow}>
+                  <View style={{ flexDirection: "row", paddingRight: 40, flex: 1 }}>
+                    {mainHostel?.profilePhoto ? (
+                      <Image
+                        source={mainHostel.profilePhoto}
+                        style={styles.hostelImg}
+                      />
+                    ) : (
+                      <View style={{
+                        width: 50, height: 50, borderRadius: 25, backgroundColor: "#E6EEF9", alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                        <Text style={{ fontSize: 18, fontWeight: "600", color: "#3B82F6", }}>
+                          {mainHostel?.profileIntials}
+                        </Text>
+                      </View>
+                    )}
+
+
+                    {/* <Image source={mainHostel?.profilePhoto} style={styles.hostelImg} /> */}
+                    <View style={{ marginLeft: 10, flex: 1 }}>
+                      <Text style={styles.hostelName}>{mainHostel?.name}</Text>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 6 }}>
+                          <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
+                          <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14, marginLeft: 4 }}>
+                            {activeHostel?.city}</Text>
+                        </View>
+
+                        <Text style={styles.badge}>{mainHostel?.type}</Text>
+                      </View>
+
+                    </View>
+                  </View>
+
+                  <View style={styles.dotsWrapper}>
+                    <TouchableOpacity
+                      ref={cardDotRef}
+                      onPress={() => openPopup(mainHostel?.id, cardDotRef.current)}
+                    >
+                      <Image source={Dots} style={styles.dotsIcon} />
+                    </TouchableOpacity>
+                  </View>
+
+                </View>
+              </View>
+              {/* <View style={{
+                backgroundColor: '#fff', shadowColor: "#000",
+                shadowOffset: { width: 0, height: 3 },
+              }}>
+                <Text style={styles.sectionTitle}>Other Hostels</Text>
+              </View> */}
+            </View>
+          </View>
+
+
+        </Animated.View>
+
+
+        )}
+
+       
+        {/* {canReadPayingGuests && ( */}
+        <Animated.ScrollView contentContainerStyle={{ paddingBottom: 100 }}
+          stickyHeaderIndices={[1]}
+          // onScroll={Animated.event(
+          //   [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          //   { useNativeDriver: false }
+          // )}
+          onScroll={(event) => {
+            const y = event.nativeEvent.contentOffset.y;
+
+            if (y > 20 && !showHeader) {
+              setShowHeader(true);
+            } else if (y <= 20 && showHeader) {
+              setShowHeader(false);
+            }
+
+            scrollY.setValue(y);
+          }}
+          scrollEventThrottle={16}
+        >
+
+          <Animated.View style={[styles.card, { overflow: 'hidden' }]}>
             <View style={styles.topRow}>
               <View style={{ flexDirection: "row", paddingRight: 40, flex: 1 }}>
                 {mainHostel?.profilePhoto ? (
@@ -501,9 +651,11 @@ export default function SettingsPG({ navigation }) {
                     style={styles.hostelImg}
                   />
                 ) : (
-                  <View style={{ width: 50,height: 50,borderRadius: 25,backgroundColor: "#E6EEF9",alignItems: "center",
-                              justifyContent: "center",}}>
-                    <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
+                  <View style={{
+                    width: 50, height: 50, borderRadius: 25, backgroundColor: "#E6EEF9", alignItems: "center",
+                    justifyContent: "center",
+                  }}>
+                    <Text style={{ fontSize: 18, fontWeight: "600", color: "#3B82F6", }}>
                       {mainHostel?.profileIntials}
                     </Text>
                   </View>
@@ -513,7 +665,17 @@ export default function SettingsPG({ navigation }) {
                 {/* <Image source={mainHostel?.profilePhoto} style={styles.hostelImg} /> */}
                 <View style={{ marginLeft: 10, flex: 1 }}>
                   <Text style={styles.hostelName}>{mainHostel?.name}</Text>
-                  <Text style={styles.badge}>{mainHostel?.type}</Text>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 6 }}>
+                      <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
+                      <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14, marginLeft: 4 }}>
+                        {activeHostel?.city}</Text>
+                    </View>
+
+                    <Text style={styles.badge}>{mainHostel?.type}</Text>
+                  </View>
+
                 </View>
               </View>
 
@@ -540,6 +702,7 @@ export default function SettingsPG({ navigation }) {
               </View>
 
             </View>
+
 
             <View style={styles.rowBox}>
               <View style={styles.col}>
@@ -608,30 +771,34 @@ export default function SettingsPG({ navigation }) {
                 )}
               </View>
             </View>
+          </Animated.View>
+
+          <View style={{backgroundColor:'#fff'}}>
+            <Text style={styles.sectionTitle}>Other Hostels</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>Other Hostels</Text>
-
           {/* <View style={{ height: 600, marginBottom: 20 }}> */}
-          <ScrollView
-            nestedScrollEnabled
-            showsVerticalScrollIndicator
-            scrollIndicatorInsets={{ right: 6 }}
-            style={{ paddingHorizontal: 0, maxHeight: 250, }}
-            contentContainerStyle={{ paddingBottom: 20 }}
+          <View
+          // nestedScrollEnabled
+          // showsVerticalScrollIndicator
+          // scrollIndicatorInsets={{ right: 6 }}
+          // style={{ paddingHorizontal: 0, maxHeight: 250, }}
+          // contentContainerStyle={{ paddingBottom: 20 }}
           >
             {otherHostels && otherHostels.filter(Boolean).map((hostel) => (
               <View key={hostel.id} style={styles.otherCard}>
                 {/* <Image source={hostel.profilePhoto} style={styles.otherImg} /> */}
-   {hostel.profilePhoto ? (
+                {hostel.profilePhoto ? (
                   <Image
                     source={hostel.profilePhoto}
                     style={styles.hostelImg}
                   />
                 ) : (
-                  <View style={{ width: 50,height: 50,borderRadius: 25,backgroundColor: "#E6EEF9",alignItems: "center",
-                              justifyContent: "center",}}>
-                    <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
+                  <View style={{
+                    width: 50, height: 50, borderRadius: 25, backgroundColor: "#E6EEF9", alignItems: "center",
+                    justifyContent: "center",
+                  }}>
+                    <Text style={{ fontSize: 18, fontWeight: "600", color: "#3B82F6", }}>
                       {hostel?.profileIntials}
                     </Text>
                   </View>
@@ -639,7 +806,17 @@ export default function SettingsPG({ navigation }) {
 
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={styles.otherName}>{hostel.name}</Text>
-                  <Text style={styles.otherBadge}>{hostel.type}</Text>
+                  <View style={{ alignItems: 'center', flexDirection: 'row', flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', width: 100 }}>
+                      <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
+                      <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', marginLeft: 4, marginRight: 6, flexShrink: 1 }}
+                        numberOfLines={1}>
+                        {hostel?.address}</Text>
+                    </View>
+
+                    <Text style={[styles.otherBadge, { flexShrink: 1 }]}>{hostel.type}</Text>
+                  </View>
+
                 </View>
 
                 <TouchableOpacity onPress={() => handleSwitchHostel(hostel)}>
@@ -647,12 +824,12 @@ export default function SettingsPG({ navigation }) {
                 </TouchableOpacity>
               </View>
             ))}
-          </ScrollView>
+          </View>
           {/* </View> */}
-        </ScrollView>
-      {/* // )} */}
+        </Animated.ScrollView>
+        {/* // )} */}
 
-        { hostelList && hostelList?.length > 0 &&
+        {hostelList && hostelList?.length > 0 &&
           (
             <View style={[
               styles.fixedAddBtnWrapper,
@@ -666,7 +843,7 @@ export default function SettingsPG({ navigation }) {
               >
                 <Image
                   source={PlusIcon}
-                  style={styles.figAddIcon}    
+                  style={styles.figAddIcon}
                 />
                 <Text style={styles.figAddText}>Add New PG</Text>
               </TouchableOpacity>
@@ -676,40 +853,42 @@ export default function SettingsPG({ navigation }) {
 
 
         {visiblePopup && (
-          <TouchableWithoutFeedback onPress={() => setVisiblePopup(null)}>
-            <View style={styles.popupOverlay}>
-              <View
-                style={[
-                  styles.popupBox,
-                  { top: popupPos.y, left: popupPos.x },
-                ]}
-              >
-                <TouchableOpacity
-                  // style={styles.popupItem}
-                style={[styles.popupItem,!canUpdatePayingGuests && { opacity: 0.4 },]}
-                disabled={!canUpdatePayingGuests}
-                  onPress={() => handleEdit(visiblePopup)}
+          <Modal transparent animationType="none">
+            <TouchableWithoutFeedback onPress={() => setVisiblePopup(null)}>
+              <View style={styles.popupOverlay}>
+                <View
+                  style={[
+                    styles.popupBox,
+                    { top: popupPos.y, left: popupPos.x },
+                  ]}
                 >
-                  <Image source={EditIcon} style={styles.popupIcon} />
-                  <Text style={styles.popupText}>Edit</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    // style={styles.popupItem}
+                    style={[styles.popupItem, !canUpdatePayingGuests && { opacity: 0.4 },]}
+                    disabled={!canUpdatePayingGuests}
+                    onPress={() => handleEdit(visiblePopup)}
+                  >
+                    <Image source={EditIcon} style={styles.popupIcon} />
+                    <Text style={styles.popupText}>Edit</Text>
+                  </TouchableOpacity>
 
-                <View style={styles.divider} />
+                  <View style={styles.divider} />
 
-                <TouchableOpacity
-                  // style={styles.popupItem}
-                style={[styles.popupItem,!canDeletePayingGuests && { opacity: 0.4 },]}
-                disabled={!canDeletePayingGuests}
-                onPress={handleDelete}
-                >
-                  <Image source={DeleteIcon} style={styles.popupIcon} />
-                  <Text style={[styles.popupText, { color: "red" }]}>
-                    Delete
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    // style={styles.popupItem}
+                    style={[styles.popupItem, !canDeletePayingGuests && { opacity: 0.4 },]}
+                    disabled={!canDeletePayingGuests}
+                    onPress={handleDelete}
+                  >
+                    <Image source={DeleteIcon} style={styles.popupIcon} />
+                    <Text style={[styles.popupText, { color: "red" }]}>
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
+            </TouchableWithoutFeedback>
+          </Modal>
         )}
 
         {isSwitchVisible && (
@@ -725,18 +904,20 @@ export default function SettingsPG({ navigation }) {
 
                 <View style={styles.switchCard}>
                   {switchHostel.profilePhoto ? (
-                  <Image
-                    source={switchHostel.profilePhoto}
-                    style={styles.hostelImg}
-                  />
-                ) : (
-                  <View style={{ width: 50,height: 50,borderRadius: 25,backgroundColor: "#E6EEF9",alignItems: "center",
-                              justifyContent: "center",}}>
-                    <Text style={{fontSize: 18,fontWeight: "600",color: "#3B82F6",}}>
-                      {switchHostel?.profileIntials}
-                    </Text>
-                  </View>
-                )}
+                    <Image
+                      source={switchHostel.profilePhoto}
+                      style={styles.hostelImg}
+                    />
+                  ) : (
+                    <View style={{
+                      width: 50, height: 50, borderRadius: 25, backgroundColor: "#E6EEF9", alignItems: "center",
+                      justifyContent: "center",
+                    }}>
+                      <Text style={{ fontSize: 18, fontWeight: "600", color: "#3B82F6", }}>
+                        {switchHostel?.profileIntials}
+                      </Text>
+                    </View>
+                  )}
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={styles.otherName}>{switchHostel?.name}</Text>
                     <Text style={styles.otherBadge} numberOfLines={1}>{switchHostel?.type}</Text>
@@ -846,6 +1027,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     marginTop: 4,
+    fontFamily: "Gilroy-Medium"
   },
 
   rowBox: {
@@ -902,6 +1084,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginTop: 4,
     alignSelf: "flex-start",
+    fontFamily: "Gilroy-Medium"
   },
 
 
@@ -935,6 +1118,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 999,
+    elevation: 999,
   },
 
   popupBox: {
@@ -943,7 +1128,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     paddingVertical: 8,
-    elevation: 10,
+    elevation: 20,
+    zIndex: 1000,
   },
 
   popupItem: {
@@ -965,12 +1151,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
+    zIndex: 999,
+    elevation: 999
   },
 
   switchBox: {
     backgroundColor: "#fff",
     padding: 20,
-    paddingBottom:34,
+    paddingBottom: 34,
     width: "100%",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -985,9 +1173,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 15,
   },
-  switchTitle:{
-    fontSize:15,
-    marginBottom:5
+  switchTitle: {
+    fontSize: 15,
+    marginBottom: 5
   },
 
   switchCard: {
@@ -1006,7 +1194,7 @@ const styles = StyleSheet.create({
   switchActions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom:10
+    marginBottom: 10
   },
 
   cancelBtn: {
