@@ -103,7 +103,7 @@ export default function BillsDesign({ route }) {
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp } = useContext(BillContext);
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp ,GetReceiptsList, receiptsList} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
     const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -121,6 +121,14 @@ export default function BillsDesign({ route }) {
     canUpdateModule: canUpdateInvoice,
     canDeleteModule: canDeleteInvoice,
   } = useHasPermission("Bills")
+
+    const {
+    canWriteModule: canWriteReceipt,
+    canReadModule: canReadReceipt,
+    canUpdateModule: canUpdateReceipt,
+    canDeleteModule: canDeleteReceipt,
+  } = useHasPermission("Receipt")
+
 
 
   const filterOptions = BillDetails?.filterOptions;
@@ -260,6 +268,8 @@ export default function BillsDesign({ route }) {
   }, [activeHostelId, canReadInvoice]);
 
 
+
+
   useEffect(() => {
     if (activeHostelId) {
       getBankListByHostel(activeHostelId);
@@ -272,6 +282,12 @@ export default function BillsDesign({ route }) {
       GetRecurringBills(activeHostelId);
     }
   }, [activeHostelId])
+
+    useEffect(() => {
+      if (activeHostelId) {
+        GetReceiptsList(activeHostelId);
+      }
+    }, [activeHostelId]);
 
     useEffect(() => {
       if (activeHostelId) {
@@ -1039,6 +1055,63 @@ export default function BillsDesign({ route }) {
     setShowReceiptDetails(true);
   };
 
+const handleOpenReceiptFromBill = async (pay) => {
+  
+  console.log("pay", pay);
+   const receipt = receiptsList.find(
+    (r) =>
+      r.transactionNumber === pay?.referenceNumber
+  );
+
+  console.log("receipt", receipt);
+
+  if (!receipt) {
+    console.log("Receipt not found");
+    return;
+  }
+
+  const res = await getReceiptPdfDetails(
+    activeHostelId,
+    receipt?.transactionId
+  );
+
+  setSelectedReceipt(receipt);
+  setSelectedReceiptFull(res?.data);
+  setShowReceiptDetails(true);
+};
+
+console.log("selectedReceipt", selectedReceipt);
+
+
+ const handleDeleteReceipt = async () => {
+
+    if (!canDeleteReceipt) return;
+
+    const res = await DeleteReceipt({
+      hostelId: activeHostelId,
+      receiptId: selectedReceipt?.transactionId,
+    });
+
+
+
+    if (res.success) {
+        setShowReceiptDetails(false);
+         setShowReceiptMenu(false)
+      setModalType("success");
+      setModalMessage("Deleted Successfully");
+      setShowSuccessModal(true);
+      setDeleteReceipt(false)
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    } else {
+      setModalType("warning");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    }
+  };
+
   const handleRecurringBill=(item)=>{
     console.log("billa",item)
     setSelectedRecurringBill(item)
@@ -1422,12 +1495,7 @@ export default function BillsDesign({ route }) {
     }
   }, [refundInitDetails]);
 
-  const {
-    canWriteModule: canWriteReceipt,
-    canReadModule: canReadReceipt,
-    canUpdateModule: canUpdateReceipt,
-    canDeleteModule: canDeleteReceipt,
-  } = useHasPermission("Receipt")
+
 
 
 
@@ -1535,7 +1603,9 @@ export default function BillsDesign({ route }) {
 
   const handleReceiptMenu = (item, id) => {
 
-    const ref = dotsRefs.current[id];
+    const Idvalue = id || selectedReceipt[0]?.transactionId
+
+    const ref = dotsRefs.current[id]
 
     if (ref) {
       ref.measureInWindow((x, y, width, height) => {
@@ -1829,10 +1899,12 @@ export default function BillsDesign({ route }) {
   const isPaid = selectedBill?.paymentStatus === "Paid";
   const isPartial =
     selectedBill?.paymentStatus === "Partially Paid" ||
-    selectedBill?.paymentStatus === "Partially Refunded" ||
+    // selectedBill?.paymentStatus === "Partially Refunded" ||
     selectedBill?.paymentStatus === "Partial Payment"
   const isPending = selectedBill?.paymentStatus === "Pending";
-
+  const cancelled = selectedBill?.paymentStatus === "Cancelled";
+  const pendingRefund = selectedBill?.paymentStatus === "Pending Refund";
+  const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
 const isExportAllow = isValidSubscription && canReadInvoice;
@@ -2070,7 +2142,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                               </View>
 
                               <Image source={Bills_Black_Icon} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1, flex: 1 }]}>#{item.invoiceNumber}</Text>
+                              <Text style={[styles.detailText, { flexShrink: 1, flex: 1 }]}>{item.invoiceNumber}</Text>
                             </View>
                           </View>
 
@@ -2211,7 +2283,8 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                       </View>
 
 
-
+                     {
+                        !isPaid && (
                       <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                         onPress={() => openMenu(selectedBill)}>
                         <Image
@@ -2219,6 +2292,8 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                           style={{ width: 30, height: 30, }}
                         />
                       </TouchableOpacity>
+                        )}
+
                     </View>
                   </View>
 
@@ -2258,11 +2333,11 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                           width: 12,
                           height: 12, marginTop: 5, marginRight: 5
                         }} />
-                        <Text style={styles.billNumber}>#{selectedBill?.invoiceNumber || "--"}</Text>
+                        <Text style={styles.billNumber}>{selectedBill?.invoiceNumber || "--"}</Text>
                       </View>
                     </View>
                   </View>
-                  {(isPending || isPartial) && (
+                  {(isPending || isPartial || partiallyRefund || pendingRefund) && (
                     <View style={styles.actionRow}>
 
                       <TouchableOpacity style={styles.reminderBtn} >
@@ -2316,7 +2391,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
 
 
-                  {isPartial && (
+                  {(isPartial || partiallyRefund ) && (
                     <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
                         <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
@@ -2338,7 +2413,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
 
 
-                  {(isPaid || isPartial) && BillPdfdetails?.paymentHistory?.length > 0 && (
+                  {(isPaid || isPartial ) && BillPdfdetails?.paymentHistory?.length > 0 && (
                     <View style={{ marginTop: 25 }}>
                       <TouchableOpacity
                         onPress={() => setShowPayments(!showPayments)}
@@ -2365,9 +2440,11 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                             <View key={index} style={styles.paymentCard}>
 
                               <View style={styles.paymentTopRow}>
-                                <Text >
-                                  #{BillPdfdetails?.invoiceNumber}
-                                </Text>
+                               <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)}>
+  <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
+    #{pay?.referenceNumber}
+  </Text>
+</TouchableOpacity>
 
                                 <Text style={styles.paymentAmount}>
                                   ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
@@ -2382,7 +2459,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                                 </View>
                                 <View>
                                   <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.paidDate ?? "N/A"}
+                                    {pay?.date ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
@@ -2395,7 +2472,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                                 </View>
                                 <View>
                                   <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.mode ?? "N/A"}
+                                    {pay?.paymentMode ?? "N/A"}
                                   </Text>
                                 </View>
                               </View>
@@ -2551,7 +2628,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
                 <View style={styles.fixedBottomBar}>
 
-                  {isPaid && (
+                  {(isPaid || cancelled || pendingRefund || partiallyRefund) && (
                     <>
                       <TouchableOpacity
                         style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -2571,7 +2648,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                     </>
                   )}
 
-                  {(isPending || isPartial) && (
+                  {(isPending || isPartial ) && (
                     <>
                       <View style={styles.bottomActionItem}>
                         <TouchableOpacity
@@ -2669,9 +2746,9 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                       </View>
 
                       <TouchableOpacity ref={(el) => {
-                        dotsRefs.current[selectedReceipt.transactionId] = el;
+                        dotsRefs.current[selectedReceipt?.transactionId] = el;
                       }}
-                        onPress={() => handleReceiptMenu(selectedReceipt, selectedReceipt.transactionId)}>
+                        onPress={() => handleReceiptMenu(selectedReceipt, selectedReceipt?.transactionId)}>
                         <Image source={Dots} style={{ width: 28, height: 28 }} />
                       </TouchableOpacity>
                     </View>
@@ -2802,13 +2879,16 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                       </TouchableOpacity> */}
 
                       <TouchableOpacity
-                        style={[styles.popupRow, !canUpdateReceipt && { opacity: 0.4 }]}
-                        disabled={!canUpdateReceipt}
+                        // style={[styles.popupRow, !canUpdateReceipt && { opacity: 0.4 }]}
+                        // disabled={!canUpdateReceipt}
+                          style={[styles.popupRow, { opacity: 0.4 }]}
+                         disabled
                         onPress={handleEditReceipt}>
                         <Image source={EditIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Edit</Text>
                       </TouchableOpacity>
 
+                     
                       <TouchableOpacity
                         style={[styles.popupRow, !canDeleteReceipt && { opacity: 0.4 }]}
                         disabled={!canDeleteReceipt}
@@ -2937,7 +3017,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
 
           {/* <ReassignBedModal visible={showReAssignbed}  onClose={handlecloseReAssignbed} /> */}
-
+   
 
           {showMenu && (
             <TouchableOpacity
@@ -3076,7 +3156,10 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
   </Text>
 </TouchableOpacity> */}
 
-                <TouchableOpacity
+
+                  {
+                        !isPaid && (
+   <TouchableOpacity
                   style={[
                     styles.popupRow,
                     isBillLocked && styles.popupRowDisabled,
@@ -3100,6 +3183,9 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                     Delete
                   </Text>
                 </TouchableOpacity>
+                        )
+                       }
+             
 
                 {/* <TouchableOpacity
                   style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
@@ -3662,7 +3748,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                           source={Bills_Black_Icon}
                           style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
                         />
-                        <Text style={{ fontSize: 11, color: "#555" }}>#{selectedBill?.invoiceNumber}</Text>
+                        <Text style={{ fontSize: 11, color: "#555" }}>{selectedBill?.invoiceNumber}</Text>
                       </View>
                     </View>
 
@@ -5736,7 +5822,8 @@ const styles = StyleSheet.create({
   /* ICON BUTTONS */
   bottomActionItem: {
     alignItems: "center",
-    flex: 1
+    flex: 1,
+    marginRight:15
   },
 
   iconBtn: {
@@ -5744,14 +5831,16 @@ const styles = StyleSheet.create({
     // padding:14,
     paddingVertical: 14,
     paddingHorizontal: 37,
-    borderRadius: 10
+    borderRadius: 10,
+    marginRight:10
   },
 
   recordBtn: {
     backgroundColor: "#00A32E",
     paddingVertical: 14,
     paddingHorizontal: 37,
-    borderRadius: 10
+    borderRadius: 10,
+    // marginLeft:5
   },
 
   bottomText: {
