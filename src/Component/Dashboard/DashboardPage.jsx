@@ -14,6 +14,7 @@ import {
   BackHandler,
   TouchableWithoutFeedback , Modal
 } from "react-native";
+import { useLayoutEffect } from "react";
 import { Animated, Easing } from "react-native";
 import SubscriptionBanner from "./SubscriptionBannerAlert"
 import LinearGradient from "react-native-linear-gradient";
@@ -187,6 +188,26 @@ const subTabs = [
       GetRoleBasedPermission(profileDetails?.roleId);
     }
   }, [profileDetails?.roleId]);
+
+
+    useLayoutEffect(() => {
+      const backAction = () => {
+        if (sharingModalVisible) {
+          setSharingModalVisible(false);
+          return true;
+        }
+  
+        return false;
+      };
+  
+      const handler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      )
+
+  
+      return () => handler.remove();
+    }, [sharingModalVisible,]);
 
 
 //   useEffect(() => {
@@ -2787,6 +2808,7 @@ svg={{fontSize:11,fill:"#6B7280"}}
   visible={sharingModalVisible}
   transparent
   animationType="fade"
+    onRequestClose={() => setSharingModalVisible(false)}
 >
   <TouchableWithoutFeedback onPress={() => setSharingModalVisible(false)}>
     <View style={styles.modalOverlay}>
