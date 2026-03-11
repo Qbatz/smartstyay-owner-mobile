@@ -246,7 +246,10 @@ public class CommonModule extends ReactContextBaseJavaModule {
         return type;
     }
 
-
+    @ReactMethod
+    public void fetchEnvironment(Promise promise) {
+        promise.resolve(Constants.ENVIRONMENT);
+    }
     @ReactMethod
     public void makeCall(String phn_number){
         if(ContextCompat.checkSelfPermission(reactContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
