@@ -1662,6 +1662,88 @@ The smartest way to manage your PG, All in one place!
 </View>
 
 
+<View style={styles.bookingsCard}>
+
+
+  <View style={styles.bookingHeader}>
+    <View style={styles.bookingHeaderLeft}>
+      <View style={styles.bookingIconBox}>
+        <Image source={CheckinImg} style={{width:18,height:18}} />
+      </View>
+      <Text style={styles.bookingTitle}>Overdue Invoices</Text>
+    </View>
+
+              <TouchableOpacity
+  style={styles.monthBtn}
+  onPress={() => {
+    setTempMonth(selectedMonth);
+    setMonthSheetOpen(true);
+  }}
+>
+  <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+    <Image
+      source={DownArrow}
+      style={{ width: 14, height: 14, marginLeft: 5 }}
+    />
+  </View>
+</TouchableOpacity>
+  </View>
+
+  <ScrollView
+    style={{ maxHeight: 260 }}
+    showsVerticalScrollIndicator={false}
+  >
+
+    {checkinList?.map((item,index)=>(
+      <View key={index} style={styles.invoiceItem}>
+
+        {/* TOP ROW */}
+        <View style={styles.invoiceTopRow}>
+
+          {/* LEFT */}
+          <View>
+            <Text style={styles.invoiceName}>{item.name}</Text>
+
+            <View style={styles.invoiceSubRow}>
+              <Text style={styles.invoiceNumber}>
+                {item.invoice}
+              </Text>
+
+              <View style={styles.statusBadges}>
+                <View style={styles.statusDot}/>
+                <Text style={styles.statusText}>Un Paid</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* RIGHT */}
+          <View style={{alignItems:"flex-end"}}>
+            <Text style={styles.amountText}>
+              ₹ 5000
+            </Text>
+
+            <Text style={styles.dateText}>
+              {item.date}
+            </Text>
+          </View>
+
+        </View>
+
+        {/* BUTTON */}
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={styles.paymentBtn}>
+            <Text style={styles.paymentText}>Record Payment</Text>
+          </TouchableOpacity>
+        </View>
+
+      </View>
+    ))}
+
+  </ScrollView>
+
+</View>
+
      {/* <View style={styles.summaryRow}>
                     <View style={[styles.summaryCard, { width: width * 0.45 }]}>
                       <View >
@@ -3833,6 +3915,88 @@ checkinBtn:{
 checkinText:{
   color:"#fff",
   fontFamily:"Gilroy-Bold"
+},
+
+invoiceItem:{
+paddingVertical:16,
+borderBottomWidth:1,
+borderBottomColor:"#E5E7EB"
+},
+
+invoiceTopRow:{
+flexDirection:"row",
+justifyContent:"space-between",
+alignItems:"center"
+},
+
+invoiceName:{
+fontSize:15,
+fontFamily:"Gilroy-Bold",
+color:"#111827"
+},
+
+invoiceSubRow:{
+flexDirection:"row",
+alignItems:"center",
+marginTop:4
+},
+
+invoiceNumber:{
+fontSize:12,
+color:"#6B7280",
+marginRight:8
+},
+
+statusBadges:{
+flexDirection:"row",
+alignItems:"center",
+backgroundColor:"#FFF7E7",
+paddingHorizontal:10,
+paddingVertical:3,
+borderRadius:12
+},
+
+statusDot:{
+width:6,
+height:6,
+borderRadius:6,
+backgroundColor:"#F59E0B",
+marginRight:6
+},
+
+statusText:{
+fontSize:11,
+color:"#374151"
+},
+
+amountText:{
+fontSize:16,
+fontFamily:"Gilroy-Bold",
+color:"#111827"
+},
+
+dateText:{
+fontSize:11,
+color:"#6B7280",
+marginTop:3
+},
+
+actionRow:{
+flexDirection:"row",
+justifyContent:"flex-end",
+marginTop:10
+},
+
+paymentBtn:{
+backgroundColor:"#2563EB",
+paddingHorizontal:18,
+paddingVertical:8,
+borderRadius:10
+},
+
+paymentText:{
+color:"#fff",
+fontFamily:"Gilroy-Bold"
 },
 
 revenueCard:{

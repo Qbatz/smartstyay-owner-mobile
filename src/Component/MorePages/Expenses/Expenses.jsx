@@ -40,7 +40,9 @@ export default function ExpensesScreen() {
   const navigation = useNavigation();
   const [showFilter, setShowFilter] = useState(false);
 
-  const { expensesList, GetExpenseList, loading , IntializeexpensesList  , GetInitializeExpense} = useContext(ExpensesContext);
+  const { expensesList, GetExpenseList, loading , IntializeexpensesList  , GetInitializeExpense ,
+    DeleteExpense
+  } = useContext(ExpensesContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("expenselist", expensesList);
@@ -332,7 +334,12 @@ export default function ExpensesScreen() {
 
   const handleEditExpenses = () => {
     if (!canUpdateExpense) return;
-    navigation.navigate("AddExpenses", { editData: selectedExpense });
+   navigation.navigate("AddExpenses", {
+    editData: selectedExpense,
+    onUpdated: () => {
+      closeDetails()
+    }
+  });
   };
 
 
@@ -344,6 +351,32 @@ export default function ExpensesScreen() {
   const handleCloseDeleteShow = () => {
     setDeleteShow(false)
   }
+
+  const handleDeleteExpense = async () => {
+
+    console.log("selectedExpense", selectedExpense);
+    
+  if (!selectedExpense) return;
+
+  const res = await DeleteExpense(activeHostelId, selectedExpense?.expenseId);
+
+  if (res?.success) {
+    setDeleteShow(false);
+    closeDetails();
+
+    setModalType("success");
+    setModalMessage("Expense deleted successfully");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Failed to delete expense");
+    setShowSuccessModal(true)
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+  }
+};
 
   const handleOpenTagAsset = () => {
       if (!canWriteExpense) return;
@@ -766,10 +799,10 @@ export default function ExpensesScreen() {
 
                     <TouchableOpacity
                       style={styles.deleteBtn}
-                      onPress={handleCloseDeleteShow}
-                      disabled
+                      onPress={handleDeleteExpense}
+                      // disabled
                     >
-                      <Text style={styles.deleteBtnText}>Coming soon</Text>
+                      <Text style={styles.deleteBtnText}>Delete</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -1180,7 +1213,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#2D6CDF",
     alignItems: "center",
-    opacity:0.7
+    // opacity:0.7
   },
 
   deleteBtnText: {

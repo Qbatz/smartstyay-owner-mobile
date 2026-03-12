@@ -427,7 +427,8 @@ const Receipt = ({ onSelectReceipt }) => {
           <Text style={[styles.name,{marginTop:2}]}>₹{item?.paidAmount}</Text>
 
           <Text style={[styles.dateText,{marginTop:10}]}>
-            {formatApiDate(item.paidAt)}
+            {/* {formatApiDate(item.paidAt)} */}
+            {item?.paidAt}
           </Text>
         </View>
         </TouchableOpacity>
