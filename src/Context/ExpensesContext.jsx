@@ -335,6 +335,66 @@ const GetRoleBasedPermission = async (roleId) => {
   }
 };
 
+const UpdateExpense = async (hostelId, expenseId, payload) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/expense/${hostelId}/${expenseId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      await GetExpenseList(hostelId);
+      return { success: true };
+    }
+
+    return { success: false };
+
+  } catch (err) {
+    return {
+      success: false,
+      message: err?.response?.data || "Update failed"
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const DeleteExpense = async (hostelId, expenseId) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v2/expense/${hostelId}/${expenseId}`
+    );
+
+    if (res?.status === 200 || res?.status === 204) {
+      // refresh expense list
+      await GetExpenseList(hostelId);
+
+      return { success: true };
+    }
+
+    return { success: false, message: "Failed to delete expense" };
+  } catch (err) {
+    console.log("Delete error", err?.response || err);
+
+    return {
+      success: false,
+      message: err?.response?.data || "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
 
@@ -359,6 +419,8 @@ const GetRoleBasedPermission = async (roleId) => {
         UpdateExpenseSubCategory,
         GetRoleBasedPermission,
         GetProfileDetails,
+        UpdateExpense,
+        DeleteExpense,
       }}
     >
       {children}

@@ -364,7 +364,8 @@ const RecurringBills = ({onSelectRecurringBill}) => {
           </View> */}
 
           <Text style={styles.date}>
-            {formatApiDate(item?.lastInvoiceDate)}
+            {/* {formatApiDate(item?.lastInvoiceDate)} */}
+            {item?.lastInvoiceDate}
           </Text>
         </View>
            </TouchableOpacity>

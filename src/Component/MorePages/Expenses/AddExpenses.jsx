@@ -26,13 +26,16 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function AddExpenses({ navigation, route }) {
 
 
-  const { fetchExpenses, IntializeexpensesList, GetInitializeExpense, expenses, expensesList, GetExpenseList, loading, AddExpense } = useContext(ExpensesContext);
+  const { fetchExpenses, IntializeexpensesList, GetInitializeExpense,
+    UpdateExpense,  expenses, expensesList, GetExpenseList, loading, AddExpense,  } = useContext(ExpensesContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const editData = route?.params?.editData || null;
 
-  console.log("IntializeexpensesList", editData);
-const isEditMode = !!editData;
+  
+
+    console.log("IntializeexpensesList", editData);
+    const isEditMode = !!editData;
 
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -83,12 +86,16 @@ const descriptionRef = useRef(null);
   const [amountErr, setAmountErr] = useState("");
   const [unitcountErr , setUnitCountErr] = useState("")
   const [modeErr, setModeErr] = useState("");
+  const [nochangeErr, setNochangeErr] =  useState("");
+
+  const [initialData, setInitialData] = useState(null);
 
   const paymentOptions =
     IntializeexpensesList?.banks?.map((b) => ({
       id: b?.bankId,
       name: `${b?.holderName} - ${b?.bankName}`,
     })) || [];
+
 
 
 
@@ -152,6 +159,50 @@ const descriptionRef = useRef(null);
 }, [editData, IntializeexpensesList]);
 
 
+
+// useEffect(() => {
+//   if (editData) {
+
+//     const data = {
+//       categoryId: editData.categoryId,
+//       subCategoryId: editData.subCategoryId,
+//       purchaseDate: editData.transactionDate,
+//       count: editData.itemsCount,
+//       totalAmount: editData.totalAmount,
+//       description: editData.description || ""
+//     };
+
+//     setInitialData(data);
+//   }
+// }, [editData]);
+
+useEffect(() => {
+  if (editData) {
+    const data = {
+      categoryId: editData?.categoryId,
+      subCategoryId: editData?.subCategoryId || null,
+      purchaseDate: editData?.transactionDate,
+      count: editData?.itemsCount,
+      totalAmount: editData?.totalAmount,
+      description: editData?.description || ""
+    };
+
+    setInitialData(data);
+  }
+}, [editData]);
+
+const [minDate, setMinDate] = useState(null);
+
+useEffect(() => {
+  if (editData?.transactionDate) {
+    const originalDate = dayjs(editData?.transactionDate, "DD/MM/YYYY");
+    setMinDate(originalDate);
+  }
+}, [editData]);
+
+
+
+
   useEffect(() => {
     const amount = Number(purchaseAmount);
     const units = Number(unitCount);
@@ -163,6 +214,7 @@ const descriptionRef = useRef(null);
       setPerUnit("");
     }
   }, [purchaseAmount, unitCount]);
+
 
 
 
@@ -185,10 +237,17 @@ const descriptionRef = useRef(null);
 
   const today = dayjs();
   
-  const isDisabledDate = (d) => {
-    if (!d) return false;
-    return d.isAfter(today, "day")
-  };
+const isDisabledDate = (d) => {
+  if (!d) return false;
+
+  if (d.isAfter(today, "day")) return true;
+
+  if (isEditMode && minDate && d.isBefore(minDate, "day")) return true;
+
+  return false;
+}
+
+
   
         
         
@@ -293,89 +352,342 @@ const descriptionRef = useRef(null);
   return !isNaN(num) && num > 0;
 };
 
+const hasChanges = () => {
 
-  const handleSaveExpense = async () => {
-    let hasError = false;
+  const currentData = {
+    categoryId: selectedCategory?.categoryId || null,
+    subCategoryId: selectedSubCategory?.subCategoryId || null,
+    purchaseDate: dayjs(purchaseDate).format("DD/MM/YYYY"),
+    count: Number(unitCount) || 1,
+    totalAmount: Number(purchaseAmount),
+    description: description || ""
+  };
 
-    setCategoryErr("");
-    setSubCategoryErr("");
-    setDateErr("");
-    setAmountErr("");
-    setUnitCountErr("")
-    setModeErr("");
-
-    if (!selectedCategory) {
-      setCategoryErr("Please Select Category")
-      hasError = true;
-    }
-
-    if (subCategoryList.length > 0 && !selectedSubCategory) {
-      setSubCategoryErr("Please select sub category");
-      hasError = true;
-    }
-
-    if (!purchaseDate) {
-      setDateErr("Please Select Purchase Date");
-      hasError = true;
-    }
-
-    if (!purchaseAmount || Number(purchaseAmount) <= 0) {
-      setAmountErr("Enter Valid Amount");
-      hasError = true;
-    }
-
-    if (!isValidPositiveNumber(purchaseAmount)) {
-  setAmountErr("Amount must be greater than 0");
-  hasError = true;
-}
-
-// UNIT COUNT VALIDATION
-if (unitCount && !isValidPositiveNumber(unitCount)) {
-  setUnitCountErr("Unit count must be greater than 0");
-  hasError = true;
-}
-
-    if (!selectedMode) {
-      setModeErr("Please Select Mode of Transaction");
-      hasError = true;
-    }
+  return JSON.stringify(initialData) !== JSON.stringify(currentData);
+};
 
 
-    if (hasError) return
+const handleSubmitExpense = async () => {
 
-    const payload = {
+  let hasError = false;
+
+  setCategoryErr("");
+  setSubCategoryErr("");
+  setDateErr("");
+  setAmountErr("");
+  setUnitCountErr("");
+  setModeErr("");
+  setNochangeErr("");
+
+  if (!selectedCategory) {
+    setCategoryErr("Please Select Category");
+    hasError = true;
+  }
+
+  if (subCategoryList.length > 0 && !selectedSubCategory) {
+    setSubCategoryErr("Please select sub category");
+    hasError = true;
+  }
+
+  if (!purchaseDate) {
+    setDateErr("Please Select Purchase Date");
+    hasError = true;
+  }
+
+  if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+    setAmountErr("Enter Valid Amount");
+    hasError = true;
+  }
+
+  if (!selectedMode && !isEditMode) {
+    setModeErr("Please Select Mode of Transaction");
+    hasError = true;
+  }
+
+  if (hasError) return;
+
+  if (isEditMode && !hasChanges()) {
+    setNochangeErr("No changes detected");
+    return;
+  }
+
+  let payload;
+
+  if (isEditMode) {
+    payload = {
       categoryId: selectedCategory.categoryId,
-      subCategory: selectedSubCategory
-        ? selectedSubCategory.subCategoryId
-        : null,
+      subCategoryId: selectedSubCategory?.subCategoryId || null,
+      purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+      count: Number(unitCount) || 1,
+      totalAmount: Number(purchaseAmount),
+      description
+    };
+  } else {
+    payload = {
+      categoryId: selectedCategory.categoryId,
+      subCategoryId: selectedSubCategory?.subCategoryId || null,
       purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
       count: Number(unitCount) || 1,
       totalAmount: Number(purchaseAmount),
       description,
-      bankId: selectedMode.id,
-    }
+      bankId: selectedMode.id
+    };
+  }
 
-    const res = await AddExpense(payload,activeHostelId);
+  let res;
 
-    if (res.success) {
-      await GetExpenseList(activeHostelId);
+  if (isEditMode) {
+    res = await UpdateExpense(activeHostelId, editData.expenseId, payload);
+  } else {
+    res = await AddExpense(payload, activeHostelId);
+  }
 
-      setModalType("success");
-      setModalMessage("Expense Added successfully");
-      setShowSuccessModal(true);
+  if (res?.success) {
 
-      setTimeout(() => {
-        setShowSuccessModal(false);
-        navigation.goBack();
-      }, 1500);
-    } else {
-      setModalType("error");
-      setModalMessage(res?.message || "Something went wrong");
-      setShowSuccessModal(true);
+    await GetExpenseList(activeHostelId);
 
-      setTimeout(() => setShowSuccessModal(false), 2000);
-    }
-  };
+    setModalType("success");
+    setModalMessage(
+      isEditMode
+        ? "Expense updated successfully"
+        : "Expense added successfully"
+    );
+
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      if (route?.params?.onUpdated) {
+      route.params.onUpdated();
+        }
+      navigation.goBack();
+    }, 1500);
+
+  } else {
+
+    setModalType("error");
+    setModalMessage(res?.message || "Something went wrong");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 2000);
+  }
+};
+
+// const handleSubmitExpense = async () => {
+
+//   let hasError = false;
+
+//   setCategoryErr("");
+//   setSubCategoryErr("");
+//   setDateErr("");
+//   setAmountErr("");
+//   setUnitCountErr("");
+//   setModeErr("");
+//   setNochangeErr("")
+
+//   if (!selectedCategory) {
+//     setCategoryErr("Please Select Category");
+//     hasError = true;
+//   }
+
+//   if (subCategoryList.length > 0 && !selectedSubCategory) {
+//     setSubCategoryErr("Please select sub category");
+//     hasError = true;
+//   }
+
+//   if (!purchaseDate) {
+//     setDateErr("Please Select Purchase Date");
+//     hasError = true;
+//   }
+
+//   if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+//     setAmountErr("Enter Valid Amount");
+//     hasError = true;
+//   }
+
+//   if (!selectedMode) {
+//     setModeErr("Please Select Mode of Transaction");
+//     hasError = true;
+//   }
+
+//   if (hasError) return;
+
+
+ 
+
+// if (!hasChanges()) {
+//   setNochangeErr("No changes detected");
+//   return;
+// }
+
+// let payload;
+
+// // if (isEditMode) {
+// //   payload = {
+// //     categoryId: selectedCategory.categoryId,
+// //     subCategoryId: selectedSubCategory?.subCategoryId || null,
+// //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+// //     count: Number(unitCount) || 1,
+// //     totalAmount: Number(purchaseAmount),
+// //     description,
+// //   };
+// // } else {
+// //   payload = {
+// //     categoryId: selectedCategory.categoryId,
+// //     subCategoryId: selectedSubCategory?.subCategoryId || null,
+// //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+// //     count: Number(unitCount) || 1,
+// //     totalAmount: Number(purchaseAmount),
+// //     description,
+// //     bankId: selectedMode.id,
+// //   };
+// // }
+
+//   let res;
+
+//   if (isEditMode) {
+
+//       payload = {
+//     categoryId: selectedCategory.categoryId,
+//     subCategoryId: selectedSubCategory?.subCategoryId || null,
+//     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+//     count: Number(unitCount) || 1,
+//     totalAmount: Number(purchaseAmount),
+//     description,
+//   };
+
+   
+
+//     res = await UpdateExpense(
+//       activeHostelId,
+//       editData.expenseId,
+//       payload
+//     );
+
+//   } else {
+//       payload = {
+//     categoryId: selectedCategory.categoryId,
+//     subCategoryId: selectedSubCategory?.subCategoryId || null,
+//     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+//     count: Number(unitCount) || 1,
+//     totalAmount: Number(purchaseAmount),
+//     description,
+//     bankId: selectedMode.id,
+//   };
+
+//     res = await AddExpense(payload, activeHostelId);
+
+//   }
+
+//   if (res?.success) {
+
+//     await GetExpenseList(activeHostelId);
+
+//     setModalType("success");
+//     setModalMessage(
+//       isEditMode
+//         ? "Expense updated successfully"
+//         : "Expense added successfully"
+//     );
+
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => {
+//       setShowSuccessModal(false);
+//       navigation.goBack();
+//     }, 1500);
+
+//   } else {
+
+//     setModalType("error");
+//     setModalMessage(res?.message || "Something went wrong");
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => setShowSuccessModal(false), 2000);
+//   }
+// };
+
+//   const handleSaveExpense = async () => {
+//     let hasError = false;
+
+//     setCategoryErr("");
+//     setSubCategoryErr("");
+//     setDateErr("");
+//     setAmountErr("");
+//     setUnitCountErr("")
+//     setModeErr("");
+
+//     if (!selectedCategory) {
+//       setCategoryErr("Please Select Category")
+//       hasError = true;
+//     }
+
+//     if (subCategoryList.length > 0 && !selectedSubCategory) {
+//       setSubCategoryErr("Please select sub category");
+//       hasError = true;
+//     }
+
+//     if (!purchaseDate) {
+//       setDateErr("Please Select Purchase Date");
+//       hasError = true;
+//     }
+
+//     if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+//       setAmountErr("Enter Valid Amount");
+//       hasError = true;
+//     }
+
+//     if (!isValidPositiveNumber(purchaseAmount)) {
+//   setAmountErr("Amount must be greater than 0");
+//   hasError = true;
+// }
+
+// if (unitCount && !isValidPositiveNumber(unitCount)) {
+//   setUnitCountErr("Unit count must be greater than 0");
+//   hasError = true;
+// }
+
+//     if (!selectedMode) {
+//       setModeErr("Please Select Mode of Transaction");
+//       hasError = true;
+//     }
+
+
+//     if (hasError) return
+
+//     const payload = {
+//       categoryId: selectedCategory.categoryId,
+//       subCategory: selectedSubCategory
+//         ? selectedSubCategory.subCategoryId
+//         : null,
+//       purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+//       count: Number(unitCount) || 1,
+//       totalAmount: Number(purchaseAmount),
+//       description,
+//       bankId: selectedMode.id,
+//     }
+
+//     const res = await AddExpense(payload,activeHostelId);
+
+//     if (res.success) {
+//       await GetExpenseList(activeHostelId);
+
+//       setModalType("success");
+//       setModalMessage("Expense Added successfully");
+//       setShowSuccessModal(true);
+
+//       setTimeout(() => {
+//         setShowSuccessModal(false);
+//         navigation.goBack();
+//       }, 1500);
+//     } else {
+//       setModalType("error");
+//       setModalMessage(res?.message || "Something went wrong");
+//       setShowSuccessModal(true);
+
+//       setTimeout(() => setShowSuccessModal(false), 2000);
+//     }
+//   };
 
 
 
@@ -422,6 +734,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
               setCategoryOpen(!categoryOpen)
               setSubCategoryOpen(false);
               setModePaymentOpen(false);
+              
             }}
           >
             <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
@@ -453,6 +766,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
                           setSelectedCategory(item);
                           setSelectedSubCategory(null);
                           setCategoryErr("");
+                            setNochangeErr("");
                           setCategoryOpen(false);
                         }}
 
@@ -499,6 +813,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
               setSubCategoryOpen(!subCategoryOpen);
               setCategoryOpen(false);
               setModePaymentOpen(false);
+      
             }}
 
           >
@@ -531,6 +846,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
                         onPress={() => {
                           setSelectedSubCategory(item);
                           setSubCategoryErr("");
+                          setNochangeErr("");
                           setSubCategoryOpen(false);
                         }}
 
@@ -563,9 +879,11 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
           </Text>
           <TouchableOpacity
             activeOpacity={0.7}
-            disabled={isEditMode}
+            // disabled={isEditMode}
   onPress={() => {
-    if (!isEditMode) setOpenPurchaseDate(true);
+    // if (!isEditMode)
+      setOpenPurchaseDate(true);
+      setNochangeErr("");
   }}
           >
             <View style={styles.dateInputWrapper}>
@@ -599,6 +917,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
               const cleaned = t.replace(/[^0-9]/g, "");
               setPurchaseAmount(cleaned);
               setAmountErr("");
+              setNochangeErr("");
             }}
           />
 
@@ -615,6 +934,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
               setUnitCount(cleaned);
               // setUnitCount(v)
               setUnitCountErr("")
+              setNochangeErr("");
             }
             }
             placeholder="Enter unit count"
@@ -642,7 +962,13 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
           </Text>
 
           <TouchableOpacity
-            style={styles.expensesDropdownBox}
+            // style={styles.expensesDropdownBox}
+
+              style={[
+    styles.expensesDropdownBox,
+    isEditMode && { opacity: 0.4 }
+  ]}
+  disabled={isEditMode}
             onPress={() => {
               setModePaymentOpen(!modePaymentOpen);
               setCategoryOpen(false);
@@ -677,6 +1003,7 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
                         onPress={() => {
                           setSelectedMode(item)
                           setModeErr("")
+                          setNochangeErr("");
                           setModePaymentOpen(false)
                         }}
                       >
@@ -711,12 +1038,17 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
             style={styles.textarea}
             multiline
             value={description}
-            onChangeText={setDescription}
+              onChangeText={(text) => {
+              setDescription(text)
+              setNochangeErr("")
+               }}
             placeholder="Add a short description"
             placeholderTextColor="#999"
             onFocus={() => scrollToField(descriptionRef)}
           />
           </View>
+
+           {nochangeErr ? <ErrorMessage message={nochangeErr} type="error" /> : null}
 
           {/* BUTTONS */}
           <View style={styles.btnRow}>
@@ -727,13 +1059,11 @@ if (unitCount && !isValidPositiveNumber(unitCount)) {
             <TouchableOpacity
   style={[
     styles.saveBtn,
-    isEditMode && {opacity:0.7} // grey
   ]}
-  disabled={isEditMode}
-  onPress={handleSaveExpense}
+  onPress={handleSubmitExpense}
 >
   <Text style={styles.saveText}>
-    {isEditMode ? "Coming Soon" : "Add Expense"}
+    {isEditMode ? "Update Expense" : "Add Expense"}
   </Text>
 </TouchableOpacity>
 
