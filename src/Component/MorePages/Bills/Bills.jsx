@@ -596,6 +596,29 @@ export default function BillsDesign({ route }) {
     })
   ).current;
 
+   useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(recordSheetY, {
+        toValue: -e.endCoordinates.height + 70,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(recordSheetY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const maxRefund = Number(refundInitDetails?.pendingRefund || 0);
 
 
@@ -648,30 +671,30 @@ export default function BillsDesign({ route }) {
   }, []);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      if (!isInputFocused) return;
-      Animated.timing(recordSheetY, {
-        toValue: -e.endCoordinates.height + 80,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
+  // useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     if (!isInputFocused) return;
+  //     Animated.timing(recordSheetY, {
+  //       toValue: -e.endCoordinates.height + 80,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
 
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(recordSheetY, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-      setIsInputFocused(false);
-    });
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     Animated.timing(recordSheetY, {
+  //       toValue: 0,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //     setIsInputFocused(false);
+  //   });
 
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [isInputFocused]);
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, [isInputFocused]);
 
 
 
@@ -3349,7 +3372,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                 <View style={styles.sheetHandle} />
 
                 <ScrollView showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled">
+                >
 
                   {/* Header */}
                   <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
@@ -3659,12 +3682,12 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                     // keyboardType="numeric"
                     value={transactionId}
                     onChangeText={handleTransactionChange}
-                    onFocus={() => {
-                      setIsInputFocused(true);
-                    }}
-                    onBlur={() => {
-                      setIsInputFocused(false);
-                    }}
+                    // onFocus={() => {
+                    //   setIsInputFocused(true);
+                    // }}
+                    // onBlur={() => {
+                    //   setIsInputFocused(false);
+                    // }}
                   />
 
 

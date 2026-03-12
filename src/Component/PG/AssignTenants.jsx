@@ -358,16 +358,21 @@ export default function AssignTenant({ navigation, route }) {
       // ✅ CASE 3: Others -> reason + amount both mandatory
       if (e.type === "Others") {
         // both empty -> ok (optional row)
-        if (!titleFilled && !amountFilled) {
-          return { ...e, titleError: "", amountError: "" };
-        }
+        // if (!titleFilled && !amountFilled) {
+        //   return { ...e, titleError: "", amountError: "" };
+        // }
 
-        if (!titleFilled) {
+        if (!titleFilled && !amountFilled) {
           titleError = "Please enter reason";
           valid = false;
         }
 
-        if (!amountFilled) {
+        else if (!titleFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        else if (!amountFilled) {
           amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
@@ -825,7 +830,7 @@ export default function AssignTenant({ navigation, route }) {
                   value={bookingAmount}
                   // onChangeText={setBookingAmount}
                   onChangeText={(text) => {
-                    const onlyNum=text.replace(/[^0-9]/g,"");
+                    const onlyNum = text.replace(/[^0-9]/g, "");
                     setBookingAmount(onlyNum);
                     setBookingAmountError("");
                   }}
@@ -920,7 +925,7 @@ export default function AssignTenant({ navigation, route }) {
 
                     onChangeText={(text) => {
 
-                       const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"" );
+                      const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
                       setReferenceNumber(noEmojis);
                     }}
                   />
@@ -969,7 +974,7 @@ export default function AssignTenant({ navigation, route }) {
                         {CheckinTenants.map((v, index) => (
                           <TouchableOpacity
                             key={index}
-                            style={[styles.option,CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
+                            style={[styles.option, CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
                             onPress={() => {
                               setCheckinTenantSelected(v);
                               setCheckinTenantsopen(false);
@@ -1056,7 +1061,7 @@ export default function AssignTenant({ navigation, route }) {
                   keyboardType="numeric"
                   value={rentalAmount}
                   onChangeText={(text) => {
-                      const onlyNum=text.replace(/[^0-9]/g,"");
+                    const onlyNum = text.replace(/[^0-9]/g, "");
                     setRentalAmount(onlyNum);
                     setRentalError("");
                   }}
@@ -1075,7 +1080,7 @@ export default function AssignTenant({ navigation, route }) {
                   keyboardType="numeric"
                   value={advanceAmount}
                   onChangeText={(text) => {
-                      const onlyNum=text.replace(/[^0-9]/g,"");
+                    const onlyNum = text.replace(/[^0-9]/g, "");
                     setAdvanceAmount(onlyNum);
                     setAdvanceError("");
                   }}

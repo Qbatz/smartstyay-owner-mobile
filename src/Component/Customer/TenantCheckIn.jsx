@@ -321,7 +321,7 @@ export default function TenantCheckIn({ navigation, route }) {
       // ✅ CASE 2: Maintenance -> amount mandatory
       if (e.type === "Maintenance") {
         if (!amountFilled) {
-          amountError = "Please enter maintenance amount";
+          amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
           amountError = "Amount must be greater than 0";
@@ -334,16 +334,21 @@ export default function TenantCheckIn({ navigation, route }) {
       // ✅ CASE 3: Others -> reason + amount both mandatory
       if (e.type === "Others") {
         // both empty -> ok (optional row)
-        if (!titleFilled && !amountFilled) {
-          return { ...e, titleError: "", amountError: "" };
-        }
+        // if (!titleFilled && !amountFilled) {
+        //   return { ...e, titleError: "", amountError: "" };
+        // }
 
-        if (!titleFilled) {
+        if (!titleFilled && !amountFilled) {
           titleError = "Please enter reason";
           valid = false;
         }
 
-        if (!amountFilled) {
+        else if (!titleFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        else if (!amountFilled) {
           amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
@@ -514,7 +519,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                           <TouchableOpacity
                             key={v.id}
-                            style={[styles.option,selectedFloor?.id === v.id && {backgroundColor:'#E6F0FF'}]}
+                            style={[styles.option, selectedFloor?.id === v.id && { backgroundColor: '#E6F0FF' }]}
                             onPress={() => {
                               setSelectedFloor(v);
                               setFloorOpen(false);
@@ -556,10 +561,10 @@ export default function TenantCheckIn({ navigation, route }) {
                   {roomOpen && rooms.length > 0 && (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
-                        {rooms.map((r) => ( 
-                          <TouchableOpacity 
+                        {rooms.map((r) => (
+                          <TouchableOpacity
                             key={r.id}
-                            style={[styles.option, selectedRoom?.id === r.id &&{backgroundColor:'#E6F0FF'}]}
+                            style={[styles.option, selectedRoom?.id === r.id && { backgroundColor: '#E6F0FF' }]}
                             onPress={() => {
                               setSelectedRoom(r);
                               setRoomOpen(false);
@@ -598,10 +603,10 @@ export default function TenantCheckIn({ navigation, route }) {
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
                         {filteredBeds.map((b) => (
-                          
+
                           <TouchableOpacity
                             key={b.bedId}
-                            style={[styles.option, selectedBed?.bedId === b.bedId &&{backgroundColor:'#E6F0FF'}]}
+                            style={[styles.option, selectedBed?.bedId === b.bedId && { backgroundColor: '#E6F0FF' }]}
                             onPress={() => {
                               setSelectedBed(b);
                               setBedOpen(false);
@@ -626,7 +631,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
 
-                <View style={styles.field}>
+                <View style={{ marginBottom: 1, marginTop: 8 }}>
                   <Text style={styles.label}>Advance Amount  <Text style={{ color: "red" }}>*</Text></Text>
                   <TextInput
                     ref={advanceRef}
@@ -646,7 +651,7 @@ export default function TenantCheckIn({ navigation, route }) {
                   <ErrorMessage message={advanceError} type="error" />
                 )}
 
-                <View style={styles.field}>
+                <View style={{ marginBottom: 2, marginTop: 12 }}>
                   <Text style={styles.label}>Rental Amount  <Text style={{ color: "red" }}>*</Text></Text>
                   <TextInput
                     ref={rentalRef}
@@ -659,7 +664,7 @@ export default function TenantCheckIn({ navigation, route }) {
                         : "Enter Rental Amount"
                     }
                     onChangeText={(text) => {
-                       const onlyNumbers = text.replace(/[^0-9]/g, "");
+                      const onlyNumbers = text.replace(/[^0-9]/g, "");
                       setRentalAmount(onlyNumbers);
                       setRentError("");
                     }}
@@ -762,10 +767,10 @@ export default function TenantCheckIn({ navigation, route }) {
                             onChangeText={(t) => {
                               // const onlyNumbers = t.replace(/[^0-9]/g, "");
                               const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
-                       
+
                               updateAmount(item.id, onlyNumbers)
                             }
-                               }
+                            }
                           />
 
 
@@ -1118,7 +1123,7 @@ const styles = StyleSheet.create({
   nonRefund: {
     backgroundColor: "#F7F9FF",
     padding: 10,
-    marginTop: 10,
+    marginTop: 16,
     borderRadius: 20
   },
 

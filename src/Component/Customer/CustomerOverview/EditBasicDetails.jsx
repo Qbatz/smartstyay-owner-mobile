@@ -142,7 +142,7 @@ export default function EditBasicDetailsSheet({
 
         if (
             !mobile ||
-            !/^[6-9]\d{9}$/.test(mobile)
+            !/^[1-9]\d{9}$/.test(mobile)
         ) {
             setMobileNumberError("Enter a valid 10 digit mobile number");
             valid = false;

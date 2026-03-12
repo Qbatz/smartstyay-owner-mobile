@@ -16,8 +16,10 @@ import ConfirmReassignSheet from "./ReAssignBottomSheet";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
-import EmptyState from "../../../Assets/Images/Empty_state.png"; 
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 import Reservedimg from "../../../Assets/Images/Reservedbed.png";
+import BedIcon from "../../../Assets/Images/Bed_Icon.png";
+import RoomIcon from "../../../Assets/Images/Room_Icon.png"
 
 
 export default function ReassignBedScreen({ route, navigation }) {
@@ -31,25 +33,25 @@ export default function ReassignBedScreen({ route, navigation }) {
   const [bedsByRoom, setBedsByRoom] = useState({});
   const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id);
 
-const [rooms, setRooms] = useState([]);
-        
-          const { ReAssignStatusCode, setReAssignStatusCode,getCustomerDetails} = useCustomer();
+  const [rooms, setRooms] = useState([]);
 
-const [bedDetails,setBedDetails] = useState([])
-console.log("selectedBed",selectedBed)
-console.log("rooms",rooms)
-useEffect(() => {
-  if (!selectedFloorId) return;
+  const { ReAssignStatusCode, setReAssignStatusCode, getCustomerDetails } = useCustomer();
 
-  const loadRooms = async () => {
-    const res = await getAllRoomsByFloor(selectedFloorId);
- 
-    if (res.success) {
-      setRooms(res.data);
-    } else {
-      setRooms([]);
-    }
-  };
+  const [bedDetails, setBedDetails] = useState([])
+  console.log("selectedBed", selectedBed)
+  console.log("rooms", rooms)
+  useEffect(() => {
+    if (!selectedFloorId) return;
+
+    const loadRooms = async () => {
+      const res = await getAllRoomsByFloor(selectedFloorId);
+
+      if (res.success) {
+        setRooms(res.data);
+      } else {
+        setRooms([]);
+      }
+    };
 
 
     loadRooms();
@@ -58,21 +60,21 @@ useEffect(() => {
 
 
 
- 
 
- useEffect(() => {
-  if(ReAssignStatusCode === 200){
+
+  useEffect(() => {
+    if (ReAssignStatusCode === 200) {
       navigation.goBack()
-  }
-  setReAssignStatusCode(0)
-},[ReAssignStatusCode])
+    }
+    setReAssignStatusCode(0)
+  }, [ReAssignStatusCode])
 
-console.log("ReAssignStatusCode", ReAssignStatusCode);
+  console.log("ReAssignStatusCode", ReAssignStatusCode);
 
 
 
- useEffect(() => {
-  if (!rooms.length) return;
+  useEffect(() => {
+    if (!rooms.length) return;
 
 
     setBedsByRoom({}); // clear old beds
@@ -138,11 +140,38 @@ console.log("ReAssignStatusCode", ReAssignStatusCode);
               <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold' }}>{selectedBed?.currentTenantInfo[0]?.tenantInitials}</Text>
             </View>}
 
-          <View style={{ marginLeft: 8 }}>
-            <Text style={styles.profileName}>{selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
-            <Text style={styles.profileSub}>
+          <View style={{ marginLeft: 8,flex:1 }}>
+            <Text numberOfLines={1}
+              style={styles.profileName}>{selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
+
+            <View style={{ marginTop: 6.9, flexDirection: 'row', alignItems: 'center',flex:1}}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontFamily: "Gilroy-Medium", fontSize: 12, paddingVertical: 4, backgroundColor: "#FFEFCF",
+                    paddingHorizontal: 8, borderRadius: 40
+                  }}>
+                  {selectedBed.floorName}
+                </Text>
+              </View>
+
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex:1}}>
+                <Image source={RoomIcon} style={{ width: 19.11, height: 19.11 }} />
+                <Text numberOfLines={1}
+                  style={{ fontFamily: 'Gilroy-Medium', fontSize: 14,flexShrink:1,marginLeft: 3 }}>{selectedBed.roomName}</Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 3, flex: 1 }} s>
+                <Image source={BedIcon} style={{ width: 19.11, height: 19.11 }} />
+                <Text numberOfLines={1}
+                  style={{ fontFamily: 'Gilroy-Medium', fontSize: 14, marginLeft: 3,flexShrink:1  }}>{selectedBed.bedName}</Text>
+              </View>
+            </View>
+            {/* <Text style={styles.profileSub}>
               {selectedBed.floorName} - {selectedBed.roomName} - {selectedBed.bedName}
-            </Text>
+            </Text> */}
           </View>
         </View>
 
@@ -199,10 +228,10 @@ console.log("ReAssignStatusCode", ReAssignStatusCode);
             <Text style={styles.legendText}>Available</Text>
           </View>
 
-          <View style={styles.legendItem}>
+          {/* <View style={styles.legendItem}>
             <View style={styles.occupiedDot} />
             <Text style={styles.legendText}>Occupied</Text>
-          </View>
+          </View> */}
         </View>
 
 
@@ -344,12 +373,15 @@ const styles = StyleSheet.create({
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    marginBottom: 10
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 1, marginHorizontal: 15,
+    paddingVertical: 15,
+    borderRadius: 10, borderColor: '#EDEDED', elevation: 2, backgroundColor: '#fff'
   },
 
   profileImg: { width: 50, height: 50, borderRadius: 25 },
-  profileName: { fontSize: 18, fontWeight: "700" },
+  profileName: { fontSize: 18, fontFamily: 'Gilroy-Semibold' },
   profileSub: { color: "#777" },
 
 
