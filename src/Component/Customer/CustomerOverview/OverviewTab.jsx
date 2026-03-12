@@ -181,6 +181,19 @@ const [viewerIndex, setViewerIndex] = useState(0);
     "NOTICE",
   ].includes(customerDetails?.hostelInfo?.currentStatus);
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
+
+const isBookedTenant = customerDetails?.customerCurrentStatus === "BOOKED";
+  const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
+
+  const status = customerDetails?.customerCurrentStatus;
+
+const disableFinancialEdit =
+  status === "BOOKED" ||
+  status === "VACATED" ||
+  status === "NOTICE";
+
+
+
   return (
     <>
       <SuccessModal
@@ -610,13 +623,12 @@ const [viewerIndex, setViewerIndex] = useState(0);
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
-                  {
+                  {/* {
                   !["VACATED","NOTICE"].includes (customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus ) && (
                       <TouchableOpacity
-                        disabled={!isJoiningDateEditable && !canUpdateTenant}
+                        disabled={!isJoiningDateEditable && !canUpdateTenant && isBookedTenant}
                         style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
                         onPress={handleEditMonthlyRent}
-                      // disabled={!isJoiningDateEditable}
                       >
                         <Image
                           source={EditIcon}
@@ -628,7 +640,22 @@ const [viewerIndex, setViewerIndex] = useState(0);
                       </TouchableOpacity>
 
                     )
-                  }
+                  } */}
+
+                  {
+!["VACATED","NOTICE"].includes(status) && (
+  <TouchableOpacity
+    disabled={disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable}
+    style={(disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable) && {opacity:0.4}}
+    onPress={handleEditMonthlyRent}
+  >
+    <Image
+      source={EditIcon}
+      style={styles.editIconSmall}
+    />
+  </TouchableOpacity>
+)
+}
 
 
                 </View>
@@ -641,13 +668,12 @@ const [viewerIndex, setViewerIndex] = useState(0);
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
-                  {
+                  {/* {
                    !["VACATED","NOTICE"].includes (customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus )  && (
                       <TouchableOpacity
-                        disabled={!isJoiningDateEditable && !canUpdateTenant}
-                        style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
+                        disabled={!isJoiningDateEditable && !canUpdateTenant && !canEditAdvance && isBookedTenant}
+                        style={!isJoiningDateEditable && !canUpdateTenant && !canEditAdvance && isBookedTenant &&  { opacity: 0.4 }}
                         onPress={handleEditAdvance}
-                      // disabled={!isJoiningDateEditable}
                       >
                         <Image
                           source={EditIcon}
@@ -659,7 +685,32 @@ const [viewerIndex, setViewerIndex] = useState(0);
                       </TouchableOpacity>
 
                     )
-                  }
+                  } */}
+
+                  {
+!["VACATED","NOTICE"].includes(status) && (
+  <TouchableOpacity
+    disabled={
+      disableFinancialEdit ||
+      !canUpdateTenant ||
+      !canEditAdvance ||
+      !isJoiningDateEditable
+    }
+    style={
+      (disableFinancialEdit ||
+        !canUpdateTenant ||
+        !canEditAdvance ||
+        !isJoiningDateEditable) && {opacity:0.4}
+    }
+    onPress={handleEditAdvance}
+  >
+    <Image
+      source={EditIcon}
+      style={styles.editIconSmall}
+    />
+  </TouchableOpacity>
+)
+}
 
                 </View>
                 <Text style={styles.amountLabel}>
