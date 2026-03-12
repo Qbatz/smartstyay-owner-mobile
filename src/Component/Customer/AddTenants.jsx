@@ -103,7 +103,7 @@ export default function AddTenant() {
         state: "",
     });
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    const mobileRegex = /^[6-9][0-9]{9}$/;
+    const mobileRegex = /^[1-9][0-9]{9}$/;
 
     const isBasicValid =
         basicDetails.firstName.trim().length > 0 &&

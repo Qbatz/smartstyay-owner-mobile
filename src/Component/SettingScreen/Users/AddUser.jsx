@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   },
 
   sheet: {
-    maxHeight: "90%",
+    maxHeight: "95%",
     backgroundColor: "#fff",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,

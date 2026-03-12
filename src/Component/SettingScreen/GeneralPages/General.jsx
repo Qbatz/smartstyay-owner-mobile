@@ -47,6 +47,8 @@ import LogoutIcon from "../../../Assets/Images/Logout.png"
 import { removeData, storeData } from "../../../Utils/Storage";
 import { LoginContexts } from "../../../Context/LoginContext";
 import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
+import YellowCrownIcon from "../../../Assets/Images/YellowCrownAdmin.png"
+import CrownIcon from "../../../Assets/Images/crown.png"
 
 
 
@@ -766,6 +768,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                         {getInitials(profileDetails)}
                       </Text>
                     )}
+                    <Image source={YellowCrownIcon} style={{width:23.2,height:23.2,position:'absolute',top:5,right:-5}}/>
                   </View>
 
                  
@@ -778,7 +781,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                   onPress={() => setShowPasswordSheet(true)}
                 >
                   <Image
-                    source={require("../../../Assets/Images/Eye.png")}
+                    source={CrownIcon}
                     style={styles.eyeIcon}
                   />
                   <Text style={styles.changePwdText}>
@@ -1484,6 +1487,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
+    position:'relative'
   },
 
   avatarText: {

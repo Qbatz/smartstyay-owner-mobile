@@ -351,16 +351,21 @@ export default function BookingCheckIn({ navigation, route }) {
             // ✅ CASE 3: Others -> reason + amount both mandatory
             if (e.type === "Others") {
                 // both empty -> ok (optional row)
-                if (!titleFilled && !amountFilled) {
-                    return { ...e, titleError: "", amountError: "" };
+                // if (!titleFilled && !amountFilled) {
+                //     return { ...e, titleError: "", amountError: "" };
+                // }
+
+                if(!titleFilled && !amountFilled){
+                    titleError= "Please enter reason";
+                    valid = false;
                 }
 
-                if (!titleFilled) {
+                else if (!titleFilled) {
                     titleError = "Please enter reason";
                     valid = false;
                 }
 
-                if (!amountFilled) {
+                else if (!amountFilled) {
                     amountError = "Please enter amount";
                     valid = false;
                 } else if (isNaN(amt) || amt <= 0) {

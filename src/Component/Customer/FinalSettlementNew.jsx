@@ -1132,7 +1132,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
             {/* Buttons */}
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.cancelBtn}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
                 <Text style={styles.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
 

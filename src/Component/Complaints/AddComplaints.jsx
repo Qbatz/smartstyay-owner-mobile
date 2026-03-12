@@ -754,7 +754,7 @@ const handleSubmitComplaint = async () => {
   style={styles.inputBox}
   value={selectedCustomer?.floorName || ""}
   editable={false}
-  placeholder="Select Floor"
+  placeholder=" Floor"
 />
 
 <Text style={styles.label}>Room<Text style={{ color: "red" }}> *</Text></Text>
@@ -762,7 +762,7 @@ const handleSubmitComplaint = async () => {
   style={styles.inputBox}
   value={selectedCustomer?.roomName || ""}
   editable={false}
-  placeholder="Select Room"
+  placeholder=" Room"
 />
 
 <Text style={styles.label}>Bed<Text style={{ color: "red" }}> *</Text></Text>
@@ -770,7 +770,7 @@ const handleSubmitComplaint = async () => {
   style={styles.inputBox}
   value={selectedCustomer?.bedName || ""}
   editable={false}
-  placeholder="Select Bed"
+  placeholder=" Bed"
 />
 
 
