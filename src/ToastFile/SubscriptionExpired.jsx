@@ -6,93 +6,104 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  SafeAreaView , 
+  SafeAreaView,
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
-import ExpiryImg from "../Assets/Images/subscription_expiry.png"; 
+import ExpiryImg from "../Assets/Images/subscription_expiry.png";
 
 
-export default function SubscriptionExpired() {
+export default function SubscriptionExpired({setTabBar,onClose}){
 
 
-    const navigation = useNavigation()
+  const navigation = useNavigation()
 
-    useFocusEffect(
-  useCallback(() => {
-    const onBackPress = () => {
-      navigation.reset({
-  index: 0,
-  routes: [{ name: "MyTabs" }],
-});
-      return true;
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "MyTabs" }],
+        });
+        return true;
+      };
 
-    const sub = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
+      const sub = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
 
-    return () => sub.remove();
-  }, [])
-);
+      return () => sub.remove();
+    }, [])
+  );
 
 
-return (
+  return (
 
-<View style={{flex:1,backgroundColor:"#fff"}}>
+    <View style={{ flex: 1, position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    zIndex: 999,
+ }}>
 
-<View style={{flexDirection:"row",justifyContent:"space-between",padding:20}}>
-<Text style={{fontSize:20,fontWeight:"700"}}>Smartstay</Text>
+  <View>
 
-<TouchableOpacity onPress={() =>
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "MyTabs" }],
-    })
-  }>
-<Text style={{fontSize:22}}>✕</Text>
-</TouchableOpacity>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 20 }}>
+        <Text style={{ fontSize: 20, fontWeight: "700" }}>Smartstay</Text>
 
-</View>
+        <TouchableOpacity onPress={() =>{
+         onClose()
+         setTabBar()}
+        }>
+          <Text style={{ fontSize: 22 }}>✕</Text>
+        </TouchableOpacity>
 
-<View style={{flex:1,justifyContent:"center",alignItems:"center",padding:20}}>
+      </View>
 
-<Image
-source={ExpiryImg}
-style={{width:260,height:260}}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
 
-/>
+        <Image
+          source={ExpiryImg}
+          style={{ width: 260, height: 260 }}
 
-<Text style={{fontSize:26,fontWeight:"800",textAlign:"center",marginTop:20}}>
-Your Smartstay Plan{"\n"}has Expired !
-</Text>
+        />
 
-<Text style={{textAlign:"center",marginTop:10,color:"#6B7280"}}>
-Renew your plan Now to continue managing the property operations.
-</Text>
+        <Text style={{ fontSize: 26, fontWeight: "800", textAlign: "center", marginTop: 20 }}>
+          Your Smartstay Plan{"\n"}has Expired !
+        </Text>
 
-<TouchableOpacity
-style={{
-backgroundColor:"#1E40AF",
-paddingVertical:16,
-borderRadius:14,
-marginTop:30,
-width:"100%",
-alignItems:"center"
-}}
->
-<Text style={{color:"#fff",fontWeight:"700",fontSize:16}}>
-Renew Now →
-</Text>
-</TouchableOpacity>
+        <Text style={{ textAlign: "center", marginTop: 10, color: "#6B7280" }}>
+          Renew your plan Now to continue managing the property operations.
+        </Text>
 
-</View>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#1E40AF",
+            paddingVertical: 16,
+            borderRadius: 14,
+            marginTop: 30,
+            width: "100%",
+            alignItems: "center"
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+            Renew Now →
+          </Text>
+        </TouchableOpacity>
 
-</View>
+      </View>
+      </View>
 
-)
+    </View>
+
+  )
 
 }

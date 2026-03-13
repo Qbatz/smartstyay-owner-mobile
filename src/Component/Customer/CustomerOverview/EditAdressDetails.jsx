@@ -472,7 +472,7 @@ export default function EditManualAddressSheet({
                     }
                   }}
                 />
-                {stateError && <ErrorMessage message={stateError} type="error" />}
+                
 
 
 
@@ -533,6 +533,7 @@ export default function EditManualAddressSheet({
                     </View>
                   </>
                 )}
+                {stateError && <ErrorMessage message={stateError} type="error" />}
 
               </View>
               {formError && <ErrorMessage message={formError} type="error" />}

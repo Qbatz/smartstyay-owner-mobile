@@ -307,7 +307,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
       }, 800);
     }
     else {
-      alert(res.data?.message || "Failed to save role");
+      // alert(res.data?.message || "Failed to save role");
     }
   };
 

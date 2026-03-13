@@ -21,6 +21,7 @@ import { Calendar } from "react-native-calendars";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../ToastFile/ToastPage";
+import ArrowLeft from "../../Assets/Images/Arrow_left.png"
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -626,10 +627,15 @@ export default function AssignTenant({ navigation, route }) {
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
 
+        <View style={{ flexDirection: 'row', alignItems: 'center',marginBottom:5 }}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={{ width: 20, height: 20 }} />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>← Assign Tenant</Text>
-        </TouchableOpacity>
+          <Text style={styles.backArrow}>Assign Tenant</Text>
+
+        </View>
+
 
         <Text style={styles.roomText}> Floor :{selectedBed?.floorName} | Room No :{selectedBed?.roomName} | Bed : {selectedBed?.bedName}</Text>
 
@@ -1127,7 +1133,7 @@ export default function AssignTenant({ navigation, route }) {
             {activeTab === "CheckIn" && (
               <View style={styles.nonRefund}>
                 <View style={styles.extraHeader}>
-                  <Text style={styles.label}>Non Refundable Amount</Text>
+                  <Text style={{ fontWeight: "600", color: "#444", }}>Non Refundable Amount</Text>
 
                   <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
                     <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
@@ -1441,7 +1447,8 @@ const styles = StyleSheet.create({
   backArrow: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 5,
+    marginLeft:4
+    // marginBottom: 5,
   },
 
   roomText: {
@@ -1520,6 +1527,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 18,
+    marginBottom: 6,
+    alignItems: 'center',
+
   },
 
   addBtn: {
@@ -1739,7 +1749,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F9FF",
     padding: 10,
     marginTop: 10,
-    borderRadius: 20
+    borderRadius: 20,
+
   },
   inputBox: {
     borderColor: "#e1e1e1",

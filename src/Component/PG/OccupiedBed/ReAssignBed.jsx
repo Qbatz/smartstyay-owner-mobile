@@ -20,6 +20,7 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 import Reservedimg from "../../../Assets/Images/Reservedbed.png";
 import BedIcon from "../../../Assets/Images/Bed_Icon.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png"
+import ArrowLeft from "../../../Assets/Images/Arrow_left.png"
 
 
 export default function ReassignBedScreen({ route, navigation }) {
@@ -127,9 +128,13 @@ export default function ReassignBedScreen({ route, navigation }) {
       <View style={styles.container}>
 
         {/* HEADER */}
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBack}>
-          <Text style={styles.headerText}>← Change Bed</Text>
+        <View style={{flexDirection:'row',alignItems:'center',padding:20}}>
+          <TouchableOpacity onPress={() => navigation.goBack()} >
+          <Image source={ArrowLeft} style={{width:20,height:20}}/>
         </TouchableOpacity>
+            <Text style={styles.headerText}> Change Bed</Text>
+        </View>
+        
 
         {/* PROFILE */}
         <View style={styles.profileRow}>
@@ -368,7 +373,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", paddingTop: 20 },
 
   headerBack: { padding: 20 },
-  headerText: { fontSize: 16, fontWeight: "500" },
+  headerText: { fontSize: 16, fontWeight: "500",marginLeft:3 },
 
   profileRow: {
     flexDirection: "row",

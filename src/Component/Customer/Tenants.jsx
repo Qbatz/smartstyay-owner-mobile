@@ -174,7 +174,6 @@ export default function TenantsScreen({ route }) {
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data || []);
-    console.log("billa",data)
   };
   const handleCheckoutSuccess = async () => {
     await fetchCustomers();
@@ -494,7 +493,6 @@ export default function TenantsScreen({ route }) {
       selectedItem: selectedItem,
     });
   };
-  console.log("bala",customers)
   const filteredTenants = customers?.listCustomers?.filter((item) => {
     const search = searchText.trim().toLowerCase();
 
@@ -520,7 +518,6 @@ export default function TenantsScreen({ route }) {
     }
   };
 
-  {console.log("bala",filteredTenants)}
 
 
 

@@ -72,6 +72,9 @@ import { NotificationContext } from "../../Context/NotificationContext";
 import EmptyState from "../../Assets/Images/Empty_state.png"
 import Loader from "../Loader/Loader"
 import OrangeLocationIcon from "../../Assets/Images/OrangeLocationIcon.png"
+import ExpiryImg from "../../Assets/Images/subscription_expiry.png";
+import SubscriptionExpiredSheet from "../../ToastFile/SubscriptionExpired"
+
 
 import {
   BarChart,
@@ -85,12 +88,13 @@ import { retriveData } from "../../Utils/Storage";
 import SuccessModal from "../../ToastFile/ToastPage";
 import SubscriptionFullScreenAlert from "./SubscriptionBannerAlert";
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
+import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 
 
 
-export default function DashboardScreen({ initialParams }) {
+export default function DashboardScreen({ initialParams, route }) {
 
-  console.log("initialParams", initialParams);
+  console.log("initialParams", initialParams, route);
 
   const insets = useSafeAreaInsets();
   const { getDashboardByHostel, loading } = useCustomer();
@@ -119,6 +123,9 @@ export default function DashboardScreen({ initialParams }) {
   const [sharingModalVisible, setSharingModalVisible] = useState(false);
 
   const [activeSubTab, setActiveSubTab] = useState("Activities");
+  const [showExpiryScreen, setShowExpiredScreen] = useState(false);
+
+  const { setShowTabBar } = route.params || {};
 
 
   const subTabs = [
@@ -240,6 +247,23 @@ export default function DashboardScreen({ initialParams }) {
   console.log("PGdetails", PGDetails);
 
   const isExpired = PGDetails && !PGDetails.isSubscriptionActive;
+
+
+  useEffect(() => {
+    if (isExpired) {
+      setShowExpiredScreen(true);
+
+      if (setShowTabBar) {
+        setShowTabBar(false); 
+      }
+    }else {
+      setShowExpiredScreen(false);
+
+      if(setShowTabBar){
+        setShowTabBar(true);
+      }
+    }
+  }, [isExpired,activeHostelId])
 
 
   const {
@@ -944,14 +968,24 @@ export default function DashboardScreen({ initialParams }) {
         type={modalType}
       />
 
+
+    {
+      showExpiryScreen && <SubscriptionExpiredSheet setTabBar={()=>setShowTabBar(true)}
+       onClose={()=>setShowExpiredScreen(false)}/>
+    }
+   
+
       <View style={[styles.safe, { paddingTop: insets.top }]}>
 
         <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
+
 
         <LinearGradient
           colors={["#E9F2FF", "#F6FBFF"]}
           style={styles.header}
         >
+
+
           {/* <View style={styles.headerTop}>
           <View style={styles.hostelRow}>
             <Image source={PgImg} style={{ width: 38, height: 38 }} />
@@ -1672,87 +1706,87 @@ export default function DashboardScreen({ initialParams }) {
                         </View>
 
 
-<View style={styles.bookingsCard}>
+                        <View style={styles.bookingsCard}>
 
 
-  <View style={styles.bookingHeader}>
-    <View style={styles.bookingHeaderLeft}>
-      <View style={styles.bookingIconBox}>
-        <Image source={CheckinImg} style={{width:18,height:18}} />
-      </View>
-      <Text style={styles.bookingTitle}>Overdue Invoices</Text>
-    </View>
+                          <View style={styles.bookingHeader}>
+                            <View style={styles.bookingHeaderLeft}>
+                              <View style={styles.bookingIconBox}>
+                                <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
+                              </View>
+                              <Text style={styles.bookingTitle}>Overdue Invoices</Text>
+                            </View>
 
-              <TouchableOpacity
-  style={styles.monthBtn}
-  onPress={() => {
-    setTempMonth(selectedMonth);
-    setMonthSheetOpen(true);
-  }}
->
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
-    <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
-    <Image
-      source={DownArrow}
-      style={{ width: 14, height: 14, marginLeft: 5 }}
-    />
-  </View>
-</TouchableOpacity>
-  </View>
+                            <TouchableOpacity
+                              style={styles.monthBtn}
+                              onPress={() => {
+                                setTempMonth(selectedMonth);
+                                setMonthSheetOpen(true);
+                              }}
+                            >
+                              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+                                <Image
+                                  source={DownArrow}
+                                  style={{ width: 14, height: 14, marginLeft: 5 }}
+                                />
+                              </View>
+                            </TouchableOpacity>
+                          </View>
 
-  <ScrollView
-    style={{ maxHeight: 260 }}
-    showsVerticalScrollIndicator={false}
-  >
+                          <ScrollView
+                            style={{ maxHeight: 260 }}
+                            showsVerticalScrollIndicator={false}
+                          >
 
-    {checkinList?.map((item,index)=>(
-      <View key={index} style={styles.invoiceItem}>
+                            {checkinList?.map((item, index) => (
+                              <View key={index} style={styles.invoiceItem}>
 
-        {/* TOP ROW */}
-        <View style={styles.invoiceTopRow}>
+                                {/* TOP ROW */}
+                                <View style={styles.invoiceTopRow}>
 
-          {/* LEFT */}
-          <View>
-            <Text style={styles.invoiceName}>{item.name}</Text>
+                                  {/* LEFT */}
+                                  <View>
+                                    <Text style={styles.invoiceName}>{item.name}</Text>
 
-            <View style={styles.invoiceSubRow}>
-              <Text style={styles.invoiceNumber}>
-                {item.invoice}
-              </Text>
+                                    <View style={styles.invoiceSubRow}>
+                                      <Text style={styles.invoiceNumber}>
+                                        {item.invoice}
+                                      </Text>
 
-              <View style={styles.statusBadges}>
-                <View style={styles.statusDot}/>
-                <Text style={styles.statusText}>Un Paid</Text>
-              </View>
-            </View>
-          </View>
+                                      <View style={styles.statusBadges}>
+                                        <View style={styles.statusDot} />
+                                        <Text style={styles.statusText}>Un Paid</Text>
+                                      </View>
+                                    </View>
+                                  </View>
 
-          {/* RIGHT */}
-          <View style={{alignItems:"flex-end"}}>
-            <Text style={styles.amountText}>
-              ₹ 5000
-            </Text>
+                                  {/* RIGHT */}
+                                  <View style={{ alignItems: "flex-end" }}>
+                                    <Text style={styles.amountText}>
+                                      ₹ 5000
+                                    </Text>
 
-            <Text style={styles.dateText}>
-              {item.date}
-            </Text>
-          </View>
+                                    <Text style={styles.dateText}>
+                                      {item.date}
+                                    </Text>
+                                  </View>
 
-        </View>
+                                </View>
 
-        {/* BUTTON */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.paymentBtn}>
-            <Text style={styles.paymentText}>Record Payment</Text>
-          </TouchableOpacity>
-        </View>
+                                {/* BUTTON */}
+                                <View style={styles.actionRow}>
+                                  <TouchableOpacity style={styles.paymentBtn}>
+                                    <Text style={styles.paymentText}>Record Payment</Text>
+                                  </TouchableOpacity>
+                                </View>
 
-      </View>
-    ))}
+                              </View>
+                            ))}
 
-  </ScrollView>
+                          </ScrollView>
 
-</View>
+                        </View>
 
                         {/* <View style={styles.summaryRow}>
                     <View style={[styles.summaryCard, { width: width * 0.45 }]}>
@@ -3922,92 +3956,92 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
 
-checkinText:{
-  color:"#fff",
-  fontFamily:"Gilroy-Bold"
-},
+  checkinText: {
+    color: "#fff",
+    fontFamily: "Gilroy-Bold"
+  },
 
-invoiceItem:{
-paddingVertical:16,
-borderBottomWidth:1,
-borderBottomColor:"#E5E7EB"
-},
+  invoiceItem: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB"
+  },
 
-invoiceTopRow:{
-flexDirection:"row",
-justifyContent:"space-between",
-alignItems:"center"
-},
+  invoiceTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
 
-invoiceName:{
-fontSize:15,
-fontFamily:"Gilroy-Bold",
-color:"#111827"
-},
+  invoiceName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Bold",
+    color: "#111827"
+  },
 
-invoiceSubRow:{
-flexDirection:"row",
-alignItems:"center",
-marginTop:4
-},
+  invoiceSubRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4
+  },
 
-invoiceNumber:{
-fontSize:12,
-color:"#6B7280",
-marginRight:8
-},
+  invoiceNumber: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginRight: 8
+  },
 
-statusBadges:{
-flexDirection:"row",
-alignItems:"center",
-backgroundColor:"#FFF7E7",
-paddingHorizontal:10,
-paddingVertical:3,
-borderRadius:12
-},
+  statusBadges: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF7E7",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12
+  },
 
-statusDot:{
-width:6,
-height:6,
-borderRadius:6,
-backgroundColor:"#F59E0B",
-marginRight:6
-},
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 6,
+    backgroundColor: "#F59E0B",
+    marginRight: 6
+  },
 
-statusText:{
-fontSize:11,
-color:"#374151"
-},
+  statusText: {
+    fontSize: 11,
+    color: "#374151"
+  },
 
-amountText:{
-fontSize:16,
-fontFamily:"Gilroy-Bold",
-color:"#111827"
-},
+  amountText: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+    color: "#111827"
+  },
 
-dateText:{
-fontSize:11,
-color:"#6B7280",
-marginTop:3
-},
+  dateText: {
+    fontSize: 11,
+    color: "#6B7280",
+    marginTop: 3
+  },
 
-actionRow:{
-flexDirection:"row",
-justifyContent:"flex-end",
-marginTop:10
-},
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10
+  },
 
-paymentBtn:{
-backgroundColor:"#2563EB",
-paddingHorizontal:18,
-paddingVertical:8,
-borderRadius:10
-},
+  paymentBtn: {
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 10
+  },
 
-paymentText:{
-color:"#fff",
-fontFamily:"Gilroy-Bold"
-},
+  paymentText: {
+    color: "#fff",
+    fontFamily: "Gilroy-Bold"
+  },
 
   revenueCard: {
     height: 200,
@@ -5111,6 +5145,8 @@ fontFamily:"Gilroy-Bold"
     color: "#777",
     marginTop: 10,
   },
+
+  
 
 
 });
