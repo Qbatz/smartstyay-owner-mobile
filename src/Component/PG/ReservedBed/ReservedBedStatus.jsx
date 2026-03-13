@@ -6,7 +6,7 @@ import {
     PanResponder,
     TouchableOpacity,
     Image,
-    StyleSheet, TouchableWithoutFeedback, BackHandler,ScrollView
+    StyleSheet, TouchableWithoutFeedback, BackHandler,ScrollView , NativeModules
 } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import Profile from "../../../Assets/Images/Avatar.png";
@@ -15,12 +15,15 @@ import Money from "../../../Assets/Images/money.png";
 import Checkin from "../../../Assets/Images/add-circle.png";
 import MakeUs from "../../../Assets/Images/ReAssign.png";
 import Dots from "../../../Assets/Images/3dots.png";
+import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
+import Call from "../../../Assets/Images/call.png";
 import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useNavigation } from "@react-navigation/native";
 
 
 export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed,onBedAdded,handleMakeUsInActive }) {
     const navigation = useNavigation();
+    const {CommonModule}=NativeModules;
     console.log("selectedBedTHIFDGDGFG",selectedBed)
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
@@ -130,6 +133,14 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
   });
     }
+
+      const handleCallPhone=(mobile)=>{
+    console.log("mobile",mobile)
+    if(mobile){
+      CommonModule.makeCall(mobile)
+    }
+    
+  }
 
      
 
@@ -326,6 +337,20 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
   </View>
 </View>
 
+    <View style={styles.actionRow}>
+             
+                                   <TouchableOpacity style={styles.chatBtn} >
+                                     <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                     <Text style={styles.chatText}>Chat</Text>
+                                   </TouchableOpacity>
+             
+                                   <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
+                                     <Image source={Call} style={styles.actionIcon} />
+                                     <Text style={styles.callText}>Call</Text>
+                                   </TouchableOpacity>
+             
+                                 </View>
+
 
     <View style={{ marginTop: 15 }}>
       <Text style={styles.infoLabel}>Booked Date</Text>
@@ -398,7 +423,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: 20,
-        paddingBottom: 30,
+        paddingBottom: 30
     },
 
     handle: {
@@ -510,7 +535,8 @@ const styles = StyleSheet.create({
 
 
     reservedBtn: {
-        marginTop: 25,
+        marginTop: 10,
+        marginBottom:30,
         backgroundColor: "#EAF0FF",
         paddingVertical: 14,
         borderRadius: 20,
@@ -623,6 +649,51 @@ initialsText: {
    fontFamily: "Gilroy-Bold" ,
 },
 
+
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    gap: 10
+  },
+
+  chatBtn: {
+    display: 'flex',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F7EE",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  callBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F0FF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  chatText: {
+    color: "#00A653",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+
+  callText: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+ actionIcon: {
+    width: 18,
+    height: 18
+  },
 
 
 

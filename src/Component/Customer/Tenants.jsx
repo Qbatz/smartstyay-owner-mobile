@@ -26,6 +26,7 @@ import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
 import Dots from "../../Assets/Images/3dots.png";
 import CallIcon from "../../Assets/Images/call_black_icon.png";
+import WhatsappIcon from "../../Assets/Images/whatsapp.png";
 import MobileIcon from "../../Assets/Images/mobile.png";
 import MoveNoticeSheet from '../Customer/MoveToNoticePeriod';
 import ReassignBedSheet from '../Customer/ReAssignBed';
@@ -1104,6 +1105,20 @@ export default function TenantsScreen({ route }) {
   </View>
 
   {/* RIGHT SIDE ICON */}
+
+    <TouchableOpacity 
+    style={{
+      padding: 10,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Image
+      source={WhatsappIcon}
+      style={{ width: 24, height: 24 }}
+      resizeMode="contain"
+    />
+  </TouchableOpacity>
   <TouchableOpacity onPress={()=>handleCallPhone(selectedCustomer?.mobileNo)}
     style={{
       padding: 10,
@@ -1119,7 +1134,7 @@ export default function TenantsScreen({ route }) {
   </TouchableOpacity>
 </View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ marginTop: 15, }}>
+                <View style={{ marginTop: 10, }}>
                   <Text style={{ fontSize: 13, color: "#6B7280", }}>
                     {selectedCustomer?.customerCurrentStatus ==  "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
                   </Text>
@@ -1134,9 +1149,12 @@ export default function TenantsScreen({ route }) {
                   </View>
                 </View>
 
-                {
+               
+              </View>
+
+               {
                   selectedCustomer?.customerCurrentStatus == "BOOKED" && (
-                    <View style={{ marginTop: 15, }}>
+                    <View style={{ marginTop: 10, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>Booking Date</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
@@ -1152,12 +1170,11 @@ export default function TenantsScreen({ route }) {
 
                   )
                 }
-              </View>
 
               {
                 ["CHECK_IN", "OCCUPIED", "NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View style={{ marginTop: 15, }}>
+                    <View style={{ marginTop: 10, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>
                         Rental Amount
                         {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
@@ -1173,7 +1190,7 @@ export default function TenantsScreen({ route }) {
                       </View>
                     </View>
 
-                    <View style={{ marginTop: 15, }}>
+                    <View style={{ marginTop: 10, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", }}>Advance Amount</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
@@ -1193,7 +1210,7 @@ export default function TenantsScreen({ route }) {
 
               {
                 selectedCustomer?.customerCurrentStatus == "BOOKED" && (
-                  <View style={{ marginTop: 15, }}>
+                  <View style={{ marginTop: 10, }}>
                     <Text style={{ fontSize: 13, color: "#6B7280", }}>
                       Booking Amount
                       {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
@@ -2174,6 +2191,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     height: SHEET_HEIGHT,
+    // paddingBottom:20
   },
 
   modalHandle: {
@@ -2232,7 +2250,8 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
     // borderColor: "#111",
     borderRadius: 15,
-    marginTop: 25,
+    marginTop: 20,
+    marginBottom:20,
     paddingVertical: 12,
     alignItems: "center",
   },

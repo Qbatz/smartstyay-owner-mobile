@@ -165,6 +165,40 @@ export const GeneralProvider = ({ children }) => {
     }
  }
 
+ const AdminResetPassword = async (currentPassword, newPassword, confirmPassword) => {
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const body = {
+      currentPassword,
+      newPassword,
+      confirmPassword
+    };
+
+    const response = await axios.post(
+      "/v2/profile/reset-password",
+      body,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("RESET PASSWORD SUCCESS:", response.data);
+
+    return { success: true, data: response.data };
+
+  } catch (err) {
+    const errorData = err.response?.data || { message: err.message };
+    console.log("RESET PASSWORD ERROR:", errorData);
+
+    return { success: false, data: errorData };
+  }
+};
+
 
   return (
     <GeneralContext.Provider
@@ -179,7 +213,8 @@ export const GeneralProvider = ({ children }) => {
         successMsg,
         setErrorMsg,
         setSuccessMsg,
-        updateProfile
+        updateProfile,
+        AdminResetPassword,
       }}
     >
       {children}
