@@ -641,8 +641,10 @@ const disableFinancialEdit =
 
                     )
                   } */}
-
-                  {
+         {
+          !disableFinancialEdit && (
+            <>
+                              {
 !["VACATED","NOTICE"].includes(status) && (
   <TouchableOpacity
     disabled={disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable}
@@ -656,6 +658,10 @@ const disableFinancialEdit =
   </TouchableOpacity>
 )
 }
+            </>
+          )
+         }
+
 
 
                 </View>
@@ -687,20 +693,18 @@ const disableFinancialEdit =
                     )
                   } */}
 
-                  {
+                     {
+          !disableFinancialEdit && (
+            <>
+            
+                 {
 !["VACATED","NOTICE"].includes(status) && (
   <TouchableOpacity
     disabled={
-      disableFinancialEdit ||
-      !canUpdateTenant ||
-      !canEditAdvance ||
-      !isJoiningDateEditable
-    }
+      disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable }
     style={
-      (disableFinancialEdit ||
-        !canUpdateTenant ||
-        !canEditAdvance ||
-        !isJoiningDateEditable) && {opacity:0.4}
+      (disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable) &&
+       {opacity:0.4}
     }
     onPress={handleEditAdvance}
   >
@@ -711,6 +715,12 @@ const disableFinancialEdit =
   </TouchableOpacity>
 )
 }
+            </>
+            
+          )
+         }
+
+ 
 
                 </View>
                 <Text style={styles.amountLabel}>

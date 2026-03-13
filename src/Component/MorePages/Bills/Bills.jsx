@@ -40,6 +40,7 @@ import ActiveCheckout from "../../../Assets/Images/Active_checkout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout.png";
 import ActiveWalkin from "../../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../../Assets/Images/walkin.png";
+import RefundedIcon from "../../../Assets/Images/CancelledIcon.png";
 import WhatsappIcon from "../../../Assets/Images/whatsapp_blue.png";
 import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
 import PlusIcon from "../../../Assets/Images/add.png";
@@ -1910,7 +1911,11 @@ console.log("selectedReceipt", selectedReceipt);
       case "Partially Refunded":
         return PartiallypaidIcon;
 
+      case "Cancelled":
+        return RefundedIcon;
+
       case "Pending":
+      case "Pending Refund":
         return null;
 
       default:
@@ -2118,7 +2123,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
                       {BillDetails?.listInvoices?.map((item) => (
                         <TouchableOpacity key={item.invoiceId} activeOpacity={0.8} style={styles.tenantRow} onPress={() => openBillDetails(item)}>
-
+                         
                           <View>
                             {item?.profilePic ? (
                               <Image
@@ -2134,7 +2139,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                             )}
 
                             <View style={styles.profileStatusBadge}>
-                              {item.paymentStatus === "Pending" ? (
+                              {item.paymentStatus === "Pending" || item.paymentStatus === "Pending Refund" ?(
                                 <View style={styles.redDot} />
                               ) : (
                                 <View style={styles.tickBadge}>
@@ -2166,6 +2171,10 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                               <Image source={Bills_Black_Icon} style={styles.iconSmall} />
                               <Text style={[styles.detailText, { flexShrink: 1, flex: 1 }]}>{item.invoiceNumber}</Text>
                             </View>
+
+                                {["Partially Paid","Partial Payment"].includes(item.paymentStatus) && (
+                                     <Text style={styles.dueLabel}>Outstanding</Text>
+                                )}
                           </View>
 
                           <View style={styles.rightSection}>
@@ -2182,8 +2191,14 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                             }}>₹ {item?.invoiceAmount ?? "--"}</Text>
 
                             <Text style={styles.dateText}>{item.invoiceDate}</Text>
+                              {["Partially Paid","Partial Payment"].includes(item.paymentStatus) && (
+                                     <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
+                                )}
                           </View>
 
+                          <View style={{display:'flex', flexDirection:'row'}}>
+  
+  </View>
 
                         </TouchableOpacity>
                       ))}
@@ -2517,7 +2532,7 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                   )}
 
 
-                  {(selectedBill?.paymentStatus === "Partially Refunded") && BillPdfdetails?.refundHistory?.length > 0 && (
+                  {(selectedBill?.paymentStatus === "Partially Refunded" || selectedBill?.paymentStatus === "Refunded") && BillPdfdetails?.refundHistory?.length > 0 && (
                     <View style={{ marginTop: 25 }}>
 
                       <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -4822,6 +4837,26 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     fontFamily: "Gilroy-Medium"
   },
+  dueRow:{
+flexDirection:"row",
+alignItems:"center",
+marginTop:4
+},
+
+dueLabel:{
+fontSize:12,
+color:"#4B4B4B",
+marginRight:6,
+marginTop:5,
+  fontFamily: "Gilroy-Medium"
+},
+
+dueAmount:{
+fontSize:14,
+fontFamily:"Gilroy-Bold",
+color:"#E02D2D",
+marginTop:5
+},
   dots: {
     fontSize: 22,
     color: "#6B7280",

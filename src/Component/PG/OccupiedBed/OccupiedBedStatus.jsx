@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder
+  PanResponder , NativeModules
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -17,7 +17,8 @@ import Calendar from "../../../Assets/Images/calendar_blue.png";
 import Money from "../../../Assets/Images/money.png";
 import Invoice from "../../../Assets/Images/invoice.png";
 import Dots from "../../../Assets/Images/3dots.png";
-
+import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
+import Call from "../../../Assets/Images/call.png";
 import ReassignIcon from "../../../Assets/Images/ReAssign.png";
 import NoticeIcon from "../../../Assets/Images/Logout.png";
 import { ScrollView } from "react-native-gesture-handler";
@@ -37,6 +38,7 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   const [bookedItems, setBookedItems] = useState("")
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const navigation = useNavigation();
+   const {CommonModule}=NativeModules;
 
 
 
@@ -65,6 +67,15 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
     onClose();
     onReAssign()
   }
+
+  const handleCallPhone=(mobile)=>{
+    console.log("mobile",mobile)
+    if(mobile){
+      CommonModule.makeCall(mobile)
+    }
+    
+  }
+
   useEffect(() => {
     if (!visible) {
       setMenuOpen(false);
@@ -250,6 +261,20 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
               </View>
             )}
 
+                                <View style={styles.actionRow}>
+            
+                                  <TouchableOpacity style={styles.chatBtn} >
+                                    <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                    <Text style={styles.chatText}>Chat</Text>
+                                  </TouchableOpacity>
+            
+                                  <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
+                                    <Image source={Call} style={styles.actionIcon} />
+                                    <Text style={styles.callText}>Call</Text>
+                                  </TouchableOpacity>
+            
+                                </View>
+
             {/* RENTAL AMOUNT */}
             <Text style={styles.label}>Rental Amount</Text>
             <View style={styles.rowInfo}>
@@ -339,6 +364,20 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
                           </TouchableOpacity>
 
                         </View>
+
+                                                        <View style={styles.actionRow}>
+            
+                                  <TouchableOpacity style={styles.chatBtn} >
+                                    <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                    <Text style={styles.chatText}>Chat</Text>
+                                  </TouchableOpacity>
+            
+                                  <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
+                                    <Image source={Call} style={styles.actionIcon} />
+                                    <Text style={styles.callText}>Call</Text>
+                                  </TouchableOpacity>
+            
+                                </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Booking Amount</Text>
@@ -647,7 +686,50 @@ const styles = StyleSheet.create({
     color: "#374151",
   },
 
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    gap: 10
+  },
 
+  chatBtn: {
+    display: 'flex',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F7EE",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  callBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F0FF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  chatText: {
+    color: "#00A653",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+
+  callText: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+ actionIcon: {
+    width: 18,
+    height: 18
+  },
 
 
 });

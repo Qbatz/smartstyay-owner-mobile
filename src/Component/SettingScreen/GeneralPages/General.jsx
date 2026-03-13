@@ -22,6 +22,7 @@ import Sms from "../../../Assets/Images/sms.png";
 import Call from "../../../Assets/Images/call.png";
 import Buildings from "../../../Assets/Images/buildings.png";
 import Edit from "../../../Assets/Images/editIcon.png";
+import ChangePasswordIcon from "../../../Assets/Images/password-check.png";
 import Delete from "../../../Assets/Images/trash.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ChangePasswordSheet from './ChangePasswordSheet';
@@ -49,7 +50,7 @@ import { LoginContexts } from "../../../Context/LoginContext";
 import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
 import YellowCrownIcon from "../../../Assets/Images/YellowCrownAdmin.png"
 import CrownIcon from "../../../Assets/Images/crown.png"
-
+import AdminResetPasswordSheet from "./AdminResetPasswordSheet"
 
 
 
@@ -84,6 +85,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [message, setMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [editProfileBottomSheet, setEditProfileSheet] = useState(false)
+  const [showResetSheet,setShowResetSheet] = useState(false);
 
   const loginContext = useContext(LoginContexts)
 
@@ -120,6 +122,13 @@ export default function GeneralDetailsScreen({ navigation }) {
           return true;
         }
 
+         if (showResetSheet) {
+          setShowResetSheet(false);
+          return true;
+        }
+
+
+
         if (navigation.canGoBack()) {
           navigation.goBack();
           return true;
@@ -134,7 +143,7 @@ export default function GeneralDetailsScreen({ navigation }) {
       );
 
       return () => subscription.remove();
-    }, [showPasswordSheet, navigation])
+    }, [showPasswordSheet, navigation , showResetSheet])
   );
 
   useFocusEffect(
@@ -320,7 +329,7 @@ export default function GeneralDetailsScreen({ navigation }) {
           style={styles.profileImage}
         /> :
           <View style={[styles.profileImage, { backgroundColor: "#EFF2FF", alignItems: 'center', justifyContent: 'center' }]}>
-            <Text style={{ fontSize: 14, fontWeight: 600 }}>{u.initials}</Text>
+            <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"}}>{u.initials}</Text>
           </View>}
 
 
@@ -452,7 +461,7 @@ export default function GeneralDetailsScreen({ navigation }) {
         </View>
 
         <View style={{ flex: 1, backgroundColor: '#fff', paddingLeft: 12, }}>
-          <Text style={{ fontSize: 16, fontWeight: 600 }}>{item.title}</Text>
+          <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>{item.title}</Text>
           <Text style={{ fontSize: 14, fontWeight: 400, lineHeight: 20, marginTop: 10 }}>{item?.description}</Text>
           <Text style={{ fontSize: 12, fontWeight: 400, color: '#475569', marginTop: 10 }}>
             Added at {item?.date}, {item?.time}</Text>
@@ -477,14 +486,14 @@ export default function GeneralDetailsScreen({ navigation }) {
 
           {item.profilePic ? <Image source={{ uri: item.profilePic }} style={{ width: 50, height: 50, borderRadius: 25, resizeMode: 'contain' }} />
             : <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#F0F7FF', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 16, fontWeight: 600 }}>
+              <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
                 {(item.firstName?.charAt(0).toUpperCase() || "") + (item.lastName?.charAt(0).toUpperCase() || "")}
               </Text>
             </View>
           }
 
           <View style={{ paddingLeft: 10 }}>
-            <Text style={{ fontSize: 16, fontWeight: 600 }}>{item.firstName} {item.lastName}</Text>
+            <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{item.firstName} {item.lastName}</Text>
             <View style={{ padding: 5, backgroundColor: '#F0F7FF', flexDirection: 'row', alignItems: 'center', borderRadius: 5, marginTop: 5 }}>
               <Image source={SheildIcon} style={{ width: 12, height: 12, resizeMode: 'contain' }} />
               <Text style={{ color: '#3A90E5', fontSize: 12, fontWeight: 400, marginLeft: 4 }}>
@@ -571,7 +580,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -591,7 +600,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -612,7 +621,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -632,7 +641,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontWeight: 600 }}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -933,12 +942,12 @@ export default function GeneralDetailsScreen({ navigation }) {
                 style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
                 disabled={!canUpdateProfile}
                 onPress={() => {
-                  console.log(activeMenu + " EDIT");
                   setActiveMenuProfile(null);
-                  setEditProfileSheet(true)
+                  setShowResetSheet(true)
                 }}
+                // onPress={()=>setShowResetSheet(true)}
               >
-                <Image source={Edit} style={styles.menuIcon} />
+                <Image source={ChangePasswordIcon} style={styles.menuIcon} />
                 <Text style={styles.menuText}>Change Password</Text>
               </TouchableOpacity>
 
@@ -1015,7 +1024,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                 setActiveMenu(null);
               }}
             >
-              <Image source={Edit} style={styles.menuIcon} />
+              <Image source={ChangePasswordIcon} style={styles.menuIcon} />
               <Text style={styles.menuText}>Change Password</Text>
             </TouchableOpacity>
 
@@ -1118,13 +1127,13 @@ export default function GeneralDetailsScreen({ navigation }) {
 
                 {selectedManageUser.profilePic ? <Image source={{ uri: selectedManageUser.profilePic }} style={{ width: 55, height: 55, borderRadius: 27, resizeMode: 'contain' }} />
                   : <View style={{ width: 55, height: 55, borderRadius: 27, backgroundColor: '#F0F7FF', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 16, fontWeight: 600 }}>
+                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
                       {(selectedManageUser.firstName?.charAt(0).toUpperCase() || "") + (selectedManageUser.lastName?.charAt(0).toUpperCase() || "")}
                     </Text>
                   </View>}
 
                 <View style={{ paddingLeft: 10 }}>
-                  <Text style={{ fontSize: 16, fontWeight: 600 }}>{selectedManageUser?.firstName} {selectedManageUser?.lastName}</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{selectedManageUser?.firstName} {selectedManageUser?.lastName}</Text>
                   <View style={{ flexDirection: 'row', padding: 5, alignItems: 'center', borderRadius: 5, backgroundColor: '#F0F7FF', marginTop: 5 }}>
                     <Image source={SheildIcon} style={{ width: 10, height: 10 }} />
                     <Text style={{ fontSize: 13, fontWeight: 400, color: '#3A90E5', marginLeft: 4 }}>{selectedManageUser?.roleName}</Text>
@@ -1249,6 +1258,11 @@ export default function GeneralDetailsScreen({ navigation }) {
           </View>
         </View>
       </Modal>
+
+      <AdminResetPasswordSheet
+ visible={showResetSheet}
+ onClose={()=>setShowResetSheet(false)}
+/>
     </>
   );
 
@@ -1274,7 +1288,7 @@ const styles = StyleSheet.create({
     textAlign: "left",
     marginLeft: 10,
     fontSize: 20,
-    fontWeight: "600",
+  fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
@@ -1285,7 +1299,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 
-  masterText: { color: "#FFF", fontWeight: "600" },
+  masterText: { color: "#FFF",fontFamily: "Gilroy-Semibold" },
 
   card: {
     backgroundColor: "#FFF",
@@ -1320,7 +1334,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  userName: { fontSize: 17, fontWeight: "600", color: "#000" },
+  userName: { fontSize: 17, fontFamily: "Gilroy-Semibold", color: "#000" },
 
   changePassword: {
     color: "#4D77FF",
@@ -1332,7 +1346,7 @@ const styles = StyleSheet.create({
 
   section: { marginTop: 10 },
 
-  sectionTitle: { fontSize: 14, fontWeight: "600", color: "#666" },
+  sectionTitle: { fontSize: 14,fontFamily: "Gilroy-Semibold", color: "#666" },
 
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 15 },
 
@@ -1372,7 +1386,7 @@ const styles = StyleSheet.create({
 
   menuText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
   popupOverlay: {
@@ -1395,7 +1409,7 @@ const styles = StyleSheet.create({
 
   popupTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     textAlign: "center",
     marginBottom: 8
   },
@@ -1425,7 +1439,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: "#1E45E1",
     fontSize: 16,
-    fontWeight: "600"
+    fontFamily: "Gilroy-Semibold"
   },
 
   deleteBtn: {
@@ -1440,7 +1454,7 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700"
+  fontFamily: "Gilroy-Bold"
   },
   emptyContainer: {
     alignItems: "center",
@@ -1458,7 +1472,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 14,
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#777",
   },
 
@@ -1492,7 +1506,7 @@ const styles = StyleSheet.create({
 
   avatarText: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     color: "#374151",
   },
 
@@ -1571,7 +1585,7 @@ const styles = StyleSheet.create({
   addressTitle: {
     marginTop: 20,
     fontSize: 14,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#444",
 
   },
@@ -1596,16 +1610,16 @@ const styles = StyleSheet.create({
   changeBtnText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
   },
   tabText: {
     fontSize: 14,
     color: "#888",
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
   },
   activeText: {
     color: "#2962FF", // blue like screenshot
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
   },
   overlay: {
     position: "absolute",
@@ -1671,7 +1685,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
     color: "#000",
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
   },
 
   divider: {
@@ -1694,7 +1708,7 @@ const styles = StyleSheet.create({
   },
   deleteTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: "Gilroy-Bold",
     color: '#111',
     textAlign: 'center',
   },
@@ -1726,7 +1740,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#444',
     fontSize: 16,
-    fontWeight: '600',
+   fontFamily: "Gilroy-Semibold",
   },
 
   deleteBtn: {
@@ -1742,7 +1756,7 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: "Gilroy-Bold",
   },
 
 });

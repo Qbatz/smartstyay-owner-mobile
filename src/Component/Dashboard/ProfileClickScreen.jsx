@@ -200,13 +200,13 @@ console.log("profileDetails", profileDetails);
 </View>
 
 
-        <View style={styles.profileRow}> 
-          <TouchableOpacity
-            style={{ flexDirection: "row", flex: 1 }}
-            onPress={() => {
+        <TouchableOpacity style={styles.profileRow}    onPress={() => {
               onClose();
               setTimeout(() => navigation.navigate("GeneralDetailsScreen"), 150);
-            }}
+            }}> 
+          <View
+            style={{ flexDirection: "row", flex: 1 }}
+         
           >
            <View style={styles.avatar}>
   {profileDetails?.profileImage ? (
@@ -233,10 +233,10 @@ console.log("profileDetails", profileDetails);
                 <Text style={styles.changePassword}>Change Password</Text>
               </View>
             </View>
-          </TouchableOpacity>
+          </View>
 
         
-          <TouchableOpacity
+          {/* <TouchableOpacity
             ref={arrowRef}
             onPress={() => {
               arrowRef.current.measureInWindow((x, y, width, height) => {
@@ -247,14 +247,14 @@ console.log("profileDetails", profileDetails);
               });
               setShowEditPopup(true);
             }}
-          >
+          > */}
             <Image
               source={require("../../Assets/Images/right_direction.png")}
               style={styles.arrowIcon}
             />
-          </TouchableOpacity>
+          {/* </TouchableOpacity> */}
 
-        </View>
+        </TouchableOpacity>
 
         {/* BOTTOM MENU */}
         <View style={styles.bottomSection}>
@@ -281,7 +281,6 @@ console.log("profileDetails", profileDetails);
 
       </Animated.View>
 
-      {/* POPUP */}
       {showEditPopup && (
   <TouchableOpacity
     style={styles.popupOverlay}
@@ -290,7 +289,8 @@ console.log("profileDetails", profileDetails);
   />
 )}
 
-{showEditPopup && (
+
+{/* {showEditPopup && (
   <View style={[styles.popup, { top: popupPos.top, right: popupPos.right }]}>
     <TouchableOpacity style={styles.popupRow}>
       <Image source={require("../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
@@ -302,7 +302,7 @@ console.log("profileDetails", profileDetails);
       <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
     </TouchableOpacity>
   </View>
-)}
+)} */}
 
 
     </View>
