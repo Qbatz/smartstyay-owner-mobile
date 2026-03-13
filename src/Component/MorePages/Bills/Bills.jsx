@@ -1136,7 +1136,6 @@ console.log("selectedReceipt", selectedReceipt);
   };
 
   const handleRecurringBill=(item)=>{
-    console.log("billa",item)
     setSelectedRecurringBill(item)
     setShowRecuringBillDetail(true)
   }

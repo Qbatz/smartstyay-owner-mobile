@@ -410,7 +410,9 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                 Booking Date <Text style={{ color: "red" }}>*</Text>
               </Text>
               <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
+                onPress={() => {
+                  Keyboard.dismiss()
+                  setShowDatePicker(true)}}
                 style={styles.inputBox}
               >
                 <Text style={{ color: bookingDate ? "#000" : "#999" }}>
@@ -453,7 +455,9 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                 Joining Date <Text style={{ color: "red" }}>*</Text>
               </Text>
               <TouchableOpacity
-                onPress={() => setShowJoinDatePicker(true)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShowJoinDatePicker(true)}}
                 style={styles.inputBox}
               >
                 <Text style={{ color: joiningDate ? "#000" : "#999" }}>

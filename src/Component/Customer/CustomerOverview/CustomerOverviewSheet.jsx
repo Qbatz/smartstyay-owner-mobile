@@ -5,7 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity, TouchableWithoutFeedback,
-  Image, BackHandler
+  Image, BackHandler,
+  NativeModules
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -76,8 +77,18 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showNotice, setShowNotice] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [reason, setReason] = useState("");
+  const [environment, setEnvironment] = useState("")
+
+  const { CommonModule } = NativeModules;
 
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+
+  useEffect(() => {
+    CommonModule.fetchEnvironment().then(r => {
+      setEnvironment(r)
+    })
+  }, [])
+
 
 
 
@@ -485,13 +496,15 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Tenant Profile</Text>
-          
-          {/* {
-            customerDetails?.customerCurrentStatus !=="VACATED" && (
-               <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
+
+          {
+            environment !== "PROD" && (
+              customerDetails?.customerCurrentStatus !== "VACATED" && (
+                <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
+              )
             )
-          } */}
-         
+          }
+
           {/* <View style={styles.notificationDot} /> */}
         </View>
 
@@ -608,11 +621,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
             {
               customerDetails?.customerCurrentStatus !== "VACATED" && (
-                   <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
+                <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
               )
             }
 
-           
+
             {/* <Text style={styles.verified}>✔</Text> */}
           </View>
 
@@ -642,10 +655,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
           {
             customerDetails?.customerCurrentStatus == "VACATED" && (
-              <View style={{paddingVertical:8,paddingHorizontal:10,backgroundColor:"#fbd5d2",borderRadius:10,
-                          flexDirection:'row',alignItems:'center',marginBottom:10}}>
-                <View style={{width: 8,height: 8,borderRadius: 4,backgroundColor:'#f00800',marginRight:4}}/>
-                <Text style={{fontSize:13,fontFamily:'Gilroy-Bold',color:'#f00800'}}>Vacated</Text>
+              <View style={{
+                paddingVertical: 8, paddingHorizontal: 10, backgroundColor: "#fbd5d2", borderRadius: 10,
+                flexDirection: 'row', alignItems: 'center', marginBottom: 10
+              }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#f00800', marginRight: 4 }} />
+                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Bold', color: '#f00800' }}>Vacated</Text>
               </View>
             )
           }
@@ -654,33 +669,40 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           {/* BUTTON ROW */}
 
           {
-             customerDetails?.customerCurrentStatus !== "VACATED" && (
+            customerDetails?.customerCurrentStatus !== "VACATED" && (
               <View style={styles.actionRow}>
-            {/* <TouchableOpacity style={styles.walletBtn}>
-              <Text style={styles.walletText}>Wallet</Text>
-            </TouchableOpacity> */}
+                {
+                  environment !== "PROD" && (
+                    <TouchableOpacity style={styles.walletBtn}>
+                      <Text style={styles.walletText}>Wallet</Text>
+                    </TouchableOpacity>
+                  )
+                }
 
-            <TouchableOpacity
-              style={styles.stayBtn}
-              onPress={() => setShowStayHistory(true)}
-            >
-              <Text style={styles.stayText}>Stay History</Text>
-            </TouchableOpacity>
-          </View>
-             )
+
+                <TouchableOpacity
+                  style={styles.stayBtn}
+                  onPress={() => setShowStayHistory(true)}
+                >
+                  <Text style={styles.stayText}>Stay History</Text>
+                </TouchableOpacity>
+              </View>
+            )
           }
 
           {
             customerDetails?.customerCurrentStatus == "VACATED" && (
-              <TouchableOpacity style={{backgroundColor:'#1E45E1',paddingVertical: 12,alignItems:'center',width:"100%",
-                                       borderRadius: 12,flexDirection:'row',justifyContent:'center',marginTop:12}}
-                                       disabled>
-                <Image source={RecheckInIcon} style={{width:20,height:20}}/>
-                <Text style={{fontSize:16,fontFamily:'Gilroy-Medium',color:'#ffffff',marginLeft:5}}>Re Check in</Text>
+              <TouchableOpacity style={{
+                backgroundColor: '#1E45E1', paddingVertical: 12, alignItems: 'center', width: "100%",
+                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12
+              }}
+                disabled>
+                <Image source={RecheckInIcon} style={{ width: 20, height: 20 }} />
+                <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#ffffff', marginLeft: 5 }}>Re Check in</Text>
               </TouchableOpacity>
             )
           }
-          
+
 
         </View>
 
@@ -892,7 +914,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         </TouchableWithoutFeedback>
       )}
 
-     
+
 
       {
         showReAssignbed &&
@@ -1102,7 +1124,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
-    
+
   },
 
   walletText: {
