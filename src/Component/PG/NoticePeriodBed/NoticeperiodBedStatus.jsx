@@ -7,11 +7,13 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder, BackHandler
+  PanResponder, BackHandler , NativeModules
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
-import CheckoutIcon from "../../../Assets/Images/Checkout_icon.png";
+import CheckoutIcon from "../../../Assets/Images/checkout_red.png";
 import ReserveIcon from "../../../Assets/Images/user-square.png";
+import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
+import Call from "../../../Assets/Images/call.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -27,6 +29,7 @@ export default function NoticePeriodBedSheet({
   tenant, onClick, onFinalSheet, cancelNoticePeriod, handleEditBed, selectedBed, handleNoticeToCheckout
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
+   const {CommonModule}=NativeModules;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading } = useCustomer();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -105,6 +108,14 @@ export default function NoticePeriodBedSheet({
     cancelNoticePeriod();
     onClose();
   };
+
+      const handleCallPhone=(mobile)=>{
+    console.log("mobile",mobile)
+    if(mobile){
+      CommonModule.makeCall(mobile)
+    }
+    
+  }
 
   const {
     canWriteModule: canWriteCustomers,
@@ -340,6 +351,20 @@ export default function NoticePeriodBedSheet({
             </View>
           </View>
 
+            <View style={styles.actionRow}>
+                      
+                                            <TouchableOpacity style={styles.chatBtn} >
+                                              <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                              <Text style={styles.chatText}>Chat</Text>
+                                            </TouchableOpacity>
+                      
+                                            <TouchableOpacity style={styles.callBtn}  onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
+                                              <Image source={Call} style={styles.actionIcon} />
+                                              <Text style={styles.callText}>Call</Text>
+                                            </TouchableOpacity>
+                      
+                                          </View>
+
           <Text style={styles.label}>Rental Amount</Text>
 
           <View style={styles.dateRow}>
@@ -509,6 +534,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
    fontFamily: "Gilroy-Bold" ,
     color: "#374151",
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    gap: 10
+  },
+
+  chatBtn: {
+    display: 'flex',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F7EE",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  callBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F0FF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  chatText: {
+    color: "#00A653",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+
+  callText: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+ actionIcon: {
+    width: 18,
+    height: 18
   },
 
 });

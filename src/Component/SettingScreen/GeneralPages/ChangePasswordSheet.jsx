@@ -153,7 +153,7 @@ export default function ChangePasswordSheet({ visible, onClose, adminId }) {
           <Text style={styles.title}>Change Password</Text>
 
           <Text style={styles.label}>
-            New Password <Text style={{ color: "red", fontWeight: "700" }}>*</Text>
+            New Password <Text style={{ color: "red",fontFamily: "Gilroy-Bold"  }}>*</Text>
           </Text>
 
           {/* <TextInput
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
 
@@ -249,6 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 10,
     marginBottom: 4,
+    fontFamily: "Gilroy-Semibold"
   },
 
   input: {
@@ -258,6 +259,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
     color: "#000",
+    fontFamily: "Gilroy-Regular" 
   },
 
   btnRow: {
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     color: "#4466F2",
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
   },
 
   updateBtn: {
@@ -290,7 +292,7 @@ const styles = StyleSheet.create({
 
   updateText: {
     color: "#fff",
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold"
   },
   passwordWrapper: {
   position: "relative",
@@ -305,6 +307,7 @@ passwordInput: {
   paddingHorizontal: 14,
   paddingRight: 45, // ✅ space for eye
   marginTop: 8,
+  fontFamily: "Gilroy-Regular"
 },
 
 eyeIconBox: {

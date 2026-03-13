@@ -9,12 +9,14 @@ import {
   PanResponder,
   Dimensions,
   TouchableWithoutFeedback,
-  Easing, ScrollView
+  Easing, ScrollView , NativeModules
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ReAssign from "../../../Assets/Images/ReAssign.png";
+import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
+import Call from "../../../Assets/Images/call.png";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -30,6 +32,7 @@ export default function DoubleStatusSheet({
   handleReAssignBed, handleMakeUsInActive, handleCheckIn, selectedBed, handleNoticeToCheckout, handleEditBed
 }) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const {CommonModule}=NativeModules;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading } = useCustomer();
@@ -181,6 +184,14 @@ export default function DoubleStatusSheet({
   ).current;
   const isDisabled = true;
 
+      const handleCallPhone=(mobile)=>{
+    console.log("mobile",mobile)
+    if(mobile){
+      CommonModule.makeCall(mobile)
+    }
+    
+  }
+
 
   if (!visible) return null;
 
@@ -266,6 +277,9 @@ export default function DoubleStatusSheet({
                 </View>
               </View>
 
+
+              
+
               <TouchableOpacity
                 style={styles.dotsButton}
                 onPress={() => {
@@ -276,6 +290,20 @@ export default function DoubleStatusSheet({
                 <Text style={styles.dots}>⋯</Text>
               </TouchableOpacity>
             </View>
+
+                                   <View style={styles.actionRow}>
+                                  
+                                                        <TouchableOpacity style={styles.chatBtn} >
+                                                          <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                                          <Text style={styles.chatText}>Chat</Text>
+                                                        </TouchableOpacity>
+                                  
+                                                        <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(selectedBed.currentTenantInfo[0]?.mobile)}>
+                                                          <Image source={Call} style={styles.actionIcon} />
+                                                          <Text style={styles.callText}>Call</Text>
+                                                        </TouchableOpacity>
+                                  
+                                                      </View>
 
             <View style={styles.infoRow}>
               <Text style={styles.label}>Rental Amount</Text>
@@ -446,6 +474,20 @@ export default function DoubleStatusSheet({
                         </TouchableOpacity>
 
                       </View>
+
+                       <View style={styles.actionRow}>
+                                  
+                                                        <TouchableOpacity style={styles.chatBtn} >
+                                                          <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                                          <Text style={styles.chatText}>Chat</Text>
+                                                        </TouchableOpacity>
+                                  
+                                                        <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
+                                                          <Image source={Call} style={styles.actionIcon} />
+                                                          <Text style={styles.callText}>Call</Text>
+                                                        </TouchableOpacity>
+                                  
+                                                      </View>
 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Booking Amount</Text>
@@ -758,4 +800,48 @@ const styles = StyleSheet.create({
   },
 
 
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    gap: 10
+  },
+
+  chatBtn: {
+    display: 'flex',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F7EE",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  callBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F0FF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  chatText: {
+    color: "#00A653",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+
+  callText: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+ actionIcon: {
+    width: 18,
+    height: 18
+  },
 });
