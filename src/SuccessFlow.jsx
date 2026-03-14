@@ -51,7 +51,9 @@ import Integration from "../src/Component/SettingScreen/Integration/Integration"
 import UsersScreen from "../src/Component/SettingScreen/Users/UsersList";
 import AmenitySettings from "../src/Component/SettingScreen/Amenity/AmenitySettings";
 import BillingRuleScreen from "../src/Component/SettingScreen/BillingRule/BillingRuleList";
+import BillingRule from "../src/Component/SettingScreen/BillingRule/BillingRule";
 import LongStayRecurring from "../src/Component/SettingScreen/BillingRule/LongStayRecurring";
+import LongStay from "../src/Component/SettingScreen/BillingRule/LongStay";
 import RolesScreen from "../src/Component/SettingScreen/RoleScreen/RoleList";
 import BillTemplateSettings from "../src/Component/SettingScreen/BillTemplate/SettingsBillTemplate";
 import SubscriptionPlans from "../src/Component/SettingScreen/Subscription/SubscriptionPlan";
@@ -149,7 +151,9 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="UsersScreen" component={UsersScreen} />
                     <Navigation.Screen name="SettingsAmenity" component={AmenitySettings} />
                     <Navigation.Screen name="BillingRuleScreen" component={BillingRuleScreen} />
+                    <Navigation.Screen name="BillingRule" component={BillingRule} />
                     <Navigation.Screen name="LongStayRecurring" component={LongStayRecurring} />
+                     <Navigation.Screen name="LongStay" component={LongStay} />
                     <Navigation.Screen name="RolesScreen" component={RolesScreen} />
                     <Navigation.Screen name="BillTemplate" component={BillTemplateSettings} />
                     <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />

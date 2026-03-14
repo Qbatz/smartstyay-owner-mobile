@@ -49,6 +49,7 @@
     "react-native-svg": "^15.15.0",
     "react-native-svg-charts": "^5.4.0",
     "react-native-swiper-flatlist": "^3.2.5",
+    "react-native-switch": "^1.5.1",
     "react-native-ui-datepicker": "^3.1.2",
     "react-native-webview": "^13.16.0"
   },
