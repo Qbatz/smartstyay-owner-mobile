@@ -44,7 +44,8 @@ export default function SettingsScreen({ navigation }) {
   const pgItems = [
 
   { icon: Electricity, title: "Electricity", screen: "SettingsElectricity" },
-  { icon: BillingRule, title: "Billing Rule", screen:"BillingRuleScreen" },
+  { icon: BillingRule, title: "Billing Rule old", screen:"BillingRuleScreen" },
+  { icon: BillingRule, title: "Billing Rule", screen:"BillingRule" },
   { icon: BillTemplate, title: "Bill Templates", screen:"BillTemplate" },
   { icon: Expense, title: "Expenses", screen: "ExpensesCategory" },
   { icon: Complaints, title: "Complaints", screen: "ComplaintType" },
