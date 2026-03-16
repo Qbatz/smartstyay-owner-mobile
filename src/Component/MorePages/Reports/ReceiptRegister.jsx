@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import Loader from "../../../Component/Loader/Loader"
 import LinearGradient from "react-native-linear-gradient";
@@ -24,6 +25,8 @@ const ReceiptRegister = ({navigation}) => {
  
     const {loading,  getReceiptRegisterReport , downloadReceiptReport} = UseSetting();
     const { activeHostelId } = useContext(CommonContexts);
+      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+
     const [receiptData, setReceiptData] = useState(null);
       const {
         canWriteModule: canWriteReports,
@@ -130,6 +133,9 @@ const handleDownloadReceiptReport = async () => {
 };
 
 console.log("receiptData", receiptData);
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isExportAllow = isValidSubscription && canReadReports;
 
 
   return (
@@ -282,7 +288,11 @@ console.log("receiptData", receiptData);
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadReceiptReport}>
+    <TouchableOpacity 
+      style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
+      disabled={!isExportAllow}
+    // style={styles.exportBtn}
+     onPress={handleDownloadReceiptReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>

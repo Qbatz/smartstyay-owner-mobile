@@ -803,8 +803,9 @@ const saveSubcategory = async () => {
     </Text>
 
     <TouchableOpacity
-      style={styles.addButtonEmpty}
-
+      // style={styles.addButtonEmpty}
+       style={[styles.addButtonEmpty,!canWriteExpense && { opacity: 0.4 },]}
+                disabled={!canWriteExpense}
 onPress={() => {
   openSubAddSheet(false, null, selectedExpenseId);
 }}

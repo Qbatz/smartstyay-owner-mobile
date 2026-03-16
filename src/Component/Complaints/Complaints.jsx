@@ -410,12 +410,12 @@ if (!canReadComplaints && !loading) {
       {/* Header */}
 <View style={styles.headerRow}>
   <Text style={styles.headerTitle}>Complaints</Text>
- {!loading &&  complaintsList && complaintsList?.length > 0 && (
+ {/* {!loading &&  complaintsList && complaintsList?.length > 0 && (
  <TouchableOpacity onPress={() => setShowFilter(true)}   disabled={!canReadComplaints}
   style={!canReadComplaints && { opacity: 0.4 }}>
     <Image source={FilterIcon} style={styles.headerFilterIcon} />
   </TouchableOpacity>
- )}
+ )} */}
  
 </View>
 
@@ -472,7 +472,7 @@ if (!canReadComplaints && !loading) {
  {!loading &&  complaintsList && complaintsList?.length > 0 &&
        <>
 
-      <TouchableOpacity  style={[
+      {/* <TouchableOpacity  style={[
     styles.filterBtn,
     !canReadComplaints && { opacity: 0.4 } 
   ]} disabled={!canReadComplaints} onPress={() => setShowFilter(true)}>
@@ -481,7 +481,7 @@ if (!canReadComplaints && !loading) {
           style={{ width: 25, height: 25 }}
         />
 
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity
        style={[
@@ -560,7 +560,6 @@ if (!canReadComplaints && !loading) {
     >
       <View style={styles.filterHandle} />
 
-      {/* Header */}
       <View style={styles.filterHeader}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image

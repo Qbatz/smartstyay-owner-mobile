@@ -351,12 +351,12 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
 
         {walkinCustomers?.length > 0 &&
           <>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[styles.filterBtn, !canReadWalkin && { opacity: 0.4 }]}
               disabled={!canReadWalkin}
               onPress={handleWalkinFilter}>
               <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
 
             <TouchableOpacity

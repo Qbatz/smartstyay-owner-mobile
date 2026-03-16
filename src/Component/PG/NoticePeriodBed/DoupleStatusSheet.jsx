@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ReAssign from "../../../Assets/Images/ReAssign.png";
 import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
@@ -35,6 +36,7 @@ export default function DoubleStatusSheet({
   const {CommonModule}=NativeModules;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const { activeHostelId } = useContext(CommonContexts);
+     const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getCustomersByHostel, loading } = useCustomer();
   const navigation = useNavigation();
 
@@ -48,6 +50,8 @@ export default function DoubleStatusSheet({
     onClose();
   }
 
+  
+
 
   const {
     canWriteModule: canWriteCustomers,
@@ -58,7 +62,8 @@ export default function DoubleStatusSheet({
 
 
 
-  const {
+  const { 
+    canReadModule: canReadPayingGuests,
     canUpdateModule: canUpdatePayingGuests,
     // canDeleteModule: canDeletePayingGuests,
 
@@ -145,6 +150,13 @@ export default function DoubleStatusSheet({
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data?.listCustomers || []);
   };
+
+      useEffect(() => {
+                   if (activeHostelId) {
+                     getParticularHostelDetails(activeHostelId);
+                   }
+                 }, [activeHostelId])
+
   console.log("customers123", customers)
   const matchedCustomer = customers.find(
     c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
@@ -191,7 +203,8 @@ export default function DoubleStatusSheet({
     }
     
   }
-
+     const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   if (!visible) return null;
 
@@ -293,12 +306,15 @@ export default function DoubleStatusSheet({
 
                                    <View style={styles.actionRow}>
                                   
-                                                        <TouchableOpacity style={styles.chatBtn} >
+                                                        {/* <TouchableOpacity style={styles.chatBtn} >
                                                           <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                                           <Text style={styles.chatText}>Chat</Text>
-                                                        </TouchableOpacity>
+                                                        </TouchableOpacity> */}
                                   
-                                                        <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(selectedBed.currentTenantInfo[0]?.mobile)}>
+                                                        <TouchableOpacity 
+                                                                   style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                    disabled={!isSubscriptionAllow}
+                                                         onPress={()=>handleCallPhone(selectedBed.currentTenantInfo[0]?.mobile)}>
                                                           <Image source={Call} style={styles.actionIcon} />
                                                           <Text style={styles.callText}>Call</Text>
                                                         </TouchableOpacity>
@@ -477,12 +493,16 @@ export default function DoubleStatusSheet({
 
                        <View style={styles.actionRow}>
                                   
-                                                        <TouchableOpacity style={styles.chatBtn} >
+                                                        {/* <TouchableOpacity style={styles.chatBtn} >
                                                           <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                                           <Text style={styles.chatText}>Chat</Text>
-                                                        </TouchableOpacity>
+                                                        </TouchableOpacity> */}
+                                                        
                                   
-                                                        <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
+                                                        <TouchableOpacity
+                                                        style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                                        disabled={!isSubscriptionAllow}
+                                                        onPress={()=>handleCallPhone(item?.mobile)}>
                                                           <Image source={Call} style={styles.actionIcon} />
                                                           <Text style={styles.callText}>Call</Text>
                                                         </TouchableOpacity>

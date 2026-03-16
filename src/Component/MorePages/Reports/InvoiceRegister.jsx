@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { NativeModules } from "react-native";
 import Loader from "../../../Component/Loader/Loader"
@@ -26,6 +27,7 @@ const InvoiceRegister = ({navigation}) => {
        const { CommonModule } = NativeModules;
      const {loading,  Reportsdetails , GetInvoiceReports  , invoiceReports , downloadInvoiceReport} = UseSetting();
     const { activeHostelId } = useContext(CommonContexts);
+      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
       const [billStatus, setBillStatus] = useState([]);
       const [type, setType] = useState([]);
@@ -50,11 +52,19 @@ const slideAnim = useState(new Animated.Value(500))[0];
         canDeleteModule: canDeleteReports,
       } = useHasPermission("Reports")
 
+      
+
 useEffect(() => {
   if (activeHostelId) {
     GetInvoiceReports(activeHostelId); 
   }
 }, [activeHostelId]);
+
+    useEffect(() => {
+      if (activeHostelId) {
+        getParticularHostelDetails(activeHostelId);
+      }
+    }, [activeHostelId])
 
 
 useEffect(() => {
@@ -169,6 +179,10 @@ const handleDownloadInvoiceReport = async () => {
 };
 
 console.log("invoiceReports", invoiceReports);
+
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isExportAllow = isValidSubscription && canReadReports;
 
 
   return (
@@ -329,7 +343,11 @@ console.log("invoiceReports", invoiceReports);
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadInvoiceReport}>
+    <TouchableOpacity 
+      style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
+      disabled={!isExportAllow}
+    // style={styles.exportBtn}
+     onPress={handleDownloadInvoiceReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>

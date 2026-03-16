@@ -11,6 +11,7 @@ import { NativeModules } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
+import { PGContext } from "../../../Context/PGContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png"; 
 import EmptyState from "../../../Assets/Images/Empty_state.png"
@@ -22,7 +23,7 @@ const ExpenseRegister = ({navigation}) => {
 
     const { CommonModule } = NativeModules;
   const {loading,  Reportsdetails , GetExpenseRegisterReport , downloadExpenseReport} = UseSetting();
-
+ const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   // const { getExpenseRegisterReport } = UseSetting();
 const { activeHostelId } = useContext(CommonContexts)
 const [expenseData, setExpenseData] = useState(null)
@@ -170,6 +171,9 @@ const handleDownloadExpenseReport = async () => {
   }
 }
 
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isExportAllow = isValidSubscription && canReadReports;
+
 
   return (
          <>
@@ -316,7 +320,11 @@ const handleDownloadExpenseReport = async () => {
     </View>
 
       <View style={styles.exportWrapper}>
-    <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadExpenseReport}>
+    <TouchableOpacity
+    //  style={styles.exportBtn}
+      style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
+      disabled={!isExportAllow}
+      onPress={handleDownloadExpenseReport}>
       <Text style={styles.exportText}>Export PDF</Text>
     </TouchableOpacity>
   </View>

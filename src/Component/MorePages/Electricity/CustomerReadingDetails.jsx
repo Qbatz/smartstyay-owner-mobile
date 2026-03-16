@@ -111,10 +111,10 @@ export default function CustomerReading({ route, navigation }) {
     <Text style={styles.unitLabel}>Units{tenant?.totalUnits} </Text>
    
   </View>
-   <View style={styles.dateBox}>
+   {/* <View style={styles.dateBox}>
     <Image source={calendarCheck} style={styles.calIcon} />
     <Text style={styles.dateLabel}>Aug 01 - 31</Text>
-  </View>
+  </View> */}
   </View>
 
  

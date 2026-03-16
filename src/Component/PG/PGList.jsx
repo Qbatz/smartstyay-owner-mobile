@@ -1372,7 +1372,9 @@ useFocusEffect(
 
                     <View style={styles.addBedHead}>
                       <TouchableOpacity
-                        style={styles.addBedBox}
+                        // style={styles.addBedBox}
+                        disabled={!canWritePayingGuests}
+                        style={[styles.addBedBox, !canWritePayingGuests && { opacity: 0.4 }]}
                         onPress={() =>
                         {
                           setShowFloorMenu(false)

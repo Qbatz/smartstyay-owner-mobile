@@ -484,13 +484,13 @@ export default function VendorsList({ navigation }) {
 
         {!loading && vendorList?.length > 0 && (
           <>
-            <TouchableOpacity style={[
+            {/* <TouchableOpacity style={[
               styles.filterFab,
               !canReadVendor && { opacity: 0.4 }
             ]}
               disabled={!canReadVendor} onPress={() => setShowFilter(true)}>
               <Image source={FilterIcon} style={styles.filterIcon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={[

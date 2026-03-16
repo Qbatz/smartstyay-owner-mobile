@@ -10,7 +10,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal, Animated, BackHandler, PanResponder,
-  NativeModules
+  NativeModules , Linking 
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -42,6 +42,7 @@ import Bed from "../../Assets/Images/bed.png";
 import { Dimensions } from "react-native";
 import CheckoutBottomSheet from './Checkout/CheckoutTenant';
 import { CommonContexts } from "../../Context/CommonContext";
+import { PGContext } from "../../Context/PGContext";
 import { useCustomer } from "../../Context/CustomerContext";
 import EmptyState from "../../Assets/Images/Empty_state.png";
 import Loader from "../Loader/Loader";
@@ -50,6 +51,7 @@ import CustomerOverviewScreen from "./CustomerOverview/CustomerOverviewSheet";
 import moment from "moment";
 import RentMoney from "../../Assets/Images/RentMoney.png"
 import DirectionImage from "../../Assets/Images/direction-down.png"
+import SuccessModal from "../../ToastFile/ToastPage";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
@@ -58,6 +60,11 @@ export default function TenantsScreen({ route }) {
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
+    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+
+     const [showSuccessModal, setShowSuccessModal] = useState(false);
+     const [modalMessage, setModalMessage] = useState("");
+     const [modalType, setModalType] = useState("success");
 
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -161,6 +168,50 @@ export default function TenantsScreen({ route }) {
       }
     }, [activeHostelId])
   );
+
+      useEffect(() => {
+        if (activeHostelId) {
+          getParticularHostelDetails(activeHostelId);
+        }
+      }, [activeHostelId])
+
+
+const handleOpenWhatsapp = (item) => {
+  console.log("mobile", item);
+  if (!item) return;
+
+  let mobile = item?.mobileNo || item?.mobile;
+  let countryCode = item?.countryCode || "91";
+
+  if (!mobile) {
+    setModalType("warning");
+    setModalMessage("Mobile number not available");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
+
+  mobile = mobile.toString().replace(/\D/g, "");
+
+  if (mobile.startsWith(countryCode)) {
+    mobile = mobile.slice(countryCode.length);
+  }
+
+  const phoneNumber = `${countryCode}${mobile}`;
+  const url = `https://wa.me/${phoneNumber}`;
+
+  console.log("url", url);
+
+  Linking.openURL(url).catch(() => {
+    setModalType("warning");
+    setModalMessage("WhatsApp not installed");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+  });
+};
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isExportAllow = isValidSubscription && canReadTenant;
 
   const handleCallPhone=(mobile)=>{
     console.log("mobile",mobile)
@@ -305,6 +356,20 @@ export default function TenantsScreen({ route }) {
     showInactiveSheet,
     showReAssignbed
   ]);
+
+  useEffect(() => {
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    () => {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
+      return true;
+    }
+  );
+
+  return () => backHandler.remove();
+}, []);
 
 
   useLayoutEffect(() => {
@@ -552,6 +617,13 @@ export default function TenantsScreen({ route }) {
 
   return (
     <>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+
       {loading && <Loader />}
 
       <SafeAreaView style={styles.container}>
@@ -634,7 +706,7 @@ export default function TenantsScreen({ route }) {
                     </Text>
                   </View>
                 )}
-                   { customers?.listCustomers?.length > 0 && (
+                   {/* { customers?.listCustomers?.length > 0 && (
         <View style={styles.filterRow}>
   <TouchableOpacity style={styles.filterChipActive}>
     <Text style={styles.filterChipTextActive}>All</Text>
@@ -668,7 +740,7 @@ export default function TenantsScreen({ route }) {
   </TouchableOpacity>
 </View>
                     )
-                  }
+                  } */}
     
 
                 <ScrollView
@@ -913,9 +985,11 @@ export default function TenantsScreen({ route }) {
                           />
                         </TouchableOpacity> */}
 
-                        <TouchableOpacity onPress={()=>{
-                            handleCallPhone(item.mobile)
-                        }}>
+                        <TouchableOpacity
+                        style={[ !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow}
+                         onPress={()=>{
+                            handleCallPhone(item.mobile)}}>
                           <Image
                             source={CallIcon}
                             style={{ width: 20, height: 20, }}
@@ -1104,11 +1178,25 @@ export default function TenantsScreen({ route }) {
   {/* RIGHT SIDE ICON */}
 
     <TouchableOpacity 
-    style={{
+
+      onPress={() =>
+    handleOpenWhatsapp(selectedCustomer)
+  }
+    // style={{
+    //   padding: 10,
+    //   justifyContent: "center",
+    //   alignItems: "center",
+    // }}
+
+      style={[
+    {
       padding: 10,
       justifyContent: "center",
       alignItems: "center",
-    }}
+    },
+    !isExportAllow && { opacity: 0.4 },
+  ]}
+        disabled={!isExportAllow}
   >
     <Image
       source={WhatsappIcon}
@@ -1117,11 +1205,16 @@ export default function TenantsScreen({ route }) {
     />
   </TouchableOpacity>
   <TouchableOpacity onPress={()=>handleCallPhone(selectedCustomer?.mobileNo)}
-    style={{
+
+  style={[
+    {
       padding: 10,
       justifyContent: "center",
       alignItems: "center",
-    }}
+    },
+    !isExportAllow && { opacity: 0.4 },
+  ]}
+        disabled={!isExportAllow}
   >
     <Image
       source={CallIcon}

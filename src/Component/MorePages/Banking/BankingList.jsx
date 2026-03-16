@@ -927,7 +927,7 @@ export default function BankingScreen() {
 
 
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.filterBtn,
                 !canReadBanking && { opacity: 0.4 }
@@ -935,7 +935,7 @@ export default function BankingScreen() {
               disabled={!canReadBanking}
               onPress={() => setShowFilter(true)}>
               <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
 
             {/* <TouchableOpacity 

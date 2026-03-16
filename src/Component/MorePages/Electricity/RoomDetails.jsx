@@ -996,14 +996,13 @@ export default function RoomDetails({ route, navigation }) {
 
 
 
-        {/* Floating Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.fab,
           !canReadElectricity && { opacity: 0.4 }]}
           disabled={!canReadElectricity}
         >
           <Image source={FilterIcon} style={styles.fabIcon} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
 

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState , useContext} from "react";
 import {
     View,
     Text,
@@ -19,11 +19,16 @@ import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
 import Call from "../../../Assets/Images/call.png";
 import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useNavigation } from "@react-navigation/native";
-
+import { PGContext } from "../../../Context/PGContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 export default function ReservedBedBottomSheet({ visible, onClose, selectTap, handleEditBed, selectedBed,onBedAdded,handleMakeUsInActive }) {
     const navigation = useNavigation();
     const {CommonModule}=NativeModules;
+
+     const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+     const { activeHostelId } = useContext(CommonContexts);
+
     console.log("selectedBedTHIFDGDGFG",selectedBed)
     const translateY = useRef(new Animated.Value(300)).current;
     const [menuOpen, setMenuOpen] = useState(false);
@@ -60,6 +65,13 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
         return () => sub.remove();
     }, [showInactiveSheet, menuOpen]);
 
+
+      useEffect(() => {
+               if (activeHostelId) {
+                 getParticularHostelDetails(activeHostelId);
+               }
+             }, [activeHostelId])
+
     useEffect(() => {
         if (visible) {
             Animated.timing(translateY, {
@@ -91,7 +103,6 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
        const {
         canWriteModule: canWriteCustomers,
-        // canReadModule: canReadPayingGuests,
         // canUpdateModule: canUpdatePayingGuests,
         // canDeleteModule: canDeletePayingGuests,
     } = useHasPermission("Customers");
@@ -99,6 +110,7 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
 
     const {
+         canReadModule: canReadPayingGuests,
         canUpdateModule: canUpdatePayingGuests,
         // canDeleteModule: canDeletePayingGuests,
 
@@ -142,7 +154,8 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
     
   }
 
-     
+     const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
     return (
         <>
@@ -339,12 +352,16 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
 
     <View style={styles.actionRow}>
              
-                                   <TouchableOpacity style={styles.chatBtn} >
+                                   {/* <TouchableOpacity style={styles.chatBtn} >
                                      <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                      <Text style={styles.chatText}>Chat</Text>
-                                   </TouchableOpacity>
+                                   </TouchableOpacity> */}
              
-                                   <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
+                                   <TouchableOpacity
+                                    style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                    disabled={!isSubscriptionAllow}
+                                  //  style={styles.callBtn}
+                                    onPress={()=>handleCallPhone(item?.mobile)}>
                                      <Image source={Call} style={styles.actionIcon} />
                                      <Text style={styles.callText}>Call</Text>
                                    </TouchableOpacity>
