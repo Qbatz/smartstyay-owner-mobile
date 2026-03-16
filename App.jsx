@@ -282,15 +282,14 @@ function AppContent(props) {
   console.log(loginContext)
 
   useEffect(() => {
-
-     if (Platform.OS == 'android') {
       CommonModule.checkInternet().then(r => {
+        console.log("internet check")
         console.log(r)
         loginContext.internet(r)
       }).catch(error => {
         console.log(error)
       })
-    }
+    
 
     if (loginContext?.LoggedIN) {
       setIsLoggedIn(loginContext?.LoggedIN)
