@@ -353,10 +353,10 @@ export default function NoticePeriodBedSheet({
 
             <View style={styles.actionRow}>
                       
-                                            <TouchableOpacity style={styles.chatBtn} >
+                                            {/* <TouchableOpacity style={styles.chatBtn} >
                                               <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                               <Text style={styles.chatText}>Chat</Text>
-                                            </TouchableOpacity>
+                                            </TouchableOpacity> */}
                       
                                             <TouchableOpacity style={styles.callBtn}  onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
                                               <Image source={Call} style={styles.actionIcon} />

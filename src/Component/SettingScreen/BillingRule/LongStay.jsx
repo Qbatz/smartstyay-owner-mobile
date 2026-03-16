@@ -1,27 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
     View,
     Text,
     StyleSheet,
     SafeAreaView,
     TouchableOpacity,
-    Image, ScrollView,TextInput ,
+    Image, ScrollView, TextInput,
 } from "react-native";
 import { StatusBar, Platform } from "react-native";
 import { Switch } from "react-native-switch";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { UseSetting } from "../../../Context/SettingContext";
+import { useFocusEffect } from "@react-navigation/native";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ArrowDown from "../../../Assets/Images/direction-downIcon.png";
 import EditIcon from "../../../Assets/Images/Edit_Configure.png";
 import GracePeriodIcon from "../../../Assets/Images/GraceperiodIocn.png";
 import OverdueIcon from "../../../Assets/Images/DuedayIcon.png";
 import CloseIcon from "../../../Assets/Images/Close_Icon.png";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function LongStay({ navigation }) {
 
-    const [billingMethod, setBillingMethod] = useState("monthly");
+    const { activeHostelId } = useContext(CommonContexts);
+    const { getBillingConfig, loading, addBillingRecurring } = UseSetting();
+
+    const [billingMethod, setBillingMethod] = useState("fixed");
     const [billingstartDate, setBillingStartDate] = useState(null);
     const [gracedate, setGraceDate] = useState(null);
     const [duedate, setDueDate] = useState(null);
+    const [billingData, setBillingData] = useState(null)
 
     const [openPicker, setOpenPicker] = useState(false);
     const [openStartDate, setOpenStartDate] = useState(false);
@@ -40,7 +52,88 @@ export default function LongStay({ navigation }) {
     ]);
 
     const [openFromPicker, setOpenFromPicker] = useState(null);
-const [openToPicker, setOpenToPicker] = useState(null);
+    const [openToPicker, setOpenToPicker] = useState(null);
+
+    const [errors, setErrors] = useState({});
+    const [initialValues, setInitialValues] = useState({});
+
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+
+
+
+    useEffect(() => {
+        if (activeHostelId) {
+            loadBilling(activeHostelId);
+        }
+    }, [activeHostelId]);
+
+    const loadBilling = async (id) => {
+        const res = await getBillingConfig(id);
+        console.log("Billing Data →", res);
+        setBillingData(res.data)
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (activeHostelId) {
+                loadBilling(activeHostelId)
+            }
+        }, [activeHostelId])
+    );
+
+    const {
+        canWriteModule: canWriteBills,
+        canReadModule: canReadRecurring,
+    } = useHasPermission("Bills");
+
+    //     useEffect(() => {
+
+    // if(billingData){
+
+    // setBillingStartDate(billingData?.billStartDate || null);
+    // setDueDate(billingData?.billDueDate || null);
+    // if(billingData?.hasGracePeriod){
+    // setGraceDate(billingData.gracePeriod)
+    // }
+
+    // if(billingData?.reminderDays){
+    // setReminderDays(billingData?.reminderDays);
+    // }
+
+    // }
+
+    // },[billingData])
+
+
+    useEffect(() => {
+
+        if (billingData) {
+
+            const billingStart = billingData?.billStartDate
+            const dueDate = billingData?.billDueDate
+            const grace = billingData?.gracePeriod
+            const reminders = billingData?.reminderDays || []
+
+            setBillingStartDate(billingStart)
+            setDueDate(dueDate)
+            setGraceDate(grace)
+            setReminderDays(reminders)
+
+            setInitialValues({
+                billingstartDate: billingStart,
+                duedate: dueDate,
+                gracedate: grace,
+                reminderDays: reminders
+            })
+
+        }
+
+    }, [billingData])
+
+
+
 
     const currentDate = new Date();
     const year = currentDate.getFullYear();
@@ -60,685 +153,818 @@ const [openToPicker, setOpenToPicker] = useState(null);
         return date - 1;
     };
 
+    const getGraceInfoText = () => {
+
+        if (!gracedate || isNaN(gracedate)) return ""
+
+        const start = "01"
+        const end = gracedate < 10 ? `0${gracedate}` : gracedate
+
+        const next = gracedate + 1
+        const nextFormatted = next < 10 ? `0${next}` : next
+
+        return `Full rent will apply if tenant joins from ${start} to ${end} of the month. Prorated rent applies from ${nextFormatted} onwards.`
+
+    }
+
     const addSlab = () => {
-  setSlabs([
-    ...slabs,
-    { id: Date.now(), from: "", to: "", amount: "" }
-  ]);
-};
+        setSlabs([
+            ...slabs,
+            { id: Date.now(), from: "", to: "", amount: "" }
+        ]);
+    };
 
-const updateSlab = (id, field, value) => {
-  setSlabs(prev =>
-    prev.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
-    )
-  );
-};
+    const updateSlab = (id, field, value) => {
+        setSlabs(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, [field]: value } : item
+            )
+        );
+    };
 
-const removeSlab = (id) => {
-  setSlabs(slabs.filter((item) => item.id !== id));
-};
+    const removeSlab = (id) => {
+        setSlabs(slabs.filter((item) => item.id !== id));
+    };
+
+
+    const handleSaveConfiguration = async () => {
+
+        const newErrors = {}
+
+        if (!billingstartDate) {
+            newErrors.billingDate = "Please select billing start date"
+        }
+
+        const isChanged =
+            billingstartDate !== initialValues.billingstartDate ||
+            billingMethod !== "fixed"
+
+        if (!isChanged) {
+            newErrors.noChange = "No changes detected"
+        }
+
+        setErrors(newErrors)
+
+        if (Object.keys(newErrors).length === 0) {
+
+            const res = await addBillingRecurring({
+                hostelId: activeHostelId,
+                startDate: billingstartDate,
+                calculationType: billingMethod
+            })
+
+            if (res?.success) {
+                setModalType("success");
+                setMessage("Saved Successfully");
+                setShowSuccess(true);
+
+                await getBillingConfig(activeHostelId);
+                setIsConfigured(true)
+
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 1200);
+
+            }
+
+
+
+        }
+
+    }
+
+   console.log("duedate", duedate);
+   
+
+    const handleSaveChanges = async () => {
+
+        const newErrors = {}
+
+        if (!duedate) {
+            newErrors.dueDate = "Please select billing due days"
+        }
+
+        if (billingstartDate && duedate && duedate <= billingstartDate) {
+            newErrors.dueDate = "Due date must be after billing date"
+        }
+
+     const payload = {
+  dueDate: duedate,
+  gracePeriodDays: gracedate || "",
+  reminderDays: reminderDays || []
+}
+        console.log("payload", payload);
+        
+
+
+        const isChanged =
+            JSON.stringify(payload) !==
+            JSON.stringify({
+                billStartDate: initialValues.billingstartDate,
+                billDueDate: initialValues.duedate,
+                gracePeriod: initialValues.gracedate,
+                reminderDays: initialValues.reminderDays
+            })
+
+        if (!isChanged) {
+            newErrors.noChange = "No changes detected"
+            return
+        }
+
+        setErrors(newErrors)
+
+        if (Object.keys(newErrors).length === 0) {
+
+      const res =  await addBillingRecurring({
+                hostelId: activeHostelId,
+                ...payload
+            })
+
+              if (res?.success) {
+                setModalType("success");
+                setMessage("Updated Successfully");
+                setShowSuccess(true);
+
+                await getBillingConfig(activeHostelId);
+
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 1200);
+
+            }
+
+        }
+
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
 
-            {/* Header */}
-            <View style={styles.headerRow}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Image source={ArrowLeft} style={styles.backIcon} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Longstay Recurring</Text>
-            </View>
+        <>
+            {loading && <Loader />}
+            <SuccessModal
+                visible={showSuccess}
+                message={message}
+                type={modalType}
+            />
+            <SafeAreaView style={styles.container}>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Billing Method */}
-                <View style={styles.card}>
-
-                    <Text style={styles.sectionTitle}>Billing Method</Text>
-                    <Text style={styles.sectionSub}>
-                        Choose how rent invoices are generated for tenants.
-                    </Text>
-
-                    {/* Monthly Recurring */}
-                    <TouchableOpacity
-                        style={styles.radioRow}
-                        onPress={() => setBillingMethod("monthly")}
-                    >
-                        <View style={styles.radioTextContainer}>
-                            <Text style={styles.radioTitle}>Monthly Recurring</Text>
-                            <Text style={styles.radioSub}>
-                                It's automatically calculated based on bill start date
-                            </Text>
-                        </View>
-
-                        <View style={styles.radioOuter}>
-                            {billingMethod === "monthly" && <View style={styles.radioInner} />}
-                        </View>
+                {/* Header */}
+                <View style={styles.headerRow}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
-
-                    {/* Tenant Joining */}
-
-                    <TouchableOpacity
-                        style={styles.radioRow}
-                        onPress={() => setBillingMethod("joining")}
-                    >
-                        <View style={styles.radioTextContainer}>
-                            <Text style={styles.radioTitle}>Tenant Joining Based</Text>
-                            <Text style={styles.radioSub}>
-                                Invoices are generated based on each tenant's join date.
-                            </Text>
-                        </View>
-
-                        <View style={styles.radioOuter}>
-                            {billingMethod === "joining" && <View style={styles.radioInner} />}
-                        </View>
-                    </TouchableOpacity>
-
-
-
-
+                    <Text style={styles.headerTitle}>Longstay Recurring</Text>
                 </View>
 
-                {/* Billing Config */}
-                <View style={styles.card}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    {/* Billing Method */}
+                    <View style={styles.card}>
 
-                    <Text style={styles.sectionTitle}>Basic Billing Configuration</Text>
-                    <Text style={styles.sectionSub}>Defines the monthly rent period.</Text>
-
-                    {/* Start Date */}
-                    <Text style={styles.label}>Billing Start Date (Day of Month)</Text>
-
-                    <TouchableOpacity
-                        // style={styles.dropdown}
-                        style={[styles.dropdown, { opacity: billingMethod === "joining" ? 0.4 : 1 }]}
-                        onPress={() => {
-                            setOpenStartDate(!openStartDate);
-                            setOpenGracePeriod(false);
-                            setOpenDueWithin(false);
-                        }}
-                        disabled={billingMethod === "joining"}
-                    >
-                        <Text style={styles.dropdownText}>
-                            {billingstartDate ? billingstartDate : "Select Date"}
+                        <Text style={styles.sectionTitle}>Billing Method</Text>
+                        <Text style={styles.sectionSub}>
+                            Choose how rent invoices are generated for tenants.
                         </Text>
 
-                        <Image source={ArrowDown} style={{ height: 18, width: 18, transform: [{ rotate: openStartDate ? "180deg" : "0deg" }] }} />
-                    </TouchableOpacity>
+                        {/* Monthly Recurring */}
+                        <TouchableOpacity
+                            style={styles.radioRow}
+                            onPress={() => setBillingMethod("fixed")}
+                        >
+                            <View style={styles.radioTextContainer}>
+                                <Text style={styles.radioTitle}>Monthly Recurring</Text>
+                                <Text style={styles.radioSub}>
+                                    It's automatically calculated based on bill start date
+                                </Text>
+                            </View>
 
-                    <Text style={styles.helper}>Select a day between 1-30</Text>
+                            <View style={styles.radioOuter}>
+                                {billingMethod === "fixed" && <View style={styles.radioInner} />}
+                            </View>
+                        </TouchableOpacity>
 
-                    {openStartDate && (
-                        <View style={styles.dateGrid}>
-                            {days.map((d) => (
-                                <TouchableOpacity
-                                    key={d}
-                                    style={[
-                                        styles.dateItem,
-                                        billingstartDate === d && styles.dateSelected
-                                    ]}
-                                    onPress={() => {
-                                        setBillingStartDate(d);
-                                        setOpenStartDate(false);
-                                    }}
-                                >
-                                    <Text
-                                        style={[
-                                            styles.dateText,
-                                            billingstartDate === d && { color: "#fff" }
-                                        ]}
-                                    >
-                                        {d < 10 ? `0${d}` : d}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    )}
+                        {/* Tenant Joining */}
 
-                    {/* End Date */}
-                    <Text style={styles.label}>Billing End Date (Auto-calculated)</Text>
-                    <View style={styles.dropdownDisabled}>
-                        <Text style={styles.dropdownText}>
+                        <TouchableOpacity
+                            style={styles.radioRow}
+                            // onPress={() => setBillingMethod("joining")}
+                            disabled
+                        >
+                            <View style={styles.radioTextContainer}>
+                                <Text style={styles.radioTitle}>Tenant Joining Based</Text>
+                                <Text style={styles.radioSub}>
+                                    Invoices are generated based on each tenant's join date.
+                                </Text>
+                            </View>
 
-                            {billingstartDate ? `${getEndDate(billingstartDate)} of next month` : "Auto calculated"}
-                        </Text>
+                            <View style={styles.radioOuter}>
+                                {billingMethod === "joining_date_based" && <View style={styles.radioInner} />}
+                            </View>
+                        </TouchableOpacity>
+
+
+
+
                     </View>
 
-                    <Text style={styles.helper}>
-                        Automatically calculated based on start date
-                    </Text>
+                    {/* Billing Config */}
+                    <View style={styles.card}>
 
-                    {/* Button */}
-                    <View style={styles.BtnRow} >
+                        <Text style={styles.sectionTitle}>Basic Billing Configuration</Text>
+                        <Text style={styles.sectionSub}>Defines the monthly rent period.</Text>
+
+                        {/* Start Date */}
+                        <Text style={styles.label}>Billing Start Date (Day of Month)</Text>
+
+                        <TouchableOpacity
+                            // style={styles.dropdown}
+                            style={[styles.dropdown, { opacity: billingMethod === "joining_date_based" ? 0.4 : 1 }]}
+                            onPress={() => {
+                                setOpenStartDate(!openStartDate);
+                                setOpenGracePeriod(false);
+                                setOpenDueWithin(false);
+                            }}
+                            disabled={billingMethod === "joining_date_based"}
+                        >
+                            <Text style={styles.dropdownText}>
+                                {billingstartDate ? billingstartDate : "Select Date"}
+                            </Text>
+
+                            <Image source={ArrowDown} style={{ height: 18, width: 18, transform: [{ rotate: openStartDate ? "180deg" : "0deg" }] }} />
+                        </TouchableOpacity>
+
+                        <Text style={styles.helper}>Select a day between 1-30</Text>
+
+                        {errors.billingDate && (
+                            <Text style={{ color: "red", marginTop: 5 }}>
+                                {errors.billingDate}
+                            </Text>
+                        )}
+
+                        {openStartDate && (
+                            <View style={styles.dateGrid}>
+                                {days.map((d) => (
+                                    <TouchableOpacity
+                                        key={d}
+                                        style={[
+                                            styles.dateItem,
+                                            billingstartDate === d && styles.dateSelected
+                                        ]}
+                                        onPress={() => {
+                                            setBillingStartDate(d);
+                                            setOpenStartDate(false);
+                                        }}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.dateText,
+                                                billingstartDate === d && { color: "#fff" }
+                                            ]}
+                                        >
+                                            {d < 10 ? `0${d}` : d}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* End Date */}
+                        <Text style={styles.label}>Billing End Date (Auto-calculated)</Text>
+                        <View style={styles.dropdownDisabled}>
+                            <Text style={styles.dropdownText}>
+
+                                {billingstartDate ? `${getEndDate(billingstartDate)} of next month` : "Auto calculated"}
+                            </Text>
+                        </View>
+
+                        <Text style={styles.helper}>
+                            Automatically calculated based on start date
+                        </Text>
 
 
-                        {!isConfigured && (
+
+                        {errors.noChange && (
+                            <Text style={{ color: "red", marginTop: 10 }}>
+                                {errors.noChange}
+                            </Text>
+                        )}
+                        {/* Button */}
+                        <View style={styles.BtnRow} >
+
+
+
+
+
+                        </View>
+
+                        <View style={styles.configRow}>
+                            {billingData && !billingData?.canModifyBilling && (
+                                <View style={styles.configBadge}>
+                                    <Text style={styles.configIcon}>✓</Text>
+                                    <Text style={styles.configText}>Configured</Text>
+                                </View>
+                            )}
+
+
                             <TouchableOpacity
                                 // style={styles.saveBtn}
-                                style={[styles.saveBtn, { opacity: billingMethod === "joining" ? 0.4 : 1 }]}
-                                disabled={billingMethod === "joining"}
-                                onPress={() => {
-                                    if (billingstartDate) {
-                                        setIsConfigured(true);
-                                    }
-                                }}
+                                style={[
+                                    styles.saveBtn,
+                                    { opacity: billingData && !billingData?.canModifyBilling ? 0.4 : 1 }
+                                ]}
+                                // disabled={billingMethod === "joining_date_based"}
+                                disabled={!billingData?.canModifyBilling}
+                                onPress={handleSaveConfiguration}
                             >
-                                <Text style={styles.saveText}>Save Configuration</Text>
+                                <Text style={styles.saveText}>
+                                    {billingData?.billStartDate
+                                        ? "Edit Configuration"
+                                        : "Save Configuration"}
+                                </Text>
                             </TouchableOpacity>
-                        )}
+
+                        </View>
+
+
                     </View>
-                    {isConfigured && (
-                        <View style={styles.configRow}>
 
-                            <View style={styles.configBadge}>
-                                <Text style={styles.configIcon}>✓</Text>
-                                <Text style={styles.configText}>Configured</Text>
+
+                    <View style={styles.card}>
+                        <Text style={styles.sectionTitle}>Full Rent Grace Period</Text>
+                        <Text style={styles.sectionSub}>Tenants joining shortly after the billing cycle starts are often charged full rent
+                        </Text>
+
+                        <Text style={styles.label}>Grace Period (Days)</Text>
+
+                        <TouchableOpacity style={styles.dropdown} onPress={() => {
+                            setOpenGracePeriod(!openGracePeriod);
+                            setOpenStartDate(false);
+                            setOpenDueWithin(false);
+                        }}>
+                            <Text style={styles.dropdownText}>
+                                {gracedate ? gracedate : "Select Date"}</Text>
+                            <Image source={ArrowDown} style={{ width: 18, height: 18, transform: [{ rotate: openGracePeriod ? "180deg" : "0deg" }] }} />
+                        </TouchableOpacity>
+                        {openGracePeriod && (
+                            <View style={styles.dateGrid}>
+                                {days.map((d) => (
+                                    <TouchableOpacity
+                                        key={d}
+                                        style={[
+                                            styles.dateItem,
+                                            gracedate === d && styles.dateSelected
+                                        ]}
+                                        onPress={() => {
+                                            setGraceDate(d);
+                                            setOpenGracePeriod(false);
+                                        }}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.dateText,
+                                                gracedate === d && { color: "#fff" }
+                                            ]}
+                                        >
+                                            {d < 10 ? `0${d}` : d}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
-
-                            <TouchableOpacity
-                                style={styles.editBtn}
-                                onPress={() => setIsConfigured(false)}
-                            >
-                                {/* <Text style={styles.editIcon}>✎</Text> */}
-                                <Image source={EditIcon} style={styles.editIcon} />
-                                <Text style={styles.editText}>Edit Configuration</Text>
-                            </TouchableOpacity>
-
-                        </View>
-                    )}
-
-                </View>
-
-                {billingMethod === "joining" && (
-                    <>
-                        {/* Full Rent Grace Period */}
-                        <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>Full Rent Grace Period</Text>
-                            <Text style={styles.sectionSub}>
-                                Tenants joining shortly after the billing cycle starts are often charged full rent
-                            </Text>
-
-                            <Text style={styles.label}>Grace Period (Days)</Text>
-
-                            <TouchableOpacity style={styles.dropdown} onPress={() => {
-                                setOpenGracePeriod(!openGracePeriod);
-                                setOpenStartDate(false);
-                                setOpenDueWithin(false);
-                            }}>
-                                <Text style={styles.dropdownText}>
-                                    {gracedate ? gracedate : "Select Date"}</Text>
-                                <Image source={ArrowDown} style={{ width: 18, height: 18, transform: [{ rotate: openGracePeriod ? "180deg" : "0deg" }] }} />
-                            </TouchableOpacity>
-                            {openGracePeriod && (
-                                <View style={styles.dateGrid}>
-                                    {days.map((d) => (
-                                        <TouchableOpacity
-                                            key={d}
-                                            style={[
-                                                styles.dateItem,
-                                                gracedate === d && styles.dateSelected
-                                            ]}
-                                            onPress={() => {
-                                                setGraceDate(d);
-                                                setOpenGracePeriod(false);
-                                            }}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.dateText,
-                                                    gracedate === d && { color: "#fff" }
-                                                ]}
-                                            >
-                                                {d < 10 ? `0${d}` : d}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            )}
-                   
-                                               <View style={{display:'flex', flexDirection:'row',    marginTop: 8}}>
-                                <Image source={GracePeriodIcon} style={{ height: 13, width: 13,   marginTop: 2, marginRight:4  }} />
-                            <Text style={styles.infoText}>
-                             
-                                Full rent will apply if tenant joins from 4 to 11 of the month. Prorated rent applies from 12 onwards.
-                            </Text>
-                        </View>
-                         </View>
+                        )}
 
 
-                        {/* Payment Timeline */}
-                        <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>Payment Timeline (Due days)</Text>
-                            <Text style={styles.sectionSub}>
-                                Configure payment due dates and reminder settings
-                            </Text>
-
-                            <Text style={styles.label}>Due Within (Days)</Text>
-
-                            <TouchableOpacity style={styles.dropdown} onPress={() => {
-                                setOpenDueWithin(!openDueWithin);
-                                setOpenStartDate(false)
-                                setOpenGracePeriod(false);
-                            }}>
-                                <Text style={styles.dropdownText}>{duedate ? duedate : "Select Date"}</Text>
-                                <Image source={ArrowDown} style={{ width: 18, height: 18 }} />
-                            </TouchableOpacity>
-
-                            {openDueWithin && (
-                                <View style={styles.dateGrid}>
-                                    {days.map((d) => (
-                                        <TouchableOpacity
-                                            key={d}
-                                            style={[
-                                                styles.dateItem,
-                                                duedate === d && styles.dateSelected
-                                            ]}
-                                            onPress={() => {
-                                                setDueDate(d);
-                                                setOpenDueWithin(false);
-                                            }}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.dateText,
-                                                    duedate === d && { color: "#fff" }
-                                                ]}
-                                            >
-                                                {d < 10 ? `0${d}` : d}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            )}
-                            <View style={{display:'flex', flexDirection:'row', alignItems:'center',    marginTop: 8}}>
-                                <Image source={OverdueIcon} style={{ height: 13, width: 13,   marginTop: 2, marginRight:4  }} />
-                            <Text style={styles.warningText}>
-                                
-                                Overdue starts from 10 of the month
-                            </Text>
-                            </View>
-
-                            <Text style={styles.label}>Send Reminder (Days Before Due)</Text>
-
-                            <TouchableOpacity
-                                style={styles.dropdown}
-                                onPress={() => setOpenReminder(!openReminder)}
-                            >
-                                <View style={{ flexDirection: "row", flexWrap: "wrap", flex: 1 }}>
-                                    {reminderDays.length === 0 ? (
-                                        <Text style={styles.dropdownText}>Select Reminder Days</Text>
-                                    ) : (
-                                        reminderDays.map((d) => (
-                                            <View key={d} style={styles.reminderChip}>
-                                                <Text style={{ color: '#222222' }}>{d < 10 ? `0${d}` : d}</Text>
-
-                                                <TouchableOpacity
-                                                    onPress={() =>
-                                                        setReminderDays(reminderDays.filter((item) => item !== d))
-                                                    }
-                                                >
-                                                    <Image source={CloseIcon} style={{ marginLeft: 6, height: 15, width: 15 }} />
-                                                    {/* <Text style={{marginLeft:6}}>✕</Text> */}
-                                                </TouchableOpacity>
-                                            </View>
-                                        ))
-                                    )}
-                                </View>
-                                <View style={{ width: "7%" }}>
-                                    <Image source={ArrowDown} style={{ width: 18, height: 18, }} />
-                                </View>
-                            </TouchableOpacity>
-
-                            {openReminder && duedate && (
-                                <View style={styles.dateGrid}>
-                                    {Array.from({ length: duedate }, (_, i) => i + 1).map((d) => (
-                                        <TouchableOpacity
-                                            key={d}
-                                            style={[
-                                                styles.dateItem,
-                                                reminderDays.includes(d) && styles.dateSelected
-                                            ]}
-                                            onPress={() => {
-                                                if (reminderDays.includes(d)) {
-                                                    setReminderDays(reminderDays.filter((x) => x !== d));
-                                                } else {
-                                                    setReminderDays([...reminderDays, d]);
-                                                }
-                                            }}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.dateText,
-                                                    reminderDays.includes(d) && { color: "#fff" }
-                                                ]}
-                                            >
-                                                {d < 10 ? `0${d}` : d}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            )}
-
-
-                            <Text style={styles.helper}>
-                                Automatic payment reminder will be sent before due date
-                            </Text>
-                        </View>
-
-
-                        {/* Late Fee */}
-                        <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>
-                                Late Fee Configuration (Fine Amount)
-                            </Text>
-
-                            <Text style={styles.sectionSub}>
-                                Set up late payment penalties and charges
-                            </Text>
-
-                            <View style={styles.lateRow}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.sectionTitle}>Enable Late Fees</Text>
-                                    <Text style={styles.helper}>
-                                        Automatically charge late fees on overdue payments
-                                    </Text>
-                                </View>
-
-                                {/* <Switch
-    value={lateFeeEnabled}
-    onValueChange={setLateFeeEnabled}
-    trackColor={{ false: "#D9D9D9", true: "#2F5BFF" }}
-    thumbColor="#fff"
-  /> */}
-
-                                <Switch
-                                    value={lateFeeEnabled}
-                                    onValueChange={setLateFeeEnabled}
-                                    circleSize={20}
-                                    barHeight={25}
-                                    circleBorderWidth={0}
-                                    backgroundActive={"#2F5BFF"}
-                                    backgroundInactive={"#D9D9D9"}
-                                    circleActiveColor={"#fff"}
-                                    circleInActiveColor={"#fff"}
-                                    changeValueImmediately={true}
-                                    innerCircleStyle={{ alignItems: "center", justifyContent: "center" }}
-                                    renderActiveText={false}
-                                    renderInActiveText={false}
+                        {gracedate ? (
+                            <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                                <Image
+                                    source={GracePeriodIcon}
+                                    style={{ height: 13, width: 13, marginRight: 4 }}
                                 />
 
+                                <Text style={styles.infoText}>
+                                    {getGraceInfoText()}
+                                </Text>
+
+                            </View>
+                        ) : null}
+
+                    </View>
+
+
+                    <View style={styles.card}>
+                        <Text style={styles.sectionTitle}>Payment Timeline (Due days)</Text>
+                        <Text style={styles.sectionSub}>
+                            Configure payment due dates and reminder settings
+                        </Text>
+
+                        <Text style={styles.label}>Due Within (Days)</Text>
+
+                        <TouchableOpacity style={styles.dropdown} onPress={() => {
+                            setOpenDueWithin(!openDueWithin);
+                            setOpenStartDate(false)
+                            setOpenGracePeriod(false);
+                            setOpenReminder(false)
+                        }}>
+                            <Text style={styles.dropdownText}>{duedate ? duedate : "Select Date"}</Text>
+                            <Image source={ArrowDown} style={{ width: 18, height: 18 }} />
+                        </TouchableOpacity>
+
+                        {openDueWithin && (
+                            <View style={styles.dateGrid}>
+                                {days.map((d) => (
+                                    <TouchableOpacity
+                                        key={d}
+                                        style={[
+                                            styles.dateItem,
+                                            duedate === d && styles.dateSelected
+                                        ]}
+                                        onPress={() => {
+                                            setDueDate(d);
+                                            setOpenDueWithin(false);
+                                            setReminderDays([])
+                                        }}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.dateText,
+                                                duedate === d && { color: "#fff" }
+                                            ]}
+                                        >
+                                            {d < 10 ? `0${d}` : d}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                        {duedate && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                                <Image
+                                    source={OverdueIcon}
+                                    style={{ height: 13, width: 13, marginRight: 4 }}
+                                />
+
+                                <Text style={styles.warningText}>
+                                    Overdue starts from {duedate} of the month
+                                </Text>
+                            </View>
+                        )}
+
+                        <Text style={styles.label}>Send Reminder (Days Before Due)</Text>
+
+                        <TouchableOpacity
+                            style={styles.dropdown}
+                            onPress={() => {
+                                setOpenReminder(!openReminder)
+                                setOpenDueWithin(false)
+                            }}
+                        >
+                            <View style={{ flexDirection: "row", flexWrap: "wrap", flex: 1 }}>
+                                {reminderDays.length === 0 ? (
+                                    <Text style={styles.dropdownText}>Select Reminder Days</Text>
+                                ) : (
+                                    reminderDays.map((d) => (
+                                        <View key={d} style={styles.reminderChip}>
+                                            <Text style={{ color: '#222222' }}>{d < 10 ? `0${d}` : d}</Text>
+
+                                            <TouchableOpacity
+                                                onPress={() =>
+                                                    setReminderDays(reminderDays.filter((item) => item !== d))
+                                                }
+                                            >
+                                                <Image source={CloseIcon} style={{ marginLeft: 6, height: 15, width: 15 }} />
+                                                {/* <Text style={{marginLeft:6}}>✕</Text> */}
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))
+                                )}
+                            </View>
+                            <View style={{ width: "7%" }}>
+                                <Image source={ArrowDown} style={{ width: 18, height: 18, }} />
+                            </View>
+                        </TouchableOpacity>
+
+                        {openReminder && duedate && (
+                            <View style={styles.dateGrid}>
+                                {Array.from({ length: duedate }, (_, i) => i + 1).map((d) => (
+                                    <TouchableOpacity
+                                        key={d}
+                                        style={[
+                                            styles.dateItem,
+                                            reminderDays.includes(d) && styles.dateSelected
+                                        ]}
+                                        onPress={() => {
+                                            if (reminderDays.includes(d)) {
+                                                setReminderDays(reminderDays.filter((x) => x !== d));
+                                            } else {
+                                                setReminderDays([...reminderDays, d]);
+                                            }
+                                        }}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.dateText,
+                                                reminderDays.includes(d) && { color: "#fff" }
+                                            ]}
+                                        >
+                                            {d < 10 ? `0${d}` : d}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+
+                        <Text style={styles.helper}>
+                            Automatic payment reminder will be sent before due date
+                        </Text>
+                    </View>
+
+
+                    <View style={styles.card}>
+                        <Text style={styles.sectionTitle}>
+                            Late Fee Configuration (Fine Amount)
+                        </Text>
+
+                        <Text style={styles.sectionSub}>
+                            Set up late payment penalties and charges
+                        </Text>
+
+                        <View style={styles.lateRow}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.sectionTitle}>Enable Late Fees</Text>
+                                <Text style={styles.helper}>
+                                    Automatically charge late fees on overdue payments
+                                </Text>
                             </View>
 
-                            {lateFeeEnabled && (
-                                <View style={{ marginTop: 20 }}>
-                                    <Text style={{fontSize: 15,fontFamily: "Gilroy-Medium"}}>Late Fee Type</Text>
-                                    <TouchableOpacity
-                                        style={styles.radioRow}
-                                        onPress={() => setLateFeeType("flat")}
-                                    >
-                                        <View style={styles.radioTextContainer}>
-                                            <Text style={styles.radioTitle}>Flat Fee</Text>
-                                            <Text style={styles.radioSub}>
-                                                One-time charge when payment becomes overdue
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.radioOuter}>
-                                            {lateFeeType === "flat" && <View style={styles.radioInner} />}
-                                        </View>
-                                    </TouchableOpacity>
 
 
-                                    {/* Daily Fee */}
-                                    <TouchableOpacity
-                                        style={styles.radioRow}
-                                        onPress={() => setLateFeeType("daily")}
-                                    >
-                                        <View style={styles.radioTextContainer}>
-                                            <Text style={styles.radioTitle}>Daily Fee</Text>
-                                            <Text style={styles.radioSub}>
-                                                Fixed amount charged per day after due date
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.radioOuter}>
-                                            {lateFeeType === "daily" && <View style={styles.radioInner} />}
-                                        </View>
-                                    </TouchableOpacity>
-
-
-                                    {/* Tiered Daily Fee */}
-                                    <TouchableOpacity
-                                        style={styles.radioRow}
-                                        onPress={() => setLateFeeType("tiered")}
-                                    >
-                                        <View style={styles.radioTextContainer}>
-                                            <Text style={styles.radioTitle}>Tiered Daily Fee</Text>
-                                            <Text style={styles.radioSub}>
-                                                Variable daily charges based on overdue period
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.radioOuter}>
-                                            {lateFeeType === "tiered" && <View style={styles.radioInner} />}
-                                        </View>
-                                    </TouchableOpacity>
-
-
-                                    {/* <TouchableOpacity style={styles.radioRow}>
-<View style={styles.radioTextContainer}>
-<Text style={styles.radioTitle}>Daily Fee</Text>
-<Text style={styles.radioSub}>
-Fixed amount charged per day after due date
-</Text>
-</View>
-
-<View style={styles.radioOuter}/>
-</TouchableOpacity> */}
-
-
-                                    {/* <TouchableOpacity style={styles.radioRow}>
-<View style={styles.radioTextContainer}>
-<Text style={styles.radioTitle}>Tiered Daily Fee</Text>
-<Text style={styles.radioSub}>
-Variable daily charges based on overdue period
-</Text>
-</View>
-
-<View style={styles.radioOuter}/>
-</TouchableOpacity> */}
-
-
-                                    {lateFeeType === "flat" && (
-                                        <>
-                                            <Text style={styles.label}>Flat Fee Amount (₹)</Text>
-
-                                            <View style={styles.dropdown}>
-                                                <Text style={styles.dropdownText}>₹ 300</Text>
-                                            </View>
-                                        </>
-                                    )}
-
-                                    {lateFeeType === "daily" && (
-                                        <>
-                                            <Text style={styles.label}>Daily Fee Amount (₹)</Text>
-
-                                            <View style={styles.dropdown}>
-                                                <Text style={styles.dropdownText}>₹</Text>
-                                            </View>
-
-
-                                            <Text style={styles.label}>Maximum Late Fee Cap (₹)</Text>
-
-                                            <View style={styles.dropdown}>
-                                                <Text style={styles.dropdownText}>₹</Text>
-                                            </View>
-
-                                            <Text style={styles.helper}>
-                                                Late fees will not exceed this amount regardless of delay duration
-                                            </Text>
-                                        </>
-                                    )}
-
-                                   {lateFeeType === "tiered" && (
-<View style={{marginTop:15}}>
-
-{slabs.map((slab,index)=>(
-<View key={slab.id} style={{marginBottom:20}}>
-
-<View style={{alignItems:"flex-end"}}>
-<TouchableOpacity onPress={()=>removeSlab(slab.id)}>
-<Image source={CloseIcon} style={{height:18,width:18}}/>
-</TouchableOpacity>
-</View>
-
-{/* FROM / TO LABEL */}
-<View style={{flexDirection:"row",justifyContent:"space-between"}}>
-    <View style={{flex:1}}>
-<Text style={styles.label}>From Day</Text>
-</View>
- <View style={{flex:1 , marginLeft:15}}>
-<Text style={styles.label}>To Day</Text>
-</View>
-
-</View>
-
-<View style={styles.tierRow}>
-
-{/* FROM DATE */}
-<TouchableOpacity
-style={styles.dropdownSmall}
-onPress={()=>setOpenFromPicker(slab.id)}
->
-<Text>{slab.from || "Select"}</Text>
-</TouchableOpacity>
-
-{/* TO DATE */}
-<TouchableOpacity
-style={styles.dropdownSmall}
-onPress={()=>setOpenToPicker(slab.id)}
->
-<Text>{slab.to || "Select"}</Text>
-</TouchableOpacity>
-
-</View>
-
-
-{/* FROM DATE PICKER */}
-{openFromPicker===slab.id && (
-<View style={styles.dateGrid}>
-{days.map((d)=>(
-<TouchableOpacity
-key={d}
-style={[
-styles.dateItem,
-slab.from===d && styles.dateSelected
-]}
-onPress={()=>{
-updateSlab(slab.id,"from",d);
-setOpenFromPicker(null);
-}}
->
-<Text
-style={[
-styles.dateText,
-slab.from===d && {color:"#fff"}
-]}
->
-{d}
-</Text>
-</TouchableOpacity>
-))}
-</View>
-)}
-
-
-{/* TO DATE PICKER */}
-{openToPicker===slab.id && (
-<View style={styles.dateGrid}>
-{days.map((d)=>(
-<TouchableOpacity
-key={d}
-style={[
-styles.dateItem,
-slab.to===d && styles.dateSelected
-]}
-onPress={()=>{
-updateSlab(slab.id,"to",d);
-setOpenToPicker(null);
-}}
->
-<Text
-style={[
-styles.dateText,
-slab.to===d && {color:"#fff"}
-]}
->
-{d}
-</Text>
-</TouchableOpacity>
-))}
-</View>
-)}
-
-
-{/* AMOUNT */}
-<Text style={styles.label}>Amount per day (₹)</Text>
-
-<TextInput
-style={styles.dropdown}
-keyboardType="numeric"
-placeholder="₹"
-value={slab.amount}
-onChangeText={(text)=>updateSlab(slab.id,"amount",text)}
-/>
-
-</View>
-))}
-
-          <Text style={styles.label}>Maximum Late Fee Amount (₹)</Text>
-
-                                            <View style={styles.dropdown}>
-                                                <Text style={styles.dropdownText}>₹</Text>
-                                            </View>
-
-                                            <Text style={styles.helper}>
-                                                Late fees will not exceed this amount regardless of delay duration
-                                            </Text>
-
-
-
-   <View style={styles.bottomRow}>
-                             
-
-                           <TouchableOpacity style={styles.addSlab} onPress={addSlab}>
-<Text style={{color:"#2F5BFF"}}>+ Add Slab</Text>
-</TouchableOpacity>
-                        </View>
-
-</View>
-)}
-
-                                </View>
-                            )}
+                            <Switch
+                                value={lateFeeEnabled}
+                                onValueChange={setLateFeeEnabled}
+                                circleSize={20}
+                                barHeight={25}
+                                circleBorderWidth={0}
+                                backgroundActive={"#2F5BFF"}
+                                backgroundInactive={"#D9D9D9"}
+                                circleActiveColor={"#fff"}
+                                circleInActiveColor={"#fff"}
+                                changeValueImmediately={true}
+                                innerCircleStyle={{ alignItems: "center", justifyContent: "center" }}
+                                renderActiveText={false}
+                                renderInActiveText={false}
+                            />
 
                         </View>
 
+                        {lateFeeEnabled && (
+                            <View style={{ marginTop: 20 }}>
+                                <Text style={{ fontSize: 15, fontFamily: "Gilroy-Medium" }}>Late Fee Type</Text>
+                                <TouchableOpacity
+                                    style={styles.radioRow}
+                                    onPress={() => setLateFeeType("flat")}
+                                >
+                                    <View style={styles.radioTextContainer}>
+                                        <Text style={styles.radioTitle}>Flat Fee</Text>
+                                        <Text style={styles.radioSub}>
+                                            One-time charge when payment becomes overdue
+                                        </Text>
+                                    </View>
 
-                        {/* Bottom Buttons */}
-                        <View style={styles.bottomRow}>
-                            <TouchableOpacity style={styles.discardBtn}>
-                                <Text style={styles.discardText}>Discard</Text>
-                            </TouchableOpacity>
+                                    <View style={styles.radioOuter}>
+                                        {lateFeeType === "flat" && <View style={styles.radioInner} />}
+                                    </View>
+                                </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.saveChangesBtn}>
-                                <Text style={styles.saveText}>Save Changes</Text>
-                            </TouchableOpacity>
-                        </View>
 
-                    </>
-                )}
-            </ScrollView>
-        </SafeAreaView>
+                                {/* Daily Fee */}
+                                <TouchableOpacity
+                                    style={styles.radioRow}
+                                    onPress={() => setLateFeeType("daily")}
+                                >
+                                    <View style={styles.radioTextContainer}>
+                                        <Text style={styles.radioTitle}>Daily Fee</Text>
+                                        <Text style={styles.radioSub}>
+                                            Fixed amount charged per day after due date
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.radioOuter}>
+                                        {lateFeeType === "daily" && <View style={styles.radioInner} />}
+                                    </View>
+                                </TouchableOpacity>
+
+
+                                {/* Tiered Daily Fee */}
+                                <TouchableOpacity
+                                    style={styles.radioRow}
+                                    onPress={() => setLateFeeType("tiered")}
+                                >
+                                    <View style={styles.radioTextContainer}>
+                                        <Text style={styles.radioTitle}>Tiered Daily Fee</Text>
+                                        <Text style={styles.radioSub}>
+                                            Variable daily charges based on overdue period
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.radioOuter}>
+                                        {lateFeeType === "tiered" && <View style={styles.radioInner} />}
+                                    </View>
+                                </TouchableOpacity>
+
+
+
+
+                                {lateFeeType === "flat" && (
+                                    <>
+                                        <Text style={styles.label}>Flat Fee Amount (₹)</Text>
+
+                                        <View style={styles.dropdown}>
+                                            <Text style={styles.dropdownText}>₹ 300</Text>
+                                        </View>
+                                    </>
+                                )}
+
+                                {lateFeeType === "daily" && (
+                                    <>
+                                        <Text style={styles.label}>Daily Fee Amount (₹)</Text>
+
+                                        <View style={styles.dropdown}>
+                                            <Text style={styles.dropdownText}>₹</Text>
+                                        </View>
+
+
+                                        <Text style={styles.label}>Maximum Late Fee Cap (₹)</Text>
+
+                                        <View style={styles.dropdown}>
+                                            <Text style={styles.dropdownText}>₹</Text>
+                                        </View>
+
+                                        <Text style={styles.helper}>
+                                            Late fees will not exceed this amount regardless of delay duration
+                                        </Text>
+                                    </>
+                                )}
+
+                                {lateFeeType === "tiered" && (
+                                    <View style={{ marginTop: 15 }}>
+
+                                        {slabs.map((slab, index) => (
+                                            <View key={slab.id} style={{ marginBottom: 20 }}>
+
+                                                <View style={{ alignItems: "flex-end" }}>
+                                                    <TouchableOpacity onPress={() => removeSlab(slab.id)}>
+                                                        <Image source={CloseIcon} style={{ height: 18, width: 18 }} />
+                                                    </TouchableOpacity>
+                                                </View>
+
+                                                {/* FROM / TO LABEL */}
+                                                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                                                    <View style={{ flex: 1 }}>
+                                                        <Text style={styles.label}>From Day</Text>
+                                                    </View>
+                                                    <View style={{ flex: 1, marginLeft: 15 }}>
+                                                        <Text style={styles.label}>To Day</Text>
+                                                    </View>
+
+                                                </View>
+
+                                                <View style={styles.tierRow}>
+
+                                                    {/* FROM DATE */}
+                                                    <TouchableOpacity
+                                                        style={styles.dropdownSmall}
+                                                        onPress={() => setOpenFromPicker(slab.id)}
+                                                    >
+                                                        <Text>{slab.from || "Select"}</Text>
+                                                    </TouchableOpacity>
+
+                                                    {/* TO DATE */}
+                                                    <TouchableOpacity
+                                                        style={styles.dropdownSmall}
+                                                        onPress={() => setOpenToPicker(slab.id)}
+                                                    >
+                                                        <Text>{slab.to || "Select"}</Text>
+                                                    </TouchableOpacity>
+
+                                                </View>
+
+
+                                                {/* FROM DATE PICKER */}
+                                                {openFromPicker === slab.id && (
+                                                    <View style={styles.dateGrid}>
+                                                        {days.map((d) => (
+                                                            <TouchableOpacity
+                                                                key={d}
+                                                                style={[
+                                                                    styles.dateItem,
+                                                                    slab.from === d && styles.dateSelected
+                                                                ]}
+                                                                onPress={() => {
+                                                                    updateSlab(slab.id, "from", d);
+                                                                    setOpenFromPicker(null);
+                                                                }}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.dateText,
+                                                                        slab.from === d && { color: "#fff" }
+                                                                    ]}
+                                                                >
+                                                                    {d}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </View>
+                                                )}
+
+
+                                                {/* TO DATE PICKER */}
+                                                {openToPicker === slab.id && (
+                                                    <View style={styles.dateGrid}>
+                                                        {days.map((d) => (
+                                                            <TouchableOpacity
+                                                                key={d}
+                                                                style={[
+                                                                    styles.dateItem,
+                                                                    slab.to === d && styles.dateSelected
+                                                                ]}
+                                                                onPress={() => {
+                                                                    updateSlab(slab.id, "to", d);
+                                                                    setOpenToPicker(null);
+                                                                }}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.dateText,
+                                                                        slab.to === d && { color: "#fff" }
+                                                                    ]}
+                                                                >
+                                                                    {d}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </View>
+                                                )}
+
+
+                                                {/* AMOUNT */}
+                                                <Text style={styles.label}>Amount per day (₹)</Text>
+
+                                                <TextInput
+                                                    style={styles.dropdown}
+                                                    keyboardType="numeric"
+                                                    placeholder="₹"
+                                                    value={slab.amount}
+                                                    onChangeText={(text) => updateSlab(slab.id, "amount", text)}
+                                                />
+
+                                            </View>
+                                        ))}
+
+                                        <Text style={styles.label}>Maximum Late Fee Amount (₹)</Text>
+
+                                        <View style={styles.dropdown}>
+                                            <Text style={styles.dropdownText}>₹</Text>
+                                        </View>
+
+                                        <Text style={styles.helper}>
+                                            Late fees will not exceed this amount regardless of delay duration
+                                        </Text>
+
+
+
+                                        <View style={styles.bottomRow}>
+
+
+                                            <TouchableOpacity style={styles.addSlab} onPress={addSlab}>
+                                                <Text style={{ color: "#2F5BFF" }}>+ Add Slab</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                    </View>
+                                )}
+
+                            </View>
+                        )}
+
+                    </View>
+
+
+                    <View style={styles.bottomRow}>
+                        <TouchableOpacity style={styles.discardBtn}>
+                            <Text style={styles.discardText}>Discard</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.saveChangesBtn}
+                            onPress={handleSaveChanges}
+                        >
+                            <Text style={styles.saveText}>Save Changes</Text>
+                        </TouchableOpacity>
+                    </View>
+
+
+                </ScrollView>
+            </SafeAreaView>
+        </>
     );
 }
 
@@ -980,14 +1206,14 @@ const styles = StyleSheet.create({
     infoText: {
         color: "#1E45E1",
         fontSize: 13,
-      fontFamily: "Gilroy-Medium"
+        fontFamily: "Gilroy-Medium"
     },
 
     warningText: {
         color: "#E27625",
         fontSize: 13,
-           fontFamily: "Gilroy-Medium"
-     
+        fontFamily: "Gilroy-Medium"
+
     },
 
     reminderRow: {
@@ -1053,19 +1279,19 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Medium"
     },
 
-  tierRow:{
-flexDirection:"row",
-justifyContent:"space-between",
-marginTop:10
-},
-    dropdownSmall:{
-borderWidth:1,
-borderColor:"#ddd",
-borderRadius:8,
-padding:12,
-width:"48%",
-alignItems:"center"
-},
+    tierRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 10
+    },
+    dropdownSmall: {
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 8,
+        padding: 12,
+        width: "48%",
+        alignItems: "center"
+    },
 
     addSlab: {
         marginTop: 15,

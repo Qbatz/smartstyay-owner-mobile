@@ -971,7 +971,7 @@ if (!canReadElectricity && !loading) {
   ))
 )}
 
-  {
+  {/* {
        !loading &&  EbRoomReading && EbRoomReading.length > 0 &&
        (
 <TouchableOpacity 
@@ -985,7 +985,7 @@ onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
         <Image source={FilterIcon} style={styles.fabIcon} />
       </TouchableOpacity>
        )
-      }
+      } */}
 
 {!loading &&
   (

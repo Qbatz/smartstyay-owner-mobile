@@ -181,8 +181,7 @@ const handleSwipe = () => {
     Operational Reports
   </Text>
 
-  <TouchableOpacity
-    // style={styles.filterBtn}
+  {/* <TouchableOpacity
     onPress={() => setReportFilterOpen(!reportFilterOpen)}
     activeOpacity={0.7}
    style={[styles.filterBtn,!canUpdateReports && { opacity: 0.4 }]}
@@ -191,7 +190,7 @@ const handleSwipe = () => {
     <Text style={styles.filterText}>{selectedFilter}</Text>
     <Image source={DirectionImage} style={{   marginLeft: 6,
   height:15, width:15 , transform: reportFilterOpen ? "rotate(180deg)": "rotate(0deg)"}}/>
-  </TouchableOpacity>
+  </TouchableOpacity> */}
 </View>
 
 {reportFilterOpen && (
