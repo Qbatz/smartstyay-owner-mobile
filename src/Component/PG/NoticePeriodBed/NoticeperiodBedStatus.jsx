@@ -15,10 +15,10 @@ import ReserveIcon from "../../../Assets/Images/user-square.png";
 import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
 import Call from "../../../Assets/Images/call.png";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
-
 
 
 export default function NoticePeriodBedSheet({
@@ -31,6 +31,7 @@ export default function NoticePeriodBedSheet({
   const translateY = useRef(new Animated.Value(500)).current;
    const {CommonModule}=NativeModules;
   const { activeHostelId } = useContext(CommonContexts);
+       const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getCustomersByHostel, loading } = useCustomer();
   const [menuVisible, setMenuVisible] = useState(false);
   const [customers, setCustomers] = useState([]);
@@ -54,12 +55,20 @@ export default function NoticePeriodBedSheet({
     }, [activeHostelId])
   );
 
+  
 
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
     setCustomers(data?.listCustomers || []);
   };
+
+     useEffect(() => {
+                 if (activeHostelId) {
+                   getParticularHostelDetails(activeHostelId);
+                 }
+               }, [activeHostelId])
+
   console.log("customers123", customers)
   const matchedCustomer = customers.find(
     c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
@@ -125,13 +134,15 @@ export default function NoticePeriodBedSheet({
   } = useHasPermission("Customers");
 
 
+     const {
+           canReadModule: canReadPayingGuests,
+          canUpdateModule: canUpdatePayingGuests,
+          // canDeleteModule: canDeletePayingGuests,
+  
+      } = useHasPermission("Paying Guests");
 
-  const {
-    canUpdateModule: canUpdatePayingGuests,
-    // canDeleteModule: canDeletePayingGuests,
-
-  } = useHasPermission("Paying Guests");
-
+     const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   if (!visible) return null;
 
@@ -358,7 +369,10 @@ export default function NoticePeriodBedSheet({
                                               <Text style={styles.chatText}>Chat</Text>
                                             </TouchableOpacity> */}
                       
-                                            <TouchableOpacity style={styles.callBtn}  onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
+                                            <TouchableOpacity
+                                              style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                    disabled={!isSubscriptionAllow}
+                                        onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
                                               <Image source={Call} style={styles.actionIcon} />
                                               <Text style={styles.callText}>Call</Text>
                                             </TouchableOpacity>
