@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState , useContext} from "react";
 import {
   View,
   Text,
@@ -24,8 +24,8 @@ import NoticeIcon from "../../../Assets/Images/Logout.png";
 import { ScrollView } from "react-native-gesture-handler";
 import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useHasPermission } from "../../../Utils/useHasPermission";
-
-
+import { PGContext } from "../../../Context/PGContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveToNotice, onReAssign, handleEditBed, selectedBed, onBedAdded, handleMakeUsInActive, handleCheckIn }) {
   const translateY = useRef(new Animated.Value(300)).current;
@@ -39,7 +39,15 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const navigation = useNavigation();
    const {CommonModule}=NativeModules;
+     const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+ const { activeHostelId } = useContext(CommonContexts);
 
+
+         useEffect(() => {
+           if (activeHostelId) {
+             getParticularHostelDetails(activeHostelId);
+           }
+         }, [activeHostelId])
 
 
   const handleMoveClick = () => {
@@ -117,10 +125,14 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   } = useHasPermission("Customers");
 
   const {
+        canReadModule: canReadPayingGuests,
     canUpdateModule: canUpdatePayingGuests,
     // canDeleteModule: canDeletePayingGuests,
 
   } = useHasPermission("Paying Guests");
+
+const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   const hasReserved = selectedBed?.newTenantInfo?.length > 0;
 
@@ -263,12 +275,16 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
                                 <View style={styles.actionRow}>
             
-                                  <TouchableOpacity style={styles.chatBtn} >
+                                  {/* <TouchableOpacity style={styles.chatBtn} >
                                     <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                     <Text style={styles.chatText}>Chat</Text>
-                                  </TouchableOpacity>
+                                  </TouchableOpacity> */}
             
-                                  <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
+                                  <TouchableOpacity
+                                         style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                 disabled={!isSubscriptionAllow}
+                                  // style={styles.callBtn} 
+                                  onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
                                     <Image source={Call} style={styles.actionIcon} />
                                     <Text style={styles.callText}>Call</Text>
                                   </TouchableOpacity>
@@ -367,10 +383,10 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
                                                         <View style={styles.actionRow}>
             
-                                  <TouchableOpacity style={styles.chatBtn} >
+                                  {/* <TouchableOpacity style={styles.chatBtn} >
                                     <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                     <Text style={styles.chatText}>Chat</Text>
-                                  </TouchableOpacity>
+                                  </TouchableOpacity> */}
             
                                   <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
                                     <Image source={Call} style={styles.actionIcon} />

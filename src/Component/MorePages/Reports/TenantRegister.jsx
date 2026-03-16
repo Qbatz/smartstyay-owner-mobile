@@ -11,6 +11,7 @@ import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import Loader from "../../../Component/Loader/Loader"
@@ -29,6 +30,7 @@ const TenantRegister = ({ navigation }) => {
 
   const { loading, Reportsdetails, GetInvoiceReports,
     invoiceReports, getTenantRegisterReport } = UseSetting();
+          const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const [tenantData, setTenantData] = useState(null);
@@ -154,6 +156,10 @@ const applyTenantFilters = (
     });
 
 };
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+const isExportAllow = isValidSubscription && canReadReports;
+
 
   return (
     <>
@@ -300,7 +306,11 @@ const applyTenantFilters = (
         </View>
 
         <View style={styles.exportWrapper}>
-          <TouchableOpacity style={styles.exportBtn} onPress={handleDownloadReport}>
+          <TouchableOpacity
+          //  style={styles.exportBtn} 
+            style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
+            disabled={!isExportAllow}
+           onPress={handleDownloadReport}>
             <Text style={styles.exportText}>Export PDF</Text>
           </TouchableOpacity>
         </View>

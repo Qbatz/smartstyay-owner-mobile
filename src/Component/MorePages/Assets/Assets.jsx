@@ -622,7 +622,7 @@ const handleAssignAsset = async () => {
           )}
         </ScrollView>
 
-        {
+        {/* {
           !loading && assetList?.length > 0 && canReadAssets && (
             <TouchableOpacity
               style={[
@@ -634,7 +634,7 @@ const handleAssignAsset = async () => {
               <Image source={FilterIcon} style={styles.fabIcon} />
             </TouchableOpacity>
           )
-        }
+        } */}
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useContext , useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,11 @@ import {
 import { StatusBar, Platform } from "react-native";
 import { Switch } from "react-native-switch";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { UseSetting } from "../../../Context/SettingContext";
+import { useFocusEffect } from "@react-navigation/native";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
+import Loader from "../../../Component/Loader/Loader"
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import LongStayIcon from "../../../Assets/Images/shield-tick.png";
 import ShortStayIcon from "../../../Assets/Images/Shortstay.png";
@@ -18,8 +23,39 @@ import ShortStayIcon from "../../../Assets/Images/Shortstay.png";
 
 export default function BillingRule({ navigation }) {
 
-  const [longStay, setLongStay] = useState(true);
-  const [shortStay, setShortStay] = useState(false);
+     const {activeHostelId } = useContext(CommonContexts);
+     const {getBillingConfig , loading} = UseSetting();
+
+       const [billingData,setBillingData] = useState("")
+
+     const [longStay, setLongStay] = useState(true);
+     const [shortStay, setShortStay] = useState(false);
+
+
+     useEffect(() => {
+       if (activeHostelId) {
+         loadBilling(activeHostelId);
+       }
+     }, [activeHostelId]);
+     
+     const loadBilling = async (id) => {
+       const res = await getBillingConfig(id);
+       console.log("Billing Data →", res);
+       setBillingData(res.data)
+     };
+     
+     useFocusEffect(
+       React.useCallback(() => {
+         if (activeHostelId) {
+           loadBilling(activeHostelId);  // Always refresh when screen open
+         }
+       }, [activeHostelId])
+     );
+
+       const {
+         canWriteModule: canWriteBills,
+         canReadModule: canReadRecurring,
+       } = useHasPermission("Bills");
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,7 +72,34 @@ export default function BillingRule({ navigation }) {
        
       </View>
 
+           {!canReadRecurring && !loading && (
+                       <View style={styles.emptyContainer}>
+                         <Image
+                           source={EmptyState}
+                           style={styles.emptyImage}
+                         />
+                         <Text style={styles.emptyText}>
+                           You do not have access to view Billing Rule
+                         </Text>           
+                       </View>
+                )}
+         
+             {canReadRecurring && !loading && billingData?.length === 0 && (
+                       <View style={styles.emptyContainer}>
+                         <Image
+                           source={EmptyState}
+                           style={styles.emptyImage}
+                         />
+                         <Text style={styles.emptyText}>
+                           No Records Found
+                         </Text>       
+                       </View>
+                     ) }
+      
       {/* Long Stay */}
+
+           {billingData && canReadRecurring  && (
+            <>
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("LongStay")}>
         <View style={styles.row}>
           
@@ -70,8 +133,8 @@ export default function BillingRule({ navigation }) {
         </View>
       </TouchableOpacity>
 
-      {/* Short Stay */}
-      <View style={styles.card}>
+
+<View style={styles.card}>
         <View style={styles.row}>
 
           <View style={styles.iconContainer}>
@@ -101,6 +164,8 @@ export default function BillingRule({ navigation }) {
 
         </View>
       </View>
+      </>
+           )}
 
     </SafeAreaView>
   );
@@ -170,6 +235,24 @@ row: {
     fontSize: 13,
     color: "#666",
     marginTop: 3
-  }
+  },
+    emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  emptyImage: {
+    width: 250,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.9,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
 
 });
