@@ -130,6 +130,8 @@ export default function BillsDesign({ route }) {
     canDeleteModule: canDeleteReceipt,
   } = useHasPermission("Receipt")
 
+  
+
 
 
   const filterOptions = BillDetails?.filterOptions;
@@ -483,6 +485,13 @@ export default function BillsDesign({ route }) {
     }
   };
 
+
+    const handleCallPhone=(mobile)=>{
+    console.log("mobile",mobile)
+    if(mobile){
+      CommonModule.makeCall(mobile)
+    }
+  }
 
 
   const DeleteMenu = () => {
@@ -1667,7 +1676,7 @@ console.log("selectedReceipt", selectedReceipt);
     }
   };
 
-  const handleShareBill = async () => {
+  const handleWhatsappShareBill = async () => {
     const res = await shareBillOnWhatsapp(activeHostelId, selectedBill?.invoiceId);
 
     if (res?.success) {
@@ -1685,25 +1694,43 @@ console.log("selectedReceipt", selectedReceipt);
     }
   }
 
+  const handleshareBill = async () => {
+     if (!activeHostelId || !selectedBill?.invoiceId) return;
 
-  const handleShareReceipt = async () => {
+    const res = await downloadBill(activeHostelId, selectedBill?.invoiceId);
 
-    const res = await shareReceiptOnWhatsapp(activeHostelId, selectedReceipt?.transactionId);
+    console.log("response", res);
+    
 
-    if (res?.success) {
-      setShowReceiptMenu(false)
-      setShowReceiptDetails(false)
-      setModalType("success");
-      setModalMessage("Receipt shared successfully");
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
-
-      // console.log("WhatsApp shared successfully");
+    if (res?.success && res?.url) {
+      await CommonModule.downloadAndShareFile(res?.url);
+      setShowMenu(false)
+      setShowBillDetails(false)
     } else {
       console.log(res?.message);
       setShowMenu(false)
+
     }
-  };
+  }
+
+
+  // const handleShareReceipt = async () => {
+
+  //   const res = await shareReceiptOnWhatsapp(activeHostelId, selectedReceipt?.transactionId);
+
+  //   if (res?.success) {
+  //     setShowReceiptMenu(false)
+  //     setShowReceiptDetails(false)
+  //     setModalType("success");
+  //     setModalMessage("Receipt shared successfully");
+  //     setShowSuccessModal(true);
+  //     setTimeout(() => setShowSuccessModal(false), 1500);
+
+  //   } else {
+  //     console.log(res?.message);
+  //     setShowMenu(false)
+  //   }
+  // };
 
 
   // const handleDownloadReport = async () => {
@@ -1738,6 +1765,17 @@ console.log("selectedReceipt", selectedReceipt);
   //   }
   // };
 
+    const handleShareReceipt = async (item) => {
+    if (!activeHostelId || !item?.transactionId) return;
+
+    const response = await downloadReceipt(
+      activeHostelId,
+      item.transactionId
+    );
+
+    CommonModule.downloadAndShareFile(response?.url);
+  };
+
 
   const handleDownloadReceipt = async (item) => {
     if (!activeHostelId || !item?.transactionId) return;
@@ -1747,7 +1785,7 @@ console.log("selectedReceipt", selectedReceipt);
       item.transactionId
     );
 
-    CommonModule.downloadAndViewDocument(response.url);
+    CommonModule.downloadAndViewDocument(response?.url);
   };
   // const handleDownloadReceipt = async (item) => {
   //   if (!activeHostelId) return;
@@ -2377,12 +2415,20 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                   {(isPending || isPartial || partiallyRefund || pendingRefund) && (
                     <View style={styles.actionRow}>
 
-                      <TouchableOpacity style={styles.reminderBtn} >
+                      <TouchableOpacity
+                        style={[styles.reminderBtn, !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow}
+                       onPress={handleWhatsappShareBill}>
                         <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                         <Text style={styles.reminderText}>Remainder</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.callBtn}>
+                      <TouchableOpacity
+                          style={[styles.callBtn, !isExportAllow && { opacity: 0.4 }]}
+                        disabled={!isExportAllow}
+                     onPress={()=>{
+                            handleCallPhone(BillPdfdetails?.customerInfo?.customerMobileNo)
+                        }}>
                         <Image source={Call} style={styles.actionIcon} />
                         <Text style={styles.callText}>Call</Text>
                       </TouchableOpacity>
@@ -2544,8 +2590,6 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                           style={styles.paymentHeader}
                           onPress={() => setShowPayments(!showPayments)}
                         >
-
-
                           <Image
                             source={DownArrow}
                             style={{ width: 18, height: 18, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -2670,7 +2714,8 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                       <TouchableOpacity
                         style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
                         disabled={!isExportAllow}
-                        onPress={handleShareBill}>
+                        onPress={handleshareBill}
+                    >
                         <Image source={ShareIcon} style={styles.iconDark} />
                         <Text style={styles.paidText}>Share</Text>
                       </TouchableOpacity>
@@ -2690,7 +2735,8 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                       <View style={styles.bottomActionItem}>
                         <TouchableOpacity
                         style={[styles.iconBtn, !isExportAllow && { opacity: 0.4 }]}
-                        disabled={!isExportAllow} onPress={handleShareBill}
+                        disabled={!isExportAllow} 
+                          onPress={handleshareBill}
                     >
                           <Image source={ShareIcon} style={styles.iconDark}  />
                         </TouchableOpacity>
@@ -2877,7 +2923,8 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
                     <TouchableOpacity
                      style={[styles.paidBtn, !isReceiptExportAllow && { opacity: 0.4 }]}
-                      disabled={!isReceiptExportAllow} onPress={handleShareReceipt}>
+                      disabled={!isReceiptExportAllow}
+                       onPress={()=>handleShareReceipt(selectedReceipt)}>
                       <Image source={ShareIcon} style={styles.iconDark} />
                       <Text style={styles.paidText}>Share</Text>
                     </TouchableOpacity>
@@ -3227,7 +3274,6 @@ const isReceiptExportAllow = isValidSubscription && canReadReceipt;
                 {/* <TouchableOpacity
                   style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
                   disabled={!canReadInvoice}
-                  onPress={handleShareBill}
                 >
                   <Image source={WhatsappIcon} style={styles.popupIcon} />
                   <Text style={styles.popupText}>share</Text>

@@ -464,7 +464,7 @@ const RecurringBills = ({onSelectRecurringBill}) => {
 
 
 
-        {!loading && recurringBills?.customers?.length > 0 && (
+        {/* {!loading && recurringBills?.customers?.length > 0 && (
           <TouchableOpacity
             style={[styles.filterButton, !canReadRecurringBills && { opacity: 0.4 }]}
             disabled={!canReadRecurringBills}
@@ -472,7 +472,7 @@ const RecurringBills = ({onSelectRecurringBill}) => {
             <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
 
-        )}
+        )} */}
 
 
 

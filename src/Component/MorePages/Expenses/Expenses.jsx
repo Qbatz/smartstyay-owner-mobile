@@ -547,17 +547,17 @@ export default function ExpensesScreen() {
               {expensesList && expensesList.length > 0 && 
               (
                 <>
-                      <TouchableOpacity
+                      {/* <TouchableOpacity
           style={[
             styles.Filterfab,
             !canReadExpense && { opacity: 0.4 }
           ]}
             disabled={!canReadExpense}
-          // onPress={() => setShowFilter(true)}
+          onPress={() => setShowFilter(true)}
           accessibilityLabel="Open filters"
         >
           <Image source={FilterIcon} style={styles.fabIcon} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           disabled={!canWriteExpense}
