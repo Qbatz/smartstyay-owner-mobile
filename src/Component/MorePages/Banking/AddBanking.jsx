@@ -62,7 +62,7 @@ export default function AddBankingModal({ visible, onClose, mode, editTab }) {
   const [modalType, setModalType] = useState("success");
 
   const [initialData, setInitialData] = useState(null);
-
+  const [apiErr, setApiError] = useState("")
 
     const sheetY = useRef(new Animated.Value(700)).current;
 
@@ -461,6 +461,7 @@ if (bankName && !bankNameRegex.test(bankName.trim())) {
 const handleIfscChange = (value) => {
   let formatted = value.toUpperCase();
   setErrors(prev => ({ ...prev, ifsc: "", common: "" }));
+   setApiError("")
 
   formatted = formatted.replace(/[^A-Z0-9]/g, "");
 
@@ -621,6 +622,9 @@ const handleAdd = async () => {
       getBankListByHostel(activeHostelId);
     }, 1200);
   }
+  else {
+    setApiError(res?.message)
+  }
 };
 
 
@@ -683,6 +687,7 @@ const TabButton = ({ title }) => {
   onChangeText={(v) => {
      setBeneficiary(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors({ ...errors, beneficiary: "" , common: ""})
+     setApiError("")
   }}
 />
 {errors.beneficiary && <ErrorMessage message={errors.beneficiary} type="error" />}
@@ -710,6 +715,7 @@ const TabButton = ({ title }) => {
         bankName: "",
         common: ""
       }));
+       setApiError("")
 
     if (!bankNameRegex.test(cleaned)) {
       setErrors(prev => ({
@@ -735,6 +741,7 @@ const TabButton = ({ title }) => {
     const onlyNum = v.replace(/[^0-9]/g, "");
     setAccountNo(onlyNum);
     setErrors({ ...errors, accountNo: "" , common: "" });
+     setApiError("")
   }}
 //  onFocus={() => {
 //     setIsInputFocused(true);
@@ -781,9 +788,14 @@ const TabButton = ({ title }) => {
     // setDescription(v);
         setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, description: "", common: "" }));
+     setApiError("")
   }}
   ref={descriptionRef}
 />
+
+{apiErr && (
+    <ErrorMessage message={apiErr} type="error" />
+   )}
           </>
         );
 
@@ -831,6 +843,7 @@ const TabButton = ({ title }) => {
     const cleaned = v.replace(/\s/g, "").replace(/[^\w.@-]/g, "");
     setUpiId(cleaned);
     setErrors(prev => ({ ...prev, upiId: "", common: "" }));
+     setApiError("")
     if (upiRegex.test(cleaned)) {
       setErrors(prev => ({ ...prev, upiId: "", common: "" }));
     } 
@@ -856,9 +869,14 @@ const TabButton = ({ title }) => {
      onChangeText={(v) => {
     setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, description: "", common: "" }));
+     setApiError("")
   }}
   ref={descriptionRef}
 />
+
+{apiErr && (
+    <ErrorMessage message={apiErr} type="error" />
+   )}
           </>
         );
 
@@ -910,6 +928,7 @@ const TabButton = ({ title }) => {
     const onlyNum = v.replace(/[^0-9]/g, "");
     setCardNo(onlyNum);
     setErrors(prev => ({ ...prev, cardNo: "", common: "" }));
+     setApiError("")
   }}
 
 />
@@ -929,9 +948,14 @@ const TabButton = ({ title }) => {
     onChangeText={(v)=> {
     setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev,  common: "" }))
+     setApiError("")
   }}
   ref={descriptionRef}
 />
+
+{apiErr && (
+    <ErrorMessage message={apiErr} type="error" />
+   )}
           </>
         );
 
@@ -946,6 +970,7 @@ const TabButton = ({ title }) => {
   onChangeText={(v) => {
     setCashName(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev, cashName: "", common: "" }));
+    setApiError("")
   }}
 
 />
@@ -964,8 +989,13 @@ const TabButton = ({ title }) => {
   onChangeText={(v)=> {
     setDescription(v.replace(/[^a-zA-Z\s]/g, ""))
     setErrors(prev => ({ ...prev,  common: "" }))
+    setApiError("")
   }}
 />
+
+{apiErr && (
+    <ErrorMessage message={apiErr} type="error" />
+   )}
           </>
         );
 
@@ -1036,7 +1066,10 @@ const TabButton = ({ title }) => {
 
       {errors.common && (
   <ErrorMessage message={errors.common} type="error" />
-)}
+    )}
+
+
+    
 
 
       {/* BUTTON */}

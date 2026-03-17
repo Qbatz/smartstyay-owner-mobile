@@ -329,7 +329,7 @@ export default function ReassignBedScreen({ route, navigation }) {
           <View style={styles.bottomBar}>
 
             <View>
-              <Text style={styles.bottomLabel}>Bed No  |  {selectedDetails?.sharing}</Text>
+              <Text style={styles.bottomLabel}>Bed  |  {selectedDetails?.sharing} sharing</Text>
               <Text style={styles.bottomValue}>
                 {selectedNewBed?.bed?.floorName} {selectedDetails?.roomNo}, {selectedDetails?.bedLabel}
               </Text>
