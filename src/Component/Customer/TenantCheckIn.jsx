@@ -127,6 +127,8 @@ export default function TenantCheckIn({ navigation, route }) {
   const loadRooms = async (floorId) => {
     const res = await getAllRoomsByFloor(floorId);
     if (res.success) {
+      console.log("RoomData", res.data);
+      
       setRooms(res.data);
     } else {
       setRooms([]);
@@ -573,7 +575,13 @@ export default function TenantCheckIn({ navigation, route }) {
 
                           >
                             {console.log(r)}
-                            <Text style={styles.optionText}>{r.name}</Text>
+                            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                                <Text style={styles.optionText}> {r.name}  </Text>
+                              <View style={{backgroundColor:'#dee3f2', borderRadius:10,padding:3,}}>
+                               <Text style={styles.optionText}> {r?.sharingType} </Text>
+                              </View>
+                            </View>
+                            {/* <Text style={styles.optionText}> {r.name} - {r?.sharingType} </Text> */}
                           </TouchableOpacity>
                         ))}
                       </ScrollView>

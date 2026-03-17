@@ -11,6 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import EditBasicDetailsSheet from "./EditBasicDetails";
 import EditManualAddressSheet from "./EditAdressDetails";
 import EditJoiningDateSheet from "./EditJoiningDateSheet";
@@ -51,7 +52,8 @@ import Generate from "../../../Assets/Images/fsi.png"
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
-  const { activeHostelId } = useContext(CommonContexts);
+  const { activeHostelId } = useContext(CommonContexts)
+    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
@@ -89,6 +91,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     })
   }, [])
 
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
 
 
@@ -98,6 +105,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     canUpdateModule: canUpdateTenant,
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
+
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription && canUpdateTenant;
 
   console.log("customerDetails", customerDetails)
   useEffect(() => {
@@ -497,13 +508,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Tenant Profile</Text>
 
-          {
+          {/* {
             environment !== "PROD" && (
               customerDetails?.customerCurrentStatus !== "VACATED" && (
                 <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
               )
             )
-          }
+          } */}
 
           {/* <View style={styles.notificationDot} /> */}
         </View>
@@ -630,8 +641,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           </View>
 
           {/* ROOM DETAILS */}
-          {
-            customerDetails?.customerCurrentStatus !== "VACATED" && (
+        
               <View style={styles.metaRowCenter}>
                 <View style={styles.floorBadge}>
                   <Text style={styles.floorText}>
@@ -650,8 +660,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 </Text>
               </View>
 
-            )
-          }
+         
 
           {
             customerDetails?.customerCurrentStatus == "VACATED" && (

@@ -19,6 +19,7 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 import { AmenityContext } from "../../../Context/AmenityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import { pick } from '@react-native-documents/picker';
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -38,6 +39,7 @@ export default function OverviewTab({ customerDetails,
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { AddManualDocument, ParticularcustomerDetails,
     GetParticularCustomerDetails, deleteManualDocument } = useCustomer();
     const [viewerVisible, setViewerVisible] = useState(false);
@@ -90,6 +92,12 @@ const [viewerIndex, setViewerIndex] = useState(0);
       setFlat(customerDetails?.address?.houseNo)
     }
   }, [customerDetails])
+
+    useEffect(() => {
+      if (activeHostelId) {
+        getParticularHostelDetails(activeHostelId);
+      }
+    }, [activeHostelId])
 
   console.log("customerDetails", customerDetails);
 
@@ -191,6 +199,9 @@ const disableFinancialEdit =
   status === "BOOKED" ||
   status === "VACATED" ||
   status === "NOTICE";
+
+    const isValidSubscription = PGDetails?.isSubscriptionActive;
+    const isSubscriptionAllow = isValidSubscription 
 
 
 
@@ -557,8 +568,13 @@ const disableFinancialEdit =
               </View>
             </View>
 
-            {/* ROW 3 : Joined Date */}
+
+      
+
+       
             <View style={styles.twoColumnRow}>
+
+   {isSubscriptionAllow && (
               <View style={styles.detailBox}>
                 <Text style={styles.detailLabel}>Joined Date</Text>
                 <View style={styles.valueWithIcon}>
@@ -572,8 +588,8 @@ const disableFinancialEdit =
                         onPress={handleEditJoining}
                         // disabled={!isJoiningDateEditable}
                         activeOpacity={0.7}
-                        disabled={!isJoiningDateEditable && !canUpdateTenant}
-                        style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
+                        disabled={!isJoiningDateEditable || !canUpdateTenant}
+                       style={(!isJoiningDateEditable || !canUpdateTenant) && { opacity: 0.4 }}
                       >
                         <Image
                           source={EditIcon}
@@ -589,6 +605,7 @@ const disableFinancialEdit =
 
                 </View>
               </View>
+                )}
 
               {
                 customerDetails?.customerCurrentStatus === "VACATED" && (
@@ -642,7 +659,7 @@ const disableFinancialEdit =
                     )
                   } */}
          {
-          !disableFinancialEdit && (
+          !disableFinancialEdit && isSubscriptionAllow && (
             <>
                               {
 !["VACATED","NOTICE"].includes(status) && (
@@ -694,7 +711,7 @@ const disableFinancialEdit =
                   } */}
 
                      {
-          !disableFinancialEdit && (
+          !disableFinancialEdit && isSubscriptionAllow && (
             <>
             
                  {
@@ -978,42 +995,42 @@ const disableFinancialEdit =
 
                             <View style={styles.docActions}>
                               <TouchableOpacity  
-  //                              onPress={() => {
-  //   const index = manualDocs.findIndex(
-  //     (item) => item.documentId === doc.documentId
-  //   )
-
-  //   setViewerIndex(index);
-  //   setViewerVisible(true);
-  // }}
+             disabled={!isSubscriptionAllow}
 
    onPress={() => {
     if (doc.type === "PDF") {
-      Linking.openURL(doc.url);   // 🔥 open in drive / browser / pdf viewer
+      Linking.openURL(doc.url);   
     } else {
       const index = manualDocs.findIndex(
         (item) => item.documentId === doc.documentId
       );
 
       setViewerIndex(index);
-      setViewerVisible(true);     // 🔥 open custom viewer
+      setViewerVisible(true);    
     }
   }}
   >
                                 <Image
                                   source={require("../../../Assets/Images/Eye.png")}
-                                  style={styles.actionIcon}
+                                 style={[
+      styles.actionIcon,
+      (!isSubscriptionAllow) && { opacity: 0.4 }
+    ]}
                                 />
                               </TouchableOpacity>
 
                               <TouchableOpacity
+                              disabled={!isSubscriptionAllow}
                                 onPress={() => {
                                   setDeleteDocumentId(doc.documentId);
                                   setDeletePopup(true);
                                 }}>
                                 <Image
                                   source={require("../../../Assets/Images/trash.png")}
-                                  style={styles.actionIcon}
+ style={[
+      styles.actionIcon,
+      (!isSubscriptionAllow) && { opacity: 0.4 }
+    ]}
                                 />
                               </TouchableOpacity>
                             </View>
@@ -1038,9 +1055,14 @@ const disableFinancialEdit =
 
 
             </View>
-            {docTab === "MANUAL" && (
+            {docTab === "MANUAL"  && (
               <TouchableOpacity
-                style={styles.uploadFabInside}
+                // style={styles.uploadFabInside}
+                 style={[
+      styles.uploadFabInside,
+      (!isSubscriptionAllow || disableFinancialEdit ) && { opacity: 0.4 }
+    ]}
+                disabled={disableAssignBtn}
                 onPress={pickFiles}
 
               >
@@ -1159,18 +1181,20 @@ const disableFinancialEdit =
             {/* HEADER */}
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Amenities provided</Text>
-              <TouchableOpacity
-                style={[
-                  styles.assignBtn,
-                  disableAssignBtn && canWriteTenant && { opacity: 0.4 }
-                ]}
-                onPress={handleShowAmenities}
-                // disabled={disableAssignBtn}
-                disabled={disableAssignBtn && canWriteTenant}
-              // style={!canWriteTenant && { opacity: 0.4 }}
-              >
-                <Text style={styles.assignText}>＋ Assign</Text>
-              </TouchableOpacity>
+       <TouchableOpacity
+  style={[
+    styles.assignBtn,
+    (disableAssignBtn || !canWriteTenant || !isSubscriptionAllow) && { opacity: 0.4 }
+  ]}
+  disabled={
+    disableAssignBtn ||
+    !canWriteTenant ||
+    !isSubscriptionAllow
+  }
+  onPress={handleShowAmenities}
+>
+  <Text style={styles.assignText}>＋ Assign</Text>
+</TouchableOpacity>
             </View>
 
             {Array.isArray(customerDetails?.assignedAmenities) &&
