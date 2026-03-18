@@ -39,14 +39,22 @@ export default function GlobalBillSettings({ onBack }) {
   const [message,setmessage]=useState("")
   const [errorType,setErrorType]=useState("")
 
+  const [mobileError,setMobileError]=useState("")
+  const [mailError,setMailError]=useState("")
+
 
   useEffect(()=>{
 
      getGlobalBillPdfDetail(activeHostelId).then(r=>{
+      console.log(r)
       setMobile(r.data?.mobile)
       setEmail(r.data?.emailId)
       setUploadedLogo(r.data?.logo)
       setSignatureImage(r.data?.signature)
+      setLogoCustomize(r?.data?.isLogoCustomized)
+      setEmailCustomize(r?.data?.isMailIdCustomized)
+      setContactCustomize(r?.data?.isMobileCustomized)
+      setSignCustomize(r?.data?.isSignatureCustomized)
      })
 
   },[])
@@ -131,17 +139,20 @@ if (uploadedLogo) {
   formData.append("hostelLogo", {
     uri: uploadedLogo,
     type: "image/jpeg",
-    name: "rn_image_picker_lib_temp_d7b04525-2925-4bd9-ba48-fe13567c0155.jpg",
+    name: "hostelLogo.jpg",
   });
 }
 
+
 if (signatureImage) {
-  formData.append("receiptSign", {
+  formData.append("billSignature", {
     uri: signatureImage,
     type: "image/jpeg",
     name: "receiptSign.jpg",
   });
 }
+  
+   
    
 
 //   formData.append("request[invoicePhoneNumber]", mobile);
@@ -157,7 +168,7 @@ if (signatureImage) {
     if(res.status == 200){
         setShowSuccessModal(true),
         setmessage(res.data),
-        setErrorType("Success")
+        setErrorType("success")
 
         setTimeout(() => {
           setShowSuccessModal(false)

@@ -632,6 +632,8 @@ export default function BillsProvider({ children }) {
 
   const getGlobalBillPdfDetail = async (hostelId) => {
     try {
+      setLoading(true)
+      setErrorMsg("")
       const axios = getAxios();
 
       const res = await axios.get("/v2/hostel/config/" + hostelId)
@@ -640,26 +642,30 @@ export default function BillsProvider({ children }) {
       const msg = getErrorMessage(error);
       setErrorMsg(msg);
       return { success: false, message: msg };
+    } finally {
+      setLoading(false)
     }
   };
 
-  const postGlobalBilPdfDetails = async (hostelId, payload,formData) => {
+  const postGlobalBilPdfDetails = async (hostelId, payload, formData) => {
     console.log("payload", payload)
     console.log(formData)
     try {
 
       const axios = getAxios();
-      const res = await axios.post("/v2/hostel/config/" + hostelId, 
+      const res = await axios.post("/v2/hostel/config/" + hostelId,
         formData, {
-          params: {
-           mobile: payload.mobile,
-           email: payload.email,
-           isMobileCustomized: payload.isMobileCustomized,
-           isEmailCustomized: payload.isEmailCustomized,
-           isLogoCustomized: payload.isLogoCustomized,
-           isSignatureCustomized: payload.isSignatureCustomized,
-          }
-
+        params: {
+          mobile: payload?.mobile,
+          email: payload?.email,
+          isMobileCustomized: payload?.isMobileCustomized,
+          isEmailCustomized: payload?.isEmailCustomized,
+          isLogoCustomized: payload?.isLogoCustomized,
+          isSignatureCustomized: payload?.isSignatureCustomized,
+        },
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
       )
       return res;

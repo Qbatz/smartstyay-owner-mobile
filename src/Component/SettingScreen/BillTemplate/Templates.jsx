@@ -20,6 +20,7 @@ import ReceiptsTemplate from "./ReceiptsTemplate";
 import BillsPdfPreview from "./BillsPdfPreview";
 import SecurityDepositPdfPreview from "./SecurityDepositPreview";
 import ReceiptPdfPreview from "./ReceiptPdfPreview";
+import AddBankingModal from "../../MorePages/Banking/AddBanking";
 
 export default function TemplatesScreen({ navigation, onBack }) {
   const [activeTab, setActiveTab] = useState("Bills");
@@ -61,9 +62,21 @@ export default function TemplatesScreen({ navigation, onBack }) {
 
     return () => backHandler.remove();
   }, [showBillsPreview, showSecurityPreview, showReceiptPreview]);
+  const [addbankingshow, setAddBankingShow] = useState(false)
+  const [editMode, setEditMode] = useState({ mode: "add", tab: "Bank" });
 
   const PREVIEW_ACTIVE =
     showBillsPreview || showSecurityPreview || showReceiptPreview;
+
+  const handleAddBanking = () => {
+    setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
+    setAddBankingShow(true);
+  };
+
+  const handleCloseAddBanking = () => {
+    setAddBankingShow(false);
+    setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
+  };
 
   return (
     <View style={styles.screen}>
@@ -108,14 +121,14 @@ export default function TemplatesScreen({ navigation, onBack }) {
       {/* ---------------- CONTENT AREA ---------------- */}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
         {/* BILLS TAB */}
-        {activeTab === "Bills" && !showBillsPreview && <BillsTemplate />}
+        {activeTab === "Bills" && !showBillsPreview && <BillsTemplate handleBank={handleAddBanking}/>}
         {activeTab === "Bills" && showBillsPreview && (
           <BillsPdfPreview />
         )}
 
         {/* SECURITY DEPOSIT TAB */}
         {activeTab === "Security Deposit" && !showSecurityPreview && (
-          <SecurityDepositTemplate />
+          <SecurityDepositTemplate handleAddBank={handleAddBanking} />
         )}
         {activeTab === "Security Deposit" && showSecurityPreview && (
           <SecurityDepositPdfPreview />
@@ -157,6 +170,15 @@ export default function TemplatesScreen({ navigation, onBack }) {
           <Text style={styles.previewBtnText}>Preview</Text>
         </TouchableOpacity>
       )}
+
+      {addbankingshow && (
+        <AddBankingModal visible={addbankingshow} onClose={handleCloseAddBanking}
+          mode={editMode.mode}
+          editTab={editMode}
+        />
+      )
+
+      }
     </View>
   );
 }
