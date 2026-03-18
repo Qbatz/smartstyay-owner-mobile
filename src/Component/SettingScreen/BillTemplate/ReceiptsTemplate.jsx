@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,35 @@ import {
   TextInput,
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { BillContext } from "../../../Context/BillsContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 const EditIcon = require("../../../Assets/Images/edit.png");
 const UploadIcon = require("../../../Assets/Images/upload.png");
 
 export default function ReceiptTemplate() {
+  const { activeHostelId } = useContext(CommonContexts)
+  const { getGlobalBillPdfDetail, postGlobalBilPdfDetails } = useContext(BillContext)
   const [contactNumber, setContactNumber] = useState("9876543210");
   const [email, setEmail] = useState("sriramkumar@gmail.com");
+
+  const [logoCustomize, setLogoCustomize] = useState(false);
+  const [contactCustomize, setContactCustomize] = useState(false);
+  const [emailCustomize, setEmailCustomize] = useState(false);
+  const [signCustomize, setSignCustomize] = useState(false);
+
+  const [globalMobileNo, setGlobalMobileNo] = useState("");
+  const [globalEmailId, setGlobalEmailId] = useState("")
 
   const [prefix, setPrefix] = useState("Inv");
   const [suffix, setSuffix] = useState("001");
   const previewInvoice = `${prefix}${suffix}`;
 
-  const [tax, setTax] = useState("12");
+  const [tax, setTax] = useState("");
+  const [typeId, setTypeId] = useState("")
 
-  const [notes, setNotes] = useState(
+  const [receiptNotes, setReceiptNotes] = useState(
     `"Your comfort is our priority – See you again at Smart Stay!"`
   );
   const [terms, setTerms] = useState(
@@ -32,82 +46,229 @@ export default function ReceiptTemplate() {
 
   const [logoUri, setLogoUri] = useState(null);
   const [qrUri, setQrUri] = useState(null);
+  const [signatureImage, setSignatureImage] = useState(null);
 
   const presetColors = ["#1E45E1", "#3562FF", "#FF6B6B", "#34C759", "#FFB800"];
   const [selectedColor, setSelectedColor] = useState("#1E45E1");
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [message, setmessage] = useState("")
+  const [errorType, setErrorType] = useState("")
+
+
+  useEffect(() => {
+
+    getGlobalBillPdfDetail(activeHostelId).then(r => {
+      console.log(r)
+      setContactNumber(r?.data?.templates[1]?.receiptMobileNumber || r.data?.mobile)
+      setEmail(r?.data?.templates[1]?.receiptMailId || r.data?.emailId)
+      setLogoUri(r?.data?.templates[1]?.receiptLogoUrl)
+      setSignatureImage(r?.data?.templates[1]?.receiptSignatureUrl)
+      setLogoCustomize(r?.data?.isLogoCustomized)
+      setEmailCustomize(r?.data?.isMailIdCustomized)
+      setContactCustomize(r?.data?.isMobileCustomized)
+      setSignCustomize(r?.data?.isSignatureCustomized)
+
+      // setPrefix(r?.data?.templates[1]?.prefix || null)
+      // setSuffix(r?.data?.templates[1]?.suffix || null)
+
+      setReceiptNotes(r?.data?.templates[1]?.receiptNotes || null)
+      setTerms(r?.data?.templates[1]?.receiptTermsAndCondition || null)
+      setTypeId(r?.data?.templates[1]?.typeId)
+
+      setGlobalMobileNo(r.data?.mobile)
+      setGlobalEmailId(r.data?.emailId)
+    })
+
+  }, [])
 
   const pickImage = async (setter) => {
     const res = await launchImageLibrary({ mediaType: "photo" });
     if (res?.assets?.[0]?.uri) setter(res.assets[0].uri);
   };
 
+
+  const handleSaveTemplate = async () => {
+
+
+    const queryPayload = {
+      hostelId: activeHostelId,
+      mobile: globalMobileNo,
+      email: globalEmailId,
+      isMobileCustomized: contactCustomize,
+      isEmailCustomized: emailCustomize,
+      isLogoCustomized: logoCustomize,
+      isSignatureCustomized: signCustomize,
+    }
+
+    const payload = {
+      templateTypeId: typeId,
+      receiptNotes: receiptNotes,
+      receiptTermsAndCondition: terms,
+      receiptPhoneNumber: contactNumber,
+      receiptMailId: email,
+    }
+
+    const formData = new FormData();
+
+    const jsonBase64 = btoa(JSON.stringify(payload));
+
+    formData.append("request", {
+      uri: "data:application/json;base64," + jsonBase64,
+      type: "application/json",
+      name: "payload.json",
+    });
+
+    if (logoUri) {
+      formData.append("receiptLogo", {
+        uri: logoUri,
+        type: "image/jpeg",
+        name: "receiptLogo.jpg",
+      });
+    }
+
+    if (signatureImage) {
+      formData.append("receiptSign", {
+        uri: signatureImage,
+        type: "image/jpeg",
+        name: "receiptSign.jpg",
+      });
+    }
+
+
+
+    const res = await postGlobalBilPdfDetails(activeHostelId, queryPayload, formData)
+
+    console.log("billa", res)
+
+    if (res.status === 200) {
+      setShowSuccessModal(true)
+      setmessage(res.data || "updated Successfully")
+      setErrorType("success")
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1000);
+    } else {
+      setShowSuccessModal(true)
+      setmessage(res.message || "Not uploaded"),
+        setErrorType("error")
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1000);
+    }
+  }
+
   return (
-   
-    <View style={{ flex: 1,   position: "relative"  }}>
+
+    <View style={{ flex: 1, position: "relative" }}>
+      <SuccessModal visible={showSuccessModal} message={message} type={errorType} />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 150 }}>
 
         {/* SECTION TITLE */}
         <Text style={styles.sectionTitle}>Inherited Global Details</Text>
 
         {/* CONTACT NUMBER */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardLabel}>Contact Number</Text>
-            <Image source={EditIcon} style={styles.iconSmall} />
-          </View>
 
-          <View style={styles.row}>
-            <View style={styles.countryBox}>
-              <Text style={styles.countryText}>+91</Text>
+        {
+          contactCustomize && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardLabel}>Contact Number</Text>
+                <Image source={EditIcon} style={styles.iconSmall} />
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.countryBox}>
+                  <Text style={styles.countryText}>+91</Text>
+                </View>
+
+                <TextInput
+                  style={styles.lightInput}
+                  value={contactNumber}
+                  keyboardType="number-pad"
+                  maxLength={10}
+                  onChangeText={(t) => setContactNumber(t.replace(/\D/g, ""))}
+                />
+              </View>
             </View>
 
-            <TextInput
-              style={styles.lightInput}
-              value={contactNumber}
-              keyboardType="number-pad"
-              maxLength={10}
-              onChangeText={(t) => setContactNumber(t.replace(/\D/g, ""))}
-            />
-          </View>
-        </View>
+          )
+        }
+
 
         {/* EMAIL */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardLabel}>E-Mail Address</Text>
-            <Image source={EditIcon} style={styles.iconSmall} />
-          </View>
 
-          <TextInput
-            style={styles.lightInput}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-        </View>
+        {
+          emailCustomize && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardLabel}>E-Mail Address</Text>
+                <Image source={EditIcon} style={styles.iconSmall} />
+              </View>
+
+              <TextInput
+                style={styles.lightInput}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+              />
+            </View>
+          )
+        }
 
 
-{/* LOGO UPLOAD */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardLabel}>Hostel/PG Logo</Text>
-               <Image source={EditIcon} style={styles.iconSmall} />
-          </View>
 
-          <View style={styles.logoBox}>
-            {logoUri ? (
-              <Image source={{ uri: logoUri }} style={styles.logoPreview} />
-            ) : (
-              <Image source={UploadIcon} style={styles.uploadIcon} />
-            )}
-             <TouchableOpacity onPress={() => pickImage(setLogoUri)}>
-              <Text style={[styles.linkText, { color: selectedColor }]}>Choose file</Text>
-            </TouchableOpacity>
-            <Text style={styles.smallNote}>Must be PNG (600 × 300)</Text>
-          </View>
-        </View>
+        {/* LOGO UPLOAD */}
 
-{/* <View style={styles.card}>
+        {
+          logoCustomize && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardLabel}>Hostel/PG Logo</Text>
+                <Image source={EditIcon} style={styles.iconSmall} />
+              </View>
+
+              <View style={styles.logoBox}>
+                {logoUri ? (
+                  <Image source={{ uri: logoUri }} style={styles.logoPreview} />
+                ) : (
+                  <Image source={UploadIcon} style={styles.uploadIcon} />
+                )}
+                <TouchableOpacity onPress={() => pickImage(setLogoUri)}>
+                  <Text style={[styles.linkText, { color: selectedColor }]}>Choose file</Text>
+                </TouchableOpacity>
+                <Text style={styles.smallNote}>Must be PNG (600 × 300)</Text>
+              </View>
+            </View>
+          )
+        }
+
+
+        {/* ---upload Signature-- */}
+
+        {
+          signCustomize && (
+            <View>
+              <Text style={styles.fieldTitle}>Digital Signature Upload</Text>
+
+              <TouchableOpacity
+                style={styles.signatureBox}
+                onPress={() => pickImage(setSignatureImage)}
+              >
+                {signatureImage ? (
+                  <Image source={{ uri: signatureImage }} style={styles.signaturePreview} />
+                ) : (
+                  <Text style={styles.signaturePlaceholder}>Upload Signature</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )
+        }
+
+
+        {/* <View style={styles.card}>
     <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
   <Text style={styles.boxTitle}>Upload QR</Text>
  <Image source={EditIcon} style={styles.iconSmall} />
@@ -212,9 +373,11 @@ export default function ReceiptTemplate() {
 
 
 
+        <Text style={{ fontSize: 16.7, fontFamily: 'Gilroy-Semibold', marginTop: 18 }}>Form Specific Detials</Text>
+
+        <Text style={{ fontFamily: 'Gilroy-Medium', fontSize: 13, color: '#9C9C9C', marginTop: 10 }}>Fill the form with details you'd like customize</Text>
 
 
-        
 
         {/* NOTES */}
         <View style={styles.card}>
@@ -225,8 +388,8 @@ export default function ReceiptTemplate() {
           <View style={styles.notesBox}>
             <TextInput
               multiline
-              value={notes}
-              onChangeText={setNotes}
+              value={receiptNotes}
+              onChangeText={setReceiptNotes}
               style={styles.notesInput}
             />
           </View>
@@ -268,18 +431,23 @@ export default function ReceiptTemplate() {
           </View>
         </View>
 
+        <TouchableOpacity onPress={handleSaveTemplate}
+          style={{ alignSelf: 'flex-end', marginTop: 20, padding: 15, backgroundColor: '#2044e2', borderRadius: 8 }}>
+          <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Semibold', color: '#ffffff' }}>Save Template</Text>
+        </TouchableOpacity>
+
       </ScrollView>
 
       {/* STICKY PREVIEW BUTTON */}
-        {/* <TouchableOpacity style={styles.previewBtn }>
+      {/* <TouchableOpacity style={styles.previewBtn }>
         <Text style={styles.previewBtnText}>Preview</Text>
       </TouchableOpacity>
      */}
     </View>
 
-    
 
-    
+
+
   );
 }
 
@@ -345,6 +513,35 @@ const styles = StyleSheet.create({
   uploadIcon: { width: 40, height: 40, tintColor: "#999" },
   smallNote: { fontSize: 12, color: "#666", marginTop: 6 },
   linkText: { fontWeight: "600" },
+
+  fieldTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+
+  signatureBox: {
+    height: 140,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#D9D9D9",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+    marginBottom: 10,
+  },
+  signaturePlaceholder: {
+    fontSize: 20,
+    color: "#6AA0FF",
+    fontStyle: "italic",
+  },
+  signaturePreview: {
+    width: "100%",
+    height: 120,
+    resizeMode: "contain",
+  },
 
   notesBox: {
     backgroundColor: "#fff",
@@ -427,84 +624,84 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   /* BANK LIST */
-bankHeaderRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
-addBankBtn: {
-  backgroundColor: "#1E45E1",
-  paddingHorizontal: 16,
-  paddingVertical: 6,
-  borderRadius: 10,
-},
-addBankText: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  bankHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  addBankBtn: {
+    backgroundColor: "#1E45E1",
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  addBankText: { color: "#fff", fontWeight: "600", fontSize: 14 },
 
-divider: {
-  height: 1,
-  backgroundColor: "#E5E7EB",
-  marginVertical: 10,
-},
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 10,
+  },
 
-bankRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 10,
-},
+  bankRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
 
-radioOuter: {
-  width: 22,
-  height: 22,
-  borderRadius: 11,
-  borderWidth: 2,
-  borderColor: "#9CA3AF",
-  alignItems: "center",
-  justifyContent: "center",
-},
-radioInner: {
-  width: 12,
-  height: 12,
-  borderRadius: 6,
-  backgroundColor: "#1E45E1",
-},
+  radioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "#9CA3AF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#1E45E1",
+  },
 
-bankIconCircle: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  backgroundColor: "#1E45E1",
-  alignItems: "center",
-  justifyContent: "center",
-  marginLeft: 12,
-},
-bankIcon: { width: 22, height: 22, tintColor: "#fff" },
+  bankIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#1E45E1",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
+  },
+  bankIcon: { width: 22, height: 22, tintColor: "#fff" },
 
-bankName: { fontSize: 14, fontWeight: "600", color: "#111" },
-bankSub: { fontSize: 12, color: "#6B7280" },
+  bankName: { fontSize: 14, fontWeight: "600", color: "#111" },
+  bankSub: { fontSize: 12, color: "#6B7280" },
 
-/* QR UPLOAD */
-qrUploadBox: {
-  marginTop: 14,
-  backgroundColor: "#F8F9FB",
-  padding: 20,
-  borderRadius: 14,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  alignItems: "center",
-},
-qrNote: { fontSize: 12, color: "#6B7280", marginTop: 4 },
-blueLink: { color: "#1E45E1", fontWeight: "600" },
+  /* QR UPLOAD */
+  qrUploadBox: {
+    marginTop: 14,
+    backgroundColor: "#F8F9FB",
+    padding: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    alignItems: "center",
+  },
+  qrNote: { fontSize: 12, color: "#6B7280", marginTop: 4 },
+  blueLink: { color: "#1E45E1", fontWeight: "600" },
 
-uploadIconBlue: {
-  width: 40,
-  height: 40,
-  tintColor: "#1E45E1",
-},
-qrUploadedImage: {
-  width: 120,
-  height: 120,
-  resizeMode: "contain",
-},
+  uploadIconBlue: {
+    width: 40,
+    height: 40,
+    tintColor: "#1E45E1",
+  },
+  qrUploadedImage: {
+    width: 120,
+    height: 120,
+    resizeMode: "contain",
+  },
 
 });
 

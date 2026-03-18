@@ -656,7 +656,6 @@ export default function GeneralDetailsScreen({ navigation }) {
   };
 
   const handleLogout = async () => {
-    console.log("thata")
     const res = await logout();
     console.log(res)
 

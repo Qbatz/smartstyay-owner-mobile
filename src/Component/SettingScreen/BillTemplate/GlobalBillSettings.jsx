@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,8 +16,14 @@ import {
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import UploadIcon from "../../../Assets/Images/upload.png";
 import TickIcon from "../../../Assets/Images/check_switch.png";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { BillContext } from "../../../Context/BillsContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function GlobalBillSettings({ onBack }) {
+
+  const {activeHostelId} = useContext(CommonContexts)
+  const {getGlobalBillPdfDetail,postGlobalBilPdfDetails}=useContext(BillContext)
   const [logoCustomize, setLogoCustomize] = useState(false);
   const [contactCustomize, setContactCustomize] = useState(true);
   const [emailCustomize, setEmailCustomize] = useState(true);
@@ -29,12 +35,38 @@ export default function GlobalBillSettings({ onBack }) {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
 
+  const [showSuccessModal,setShowSuccessModal] =useState(false);
+  const [message,setmessage]=useState("")
+  const [errorType,setErrorType]=useState("")
+
+  const [mobileError,setMobileError]=useState("")
+  const [mailError,setMailError]=useState("")
+
+
+  useEffect(()=>{
+
+     getGlobalBillPdfDetail(activeHostelId).then(r=>{
+      console.log(r)
+      setMobile(r.data?.mobile)
+      setEmail(r.data?.emailId)
+      setUploadedLogo(r.data?.logo)
+      setSignatureImage(r.data?.signature)
+      setLogoCustomize(r?.data?.isLogoCustomized)
+      setEmailCustomize(r?.data?.isMailIdCustomized)
+      setContactCustomize(r?.data?.isMobileCustomized)
+      setSignCustomize(r?.data?.isSignatureCustomized)
+     })
+
+  },[])
+
   /* ---------------- IMAGE PICK FUNCTION ---------------- */
   async function pickImage(setFunction) {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
+
+    console.log("images",result)
 
     if (!result.canceled) {
       setFunction(result.assets[0].uri);
@@ -50,6 +82,7 @@ async function pickImage(setFunction) {
   };
 
   launchImageLibrary(options, (response) => {
+    console.log(response)
     if (response.didCancel) {
       console.log("User cancelled image picker");
     } else if (response.errorMessage) {
@@ -68,16 +101,87 @@ async function pickImage(setFunction) {
 
   const validateMobile = (num) => num.length === 10;
 
-  function handleSave() {
+  async function handleSave () {
     if (!validateMobile(mobile)) {
       return Alert.alert("Invalid Mobile", "Mobile number must be 10 digits");
     }
 
-    if (!validateEmail(email)) {
-      return Alert.alert("Invalid Email", "Please enter a valid email address");
-    }
+    console.log(mobile,'bilmail')
+    // if (!validateEmail(email)) {
+    //   return Alert.alert("Invalid Email", "Please enter a valid email address");
+    // }
 
-    Alert.alert("Success", "Changes Saved Successfully!");
+    // Alert.alert("Success", "Changes Saved Successfully!");
+
+    const payload = {
+    hostelId :activeHostelId,
+    mobile: mobile,
+    email: email,
+    isMobileCustomized:contactCustomize,
+    isEmailCustomized:emailCustomize,
+    isLogoCustomized:logoCustomize,
+    isSignatureCustomized: signCustomize,
+  };
+
+     const formData = new FormData();
+
+    //  const jsonBase64= btoa(JSON.stringify(requestBody))
+
+     
+
+  // formData.append("request", JSON.stringify(jsonBase64));
+
+//  
+
+console.log(uploadedLogo)
+if (uploadedLogo) {
+
+  formData.append("hostelLogo", {
+    uri: uploadedLogo,
+    type: "image/jpeg",
+    name: "hostelLogo.jpg",
+  });
+}
+
+
+if (signatureImage) {
+  formData.append("billSignature", {
+    uri: signatureImage,
+    type: "image/jpeg",
+    name: "receiptSign.jpg",
+  });
+}
+  
+   
+   
+
+//   formData.append("request[invoicePhoneNumber]", mobile);
+// formData.append("request[invoiceMailId]", email);
+
+//    formData.append("receiptPhoneNumber", mobile);
+//   formData.append("invoiceMailId", email);
+
+
+    const res= await postGlobalBilPdfDetails(activeHostelId,payload,formData)
+    console.log("pilla",res)
+
+    if(res.status == 200){
+        setShowSuccessModal(true),
+        setmessage(res.data),
+        setErrorType("success")
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1000);
+    }else{
+      setShowSuccessModal(true),
+      setmessage(res.message || "Not uploaded"),
+      setErrorType("error")
+
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1000);
+    }
   }
 
   function handleReset() {
@@ -89,6 +193,7 @@ async function pickImage(setFunction) {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F8F8FB", paddingTop:40 }}>
+     <SuccessModal visible={showSuccessModal} message={message} type={errorType}/>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={onBack}>
           <Image source={BackIcon} style={styles.backIcon} />
