@@ -621,6 +621,57 @@ export default function BillsProvider({ children }) {
 
       return { success: false, message: "Share failed" };
 
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bills/unpaid/${hostelId}/${invoiceId}`
+    );
+
+    if (res.status === 200) {
+      await GetAllBillDetails(hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to mark as unpaid",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+  
     } catch (error) {
       const msg = getErrorMessage(error);
       setErrorMsg(msg);
@@ -707,6 +758,7 @@ export default function BillsProvider({ children }) {
         shareReceiptOnWhatsapp,
         getGlobalBillPdfDetail,
         postGlobalBilPdfDetails
+         MarkBillAsUnpaid
       }}
     >
       {children}
