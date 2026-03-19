@@ -701,14 +701,26 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
           {
             customerDetails?.customerCurrentStatus == "VACATED" && (
-              <TouchableOpacity style={{
-                backgroundColor: '#1E45E1', paddingVertical: 12, alignItems: 'center', width: "100%",
-                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12
+              <View style={{display:'flex', flexDirection:'row'}}>
+              <TouchableOpacity
+              
+              style={{
+                backgroundColor: '#1E45E1', paddingVertical: 12, alignItems: 'center', width:'48%',
+                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12 , marginRight:5
               }}
                 disabled>
                 <Image source={RecheckInIcon} style={{ width: 20, height: 20 }} />
                 <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#ffffff', marginLeft: 5 }}>Re Check in</Text>
               </TouchableOpacity>
+
+                              <TouchableOpacity
+                  style={{    backgroundColor: "#E6ECFF",paddingVertical: 12, alignItems: 'center', width:'48%',
+                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12}}
+                  onPress={() => setShowStayHistory(true)}
+                >
+                  <Text style={styles.stayText}>Stay History</Text>
+                </TouchableOpacity>
+                </View>
             )
           }
 

@@ -326,7 +326,7 @@ export default function AddTenant() {
                         <Text
                             style={[
                                 styles.stepLabel,
-                                step === 1 && { color: "#2D6CDF", fontWeight: "600" },
+                                step === 1 && { color: "#2D6CDF",fontFamily: "Gilroy-Semibold" },
                             ]}
                         >
                             Basic Details
@@ -356,7 +356,7 @@ export default function AddTenant() {
                         <Text
                             style={[
                                 styles.stepLabel,
-                                step === 2 && { color: "#2D6CDF", fontWeight: "600" },
+                                step === 2 && { color: "#2D6CDF", fontFamily: "Gilroy-Semibold" },
                             ]}
                         >
                             Address Details
@@ -749,7 +749,7 @@ export default function AddTenant() {
                                                                             setStateOpen(false);
                                                                         }}
                                                                     >
-                                                                        <Text style={{ color: "red", fontWeight: "600" }}>
+                                                                        <Text style={{ color: "red", fontFamily: "Gilroy-Semibold" }}>
                                                                             Clear selection
                                                                         </Text>
                                                                     </TouchableOpacity>
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 17,
-        fontWeight: "600",
+        fontFamily: "Gilroy-Semibold",
         color: "#111827",
     },
     stepContainer: {
@@ -886,11 +886,12 @@ const styles = StyleSheet.create({
     stepNumber: {
         fontSize: 13,
         color: "#2D6CDF",
-        fontWeight: "600",
+       fontFamily: "Gilroy-Semibold"
     },
     stepLabel: {
         fontSize: 13,
         color: "#6B7280",
+        
     },
     profileSection: {
         flexDirection: "row",
@@ -939,7 +940,7 @@ const styles = StyleSheet.create({
 
     profileTitle: {
         fontSize: 16,
-        fontWeight: "600",
+       fontFamily: "Gilroy-Semibold",
         color: "#111827",
     },
     profileSub: {
@@ -948,6 +949,7 @@ const styles = StyleSheet.create({
         lineHeight: 16,
         width: 220,
         marginTop: 4,
+        fontFamily: "Gilroy-Regular" 
     },
     form: {
         marginBottom: 10,
@@ -957,6 +959,7 @@ const styles = StyleSheet.create({
         color: "#111827",
         marginBottom: 6,
         marginTop: 4,
+        fontFamily: "Gilroy-Medium" 
     },
 
     input: {
@@ -968,6 +971,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         backgroundColor: "#fff",
         marginBottom: 12,
+        fontFamily: "Gilroy-Regular" 
     },
 
 mobileWrapper: {
@@ -991,7 +995,7 @@ countryDropdown: {
 
 countryCodeText: {
   fontSize: 14,
-  fontWeight: "500",
+ fontFamily: "Gilroy-Medium" ,
   color: "#111",
   marginRight: 4,
 },
@@ -1031,7 +1035,7 @@ countryOptionText: {
         fontSize: 14,
         color: "#111",
         marginRight: 10,
-        fontWeight: "500",
+       fontFamily: "Gilroy-Medium" ,
     },
 
     mobileInput: {
@@ -1061,7 +1065,7 @@ countryOptionText: {
     primaryText: {
         color: "#2D6CDF",
         fontSize: 15,
-        fontWeight: "600",
+       fontFamily: "Gilroy-Semibold"
     },
 
     secondaryBtn: {
@@ -1075,7 +1079,7 @@ countryOptionText: {
     secondaryText: {
         color: "#fff",
         fontSize: 15,
-        fontWeight: "600",
+        fontFamily: "Gilroy-Semibold"
     },
     secondaryBtnDisabled: {
         backgroundColor: "#A5B4FC",
@@ -1217,7 +1221,7 @@ countryOptionText: {
     },
     selectedOptionText: {
         color: "#fff",
-        fontWeight: "600"
+        fontFamily: "Gilroy-Semibold"
     },
     searchInput: {
         height: 45,

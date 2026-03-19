@@ -517,7 +517,15 @@ export default function TenantCheckIn({ navigation, route }) {
                   {floorOpen && (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
-                        {floors.map((v) => (
+
+{floors?.length === 0 ? (
+  <View style={{ padding: 12 }}>
+    <Text style={{ color: "#999", textAlign: "center" }}>
+      No Floors Available
+    </Text>
+  </View>
+) : (
+                        floors?.map((v) => (
 
                           <TouchableOpacity
                             key={v.id}
@@ -535,7 +543,8 @@ export default function TenantCheckIn({ navigation, route }) {
                           >
                             <Text style={styles.optionText}>{v.name}</Text>
                           </TouchableOpacity>
-                        ))}
+                          ))
+)}
                       </ScrollView>
                     </View>
                   )}
@@ -552,7 +561,7 @@ export default function TenantCheckIn({ navigation, route }) {
                     style={styles.select}
                     onPress={() => setRoomOpen(!roomOpen)}
                     activeOpacity={0.9}
-                    disabled={!rooms.length}
+                    // disabled={!rooms.length}
                   >
                     <Text style={styles.selectText}>
                       {selectedRoom ? selectedRoom.name : "Select a Room"}
@@ -560,10 +569,17 @@ export default function TenantCheckIn({ navigation, route }) {
                     <Image source={DownArrow} style={styles.arrow} />
                   </TouchableOpacity>
 
-                  {roomOpen && rooms.length > 0 && (
+                  {roomOpen &&  (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
-                        {rooms.map((r) => (
+ {rooms.length === 0 ? (
+        <View style={{ padding: 12 }}>
+          <Text style={{ color: "#999", textAlign: "center" }}>
+            No Rooms Available
+          </Text>
+        </View>
+      ) : (
+                        rooms.map((r) => (
                           <TouchableOpacity
                             key={r.id}
                             style={[styles.option, selectedRoom?.id === r.id && { backgroundColor: '#E6F0FF' }]}
@@ -583,7 +599,8 @@ export default function TenantCheckIn({ navigation, route }) {
                             </View>
                             {/* <Text style={styles.optionText}> {r.name} - {r?.sharingType} </Text> */}
                           </TouchableOpacity>
-                        ))}
+                          ))
+      )}
                       </ScrollView>
                     </View>
                   )}
@@ -598,7 +615,7 @@ export default function TenantCheckIn({ navigation, route }) {
                     style={styles.select}
                     onPress={() => setBedOpen(!bedOpen)}
                     activeOpacity={0.9}
-                    disabled={!filteredBeds.length}
+                    // disabled={!filteredBeds.length}
                   >
                     <Text style={styles.selectText}>
                       {selectedBed ? selectedBed.bedName : "Select a Bed"}
@@ -607,10 +624,18 @@ export default function TenantCheckIn({ navigation, route }) {
                     <Image source={DownArrow} style={styles.arrow} />
                   </TouchableOpacity>
 
-                  {bedOpen && filteredBeds.length > 0 && (
+                  {bedOpen &&  (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
-                        {filteredBeds.map((b) => (
+                        {filteredBeds.length === 0 ? (
+        <View style={{ padding: 12 }}>
+          <Text style={{ color: "#999", textAlign: "center" }}>
+            No Beds Available
+          </Text>
+        </View>
+      ) : (
+                        
+                        filteredBeds.map((b) => (
 
                           <TouchableOpacity
                             key={b.bedId}
@@ -628,7 +653,8 @@ export default function TenantCheckIn({ navigation, route }) {
                               {b.bedName}
                             </Text>
                           </TouchableOpacity>
-                        ))}
+                          ))
+      )}
                       </ScrollView>
                     </View>
                   )}
@@ -689,7 +715,7 @@ export default function TenantCheckIn({ navigation, route }) {
                     <Text style={styles.label}>Non Refundable Amount</Text>
 
                     <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                      <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+                      <Text style={{ color: "#fff",  fontFamily: "Gilroy-Semibold"  }}>Add</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -723,7 +749,7 @@ export default function TenantCheckIn({ navigation, route }) {
                               setOpenDropdownId(openDropdownId === item.id ? null : item.id)
                             }
                           >
-                            <Text style={{ color: "#777" }}>Select...</Text>
+                            <Text style={{ color: "#777", fontFamily: "Gilroy-Semibold" }}>Select...</Text>
                             <Image source={DownArrow} style={styles.arrow} />
                           </TouchableOpacity>
                         ) : item.type === "Others" ? (
@@ -835,7 +861,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                 <View style={styles.BtnRow}>
                   <TouchableOpacity style={styles.CancelBtn} onPress={() => navigation.goBack()}>
-                    <Text style={{ color: "grey", fontWeight: "600" }}>
+                    <Text style={{ color: "grey",  fontFamily: "Gilroy-Semibold"  }}>
                       Cancel
                     </Text>
                   </TouchableOpacity>
@@ -910,7 +936,7 @@ const styles = StyleSheet.create({
 
   backBtn: { padding: 6, marginRight: 8 },
 
-  headerTitle: { fontSize: 18, fontWeight: "600" },
+  headerTitle: { fontSize: 18, fontFamily: "Gilroy-Semibold" },
 
   segmentRow: {
     flexDirection: "row",
@@ -930,15 +956,15 @@ const styles = StyleSheet.create({
 
   segmentActive: { backgroundColor: "#2B6CF6" },
 
-  segmentText: { color: "#4B5563" },
+  segmentText: { color: "#4B5563", fontFamily: "Gilroy-Semibold" },
 
-  segmentTextActive: { color: "#fff", fontWeight: "600" },
+  segmentTextActive: { color: "#fff",  fontFamily: "Gilroy-Semibold"  },
 
   container: { paddingHorizontal: 16 },
 
   field: { marginBottom: 12 },
 
-  label: { color: "#4B4B4B", marginBottom: 6 },
+  label: { color: "#4B4B4B", marginBottom: 6 ,  fontFamily: "Gilroy-Semibold" },
 
   input: {
     borderWidth: 1,
@@ -947,6 +973,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     backgroundColor: "#fff",
+    fontFamily: "Gilroy-Regular" 
   },
 
   pickerWrap: {
@@ -991,7 +1018,7 @@ const styles = StyleSheet.create({
   fixedLabel: {
     fontSize: 14,
     color: "#000",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold" 
   },
 
   closeInside: {
@@ -1023,7 +1050,7 @@ const styles = StyleSheet.create({
     marginRight: 6
   },
 
-  addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  addText: { color: "#fff", fontSize: 12,  fontFamily: "Gilroy-Semibold"  },
 
   BtnRow: {
     flexDirection: "row",
@@ -1048,7 +1075,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  submitText: { color: "#fff", fontWeight: "600" },
+  submitText: { color: "#fff",  fontFamily: "Gilroy-Semibold"  },
 
 
 
@@ -1168,6 +1195,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    fontFamily: "Gilroy-Regular" 
   },
 
   figmaRightBox: {
@@ -1179,7 +1207,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E3E3E3",
     justifyContent: "center",
-    marginRight: 20
+    marginRight: 20,
+    fontFamily: "Gilroy-Regular" 
   },
 
   figmaCloseBtn: {

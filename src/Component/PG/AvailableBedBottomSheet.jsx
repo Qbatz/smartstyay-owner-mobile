@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     color: "#333",
+    fontFamily: "Gilroy-Regular" 
   },
   deleteRow: {
     flexDirection: "row",
@@ -291,7 +292,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#555",
     textAlign: "center",
-    marginBottom: 25
+    marginBottom: 25,
+    fontFamily: "Gilroy-Bold" 
   },
 
   popupBtnRow: {

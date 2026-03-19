@@ -334,6 +334,7 @@ export default function BankingScreen() {
         acc: b.accountNumber,
         balance: b.accountBalance ?? 0,
         Icon: BankIcon,
+        isDeleted: b.isDeleted, 
         raw: b,
       };
     }
@@ -347,6 +348,7 @@ export default function BankingScreen() {
         acc: b.upiId,
         balance: b.accountBalance ?? 0,
         Icon: UpiIcon,
+        isDeleted: b.isDeleted, 
         raw: b,
       };
     }
@@ -360,6 +362,7 @@ export default function BankingScreen() {
         acc: b.creditCardNumber || b.debitCardNumber,
         balance: b.accountBalance ?? 0,
         Icon: CardIcon,
+        isDeleted: b.isDeleted, 
         raw: b,
       };
     }
@@ -373,6 +376,7 @@ export default function BankingScreen() {
         acc: "",
         balance: b.accountBalance ?? 0,
         Icon: CashIcon,
+        isDeleted: b.isDeleted, 
         raw: b,
       };
     }
@@ -738,10 +742,27 @@ export default function BankingScreen() {
               <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item, index) => (
-                    <View key={index} style={styles.bankCard}>
+                    <View key={index}   style={[
+    styles.bankCard,
+    item.isDeleted && {
+      opacity: 0.5,
+      backgroundColor: "#F3F4F6", 
+    },
+  ]}>
 
                       <View
-                        style={{ backgroundColor: '#f7f5ff', padding: 20, flexGrow: 1, paddingTop: 7, paddingBottom: 7 }}
+                       style={[
+    {
+      backgroundColor: '#f7f5ff',
+      padding: 20,
+      flexGrow: 1,
+      paddingTop: 7,
+      paddingBottom: 7,
+    },
+    item.isDeleted && {
+      backgroundColor: "#E5E7EB",
+    },
+  ]}
                       >
 
                         <View style={styles.topRow}>
@@ -789,14 +810,15 @@ export default function BankingScreen() {
                             // style={styles.addAmountText}
                             // onPress={() => handleShowAddBalance(item)}
 
-                            style={[
-                              styles.addAmountText,
-                              !canWriteBanking && { opacity: 0.4 }
-                            ]}
-                            onPress={() => {
-                              if (!canWriteBanking) return;
-                              handleShowAddBalance(item);
-                            }}
+                           style={[
+  styles.addAmountText,
+  (!canWriteBanking || item?.isDeleted) && { opacity: 0.4 }
+]}
+disabled={!canWriteBanking || item?.isDeleted}
+                           onPress={() => {
+  if (!canWriteBanking || item?.isDeleted) return;
+  handleShowAddBalance(item);
+}}
                           >
                             + Add Amount
                           </Text>
@@ -1254,18 +1276,21 @@ export default function BankingScreen() {
             ]}
           >
 
-            <TouchableOpacity
-              //             style={styles.popupRow} onPress={() => {
-              //   setShowMenu(false);
-              //   setSelfTransferScreen(true);   
-              // }}
+            <TouchableOpacity     
+  //                         style={[
+  //   styles.popupRow,
+  //   (!canWriteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+  // ]}
 
-              style={[
-                styles.popupRow,
-                !canWriteBanking && { opacity: 0.4 }
-              ]}
+          style={[
+    styles.popupRow,
+     , { opacity: 0.4 }
+  ]}
+  disabled
+  
+  // disabled={!canWriteBanking || selectedItem?.isDeleted}
               onPress={() => {
-                if (!canWriteBanking) return;
+                if (!canWriteBanking || selectedItem?.isDeleted) return;
                 setShowMenu(false);
                 setSelfTransferScreen(true);
               }}
@@ -1281,14 +1306,16 @@ export default function BankingScreen() {
               //  style={styles.popupRow} 
               //  onPress={()=>handleEditBanking(selectedItem)}
 
-              style={[
-                styles.popupRow,
-                !canUpdateBanking && { opacity: 0.4 }
-              ]}
+               style={[
+    styles.popupRow,
+    (!canUpdateBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+  ]}
+
+  disabled={!canUpdateBanking || selectedItem?.isDeleted}
               onPress={() => {
-                if (!canUpdateBanking) return;
-                handleEditBanking(selectedItem)
-              }}
+    if (!canUpdateBanking || selectedItem?.isDeleted) return;
+    handleEditBanking(selectedItem);
+  }}
             >
               <Image
                 source={EditIcon}
@@ -1304,17 +1331,24 @@ export default function BankingScreen() {
 
 
             <TouchableOpacity
-              //  style={styles.popupRow}
-              //  onPress={handleDeleteShow}
 
-              style={[
-                styles.popupRow,
-                !canDeleteBanking && { opacity: 0.4 }
-              ]}
-              onPress={() => {
-                if (!canDeleteBanking) return;
-                handleDeleteShow()
-              }}
+  //             style={[
+  //   styles.popupRow,
+  //   (!canDeleteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+  // ]}
+         style={[
+    styles.popupRow,
+     , { opacity: 0.4 }
+  ]}
+
+  disabled
+  
+  // disabled={!canDeleteBanking || selectedItem?.isDeleted}
+  onPress={() => {
+    if (!canDeleteBanking || selectedItem?.isDeleted) return;
+    handleDeleteShow();
+  }}
+  
             >
               <Image
                 source={DeleteIcon}
@@ -2041,6 +2075,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
+    marginBottom:30
   },
 
   addBalanceBtnText: {

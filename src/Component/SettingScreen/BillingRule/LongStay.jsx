@@ -12,6 +12,7 @@ import { Switch } from "react-native-switch";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { UseSetting } from "../../../Context/SettingContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useFocusEffect } from "@react-navigation/native";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -28,6 +29,7 @@ export default function LongStay({ navigation }) {
 
     const { activeHostelId } = useContext(CommonContexts);
     const { getBillingConfig, loading, addBillingRecurring } = UseSetting();
+      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
     const [billingMethod, setBillingMethod] = useState("fixed");
     const [billingstartDate, setBillingStartDate] = useState(null);
@@ -82,6 +84,12 @@ export default function LongStay({ navigation }) {
             }
         }, [activeHostelId])
     );
+
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
     const {
         canWriteModule: canWriteBills,
@@ -153,19 +161,19 @@ export default function LongStay({ navigation }) {
         return date - 1;
     };
 
-    const getGraceInfoText = () => {
+const getGraceInfoText = () => {
+  if (!gracedate || !billingstartDate) return "";
 
-        if (!gracedate || isNaN(gracedate)) return ""
+  const start = billingstartDate;
 
-        const start = "01"
-        const end = gracedate < 10 ? `0${gracedate}` : gracedate
+  const end = Math.min(billingstartDate + gracedate, daysInMonth);
 
-        const next = gracedate + 1
-        const nextFormatted = next < 10 ? `0${next}` : next
+  const next = end + 1;
 
-        return `Full rent will apply if tenant joins from ${start} to ${end} of the month. Prorated rent applies from ${nextFormatted} onwards.`
+  const format = (num) => (num < 10 ? `0${num}` : num);
 
-    }
+  return `Full rent will apply if tenant joins from ${format(start)} to ${format(end)} of the month. Prorated rent applies from ${format(next)} onwards.`;
+};
 
     const addSlab = () => {
         setSlabs([
@@ -457,26 +465,27 @@ export default function LongStay({ navigation }) {
                         </View>
 
                         <View style={styles.configRow}>
-                            {billingData && !billingData?.canModifyBilling && (
+                            <View>
+                            {PGDetails && !PGDetails?.canModifyBilling && (
                                 <View style={styles.configBadge}>
                                     <Text style={styles.configIcon}>✓</Text>
                                     <Text style={styles.configText}>Configured</Text>
                                 </View>
                             )}
-
+                         </View>
 
                             <TouchableOpacity
                                 // style={styles.saveBtn}
                                 style={[
                                     styles.saveBtn,
-                                    { opacity: billingData && !billingData?.canModifyBilling ? 0.4 : 1 }
+                                    { opacity: PGDetails && !PGDetails?.canModifyBilling ? 0.4 : 1 }
                                 ]}
                                 // disabled={billingMethod === "joining_date_based"}
-                                disabled={!billingData?.canModifyBilling}
+                                disabled={!PGDetails?.canModifyBilling}
                                 onPress={handleSaveConfiguration}
                             >
                                 <Text style={styles.saveText}>
-                                    {billingData?.billStartDate
+                                    {!PGDetails?.canModifyBilling
                                         ? "Edit Configuration"
                                         : "Save Configuration"}
                                 </Text>
@@ -536,7 +545,7 @@ export default function LongStay({ navigation }) {
                             <View style={{ flexDirection: 'row', marginTop: 8 }}>
                                 <Image
                                     source={GracePeriodIcon}
-                                    style={{ height: 13, width: 13, marginRight: 4 }}
+                                    style={{ height: 13, width: 13, marginRight: 4, marginTop:3 }}
                                 />
 
                                 <Text style={styles.infoText}>
