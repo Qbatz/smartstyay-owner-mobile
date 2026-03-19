@@ -19,6 +19,7 @@ import TickIcon from "../../../Assets/Images/check_switch.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BillContext } from "../../../Context/BillsContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function GlobalBillSettings({ onBack }) {
 
@@ -103,7 +104,7 @@ async function pickImage(setFunction) {
 
   async function handleSave () {
     if (!validateMobile(mobile)) {
-      return Alert.alert("Invalid Mobile", "Mobile number must be 10 digits");
+      setMobileError("Please enter valid 10 digit number")
     }
 
     console.log(mobile,'bilmail')
@@ -256,11 +257,14 @@ if (signatureImage) {
             value={mobile}
             placeholder="9876543210"
             maxLength={10}
-            onChangeText={(val) => setMobile(val.replace(/[^0-9]/g, ""))}
+            onChangeText={(val) => {setMobile(val.replace(/[^0-9]/g, ""))
+              setMobileError("")}
+            }
           />
         </View>
+        {mobileError && <ErrorMessage message={mobileError} type="error"/>}
 
-        <Text style={styles.fieldTitle}>Email Address</Text>
+        <Text style={[styles.fieldTitle,{marginTop:15}]}>Email Address</Text>
 
         <View style={styles.checkboxRow}>
           <CustomCheckbox value={emailCustomize} onChange={setEmailCustomize} />
@@ -411,7 +415,7 @@ const styles = StyleSheet.create({
     borderColor: "#E3E3E3",
     height: 50,
     paddingHorizontal: 12,
-    marginBottom: 12,
+    marginBottom: 3,
   },
   countryCode: { marginRight: 12, fontSize: 16 },
   phoneInput: { flex: 1, fontSize: 16 },

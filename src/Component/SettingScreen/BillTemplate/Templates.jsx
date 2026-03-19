@@ -21,6 +21,7 @@ import BillsPdfPreview from "./BillsPdfPreview";
 import SecurityDepositPdfPreview from "./SecurityDepositPreview";
 import ReceiptPdfPreview from "./ReceiptPdfPreview";
 import AddBankingModal from "../../MorePages/Banking/AddBanking";
+import { useNavigation } from "@react-navigation/native";
 
 export default function TemplatesScreen({ navigation, onBack }) {
   const [activeTab, setActiveTab] = useState("Bills");
@@ -37,6 +38,9 @@ export default function TemplatesScreen({ navigation, onBack }) {
     setShowReceiptPreview(false);
   };
 
+  const [billTemplateData, setBillTemplateData] = useState({});
+  const [advanceTemplateData,setAdvanceTemplateData]=useState({});
+  const [receiptTemplateData, setReceiptTemplateDate]=useState({});
   /* -----------------------------------------------------------
       ANDROID BACK BUTTON HANDLER
      ----------------------------------------------------------- */
@@ -77,6 +81,19 @@ export default function TemplatesScreen({ navigation, onBack }) {
     setAddBankingShow(false);
     setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
   };
+
+  const handleBillsTemplateChange = (data) => {
+    console.log("Received from child:", data);
+    setBillTemplateData(data);
+  };
+
+  const handleAdvanceTemplateChange =(data)=>{
+    setAdvanceTemplateData(data)
+  }
+
+  const handleReceiptTemplateChange =(data) =>{
+    setReceiptTemplateDate(data)
+  }
 
   return (
     <View style={styles.screen}>
@@ -121,25 +138,25 @@ export default function TemplatesScreen({ navigation, onBack }) {
       {/* ---------------- CONTENT AREA ---------------- */}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
         {/* BILLS TAB */}
-        {activeTab === "Bills" && !showBillsPreview && <BillsTemplate handleBank={handleAddBanking}/>}
+        {activeTab === "Bills" && !showBillsPreview && <BillsTemplate handleBank={handleAddBanking} onChange={handleBillsTemplateChange} />}
         {activeTab === "Bills" && showBillsPreview && (
-          <BillsPdfPreview />
+          <BillsPdfPreview onBack={() => navigation.goBack()} billsDataChanged={billTemplateData}/>
         )}
 
         {/* SECURITY DEPOSIT TAB */}
         {activeTab === "Security Deposit" && !showSecurityPreview && (
-          <SecurityDepositTemplate handleAddBank={handleAddBanking} />
+          <SecurityDepositTemplate handleAddBank={handleAddBanking} onChange={handleAdvanceTemplateChange}/>
         )}
         {activeTab === "Security Deposit" && showSecurityPreview && (
-          <SecurityDepositPdfPreview />
+          <SecurityDepositPdfPreview onBack={() => navigation.goBack()} advanceDataChanged={advanceTemplateData}/>
         )}
 
         {/* RECEIPTS TAB */}
         {activeTab === "Receipts" && !showReceiptPreview && (
-          <ReceiptsTemplate />
+          <ReceiptsTemplate onChange={handleReceiptTemplateChange}/>
         )}
         {activeTab === "Receipts" && showReceiptPreview && (
-          <ReceiptPdfPreview />
+          <ReceiptPdfPreview onBack={() => navigation.goBack()} receiptDataChanged={receiptTemplateData}/>
         )}
       </ScrollView>
 
