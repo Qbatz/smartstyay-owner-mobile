@@ -66,9 +66,9 @@ export default function CheckoutList({ searchText }) {
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) => {
-        return gesture.dy > 5; // swipe down only
-      },
+     onMoveShouldSetPanResponder: (_, gesture) => {
+  return Math.abs(gesture.dy) > 5;
+},
       onPanResponderMove: (_, gesture) => {
         if (gesture.dy > 0) {
           translateY.setValue(gesture.dy);
@@ -108,6 +108,7 @@ export default function CheckoutList({ searchText }) {
     console.log(res)
     setSelectedCustomer(res.data);
     setShowCustomerModal(true);
+    
   };
 
   const filteredCheckout = checkoutCustomer.filter((item) => {
@@ -140,6 +141,7 @@ export default function CheckoutList({ searchText }) {
     navigation.navigate("CustomerOverviewScreen", {
       customer: item,
     });
+    setShowCustomerModal(false)
   }
 
   const renderItem = ({ item }) => {
@@ -147,20 +149,19 @@ export default function CheckoutList({ searchText }) {
     console.log("checkout",item)
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={() => openCustomerDetails(item)}>
         <View style={styles.leftRow}>
-          <TouchableOpacity onPress={() => openCustomerDetails(item)}>
+          <View>
             {item?.profilePic ? <Image source={{uri:item.profilePic}} style={styles.profileImg} /> : 
                 <View style={{width:55,height:55,borderRadius:30,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
-                  <Text style={{fontSize:16,fontWeight:600}}>{item?.initials}</Text>
+                  <Text style={{fontSize:16,fontFamily: "Gilroy-Semibold"}}>{item?.initials}</Text>
                 </View>}
-          </TouchableOpacity>
+          </View>
 
           <View style={styles.info}>
-            <TouchableOpacity
+            <View
                                 style={{ flex: 1 }}
-                                activeOpacity={0.7}
-                                onPress={() => handleOverViewScrren(item)}
+                          
                               >
             <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
 
@@ -179,7 +180,7 @@ export default function CheckoutList({ searchText }) {
                 <Text style={styles.detailText}>{item.bedName}</Text>
               </View>
             </View>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -213,7 +214,7 @@ export default function CheckoutList({ searchText }) {
             </View>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -248,12 +249,18 @@ export default function CheckoutList({ searchText }) {
         )}
 
 
+        
+
+
         <Modal visible={showCustomerModal} transparent animationType="fade">
           <View style={styles.overlay}>
-
+ <Pressable
+    style={StyleSheet.absoluteFill}
+    onPress={closeModalWithAnimation}
+  />
 
             <Animated.View
-              onStartShouldSetResponder={() => true}
+              // onStartShouldSetResponder={() => true}
               style={[styles.sheet, { transform: [{ translateY }] }]}
               {...panResponder.panHandlers}
             >
@@ -264,30 +271,31 @@ export default function CheckoutList({ searchText }) {
               <View style={styles.profileRow}>
                 {selectedCustomer?.profilePic ? <Image source={{uri:selectedCustomer.profilePic}} style={styles.profileImg} /> : 
                 <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
-                  <Text style={{fontSize:16,fontWeight:600}}>{selectedCustomer?.initials}</Text>
+                  <Text style={{fontSize:16,fontFamily: "Gilroy-Semibold"}}>{selectedCustomer?.initials}</Text>
                 </View>}
-                
+                <TouchableOpacity  onPress={() => handleOverViewScrren(selectedCustomer)}>
                 <Text style={styles.profileName}>
                   {selectedCustomer?.fullName}
                 </Text>
+                </TouchableOpacity>
               </View>
 
               <Text style={styles.label}>Email</Text>
               <View style={styles.infoRow}>
                 <Image source={EmailIcon} style={styles.infoIcon} />
-                <Text>{selectedCustomer?.emailId || "N/A"}</Text>
+                <Text style={{fontFamily: "Gilroy-Bold" }}>{selectedCustomer?.emailId || "N/A"}</Text>
               </View>
 
               <Text style={styles.label}>Mobile</Text>
               <View style={styles.infoRow}>
                 <Image source={PhoneIcon} style={styles.infoIcon} />
-                <Text>{selectedCustomer?.mobileNo}</Text>
+                <Text style={{fontFamily: "Gilroy-Bold" }}>{selectedCustomer?.mobileNo}</Text>
               </View>
 
               <Text style={styles.label}>Checkout Date</Text>
               <View style={styles.infoRow}>
                 <Image source={CalendarIcon} style={styles.infoIcon} />
-                <Text>{selectedCustomer?.checkoutInfo?.checkoutDate}</Text>
+                <Text style={{fontFamily: "Gilroy-Bold" }}>{selectedCustomer?.checkoutInfo?.checkoutDate}</Text>
               </View>
 
               {/* <Text style={styles.label}>Amount</Text>
@@ -326,10 +334,10 @@ export default function CheckoutList({ searchText }) {
             </Animated.View>
 
             {/* ✅ outside click close (this should be behind sheet) */}
-            <Pressable
+            {/* <Pressable
               style={StyleSheet.absoluteFill}
               onPress={closeModalWithAnimation}
-            />
+            /> */}
           </View>
         </Modal>
 
@@ -356,19 +364,19 @@ const styles = StyleSheet.create({
   avatar: { width: 45, height: 45, borderRadius: 25 },
 
   info: { marginLeft: 12 },
-  name: { fontWeight: "700", fontSize: 15 },
+  name: { fontFamily: "Gilroy-Bold" , fontSize: 15 },
 
   row: { flexDirection: "row", marginTop: 4, alignItems: "center" },
 
   floorBadge: { backgroundColor: "#F1F5FF", padding: 5, borderRadius: 6 },
-  floorText: { color: "#2D6CDF", fontSize: 11 },
+  floorText: { color: "#2D6CDF", fontSize: 11, fontFamily: "Gilroy-Regular" },
 
   iconRow: { flexDirection: "row", marginLeft: 6, alignItems: "center" },
   icon: { width: 16, height: 16, marginRight: 3 },
-  detailText: { fontSize: 12 },
+  detailText: { fontSize: 12 , fontFamily: "Gilroy-Regular"},
 
   rightCol: { alignItems: "flex-end" },
-  date: { color: "#999", fontSize: 11, marginTop: 5 },
+  date: { color: "#999", fontSize: 11, marginTop: 5, fontFamily: "Gilroy-Regular" },
 
   popup: {
     position: "absolute",
@@ -383,7 +391,7 @@ const styles = StyleSheet.create({
   },
 
   popupItem: { paddingVertical: 10 },
-  popupText: { fontSize: 14, color: "#111", fontWeight: "500" },
+  popupText: { fontSize: 14, color: "#111", fontFamily: "Gilroy-Medium" },
 
   menuOverlay: {
     position: "absolute",
@@ -422,7 +430,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  title: { fontSize: 18, fontWeight: "700" },
+  title: { fontSize: 18,fontFamily: "Gilroy-Bold" },
 
   profileRow: {
     flexDirection: "row",
@@ -431,10 +439,10 @@ const styles = StyleSheet.create({
   },
 
   profileImg: { width: 55, height: 55, borderRadius: 30 },
-  profileName: { fontSize: 17, fontWeight: "700", marginLeft: 10 },
+  profileName: { fontSize: 17,fontFamily: "Gilroy-Bold" , marginLeft: 10 },
 
-  label: { fontSize: 13, color: "#6B7280", marginTop: 12 },
-  infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  label: { fontSize: 13, color: "#6B7280", marginTop: 12 , fontFamily: "Gilroy-Regular"},
+  infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4 , },
   infoIcon: { width: 16, height: 16, marginRight: 6 },
   unassignBtn: {
     // borderWidth: 1,
@@ -446,7 +454,7 @@ const styles = StyleSheet.create({
   },
   unassignText: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   emptyContainer: {
@@ -465,7 +473,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,

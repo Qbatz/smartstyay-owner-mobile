@@ -492,7 +492,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       alignItems: "center", justifyContent: "center"
                     }}>
                       <Text style={{
-                        fontSize: 17, fontWeight: "600", color: "#374151",
+                        fontSize: 17,fontFamily: "Gilroy-Semibold", color: "#374151",
                       }}>
                         {settlementDetails?.customerInfo?.initials}
                       </Text>
@@ -995,11 +995,20 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 <Text style={styles.label}>Deductions</Text>
 
                 <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                  <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+                  <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
                 </TouchableOpacity>
               </View>
 
-              {extraCharges.map((item) => (
+
+{extraCharges.length === 0 ? (
+  <View style={{    paddingVertical: 20,
+    alignItems: "center",
+    justifyContent: "center",backgroundColor:"#fff",  margin:10, borderRadius:10}}>
+    <Text style={styles.emptyText}>No deductions available</Text>
+  </View>
+) : (
+
+              extraCharges.map((item) => (
                 <View key={item.id} style={styles.figmaRowWrapper}>
                   {!item.isDefault && (
                     <TouchableOpacity
@@ -1103,7 +1112,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </View>
                   )}
                 </View>
-              ))}
+              ))
+            )}
             </View>
 
 
@@ -1252,7 +1262,7 @@ const styles = StyleSheet.create({
   },
 
   backIcon: { width: 18, height: 18, marginRight: 10 },
-  headerTitle: { fontSize: 18, fontWeight: "700" },
+  headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold"  },
 
   customerCard: {
     backgroundColor: "#F8FAFC",
@@ -1264,11 +1274,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 
-  customerName: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
+  customerName: { fontSize: 16, fontFamily: "Gilroy-Bold" , marginBottom: 4 },
 
-  smallLabel: { fontSize: 12, color: "#6B7280" },
-  value: { fontSize: 14, fontWeight: "600", marginTop: 4 },
-  refundText: { fontSize: 14, fontWeight: "700", color: "green", marginTop: 4 },
+  smallLabel: { fontSize: 12, color: "#6B7280",fontFamily: "Gilroy-Regular"  },
+  value: { fontSize: 14, fontFamily: "Gilroy-Semibold", marginTop: 4 },
+  refundText: { fontSize: 14,fontFamily: "Gilroy-Bold" , color: "green", marginTop: 4 },
 
   accordionCard: {
     borderWidth: 1,
@@ -1289,8 +1299,8 @@ const styles = StyleSheet.create({
 
   arrowImg: { width: 18, height: 18, tintColor: "#111", marginRight: 10 },
 
-  cardTitle: { flex: 1, fontSize: 14, fontWeight: "700" },
-  amountText: { fontSize: 14, fontWeight: "700" },
+  cardTitle: { flex: 1, fontSize: 14, fontFamily: "Gilroy-Bold"  },
+  amountText: { fontSize: 14, fontFamily: "Gilroy-Bold"  },
 
   accordionBody: {
     borderTopWidth: 1,
@@ -1299,19 +1309,19 @@ const styles = StyleSheet.create({
   },
 
 
-  th: { fontSize: 12, fontWeight: "700", color: "#6B7280" },
+  th: { fontSize: 12, fontFamily: "Gilroy-Bold" , color: "#6B7280" },
   invoiceRow: { flexDirection: "row", paddingVertical: 10 },
   invText: { fontSize: 13, color: "#111" },
 
-  sectionLabel: { fontSize: 13, fontWeight: "700", marginBottom: 8 },
+  sectionLabel: { fontSize: 13, fontFamily: "Gilroy-Bold" , marginBottom: 8 },
   descText: { fontSize: 13, color: "#6B7280" },
 
   ebRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   ebLeft: { flex: 1, fontSize: 13 },
-  ebRight: { fontSize: 13, fontWeight: "700" },
+  ebRight: { fontSize: 13, fontFamily: "Gilroy-Bold"  },
 
   pendingRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  addText: { color: "#1D4ED8", fontWeight: "700" },
+  addText: { color: "#1D4ED8",fontFamily: "Gilroy-Bold"  },
 
   totalRow: {
     flexDirection: "row",
@@ -1354,7 +1364,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 14,
     color: "#6B7280",
-    fontWeight: "500",
+   fontFamily: "Gilroy-Medium"
   },
 
   totalAmount: {
@@ -1378,7 +1388,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  cancelTxt: { fontSize: 15, fontWeight: "600" },
+  cancelTxt: { fontSize: 15, fontFamily: "Gilroy-Semibold" },
 
   generateBtn: {
     flex: 1,
@@ -1388,7 +1398,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D4ED8",
   },
 
-  generateTxt: { fontSize: 15, fontWeight: "700", color: "#fff" },
+  generateTxt: { fontSize: 15, fontFamily: "Gilroy-Bold" , color: "#fff" },
 
   // ✅ NON REFUND
   nonRefund: {
@@ -1493,7 +1503,7 @@ const styles = StyleSheet.create({
   smallRow: { flexDirection: "row", alignItems: "center", },
   badge: { backgroundColor: "#FFEFCF", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
   Roombadge: { backgroundColor: "#FFE0D9", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
-  badgeText: { color: "black", fontSize: 12 },
+  badgeText: { color: "black", fontSize: 12 ,fontFamily: "Gilroy-Regular" },
   smallIcon: { width: 16, height: 16, marginHorizontal: 4 },
   badgeLabel: { fontSize: 13 },
   gridCol: {
@@ -1504,10 +1514,11 @@ const styles = StyleSheet.create({
   gridLabel: {
     color: "#6B7280",
     fontSize: 13,
+    fontFamily: "Gilroy-Regular" 
   },
 
   gridValue: {
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     fontSize: 14,
     marginTop: 3,
   },
@@ -1545,7 +1556,7 @@ const styles = StyleSheet.create({
 
   calendarTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     marginBottom: 10,
     color: "#111",
   },
@@ -1566,7 +1577,7 @@ const styles = StyleSheet.create({
 
   ebText: {
     fontSize: 14,
-    fontWeight: "500",
+   fontFamily: "Gilroy-Medium",
     color: "#111827",
   },
 
@@ -1582,7 +1593,7 @@ const styles = StyleSheet.create({
   dateChipText: {
     fontSize: 12,
     color: "#EA580C",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   addBtnCircle: {
@@ -1593,7 +1604,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontSize: 20,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     lineHeight: 28,
   },
 
@@ -1615,7 +1626,7 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#6B7280",
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium"
   },
 
   totalInvoiceRow: {
@@ -1629,12 +1640,12 @@ const styles = StyleSheet.create({
 
   totalText: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   totalAmount: {
     fontSize: 14,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
   linkText: {
     color: "#2563EB",
@@ -1687,13 +1698,13 @@ const styles = StyleSheet.create({
 
   refundTitle: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     marginLeft: 6,
   },
 
   refundAmount: {
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
   refundBody: {

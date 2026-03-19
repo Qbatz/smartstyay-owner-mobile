@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     color: "#777",
     marginBottom: 10,
     marginTop: 10,
+     fontFamily: "Gilroy-Regular"
   },
 
   selectWrapper: { position: "relative", width: "100%" },
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  selectedText: { fontSize: 15, color: "#000" },
+  selectedText: { fontSize: 15, color: "#000",  fontFamily: "Gilroy-Regular" },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
 
   dropdownMenu: {
@@ -358,8 +359,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  option: { paddingVertical: 14, paddingHorizontal: 16 },
-  optionText: { fontSize: 15, color: "#000" },
+  option: { paddingVertical: 14, paddingHorizontal: 16,  },
+  optionText: { fontSize: 15, color: "#000",  fontFamily: "Gilroy-Regular" },
 
   submitBtn: {
     backgroundColor: "#1D5DFF",
@@ -372,6 +373,6 @@ const styles = StyleSheet.create({
   submitText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 });

@@ -340,7 +340,7 @@ export default function AddBookingScreen({ navigation, route }) {
 
             <TextInput
               style={styles.inputBox}
-              placeholder="₹500"
+              placeholder="Enter Booking Amount"
               placeholderTextColor="#999"
               keyboardType="numeric"
               value={amount}
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     // textAlign: "center",
     marginLeft: 10,
     fontSize: 18,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
     color: "#000",
   },
 
@@ -671,9 +671,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   userImg: { width: 45, height: 45, borderRadius: 25 },
-  userName: { marginLeft: 12, fontSize: 16, fontWeight: "600" },
+  userName: { marginLeft: 12, fontSize: 16, fontFamily: "Gilroy-Semibold"  },
 
-  label: { fontSize: 14, fontWeight: "600", marginBottom: 6, marginTop: 12 },
+  label: { fontSize: 14,fontFamily: "Gilroy-Semibold" , marginBottom: 6, marginTop: 12 },
 
   inputBox: {
     borderColor: "#e1e1e1",
@@ -682,7 +682,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderWidth: 1
+    borderWidth: 1,
+    fontFamily: "Gilroy-Regular"
   },
 
   icon: { width: 20, height: 20, tintColor: "#555" },
@@ -716,7 +717,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     marginRight: 10,
   },
-  cancelText: { color: "#000", fontSize: 15, fontWeight: "500" },
+  cancelText: { color: "#000", fontSize: 15, fontFamily: "Gilroy-Medium" },
 
   bookBtn: {
     flex: 1,
@@ -726,7 +727,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E45E1",
     marginLeft: 10,
   },
-  bookText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  bookText: { color: "#fff", fontSize: 15,fontFamily: "Gilroy-Semibold"  },
   star: {
     color: "red",
   },
@@ -832,7 +833,7 @@ const styles = StyleSheet.create({
   initialText: {
     color: "#374151",
     fontSize: 18,
-    fontWeight: "700",
+  fontFamily: "Gilroy-Bold"
   },
 
 
