@@ -17,11 +17,15 @@ import BankIcon from "../../../Assets/Images/bank.png";
 import UpiIcon from "../../../Assets/Images/Upi_Icon.png";
 import CardIcon from "../../../Assets/Images/Card_Icon.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
+import ColorPicker,{HueSlider, OpacitySlider, Panel1} from "reanimated-color-picker"
+import { runOnJS } from "react-native-reanimated";
+import tinycolor from "tinycolor2"
+
 
 const EditIcon = require("../../../Assets/Images/edit.png");
 const UploadIcon = require("../../../Assets/Images/upload.png");
 
-export default function BillsTemplate({ handleBank }) {
+export default function BillsTemplate({ handleBank, onChange }) {
 
   const { activeHostelId } = useContext(CommonContexts)
   const { getGlobalBillPdfDetail, postGlobalBilPdfDetails } = useContext(BillContext)
@@ -64,6 +68,8 @@ export default function BillsTemplate({ handleBank }) {
 
   const [selectedBankId, setSelectedBankId] = useState(null)
 
+  const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
+
 
   useEffect(() => {
 
@@ -97,6 +103,18 @@ export default function BillsTemplate({ handleBank }) {
     }
   }, [activeHostelId]);
 
+  useEffect(() => {
+  const data = {
+    contactNumber,email,prefix,suffix,tax,invoiceNotes,terms,logoUri,
+    qrUri,signatureImage,selectedBankId,color,
+  };
+
+  onChange && onChange(data);
+}, [
+  contactNumber,email,prefix,suffix,tax,invoiceNotes,terms,logoUri,qrUri,signatureImage,
+  selectedBankId,color,
+]);
+
   const pickImage = async (setter) => {
     const res = await launchImageLibrary({ mediaType: "photo" });
     if (res?.assets?.[0]?.uri) setter(res.assets[0].uri);
@@ -122,6 +140,7 @@ export default function BillsTemplate({ handleBank }) {
       gstPercentile: tax,
       invoiceNotes: invoiceNotes,
       invoiceTermsAndCondition: terms,
+      invoiceTemplateColor: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a })`,
       invoicePhoneNumber: contactNumber,
       invoiceMailId: email,
     }
@@ -183,7 +202,7 @@ export default function BillsTemplate({ handleBank }) {
     }
   }
 
-
+console.log("clooo",color)
   const mappedBankList = (bankList || []).map((b) => {
     if (b.accountType === "BANK") {
       return {
@@ -240,6 +259,30 @@ export default function BillsTemplate({ handleBank }) {
     return null;
   }).filter(Boolean);
 
+  const Box = ({ label, value }) => (
+  <View style={{marginTop:10,alignItems:'center'}}>
+    <View style={styles.box}>
+       <Text style={styles.boxValue}>{value}</Text>
+    </View>
+   
+    <Text style={styles.boxLabel}>{label}</Text>
+  </View>
+);
+
+const handleColorChange = (c) => {
+  const tc = tinycolor(c.hex);
+  const rgb = tc.toRgb();
+
+  const alpha = c?.alpha ?? rgb.a ?? 1; // ✅ define it
+  setColor({
+    hex: c.hex,
+    r: rgb.r,
+    g: rgb.g,
+    b: rgb.b,
+    a: Math.round(alpha * 100),
+    // Math.round(c.alpha * 100),
+  });
+};
 
 
   console.log("banklist", mappedBankList)
@@ -513,19 +556,48 @@ export default function BillsTemplate({ handleBank }) {
 
         {/* THEME */}
         <View style={styles.card}>
-          <Text style={styles.boxTitle}>Template Theme</Text>
+          <Text style={[styles.boxTitle,{marginBottom:20}]}>Template Theme</Text>
 
-          <View style={styles.colorRow}>
+
+          {/* <View style={styles.colorRow}>
             <View style={[styles.themePreview, { backgroundColor: selectedColor }]} />
             <Text style={{ marginLeft: 10, color: "#555" }}>{selectedColor}</Text>
+          </View> */}
+
+          <ColorPicker
+           key={color.hex}
+          value={color.hex}
+          onComplete={(c)=>{
+            'worklet';
+
+           
+            runOnJS(handleColorChange)(c);
+          }}
+          >
+            <Panel1 style={{ height: 180,borderRadius: 12,}}/>
+
+            <HueSlider style={{ marginTop: 12,}}/>
+
+            <OpacitySlider style={{ marginTop: 12,}}/>
+          
+          </ColorPicker>
+
+          
+
+          <View style={{ flexDirection: "row",justifyContent: "space-between",marginTop: 15,}}>
+              <Box label="Hex" value={color.hex}/>
+              <Box label="R" value={color.r}/>
+              <Box label="G" value={color.g}/>
+              <Box label="B" value={color.b}/>
+              <Box label="A" value={color.a}/>
           </View>
 
           <View style={styles.swatchContainer}>
             {presetColors.map((c) => (
               <TouchableOpacity
                 key={c}
-                style={[styles.swatch, { backgroundColor: c }]}
-                onPress={() => setSelectedColor(c)}
+                style={[styles.swatch, { backgroundColor: c },color.hex === c && { borderWidth: 2, borderColor: '#000' }]}
+                onPress={() => {handleColorChange({ hex: c, alpha: 1 });}}
               />
             ))}
           </View>
@@ -801,6 +873,20 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     resizeMode: "contain",
+  },
+  box: {
+    backgroundColor: "#eee",
+    padding: 5,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  boxValue: {
+    fontWeight: "bold",
+  },
+  boxLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginTop:4
   },
 
 });

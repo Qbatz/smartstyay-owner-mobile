@@ -5,7 +5,7 @@ import PaymentReceivedIcon from "../../../Assets/Images/paymentreceived_image.pn
 import SigantureIcon from "../../../Assets/Images/signature.png";
 // import Pdf from "react-native-pdf";
 
-const ReceiptPdfPreview = ({ onBack }) => {
+const ReceiptPdfPreview = ({ onBack,receiptDataChanged }) => {
 
      useEffect(() => {
         const handler = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -18,12 +18,14 @@ const ReceiptPdfPreview = ({ onBack }) => {
 
   const receiptname = "PaymentReceipt"
 
+  const receiptDataColor=  `rgba(${receiptDataChanged?.color.r}, ${receiptDataChanged?.color.g}, ${receiptDataChanged?.color.b}, ${receiptDataChanged?.color.a})`
+console.log(receiptDataChanged)
   return (
     <ScrollView style={styles.container}>
       <View style={styles.receiptCard}>
         <View style={styles.header}>
           <Image
-            source={HostelImage}
+            source={receiptDataChanged?.logoUri ? {uri:receiptDataChanged?.logoUri} : HostelImage}
             style={styles.logo}
           />
           
@@ -34,7 +36,7 @@ const ReceiptPdfPreview = ({ onBack }) => {
         </View>
 
         <View style={{ alignItems: "center", marginVertical: 10 , marginTop:20, marginBottom:15}}>
-          <Text style={styles.title}>
+          <Text style={[styles.title,{color: receiptDataColor}]}>
             {/* {pdfDetails?.configurations?.receiptType === "Rent"
               ? "Payment Receipt"
               : pdfDetails?.configurations?.receiptType === "Booking"
@@ -49,7 +51,7 @@ const ReceiptPdfPreview = ({ onBack }) => {
 
         <View style={styles.row}>
   <View style={styles.leftColumn}>
-    <Text style={styles.sectionHeader}>Receipt to:</Text>
+    <Text style={[styles.sectionHeader,{color:receiptDataColor}]}>Receipt to:</Text>
 
     <View style={styles.detailRow}>
       <Text style={styles.label}>Tenant Name :</Text>
@@ -118,7 +120,7 @@ const ReceiptPdfPreview = ({ onBack }) => {
 
     <View style={styles.acknowledgementRow}>
   <View style={{flex:1}}>
-    <Text style={styles.ackTitle}>Acknowledgement</Text>
+    <Text style={[styles.ackTitle,{color:receiptDataColor}]}>Acknowledgement</Text>
     <Text style={styles.ackDescription}>
       This payment confirms your dues till the mentioned period. Final settlement
       during checkout will be calculated based on services utilized and advance paid.
@@ -226,10 +228,10 @@ const ReceiptPdfPreview = ({ onBack }) => {
 
         <View style={styles.footerContainer}>
       <Text style={styles.footerLeft}>
-        email : <Text style={styles.highlight}>contact@roomsearch.in</Text>
+        email : <Text style={styles.highlight}>{receiptDataChanged?.email}</Text>
       </Text>
       <Text style={styles.footerRight}>
-        Contact : <Text style={styles.highlight}>+91 88994 56611</Text>
+        Contact : <Text style={styles.highlight}>+91 {receiptDataChanged?.contactNumber}</Text>
       </Text>
     </View>
         

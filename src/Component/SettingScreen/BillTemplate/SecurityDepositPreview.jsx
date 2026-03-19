@@ -9,7 +9,7 @@ import signature from '../../../Assets/Images/signature.png'
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 
 
-const SecurityDepositPdfDesign = ({ onBack }) => {
+const SecurityDepositPdfDesign = ({ onBack,advanceDataChanged }) => {
 
   // ---------- ANDROID BACK BUTTON ----------
   useEffect(() => {
@@ -21,6 +21,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
     return () => handler.remove();
   }, []);
 
+  const advanceDatacolor = `rgba(${advanceDataChanged?.color.r}, ${advanceDataChanged?.color.g}, ${advanceDataChanged?.color.b}, ${advanceDataChanged?.color.a})`
   return (
     <ScrollView style={styles.container}>
     
@@ -41,7 +42,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
 
      
       <View style={styles.receiptTitleContainer}>
-        <Text style={styles.receiptTitle}>Security Deposit Invoice</Text>
+        <Text style={[styles.receiptTitle,{color:advanceDatacolor}]}>Security Deposit Invoice</Text>
       </View>
 
       
@@ -78,7 +79,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
       <View style={styles.invoiceInfo}>
   <View style={styles.billToSection}>
     <View style={styles.labelColumn}>
-      <Text style={styles.sectionTitle}>Bill to</Text>
+      <Text style={[styles.sectionTitle,{color:advanceDatacolor}]}>Bill to</Text>
       <Text style={styles.label}>Name</Text>
       <Text style={styles.label}>Phone</Text>
       <Text style={styles.label}>RoomNo</Text>
@@ -97,7 +98,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
   
     <Text style={styles.invSty}>
   Invoice : {' '}
-  <Text style={styles.bold}>#INV001</Text>
+  <Text style={styles.bold}>#{advanceDataChanged?.prefix}{advanceDataChanged?.suffix}</Text>
 </Text>
    
      <Text style={styles.invSty}>
@@ -124,7 +125,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
 
    
       <View style={styles.paymentSummarySection}>
-        <Text style={styles.paymentSummaryTitle}>Payment Summary</Text>
+        <Text style={[styles.paymentSummaryTitle,{color:advanceDatacolor}]}>Payment Summary</Text>
         <View style={styles.table}>
       
           <View style={styles.tableHeader}>
@@ -190,7 +191,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
       {/* QR + Account Details */}
       <View style={styles.accountSection}>
         <View style={styles.accountLeft}>
-          <Text style={styles.accountTitle}>ACCOUNT DETAILS</Text>
+          <Text style={[styles.accountTitle,{color:advanceDatacolor}]}>ACCOUNT DETAILS</Text>
           <Text style={styles.accountText}>Account No: <Text style={styles.bold}>8745210876</Text></Text>
           <Text style={styles.accountText}>IFSC Code: <Text style={styles.bold}>SBIN0017975</Text></Text>
           <Text style={styles.accountText}>Bank Name: <Text style={styles.bold}>State Bank of India</Text></Text>
@@ -223,7 +224,7 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
       {/* Terms and Conditions & Signature in same line */}
       <View style={styles.termsAndSignatureRow}>
         <View style={styles.termsSection}>
-          <Text style={styles.termsTitle}>Terms and Conditions</Text>
+          <Text style={[styles.termsTitle,{color:advanceDatacolor}]}>Terms and Conditions</Text>
           <Text style={styles.termsText}>
             Tenants must pay all dues on or before the due date, maintain cleanliness, and follow PG rules; failure may lead to penalties or termination of stay.
           </Text>
@@ -240,8 +241,8 @@ const SecurityDepositPdfDesign = ({ onBack }) => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>email : contact@roomsearch.in</Text>
-        <Text style={styles.footerText}>Contact : +91 88994 56311</Text>
+        <Text style={styles.footerText}>email : {advanceDataChanged?.email || "N/A"}</Text>
+        <Text style={styles.footerText}>Contact : +91 {advanceDataChanged?.contactNumber || "N/A"}</Text>
       </View>
     </ScrollView>
   );
