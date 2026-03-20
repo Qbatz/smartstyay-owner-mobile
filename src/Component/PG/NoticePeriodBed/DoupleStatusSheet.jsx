@@ -561,13 +561,23 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
                        <TouchableOpacity
                         // style={styles.menuItem}
                         // disabled={!canWriteCustomers}
-                        style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                           disabled={isDisabled}   // boolean
+                                style={[
+                                  styles.menuItem,
+                                  isDisabled && styles.menuItemDisabled
+                                ]}
+
+                        // style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                         // onPress={handleEdit}
-                        disabled
+                        // disabled
                       >
                         <Image
                           source={ReAssign}
-                          style={styles.menuIcon}
+                          // style={styles.menuIcon}
+                           style={[
+                                    styles.menuIcon,
+                                    isDisabled && { opacity: 0.5 }
+                                  ]}
                         />
                         <Text style={styles.menuText}>Change Bed</Text>
                       </TouchableOpacity>

@@ -266,18 +266,44 @@ export default function CheckoutList({ searchText }) {
             >
               <View style={styles.handle} />
 
-              <Text style={styles.title}>Customer Details</Text>
+              <Text style={styles.title}>Tenant Details</Text>
 
               <View style={styles.profileRow}>
                 {selectedCustomer?.profilePic ? <Image source={{uri:selectedCustomer.profilePic}} style={styles.profileImg} /> : 
                 <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
                   <Text style={{fontSize:16,fontFamily: "Gilroy-Semibold"}}>{selectedCustomer?.initials}</Text>
                 </View>}
-                <TouchableOpacity  onPress={() => handleOverViewScrren(selectedCustomer)}>
+             
+                <View style={styles.info}>
+            <View
+                                style={{ flex: 1 }}
+                          
+                              >
+   <TouchableOpacity  onPress={() => handleOverViewScrren(selectedCustomer)}>
                 <Text style={styles.profileName}>
                   {selectedCustomer?.fullName}
                 </Text>
                 </TouchableOpacity>
+
+            <View style={styles.row}>
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorText}>{selectedCustomer?.hostelInfo?.floorName}</Text>
+              </View>
+
+              <View style={styles.iconRow}>
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.roomName}</Text>
+              </View>
+
+              <View style={styles.iconRow}>
+                <Image source={BedIcon} style={styles.icon} />
+                <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.bedName}</Text>
+              </View>
+            </View>
+            </View>
+          </View>
+                
+                 
               </View>
 
               <Text style={styles.label}>Email</Text>
@@ -375,7 +401,7 @@ const styles = StyleSheet.create({
   icon: { width: 16, height: 16, marginRight: 3 },
   detailText: { fontSize: 12 , fontFamily: "Gilroy-Regular"},
 
-  rightCol: { alignItems: "flex-end" },
+  rightCol: { alignItems: "flex-end" , paddingRight:10},
   date: { color: "#999", fontSize: 11, marginTop: 5, fontFamily: "Gilroy-Regular" },
 
   popup: {
@@ -439,7 +465,7 @@ const styles = StyleSheet.create({
   },
 
   profileImg: { width: 55, height: 55, borderRadius: 30 },
-  profileName: { fontSize: 17,fontFamily: "Gilroy-Bold" , marginLeft: 10 },
+  profileName: { fontSize: 17,fontFamily: "Gilroy-Bold" ,  },
 
   label: { fontSize: 13, color: "#6B7280", marginTop: 12 , fontFamily: "Gilroy-Regular"},
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4 , },

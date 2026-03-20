@@ -1169,7 +1169,7 @@ const styles = StyleSheet.create({
 
   stayBtn: {
     flex: 1,
-    backgroundColor: "#E6ECFF",
+    backgroundColor: "#7990de",
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",

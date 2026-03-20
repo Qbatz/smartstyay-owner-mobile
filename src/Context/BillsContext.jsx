@@ -718,6 +718,53 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
     }
   }
 
+  const ApplyBillDiscount = async ({
+  hostelId,
+  invoiceId,
+  discountAmount,
+  discountPercentage,
+  reason,
+}) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const payload = {
+      discountAmount: discountAmount || 0,
+      discountPercentage: discountPercentage || 0,
+      reason: reason || "",
+    };
+
+    const res = await axios.post(
+      `/v2/bills/discount/${hostelId}/${invoiceId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      await GetAllBillDetails(hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return { success: false, message: "Discount failed" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -749,7 +796,8 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
         shareReceiptOnWhatsapp,
         getGlobalBillPdfDetail,
         postGlobalBilPdfDetails,
-         MarkBillAsUnpaid
+         MarkBillAsUnpaid,
+         ApplyBillDiscount
       }}
     >
       {children}

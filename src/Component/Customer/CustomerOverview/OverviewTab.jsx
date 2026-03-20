@@ -31,7 +31,6 @@ import Street from "../../../Assets/Images/Street.png"
 import Building from "../../../Assets/Images/buildings.png"
 import Location from "../../../Assets/Images/location.png"
 import DocumentViewer from "./DocumentViewer"
-import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 // import RNFS from "react-native-fs";
 
 

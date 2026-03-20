@@ -23,6 +23,16 @@ export default function BillTab({ customerDetails }) {
                   canDeleteModule: canDeleteInvoice,
                 } = useHasPermission("Bills")
 
+                console.log("customerDetails", customerDetails);
+                
+
+                  const status = customerDetails?.customerCurrentStatus;
+
+const disableFinancialEdit =
+  status === "BOOKED" ||
+  status === "VACATED" ||
+  status === "NOTICE";
+
   const handleCreateBill = () => {
     if(!canWriteInvoice) return ;
 navigation.navigate("CreateBills" , {mode: "add",customerDetails})
@@ -78,8 +88,13 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
     </View>
 
        <TouchableOpacity 
-           style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
-             disabled={!canWriteInvoice}
+          //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                        style={[
+      styles.addBtn,
+      (!canWriteInvoice || disableFinancialEdit ) && { opacity: 0.4 }
+    ]}
+            //  disabled={!canWriteInvoice}
+              disabled={disableFinancialEdit || !canWriteInvoice }
        onPress={handleCreateBill}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>
