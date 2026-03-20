@@ -16,6 +16,7 @@ import FloorIcon from "../../../Assets/Images/FloorImg.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import EditIcon from "../../../Assets/Images/edit.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 import { AmenityContext } from "../../../Context/AmenityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -23,24 +24,26 @@ import { PGContext } from "../../../Context/PGContext";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import { pick } from '@react-native-documents/picker';
 import SuccessModal from "../../../ToastFile/ToastPage";
+import AddIcon from "../../../Assets/Images/add-circle.png"
 import House from "../../../Assets/Images/house.png"
 import Pin from "../../../Assets/Images/pin.png"
 import Street from "../../../Assets/Images/Street.png"
 import Building from "../../../Assets/Images/buildings.png"
 import Location from "../../../Assets/Images/location.png"
 import DocumentViewer from "./DocumentViewer"
+import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 // import RNFS from "react-native-fs";
 
 
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , }) {
+  ,openAdditionalContact }) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  const { AddManualDocument, ParticularcustomerDetails,
+  const { AddManualDocument, ParticularcustomerDetails, AddAdditionalContacts,
     GetParticularCustomerDetails, deleteManualDocument } = useCustomer();
     const [viewerVisible, setViewerVisible] = useState(false);
 const [viewerIndex, setViewerIndex] = useState(0);
@@ -80,6 +83,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
   const [pincode, setPincode] = useState("")
   const [stateList, setStateList] = useState("")
   const [manualDoc, setManualDocs] = useState([])
+  const [showSheet, setShowSheet] = useState(false);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -105,6 +109,11 @@ const [viewerIndex, setViewerIndex] = useState(0);
   const dataSource = ParticularcustomerDetails || customerDetails;
   const manualDocs = dataSource?.files?.otherDoc || [];
 
+  const contacts = ParticularcustomerDetails?.additionalContacts || [];
+  const hasContacts = contacts.length > 0;
+  const [expandedIndex, setExpandedIndex] = useState(null);
+  console.log("particularcustomer", ParticularcustomerDetails);
+  
 
   const pickFiles = async () => {
     try {
@@ -161,6 +170,13 @@ const [viewerIndex, setViewerIndex] = useState(0);
       console.log("Error", res.message);
     }
   };
+
+
+
+ const handleshowAdditionalContact = () => {
+  openAdditionalContact(); 
+};
+
 
 
 
@@ -1116,64 +1132,143 @@ const disableFinancialEdit =
           </View> */}
           <View style={styles.sectionBox}>
 
-            {/* HEADER */}
-            <View style={styles.sectionHeaderRowgur}>
-              <Text style={styles.sectionTitle}>Parent / Guardian Details</Text>
+  {/* HEADER */}
+  <View style={styles.sectionHeaderRowgur}>
+    <Text style={styles.sectionTitle}>Parent / Guardian Details</Text>
+        {hasContacts && contacts.length === 1 && (
+   <TouchableOpacity onPress={()=> handleshowAdditionalContact(contacts?.[0])} disabled>
+                <Image source={EditIcon} style={styles.editSmallIcon} />
+              </TouchableOpacity>)}
+    {hasContacts && contacts.length > 0 && (
+    <TouchableOpacity
+             style={[
+      styles.addSmallBtn,
+      (!isSubscriptionAllow || disableFinancialEdit ) && { opacity: 0.4 }
+    ]}
+                disabled={disableAssignBtn}
+    // style={styles.addSmallBtn}
+     onPress={handleshowAdditionalContact}>
+       <Image source={AddIcon} style={{height:13, width:13}} />
+      <Text style={{color:'#fff'}}> Additional</Text>
+    </TouchableOpacity>
+    )}
+  </View>
 
-              {hasGuardianDetails && (
-                <TouchableOpacity>
-                  <Image source={EditIcon} style={styles.editIcon} />
-                </TouchableOpacity>
-              )}
+  {/* EMPTY */}
+  {!hasContacts && (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>
+        No Contact Details are there!
+      </Text>
+
+       <TouchableOpacity
+                 style={[
+      styles.addSmallBtn,
+      (!isSubscriptionAllow || disableFinancialEdit ) && { opacity: 0.4 }
+    ]}
+                disabled={disableAssignBtn}
+      //  style={styles.addSmallBtn} 
+       onPress={handleshowAdditionalContact}>
+       <Image source={AddIcon} style={{height:13, width:13}} />
+      <Text style={{color:'#fff'}}> Add</Text>
+    </TouchableOpacity>
+    </View>
+  )}
+
+  {/* SINGLE CONTACT */}
+  {hasContacts && contacts.length === 1 && (
+    <View style={styles.singleCard}>
+      <Text style={styles.subLabel}>Guardian Full Name</Text>
+      <Text style={styles.name}>{contacts[0]?.fullName}</Text>
+
+      <Text style={styles.subLabel}>Relationship</Text>
+      <Text style={styles.value}>{contacts[0]?.relationship}</Text>
+
+      <Text style={styles.subLabel}>Occupation</Text>
+      <Text style={styles.value}>{contacts[0]?.occupation}</Text>
+       <Text style={styles.subLabel}>Mobile no.</Text>
+      <View style={styles.phoneRow}>
+        <Image source={Phone} style={styles.phoneIcon} />
+        <Text style={styles.value}>
+          +{contacts[0].country} {contacts[0]?.mobile}
+        </Text>
+      </View>
+    </View>
+  )}
+
+  {/* MULTIPLE CONTACTS */}
+{hasContacts && contacts.length > 1 && (
+  <>
+    {contacts.map((item, index) => {
+      const isOpen = expandedIndex === index;
+
+      return (
+        <View key={index} style={styles.accordionCard}>
+
+          {/* HEADER */}
+          <TouchableOpacity
+            style={styles.accordionHeader}
+            onPress={() =>
+              setExpandedIndex(isOpen ? null : index)
+            }
+          >
+            {/* LEFT SIDE */}
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.name}>{item.fullName}</Text>
+
+                {/* CONTACT BADGE */}
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    Contact {String(index + 1).padStart(2, "0")}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.phoneRow}>
+                <Image source={Phone} style={styles.phoneIcon} />
+                <Text style={styles.phoneText}>
+                  +{item.country} {item.mobile}
+                </Text>
+              </View>
             </View>
 
-            {/* EMPTY STATE */}
-            {!hasGuardianDetails ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  No Contact Details are there!
-                </Text>
+            {/* RIGHT SIDE */}
+            <View style={styles.rightIcons}>
+              
+              {/* EDIT ICON */}
+              <TouchableOpacity onPress={()=>handleshowAdditionalContact(item)} disabled>
+                <Image source={EditIcon} style={styles.editSmallIcon} />
+              </TouchableOpacity>
 
-                <TouchableOpacity disabled={isDisabled}
-                  style={[
-                    styles.addBtn,
-                    isDisabled && styles.addBtnDisabled
-                  ]}>
-                  <Text style={[
-                    styles.addBtnText,
-                    isDisabled && styles.addBtnTextDisabled
-                  ]} >＋ Add</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
-                {/* FUTURE – DATA VIEW */}
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Guardian Full Name</Text>
-                  <Text style={styles.detailValue}>Sivanesan R</Text>
-                </View>
+              {/* DOWN ARROW */}
+              <Image
+                source={DownArrow}
+                style={[
+                  styles.arrowIcon,
+                  isOpen && { transform: [{ rotate: "180deg" }] }
+                ]}
+              />
+            </View>
+          </TouchableOpacity>
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Relationship to Tenant</Text>
-                  <Text style={styles.detailValue}>Parent</Text>
-                </View>
+          {/* EXPANDED */}
+          {isOpen && (
+            <View style={styles.accordionBody}>
+              <Text style={styles.subLabel}>Relationship to Tenant</Text>
+              <Text style={styles.value}>{item.relationship}</Text>
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Guardian Occupation</Text>
-                  <Text style={styles.detailValue}>Private Employee</Text>
-                </View>
+              <Text style={styles.subLabel}>Guardian Occupation</Text>
+              <Text style={styles.value}>{item.occupation}</Text>
+            </View>
+          )}
+        </View>
+      );
+    })}
+  </>
+)}
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Mobile no.</Text>
-                  <View style={styles.valueWithIcon}>
-                    <Image source={Phone} style={styles.phoneIcon} />
-                    <Text style={styles.detailValue}>+91 98765 43210</Text>
-                  </View>
-                </View>
-              </>
-            )}
-
-          </View>
+</View>
 
 
           <View style={styles.sectionBox}>
@@ -1338,6 +1433,11 @@ const disableFinancialEdit =
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* <AdditionalContactBottomSheet
+  visible={showSheet}
+  onClose={() => setShowSheet(false)}
+/> */}
 
     </>
   );
@@ -1836,5 +1936,100 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  addSmallBtn: {
+    flexDirection:'row',justifyContent:'center',alignItems:'center',
+  backgroundColor: "#2563EB",
+  // color: "#fff",
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+  borderRadius: 8,
+  // fontSize: 12,
+},
+
+singleCard: {
+  backgroundColor: "#F9FAFB",
+  padding: 14,
+  borderRadius: 12,
+},
+
+accordionCard: {
+  backgroundColor: "#F9FAFB",
+  borderRadius: 12,
+  marginBottom: 10,
+  overflow: "hidden",
+},
+
+accordionHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  padding: 14,
+  alignItems: "center",
+},
+
+accordionBody: {
+  padding: 14,
+  borderTopWidth: 1,
+  borderTopColor: "#E5E7EB",
+},
+
+name: {
+  fontSize: 15,
+  fontWeight: "600",
+},
+
+phoneText: {
+  fontSize: 13,
+  color: "#6B7280",
+  marginTop: 4,
+},
+
+subLabel: {
+  fontSize: 12,
+  color: "#9CA3AF",
+  marginTop: 8,
+},
+
+value: {
+  fontSize: 14,
+  fontWeight: "500",
+},
+
+phoneRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 8,
+},
+badge: {
+  backgroundColor: "#FFE7D6",
+  paddingHorizontal: 8,
+  paddingVertical: 3,
+  borderRadius: 8,
+  marginLeft: 8,
+},
+
+badgeText: {
+  color: "#F97316",
+  fontSize: 11,
+  fontWeight: "600",
+},
+
+rightIcons: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 10,
+},
+
+editSmallIcon: {
+  width: 16,
+  height: 16,
+  tintColor: "#6B7280",
+},
+
+arrowIcon: {
+  marginLeft:5,
+  width: 23,
+  height: 23,
+  // tintColor: "#6B7280",
+},
 
 });

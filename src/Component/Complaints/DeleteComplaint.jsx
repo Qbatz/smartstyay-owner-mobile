@@ -58,6 +58,7 @@ export default function DeleteComplaintModal({visible, onClose,complaintId, onSu
 
       setTimeout(() => {
         setShowSuccessModal(false);
+        onSuccess()
          onClose();
       }, 800);
      

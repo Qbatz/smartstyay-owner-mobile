@@ -421,7 +421,6 @@ await  complaintsViewUpdates({
     onSuccess={(msg) => {
       setDeleteShow(false);
       handleCloseSheet(); 
-      alert(msg);
     }}
         />
       )}

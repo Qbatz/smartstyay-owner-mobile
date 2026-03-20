@@ -505,7 +505,11 @@ export default function TenantCheckIn({ navigation, route }) {
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() => setFloorOpen(!floorOpen)}
+                    onPress={() =>{  
+                       setFloorOpen(!floorOpen)
+                       setRoomOpen(false);
+                       setBedOpen(false)
+                    } }
                     activeOpacity={0.9}
                   >
                     <Text style={styles.selectText}>
@@ -559,7 +563,14 @@ export default function TenantCheckIn({ navigation, route }) {
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() => setRoomOpen(!roomOpen)}
+                    onPress={() => 
+                    {
+                       setFloorOpen(false)
+                       setRoomOpen(!roomOpen)
+                       setBedOpen(false)
+                    }
+                      
+                     }
                     activeOpacity={0.9}
                     // disabled={!rooms.length}
                   >
@@ -613,7 +624,13 @@ export default function TenantCheckIn({ navigation, route }) {
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() => setBedOpen(!bedOpen)}
+                    onPress={() =>
+                         {
+                       setFloorOpen(false)
+                       setRoomOpen(false)
+                       setBedOpen(!bedOpen)
+                    }
+                      }
                     activeOpacity={0.9}
                     // disabled={!filteredBeds.length}
                   >

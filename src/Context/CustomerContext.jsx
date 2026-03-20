@@ -1216,6 +1216,54 @@ const deleteManualDocument = async (hostelId, customerId, documentId) => {
 };
 
 
+const AddAdditionalContacts = async (hostelId, customerId, payload) => {
+  if (!hostelId || !customerId) {
+    return { success: false, message: "Missing hostelId or customerId" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/customers/additional-contacts/${hostelId}/${customerId}`,
+      payload, 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      
+      await GetParticularCustomerDetails(customerId);
+
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Save failed" };
+
+  } catch (error) {
+    console.log("SAVE ADDITIONAL CONTACT ERROR ", error?.response?.data);
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <CustomerContext.Provider
@@ -1237,7 +1285,7 @@ const deleteManualDocument = async (hostelId, customerId, documentId) => {
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
-        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument
+        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts
       }}
     >
       {children}

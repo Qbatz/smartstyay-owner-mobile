@@ -779,7 +779,9 @@ export default function BankingScreen() {
                             </View>
                           </View>
 
-                          <TouchableOpacity style={styles.moreIcon} ref={(ref) => (dotsRef.current[item.id] = ref)} onPress={() => openMenu(item)}>
+                          <TouchableOpacity
+                          disabled={item?.isDeleted}
+                           style={styles.moreIcon} ref={(ref) => (dotsRef.current[item.id] = ref)} onPress={() => openMenu(item)}>
                             <Image source={ThreeDotsIcon} style={styles.popupIcon} />
                           </TouchableOpacity>
                         </View>
