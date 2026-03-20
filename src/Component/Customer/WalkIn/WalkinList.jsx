@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#111",
   },
 
@@ -715,13 +715,14 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     color: "#6B7280",
     fontSize: 13,
+    fontFamily: "Gilroy-Regular" 
   },
 
   right: { alignItems: "flex-end" },
 
   dotIcon: { width: 26, height: 26, transform: [{ rotate: "90deg" }] },
 
-  date: { fontSize: 11, color: "#6B7280", marginTop: 4 },
+  date: { fontSize: 11, color: "#6B7280", marginTop: 4 , fontFamily: "Gilroy-Regular" },
 
   filterBtn: {
     position: "absolute",
@@ -786,7 +787,7 @@ const styles = StyleSheet.create({
     tintColor: "#2563EB",
   },
 
-  filterTitle: { fontSize: 18, fontWeight: "700" },
+  filterTitle: { fontSize: 18,fontFamily: "Gilroy-Bold"  },
 
   label: {
     marginTop: 12,
@@ -855,7 +856,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  resetText: { color: "#2563EB", fontSize: 15, fontWeight: "600" },
+  resetText: { color: "#2563EB", fontSize: 15,fontFamily: "Gilroy-Semibold"},
 
   applyBtn: {
     width: "48%",
@@ -865,7 +866,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  applyText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  applyText: { color: "#fff", fontSize: 15, fontFamily: "Gilroy-Semibold"},
 
 
 
@@ -904,6 +905,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 14,
     color: "#111",
+    fontFamily: "Gilroy-Regular" 
   },
   deleteOverlay: {
     flex: 1,
@@ -923,7 +925,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     color: "#111",
     marginBottom: 10,
   },
@@ -953,7 +955,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -967,7 +969,7 @@ const styles = StyleSheet.create({
 
   deleteBtnText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#fff",
   },
   emptyContainer: {
@@ -987,7 +989,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
@@ -1006,7 +1008,7 @@ const styles = StyleSheet.create({
   addBtnText: {
     textAlign: "center",
     color: "#fff",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
   avatarBox: {
     width: 48,
@@ -1037,7 +1039,7 @@ const styles = StyleSheet.create({
   initialText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" 
   },
 
 

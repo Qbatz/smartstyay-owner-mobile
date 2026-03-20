@@ -294,15 +294,15 @@ await  complaintsViewUpdates({
 
         {/* Status */}
         <Text style={styles.sectionTitle}>Status</Text>
-        <Text style={styles.value}>{complaint?.status === null ? "Open" : complaint?.status}</Text>
+        <Text style={styles.boldText}>{complaint?.status === null ? "Open" : complaint?.status}</Text>
 
         {/* Type */}
         <Text style={styles.sectionTitle}>Complaint type</Text>
-        <Text style={styles.value}> {complaint?.complaintTypeName}</Text>
+        <Text style={styles.boldText}> {complaint?.complaintTypeName}</Text>
 
         {/* Description */}
         <Text style={styles.sectionTitle}>Description</Text>
-        <Text style={styles.value}>
+        <Text style={styles.boldText}>
           {complaint?.description}
         </Text>
 
@@ -421,7 +421,6 @@ await  complaintsViewUpdates({
     onSuccess={(msg) => {
       setDeleteShow(false);
       handleCloseSheet(); 
-      alert(msg);
     }}
         />
       )}
@@ -466,16 +465,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: { fontSize: 18, fontWeight: "700", color: "#000" },
-  time: { fontSize: 12, color: "#777", marginBottom: 15 },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold"  , color: "#000" },
+  time: { fontSize: 12, color: "#777", marginBottom: 15 ,fontFamily: "Gilroy-Regular" },
 
   iconRow: { flexDirection: "row" },
   icon: { width: 20, height: 20 },
 
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#777",
     marginTop: 15,
+    fontFamily: "Gilroy-Regular" 
   },
 
   userRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
@@ -498,11 +498,11 @@ initialCircle: {
 
 initialText: {
   fontSize: 15,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold"  ,
   color: "#4B5563",
 },
 
-  userName: { fontSize: 16, fontWeight: "600" },
+  userName: { fontSize: 16, fontFamily: "Gilroy-Semibold" },
 
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
 
@@ -523,10 +523,10 @@ initialText: {
     marginTop: 20,
   },
 
-  labelSmall: { fontSize: 13, color: "#888" },
-  boldText: { fontSize: 15, fontWeight: "700", marginTop: 4 },
+  labelSmall: { fontSize: 13, color: "#888" , fontFamily: "Gilroy-Regular" },
+  boldText: { fontSize: 15,fontFamily: "Gilroy-Bold"  , marginTop: 4 },
 
-  value: { fontSize: 15, fontWeight: "500", color: "#000" },
+  value: { fontSize: 15, fontFamily: "Gilroy-Medium" , color: "#000" },
 
   commentBox: {
     flexDirection: "row",
@@ -537,9 +537,10 @@ initialText: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 15,
+    
   },
 
-  commentInput: { flex: 1, fontSize: 14 },
+  commentInput: { flex: 1, fontSize: 14 , fontFamily: "Gilroy-Regular" },
   commentIcon: { width: 18, height: 18, marginRight: 6 },
   commentCount: { fontSize: 14, color: "#555" },
 
@@ -572,8 +573,8 @@ initialText: {
   },
 
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
-  assignText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  statusText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  assignText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Semibold" },
+  statusText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Semibold"},
   assignedCard: {
   borderWidth: 1,
   borderColor: "#E5E7EB",
@@ -592,7 +593,7 @@ assignedHeader: {
 
 assignedTitle: {
   fontSize: 15,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold"  ,
   color: "#000",
 },
 
@@ -608,7 +609,7 @@ statusPill: {
 statustext: {
   marginLeft:5,
   fontSize: 12,
-  fontWeight: "600",
+ fontFamily: "Gilroy-Semibold",
   color: "#FF8A00",
 },
 
@@ -622,7 +623,7 @@ updateBtn: {
 updateBtnText: {
   color: "#fff",
   fontSize: 15,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold"  ,
 },
 
 });

@@ -4691,8 +4691,12 @@ export default function BillsDesign({ route }) {
 
 
                 <View style={styles.confirmTitleRow}>
+                  <View style={{width:"70%"}}>
                   <Text style={styles.confirmTitle}>Mark Invoice {selectedBill?.invoiceNumber} as Unpaid?</Text>
+                  </View>
+                   <View style={{width:"30%", flexDirection:'row', justifyContent:'flex-end'}}>
                   <Image source={QuestionIcon} style={styles.confirmIcon} />
+                  </View>
                 </View>
 
 
@@ -6145,11 +6149,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  confirmIcon: { width: 22, height: 22, marginRight: 8 },
+  confirmIcon: { width: 22, height: 22, marginRight: 8 , marginBottom:10},
 
   confirmTitle: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 17,
+      fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -6158,6 +6162,7 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 20,
     lineHeight: 20,
+    fontFamily: "Gilroy-Medium" 
   },
 
   confirmButtons: {
@@ -6177,7 +6182,7 @@ const styles = StyleSheet.create({
   cancelConfirmText: {
     fontSize: 15,
     color: "#555",
-    fontWeight: "600",
+     fontFamily: "Gilroy-Semibold"
   },
 
   okConfirmBtn: {
@@ -6190,6 +6195,6 @@ const styles = StyleSheet.create({
   okConfirmText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" 
   },
 });

@@ -640,7 +640,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
             // style={styles.searchInput}
             style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
             disabled={!canReadTenant}
-            placeholder="Search Customers"
+            placeholder="Search Tenants"
             placeholderTextColor="#9CA3AF"
             value={searchText}
             onChangeText={(t) => {
@@ -1132,9 +1132,9 @@ const isExportAllow = isValidSubscription && canReadTenant;
                     <View style={styles.floorBadge}>
                       <Text style={styles.floorText}>{selectedCustomer?.hostelInfo?.floorName}</Text>
                     </View>
-                    <Image source={room} style={{ width: 18, height: 18 }} />
+                    <Image source={room} style={{ width: 18, height: 18, marginRight:4 }} />
                     <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.roomName}</Text>
-                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8 }} />
+                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8 ,marginRight:4}} />
                     <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.bedName}</Text>
                   </View>
                 </View>
@@ -1225,7 +1225,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
 </View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ marginTop: 10, }}>
-                  <Text style={{ fontSize: 13, color: "#6B7280", }}>
+                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
                     {selectedCustomer?.customerCurrentStatus ==  "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
                   </Text>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -1245,14 +1245,14 @@ const isExportAllow = isValidSubscription && canReadTenant;
                {
                   selectedCustomer?.customerCurrentStatus == "BOOKED" && (
                     <View style={{ marginTop: 10, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280", }}>Booking Date</Text>
+                      <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>Booking Date</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
                           source={dateImg}
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Bold"  }}>
                           {selectedCustomer?.bookingInfo?.bookingDate}
                         </Text>
                       </View>
@@ -1265,7 +1265,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
                 ["CHECK_IN", "OCCUPIED", "NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View style={{ marginTop: 10, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280", }}>
+                      <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
                         Rental Amount
                         {/* {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date" : "Joined Date"} */}
                       </Text>
@@ -1275,20 +1275,20 @@ const isExportAllow = isValidSubscription && canReadTenant;
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, fontFamily: "Gilroy-Bold" }}>
                           ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.hostelInfo?.monthlyRent)}</Text>
                       </View>
                     </View>
 
                     <View style={{ marginTop: 10, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280", }}>Advance Amount</Text>
+                      <Text style={{ fontSize: 13, color: "#6B7280",fontFamily: "Gilroy-Semibold"  }}>Advance Amount</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
                           source={dateImg}
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Bold"  }}>
                           ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.advanceInfo?.advanceAmount)}
                         </Text>
                       </View>
@@ -2188,7 +2188,7 @@ const styles = StyleSheet.create({
 
   activeText: {
     color: "#2D6CDF",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
   },
 
   sectionTitle: {
@@ -2209,7 +2209,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-    fontWeight: "600",
+       fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
   detailRow: {
@@ -2227,7 +2227,7 @@ const styles = StyleSheet.create({
   floorText: {
     fontSize: 11,
     color: "#222222",
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium"
   },
   iconSmall: {
     width: 18,
@@ -2237,6 +2237,7 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 12,
     color: "#4B5563",
+    fontFamily: "Gilroy-Medium"
   },
   rightSection: {
     alignItems: "flex-end",
@@ -2302,7 +2303,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 18,
-    fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
     color: "#111",
   },
 
@@ -2320,7 +2321,7 @@ const styles = StyleSheet.create({
 
   modalName: {
     fontSize: 17,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#111",
   },
 
@@ -2328,12 +2329,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontSize: 13,
     color: "#6B7280",
+    fontFamily: "Gilroy-Semibold" 
   },
 
   infoValue: {
     fontSize: 14,
     color: "#111",
     marginTop: 3,
+    fontFamily: "Gilroy-Bold" 
   },
 
   unassignBtn: {
@@ -2348,7 +2351,7 @@ const styles = StyleSheet.create({
 
   unassignText: {
     fontSize: 15,
-    fontWeight: "600",
+       fontFamily: "Gilroy-Semibold",
   },
   popupOverlay: {
     position: "absolute",
@@ -2384,6 +2387,7 @@ const styles = StyleSheet.create({
   popupText: {
     fontSize: 14,
     color: "#333",
+    fontFamily: "Gilroy-Regular"
   },
 
 
@@ -2421,7 +2425,7 @@ const styles = StyleSheet.create({
 
   filterTitle: {
     fontSize: 18,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
   label: {
@@ -2478,7 +2482,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  quickText: { color: "#111", fontWeight: "500" },
+  quickText: { color: "#111", fontFamily: "Gilroy-Medium"  },
 
   bottomButtons: {
     flexDirection: "row",
@@ -2497,7 +2501,7 @@ const styles = StyleSheet.create({
 
   resetText: {
     color: "#2D6CDF",
-    fontWeight: "600",
+       fontFamily: "Gilroy-Semibold",
   },
 
   applyBtn: {
@@ -2510,7 +2514,7 @@ const styles = StyleSheet.create({
 
   applyText: {
     color: "#fff",
-    fontWeight: "600",
+      fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -2532,7 +2536,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#111",
     marginBottom: 10,
   },
@@ -2562,7 +2566,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-    fontWeight: "600",
+      fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -2576,7 +2580,7 @@ const styles = StyleSheet.create({
 
   deleteBtnText: {
     fontSize: 16,
-    fontWeight: "600",
+       fontFamily: "Gilroy-Semibold",
     color: "#fff",
   },
   menuOverlay: {
@@ -2631,7 +2635,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
@@ -2650,7 +2654,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 13,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     color: "#374151",
   },
   modalInitialCircle: {
@@ -2664,7 +2668,7 @@ const styles = StyleSheet.create({
 
   modalInitialText: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     color: "#374151",
   },
   statusDot: {
@@ -2708,7 +2712,7 @@ filterChipText: {
 filterChipTextActive: {
   fontSize: 13,
   color: "#2D6CDF",
-  fontWeight: "600",
+  fontFamily: "Gilroy-Semibold",
 },
 
 filterIconBtn: {

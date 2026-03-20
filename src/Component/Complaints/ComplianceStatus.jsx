@@ -208,7 +208,7 @@ const handleStatusUpdate = async () => {
             style={styles.selectBox}
             onPress={() => setDropdownVisible(!dropdownVisible)}
           >
-           <Text style={styles.selectedText}>
+           <Text style={styles.label}>
   {selectedStatus?.label || "Select Status"}
 </Text>
 
@@ -318,10 +318,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: { fontSize: 18, fontWeight: "700", color: "#000" },
+  title: { fontSize: 18,   fontFamily: "Gilroy-Bold", color: "#000" },
   closeIcon: { width: 18, height: 18 },
 
-  label: { fontSize: 14, color: "#666", marginBottom: 10 },
+  label: { fontSize: 14, color: "#666", marginBottom: 10 , fontFamily: "Gilroy-Semibold"  },
 
   selectBox: {
     borderWidth: 1,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  selectedText: { fontSize: 15, color: "#000" },
+  selectedText: { fontSize: 15, color: "#000",  fontFamily: "Gilroy-Semibold" },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
 
   dropdownMenu: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   },
 
   option: { paddingVertical: 10, paddingHorizontal: 14 },
-  optionText: { fontSize: 15, color: "#000" },
+  optionText: { fontSize: 15, color: "#000",  fontFamily: "Gilroy-Regular"  },
 
   footerBtnRow: {
     flexDirection: "row",
@@ -376,15 +376,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D5DFF",
   },
 
-  cancelText: { fontSize: 16, fontWeight: "500", color: "#333" },
-  updateText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+  cancelText: { fontSize: 16, fontFamily: "Gilroy-Medium", color: "#333" },
+  updateText: { fontSize: 16,fontFamily: "Gilroy-Semibold", color: "#fff" },
   optionActive: {
   backgroundColor: "#1D5DFF",
 },
 
 optionTextActive: {
   color: "#fff",
-  fontWeight: "600",
+  fontFamily: "Gilroy-Semibold"
 },
 option: {
   paddingVertical: 10,

@@ -49,6 +49,8 @@ import MakeCheckInIcon from "../../../Assets/Images/blue_circle.png";
 import MoveToNoticeIcon from "../../../Assets/Images/Logout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout_red.png"
 import Generate from "../../../Assets/Images/fsi.png"
+import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
+
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
@@ -84,6 +86,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { CommonModule } = NativeModules;
 
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
+  const [showContactSheet, setShowContactSheet] = useState(false);
 
   useEffect(() => {
     CommonModule.fetchEnvironment().then(r => {
@@ -489,6 +492,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleEditMonthlyRent={handleEditMonthlyRent}
             handleEditAdvance={handleEditAdvance}
             handleShowAmenities={handleShowAmenities}
+            openAdditionalContact={() => setShowContactSheet(true)}
           />
         );
     }
@@ -701,14 +705,26 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
           {
             customerDetails?.customerCurrentStatus == "VACATED" && (
-              <TouchableOpacity style={{
-                backgroundColor: '#1E45E1', paddingVertical: 12, alignItems: 'center', width: "100%",
-                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12
+              <View style={{display:'flex', flexDirection:'row'}}>
+              <TouchableOpacity
+              
+              style={{
+                backgroundColor: '#1E45E1', paddingVertical: 12, alignItems: 'center', width:'48%',
+                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12 , marginRight:5
               }}
                 disabled>
                 <Image source={RecheckInIcon} style={{ width: 20, height: 20 }} />
                 <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#ffffff', marginLeft: 5 }}>Re Check in</Text>
               </TouchableOpacity>
+
+                              <TouchableOpacity
+                  style={{    backgroundColor: "#E6ECFF",paddingVertical: 12, alignItems: 'center', width:'48%',
+                borderRadius: 12, flexDirection: 'row', justifyContent: 'center', marginTop: 12}}
+                  onPress={() => setShowStayHistory(true)}
+                >
+                  <Text style={styles.stayText}>Stay History</Text>
+                </TouchableOpacity>
+                </View>
             )
           }
 
@@ -999,6 +1015,15 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         onClose={() => setShowStayHistory(false)}
         customerDetails={customerDetails}
       />
+
+      <AdditionalContactBottomSheet
+  visible={showContactSheet}
+  onClose={() => setShowContactSheet(false)}
+  // onSave={async (payload) => {
+  //   await saveAdditionalContact(activeHostelId, customerId, payload);
+  //   setShowContactSheet(false);
+  // }}
+/>
     </>
   );
 }

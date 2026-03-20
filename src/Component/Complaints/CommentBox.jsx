@@ -217,7 +217,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
       <Text
         style={{
           fontSize: size / 3,
-          fontWeight: "700",
+          fontFamily: "Gilroy-Bold",
           color: "#4B5563",
         }}
       >
@@ -299,6 +299,9 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
 
 
        </ScrollView>
+                 {commentError ? (
+  <ErrorMessage message={commentError} type="error" />
+) : null} 
           <View style={[styles.replyBox  , {marginBottom: commentError ? 5: 30 }, !canWriteComplaints && { opacity: 0.4 } ]}>
   <TextInput
   value={commentText}
@@ -331,9 +334,7 @@ const renderAvatar = ({ profile, initials, name, size = 50 }) => {
             </TouchableOpacity>
             
           </View>
-          {commentError ? (
-  <ErrorMessage message={commentError} type="error" />
-) : null} 
+
  
       </Animated.View>
     </>
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
 
   commentsTitle: {
     fontSize: 17,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
     marginBottom: 15,
     color: "#000",
   },
@@ -393,13 +394,14 @@ const styles = StyleSheet.create({
 
   mainUserName: {
     fontSize: 16,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
     color: "#000",
   },
 
   mainUserDate: {
     color: "#666",
     marginTop: 2,
+    fontFamily: "Gilroy-Semibold" 
     // marginLeft:2
   },
 
@@ -428,7 +430,7 @@ const styles = StyleSheet.create({
 
   msgUserName: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold" ,
     color: "#000",
   },
 
@@ -436,12 +438,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#999",
     marginLeft: 20,
+    fontFamily: "Gilroy-Regular"
   },
 
   msgText: {
     marginTop: 5,
     fontSize: 14,
     color: "#000",
+    fontFamily: "Gilroy-Regular"
   },
 
   replyBox: {
@@ -460,6 +464,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     fontSize: 14,
+    fontFamily: "Gilroy-Regular"
   },
 
   sendBtn: {
@@ -495,7 +500,7 @@ initialCircle: {
 
 initialText: {
   fontSize: 15,
-  fontWeight: "700",
+ fontFamily: "Gilroy-Bold",
   color: "#4B5563",
 },
 });

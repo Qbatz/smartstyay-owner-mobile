@@ -641,7 +641,7 @@ headerRow: {
 
 headerTitle: {
   fontSize: 22,
-  fontWeight: "700",
+ fontFamily: "Gilroy-Bold" ,
   color: "#111827",
 },
 
@@ -665,7 +665,7 @@ headerFilterIcon: {
   },
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 15, color: "#000" },
+  searchInput: { flex: 1, fontSize: 15, color: "#000", fontFamily: "Gilroy-Regular"  },
 
   card: {
     paddingVertical: 15,
@@ -675,14 +675,14 @@ headerFilterIcon: {
     justifyContent: "space-between",
   },
 
-  title: { fontSize: 16, fontWeight: "700" },
+  title: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
   row: { flexDirection: "row", alignItems: "center", marginTop: 5 },
   userIcon: { width: 20, height: 20, marginRight: 6 },
-  user: { color: "grey" , fontWeight:400},
+  user: { color: "grey" ,  fontFamily: "Gilroy-Regular" },
 
   rightSection: { alignItems: "flex-end", justifyContent: "space-between" },
-  time: { fontSize: 12, color: "#999" },
-  status: { marginTop: 6, fontSize: 14, fontWeight: "600" },
+  time: { fontSize: 12, color: "#999" , fontFamily: "Gilroy-Regular"},
+  status: { marginTop: 6, fontSize: 14, fontFamily: "Gilroy-Semibold" },
 
   filterBtn: {
     position: "absolute",
@@ -751,7 +751,7 @@ filterHeader: {
 
 filterTitle: {
   fontSize: 18,
-  fontWeight: "700",
+ fontFamily: "Gilroy-Bold"  
 },
 
 label: {
@@ -929,7 +929,7 @@ initialCircle: {
 
 initialText: {
   fontSize: 12,
-  fontWeight: "700",
+ fontFamily: "Gilroy-Bold"  ,
   color: "#4B5563",
 },
 
