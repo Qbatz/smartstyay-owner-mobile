@@ -21,6 +21,7 @@ import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
 import { PGContext } from "../../../Context/PGContext";
+// import DiscountInvoiceSheet from "./DiscountInvoice"
 import { Calendar } from "react-native-calendars";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
@@ -116,7 +117,7 @@ export default function BillsDesign({ route }) {
   const [modalType, setModalType] = useState("success");
 
   const [showPayments, setShowPayments] = useState(false);
-
+  const [showDiscountSheet, setShowDiscountSheet] = useState(false);
 
   const {
     canWriteModule: canWriteInvoice,
@@ -414,7 +415,7 @@ export default function BillsDesign({ route }) {
   const recurringSheetY = useRef(new Animated.Value(0)).current;
 
   console.log("selectedRecurringBill", selectedRecurringBill);
-  
+
 
 
   const handleRefundRecord = () => {
@@ -572,6 +573,9 @@ export default function BillsDesign({ route }) {
 
   const BillsStatusStyle = getStatusStyle(selectedBill?.paymentStatus);
   const statusStyle = getStatusStyle(selectedReceipt?.paymentStatus);
+
+
+  
   console.log("statusstyle", statusStyle)
 
 
@@ -1029,8 +1033,8 @@ export default function BillsDesign({ route }) {
       invoiceId: selectedBill?.invoiceId,
     })
 
-    console.log("unpaidstatus",res);
-      
+    console.log("unpaidstatus", res);
+
 
     if (res.success) {
       setModalType("success");
@@ -2007,6 +2011,14 @@ export default function BillsDesign({ route }) {
   const isExportAllow = isValidSubscription && canReadInvoice;
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
+ 
+
+const isDiscounted =
+  BillPdfdetails?.invoiceInfo?.isDiscounted === true;
+
+const isNotDiscounted =
+  BillPdfdetails?.invoiceInfo?.isDiscounted === false;
+
 
   const getOverdueDays = (dueDate) => {
     if (!dueDate) return 0;
@@ -2391,7 +2403,7 @@ export default function BillsDesign({ route }) {
 
 
                       {
-                       ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual")) && (
+                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual")) && (
                           <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                             onPress={() => openMenu(selectedBill)}>
                             <Image
@@ -2399,7 +2411,7 @@ export default function BillsDesign({ route }) {
                               style={{ width: 30, height: 30, }}
                             />
                           </TouchableOpacity>
-                         )}
+                        )}
                     </View>
                   </View>
 
@@ -2490,6 +2502,37 @@ export default function BillsDesign({ route }) {
                     </View>
                   </View>
 
+{isDiscounted && (
+  <View style={styles.discountCard}>
+
+    {/* Actual Amount */}
+    <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
+      <Text style={styles.discountLabel}>Actual Amount</Text>
+      <Text style={styles.discountValue}>
+        ₹ {(
+          (BillPdfdetails?.invoiceInfo?.totalAmount || 0) +
+          (BillPdfdetails?.invoiceInfo?.discountAmount || 0)
+        ).toFixed(2)}
+      </Text>
+    </View>
+
+    {/* Discount */}
+    <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between' , marginTop:6}}>
+      <Text style={styles.discountLabel}>Discount</Text>
+      <Text style={styles.discountMinus}>
+        - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
+      </Text>
+    </View>
+
+    {/* Badge */}
+    <View style={styles.discountBadge}>
+      <Text style={styles.discountBadgeText}>
+        ✔ Discount Applied
+      </Text>
+    </View>
+
+  </View>
+)}
                   {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
                     <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
@@ -2554,11 +2597,11 @@ export default function BillsDesign({ route }) {
                             <View key={index} style={styles.paymentCard}>
 
                               <View style={styles.paymentTopRow}>
-                                <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)} style={{display:'flex', flexDirection:'row'}}>
+                                <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)} style={{ display: 'flex', flexDirection: 'row' }}>
                                   <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
                                     #{pay?.referenceNumber}
                                   </Text>
-                                   <Image source={InvoiceLinkIcon} style={{height:14, width:14 , marginLeft:7}} />
+                                  <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 }} />
                                 </TouchableOpacity>
 
                                 <Text style={styles.paymentAmount}>
@@ -2637,7 +2680,7 @@ export default function BillsDesign({ route }) {
                               <TouchableOpacity style={styles.paymentTopRow}>
                                 <Text >
                                   #{BillPdfdetails?.invoiceNumber}
-                                  <Image source={InvoiceLinkIcon} style={{height:14, width:14}} />
+                                  <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
                                 </Text>
 
                                 <Text style={styles.paymentAmount}>
@@ -3227,7 +3270,8 @@ export default function BillsDesign({ route }) {
                   </Text>
                 </TouchableOpacity> */}
 
-                {isPaid &&(selectedBill?.invoiceMode === "Manual" && selectedBill?.paymentStatus === "Paid") &&(
+                
+                {isPaid && (selectedBill?.invoiceMode === "Manual" && selectedBill?.paymentStatus === "Paid" && selectedBill?.invoiceType === "Rent") && (
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                     disabled={!canUpdateInvoice}
@@ -3257,6 +3301,27 @@ export default function BillsDesign({ route }) {
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
                 )}
+
+{selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "SETTLEMENT") &&
+  !selectedBill?.isDiscounted && (
+    <TouchableOpacity
+      style={styles.popupRow}
+      onPress={() => { 
+        setShowMenu(false);
+        setShowBillDetails(false)
+        navigation.navigate("DiscountInvoice", {
+          bill: selectedBill,
+        });
+      }}
+    >
+      <Image
+        source={require("../../../Assets/Images/discount-circle.png")}
+        style={styles.popupIcon}
+      />
+      <Text style={styles.popupText}>Make as discount</Text>
+    </TouchableOpacity>
+)}
+
 
 
                 {/* <TouchableOpacity
@@ -4559,26 +4624,28 @@ export default function BillsDesign({ route }) {
                         </Text>
                       </View>
                     )} */}
-{
-  selectedRecurringBill?.profilePic ? (
-    <Image
-      source={{ uri: selectedRecurringBill?.profilePic }}
-      style={{  width: 40,
-  height: 40,
-  borderRadius: 20,
-  resizeMode: "cover",}}
-      onError={(e) => {
-        console.log("Image error", e.nativeEvent);
-      }}
-    />
-  ) : (
-    <View style={styles.initialCircle}>
-      <Text style={styles.initialText}>
-        {selectedRecurringBill?.initials || "--"}
-      </Text>
-    </View>
-  )
-}
+                    {
+                      selectedRecurringBill?.profilePic ? (
+                        <Image
+                          source={{ uri: selectedRecurringBill?.profilePic }}
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            resizeMode: "cover",
+                          }}
+                          onError={(e) => {
+                            console.log("Image error", e.nativeEvent);
+                          }}
+                        />
+                      ) : (
+                        <View style={styles.initialCircle}>
+                          <Text style={styles.initialText}>
+                            {selectedRecurringBill?.initials || "--"}
+                          </Text>
+                        </View>
+                      )
+                    }
 
 
                     <View style={{ flex: 1, marginLeft: 12 }}>
@@ -4691,11 +4758,11 @@ export default function BillsDesign({ route }) {
 
 
                 <View style={styles.confirmTitleRow}>
-                  <View style={{width:"70%"}}>
-                  <Text style={styles.confirmTitle}>Mark Invoice {selectedBill?.invoiceNumber} as Unpaid?</Text>
+                  <View style={{ width: "70%" }}>
+                    <Text style={styles.confirmTitle}>Mark Invoice {selectedBill?.invoiceNumber} as Unpaid?</Text>
                   </View>
-                   <View style={{width:"30%", flexDirection:'row', justifyContent:'flex-end'}}>
-                  <Image source={QuestionIcon} style={styles.confirmIcon} />
+                  <View style={{ width: "30%", flexDirection: 'row', justifyContent: 'flex-end' }}>
+                    <Image source={QuestionIcon} style={styles.confirmIcon} />
                   </View>
                 </View>
 
@@ -4741,6 +4808,7 @@ export default function BillsDesign({ route }) {
     onMove={() => console.log("Move Clicked")}
   />
 )} */}
+
 
 
 
@@ -6045,14 +6113,14 @@ const styles = StyleSheet.create({
     marginRight: 20
   },
 
-   downloadBtn: {
+  downloadBtn: {
     backgroundColor: "#F3F4F6",
     // padding:14,
     paddingVertical: 14,
     paddingHorizontal: 37,
     borderRadius: 10,
     marginRight: 20,
-    marginLeft:15
+    marginLeft: 15
   },
 
   recordBtn: {
@@ -6060,7 +6128,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 37,
     borderRadius: 10,
-    marginLeft:15
+    marginLeft: 15
   },
 
   bottomText: {
@@ -6149,11 +6217,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  confirmIcon: { width: 22, height: 22, marginRight: 8 , marginBottom:10},
+  confirmIcon: { width: 22, height: 22, marginRight: 8, marginBottom: 10 },
 
   confirmTitle: {
     fontSize: 17,
-      fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -6162,7 +6230,7 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 20,
     lineHeight: 20,
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   confirmButtons: {
@@ -6182,7 +6250,7 @@ const styles = StyleSheet.create({
   cancelConfirmText: {
     fontSize: 15,
     color: "#555",
-     fontFamily: "Gilroy-Semibold"
+    fontFamily: "Gilroy-Semibold"
   },
 
   okConfirmBtn: {
@@ -6195,6 +6263,44 @@ const styles = StyleSheet.create({
   okConfirmText: {
     color: "#fff",
     fontSize: 15,
-    fontFamily: "Gilroy-Bold" 
+    fontFamily: "Gilroy-Bold"
   },
+  discountCard: {
+  backgroundColor: "#F3F4F6",
+  borderRadius: 12,
+  padding: 12,
+  marginTop: 12,
+},
+
+discountLabel: {
+  fontSize: 13,
+  color: "#6B7280",
+  fontFamily: "Gilroy-Medium",
+},
+
+discountValue: {
+  fontSize: 14,
+  fontFamily: "Gilroy-Bold",
+},
+
+discountMinus: {
+  fontSize: 14,
+  fontFamily: "Gilroy-Bold",
+  color: "#000",
+},
+
+discountBadge: {
+  backgroundColor: "#16A34A",
+  alignSelf: "flex-end",
+  marginTop: 10,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
+discountBadgeText: {
+  color: "#fff",
+  fontSize: 12,
+  fontFamily: "Gilroy-Semibold",
+},
 });
