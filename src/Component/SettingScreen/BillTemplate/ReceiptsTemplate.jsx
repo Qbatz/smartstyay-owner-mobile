@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  Modal,
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -15,6 +16,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ColorPicker, { HueSlider, OpacitySlider, Panel1 } from "reanimated-color-picker";
 import { runOnJS } from "react-native-reanimated";
 import tinycolor from "tinycolor2"
+import QuestionMarkHelp from "../../../Assets/Images/QuestionMarkHelp.png"
+
 
 const EditIcon = require("../../../Assets/Images/edit.png");
 const UploadIcon = require("../../../Assets/Images/upload.png");
@@ -61,6 +64,9 @@ export default function ReceiptTemplate({onChange}) {
 
 const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
 
+const [isEditable,setIsEditable]=useState(false)
+    const [editPopup,setEditPopUp]=useState(false)
+
   useEffect(() => {
 
     getGlobalBillPdfDetail(activeHostelId).then(r => {
@@ -69,10 +75,15 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
       setEmail(r?.data?.templates[1]?.receiptMailId || r.data?.emailId)
       setLogoUri(r?.data?.templates[1]?.receiptLogoUrl)
       setSignatureImage(r?.data?.templates[1]?.receiptSignatureUrl)
+      setColor()
       setLogoCustomize(r?.data?.isLogoCustomized)
       setEmailCustomize(r?.data?.isMailIdCustomized)
       setContactCustomize(r?.data?.isMobileCustomized)
       setSignCustomize(r?.data?.isSignatureCustomized)
+
+      const apiColor = r?.data?.templates[1]?.receiptTemplateColor;
+
+      setColor(parseRGBA(apiColor));
 
       // setPrefix(r?.data?.templates[1]?.prefix || null)
       // setSuffix(r?.data?.templates[1]?.suffix || null)
@@ -86,6 +97,21 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
     })
 
   }, [])
+
+   const parseRGBA = (rgbaString) => {
+      if (!rgbaString) return null;
+  
+      const tc = tinycolor(rgbaString);
+      const rgb = tc.toRgb();
+  
+      return {
+        hex: tc.toHexString(),
+        r: rgb.r,
+        g: rgb.g,
+        b: rgb.b,
+        a: rgb.a,
+      };
+    };
 
   useEffect(() => {
     const data = {
@@ -122,6 +148,7 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
       templateTypeId: typeId,
       receiptNotes: receiptNotes,
       receiptTermsAndCondition: terms,
+      receiptTemplateColor: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a })`,
       receiptPhoneNumber: contactNumber,
       receiptMailId: email,
     }
@@ -219,7 +246,9 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardLabel}>Contact Number</Text>
-                <Image source={EditIcon} style={styles.iconSmall} />
+                <TouchableOpacity onPress={()=>setEditPopUp(true)}>
+                    <Image source={EditIcon} style={styles.iconSmall} />
+                </TouchableOpacity>              
               </View>
 
               <View style={styles.row}>
@@ -230,6 +259,7 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
                 <TextInput
                   style={styles.lightInput}
                   value={contactNumber}
+                  editable={isEditable}
                   keyboardType="number-pad"
                   maxLength={10}
                   onChangeText={(t) => setContactNumber(t.replace(/\D/g, ""))}
@@ -248,12 +278,15 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardLabel}>E-Mail Address</Text>
-                <Image source={EditIcon} style={styles.iconSmall} />
+                <TouchableOpacity onPress={()=>setEditPopUp(true)}>
+                    <Image source={EditIcon} style={styles.iconSmall} />
+                </TouchableOpacity>  
               </View>
 
               <TextInput
                 style={styles.lightInput}
                 value={email}
+                editable={isEditable}
                 onChangeText={setEmail}
                 keyboardType="email-address"
               />
@@ -270,7 +303,9 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardLabel}>Hostel/PG Logo</Text>
-                <Image source={EditIcon} style={styles.iconSmall} />
+                <TouchableOpacity onPress={()=>setEditPopUp(true)}>
+                    <Image source={EditIcon} style={styles.iconSmall} />
+                </TouchableOpacity>  
               </View>
 
               <View style={styles.logoBox}>
@@ -279,7 +314,7 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
                 ) : (
                   <Image source={UploadIcon} style={styles.uploadIcon} />
                 )}
-                <TouchableOpacity onPress={() => pickImage(setLogoUri)}>
+                <TouchableOpacity onPress={() => pickImage(setLogoUri)} disabled={!isEditable}>
                   <Text style={[styles.linkText, { color: selectedColor }]}>Choose file</Text>
                 </TouchableOpacity>
                 <Text style={styles.smallNote}>Must be PNG (600 × 300)</Text>
@@ -299,7 +334,7 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
               <TouchableOpacity
                 style={styles.signatureBox}
                 onPress={() => pickImage(setSignatureImage)}
-              >
+              disabled={!isEditable}>
                 {signatureImage ? (
                   <Image source={{ uri: signatureImage }} style={styles.signaturePreview} />
                 ) : (
@@ -508,6 +543,38 @@ const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
         </TouchableOpacity>
 
       </ScrollView>
+
+       <Modal 
+                  visible={editPopup}
+                  transparent={true}
+                  animationType="fade">
+                    <View style={{flex:1,justifyContent:'center',alignItems:'center',backgroundColor:"rgba(0,0,0,0.5)"}}>
+                        <View style={{backgroundColor: "#fff",borderRadius: 12,padding: 20,marginHorizontal:15}}>
+                        
+                        <View style={{flexDirection:'row'}}>
+                          <Image source={QuestionMarkHelp} style={{width:22,height:22}} />
+                          <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold',marginLeft:5}}>Override Global Value</Text>
+                        </View>
+            
+                        <Text style={{fontSize:13,fontFamily:'Gilroy-Regular',marginTop:15,lineHeight:22}}>
+                          You're changing this field only for this bill. It won't affect the main settings</Text>
+            
+                           <View style={{alignSelf:'flex-end',flexDirection:'row',alignItems:'center',marginTop:18}}>
+                            <TouchableOpacity onPress={()=>setEditPopUp(false)}
+                            style={{padding:12,borderWidth:1,borderRadius:10,marginRight:5}}>
+                                <Text style={{fontFamily:'Gilroy-Semibold',fontSize:13,color:'#6F6C8F'}}>Cancel</Text>
+                            </TouchableOpacity>
+            
+                            <TouchableOpacity onPress={()=>{
+                              setIsEditable(true)
+                              setEditPopUp(false)}}
+                            style={{padding:12,borderRadius:10,backgroundColor:'#1E45E1',marginLeft:5}}> 
+                                <Text style={{fontFamily:'Gilroy-Semibold',fontSize:13,color:'#FFFFFF'}}>Edit Anyway</Text>
+                            </TouchableOpacity>
+                        </View>
+                        </View>
+                    </View>
+                  </Modal>
 
       {/* STICKY PREVIEW BUTTON */}
       {/* <TouchableOpacity style={styles.previewBtn }>

@@ -1,76 +1,78 @@
 import React from "react";
-import { View,Text, StyleSheet, ScrollView } from "react-native";
-
-export default function CustomerTransactions({customerDetails}){
-
-    const transactionList=customerDetails?.transactionList || []
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 
-    return(
-        <>
-            <View style={{ paddingBottom: 30 }}>
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:50}}>
-                  
-                  {transactionList.map((item, index) => (
-                    <View key={index} style={styles.row}>
-                      {/* LEFT */}
-                      <View>
+export default function CustomerTransactions({ customerDetails }) {
 
-                        <View style={{flexDirection:'row'}}>
-                        <Text style={styles.billId}>{item.billName}</Text>
-
-                        <View
-                            style={[
-                              styles.statusBadge,
-                              item.status === "Paid"
-                                ? styles.paidBadge
-                                : styles.overdueBadge,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.statusText,
-                                item.status === "Paid"
-                                  ? styles.paidText
-                                  : styles.overdueText,
-                              ]}
-                            >
-                              {item.status}
-                            </Text>
-                          </View>
-                          </View>
-
-                        
+  const transactionList = customerDetails?.transactionList || []
 
 
-            
-                        <View style={styles.subRow}>
-                          <Text style={styles.billType}>{item.paidTo}</Text>
-            
-                         
-                            <Text
-                              style={[
-                                styles.statusText,
-                               
-                              ]}
-                            >
-                              {item.referenceNumber}
-                            </Text>
-                        </View>
-                      </View>
-            
-                      {/* RIGHT */}
-                      <View style={styles.rightBox}>
-                        <Text style={styles.amount}>₹{item.amountPaid}</Text>
-                        <Text style={styles.date}>on {item.transactionDate}</Text>
+  return (
+    <>
+      <View style={{ paddingBottom: 30 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
+
+          {
+            !transactionList || transactionList.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Image source={EmptyState} style={styles.image} resizeMode="contain" />
+                <Text style={styles.emptyText}>
+                  No Transactions found
+                </Text>
+              </View>
+            ) : (
+              transactionList.map((item, index) => (
+                <View key={item.id || index} style={styles.row}>
+                  {/* LEFT */}
+                  <View>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Text style={styles.billId}>{item.billName}</Text>
+
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          item.status === "Paid"
+                            ? styles.paidBadge
+                            : styles.overdueBadge,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.statusText,
+                            item.status === "Paid"
+                              ? styles.paidText
+                              : styles.overdueText,
+                          ]}
+                        >
+                          {item.status}
+                        </Text>
                       </View>
                     </View>
-                  ))}
-                  </ScrollView>
-                
+
+                    <View style={styles.subRow}>
+                      <Text style={styles.billType}>{item.paidTo}</Text>
+
+                      <Text style={styles.statusText}>
+                        {item.referenceNumber}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* RIGHT */}
+                  <View style={styles.rightBox}>
+                    <Text style={styles.amount}>₹{item.amountPaid}</Text>
+                    <Text style={styles.date}>on {item.transactionDate}</Text>
+                  </View>
                 </View>
-        </>
-    )
+              ))
+            )
+          }
+        </ScrollView>
+
+      </View>
+    </>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
   subRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop:10
+    marginTop: 10
   },
 
   billType: {
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
-    alignItems:'center',justifyContent:'center',marginLeft:10
+    alignItems: 'center', justifyContent: 'center', marginLeft: 10
   },
 
   overdueBadge: {
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
     // alignItems: "center",
     // elevation: 6,
 
-        position: "absolute",
+    position: "absolute",
     bottom: 80,
     right: 20,
     backgroundColor: "#1D5DFF",
@@ -167,5 +169,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
+  },
+   image: {
+    width: 180,
+    height: 180,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 80, // little push to center nicely
+  },
+
+  emptyText: {
+    marginTop: 20,
+    fontSize: 15,
+    color: "#6B7280",
   },
 });
