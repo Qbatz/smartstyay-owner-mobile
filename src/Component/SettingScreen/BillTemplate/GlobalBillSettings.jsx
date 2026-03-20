@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 // import * as ImagePicker from "expo-image-picker";
-  import { launchImageLibrary } from "react-native-image-picker";
+import { launchImageLibrary } from "react-native-image-picker";
 
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import UploadIcon from "../../../Assets/Images/upload.png";
@@ -23,8 +23,8 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function GlobalBillSettings({ onBack }) {
 
-  const {activeHostelId} = useContext(CommonContexts)
-  const {getGlobalBillPdfDetail,postGlobalBilPdfDetails}=useContext(BillContext)
+  const { activeHostelId } = useContext(CommonContexts)
+  const { getGlobalBillPdfDetail, postGlobalBilPdfDetails } = useContext(BillContext)
   const [logoCustomize, setLogoCustomize] = useState(false);
   const [contactCustomize, setContactCustomize] = useState(true);
   const [emailCustomize, setEmailCustomize] = useState(true);
@@ -36,17 +36,18 @@ export default function GlobalBillSettings({ onBack }) {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
 
-  const [showSuccessModal,setShowSuccessModal] =useState(false);
-  const [message,setmessage]=useState("")
-  const [errorType,setErrorType]=useState("")
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [message, setmessage] = useState("")
+  const [errorType, setErrorType] = useState("")
 
-  const [mobileError,setMobileError]=useState("")
-  const [mailError,setMailError]=useState("")
+  const [mobileError, setMobileError] = useState("")
+  const [mailError, setMailError] = useState("")
+  const [signError, setSignError] = useState("")
 
 
-  useEffect(()=>{
+  useEffect(() => {
 
-     getGlobalBillPdfDetail(activeHostelId).then(r=>{
+    getGlobalBillPdfDetail(activeHostelId).then(r => {
       console.log(r)
       setMobile(r.data?.mobile)
       setEmail(r.data?.emailId)
@@ -56,9 +57,9 @@ export default function GlobalBillSettings({ onBack }) {
       setEmailCustomize(r?.data?.isMailIdCustomized)
       setContactCustomize(r?.data?.isMobileCustomized)
       setSignCustomize(r?.data?.isSignatureCustomized)
-     })
+    })
 
-  },[])
+  }, [])
 
   /* ---------------- IMAGE PICK FUNCTION ---------------- */
   async function pickImage(setFunction) {
@@ -67,7 +68,7 @@ export default function GlobalBillSettings({ onBack }) {
       quality: 1,
     });
 
-    console.log("images",result)
+    console.log("images", result)
 
     if (!result.canceled) {
       setFunction(result.assets[0].uri);
@@ -76,24 +77,24 @@ export default function GlobalBillSettings({ onBack }) {
 
 
 
-async function pickImage(setFunction) {
-  const options = {
-    mediaType: "photo",
-    quality: 1,
-  };
+  async function pickImage(setFunction) {
+    const options = {
+      mediaType: "photo",
+      quality: 1,
+    };
 
-  launchImageLibrary(options, (response) => {
-    console.log(response)
-    if (response.didCancel) {
-      console.log("User cancelled image picker");
-    } else if (response.errorMessage) {
-      console.log("ImagePicker Error: ", response.errorMessage);
-    } else {
-      const uri = response.assets[0].uri;
-      setFunction(uri);
-    }
-  });
-}
+    launchImageLibrary(options, (response) => {
+      console.log(response)
+      if (response.didCancel) {
+        console.log("User cancelled image picker");
+      } else if (response.errorMessage) {
+        console.log("ImagePicker Error: ", response.errorMessage);
+      } else {
+        const uri = response.assets[0].uri;
+        setFunction(uri);
+      }
+    });
+  }
 
 
   /* ---------------- VALIDATION ---------------- */
@@ -102,12 +103,13 @@ async function pickImage(setFunction) {
 
   const validateMobile = (num) => num.length === 10;
 
-  async function handleSave () {
+  async function handleSave() {
     if (!validateMobile(mobile)) {
       setMobileError("Please enter valid 10 digit number")
+      return;
     }
 
-    console.log(mobile,'bilmail')
+    console.log(mobile, 'bilmail')
     // if (!validateEmail(email)) {
     //   return Alert.alert("Invalid Email", "Please enter a valid email address");
     // }
@@ -115,69 +117,69 @@ async function pickImage(setFunction) {
     // Alert.alert("Success", "Changes Saved Successfully!");
 
     const payload = {
-    hostelId :activeHostelId,
-    mobile: mobile,
-    email: email,
-    isMobileCustomized:contactCustomize,
-    isEmailCustomized:emailCustomize,
-    isLogoCustomized:logoCustomize,
-    isSignatureCustomized: signCustomize,
-  };
+      hostelId: activeHostelId,
+      mobile: mobile,
+      email: email,
+      isMobileCustomized: contactCustomize,
+      isEmailCustomized: emailCustomize,
+      isLogoCustomized: logoCustomize,
+      isSignatureCustomized: signCustomize,
+    };
 
-     const formData = new FormData();
+    const formData = new FormData();
 
     //  const jsonBase64= btoa(JSON.stringify(requestBody))
 
-     
-
-  // formData.append("request", JSON.stringify(jsonBase64));
-
-//  
-
-console.log(uploadedLogo)
-if (uploadedLogo) {
-
-  formData.append("hostelLogo", {
-    uri: uploadedLogo,
-    type: "image/jpeg",
-    name: "hostelLogo.jpg",
-  });
-}
 
 
-if (signatureImage) {
-  formData.append("billSignature", {
-    uri: signatureImage,
-    type: "image/jpeg",
-    name: "receiptSign.jpg",
-  });
-}
-  
-   
-   
+    // formData.append("request", JSON.stringify(jsonBase64));
 
-//   formData.append("request[invoicePhoneNumber]", mobile);
-// formData.append("request[invoiceMailId]", email);
+    //  
 
-//    formData.append("receiptPhoneNumber", mobile);
-//   formData.append("invoiceMailId", email);
+    console.log(uploadedLogo)
+    if (uploadedLogo) {
+
+      formData.append("hostelLogo", {
+        uri: uploadedLogo,
+        type: "image/jpeg",
+        name: "hostelLogo.jpg",
+      });
+    }
 
 
-    const res= await postGlobalBilPdfDetails(activeHostelId,payload,formData)
-    console.log("pilla",res)
+    if (signatureImage) {
+      formData.append("billSignature", {
+        uri: signatureImage,
+        type: "image/jpeg",
+        name: "receiptSign.jpg",
+      });
+    }
 
-    if(res.status == 200){
-        setShowSuccessModal(true),
+
+
+
+    //   formData.append("request[invoicePhoneNumber]", mobile);
+    // formData.append("request[invoiceMailId]", email);
+
+    //    formData.append("receiptPhoneNumber", mobile);
+    //   formData.append("invoiceMailId", email);
+
+
+    const res = await postGlobalBilPdfDetails(activeHostelId, payload, formData)
+    console.log("pilla", res)
+
+    if (res.status == 200) {
+      setShowSuccessModal(true),
         setmessage(res.data),
         setErrorType("success")
 
-        setTimeout(() => {
-          setShowSuccessModal(false)
-        }, 1000);
-    }else{
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1000);
+    } else {
       setShowSuccessModal(true),
-      setmessage(res.message || "Not uploaded"),
-      setErrorType("error")
+        setmessage(res.message || "Not uploaded"),
+        setErrorType("error")
 
       setTimeout(() => {
         setShowSuccessModal(false)
@@ -193,8 +195,8 @@ if (signatureImage) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F8F8FB", paddingTop:40 }}>
-     <SuccessModal visible={showSuccessModal} message={message} type={errorType}/>
+    <View style={{ flex: 1, backgroundColor: "#F8F8FB", paddingTop: 40 }}>
+      <SuccessModal visible={showSuccessModal} message={message} type={errorType} />
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={onBack}>
           <Image source={BackIcon} style={styles.backIcon} />
@@ -203,7 +205,7 @@ if (signatureImage) {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}>
-        
+
         <Text style={styles.description}>
           Add your basic billing details here. These will appear on all invoices.
         </Text>
@@ -216,31 +218,31 @@ if (signatureImage) {
           <Text style={styles.customizeText}>Customize in Specific Templates</Text>
         </View>
 
-<TouchableOpacity
-  style={styles.uploadRow}
-  onPress={() => pickImage(setUploadedLogo)}
->
-  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-    <Image source={UploadIcon} style={styles.uploadIcon} />
-    <View>
-      <Text style={styles.uploadTitle}>Choose file  <Text style={styles.uploadSubtitle}>to Upload</Text></Text>
-     
-      <Text style={styles.uploadNote}>PNG Format (600px * 300px)</Text>
-    </View>
-  </View>
+        <TouchableOpacity
+          style={styles.uploadRow}
+          onPress={() => pickImage(setUploadedLogo)}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+            <Image source={UploadIcon} style={styles.uploadIcon} />
+            <View>
+              <Text style={styles.uploadTitle}>Choose file  <Text style={styles.uploadSubtitle}>to Upload</Text></Text>
 
-  {uploadedLogo && (
-    <Image
-      source={{ uri: uploadedLogo }}
-      style={styles.logoPreview}
-    />
-  )}
-</TouchableOpacity>
+              <Text style={styles.uploadNote}>PNG Format (600px * 300px)</Text>
+            </View>
+          </View>
 
-
+          {uploadedLogo && (
+            <Image
+              source={{ uri: uploadedLogo }}
+              style={styles.logoPreview}
+            />
+          )}
+        </TouchableOpacity>
 
 
-        
+
+
+
 
         <Text style={styles.fieldTitle}>Contact Number</Text>
 
@@ -257,14 +259,16 @@ if (signatureImage) {
             value={mobile}
             placeholder="9876543210"
             maxLength={10}
-            onChangeText={(val) => {setMobile(val.replace(/[^0-9]/g, ""))
-              setMobileError("")}
+            onChangeText={(val) => {
+              setMobile(val.replace(/[^0-9]/g, ""))
+              setMobileError("")
+            }
             }
           />
         </View>
-        {mobileError && <ErrorMessage message={mobileError} type="error"/>}
+        {mobileError && <ErrorMessage message={mobileError} type="error" />}
 
-        <Text style={[styles.fieldTitle,{marginTop:15}]}>Email Address</Text>
+        <Text style={[styles.fieldTitle, { marginTop: 15 }]}>Email Address</Text>
 
         <View style={styles.checkboxRow}>
           <CustomCheckbox value={emailCustomize} onChange={setEmailCustomize} />
@@ -276,7 +280,12 @@ if (signatureImage) {
           value={email}
           placeholder="Enter mail address"
           keyboardType="email-address"
-          onChangeText={setEmail}
+          onChangeText={(t) => {
+            const noEmojis = t.replace(
+              /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+            setEmail(noEmojis)
+          }
+          }
         />
 
         <Text style={styles.fieldTitle}>Digital Signature Upload</Text>
@@ -287,16 +296,21 @@ if (signatureImage) {
           <Text style={styles.customizeText}>Customize in Specific Templates</Text>
         </View>
 
-      <TouchableOpacity
-  style={styles.signatureBox}
-  onPress={() => pickImage(setSignatureImage)}
->
-  {signatureImage ? (
-    <Image source={{ uri: signatureImage }} style={styles.signaturePreview} />
-  ) : (
-    <Text style={styles.signaturePlaceholder}>Upload Signature</Text>
-  )}
-</TouchableOpacity>
+        <TouchableOpacity
+          style={styles.signatureBox}
+          onPress={() => {
+            pickImage(setSignatureImage)
+            setSignError("")
+          }}
+        >
+          {signatureImage ? (
+            <Image source={{ uri: signatureImage }} style={styles.signaturePreview} />
+          ) : (
+            <Text style={styles.signaturePlaceholder}>Upload Signature</Text>
+          )}
+        </TouchableOpacity>
+
+        {signError && <ErrorMessage message={signError} type="error" />}
 
 
         <View style={styles.signatureActions}>
@@ -306,10 +320,11 @@ if (signatureImage) {
 
           <TouchableOpacity
             onPress={() => {
-              if (signatureImage) {
-                Alert.alert("Success", "Signature uploaded!");
+              if (!signatureImage) {
+                setSignError("Please upload a signature first");
+                // Alert.alert("Success", "Signature uploaded!");
               } else {
-                Alert.alert("Error", "Please upload a signature first");
+                setSignError("")
               }
             }}
           >
@@ -392,12 +407,12 @@ const styles = StyleSheet.create({
   uploadNote: { color: "#9A9A9A", fontSize: 12 },
 
   logoPreview: {
-  width: 70,
-  height: 70,
-  borderRadius: 10,
-  resizeMode: "contain",
-  marginLeft: 10,
-},
+    width: 70,
+    height: 70,
+    borderRadius: 10,
+    resizeMode: "contain",
+    marginLeft: 10,
+  },
 
   previewImage: {
     width: "100%",
@@ -439,7 +454,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFF",
-    marginBottom: 10,
+    marginBottom: 3,
   },
   signaturePlaceholder: {
     fontSize: 20,
@@ -456,7 +471,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 20,
-    marginBottom: 20,
+    marginBottom: 20, marginTop: 8
   },
 
   footerClear: { color: "#444", fontSize: 14 },
@@ -469,12 +484,12 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   resetBtn: {
- color: "#fff",
+    color: "#fff",
     backgroundColor: "red",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 8,
-    fontWeight: "700", 
+    fontWeight: "700",
   },
   saveBtn: {
     color: "#fff",

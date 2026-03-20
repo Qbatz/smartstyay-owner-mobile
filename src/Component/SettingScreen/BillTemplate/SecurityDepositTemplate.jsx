@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  Modal,
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -21,15 +22,16 @@ import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import ColorPicker, { HueSlider, OpacitySlider, Panel1 } from "reanimated-color-picker";
 import { runOnJS } from "react-native-reanimated";
 import tinycolor from "tinycolor2"
+import QuestionMarkHelp from "../../../Assets/Images/QuestionMarkHelp.png"
 
 
 const EditIcon = require("../../../Assets/Images/edit.png");
 const UploadIcon = require("../../../Assets/Images/upload.png");
 
-export default function SecurityDepositTemplate({handleAddBank,onChange}) {
+export default function SecurityDepositTemplate({ handleAddBank, onChange }) {
   const { activeHostelId } = useContext(CommonContexts)
   const { getGlobalBillPdfDetail, postGlobalBilPdfDetails } = useContext(BillContext)
-  const { bankList,getBankListByHostel } =useContext(BankingContext);
+  const { bankList, getBankListByHostel } = useContext(BankingContext);
   const [contactNumber, setContactNumber] = useState("9876543210");
   const [email, setEmail] = useState("sriramkumar@gmail.com");
 
@@ -67,9 +69,12 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
   const [message, setmessage] = useState("")
   const [errorType, setErrorType] = useState("")
 
-  const [selectedBankId,setSelectedBankId]=useState(null)
+  const [selectedBankId, setSelectedBankId] = useState(null)
 
-  const [color,setColor]=useState({hex: "#E0911D",r: 224,g: 145,b: 29,a: 1,})
+  const [color, setColor] = useState({ hex: "#E0911D", r: 224, g: 145, b: 29, a: 1, })
+
+    const [isEditable,setIsEditable]=useState(false)
+    const [editPopup,setEditPopUp]=useState(false)
 
 
   useEffect(() => {
@@ -85,6 +90,11 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
       setContactCustomize(r?.data?.isMobileCustomized)
       setSignCustomize(r?.data?.isSignatureCustomized)
 
+      const apiColor = r?.data?.templates[0]?.invoiceTemplateColor;
+
+      setColor(parseRGBA(apiColor));
+
+
       setPrefix(r?.data?.templates[0]?.prefix || null)
       setSuffix(r?.data?.templates[0]?.suffix || null)
 
@@ -98,23 +108,39 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
 
   }, [])
 
-    useEffect(() => {
-        if (activeHostelId) {
-          getBankListByHostel(activeHostelId);
-        }
-      }, [activeHostelId]);
+  const parseRGBA = (rgbaString) => {
+    if (!rgbaString) return null;
 
-     useEffect(() => {
-      const data = {
-        contactNumber,email,prefix,suffix,tax,invoiceNotes,terms,logoUri,
-        qrUri,signatureImage,selectedBankId,color,
-      };
-    
-      onChange && onChange(data);
-    }, [
-      contactNumber,email,prefix,suffix,tax,invoiceNotes,terms,logoUri,qrUri,signatureImage,
-      selectedBankId,color,
-    ]);
+    const tc = tinycolor(rgbaString);
+    const rgb = tc.toRgb();
+
+    return {
+      hex: tc.toHexString(),
+      r: rgb.r,
+      g: rgb.g,
+      b: rgb.b,
+      a: rgb.a,
+    };
+  };
+
+
+  useEffect(() => {
+    if (activeHostelId) {
+      getBankListByHostel(activeHostelId);
+    }
+  }, [activeHostelId]);
+
+  useEffect(() => {
+    const data = {
+      contactNumber, email, prefix, suffix, tax, invoiceNotes, terms, logoUri,
+      qrUri, signatureImage, selectedBankId, color,
+    };
+
+    onChange && onChange(data);
+  }, [
+    contactNumber, email, prefix, suffix, tax, invoiceNotes, terms, logoUri, qrUri, signatureImage,
+    selectedBankId, color,
+  ]);
 
   const pickImage = async (setter) => {
     const res = await launchImageLibrary({ mediaType: "photo" });
@@ -141,6 +167,7 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
       gstPercentile: tax,
       invoiceNotes: invoiceNotes,
       invoiceTermsAndCondition: terms,
+      invoiceTemplateColor: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
       invoicePhoneNumber: contactNumber,
       invoiceMailId: email,
     }
@@ -204,75 +231,75 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
 
 
   const mappedBankList = (bankList || []).map((b) => {
-        if (b.accountType === "BANK") {
-          return {
-            id: b.bankingId,
-            title: b.bankName || "Bank",
-            subtitle: "Savings A/C",
-            name: b.accountHolderName,
-            acc: b.accountNumber,
-            balance: b.accountBalance ?? 0,
-            Icon: BankIcon,
-            raw: b,
-          };
-        }
-    
-        if (b.accountType === "UPI") {
-          return {
-            id: b.bankingId,
-            title: "UPI",
-            subtitle: "UPI ID",
-            name: b.accountHolderName,
-            acc: b.upiId,
-            balance: b.accountBalance ?? 0,
-            Icon: UpiIcon,
-            raw: b,
-          };
-        }
-    
-        if (b.accountType === "CARD") {
-          return {
-            id: b.bankingId,
-            title: "Card",
-            subtitle: b.cardType || "Card",
-            name: b.accountHolderName,
-            acc: b.creditCardNumber || b.debitCardNumber,
-            balance: b.accountBalance ?? 0,
-            Icon: CardIcon,
-            raw: b,
-          };
-        }
-    
-        if (b.accountType === "CASH") {
-          return {
-            id: b.bankingId,
-            title: "Cash",
-            subtitle: "Petty Cash",
-            name: b.accountHolderName,
-            acc: "",
-            balance: b.accountBalance ?? 0,
-            Icon: CashIcon,
-            raw: b,
-          };
-        }
-    
-        return null;
-      }).filter(Boolean);
+    if (b.accountType === "BANK") {
+      return {
+        id: b.bankingId,
+        title: b.bankName || "Bank",
+        subtitle: "Savings A/C",
+        name: b.accountHolderName,
+        acc: b.accountNumber,
+        balance: b.accountBalance ?? 0,
+        Icon: BankIcon,
+        raw: b,
+      };
+    }
 
-   const Box = ({ label, value }) => (
-    <View style={{marginTop:10,alignItems:'center'}}>
+    if (b.accountType === "UPI") {
+      return {
+        id: b.bankingId,
+        title: "UPI",
+        subtitle: "UPI ID",
+        name: b.accountHolderName,
+        acc: b.upiId,
+        balance: b.accountBalance ?? 0,
+        Icon: UpiIcon,
+        raw: b,
+      };
+    }
+
+    if (b.accountType === "CARD") {
+      return {
+        id: b.bankingId,
+        title: "Card",
+        subtitle: b.cardType || "Card",
+        name: b.accountHolderName,
+        acc: b.creditCardNumber || b.debitCardNumber,
+        balance: b.accountBalance ?? 0,
+        Icon: CardIcon,
+        raw: b,
+      };
+    }
+
+    if (b.accountType === "CASH") {
+      return {
+        id: b.bankingId,
+        title: "Cash",
+        subtitle: "Petty Cash",
+        name: b.accountHolderName,
+        acc: "",
+        balance: b.accountBalance ?? 0,
+        Icon: CashIcon,
+        raw: b,
+      };
+    }
+
+    return null;
+  }).filter(Boolean);
+
+  const Box = ({ label, value }) => (
+    <View style={{ marginTop: 10, alignItems: 'center' }}>
       <View style={styles.box}>
-         <Text style={styles.boxValue}>{value}</Text>
+        <Text style={styles.boxValue}>{value}</Text>
       </View>
-     
+
       <Text style={styles.boxLabel}>{label}</Text>
     </View>
   );
-  
+
   const handleColorChange = (c) => {
     const tc = tinycolor(c.hex);
     const rgb = tc.toRgb();
-  
+
     const alpha = c?.alpha ?? rgb.a ?? 1; // ✅ define it
     setColor({
       hex: c.hex,
@@ -284,7 +311,7 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
     });
   };
 
-  
+
 
   return (
 
@@ -301,7 +328,9 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardLabel}>Contact Number</Text>
-                <Image source={EditIcon} style={styles.iconSmall} />
+                <TouchableOpacity onPress={()=>setEditPopUp(true)}>
+                  <Image source={EditIcon} style={styles.iconSmall} />
+                </TouchableOpacity>          
               </View>
 
               <View style={styles.row}>
@@ -312,6 +341,7 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
                 <TextInput
                   style={styles.lightInput}
                   value={contactNumber}
+                  editable={isEditable}
                   keyboardType="number-pad"
                   maxLength={10}
                   onChangeText={(t) => setContactNumber(t.replace(/\D/g, ""))}
@@ -328,12 +358,15 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardLabel}>E-Mail Address</Text>
-                <Image source={EditIcon} style={styles.iconSmall} />
+                 <TouchableOpacity onPress={()=>setEditPopUp(true)}>
+                  <Image source={EditIcon} style={styles.iconSmall} />
+                </TouchableOpacity>
               </View>
 
               <TextInput
                 style={styles.lightInput}
                 value={email}
+                editable={isEditable}
                 onChangeText={setEmail}
                 keyboardType="email-address"
               />
@@ -349,7 +382,9 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardLabel}>Hostel/PG Logo</Text>
-                <Image source={EditIcon} style={styles.iconSmall} />
+                 <TouchableOpacity onPress={()=>setEditPopUp(true)}>
+                  <Image source={EditIcon} style={styles.iconSmall} />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.logoBox}>
@@ -358,7 +393,8 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
                 ) : (
                   <Image source={UploadIcon} style={styles.uploadIcon} />
                 )}
-                <TouchableOpacity onPress={() => pickImage(setLogoUri)}>
+                <TouchableOpacity onPress={() => pickImage(setLogoUri)}
+                  disabled={!isEditable}>
                   <Text style={[styles.linkText, { color: selectedColor }]}>Choose file</Text>
                 </TouchableOpacity>
                 <Text style={styles.smallNote}>Must be PNG (600 × 300)</Text>
@@ -377,7 +413,7 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
               <TouchableOpacity
                 style={styles.signatureBox}
                 onPress={() => pickImage(setSignatureImage)}
-              >
+               disabled={!isEditable}>
                 {signatureImage ? (
                   <Image source={{ uri: signatureImage }} style={styles.signaturePreview} />
                 ) : (
@@ -461,7 +497,7 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
             <Text style={styles.boxTitle}>Account Details</Text>
 
             <TouchableOpacity onPress={handleAddBank}
-            style={styles.addBankBtn}>
+              style={styles.addBankBtn}>
               <Text style={styles.addBankText}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -472,17 +508,17 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
           <View style={{ maxHeight: 200 }}>
             <ScrollView showsVerticalScrollIndicator nestedScrollEnabled={true}>
               {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item) => (
-                <TouchableOpacity onPress={()=>setSelectedBankId(item.id)}
-                key={item.id} style={styles.bankRow}>
+                <TouchableOpacity onPress={() => setSelectedBankId(item.id)}
+                  key={item.id} style={styles.bankRow}>
 
                   {/* Radio */}
                   <View style={styles.radioOuter}>
                     {
-                      selectedBankId === item.id  && (
-                          <View style={styles.radioInner} />
+                      selectedBankId === item.id && (
+                        <View style={styles.radioInner} />
                       )
                     }
-                    
+
                   </View>
 
                   {/* Icon */}
@@ -547,39 +583,39 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
 
         {/* THEME */}
         <View style={styles.card}>
-          <Text style={[styles.boxTitle,{marginBottom:20}]}>Template Theme</Text>
+          <Text style={[styles.boxTitle, { marginBottom: 20 }]}>Template Theme</Text>
 
           {/* <View style={styles.colorRow}>
             <View style={[styles.themePreview, { backgroundColor: selectedColor }]} />
             <Text style={{ marginLeft: 10, color: "#555" }}>{selectedColor}</Text>
           </View> */}
 
-           <ColorPicker
-           key={color.hex}
-          value={color.hex}
-          onComplete={(c)=>{
-            'worklet';
+          <ColorPicker
+            key={color?.hex}
+            value={color?.hex}
+            onComplete={(c) => {
+              'worklet';
 
-           
-            runOnJS(handleColorChange)(c);
-          }}
+
+              runOnJS(handleColorChange)(c);
+            }}
           >
-            <Panel1 style={{ height: 180,borderRadius: 12,}}/>
+            <Panel1 style={{ height: 180, borderRadius: 12, }} />
 
-            <HueSlider style={{ marginTop: 12,}}/>
+            <HueSlider style={{ marginTop: 12, }} />
 
-            <OpacitySlider style={{ marginTop: 12,}}/>
-          
+            <OpacitySlider style={{ marginTop: 12, }} />
+
           </ColorPicker>
 
-          
 
-          <View style={{ flexDirection: "row",justifyContent: "space-between",marginTop: 15,}}>
-              <Box label="Hex" value={color.hex}/>
-              <Box label="R" value={color.r}/>
-              <Box label="G" value={color.g}/>
-              <Box label="B" value={color.b}/>
-              <Box label="A" value={color.a}/>
+
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 15, }}>
+            <Box label="Hex" value={color?.hex} />
+            <Box label="R" value={color?.r} />
+            <Box label="G" value={color?.g} />
+            <Box label="B" value={color?.b} />
+            <Box label="A" value={color?.a} />
           </View>
 
           <View style={styles.swatchContainer}>
@@ -587,7 +623,7 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
               <TouchableOpacity
                 key={c}
                 style={[styles.swatch, { backgroundColor: c }]}
-                onPress={() => {handleColorChange({ hex: c, alpha: 1 });}}
+                onPress={() => { handleColorChange({ hex: c, alpha: 1 }); }}
               />
             ))}
           </View>
@@ -600,18 +636,50 @@ export default function SecurityDepositTemplate({handleAddBank,onChange}) {
 
       </ScrollView>
 
+      <Modal 
+            visible={editPopup}
+            transparent={true}
+            animationType="fade">
+              <View style={{flex:1,justifyContent:'center',alignItems:'center',backgroundColor:"rgba(0,0,0,0.5)"}}>
+                  <View style={{backgroundColor: "#fff",borderRadius: 12,padding: 20,marginHorizontal:15}}>
+                  
+                  <View style={{flexDirection:'row'}}>
+                    <Image source={QuestionMarkHelp} style={{width:22,height:22}} />
+                    <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold',marginLeft:5}}>Override Global Value</Text>
+                  </View>
+      
+                  <Text style={{fontSize:13,fontFamily:'Gilroy-Regular',marginTop:15,lineHeight:22}}>
+                    You're changing this field only for this bill. It won't affect the main settings</Text>
+      
+                     <View style={{alignSelf:'flex-end',flexDirection:'row',alignItems:'center',marginTop:18}}>
+                      <TouchableOpacity onPress={()=>setEditPopUp(false)}
+                      style={{padding:12,borderWidth:1,borderRadius:10,marginRight:5}}>
+                          <Text style={{fontFamily:'Gilroy-Semibold',fontSize:13,color:'#6F6C8F'}}>Cancel</Text>
+                      </TouchableOpacity>
+      
+                      <TouchableOpacity onPress={()=>{
+                        setIsEditable(true)
+                        setEditPopUp(false)}}
+                      style={{padding:12,borderRadius:10,backgroundColor:'#1E45E1',marginLeft:5}}> 
+                          <Text style={{fontFamily:'Gilroy-Semibold',fontSize:13,color:'#FFFFFF'}}>Edit Anyway</Text>
+                      </TouchableOpacity>
+                  </View>
+                  </View>
+              </View>
+            </Modal>
 
-           
+
+
       {/* STICKY PREVIEW BUTTON */}
       {/* <TouchableOpacity style={styles.previewBtn }>
         <Text style={styles.previewBtnText}>Preview</Text>
       </TouchableOpacity>
      */}
-     
+
     </View>
 
 
-        
+
 
   );
 }
@@ -879,7 +947,7 @@ const styles = StyleSheet.create({
   boxLabel: {
     fontSize: 12,
     color: "#666",
-    marginTop:4
+    marginTop: 4
   },
 
 });
