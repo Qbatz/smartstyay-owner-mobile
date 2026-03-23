@@ -24,6 +24,22 @@ export default function BillTab({ customerDetails }) {
                 } = useHasPermission("Bills")
 
                 console.log("customerDetails", customerDetails);
+
+                const parseDate = (dateStr) => {
+  if (!dateStr) return null;
+
+  const [day, month, year] = dateStr.split("/");
+  return new Date(`${year}-${month}-${day}`);
+};
+
+const requestedLeavingDate =
+  customerDetails?.checkoutInfo?.requestedLeavingDate;
+
+const leavingDateObj = parseDate(requestedLeavingDate);
+const today = new Date();
+
+const isAfterLeavingDate =
+  leavingDateObj && today > leavingDateObj;
                 
 
                   const status = customerDetails?.customerCurrentStatus;
@@ -31,7 +47,8 @@ export default function BillTab({ customerDetails }) {
 const disableFinancialEdit =
   status === "BOOKED" ||
   status === "VACATED" ||
-  status === "NOTICE";
+  (status === "NOTICE" && isAfterLeavingDate);
+
 
   const handleCreateBill = () => {
     if(!canWriteInvoice) return ;

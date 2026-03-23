@@ -1905,22 +1905,24 @@ export default function BillsDesign({ route }) {
 
     const res = await CreateRefund({
       hostelId: activeHostelId,
-      invoiceId: selectedBill.invoiceId,
+      invoiceId: selectedBill?.invoiceId,
       payload,
     });
 
-    if (res.success) {
+    if (res?.success) {
       setModalType("success");
       setModalMessage("Refund successfully");
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
+
       GetAllBillDetails(activeHostelId);
       setShowRefundPayment(false);
+      resetRefundForm();
       setRefundAmount("");
       setRefundDate(null);
       setRefundFrom("");
       setTransactionId("");
-    } else if (res.refundableError) {
+    } else if (res?.refundableError) {
       setModalType("warning");
       setModalMessage(res?.refundableError);
       setShowSuccessModal(true);
@@ -2006,6 +2008,8 @@ export default function BillsDesign({ route }) {
   const cancelled = selectedBill?.paymentStatus === "Cancelled";
   const pendingRefund = selectedBill?.paymentStatus === "Pending Refund";
   const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
+  const FullyRefund = selectedBill?.paymentStatus === "Refunded"
+
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadInvoice;
@@ -2285,7 +2289,7 @@ const isNotDiscounted =
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
-                  )}
+                  )} 
 
                   {(
                     !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
@@ -2785,7 +2789,7 @@ const isNotDiscounted =
 
                 <View style={styles.fixedBottomBar}>
 
-                  {(isPaid || cancelled || pendingRefund || partiallyRefund) && (
+                  {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
                     <>
                       <TouchableOpacity
                         style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -4237,7 +4241,7 @@ const isNotDiscounted =
 
                   {/* BUTTON ROW */}
                   <View style={styles.btnRow}>
-                    <TouchableOpacity style={styles.cancelBtn} >
+                    <TouchableOpacity style={styles.cancelBtn} onPress={setShowRefundPayment(false)}>
                       <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
 
