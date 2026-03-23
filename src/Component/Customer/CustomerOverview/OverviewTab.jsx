@@ -107,6 +107,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
   // const manualDocs = customerDetails?.files?.otherDoc || [];
   const dataSource = ParticularcustomerDetails || customerDetails;
   const manualDocs = dataSource?.files?.otherDoc || [];
+  const kycDocs = dataSource?.files?.kycDoc || [];
 
   const contacts = ParticularcustomerDetails?.additionalContacts || [];
   const hasContacts = contacts.length > 0;
@@ -892,93 +893,73 @@ const disableFinancialEdit =
 
 
               {docTab === "KYC" && (
-                <>
-                  <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: "#9CA3AF" }}>
-                      No KYC documents are there!</Text>
-                  </View>
-                </>
-                // <>
+  <View style={{ maxHeight: 300 }}>
+    <ScrollView nestedScrollEnabled>
+      {kycDocs.length > 0 ? (
+        kycDocs.map((doc) => (
+          <View style={styles.docRow} key={doc.documentId}>
+            <View style={styles.docLeft}>
+              <Image
+                source={
+                  doc.type === "PDF"
+                    ? require("../../../Assets/Images/pdf.png")
+                    : { uri: doc?.url }
+                }
+                style={styles.pdfIcon}
+              />
 
-                //   <View style={styles.docRow}>
-                //     <View style={styles.docLeft}>
-                //       <Image
-                //         source={require("../../../Assets/Images/profile.png")}
-                //         style={styles.pdfIcon}
-                //       />
-                //       <View>
-                //         <Text style={styles.docTitle}>Rental Agreement.pdf</Text>
-                //         <Text style={styles.docMeta}>180 KB · PDF</Text>
-                //       </View>
-                //     </View>
-
-                //     <View style={styles.docActions}>
-                //       <Image
-                //         source={require("../../../Assets/Images/Eye.png")}
-                //         style={styles.actionIcon}
-                //       />
-                //       <Image
-                //         source={require("../../../Assets/Images/download.png")}
-                //         style={styles.actionIcon}
-                //       />
-                //     </View>
-                //   </View>
-
-                //   {/* Aadhar */}
-                //   <View style={styles.docRow}>
-                //     <View style={styles.docLeft}>
-                //       <Image
-                //         source={require("../../../Assets/Images/profile.png")}
-                //         style={styles.pdfIcon}
-                //       />
-                //       <View>
-                //         <Text style={styles.docTitle}>Aadhar.pdf</Text>
-                //         <Text style={styles.docMeta}>180 KB · PDF</Text>
-                //       </View>
-                //     </View>
-
-                //     <View style={styles.docActions}>
-                //       <Image
-                //         source={require("../../../Assets/Images/Eye.png")}
-                //         style={styles.actionIcon}
-                //       />
-                //       <Image
-                //         source={require("../../../Assets/Images/download.png")}
-                //         style={styles.actionIcon}
-                //       />
-                //     </View>
-                //   </View>
-                // </>
-              )}
-
-              {/* 
-            {docTab === "MANUAL" && (
-
-              <View style={styles.docRow}>
-                <View style={styles.docLeft}>
-                  <Image
-                    source={require("../../../Assets/Images/profile.png")} // PDF icon
-                    style={styles.pdfIcon}
-                  />
-                  <View>
-                    <Text style={styles.docTitle}>Manual_Document.pdf</Text>
-                    <Text style={styles.docMeta}>180 KB · PDF</Text>
-                  </View>
-                </View>
-
-                <View style={styles.docActions}>
-                  <Image
-                    source={require("../../../Assets/Images/Eye.png")}
-                    style={styles.actionIcon}
-                  />
-                  <Image
-                    source={require("../../../Assets/Images/download.png")}
-                    style={styles.actionIcon}
-                  />
-                </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.docTitle} numberOfLines={1}>
+                  {doc.type}
+                </Text>
               </View>
+            </View>
 
-            )} */}
+            <View style={styles.docActions}>
+              {/* VIEW */}
+              <TouchableOpacity
+                disabled={!isSubscriptionAllow}
+                onPress={() => {
+                  if (doc.type === "PDF") {
+                    Linking.openURL(doc.url);
+                  } else {
+                    const index = kycDocs.findIndex(
+                      (item) => item.documentId === doc.documentId
+                    );
+                    setViewerIndex(index);
+                    setViewerVisible(true);
+                  }
+                }}
+              >
+                <Image
+                  source={require("../../../Assets/Images/Eye.png")}
+                  style={[
+                    styles.actionIcon,
+                    !isSubscriptionAllow && { opacity: 0.4 },
+                  ]}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))
+      ) : (
+        <Text style={{ textAlign: "center", color: "#9CA3AF" }}>
+          No KYC Documents
+        </Text>
+      )}
+    </ScrollView>
+
+    {/* 👇 IMPORTANT: viewer ku kycDocs pass pannunga */}
+    <DocumentViewer
+      visible={viewerVisible}
+      documents={kycDocs}
+      initialIndex={viewerIndex}
+      onClose={() => setViewerVisible(false)}
+      customerdetails={customerDetails}
+    />
+  </View>
+)}
+           
 
               {docTab === "MANUAL" && (
                 <>
