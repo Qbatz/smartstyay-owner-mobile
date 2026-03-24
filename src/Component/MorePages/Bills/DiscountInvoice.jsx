@@ -167,6 +167,22 @@ console.log({
     discountType === "Percentage" ? Number(discount) : 0,
 });
 
+
+const sendpayload = {
+  hostelId: bill?.hostelId,
+  invoiceId: bill?.invoiceId,
+  reason: reason || "",
+  ...(discountType === "Amount" && {
+    discountAmount: Number(discount),
+  }),
+  ...(discountType === "Percentage" && {
+    discountPercentage: Number(discount),
+  }),
+};
+
+console.log("sendpayload", sendpayload);
+
+
 const handleDiscountApply = async () => {
   let hasError = false;
 
@@ -203,22 +219,39 @@ const handleDiscountApply = async () => {
 
   if (hasError) return;
 
-const res = await ApplyBillDiscount({
+const payload = {
   hostelId: bill?.hostelId,
   invoiceId: bill?.invoiceId,
+  reason: reason || "",
+  ...(discountType === "Amount" && {
+    discountAmount: Number(discount),
+  }),
+  ...(discountType === "Percentage" && {
+    discountPercentage: Number(discount),
+  }),
+};
 
-  discountAmount:
-    discountType === "Amount"
-      ? Number(discount)
-      : discountValue,
+console.log("payload", payload);
 
-  discountPercentage:
-    discountType === "Percentage"
-      ? Number(discount)
-      : 0,
 
-  reason,
-});
+const res = await ApplyBillDiscount(payload);
+
+// const res = await ApplyBillDiscount({
+//   hostelId: bill?.hostelId,
+//   invoiceId: bill?.invoiceId,
+
+//   discountAmount:
+//     discountType === "Amount"
+//       ? Number(discount)
+//       : discountValue,
+
+//   discountPercentage:
+//     discountType === "Percentage"
+//       ? Number(discount)
+//       : 0,
+
+//   reason,
+// });
 
   if (res?.success) {
     setModalType("success");
@@ -402,19 +435,41 @@ const res = await ApplyBillDiscount({
     placeholder={discountType === "Amount" ? "₹ 0.00" : "0 %"}
     keyboardType="numeric"
     value={discount}
-   onChangeText={(text) => {
-  setDiscount(text);
+    onChangeText={(text) => {
+  // ✅ allow only numbers + dot
+  let cleaned = text.replace(/[^0-9.]/g, "");
 
-  const num = Number(text);
+  // ✅ prevent multiple dots
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "." + parts[1];
+  }
 
-  if (text && !isNaN(num) && num > 0) {
+  setDiscount(cleaned);
+
+  const num = Number(cleaned);
+
+  if (cleaned && !isNaN(num) && num > 0) {
     setDiscountErr("");
   }
 
-  if (text && (isNaN(num) || num <= 0)) {
+  if (cleaned && (isNaN(num) || num <= 0)) {
     setDiscountErr("Enter valid discount");
   }
 }}
+//    onChangeText={(text) => {
+//   setDiscount(text);
+
+//   const num = Number(text);
+
+//   if (text && !isNaN(num) && num > 0) {
+//     setDiscountErr("");
+//   }
+
+//   if (text && (isNaN(num) || num <= 0)) {
+//     setDiscountErr("Enter valid discount");
+//   }
+// }}
   />
 
   <View style={styles.toggleBox}>

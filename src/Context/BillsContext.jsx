@@ -735,11 +735,17 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
 
     const axios = getAxios();
 
+    // const payload = {
+    //   discountAmount: discountAmount || 0,
+    //   discountPercentage: discountPercentage || 0,
+    //   reason: reason || "",
+    // };
+
     const payload = {
-      discountAmount: discountAmount || 0,
-      discountPercentage: discountPercentage || 0,
-      reason: reason || "",
-    };
+  reason: reason || "",
+  ...(discountAmount !== undefined && { discountAmount }),
+  ...(discountPercentage !== undefined && { discountPercentage }),
+};
 
     const res = await axios.post(
       `/v2/bills/discount/${hostelId}/${invoiceId}`,

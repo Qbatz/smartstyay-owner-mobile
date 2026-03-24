@@ -128,6 +128,7 @@ export default function BillingRule({ navigation }) {
   innerCircleStyle={{ alignItems: "center", justifyContent: "center" }}
   renderActiveText={false}
   renderInActiveText={false}
+  disabled
 />
 
         </View>
@@ -160,6 +161,7 @@ export default function BillingRule({ navigation }) {
   circleInActiveColor={"#fff"}
   renderActiveText={false}
   renderInActiveText={false}
+  disabled
 />
 
         </View>

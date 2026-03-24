@@ -443,7 +443,6 @@ export default function BillsDesign({ route }) {
 
     console.log("REFUND DATA", payload);
 
-    setShowRefundPayment(false);
   };
 
 
@@ -1528,13 +1527,14 @@ export default function BillsDesign({ route }) {
 
 
   const handleShowRefundPayment = () => {
-
     resetRefundForm();
     setShowMenu(false);
     setShowRefundPayment(true);
     setShowRefundFrom(false);
-
   }
+
+  console.log("showrefund", showRefundPayment);
+  
 
   useEffect(() => {
     if (
@@ -2407,7 +2407,7 @@ const isNotDiscounted =
 
 
                       {
-                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual")) && (
+                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" &&  selectedBill?.invoiceType !== "Settlement")) && (
                           <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                             onPress={() => openMenu(selectedBill)}>
                             <Image
@@ -3306,7 +3306,7 @@ const isNotDiscounted =
                   </TouchableOpacity>
                 )}
 
-{selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "SETTLEMENT") &&
+{selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
   !selectedBill?.isDiscounted && (
     <TouchableOpacity
       style={styles.popupRow}
@@ -3882,10 +3882,12 @@ const isNotDiscounted =
 
 
           {showRefundPayment && (
-            <View style={styles.sheetOverlay}>
-              <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
-                <View style={{ flex: 1 }} />
-              </TouchableWithoutFeedback>
+            <View style={styles.sheetOverlay} pointerEvents="box-none">
+            <View style={{ flex: 1 }}>
+  <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
+    <View style={{ flex: 1 }} />
+  </TouchableWithoutFeedback>
+</View>
 
               <Animated.View
                 style={[
@@ -4241,7 +4243,7 @@ const isNotDiscounted =
 
                   {/* BUTTON ROW */}
                   <View style={styles.btnRow}>
-                    <TouchableOpacity style={styles.cancelBtn} onPress={setShowRefundPayment(false)}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowRefundPayment(false)}>
                       <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
 
