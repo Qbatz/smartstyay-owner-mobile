@@ -32,6 +32,8 @@ import CommingSoon from "../../Assets/Images/Coming_soon.png"
 export default function BookingCheckIn({ navigation, route }) {
     const { customerId, customer } = route.params || {};
     console.log("customerten", customerId)
+    console.log("customer", customer);
+    
     const [tab, setTab] = useState("long");
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();

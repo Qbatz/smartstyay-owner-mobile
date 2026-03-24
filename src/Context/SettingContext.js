@@ -137,7 +137,7 @@ const addBillingRecurring = async (payload) => {
     return { success: true, data: res.data };
 
   } catch (err) {
-    return { success: false, data: err.response?.data };
+    return { success: false, data: err?.response?.data || err?.messag};
   }
 };
 

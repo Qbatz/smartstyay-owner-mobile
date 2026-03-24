@@ -545,6 +545,9 @@ const isExportAllow = isValidSubscription && canReadTenant;
       customer: selectedItem,
     });
 
+    console.log("selectedItem", selectedItem);
+    
+
     setMenuVisible(false)
   }
 
