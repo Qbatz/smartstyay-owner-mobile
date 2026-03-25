@@ -7,33 +7,44 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal,
-  FlatList, Animated, PanResponder, Pressable
+  FlatList, Animated, PanResponder, Pressable ,   NativeModules , Linking 
 } from "react-native";
 
 import Profile from "../../../Assets/Images/profile.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import RoomIcon from "../../../Assets/Images/room.png";
 import BedIcon from "../../../Assets/Images/bed.png";
-import EmailIcon from "../../../Assets/Images/email.png";
+import EmailIcon from "../../../Assets/Images/sms.png";
 import PhoneIcon from "../../../Assets/Images/profile.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import AmountIcon from "../../../Assets/Images/profile.png";
 import Loader from "../../Loader/Loader";
+import SuccessModal from "../../../ToastFile/ToastPage";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
+import CallIcon from "../../../Assets/Images/call_black_icon.png";
+import WhatsappIcon from "../../../Assets/Images/whatsapp.png";
+import MobileIcon from "../../../Assets/Images/mobile.png";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useNavigation } from "@react-navigation/native";
 
 export default function CheckoutList({ searchText }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { getCheckoutCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
+      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
   const [checkoutCustomer, setCheckoutCustomer] = useState([]);
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+       const [showSuccessModal, setShowSuccessModal] = useState(false);
+       const [modalMessage, setModalMessage] = useState("");
+       const [modalType, setModalType] = useState("success");
   const navigation = useNavigation();
+
+    const {CommonModule}=NativeModules;
 
   const {
     canWriteModule: canWriteCheckout,
@@ -121,6 +132,55 @@ export default function CheckoutList({ searchText }) {
     );
   });
 
+
+
+  const handleOpenWhatsapp = (item) => {
+    console.log("mobile", item);
+    if (!item) return;
+  
+    let mobile = item?.mobileNo || item?.mobile;
+    let countryCode = item?.countryCode || "91";
+  
+    if (!mobile) {
+      setModalType("warning");
+      setModalMessage("Mobile number not available");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+  
+    mobile = mobile.toString().replace(/\D/g, "");
+  
+    if (mobile.startsWith(countryCode)) {
+      mobile = mobile.slice(countryCode.length);
+    }
+  
+    const phoneNumber = `${countryCode}${mobile}`;
+    const url = `https://wa.me/${phoneNumber}`;
+  
+    console.log("url", url);
+  
+    Linking.openURL(url).catch(() => {
+      setModalType("warning");
+      setModalMessage("WhatsApp not installed");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    });
+  };
+  
+    const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isExportAllow = isValidSubscription && canReadCheckout;
+  
+    const handleCallPhone=(mobile)=>{
+      console.log("mobile",mobile)
+      if(mobile){
+        CommonModule.makeCall(mobile)
+      }
+      
+    }
+
+
+
   if (!canReadCheckout && !loading) {
     return (
       <View style={styles.container}>
@@ -149,6 +209,14 @@ export default function CheckoutList({ searchText }) {
     console.log("checkout",item)
 
     return (
+      <>
+        <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+      
       <TouchableOpacity style={styles.card} onPress={() => openCustomerDetails(item)}>
         <View style={styles.leftRow}>
           <View>
@@ -215,6 +283,7 @@ export default function CheckoutList({ searchText }) {
           )}
         </View>
       </TouchableOpacity>
+      </>
     );
   };
 
@@ -266,18 +335,44 @@ export default function CheckoutList({ searchText }) {
             >
               <View style={styles.handle} />
 
-              <Text style={styles.title}>Customer Details</Text>
+              <Text style={styles.title}>Tenant Details</Text>
 
               <View style={styles.profileRow}>
                 {selectedCustomer?.profilePic ? <Image source={{uri:selectedCustomer.profilePic}} style={styles.profileImg} /> : 
                 <View style={{width:50,height:50,borderRadius:25,backgroundColor:'#eef1ff',justifyContent:'center',alignItems:'center'}}>
                   <Text style={{fontSize:16,fontFamily: "Gilroy-Semibold"}}>{selectedCustomer?.initials}</Text>
                 </View>}
-                <TouchableOpacity  onPress={() => handleOverViewScrren(selectedCustomer)}>
+             
+                <View style={styles.info}>
+            <View
+                                style={{ flex: 1 }}
+                          
+                              >
+   <TouchableOpacity  onPress={() => handleOverViewScrren(selectedCustomer)}>
                 <Text style={styles.profileName}>
                   {selectedCustomer?.fullName}
                 </Text>
                 </TouchableOpacity>
+
+            <View style={styles.row}>
+              <View style={styles.floorBadge}>
+                <Text style={styles.floorText}>{selectedCustomer?.hostelInfo?.floorName}</Text>
+              </View>
+
+              <View style={styles.iconRow}>
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.roomName}</Text>
+              </View>
+
+              <View style={styles.iconRow}>
+                <Image source={BedIcon} style={styles.icon} />
+                <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.bedName}</Text>
+              </View>
+            </View>
+            </View>
+          </View>
+                
+                 
               </View>
 
               <Text style={styles.label}>Email</Text>
@@ -286,10 +381,78 @@ export default function CheckoutList({ searchText }) {
                 <Text style={{fontFamily: "Gilroy-Bold" }}>{selectedCustomer?.emailId || "N/A"}</Text>
               </View>
 
-              <Text style={styles.label}>Mobile</Text>
+              {/* <Text style={styles.label}>Mobile</Text>
               <View style={styles.infoRow}>
                 <Image source={PhoneIcon} style={styles.infoIcon} />
                 <Text style={{fontFamily: "Gilroy-Bold" }}>{selectedCustomer?.mobileNo}</Text>
+              </View> */}
+
+                        <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  // marginTop: 15,
+                }}
+              >
+                {/* LEFT SIDE */}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoLabel}>Mobile</Text>
+              
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Image
+                      source={MobileIcon}
+                      style={{ width: 15, height: 15, marginRight: 5 }}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.infoValue}>
+                      {selectedCustomer?.mobileNo}
+                    </Text>
+                  </View>
+                </View>
+              
+                {/* RIGHT SIDE ICON */}
+              
+                  <TouchableOpacity 
+              
+                    onPress={() =>
+                  handleOpenWhatsapp(selectedCustomer)
+                }
+                 
+              
+                    style={[
+                  {
+                    padding: 10,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  },
+                  !isExportAllow && { opacity: 0.4 },
+                ]}
+                      disabled={!isExportAllow}
+                >
+                  <Image
+                    source={WhatsappIcon}
+                    style={{ width: 24, height: 24 }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={()=>handleCallPhone(selectedCustomer?.mobileNo)}
+              
+                style={[
+                  {
+                    padding: 10,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  },
+                  !isExportAllow && { opacity: 0.4 },
+                ]}
+                      disabled={!isExportAllow}
+                >
+                  <Image
+                    source={CallIcon}
+                    style={{ width: 24, height: 24 }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
               </View>
 
               <Text style={styles.label}>Checkout Date</Text>
@@ -375,7 +538,7 @@ const styles = StyleSheet.create({
   icon: { width: 16, height: 16, marginRight: 3 },
   detailText: { fontSize: 12 , fontFamily: "Gilroy-Regular"},
 
-  rightCol: { alignItems: "flex-end" },
+  rightCol: { alignItems: "flex-end" , paddingRight:10},
   date: { color: "#999", fontSize: 11, marginTop: 5, fontFamily: "Gilroy-Regular" },
 
   popup: {
@@ -439,7 +602,7 @@ const styles = StyleSheet.create({
   },
 
   profileImg: { width: 55, height: 55, borderRadius: 30 },
-  profileName: { fontSize: 17,fontFamily: "Gilroy-Bold" , marginLeft: 10 },
+  profileName: { fontSize: 17,fontFamily: "Gilroy-Bold" ,  },
 
   label: { fontSize: 13, color: "#6B7280", marginTop: 12 , fontFamily: "Gilroy-Regular"},
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4 , },

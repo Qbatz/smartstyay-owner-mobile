@@ -23,6 +23,33 @@ export default function BillTab({ customerDetails }) {
                   canDeleteModule: canDeleteInvoice,
                 } = useHasPermission("Bills")
 
+                console.log("customerDetails", customerDetails);
+
+                const parseDate = (dateStr) => {
+  if (!dateStr) return null;
+
+  const [day, month, year] = dateStr.split("/");
+  return new Date(`${year}-${month}-${day}`);
+};
+
+const requestedLeavingDate =
+  customerDetails?.checkoutInfo?.requestedLeavingDate;
+
+const leavingDateObj = parseDate(requestedLeavingDate);
+const today = new Date();
+
+const isAfterLeavingDate =
+  leavingDateObj && today > leavingDateObj;
+                
+
+                  const status = customerDetails?.customerCurrentStatus;
+
+const disableFinancialEdit =
+  status === "BOOKED" ||
+  status === "VACATED" ||
+  (status === "NOTICE" && isAfterLeavingDate);
+
+
   const handleCreateBill = () => {
     if(!canWriteInvoice) return ;
 navigation.navigate("CreateBills" , {mode: "add",customerDetails})
@@ -78,8 +105,13 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
     </View>
 
        <TouchableOpacity 
-           style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
-             disabled={!canWriteInvoice}
+          //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                        style={[
+      styles.addBtn,
+      (!canWriteInvoice || disableFinancialEdit ) && { opacity: 0.4 }
+    ]}
+            //  disabled={!canWriteInvoice}
+              disabled={disableFinancialEdit || !canWriteInvoice }
        onPress={handleCreateBill}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
           </TouchableOpacity>

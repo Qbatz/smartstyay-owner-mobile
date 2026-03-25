@@ -221,6 +221,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
     
   }
 
+  console.log("selectedCustomer", selectedCustomer);
+  
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
@@ -544,6 +546,9 @@ const isExportAllow = isValidSubscription && canReadTenant;
       customerId: selectedItem.customerId,
       customer: selectedItem,
     });
+
+    console.log("selectedItem", selectedItem);
+    
 
     setMenuVisible(false)
   }

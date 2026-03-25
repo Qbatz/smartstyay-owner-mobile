@@ -19,6 +19,7 @@ import { Animated, Easing } from "react-native";
 import SubscriptionBanner from "./SubscriptionBannerAlert"
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import RecordPaymentSheet from "../MorePages/Bills/RecordPayment";
 import PgImg from '../../Assets/Images/PgImg.png'
 import Bell from '../../Assets/Images/bell.png'
 import Profile from '../../Assets/Images/profile.png'
@@ -60,6 +61,8 @@ import MonthProfit from '../../Assets/Images/Month_Profit.png';
 import AnnouncementScreen from '../Dashboard/Announcement';
 import UpdatesScreen from '../Dashboard/Update';
 import Svg, { Path, Circle, Line, Text as SvgText } from "react-native-svg";
+// import { BarChart,  } from "react-native-svg-charts";
+import { G, Rect } from "react-native-svg";
 import { CommonContexts } from "../../Context/CommonContext";
 import { LoginContexts } from "../../Context/LoginContext";
 import { PGContext } from "../../Context/PGContext";
@@ -81,7 +84,7 @@ import {
   PieChart,
   Grid,
   YAxis,
-  XAxis
+  XAxis , StackedBarChart 
 } from "react-native-svg-charts";
 import { getHostels } from "../../Action/HostelAction";
 import { retriveData } from "../../Utils/Storage";
@@ -92,18 +95,18 @@ import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 
 
 
-export default function DashboardScreen({ initialParams, route }) {
+export default function DashboardNewDesign({ initialParams, route }) {
 
   console.log("initialParams", initialParams, route);
 
   const insets = useSafeAreaInsets();
-  const { getDashboardByHostel, loading } = useCustomer();
+  const { getDashboardByHostel, loading , GetParticularCustomerDetails } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const {getDashboard , getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -119,6 +122,7 @@ export default function DashboardScreen({ initialParams, route }) {
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [tempMonth, setTempMonth] = useState("");
+  const [showRecordPayment, setShowRecordPayment] = useState(false);
 
   const [sharingModalVisible, setSharingModalVisible] = useState(false);
 
@@ -137,22 +141,126 @@ export default function DashboardScreen({ initialParams, route }) {
 
   const categoryList = IntializeexpensesList?.listExpenses || [];
 
-  useEffect(() => {
-    if (!activeHostelId) return;
+  // useEffect(() => {
+  //   if (!activeHostelId) return;
 
-    const loadDashboard = async () => {
-      const res = await getDashboardByHostel(activeHostelId);
+  //   const loadDashboard = async () => {
+  //     const res = await getDashboardByHostel(activeHostelId);
 
-      console.log("Dashboard API Response", res);
 
-      if (res.success) {
-        setDashboardList(res.data);
+  //     if (res.success) {
+  //       setDashboardList(res.data);
 
-      }
-    };
+  //     }
+  //   };
 
-    loadDashboard();
-  }, [activeHostelId]);
+  //   loadDashboard();
+  // }, [activeHostelId]);
+
+
+  const mapDashboardData = (data) => {
+  return {
+    // ROOMS
+    totalRooms: data?.roomsBeds?.totalRooms || 0,
+    totalBeds: data?.roomsBeds?.totalBeds || 0,
+    occupiedBeds: data?.roomsBeds?.occupiedBeds || 0,
+    freeBeds: data?.roomsBeds?.availableBeds || 0,
+
+    // OCCUPANCY
+    occupancyRate: data?.occupancy?.occupancyRate?.replace("%", "") || 0,
+    occupancyRateFromLastMonth : data?.occupancy?.occupancyRateFromLastMonth?.replace("%", "") || 0,
+
+    // BILLING
+    totalInvoiceGenerated: data?.billingSummary?.totalInvoiceGenerated || 0,
+    totalAmount: data?.billingSummary?.totalAmount || 0,
+    totalPaid: data?.billingSummary?.totalPaid || 0,
+    totalPending: data?.billingSummary?.totalPending || 0,
+    collectionRate: data?.billingSummary?.collectionRate || "0%",
+    fromLastMonth : data?.billingSummary?.fromLastMonth || "0%",
+    // TENANTS
+    totalTenants: data?.tenantsSummary?.totalTenants || 0,
+    checkInTenants: data?.tenantsSummary?.checkInTenants || 0,
+    noticePeriod: data?.tenantsSummary?.noticePeriod || 0,
+    nextCheckout: data?.tenantsSummary?.nextCheckout || "",
+
+    // ADVANCE
+    totalAdvance: data?.advanceSummary?.totalAdvance || 0,
+    otherAdvance: data?.advanceSummary?.otherDeduction || 0,
+    advanceHolding: data?.advanceSummary?.advanceHolding || 0,
+
+    // CHECKINS
+    checkins: data?.checkins || [],
+
+    // OVERDUE
+    overdueInvoices: data?.overdueInvoices || [],
+
+    // REQUESTS / COMPLAINTS
+    tenantRequests: data?.tenantRequests  || {},
+    tenantComplaints: data?.tenantComplaints || {},
+
+    // FINANCE
+    totalIncome: data?.finance?.totalIncome || 0,
+    totalExpense: data?.finance?.totalExpense || 0,
+    netProfit: data?.finance?.netProfit || 0,
+
+    incomeTrend: data?.finance?.incomeTrend || 0,
+expenseTrend: data?.finance?.expenseTrend || 0,
+profitTrend: data?.finance?.profitTrend || 0,
+expenseSummary: data?.expenseSummary || {},
+ roomsBeds: data?.roomsBeds || {},
+  };
+};
+
+const sharingData = dashboardList?.roomsBeds?.sharingInfo || [];
+
+console.log("sharingData", sharingData);
+
+
+const occupancyTrendData =
+  dashboardList?.occupancyTrendSummary?.occupancyTrend?.map((item) => ({
+    label: item.date,
+    occupied: item.occupied,
+    vacant: item.vacant,
+  })) || [];
+
+  
+
+const financeData = {
+  totalIncome: dashboardList?.totalIncome || 0,
+  totalExpense: dashboardList?.totalExpense || 0,
+  netProfit: dashboardList?.netProfit || 0,
+
+  incomeTrend: dashboardList?.incomeTrend || 0,
+  expenseTrend: dashboardList?.expenseTrend || 0,
+  profitTrend: dashboardList?.profitTrend || 0,
+};
+
+
+ useEffect(() => {
+  const fetchDashboard = async () => {
+    const res = await getDashboard(activeHostelId, {
+      billingFilter: "This Month",
+      complaintRequestFilter: "This Month",
+      financeFilter: "This Month",
+      occupancyFilter: "This Month"
+    });
+
+   if (res?.data) {
+      const mapped = mapDashboardData(res?.data);
+
+      setDashboardList({
+        ...mapped,
+
+        occupancyTrendSummary: res.data.occupancyTrendSummary,
+        revenueSummary: res.data.revenueSummary,
+        revenueTrend : res.data.revenueTrend,
+      });
+    }
+  };
+
+  fetchDashboard();
+}, [activeHostelId])
+
 
   useEffect(() => {
     if (activeHostelId) {
@@ -330,68 +438,185 @@ export default function DashboardScreen({ initialParams, route }) {
     }
   ]
 
-  const expenseData = [
-    {
-      name: "Foods",
-      amount: "₹1.2L",
-      percent: 37.5,
-      color: "#2563EB"
-    },
-    {
-      name: "Utilities",
-      amount: "₹0.8L",
-      percent: 25,
-      color: "#16A34A"
-    },
-    {
-      name: "Maintenance",
-      amount: "₹0.6L",
-      percent: 18.75,
-      color: "#F97316"
-    },
-    {
-      name: "Others",
-      amount: "₹0.6L",
-      percent: 18.75,
-      color: "#9333EA"
-    }
-  ]
+ const expenseBreakdown =
+  dashboardList?.expenseSummary?.breakdown?.map((item, index) => {
+    const colors = ["#155DFC", "#00A63E", "#F54900", "#9810FA"];
+
+    return {
+      label: item.expenseType,
+      amount: `₹${item.amount}`,
+      percentage: item.percentage,
+      color: colors[index % colors.length],
+    };
+  }) || [];
 
 
-  const requestsList = [
-    {
-      name: "Rajesh Kumar",
-      room: "A-204",
-      issue: "AC not working",
-      category: "Maintenance",
-      time: "2 hours ago",
-      status: "Pending"
-    },
-    {
-      name: "Priya Sharma",
-      room: "B-101",
-      issue: "WiFi password reset",
-      category: "Amenity",
-      time: "5 hours ago",
-      status: "In Progress"
-    },
-    {
-      name: "selvi ",
-      room: "B-103",
-      issue: "WiFi password reset",
-      category: "Amenity",
-      time: "8 hours ago",
-      status: "In Progress"
-    },
-  ]
+const requestStats = [
+  {
+    count: dashboardList?.tenantRequests?.pending || 0,
+    label: "Pending",
+    bg: "#FFF7ED",
+    text: "#CA3500",
+  },
+  {
+    count: dashboardList?.tenantRequests?.inprogress || 0,
+    label: "In Progress",
+    bg: "#EFF6FF",
+    text: "#1447E6",
+  },
+  {
+    count: dashboardList?.tenantRequests?.resolved || 0,
+    label: "Resolved",
+    bg: "#F0FDF4",
+    text: "#008236",
+  },
+];
 
-  const month = ["Aug", "Sep", "Oct"]
+const requestComplaints = [
+  {
+    count: dashboardList?.tenantComplaints?.pending || 0,
+    label: "Pending",
+    bg: "#FFF7ED",
+    text: "#CA3500",
+  },
+  {
+    count: dashboardList?.tenantComplaints?.inprogress || 0,
+    label: "In Progress",
+    bg: "#EFF6FF",
+    text: "#1447E6",
+  },
+  {
+    count: dashboardList?.tenantComplaints?.resolved || 0,
+    label: "Resolved",
+    bg: "#F0FDF4",
+    text: "#008236",
+  },
+];
 
-  const collectedData = [12.5, 13.2, 14]
 
-  const outstandingData = [1.2, 0.9, 0.5]
+const CustomerOverviewshow = async(item) => {
+      const res = await GetParticularCustomerDetails(item?.tenantId)
+      console.log("responsedata", res);
+      
+      if(res?.success){
+      navigation.navigate("CustomerOverviewScreen", {
+      customer: res?.data,
+    });
+      }
+}
+
+ const handleShowTennantCheckin = async(item) => {
+  console.log("item", item);
+
+      const res = await GetParticularCustomerDetails(item.tenantId)
+      if(res?.success){
+      navigation.navigate("BookingCheckIn", {
+      customerId: item?.tenantId,
+      customer: res?.data?.hostelInfo,
+    });
+      }
+
+  }
+
+const complaintList =
+  dashboardList?.tenantcomplaint?.map((item) => ({
+    id: item.tenantId,
+    name: item.fullName || "-",
+    room: item.roomName,
+    title: item.complaintDescription,
+    type: item.complaintType,
+    status: item.status,
+    time: item.complaintDate,
+  })) || [];
+
+ const requestList =
+  dashboardList?.dashboardRequests?.map((item) => ({
+    id: item.requestId,
+    name: item.customerName || "-",
+    room: item.roomName || "",
+    title: item.description,
+    type: item.type,
+    status: item.status,
+    time: item.date,
+  })) || []
+
+  const getStatusStyle = (status) => {
+  const s = status?.toLowerCase();
+
+  if (s === "pending") return { bg: "#FFF1E6", color: "#EA580C" };
+  if (s === "inprogress") return { bg: "#E8F0FF", color: "#2563EB" };
+  if (s === "resolved") return { bg: "#E8F7EE", color: "#16A34A" };
+
+  return { bg: "#eee", color: "#333" };
+};
 
 
+  // const month = ["Aug", "Sep", "Oct"]
+
+  // const collectedData = [12.5, 13.2, 14]
+
+  // const outstandingData = [1.2, 0.9, 0.5]
+
+        const revenueTrendData =
+  dashboardList?.revenueTrend?.map((item) => ({
+    month: item.month,
+    collected: item.collected,
+    outstanding: item.outstanding,
+  })) || [];
+
+
+  const month = revenueTrendData.map(i => i.month);
+const collectedData = revenueTrendData.map(i => i.collected);
+const outstandingData = revenueTrendData.map(i => i.outstanding);
+
+const formatToLakhs = (v) => `${(v / 100000).toFixed(0)}`;
+
+// const barData = revenueTrendData
+//   .slice(-4)   
+//   .map(item => ({
+//     month: item.month,
+//     collected: Number(item.collected) || 0,
+//     outstanding: Number(item.outstanding) || 0,
+//   }));
+
+const barData = revenueTrendData.slice(-4);
+
+
+
+const yData = barData.map(d => Math.max(d.collected, d.outstanding));
+
+
+const CustomBars = ({ x, y, bandwidth, data }) => (
+  <G>
+    {data.map((item, index) => {
+      const barWidth = bandwidth / 2;
+
+      return (
+        <G key={index}>
+          {/* Collected */}
+          <Rect
+            x={x(index) - barWidth / 2}   // ✅ center left
+            y={y(item.collected)}
+            width={barWidth}
+            height={Math.max(0, y(0) - y(item.collected))}
+            fill="#00A32E"
+            rx={6}
+          />
+
+          {/* Outstanding */}
+          <Rect
+            x={x(index) + barWidth / 2}   // ✅ center right
+            y={y(item.outstanding)}
+            width={barWidth}
+            height={Math.max(0, y(0) - y(item.outstanding))}
+            fill="#F54900"
+            rx={6}
+          />
+        </G>
+      );
+    })}
+  </G>
+);
 
   const quickActions = [
     {
@@ -722,12 +947,18 @@ export default function DashboardScreen({ initialParams, route }) {
   const advance = [100000, 150000, 23000, 31000, 28000];
   const advanceReturn = [10000, 12000, 21000, 30000, 50000];
 
+
+    const occupiedArray = occupancyTrendData.map(i => i.occupied);
+const vacantArray = occupancyTrendData.map(i => i.vacant);
+const labels = occupancyTrendData.map(i => i.label);
+
   const padding = 20;
   const chartHeight = 250;
 
   const [chartWidth, setChartWidth] = useState(width - 40);
 
-  const maxY = Math.max(...advance, ...advanceReturn);
+  // const maxY = Math.max(...advance, ...advanceReturn);
+  const maxY = Math.max(...occupiedArray, ...vacantArray, 10); 
 
   const getX = (i) =>
     (i / (months.length - 1)) * (chartWidth - padding * 2) + padding;
@@ -735,10 +966,23 @@ export default function DashboardScreen({ initialParams, route }) {
   const getY = (value) =>
     padding + (1 - value / maxY) * (chartHeight - padding * 2);
 
+const interval = 4;
+
+const filteredLabels = labels.map((item, index) => {
+  return index % interval === 1 ? item : "";
+});
+
+
+// safe fallback
+
   const createPath = (array) =>
     array
       .map((v, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(v)}`)
       .join(" ");
+
+   
+
+
 
 
   const onPointPress = (index) => {
@@ -791,6 +1035,34 @@ export default function DashboardScreen({ initialParams, route }) {
   //       setHostelList(r.data)
   //     })
   // },[])
+
+
+  const statsCards = [
+  {
+    title: "Revenue",
+    amount: `₹ ${financeData.totalIncome}`,
+    change: `${financeData.incomeTrend}%`,
+    isPositive: false,
+    bg: ["#FFFFFF", "#F2FFF5"],
+    icon: RevenueImg,
+  },
+  {
+    title: "Expenses",
+    amount: `₹ ${financeData.totalExpense}`,
+    change: `${financeData.expenseTrend}%`,
+    isPositive: true,
+    bg: ["#FFFFFF", "#FFF6EB"],
+    icon: ExpenseImg,
+  },
+  {
+    title: "Profit",
+    amount: `₹ ${financeData.netProfit}`,
+    change: `${financeData.profitTrend}%`,
+    isPositive: true,
+    bg: ["#FFFFFF", "#F6FAFF"],
+    icon: ProfitImg,
+  },
+];
 
 
   const data = [
@@ -1375,13 +1647,15 @@ export default function DashboardScreen({ initialParams, route }) {
 
                           <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Invoices Generated</Text>
-                            <Text style={styles.billingValue}>36</Text>
+                         <Text style={styles.billingValue}>
+  {dashboardList?.totalInvoiceGenerated}
+</Text>
                           </View>
 
 
                           <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Total Amount</Text>
-                            <Text style={styles.billingValueGreen}>₹ 3,24,000</Text>
+                            <Text style={styles.billingValueGreen}> ₹ {dashboardList?.totalAmount}</Text>
                           </View>
 
 
@@ -1390,7 +1664,7 @@ export default function DashboardScreen({ initialParams, route }) {
 
                           <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Collected</Text>
-                            <Text style={styles.billingValue}>₹ 54,000</Text>
+                            <Text style={styles.billingValue}> ₹ {dashboardList?.totalPaid}</Text>
                           </View>
 
 
@@ -1399,22 +1673,22 @@ export default function DashboardScreen({ initialParams, route }) {
                               <Text style={styles.billingLabel}>Outstanding</Text>
                               <Image source={OutstandingImg} style={{ height: 12, width: 12, marginLeft: 7, }} />
                             </View>
-                            <Text style={styles.billingValue}>₹ 2,70,000</Text>
+                            <Text style={styles.billingValue}>₹ {dashboardList?.totalPending}</Text>
                           </View>
 
 
                           <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Collection Rate</Text>
-                            <Text style={styles.billingValue}>24%</Text>
+                            <Text style={styles.billingValue}> {dashboardList?.collectionRate}</Text>
                           </View>
 
 
                           <View style={styles.progressBar}>
-                            <View style={[styles.progressFill, { width: "24%" }]} />
+                            <View style={[styles.progressFill, { width:  dashboardList?.collectionRate }]} />
                           </View>
 
 
-                          <Text style={styles.billingFooter}>↑ 3% from last month</Text>
+                          <Text style={styles.billingFooter}>↑ {dashboardList?.fromLastMonth} from last month</Text>
 
                         </View>
 
@@ -1451,27 +1725,24 @@ export default function DashboardScreen({ initialParams, route }) {
                               <Image source={SharingBreakdownImg} style={styles.downupIcons} />
                             </TouchableOpacity>
                           </View>
+{sharingData.map((item, index) => (
+  <View style={styles.shareRow} key={index}>
+    <View style={styles.progressTrack}>
+      <View
+        style={[
+          styles.progressBarBlue,
+          {
+            width: `${item?.occupancyRatio || 0}%`,
+          },
+        ]}
+      />
+    </View>
 
-                          <View style={styles.shareRow}>
-                            <View style={styles.progressTrack}>
-                              <View style={[styles.progressBarBlue, { width: "40%" }]} />
-                            </View>
-                            <Text style={styles.shareText}>1-share: 12</Text>
-                          </View>
-
-                          <View style={styles.shareRow}>
-                            <View style={styles.progressTrack}>
-                              <View style={[styles.progressBarBlue, { width: "70%" }]} />
-                            </View>
-                            <Text style={styles.shareText}>2-share: 24</Text>
-                          </View>
-
-                          <View style={styles.shareRow}>
-                            <View style={styles.progressTrack}>
-                              <View style={[styles.progressBarBlue, { width: "35%" }]} />
-                            </View>
-                            <Text style={styles.shareText}>3-share: 12</Text>
-                          </View>
+    <Text style={styles.shareText}>
+      {item?.shareType}: {item?.totalBeds}
+    </Text>
+  </View>
+))}
 
                         </View>
 
@@ -1498,7 +1769,7 @@ export default function DashboardScreen({ initialParams, route }) {
                           {/* Occupied */}
                           <View style={styles.occupancyRow}>
                             <Text style={styles.occupancyLabel}>Occupied Beds</Text>
-                            <Text style={styles.occupiedValue}>{dashboardList?.occupiedBeds}</Text>
+                            <Text style={styles.occupiedValue}>  {dashboardList?.occupiedBeds}</Text>
                           </View>
 
                           {/* Available */}
@@ -1528,7 +1799,7 @@ export default function DashboardScreen({ initialParams, route }) {
                             />
                           </View>
 
-                          <Text style={styles.occupancyFooter}>↑ 3% from last month</Text>
+                          <Text style={styles.occupancyFooter}>↑ {dashboardList?.occupancyRateFromLastMonth}% from last month</Text>
 
                         </View>
 
@@ -1556,7 +1827,7 @@ export default function DashboardScreen({ initialParams, route }) {
                           <View style={styles.tenantsRow}>
                             <Text style={styles.tenantsLabel}>Total Tenants</Text>
                             <Text style={styles.tenantsValue}>
-                              {dashboardLists?.totalCustomers}
+                             {dashboardList?.totalTenants}
                             </Text>
                           </View>
 
@@ -1564,7 +1835,7 @@ export default function DashboardScreen({ initialParams, route }) {
                           <View style={styles.tenantsRow}>
                             <Text style={styles.tenantsLabel}>Check-in Tenants</Text>
                             <Text style={styles.checkinValue}>
-                              {dashboardLists?.checkinTenants}
+                               {dashboardList?.checkInTenants}
                             </Text>
                           </View>
 
@@ -1576,12 +1847,12 @@ export default function DashboardScreen({ initialParams, route }) {
 
                           <View style={styles.noticeRow}>
                             <Text style={styles.checkoutText}>
-                              Next Checkout : {dashboardLists?.nextCheckoutDate}
+                              Next Checkout : {dashboardList?.nextCheckout}
                             </Text>
 
                             <View style={styles.noticeBadge}>
                               <Text style={styles.noticeBadgeText}>
-                                {dashboardLists?.noticeTenants} Tenants
+                              {dashboardList?.noticePeriod} Tenants
                               </Text>
                             </View>
                           </View>
@@ -1611,7 +1882,7 @@ export default function DashboardScreen({ initialParams, route }) {
                           <View style={styles.advanceRow}>
                             <Text style={styles.advanceLabel}>Total Advance</Text>
                             <Text style={styles.advanceValue}>
-                              ₹{dashboardList?.totalAdvance}
+                             ₹{dashboardList?.totalAdvance}
                             </Text>
                           </View>
 
@@ -1619,7 +1890,7 @@ export default function DashboardScreen({ initialParams, route }) {
                           <View style={styles.advanceRow}>
                             <Text style={styles.advanceLabel}>Refunded</Text>
                             <Text style={styles.refundValue}>
-                              ₹{dashboardList?.refundedAmount}
+                            ₹{dashboardList?.otherAdvance}
                             </Text>
                           </View>
 
@@ -1648,7 +1919,7 @@ export default function DashboardScreen({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                              <Text style={styles.bookingTitle}>New Check-ins</Text>
+                              <Text style={styles.bookingTitle}>Upcoming Check-ins</Text>
                             </View>
 
                             <TouchableOpacity
@@ -1675,24 +1946,22 @@ export default function DashboardScreen({ initialParams, route }) {
                             nestedScrollEnabled={true}
                           >
 
-                            {checkinList?.map((item, index) => (
+                           {dashboardList?.checkins?.map((item, index) => (
                               <View key={index} style={styles.bookingItem}>
 
-                                <Text style={styles.bookingName}>
-                                  {item.name}
-                                </Text>
+                          <Text style={styles.bookingName}>{item.customerName}</Text>
 
-                                <Text style={styles.bookingInfo}>
-                                  {item.sharing} • Room {item.room} • Check-in: {item.date}
-                                </Text>
+    <Text style={styles.bookingInfo}>
+      {item.sharingType}   {item.roomName}  {item.bedName}
+    </Text>
 
                                 <View style={styles.bookingActions}>
 
-                                  <TouchableOpacity style={styles.viewBtn}>
+                                  <TouchableOpacity style={styles.viewBtn} onPress={()=>CustomerOverviewshow(item)}>
                                     <Text style={styles.viewText}>View</Text>
                                   </TouchableOpacity>
 
-                                  <TouchableOpacity style={styles.checkinBtn}>
+                                  <TouchableOpacity style={styles.checkinBtn} onPress={()=> handleShowTennantCheckin(item)}>
                                     <Text style={styles.checkinText}>Check-in</Text>
                                   </TouchableOpacity>
 
@@ -1735,11 +2004,12 @@ export default function DashboardScreen({ initialParams, route }) {
                           </View>
 
                           <ScrollView
-                            style={{ maxHeight: 260 }}
+                           style={{ height: 260 }}
                             showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled={true}
                           >
 
-                            {checkinList?.map((item, index) => (
+                           {dashboardList?.overdueInvoices?.map((item, index) => (
                               <View key={index} style={styles.invoiceItem}>
 
                                 {/* TOP ROW */}
@@ -1747,16 +2017,16 @@ export default function DashboardScreen({ initialParams, route }) {
 
                                   {/* LEFT */}
                                   <View>
-                                    <Text style={styles.invoiceName}>{item.name}</Text>
+                                     <Text style={styles.invoiceName}>{item?.customerName}</Text>
 
                                     <View style={styles.invoiceSubRow}>
                                       <Text style={styles.invoiceNumber}>
-                                        {item.invoice}
+                                        {item?.invoice}
                                       </Text>
 
                                       <View style={styles.statusBadges}>
                                         <View style={styles.statusDot} />
-                                        <Text style={styles.statusText}>Un Paid</Text>
+                                        <Text style={styles.statusText}>{item?.status}</Text>
                                       </View>
                                     </View>
                                   </View>
@@ -1764,11 +2034,11 @@ export default function DashboardScreen({ initialParams, route }) {
                                   {/* RIGHT */}
                                   <View style={{ alignItems: "flex-end" }}>
                                     <Text style={styles.amountText}>
-                                      ₹ 5000
-                                    </Text>
+      ₹ {item?.dueAmount}
+    </Text>
 
                                     <Text style={styles.dateText}>
-                                      {item.date}
+                                      {item?.dueDate}
                                     </Text>
                                   </View>
 
@@ -1975,162 +2245,94 @@ export default function DashboardScreen({ initialParams, route }) {
 
                     {activeSubTab === "Expenses & Profit" && (
                       <>
-                        <LinearGradient
-                          colors={["#FFFFFF", "#F2FFF5"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
-                          style={styles.revenueCard}
-                        >
+                       {statsCards.map((card, index) => (
+  <LinearGradient
+    key={index}
+    colors={card.bg}
+    style={styles.revenueCard}
+  >
+    <View style={styles.revenueHeader}>
+      <View style={styles.revenueLeft}>
+        <View style={styles.revenueIconBox}>
+          <Image source={card.icon} style={{ width: 18, height: 18 }} />
+        </View>
+        <Text style={styles.revenueTitle}>{card.title}</Text>
+      </View>
+    </View>
 
-                          <View style={styles.revenueHeader}>
+    <View style={styles.revenueAmountRow}>
+      <Text style={styles.revenueAmount}>{card.amount}</Text>
+      <Text style={styles.revenueMonth}> this month</Text>
+    </View>
 
-                            <View style={styles.revenueLeft}>
+    <View style={styles.revenueChangeRow}>
+      <Image
+        source={card.isPositive ? TrendupImg : TrenddownImg}
+        style={styles.downupIcons}
+      />
+      <Text
+        style={{
+          color: card.isPositive ? "#16A34A" : "#EF4444",
+          fontFamily: "Gilroy-Bold",
+        }}
+      >
+        {card.change}
+      </Text>
+      <Text style={styles.revenueCompare}> vs last time</Text>
+    </View>
 
-                              <View style={styles.revenueIconBox}>
-                                <Image source={RevenueImg} style={{ width: 18, height: 18 }} />
-                              </View>
+    <View style={styles.revenueDivider} />
 
-                              <Text style={styles.revenueTitle}>Revenue</Text>
+    <TouchableOpacity style={styles.reportRow}>
+      <Text style={styles.reportText}>View Report</Text>
+      <Image source={RightArrowImg} style={styles.RightArrowIcon} />
+    </TouchableOpacity>
+  </LinearGradient>
+))}
+<View style={styles.expenseBreakdownCard}>
+  <View style={styles.expenseBreakdownHeader}>
+    <Text style={styles.expenseBreakdownTitle}>
+      Expense Breakdown
+    </Text>
+  </View>
 
-                            </View>
+  {expenseBreakdown.length === 0 ? (
+    <Text style={{ textAlign: "center", color: "#999", marginTop: 10 }}>
+      No Data Available
+    </Text>
+  ) : (
+    expenseBreakdown.map((item, index) => (
+      <View key={index} style={styles.expenseItem}>
+        <View style={styles.expenseTopRow}>
+          <Text style={styles.expenseLabel}>{item.label}</Text>
 
-                          </View>
+          <Text style={styles.expenseAmount}>
+            {item.amount} ({item.percentage}%)
+          </Text>
+        </View>
 
-
-                          <View style={styles.revenueAmountRow}>
-                            <Text style={styles.revenueAmount}>₹14.8 L</Text>
-                            <Text style={styles.revenueMonth}> this month</Text>
-                          </View>
-
-
-                          <View style={styles.revenueChangeRow}>
-                            <Image source={TrenddownImg} style={styles.downupIcons} />
-                            <Text style={styles.revenueLoss}> -2.6%</Text>
-
-                            <Text style={styles.revenueCompare}> vs last time</Text>
-
-                          </View>
-
-
-                          <View style={styles.revenueDivider} />
-
-
-                          <TouchableOpacity style={styles.reportRow}>
-
-                            <Text style={styles.reportText}>View Report</Text>
-                            <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-                            {/* <Text style={styles.reportArrow}>→</Text> */}
-
-                          </TouchableOpacity>
-
-                        </LinearGradient>
-
-                        <LinearGradient
-                          colors={["#FFFFFF", "#FFF6EB"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
-                          style={styles.expenseCard}
-                        >
-
-                          <View style={styles.expenseHeader}>
-
-                            <View style={styles.expenseLeft}>
-
-                              <View style={styles.expenseIconBox}>
-                                <Image source={AdvanceImg} style={{ width: 18, height: 18 }} />
-                              </View>
-
-                              <Text style={styles.expenseTitle}>Expenses</Text>
-
-                            </View>
-
-                          </View>
-
-
-                          <View style={styles.expenseAmountRow}>
-                            <Text style={styles.expenseAmount}>₹3.2 L</Text>
-                            <Text style={styles.expenseMonth}> this month</Text>
-                          </View>
-
-
-                          <View style={styles.expenseChangeRow}>
-                            <Text style={styles.expenseNeutral}>–</Text>
-                          </View>
-
-
-                          <View style={styles.expenseDivider} />
-
-
-                          <TouchableOpacity style={styles.expenseReportRow}>
-
-                            <Text style={styles.expenseReportText}>View Report</Text>
-
-                            <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-
-                          </TouchableOpacity>
-
-                        </LinearGradient>
-
-
-                        <LinearGradient
-                          colors={["#FFFFFF", "#F6FAFF"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
-                          style={styles.profitCard}
-                        >
-
-                          <View style={styles.profitHeader}>
-
-                            <View style={styles.profitLeft}>
-
-                              <View style={styles.profitIconBox}>
-                                <Image source={ProfitImg} style={{ width: 18, height: 18 }} />
-                              </View>
-
-                              <Text style={styles.profitTitle}>Profit</Text>
-
-                            </View>
-
-                          </View>
-
-
-                          <View style={styles.profitAmountRow}>
-                            <Text style={styles.profitAmount}>₹11.6 L</Text>
-                            <Text style={styles.profitMonth}> this month</Text>
-                          </View>
-
-
-                          <View style={styles.profitChangeRow}>
-                            <Image source={TrendupImg} style={styles.downupIcons} />
-                            <Text style={styles.profitGain}>
-                              +1.8%</Text>
-
-                            <Text style={styles.profitCompare}> vs last time</Text>
-
-                          </View>
-
-
-                          <View style={styles.profitDivider} />
-
-
-                          <TouchableOpacity style={styles.profitReportRow}>
-
-                            <Text style={styles.profitReportText}>View Report</Text>
-
-                            <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-
-                          </TouchableOpacity>
-
-                        </LinearGradient>
-
-                        <View style={styles.expenseBreakdownCard}>
+        <View style={styles.expenseProgressTrack}>
+          <View
+            style={[
+              styles.expenseProgressFill,
+              {
+                width: `${item.percentage}%`,
+                backgroundColor: item.color,
+              },
+            ]}
+          />
+        </View>
+      </View>
+    ))
+  )}
+</View>
+                        {/* <View style={styles.expenseBreakdownCard}>
 
                           <View style={styles.expenseBreakdownHeader}>
                             <Text style={styles.expenseBreakdownTitle}>
                               Expense Breakdown
                             </Text>
 
-                            {/* <Text style={styles.dropdownArrow}>▾</Text> */}
                           </View>
 
 
@@ -2160,7 +2362,7 @@ export default function DashboardScreen({ initialParams, route }) {
                             </View>
                           ))}
 
-                        </View>
+                        </View> */}
                       </>
                     )}
 
@@ -2176,7 +2378,7 @@ export default function DashboardScreen({ initialParams, route }) {
                                 <Image source={TenantRequestImg} style={{ width: 18, height: 18 }} />
                               </View>
 
-                              <Text style={styles.requestTitle}>Requests (2)</Text>
+                              <Text style={styles.requestTitle}>Tenant Requests ({dashboardList?.tenantRequests?.total || 0})</Text>
                             </View>
 
                             <TouchableOpacity
@@ -2199,39 +2401,38 @@ export default function DashboardScreen({ initialParams, route }) {
 
 
                           {/* Status Summary */}
-                          <View style={styles.requestStatsRow}>
-
-                            <View style={[styles.requestStatBox, { backgroundColor: "#F6EDE4" }]}>
-                              <Text style={[styles.requestStatNumber, { color: "#EA580C" }]}>2</Text>
-                              <Text style={styles.requestStatLabel}>Pending</Text>
-                            </View>
-
-                            <View style={[styles.requestStatBox, { backgroundColor: "#E8F0FF" }]}>
-                              <Text style={[styles.requestStatNumber, { color: "#2563EB" }]}>1</Text>
-                              <Text style={styles.requestStatLabel}>In Progress</Text>
-                            </View>
-
-                            <View style={[styles.requestStatBox, { backgroundColor: "#E8F7EE" }]}>
-                              <Text style={[styles.requestStatNumber, { color: "#16A34A" }]}>1</Text>
-                              <Text style={styles.requestStatLabel}>Resolved</Text>
-                            </View>
-
-                          </View>
+                    <View style={styles.requestStatsRow}>
+  {requestStats.map((item, index) => (
+    <View
+      key={index}
+      style={[styles.requestStatBox, { backgroundColor: item.bg }]}
+    >
+      <Text style={[styles.requestStatNumber, { color: item.text }]}>
+        {item.count}
+      </Text>
+      <Text style={styles.requestStatLabel}>{item.label}</Text>
+    </View>
+  ))}
+</View>
 
 
                           {/* Scrollable Request List */}
                           <ScrollView
                             style={{ maxHeight: 220 }}
                             showsVerticalScrollIndicator={false}
-                            nestedScrollEnabled
+                            nestedScrollEnabled={true}
                           >
-
-                            {requestsList.map((item, index) => (
+{requestList?.length === 0 ? (
+  <Text style={{ textAlign: "center", color: "#999" }}>
+    No requests are there
+  </Text>
+) : (
+  requestList.map((item, index) => (
                               <View key={index} style={styles.requestItem}>
 
                                 <View style={styles.requestTopRow}>
                                   <Text style={styles.requestName}>
-                                    {item.name}
+                                    {item?.name}
                                   </Text>
 
                                   <Text style={styles.requestRoom}>
@@ -2240,37 +2441,37 @@ export default function DashboardScreen({ initialParams, route }) {
 
                                   <View style={[
                                     styles.statusBadge,
-                                    item.status === "Pending" && { backgroundColor: "#FFF1E6" },
-                                    item.status === "In Progress" && { backgroundColor: "#E8F0FF" }
+                                    item?.status === "Pending" && { backgroundColor: "#FFF1E6" },
+                                    item?.status === "In Progress" && { backgroundColor: "#E8F0FF" }
                                   ]}>
                                     <Text style={[
                                       styles.statusText,
-                                      item.status === "Pending" && { color: "#EA580C" },
-                                      item.status === "In Progress" && { color: "#2563EB" }
+                                      item?.status === "Pending" && { color: "#EA580C" },
+                                      item?.status === "In Progress" && { color: "#2563EB" }
                                     ]}>
-                                      {item.status}
+                                      {item?.status}
                                     </Text>
                                   </View>
 
                                 </View>
 
                                 <Text style={styles.requestIssue}>
-                                  {item.issue}
+                                 {item.title}
                                 </Text>
 
                                 <View style={styles.requestBottomRow}>
                                   <Text style={styles.requestCategory}>
-                                    {item.category}
+                                   {item.type}
                                   </Text>
 
                                   <Text style={styles.requestTime}>
-                                    {item.time}
+                                   {item.time}
                                   </Text>
                                 </View>
 
                               </View>
-                            ))}
-
+                             ))
+)}
                           </ScrollView>
 
 
@@ -2295,7 +2496,7 @@ export default function DashboardScreen({ initialParams, route }) {
                                 <Image source={ComplaintRequestImg} style={{ width: 18, height: 18 }} />
                               </View>
 
-                              <Text style={styles.requestTitle}>Complaints (2)</Text>
+                              <Text style={styles.requestTitle}>Tenant  Complaints ({dashboardList?.tenantComplaints?.total || 0})</Text>
                             </View>
 
                             <TouchableOpacity
@@ -2318,24 +2519,19 @@ export default function DashboardScreen({ initialParams, route }) {
 
 
                           {/* Status Summary */}
-                          <View style={styles.requestStatsRow}>
-
-                            <View style={[styles.requestStatBox, { backgroundColor: "#F6EDE4" }]}>
-                              <Text style={[styles.requestStatNumber, { color: "#EA580C" }]}>2</Text>
-                              <Text style={styles.requestStatLabel}>open</Text>
-                            </View>
-
-                            <View style={[styles.requestStatBox, { backgroundColor: "#E8F0FF" }]}>
-                              <Text style={[styles.requestStatNumber, { color: "#2563EB" }]}>1</Text>
-                              <Text style={styles.requestStatLabel}>In Progress</Text>
-                            </View>
-
-                            <View style={[styles.requestStatBox, { backgroundColor: "#E8F7EE" }]}>
-                              <Text style={[styles.requestStatNumber, { color: "#16A34A" }]}>1</Text>
-                              <Text style={styles.requestStatLabel}>Resolved</Text>
-                            </View>
-
-                          </View>
+                         <View style={styles.requestStatsRow}>
+  {requestComplaints.map((item, index) => (
+    <View
+      key={index}
+      style={[styles.requestStatBox, { backgroundColor: item.bg }]}
+    >
+      <Text style={[styles.requestStatNumber, { color: item.text }]}>
+        {item.count}
+      </Text>
+      <Text style={styles.requestStatLabel}>{item.label}</Text>
+    </View>
+  ))}
+</View>
 
 
                           {/* Scrollable Request List */}
@@ -2344,8 +2540,12 @@ export default function DashboardScreen({ initialParams, route }) {
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled
                           >
-
-                            {requestsList.map((item, index) => (
+{complaintList?.length === 0 ? (
+  <Text style={{ textAlign: "center", color: "#999" }}>
+    No requests are there
+  </Text>
+) : (
+  complaintList.map((item, index) => (
                               <View key={index} style={styles.requestItem}>
 
                                 <View style={styles.requestTopRow}>
@@ -2374,21 +2574,22 @@ export default function DashboardScreen({ initialParams, route }) {
                                 </View>
 
                                 <Text style={styles.requestIssue}>
-                                  {item.issue}
+                                  {item?.type}
                                 </Text>
 
                                 <View style={styles.requestBottomRow}>
                                   <Text style={styles.requestCategory}>
-                                    {item.category}
+                                    {item?.category}
                                   </Text>
 
                                   <Text style={styles.requestTime}>
-                                    {item.time}
+                                    {item?.time}
                                   </Text>
                                 </View>
 
                               </View>
-                            ))}
+                                                      ))
+)}
 
                           </ScrollView>
 
@@ -2432,13 +2633,21 @@ export default function DashboardScreen({ initialParams, route }) {
                           </View>
                           <View style={{ flexDirection: "row" }}>
 
-                            <View style={{ width: 40, justifyContent: "space-between", marginTop: 10 }}>
+                            {/* <View style={{ width: 40, justifyContent: "space-between", marginTop: 10 }}>
                               {[50000, 40000, 30000, 20000, 10000, 0].map((v, i) => (
                                 <Text key={i} style={{ fontSize: 10, color: "#6B7280" }}>
                                   {v === 0 ? "0" : v / 1000}
                                 </Text>
                               ))}
-                            </View>
+                            </View> */}
+
+                            <View style={{ width: 30, justifyContent: "space-between", marginTop: 10 }}>
+  {[maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0].map((v, i) => (
+    <Text key={i} style={{ fontSize: 10, color: "#6B7280" }}>
+      {Math.round(v)}
+    </Text>
+  ))}
+</View>
 
 
                             <TouchableWithoutFeedback onPress={() => setTooltip(null)}>
@@ -2460,7 +2669,15 @@ export default function DashboardScreen({ initialParams, route }) {
                                     />
                                   ))}
 
-                                  <Path d={createPath(advance)}
+    
+<Path d={createPath(occupiedArray)} stroke="#10B981" strokeWidth={3} fill="none" />
+<Path d={createPath(vacantArray)} stroke="#F54900" strokeWidth={3} fill="none" />
+
+                                  {/* <Path d={createPath(occupiedArray)} stroke="#10B981" strokeWidth={3} fill="none" /> */}
+
+{/* <Path d={createPath(vacantArray)} stroke="#FF5733" strokeWidth={3} fill="none" /> */}
+
+                                  {/* <Path d={createPath(advance)}
                                     stroke="#10B981"
                                     strokeWidth={3}
                                     fill="none"
@@ -2471,31 +2688,28 @@ export default function DashboardScreen({ initialParams, route }) {
                                     stroke="#FF5733"
                                     strokeWidth={3}
                                     fill="none"
-                                  />
+                                  /> */}
 
+                              {occupiedArray.map((v, i) => (
+  <Circle
+    key={i}
+    cx={getX(i)}
+    cy={getY(v)}
+    r={5}
+    fill="#10B981"
+  />
+))}
 
-                                  {advance.map((v, i) => (
-                                    <Circle
-                                      key={i}
-                                      cx={getX(i)}
-                                      cy={getY(v)}
-                                      r={6}
-                                      fill="#10B981"
-                                      onPress={() => onPointPress(i)}
-                                    />
-                                  ))}
+{vacantArray.map((v, i) => (
+  <Circle
+    key={i}
+    cx={getX(i)}
+    cy={getY(v)}
+    r={5}
+    fill="#F54900"
+  />
+))}
 
-
-                                  {advanceReturn.map((v, i) => (
-                                    <Circle
-                                      key={i}
-                                      cx={getX(i)}
-                                      cy={getY(v)}
-                                      r={6}
-                                      fill="#FF5733"
-                                      onPress={() => onPointPress(i)}
-                                    />
-                                  ))}
                                 </Svg>
 
                                 {/* {tooltip && (
@@ -2522,24 +2736,25 @@ export default function DashboardScreen({ initialParams, route }) {
                             </TouchableWithoutFeedback>
                           </View>
 
-
-                          <View style={styles.monthRow}>
-                            {months.map((m, i) => (
-                              <Text key={i} style={styles.monthLabel}>{m}</Text>
-                            ))}
-                          </View>
+<View style={styles.monthRow}>
+  {filteredLabels.map((m, i) => (
+    <Text key={i} style={styles.monthLabel}>
+      {m}
+    </Text>
+  ))}
+</View>
 
 
                           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', marginTop: 10 }}>
                             <View style={{ display: 'flex', flexDirection: "column", justifyContent: 'center', alignItems: 'center', }}>
                               <Text style={{ fontSize: 14, color: '#4A5565', fontFamily: "Gilroy-Semibold", }}> Avg Occupied</Text>
-                              <Text style={{ fontSize: 20, color: '#00A63E', fontFamily: "Gilroy-Semibold", }}>101</Text>
+                              <Text style={{ fontSize: 20, color: '#00A63E', fontFamily: "Gilroy-Semibold", }}>{dashboardList?.occupancyTrendSummary?.avgOccupied || 0}</Text>
 
                             </View>
 
                             <View style={{ display: 'flex', flexDirection: "column", justifyContent: 'center', alignItems: 'center', }}>
                               <Text style={{ fontSize: 14, color: '#4A5565', fontFamily: "Gilroy-Semibold", }}> Avg Vacant</Text>
-                              <Text style={{ fontSize: 20, color: '#F54900', fontFamily: "Gilroy-Semibold", }}>19</Text>
+                              <Text style={{ fontSize: 20, color: '#F54900', fontFamily: "Gilroy-Semibold", }}>{dashboardList?.occupancyTrendSummary?.avgVacant || 0}</Text>
                             </View>
 
                           </View>
@@ -2548,7 +2763,6 @@ export default function DashboardScreen({ initialParams, route }) {
 
                         <View style={styles.revenueTrendCard}>
 
-                          {/* Header */}
                           <View style={styles.revenueTrendHeader}>
 
                             <Text style={styles.revenueTrendTitle}>
@@ -2574,7 +2788,6 @@ export default function DashboardScreen({ initialParams, route }) {
                           </View>
 
 
-                          {/* Legend */}
                           <View style={styles.legendRow}>
 
                             <View style={styles.legendItem}>
@@ -2590,68 +2803,60 @@ export default function DashboardScreen({ initialParams, route }) {
                           </View>
 
 
-                          {/* Chart */}
-                          <View style={{ flexDirection: "row", height: 220, marginTop: 10 }}>
+                       <View style={{ flexDirection: "row", height: 220, marginTop: 10 }}>
 
-                            <YAxis
-                              data={[0, 4, 8, 12, 16]}
-                              contentInset={{ top: 20, bottom: 20 }}
-                              svg={{ fontSize: 10, fill: "#6B7280" }}
-                            />
+  <YAxis
+    data={barData.map(d => Math.max(d.collected, d.outstanding))}
+    contentInset={{ top: 20, bottom: 20 }}
+    svg={{ fontSize: 10, fill: "#6B7280" }}
+    numberOfTicks={5}
+  />
 
-                            <View style={{ flex: 1, marginLeft: 10 }}>
+  <View style={{ flex: 1, marginLeft: 10 }}>
 
-                              <BarChart
-                                style={{ height: 200 }}
-                                data={[
-                                  { data: collectedData, svg: { fill: "#00A32E", rx: 6, ry: 6 } },
-                                  { data: outstandingData, svg: { fill: "#F54900", rx: 6, ry: 6 } }
-                                ]}
-                                spacingInner={0.4}
-                                contentInset={{ top: 20, bottom: 10 }}
-                              >
-                                <Grid
-                                  belowChart={true}   // ⭐ IMPORTANT
-                                  direction="HORIZONTAL"
-                                  svg={{
-                                    stroke: "#E5E7EB",
-                                    strokeDasharray: [4, 4]
-                                  }}
-                                />
-                              </BarChart>
+ <BarChart
+  style={{ height: 200 }}
+  data={barData}
+  yAccessor={({ item }) => Math.max(item.collected, item.outstanding)}
+  contentInset={{ top: 20, bottom: 10, left: 25, right: 25 }} // 👈🔥 SAME AS XAxis
+  svg={{ fill: "transparent" }}
+>
+      <Grid
+        svg={{
+          stroke: "#E5E7EB",
+          strokeDasharray: [4, 4],
+        }}
+      />
+      <CustomBars />
+    </BarChart>
 
-
-                              <XAxis
-                                style={{ marginTop: 10 }}
-                                data={[0, 1, 2]}
-                                formatLabel={(value, index) => month[index]}
-                                contentInset={{ left: 25, right: 25 }}
-                                svg={{ fontSize: 11, fill: "#6B7280" }}
-                              />
-
-                            </View>
-
-                          </View>
-
+   <XAxis
+  style={{ marginTop: 10 }}
+  data={barData}
+  formatLabel={(value, index) => barData[index].month}
+  contentInset={{ left: 25, right: 25 }}   // 👈🔥 FIX
+  svg={{ fontSize: 11, fill: "#6B7280" }}
+/>
+  </View>
+</View>
 
                           <View style={styles.chartDivider} />
 
 
-                          {/* Footer Stats */}
                           <View style={styles.revenueStatsRow}>
 
                             <View>
                               <Text style={styles.statLabel}>Total Collected</Text>
-                              <Text style={styles.collectedValue}>₹ 54,000</Text>
+                              <Text style={styles.collectedValue}>₹ {dashboardList?.revenueSummary?.totalCollected?.amount || 0}</Text>
 
-                              <Text style={styles.statSub}>↓ 8% from last Month</Text>
+                              <Text style={styles.statSub}>↓ {dashboardList?.revenueSummary?.totalCollected?.percentageChange || 0}% from last Month</Text>
                             </View>
 
                             <View>
                               <Text style={styles.statLabel}>Total Outstanding</Text>
-                              <Text style={styles.outstandingValue}>₹ 2.7L</Text>
+                              <Text style={styles.outstandingValue}>₹ {dashboardList?.revenueSummary?.totalOutstanding?.amount || 0}</Text>
 
-                              <Text style={styles.statSubGreen}>↑ 12% from last Month</Text>
+                              <Text style={styles.statSubGreen}>↑ {dashboardList?.revenueSummary?.totalOutstanding?.percentageChange || 0}% from last Month</Text>
                             </View>
 
                           </View>
@@ -2947,81 +3152,44 @@ export default function DashboardScreen({ initialParams, route }) {
                   <Text style={styles.modalTitle}>Detailed Sharing Breakdown</Text>
                 </View>
                 {/* 1 Sharing */}
-                <View style={styles.shareCard}>
-                  <View style={styles.shareCardHeader}>
-                    <Text style={styles.shareCardTitle}>1-Sharing</Text>
-                    <Text style={styles.roomsAvailable}>2 Rooms Available</Text>
-                  </View>
+              <ScrollView>
+  {sharingData.map((item, index) => (
+    <View style={styles.shareCard} key={index}>
+      
+      <View style={styles.shareCardHeader}>
+        <Text style={styles.shareCardTitle}>
+          {item.shareType}
+        </Text>
 
-                  <View style={styles.shareCardRow}>
-                    <View>
-                      <Text style={styles.cardLabel}>Rooms</Text>
-                      <Text style={styles.cardValue}>7</Text>
-                    </View>
+        <Text style={styles.roomsAvailable}>
+          {item.availableRooms} Rooms Available
+        </Text>
+      </View>
 
-                    <View>
-                      <Text style={styles.cardLabel}>Total Beds</Text>
-                      <Text style={styles.cardValue}>7</Text>
-                    </View>
+      <View style={styles.shareCardRow}>
+        <View>
+          <Text style={styles.cardLabel}>Rooms</Text>
+          <Text style={styles.cardValue}>{item.totalRooms}</Text>
+        </View>
 
-                    <View>
-                      <Text style={styles.cardLabel}>Occupied</Text>
-                      <Text style={styles.cardOccupied}>5</Text>
-                    </View>
-                  </View>
-                </View>
+        <View>
+          <Text style={styles.cardLabel}>Total Beds</Text>
+          <Text style={styles.cardValue}>{item.totalBeds}</Text>
+        </View>
 
+        <View>
+          <Text style={styles.cardLabel}>Occupied</Text>
+          <Text style={{    fontSize: 28,
+    fontFamily: "Gilroy-Bold",
+    color: "#16A34A" ,  marginTop: 6 }}>
+            {item.occupiedBeds}
+          </Text>
+        </View>
+      </View>
 
-                {/* 2 Sharing */}
-                <View style={styles.shareCard}>
-                  <View style={styles.shareCardHeader}>
-                    <Text style={styles.shareCardTitle}>2-Sharing</Text>
-                    <Text style={styles.roomsAvailable}>1 Room Available</Text>
-                  </View>
-
-                  <View style={styles.shareCardRow}>
-                    <View>
-                      <Text style={styles.cardLabel}>Rooms</Text>
-                      <Text style={styles.cardValue}>5</Text>
-                    </View>
-
-                    <View>
-                      <Text style={styles.cardLabel}>Total Beds</Text>
-                      <Text style={styles.cardValue}>10</Text>
-                    </View>
-
-                    <View>
-                      <Text style={styles.cardLabel}>Occupied</Text>
-                      <Text style={styles.cardOccupied}>8</Text>
-                    </View>
-                  </View>
-                </View>
-
-
-                {/* 3 Sharing */}
-                <View style={styles.shareCard}>
-                  <View style={styles.shareCardHeader}>
-                    <Text style={styles.shareCardTitle}>3-Sharing</Text>
-                    <Text style={styles.roomsAvailable}>2 Rooms Available</Text>
-                  </View>
-
-                  <View style={styles.shareCardRow}>
-                    <View>
-                      <Text style={styles.cardLabel}>Rooms</Text>
-                      <Text style={styles.cardValue}>12</Text>
-                    </View>
-
-                    <View>
-                      <Text style={styles.cardLabel}>Total Beds</Text>
-                      <Text style={styles.cardValue}>36</Text>
-                    </View>
-
-                    <View>
-                      <Text style={styles.cardLabel}>Occupied</Text>
-                      <Text style={styles.cardOccupied}>30</Text>
-                    </View>
-                  </View>
-                </View>
+    </View>
+  ))}
+</ScrollView>
 
               </View>
             </TouchableWithoutFeedback>
@@ -3029,6 +3197,14 @@ export default function DashboardScreen({ initialParams, route }) {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+
+      {/* <RecordPaymentSheet
+  visible={showRecordPayment}
+  onClose={() => setShowRecordPayment(false)}
+  selectedBill={selectedBill}
+  bankList={bankList}
+/> */}
 
       {/* {showExpiryModal && (
   <SubscriptionFullScreenAlert
@@ -3511,7 +3687,7 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: "#E5E7EB",
     borderRadius: 10,
-    marginRight: 10
+    marginRight: 20
   },
 
   progressBarBlue: {
@@ -3523,7 +3699,7 @@ const styles = StyleSheet.create({
   shareText: {
     fontSize: 12,
     color: "#374151",
-    width: 80
+    width: 100
   },
   modalOverlay: {
     flex: 1,

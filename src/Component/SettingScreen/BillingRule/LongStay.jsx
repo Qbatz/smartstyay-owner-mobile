@@ -35,15 +35,20 @@ export default function LongStay({ navigation }) {
     const [billingstartDate, setBillingStartDate] = useState(null);
     const [gracedate, setGraceDate] = useState(null);
     const [duedate, setDueDate] = useState(null);
+    const [noticePeriod, setNoticePeriod] = useState(null);
     const [billingData, setBillingData] = useState(null)
 
     const [openPicker, setOpenPicker] = useState(false);
     const [openStartDate, setOpenStartDate] = useState(false);
     const [openGracePeriod, setOpenGracePeriod] = useState(false);
     const [openDueWithin, setOpenDueWithin] = useState(false);
+    const [openNoticeDays, setOpenNoticeDays] = useState(false);
 
     const [reminderDays, setReminderDays] = useState([]);
     const [openReminder, setOpenReminder] = useState(false);
+
+
+    const [billingSchedule, setBillingSchedule] = useState("PREPAID");
 
     const [isConfigured, setIsConfigured] = useState(false);
     const [lateFeeEnabled, setLateFeeEnabled] = useState(false);
@@ -118,22 +123,30 @@ export default function LongStay({ navigation }) {
     useEffect(() => {
 
         if (billingData) {
+            console.log("billingdata", billingData);
+            
 
             const billingStart = billingData?.billStartDate
             const dueDate = billingData?.billDueDate
             const grace = billingData?.gracePeriod
             const reminders = billingData?.reminderDays || []
+            const notice = billingData?.noticePeriod
+            const billingschedule = billingData?.billingModel
 
             setBillingStartDate(billingStart)
             setDueDate(dueDate)
             setGraceDate(grace)
             setReminderDays(reminders)
+            setNoticePeriod(notice)
+            setBillingSchedule(billingschedule)
 
             setInitialValues({
                 billingstartDate: billingStart,
                 duedate: dueDate,
                 gracedate: grace,
-                reminderDays: reminders
+                reminderDays: reminders, 
+                noticeperiod :notice,
+                billingschedule: billingschedule
             })
 
         }
@@ -143,23 +156,24 @@ export default function LongStay({ navigation }) {
 
 
 
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+  const daysInMonth = 28;
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+const days = Array.from({ length: 28 }, (_, i) => i + 1);
 
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+   const getEndDate = (date) => {
+  if (!date) return "";
 
-    const getEndDate = (date) => {
-        if (!date) return "";
+  if (date === 1) {
+    return daysInMonth;
+  }
 
-        if (date === 1) {
-            return daysInMonth;
-        }
+  return date - 1;
+};
 
-        return date - 1;
-    };
+const days28 = Array.from({ length: 28 }, (_, i) => i + 1);
+const noticedays = Array.from({ length: 31 }, (_, i) => i + 1);
+
+const end = Math.min(billingstartDate + gracedate, daysInMonth);
 
 const getGraceInfoText = () => {
   if (!gracedate || !billingstartDate) return "";
@@ -203,13 +217,13 @@ const getGraceInfoText = () => {
             newErrors.billingDate = "Please select billing start date"
         }
 
-        const isChanged =
-            billingstartDate !== initialValues.billingstartDate ||
-            billingMethod !== "fixed"
+        // const isChanged =
+        //     billingstartDate !== initialValues.billingstartDate ||
+        //     billingMethod !== "fixed"
 
-        if (!isChanged) {
-            newErrors.noChange = "No changes detected"
-        }
+        // if (!isChanged) {
+        //     newErrors.noChange = "No changes detected"
+        // }
 
         setErrors(newErrors)
 
@@ -218,7 +232,8 @@ const getGraceInfoText = () => {
             const res = await addBillingRecurring({
                 hostelId: activeHostelId,
                 startDate: billingstartDate,
-                calculationType: billingMethod
+                 calculationType: "FIXED",
+                 billingModel: billingSchedule === "PREPAID" ? "PREPAID" : "POSTPAID",
             })
 
             if (res?.success) {
@@ -242,42 +257,58 @@ const getGraceInfoText = () => {
     }
 
    console.log("duedate", duedate);
+
    
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription && canWriteBills;
+   
+    const [noticedayErr, setNoticeDayErr]  = useState("")
 
     const handleSaveChanges = async () => {
 
         const newErrors = {}
 
-        if (!duedate) {
-            newErrors.dueDate = "Please select billing due days"
+        if (!noticePeriod) {
+           setNoticeDayErr("Please select notice days")
         }
 
-        if (billingstartDate && duedate && duedate <= billingstartDate) {
-            newErrors.dueDate = "Due date must be after billing date"
-        }
+        // if (billingstartDate && duedate && duedate <= billingstartDate) {
+        //     newErrors.dueDate = "Due date must be after billing date"
+        // }
 
-     const payload = {
+//      const payload = {
+//   dueDate: duedate,
+//   gracePeriodDays: gracedate || "",
+//   reminderDays: reminderDays || []
+// }
+
+const payload = {
+//   hostelId: activeHostelId,
+//   startDate: billingstartDate,
   dueDate: duedate,
+  noticeDays: noticePeriod,
   gracePeriodDays: gracedate || "",
+//   billingModel: billingSchedule === "prepaid" ? "PREPAID" : "POSTPAID",
+//   calculationType: "FIXED",
   reminderDays: reminderDays || []
-}
+};
         console.log("payload", payload);
         
 
 
-        const isChanged =
-            JSON.stringify(payload) !==
-            JSON.stringify({
-                billStartDate: initialValues.billingstartDate,
-                billDueDate: initialValues.duedate,
-                gracePeriod: initialValues.gracedate,
-                reminderDays: initialValues.reminderDays
-            })
+        // const isChanged =
+        //     JSON.stringify(payload) !==
+        //     JSON.stringify({
+        //         billStartDate: initialValues.billingstartDate,
+        //         billDueDate: initialValues.duedate,
+        //         gracePeriod: initialValues.gracedate,
+        //         reminderDays: initialValues.reminderDays
+        //     })
 
-        if (!isChanged) {
-            newErrors.noChange = "No changes detected"
-            return
-        }
+        // if (!isChanged) {
+        //     newErrors.noChange = "No changes detected"
+        //     return
+        // }
 
         setErrors(newErrors)
 
@@ -287,6 +318,9 @@ const getGraceInfoText = () => {
                 hostelId: activeHostelId,
                 ...payload
             })
+
+            console.log("Response", res);
+            
 
               if (res?.success) {
                 setModalType("success");
@@ -299,6 +333,16 @@ const getGraceInfoText = () => {
                     setShowSuccess(false);
                 }, 1200);
 
+            }
+            else {
+                setModalType("warning");
+                setMessage(res?.data);
+                setShowSuccess(true);
+                console.log("Error", res?.data);
+                      setTimeout(() => {
+                    setShowSuccess(false);
+                }, 1200);
+                
             }
 
         }
@@ -455,6 +499,60 @@ const getGraceInfoText = () => {
                                 {errors.noChange}
                             </Text>
                         )}
+
+
+                         <View style={{        backgroundColor: "#F8FAFF",
+        padding: 18,
+        // paddingTop:10,
+       marginTop:10,
+        borderRadius: 10,
+        // marginBottom: 18,
+        elevation: 2,
+        shadowColor: "#0000000D",}}>
+
+                        <Text style={styles.sectionTitle}>Billing Schedule</Text>
+                    
+
+                        {/* Monthly Recurring */}
+                        <TouchableOpacity
+                            style={styles.radioRow}
+                       onPress={() => setBillingSchedule("PREPAID")}
+                        >
+                            <View style={styles.radioTextContainer}>
+                                <Text style={styles.radioTitle}>Prepaid</Text>
+                                <Text style={styles.radioSub}>
+                                   Invoices will generate at the start date of month
+                                </Text>
+                            </View>
+
+                            <View style={styles.radioOuter}>
+                                {billingSchedule === "PREPAID" && <View style={styles.radioInner} />}
+                            </View>
+                        </TouchableOpacity>
+
+
+                        {/* Tenant Joining */}
+
+                        <TouchableOpacity
+                            style={styles.radioRow}
+                          onPress={() => setBillingSchedule("POSTPAID")}
+                        >
+                            <View style={styles.radioTextContainer}>
+                                <Text style={styles.radioTitle}>Postpaid</Text>
+                                <Text style={styles.radioSub}>
+                                   Invoices will generate at the end date of month
+                                </Text>
+                            </View>
+
+                            <View style={styles.radioOuter}>
+                                {billingSchedule === "POSTPAID" && <View style={styles.radioInner} />}
+                            </View>
+                        </TouchableOpacity>
+
+
+
+
+                    </View>
                         {/* Button */}
                         <View style={styles.BtnRow} >
 
@@ -475,12 +573,10 @@ const getGraceInfoText = () => {
                          </View>
 
                             <TouchableOpacity
-                                // style={styles.saveBtn}
                                 style={[
                                     styles.saveBtn,
                                     { opacity: PGDetails && !PGDetails?.canModifyBilling ? 0.4 : 1 }
                                 ]}
-                                // disabled={billingMethod === "joining_date_based"}
                                 disabled={!PGDetails?.canModifyBilling}
                                 onPress={handleSaveConfiguration}
                             >
@@ -686,6 +782,69 @@ const getGraceInfoText = () => {
                         </Text>
                     </View>
 
+                       <View style={styles.card}>
+                        <Text style={styles.sectionTitle}>Notice Period (Due days)</Text>
+                        <Text style={styles.sectionSub}>Set default notice period days to get serve by tenants.
+                        </Text>
+
+                        <Text style={styles.label}>Notice period (Days) <Text style={{color:'red'}}>*</Text></Text>
+
+                        <TouchableOpacity style={styles.dropdown} onPress={() => {
+                            setOpenNoticeDays(!openNoticeDays);
+                            setOpenStartDate(false);
+                            setOpenDueWithin(false);
+                        }}>
+                            <Text style={styles.dropdownText}>
+                               {noticePeriod ? noticePeriod : "Select Date"}</Text>
+                            <Image source={ArrowDown} style={{ width: 18, height: 18, transform: [{ rotate: openGracePeriod ? "180deg" : "0deg" }] }} />
+                        </TouchableOpacity>
+                        {openNoticeDays && (
+                            <View style={styles.dateGrid}>
+                                {noticedays.map((d) => (
+                                    <TouchableOpacity
+                                        key={d}
+                                        style={[
+                                            styles.dateItem,
+                                            noticePeriod === d && styles.dateSelected
+                                        ]}
+                                        onPress={() => {
+                                            setNoticePeriod(d);
+                                            setOpenNoticeDays(false);
+                                            setNoticeDayErr("")
+                                        }}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.dateText,
+                                                noticePeriod === d && { color: "#fff" }
+                                            ]}
+                                        >
+                                            {d < 10 ? `0${d}` : d}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+
+                        {noticePeriod ? (
+                            <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                                <Image
+                                    source={GracePeriodIcon}
+                                    style={{ height: 13, width: 13, marginRight: 4, marginTop:3 }}
+                                />
+
+                                <Text style={styles.infoText}>
+                                    Tenants must serve the notice period days before leaving the property
+                                </Text>
+
+                            </View>
+                        ) : null}
+
+                           {noticedayErr && <ErrorMessage message={noticedayErr} />}
+
+                    </View>
+
 
                     <View style={styles.card}>
                         <Text style={styles.sectionTitle}>
@@ -703,8 +862,6 @@ const getGraceInfoText = () => {
                                     Automatically charge late fees on overdue payments
                                 </Text>
                             </View>
-
-
 
                             <Switch
                                 value={lateFeeEnabled}
@@ -959,12 +1116,16 @@ const getGraceInfoText = () => {
 
 
                     <View style={styles.bottomRow}>
-                        <TouchableOpacity style={styles.discardBtn}>
+                        {/* <TouchableOpacity style={styles.discardBtn}>
                             <Text style={styles.discardText}>Discard</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
 
-                        <TouchableOpacity style={styles.saveChangesBtn}
+                        <TouchableOpacity
+                        //  style={styles.saveChangesBtn}
+                         style={[styles.saveChangesBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                         disabled={!isSubscriptionAllow}
                             onPress={handleSaveChanges}
+
                         >
                             <Text style={styles.saveText}>Save Changes</Text>
                         </TouchableOpacity>

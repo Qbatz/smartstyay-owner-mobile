@@ -161,11 +161,41 @@ export default function PGProvider({ children }) {
     }
   };
 
+const getDashboard = async (hostelId, filters = {}) => {
+  try {
+    setPgLoading(true);
+    setPgError(null);
 
+    const axios = getAxios();
+
+    const response = await axios.get(`/v2/dashboard/new/${hostelId}`, {
+      params: {
+        billingFilter: filters?.billingFilter,
+        complaintRequestFilter: filters?.complaintRequestFilter,
+        financeFilter: filters?.financeFilter,
+        occupancyFilter: filters?.occupancyFilter,
+      },
+      paramsSerializer: params => {
+        const qs = require("qs");
+        return qs.stringify(params, { arrayFormat: "repeat" });
+      },
+    });
+
+    return response;
+
+  } catch (error) {
+    console.log("GET DASHBOARD ERROR:", error?.response || error);
+    setPgError(error);
+    return error?.response || error;
+
+  } finally {
+    setPgLoading(false);
+  }
+};
 
 
   return (
-    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, PGDetails, pgLoading, pgError }}>
+    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails,getDashboard, PGDetails, pgLoading, pgError }}>
       {children}
     </PGContext.Provider>
   );

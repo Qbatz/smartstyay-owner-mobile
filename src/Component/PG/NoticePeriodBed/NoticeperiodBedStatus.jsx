@@ -7,7 +7,7 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder, BackHandler , NativeModules
+  PanResponder, BackHandler , NativeModules , Linking
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
 import CheckoutIcon from "../../../Assets/Images/checkout_red.png";
@@ -19,7 +19,7 @@ import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
-
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function NoticePeriodBedSheet({
   visible,
@@ -36,6 +36,12 @@ export default function NoticePeriodBedSheet({
   const [menuVisible, setMenuVisible] = useState(false);
   const [customers, setCustomers] = useState([]);
    const navigation = useNavigation();
+
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
+
+
   console.log("selectedBed", selectedBed)
   const handleEdit = () => {
     if (!handleEditBed || !selectedBed) return;
@@ -141,6 +147,41 @@ export default function NoticePeriodBedSheet({
   
       } = useHasPermission("Paying Guests");
 
+
+        const handleOpenWhatsapp = (item) => {
+          console.log("mobile", item);
+          if (!item) return;
+        
+          let mobile = item?.mobileNo || item?.mobile;
+          let countryCode = item?.countryCode || "91";
+        
+          if (!mobile) {
+            setModalType("warning");
+            setModalMessage("Mobile number not available");
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 1500);
+            return;
+          }
+        
+          mobile = mobile.toString().replace(/\D/g, "");
+        
+          if (mobile.startsWith(countryCode)) {
+            mobile = mobile.slice(countryCode.length);
+          }
+        
+          const phoneNumber = `${countryCode}${mobile}`;
+          const url = `https://wa.me/${phoneNumber}`;
+        
+          console.log("url", url);
+        
+          Linking.openURL(url).catch(() => {
+            setModalType("warning");
+            setModalMessage("WhatsApp not installed");
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 1500);
+          });
+        };
+
      const isValidSubscription = PGDetails?.isSubscriptionActive;
 const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
@@ -148,6 +189,12 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   return (
     <>
+     <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
 
       <View style={styles.overlay}>
         <TouchableWithoutFeedback
@@ -364,10 +411,13 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
             <View style={styles.actionRow}>
                       
-                                            {/* <TouchableOpacity style={styles.chatBtn} >
+                                            <TouchableOpacity  
+                                             style={[styles.chatBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                             disabled={!isSubscriptionAllow}
+                                            onPress={() =>handleOpenWhatsapp(selectedBed?.currentTenantInfo[0])}>
                                               <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                               <Text style={styles.chatText}>Chat</Text>
-                                            </TouchableOpacity> */}
+                                            </TouchableOpacity>
                       
                                             <TouchableOpacity
                                               style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
