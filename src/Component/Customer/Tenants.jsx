@@ -221,6 +221,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
     
   }
 
+  console.log("selectedCustomer", selectedCustomer);
+  
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);

@@ -19,6 +19,7 @@ import { Animated, Easing } from "react-native";
 import SubscriptionBanner from "./SubscriptionBannerAlert"
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import RecordPaymentSheet from "../MorePages/Bills/RecordPayment";
 import PgImg from '../../Assets/Images/PgImg.png'
 import Bell from '../../Assets/Images/bell.png'
 import Profile from '../../Assets/Images/profile.png'
@@ -121,6 +122,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [tempMonth, setTempMonth] = useState("");
+  const [showRecordPayment, setShowRecordPayment] = useState(false);
 
   const [sharingModalVisible, setSharingModalVisible] = useState(false);
 
@@ -494,9 +496,11 @@ const requestComplaints = [
 
 const CustomerOverviewshow = async(item) => {
       const res = await GetParticularCustomerDetails(item?.tenantId)
+      console.log("responsedata", res);
+      
       if(res?.success){
       navigation.navigate("CustomerOverviewScreen", {
-      customer: res?.data?.hostelInfo,
+      customer: res?.data,
     });
       }
 }
@@ -1953,7 +1957,7 @@ const filteredLabels = labels.map((item, index) => {
 
                                 <View style={styles.bookingActions}>
 
-                                  <TouchableOpacity style={styles.viewBtn}>
+                                  <TouchableOpacity style={styles.viewBtn} onPress={()=>CustomerOverviewshow(item)}>
                                     <Text style={styles.viewText}>View</Text>
                                   </TouchableOpacity>
 
@@ -3193,6 +3197,14 @@ const filteredLabels = labels.map((item, index) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+
+      {/* <RecordPaymentSheet
+  visible={showRecordPayment}
+  onClose={() => setShowRecordPayment(false)}
+  selectedBill={selectedBill}
+  bankList={bankList}
+/> */}
 
       {/* {showExpiryModal && (
   <SubscriptionFullScreenAlert

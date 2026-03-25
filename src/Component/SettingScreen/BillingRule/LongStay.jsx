@@ -48,7 +48,7 @@ export default function LongStay({ navigation }) {
     const [openReminder, setOpenReminder] = useState(false);
 
 
-    const [billingSchedule, setBillingSchedule] = useState("prepaid");
+    const [billingSchedule, setBillingSchedule] = useState("PREPAID");
 
     const [isConfigured, setIsConfigured] = useState(false);
     const [lateFeeEnabled, setLateFeeEnabled] = useState(false);
@@ -131,13 +131,14 @@ export default function LongStay({ navigation }) {
             const grace = billingData?.gracePeriod
             const reminders = billingData?.reminderDays || []
             const notice = billingData?.noticePeriod
-            const billingschedule = billingData?.typeOfBilling
+            const billingschedule = billingData?.billingModel
 
             setBillingStartDate(billingStart)
             setDueDate(dueDate)
             setGraceDate(grace)
             setReminderDays(reminders)
             setNoticePeriod(notice)
+            setBillingSchedule(billingschedule)
 
             setInitialValues({
                 billingstartDate: billingStart,
@@ -145,6 +146,7 @@ export default function LongStay({ navigation }) {
                 gracedate: grace,
                 reminderDays: reminders, 
                 noticeperiod :notice,
+                billingschedule: billingschedule
             })
 
         }
@@ -231,7 +233,7 @@ const getGraceInfoText = () => {
                 hostelId: activeHostelId,
                 startDate: billingstartDate,
                  calculationType: "FIXED",
-                 billingModel: billingSchedule === "prepaid" ? "PREPAID" : "POSTPAID",
+                 billingModel: billingSchedule === "PREPAID" ? "PREPAID" : "POSTPAID",
             })
 
             if (res?.success) {
@@ -255,15 +257,20 @@ const getGraceInfoText = () => {
     }
 
    console.log("duedate", duedate);
+
    
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription && canWriteBills;
+   
+    const [noticedayErr, setNoticeDayErr]  = useState("")
 
     const handleSaveChanges = async () => {
 
         const newErrors = {}
 
-        // if (!duedate) {
-        //     newErrors.dueDate = "Please select billing due days"
-        // }
+        if (!noticePeriod) {
+           setNoticeDayErr("Please select notice days")
+        }
 
         // if (billingstartDate && duedate && duedate <= billingstartDate) {
         //     newErrors.dueDate = "Due date must be after billing date"
@@ -509,7 +516,7 @@ const payload = {
                         {/* Monthly Recurring */}
                         <TouchableOpacity
                             style={styles.radioRow}
-                       onPress={() => setBillingSchedule("prepaid")}
+                       onPress={() => setBillingSchedule("PREPAID")}
                         >
                             <View style={styles.radioTextContainer}>
                                 <Text style={styles.radioTitle}>Prepaid</Text>
@@ -519,7 +526,7 @@ const payload = {
                             </View>
 
                             <View style={styles.radioOuter}>
-                                {billingSchedule === "prepaid" && <View style={styles.radioInner} />}
+                                {billingSchedule === "PREPAID" && <View style={styles.radioInner} />}
                             </View>
                         </TouchableOpacity>
 
@@ -528,7 +535,7 @@ const payload = {
 
                         <TouchableOpacity
                             style={styles.radioRow}
-                          onPress={() => setBillingSchedule("postpaid")}
+                          onPress={() => setBillingSchedule("POSTPAID")}
                         >
                             <View style={styles.radioTextContainer}>
                                 <Text style={styles.radioTitle}>Postpaid</Text>
@@ -538,7 +545,7 @@ const payload = {
                             </View>
 
                             <View style={styles.radioOuter}>
-                                {billingSchedule === "postpaid" && <View style={styles.radioInner} />}
+                                {billingSchedule === "POSTPAID" && <View style={styles.radioInner} />}
                             </View>
                         </TouchableOpacity>
 
@@ -566,12 +573,10 @@ const payload = {
                          </View>
 
                             <TouchableOpacity
-                                // style={styles.saveBtn}
                                 style={[
                                     styles.saveBtn,
                                     { opacity: PGDetails && !PGDetails?.canModifyBilling ? 0.4 : 1 }
                                 ]}
-                                // disabled={billingMethod === "joining_date_based"}
                                 disabled={!PGDetails?.canModifyBilling}
                                 onPress={handleSaveConfiguration}
                             >
@@ -782,7 +787,7 @@ const payload = {
                         <Text style={styles.sectionSub}>Set default notice period days to get serve by tenants.
                         </Text>
 
-                        <Text style={styles.label}>Notice period (Days)</Text>
+                        <Text style={styles.label}>Notice period (Days) <Text style={{color:'red'}}>*</Text></Text>
 
                         <TouchableOpacity style={styles.dropdown} onPress={() => {
                             setOpenNoticeDays(!openNoticeDays);
@@ -805,6 +810,7 @@ const payload = {
                                         onPress={() => {
                                             setNoticePeriod(d);
                                             setOpenNoticeDays(false);
+                                            setNoticeDayErr("")
                                         }}
                                     >
                                         <Text
@@ -835,6 +841,8 @@ const payload = {
                             </View>
                         ) : null}
 
+                           {noticedayErr && <ErrorMessage message={noticedayErr} />}
+
                     </View>
 
 
@@ -854,8 +862,6 @@ const payload = {
                                     Automatically charge late fees on overdue payments
                                 </Text>
                             </View>
-
-
 
                             <Switch
                                 value={lateFeeEnabled}
@@ -1114,8 +1120,12 @@ const payload = {
                             <Text style={styles.discardText}>Discard</Text>
                         </TouchableOpacity> */}
 
-                        <TouchableOpacity style={styles.saveChangesBtn}
+                        <TouchableOpacity
+                        //  style={styles.saveChangesBtn}
+                         style={[styles.saveChangesBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                         disabled={!isSubscriptionAllow}
                             onPress={handleSaveChanges}
+
                         >
                             <Text style={styles.saveText}>Save Changes</Text>
                         </TouchableOpacity>

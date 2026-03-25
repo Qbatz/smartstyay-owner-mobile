@@ -1357,13 +1357,13 @@ export default function BillsDesign({ route }) {
         invoiceId: selectedBill.invoiceId,
       });
 
-      if (res.success) {
-        setRefundInitDetails(res.data);
+      if (res?.success) {
+        setRefundInitDetails(res?.data);
       } else {
-        alert(res.message);
+        console.log(res.message);
       }
     } catch (err) {
-      alert("Failed to load refund details");
+      console.log("Failed to load refund details");
     } finally {
       setRefundLoading(false);
     }
@@ -1915,6 +1915,7 @@ export default function BillsDesign({ route }) {
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
 
+       setShowBillDetails(false)
       GetAllBillDetails(activeHostelId);
       setShowRefundPayment(false);
       resetRefundForm();
