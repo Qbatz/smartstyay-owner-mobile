@@ -100,7 +100,7 @@ export default function BillingRule({ navigation }) {
 
            {billingData && canReadRecurring  && (
             <>
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("LongStay")}>
+      <TouchableOpacity style={styles.card}  onPress={() => navigation.navigate("LongStay")}>
         <View style={styles.row}>
           
           <View style={styles.iconContainer}>
