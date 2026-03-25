@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image, ScrollView, Modal, TouchableWithoutFeedback , Linking 
+  Image, ScrollView, Modal, TouchableWithoutFeedback, Linking
 } from "react-native";
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
@@ -32,21 +32,23 @@ import Building from "../../../Assets/Images/buildings.png"
 import Location from "../../../Assets/Images/location.png"
 import DocumentViewer from "./DocumentViewer"
 import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
+import AmenitiesClipPath from "../../../Assets/Images/amenitiesClipPath.png";
+import RequestAmenitiesIcon from "../../../Assets/Images/requestAmenitiesIcon.png"
 // import RNFS from "react-native-fs";
 
 
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  ,openAdditionalContact }) {
+  , openAdditionalContact }) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { AddManualDocument, ParticularcustomerDetails, AddAdditionalContacts,
     GetParticularCustomerDetails, deleteManualDocument } = useCustomer();
-    const [viewerVisible, setViewerVisible] = useState(false);
-const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   const [deletePopup, setDeletePopup] = useState(false)
   const [deleteDocumentId, setDeleteDocumentId] = useState(null);
@@ -97,11 +99,11 @@ const [viewerIndex, setViewerIndex] = useState(0);
     }
   }, [customerDetails])
 
-    useEffect(() => {
-      if (activeHostelId) {
-        getParticularHostelDetails(activeHostelId);
-      }
-    }, [activeHostelId])
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
   console.log("customerDetails", customerDetails);
 
@@ -113,7 +115,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
   const hasContacts = contacts.length > 0;
   const [expandedIndex, setExpandedIndex] = useState(null);
   console.log("particularcustomer", ParticularcustomerDetails);
-  
+
 
   const pickFiles = async () => {
     try {
@@ -173,9 +175,9 @@ const [viewerIndex, setViewerIndex] = useState(0);
 
 
 
- const handleshowAdditionalContact = () => {
-  openAdditionalContact(); 
-};
+  const handleshowAdditionalContact = () => {
+    openAdditionalContact();
+  };
 
 
 
@@ -206,18 +208,18 @@ const [viewerIndex, setViewerIndex] = useState(0);
   ].includes(customerDetails?.hostelInfo?.currentStatus);
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
-const isBookedTenant = customerDetails?.customerCurrentStatus === "BOOKED";
+  const isBookedTenant = customerDetails?.customerCurrentStatus === "BOOKED";
   const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
 
   const status = customerDetails?.customerCurrentStatus;
 
-const disableFinancialEdit =
-  status === "BOOKED" ||
-  status === "VACATED" ||
-  status === "NOTICE";
+  const disableFinancialEdit =
+    status === "BOOKED" ||
+    status === "VACATED" ||
+    status === "NOTICE";
 
-    const isValidSubscription = PGDetails?.isSubscriptionActive;
-    const isSubscriptionAllow = isValidSubscription 
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription
 
 
 
@@ -359,8 +361,8 @@ const disableFinancialEdit =
               {/* RIGHT : Edit Icon */}
               {addressTab === "MANUAL" && (
 
-                
-                  customerDetails?.customerCurrentStatus !== "VACATED" && (
+
+                customerDetails?.customerCurrentStatus !== "VACATED" && (
                   <TouchableOpacity
                     disabled={!canUpdateTenant}
                     style={!canUpdateTenant && { opacity: 0.4 }}
@@ -368,8 +370,8 @@ const disableFinancialEdit =
                     <Image source={EditIcon} style={styles.editIcon} />
                   </TouchableOpacity>
                 )
-                
-               
+
+
               )}
             </View>
 
@@ -585,43 +587,43 @@ const disableFinancialEdit =
             </View>
 
 
-      
 
-       
+
+
             <View style={styles.twoColumnRow}>
 
-   {isSubscriptionAllow && (
-              <View style={styles.detailBox}>
-                <Text style={styles.detailLabel}>Joined Date</Text>
-                <View style={styles.valueWithIcon}>
-                  <Image source={Home} style={styles.detailIcon} />
-                  <Text style={styles.detailValue}>
-                    {customerDetails?.hostelInfo?.joiningDate || "N/A"}
-                  </Text>
-                  {
-                    ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
-                      <TouchableOpacity
-                        onPress={handleEditJoining}
-                        // disabled={!isJoiningDateEditable}
-                        activeOpacity={0.7}
-                        disabled={!isJoiningDateEditable || !canUpdateTenant}
-                       style={(!isJoiningDateEditable || !canUpdateTenant) && { opacity: 0.4 }}
-                      >
-                        <Image
-                          source={EditIcon}
-                          style={[
-                            styles.editIconSmall,
-                            !isJoiningDateEditable && styles.disabledIcon,
-                          ]}
-                        />
-                      </TouchableOpacity>
-                    )
+              {isSubscriptionAllow && (
+                <View style={styles.detailBox}>
+                  <Text style={styles.detailLabel}>Joined Date</Text>
+                  <View style={styles.valueWithIcon}>
+                    <Image source={Home} style={styles.detailIcon} />
+                    <Text style={styles.detailValue}>
+                      {customerDetails?.hostelInfo?.joiningDate || "N/A"}
+                    </Text>
+                    {
+                      ["CHECK_IN"].includes(customerDetails?.customerCurrentStatus) && (
+                        <TouchableOpacity
+                          onPress={handleEditJoining}
+                          // disabled={!isJoiningDateEditable}
+                          activeOpacity={0.7}
+                          disabled={!isJoiningDateEditable || !canUpdateTenant}
+                          style={(!isJoiningDateEditable || !canUpdateTenant) && { opacity: 0.4 }}
+                        >
+                          <Image
+                            source={EditIcon}
+                            style={[
+                              styles.editIconSmall,
+                              !isJoiningDateEditable && styles.disabledIcon,
+                            ]}
+                          />
+                        </TouchableOpacity>
+                      )
 
-                  }
+                    }
 
+                  </View>
                 </View>
-              </View>
-                )}
+              )}
 
               {
                 customerDetails?.customerCurrentStatus === "VACATED" && (
@@ -674,26 +676,26 @@ const disableFinancialEdit =
 
                     )
                   } */}
-         {
-          !disableFinancialEdit && isSubscriptionAllow && (
-            <>
-                              {
-!["VACATED","NOTICE"].includes(status) && (
-  <TouchableOpacity
-    disabled={disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable}
-    style={(disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable) && {opacity:0.4}}
-    onPress={handleEditMonthlyRent}
-  >
-    <Image
-      source={EditIcon}
-      style={styles.editIconSmall}
-    />
-  </TouchableOpacity>
-)
-}
-            </>
-          )
-         }
+                  {
+                    !disableFinancialEdit && isSubscriptionAllow && (
+                      <>
+                        {
+                          !["VACATED", "NOTICE"].includes(status) && (
+                            <TouchableOpacity
+                              disabled={disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable}
+                              style={(disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable) && { opacity: 0.4 }}
+                              onPress={handleEditMonthlyRent}
+                            >
+                              <Image
+                                source={EditIcon}
+                                style={styles.editIconSmall}
+                              />
+                            </TouchableOpacity>
+                          )
+                        }
+                      </>
+                    )
+                  }
 
 
 
@@ -726,34 +728,34 @@ const disableFinancialEdit =
                     )
                   } */}
 
-                     {
-          !disableFinancialEdit && isSubscriptionAllow && (
-            <>
-            
-                 {
-!["VACATED","NOTICE"].includes(status) && (
-  <TouchableOpacity
-    disabled={
-      disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable }
-    style={
-      (disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable) &&
-       {opacity:0.4}
-    }
-    onPress={handleEditAdvance}
-  >
-    <Image
-      source={EditIcon}
-      style={styles.editIconSmall}
-    />
-  </TouchableOpacity>
-)
-}
-            </>
-            
-          )
-         }
+                  {
+                    !disableFinancialEdit && isSubscriptionAllow && (
+                      <>
 
- 
+                        {
+                          !["VACATED", "NOTICE"].includes(status) && (
+                            <TouchableOpacity
+                              disabled={
+                                disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable}
+                              style={
+                                (disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable) &&
+                                { opacity: 0.4 }
+                              }
+                              onPress={handleEditAdvance}
+                            >
+                              <Image
+                                source={EditIcon}
+                                style={styles.editIconSmall}
+                              />
+                            </TouchableOpacity>
+                          )
+                        }
+                      </>
+
+                    )
+                  }
+
+
 
                 </View>
                 <Text style={styles.amountLabel}>
@@ -1010,43 +1012,43 @@ const disableFinancialEdit =
                             </View>
 
                             <View style={styles.docActions}>
-                              <TouchableOpacity  
-             disabled={!isSubscriptionAllow}
+                              <TouchableOpacity
+                                disabled={!isSubscriptionAllow}
 
-   onPress={() => {
-    if (doc.type === "PDF") {
-      Linking.openURL(doc.url);   
-    } else {
-      const index = manualDocs.findIndex(
-        (item) => item.documentId === doc.documentId
-      );
+                                onPress={() => {
+                                  if (doc.type === "PDF") {
+                                    Linking.openURL(doc.url);
+                                  } else {
+                                    const index = manualDocs.findIndex(
+                                      (item) => item.documentId === doc.documentId
+                                    );
 
-      setViewerIndex(index);
-      setViewerVisible(true);    
-    }
-  }}
-  >
+                                    setViewerIndex(index);
+                                    setViewerVisible(true);
+                                  }
+                                }}
+                              >
                                 <Image
                                   source={require("../../../Assets/Images/Eye.png")}
-                                 style={[
-      styles.actionIcon,
-      (!isSubscriptionAllow) && { opacity: 0.4 }
-    ]}
+                                  style={[
+                                    styles.actionIcon,
+                                    (!isSubscriptionAllow) && { opacity: 0.4 }
+                                  ]}
                                 />
                               </TouchableOpacity>
 
                               <TouchableOpacity
-                              disabled={!isSubscriptionAllow}
+                                disabled={!isSubscriptionAllow}
                                 onPress={() => {
                                   setDeleteDocumentId(doc.documentId);
                                   setDeletePopup(true);
                                 }}>
                                 <Image
                                   source={require("../../../Assets/Images/trash.png")}
- style={[
-      styles.actionIcon,
-      (!isSubscriptionAllow) && { opacity: 0.4 }
-    ]}
+                                  style={[
+                                    styles.actionIcon,
+                                    (!isSubscriptionAllow) && { opacity: 0.4 }
+                                  ]}
                                 />
                               </TouchableOpacity>
                             </View>
@@ -1059,25 +1061,25 @@ const disableFinancialEdit =
                       )}
                     </ScrollView>
                     <DocumentViewer
-   visible={viewerVisible}
-  documents={manualDocs}
-  initialIndex={viewerIndex}
-  onClose={() => setViewerVisible(false)}
-  customerdetails={customerDetails}
-/>
+                      visible={viewerVisible}
+                      documents={manualDocs}
+                      initialIndex={viewerIndex}
+                      onClose={() => setViewerVisible(false)}
+                      customerdetails={customerDetails}
+                    />
                   </View>
                 </>
               )}
 
 
             </View>
-            {docTab === "MANUAL"  && (
+            {docTab === "MANUAL" && (
               <TouchableOpacity
                 // style={styles.uploadFabInside}
-                 style={[
-      styles.uploadFabInside,
-      (!isSubscriptionAllow || disableFinancialEdit ) && { opacity: 0.4 }
-    ]}
+                style={[
+                  styles.uploadFabInside,
+                  (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                ]}
                 disabled={disableAssignBtn}
                 onPress={pickFiles}
 
@@ -1132,143 +1134,143 @@ const disableFinancialEdit =
           </View> */}
           <View style={styles.sectionBox}>
 
-  {/* HEADER */}
-  <View style={styles.sectionHeaderRowgur}>
-    <Text style={styles.sectionTitle}>Parent / Guardian Details</Text>
-        {hasContacts && contacts.length === 1 && (
-   <TouchableOpacity onPress={()=> handleshowAdditionalContact(contacts?.[0])} disabled>
-                <Image source={EditIcon} style={styles.editSmallIcon} />
-              </TouchableOpacity>)}
-    {hasContacts && contacts.length > 0 && (
-    <TouchableOpacity
-             style={[
-      styles.addSmallBtn,
-      (!isSubscriptionAllow || disableFinancialEdit ) && { opacity: 0.4 }
-    ]}
-                disabled={disableAssignBtn}
-    // style={styles.addSmallBtn}
-     onPress={handleshowAdditionalContact}>
-       <Image source={AddIcon} style={{height:13, width:13}} />
-      <Text style={{color:'#fff'}}> Additional</Text>
-    </TouchableOpacity>
-    )}
-  </View>
+            {/* HEADER */}
+            <View style={styles.sectionHeaderRowgur}>
+              <Text style={styles.sectionTitle}>Parent / Guardian Details</Text>
+              {hasContacts && contacts.length === 1 && (
+                <TouchableOpacity onPress={() => handleshowAdditionalContact(contacts?.[0])} disabled>
+                  <Image source={EditIcon} style={styles.editSmallIcon} />
+                </TouchableOpacity>)}
+              {hasContacts && contacts.length > 0 && (
+                <TouchableOpacity
+                  style={[
+                    styles.addSmallBtn,
+                    (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                  ]}
+                  disabled={disableAssignBtn}
+                  // style={styles.addSmallBtn}
+                  onPress={handleshowAdditionalContact}>
+                  <Image source={AddIcon} style={{ height: 13, width: 13 }} />
+                  <Text style={{ color: '#fff' }}> Additional</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-  {/* EMPTY */}
-  {!hasContacts && (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>
-        No Contact Details are there!
-      </Text>
+            {/* EMPTY */}
+            {!hasContacts && (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  No Contact Details are there!
+                </Text>
 
-       <TouchableOpacity
-                 style={[
-      styles.addSmallBtn,
-      (!isSubscriptionAllow || disableFinancialEdit ) && { opacity: 0.4 }
-    ]}
-                disabled={disableAssignBtn}
-      //  style={styles.addSmallBtn} 
-       onPress={handleshowAdditionalContact}>
-       <Image source={AddIcon} style={{height:13, width:13}} />
-      <Text style={{color:'#fff'}}> Add</Text>
-    </TouchableOpacity>
-    </View>
-  )}
+                <TouchableOpacity
+                  style={[
+                    styles.addSmallBtn,
+                    (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                  ]}
+                  disabled={disableAssignBtn}
+                  //  style={styles.addSmallBtn} 
+                  onPress={handleshowAdditionalContact}>
+                  <Image source={AddIcon} style={{ height: 13, width: 13 }} />
+                  <Text style={{ color: '#fff' }}> Add</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-  {/* SINGLE CONTACT */}
-  {hasContacts && contacts.length === 1 && (
-    <View style={styles.singleCard}>
-      <Text style={styles.subLabel}>Guardian Full Name</Text>
-      <Text style={styles.name}>{contacts[0]?.fullName}</Text>
+            {/* SINGLE CONTACT */}
+            {hasContacts && contacts.length === 1 && (
+              <View style={styles.singleCard}>
+                <Text style={styles.subLabel}>Guardian Full Name</Text>
+                <Text style={styles.name}>{contacts[0]?.fullName}</Text>
 
-      <Text style={styles.subLabel}>Relationship</Text>
-      <Text style={styles.value}>{contacts[0]?.relationship}</Text>
+                <Text style={styles.subLabel}>Relationship</Text>
+                <Text style={styles.value}>{contacts[0]?.relationship}</Text>
 
-      <Text style={styles.subLabel}>Occupation</Text>
-      <Text style={styles.value}>{contacts[0]?.occupation}</Text>
-       <Text style={styles.subLabel}>Mobile no.</Text>
-      <View style={styles.phoneRow}>
-        <Image source={Phone} style={styles.phoneIcon} />
-        <Text style={styles.value}>
-          +{contacts[0].country} {contacts[0]?.mobile}
-        </Text>
-      </View>
-    </View>
-  )}
-
-  {/* MULTIPLE CONTACTS */}
-{hasContacts && contacts.length > 1 && (
-  <>
-    {contacts.map((item, index) => {
-      const isOpen = expandedIndex === index;
-
-      return (
-        <View key={index} style={styles.accordionCard}>
-
-          {/* HEADER */}
-          <TouchableOpacity
-            style={styles.accordionHeader}
-            onPress={() =>
-              setExpandedIndex(isOpen ? null : index)
-            }
-          >
-            {/* LEFT SIDE */}
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.name}>{item.fullName}</Text>
-
-                {/* CONTACT BADGE */}
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    Contact {String(index + 1).padStart(2, "0")}
+                <Text style={styles.subLabel}>Occupation</Text>
+                <Text style={styles.value}>{contacts[0]?.occupation}</Text>
+                <Text style={styles.subLabel}>Mobile no.</Text>
+                <View style={styles.phoneRow}>
+                  <Image source={Phone} style={styles.phoneIcon} />
+                  <Text style={styles.value}>
+                    +{contacts[0].country} {contacts[0]?.mobile}
                   </Text>
                 </View>
               </View>
+            )}
 
-              <View style={styles.phoneRow}>
-                <Image source={Phone} style={styles.phoneIcon} />
-                <Text style={styles.phoneText}>
-                  +{item.country} {item.mobile}
-                </Text>
-              </View>
-            </View>
+            {/* MULTIPLE CONTACTS */}
+            {hasContacts && contacts.length > 1 && (
+              <>
+                {contacts.map((item, index) => {
+                  const isOpen = expandedIndex === index;
 
-            {/* RIGHT SIDE */}
-            <View style={styles.rightIcons}>
-              
-              {/* EDIT ICON */}
-              <TouchableOpacity onPress={()=>handleshowAdditionalContact(item)} disabled>
-                <Image source={EditIcon} style={styles.editSmallIcon} />
-              </TouchableOpacity>
+                  return (
+                    <View key={index} style={styles.accordionCard}>
 
-              {/* DOWN ARROW */}
-              <Image
-                source={DownArrow}
-                style={[
-                  styles.arrowIcon,
-                  isOpen && { transform: [{ rotate: "180deg" }] }
-                ]}
-              />
-            </View>
-          </TouchableOpacity>
+                      {/* HEADER */}
+                      <TouchableOpacity
+                        style={styles.accordionHeader}
+                        onPress={() =>
+                          setExpandedIndex(isOpen ? null : index)
+                        }
+                      >
+                        {/* LEFT SIDE */}
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <Text style={styles.name}>{item.fullName}</Text>
 
-          {/* EXPANDED */}
-          {isOpen && (
-            <View style={styles.accordionBody}>
-              <Text style={styles.subLabel}>Relationship to Tenant</Text>
-              <Text style={styles.value}>{item.relationship}</Text>
+                            {/* CONTACT BADGE */}
+                            <View style={styles.badge}>
+                              <Text style={styles.badgeText}>
+                                Contact {String(index + 1).padStart(2, "0")}
+                              </Text>
+                            </View>
+                          </View>
 
-              <Text style={styles.subLabel}>Guardian Occupation</Text>
-              <Text style={styles.value}>{item.occupation}</Text>
-            </View>
-          )}
-        </View>
-      );
-    })}
-  </>
-)}
+                          <View style={styles.phoneRow}>
+                            <Image source={Phone} style={styles.phoneIcon} />
+                            <Text style={styles.phoneText}>
+                              +{item.country} {item.mobile}
+                            </Text>
+                          </View>
+                        </View>
 
-</View>
+                        {/* RIGHT SIDE */}
+                        <View style={styles.rightIcons}>
+
+                          {/* EDIT ICON */}
+                          <TouchableOpacity onPress={() => handleshowAdditionalContact(item)} disabled>
+                            <Image source={EditIcon} style={styles.editSmallIcon} />
+                          </TouchableOpacity>
+
+                          {/* DOWN ARROW */}
+                          <Image
+                            source={DownArrow}
+                            style={[
+                              styles.arrowIcon,
+                              isOpen && { transform: [{ rotate: "180deg" }] }
+                            ]}
+                          />
+                        </View>
+                      </TouchableOpacity>
+
+                      {/* EXPANDED */}
+                      {isOpen && (
+                        <View style={styles.accordionBody}>
+                          <Text style={styles.subLabel}>Relationship to Tenant</Text>
+                          <Text style={styles.value}>{item.relationship}</Text>
+
+                          <Text style={styles.subLabel}>Guardian Occupation</Text>
+                          <Text style={styles.value}>{item.occupation}</Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </>
+            )}
+
+          </View>
 
 
           <View style={styles.sectionBox}>
@@ -1276,34 +1278,41 @@ const disableFinancialEdit =
             {/* HEADER */}
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Amenities provided</Text>
-       <TouchableOpacity
-  style={[
-    styles.assignBtn,
-    (disableAssignBtn || !canWriteTenant || !isSubscriptionAllow) && { opacity: 0.4 }
-  ]}
-  disabled={
-    disableAssignBtn ||
-    !canWriteTenant ||
-    !isSubscriptionAllow
-  }
-  onPress={handleShowAmenities}
->
-  <Text style={styles.assignText}>＋ Assign</Text>
-</TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.assignBtn,
+                  (disableAssignBtn || !canWriteTenant || !isSubscriptionAllow) && { opacity: 0.4 }
+                ]}
+                disabled={
+                  disableAssignBtn ||
+                  !canWriteTenant ||
+                  !isSubscriptionAllow
+                }
+                onPress={handleShowAmenities}
+              >
+                <Text style={styles.assignText}>＋ Assign</Text>
+              </TouchableOpacity>
             </View>
 
             {Array.isArray(customerDetails?.assignedAmenities) &&
               customerDetails?.assignedAmenities?.length > 0 ? (
 
               customerDetails.assignedAmenities.map((item, index) => (
-                <View style={styles.amenityItem} key={item.amenityId || index}>
-                  <Text style={styles.amenityTitle}>
-                    {item.amenityName}
-                  </Text>
+                <View style={[styles.amenityItem, { flexDirection: 'row', alignItems: 'center' }]} key={item.amenityId || index}>
 
-                  <Text style={styles.amenityPrice}>
-                    ₹ {item.amenityAmount} / month
-                  </Text>
+                  <View style={{ paddingVertical: 5.93, paddingHorizontal: 5.5, backgroundColor: "#1E45E10F", borderRadius: 10 }}>
+                    <Image source={AmenitiesClipPath} style={{ width: 26, height: 26 }} />
+                  </View>
+
+                  <View style={{ marginLeft: 10 }}>
+                    <Text style={styles.amenityTitle}>
+                      {item.amenityName}
+                    </Text>
+
+                    <Text style={styles.amenityPrice}>
+                      ₹ {item.amenityAmount} / month
+                    </Text>
+                  </View>
                 </View>
               ))
 
@@ -1351,13 +1360,23 @@ const disableFinancialEdit =
 
               customerDetails.requestedAmenities.map((item, index) => (
                 <View style={styles.amenityItem} key={item.amenityId || index}>
-                  <Text style={styles.amenityTitle}>
-                    {item.amenityName}
-                  </Text>
 
-                  <Text style={styles.amenityPrice}>
-                    ₹ {item.price} / month
-                  </Text>
+                  <View style={{flexDirection:'row',alignItems:'center'}}>
+                    <View style={{ backgroundColor: "#fffbf2", paddingVertical: 5.93, paddingHorizontal: 5.5,borderRadius:10}}>
+                      <Image source={RequestAmenitiesIcon} style={{ width: 22.43, height: 22.43 }} />
+                    </View>
+
+                    <View style={{marginLeft:10}}>
+                      <Text style={styles.amenityTitle}>
+                        {item.amenityName}
+                      </Text>
+
+                      <Text style={styles.amenityPrice}>
+                        ₹ {item.price} / month
+                      </Text>
+
+                    </View>
+                  </View>
 
                   <View style={styles.actionRow}>
                     <TouchableOpacity style={styles.approveBtn}>
@@ -1759,10 +1778,13 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E6E6E6",
   },
   amenityItem: {
-    backgroundColor: "#F8FAFF",
+    // backgroundColor: "#F8FAFF",
+    borderWidth: 1,
+    borderColor: "#EFF2FF",
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
+    // flexDirection:'row'
   },
   row: {
     flexDirection: "row",
@@ -1937,99 +1959,99 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   addSmallBtn: {
-    flexDirection:'row',justifyContent:'center',alignItems:'center',
-  backgroundColor: "#2563EB",
-  // color: "#fff",
-  paddingHorizontal: 10,
-  paddingVertical: 5,
-  borderRadius: 8,
-  // fontSize: 12,
-},
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: "#2563EB",
+    // color: "#fff",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    // fontSize: 12,
+  },
 
-singleCard: {
-  backgroundColor: "#F9FAFB",
-  padding: 14,
-  borderRadius: 12,
-},
+  singleCard: {
+    backgroundColor: "#F9FAFB",
+    padding: 14,
+    borderRadius: 12,
+  },
 
-accordionCard: {
-  backgroundColor: "#F9FAFB",
-  borderRadius: 12,
-  marginBottom: 10,
-  overflow: "hidden",
-},
+  accordionCard: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
 
-accordionHeader: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  padding: 14,
-  alignItems: "center",
-},
+  accordionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 14,
+    alignItems: "center",
+  },
 
-accordionBody: {
-  padding: 14,
-  borderTopWidth: 1,
-  borderTopColor: "#E5E7EB",
-},
+  accordionBody: {
+    padding: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
 
-name: {
-  fontSize: 15,
-  fontWeight: "600",
-},
+  name: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
-phoneText: {
-  fontSize: 13,
-  color: "#6B7280",
-  marginTop: 4,
-},
+  phoneText: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 4,
+  },
 
-subLabel: {
-  fontSize: 12,
-  color: "#9CA3AF",
-  marginTop: 8,
-},
+  subLabel: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 8,
+  },
 
-value: {
-  fontSize: 14,
-  fontWeight: "500",
-},
+  value: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
 
-phoneRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 8,
-},
-badge: {
-  backgroundColor: "#FFE7D6",
-  paddingHorizontal: 8,
-  paddingVertical: 3,
-  borderRadius: 8,
-  marginLeft: 8,
-},
+  phoneRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  badge: {
+    backgroundColor: "#FFE7D6",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
 
-badgeText: {
-  color: "#F97316",
-  fontSize: 11,
-  fontWeight: "600",
-},
+  badgeText: {
+    color: "#F97316",
+    fontSize: 11,
+    fontWeight: "600",
+  },
 
-rightIcons: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-},
+  rightIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
 
-editSmallIcon: {
-  width: 16,
-  height: 16,
-  tintColor: "#6B7280",
-},
+  editSmallIcon: {
+    width: 16,
+    height: 16,
+    tintColor: "#6B7280",
+  },
 
-arrowIcon: {
-  marginLeft:5,
-  width: 23,
-  height: 23,
-  // tintColor: "#6B7280",
-},
+  arrowIcon: {
+    marginLeft: 5,
+    width: 23,
+    height: 23,
+    // tintColor: "#6B7280",
+  },
 
 });

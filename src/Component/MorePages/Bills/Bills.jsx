@@ -4172,7 +4172,8 @@ export default function BillsDesign({ route }) {
 
                   {/* BUTTON ROW */}
                   <View style={styles.btnRow}>
-                    <TouchableOpacity style={styles.cancelBtn} >
+                    <TouchableOpacity onPress={()=>setShowRefundPayment(false)}
+                     style={styles.cancelBtn} >
                       <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
 

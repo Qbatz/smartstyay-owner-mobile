@@ -177,6 +177,7 @@ export default function EditManualAddressSheet({
       setPincodeError("");
       setCityError("");
       setStateError("")
+      setStateOpen(false)
     }
   }, [visible]);
 
@@ -463,7 +464,8 @@ export default function EditManualAddressSheet({
                   placeholder="Select state"
                   placeholderTextColor="#9CA3AF"
                   value={stateOpen ? stateQuery || selectedState : selectedState}
-                  onFocus={() => setStateOpen(true)}
+                  // onFocus={() => setStateOpen(true)}
+                   onPressIn={() => setStateOpen(prev => !prev)}
                   onChangeText={(t) => {
                     setStateQuery(t);
                     setStateOpen(true);

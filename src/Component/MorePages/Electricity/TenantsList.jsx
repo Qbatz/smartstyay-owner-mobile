@@ -91,19 +91,21 @@ export default function TenantsList() {
             <Text style={styles.name}>{item?.fullName}</Text>
 
             <View style={styles.inline}>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{item?.floorName}</Text>
+              <View style={[styles.tag,{flexShrink: 1, flex: 1}]}>
+                <Text style={[styles.tagText,{flexShrink:1}]}
+                numberOfLines={1}>{item?.floorName}</Text>
               </View>
 
-              <View style={styles.inline}>
-                <Image source={RoomIcon} style={styles.icon} />
-                <Text style={styles.value}>{item?.roomName}</Text>
-              </View>
-
-              <View style={styles.inline}>
+              <View style={[styles.inline,{flexShrink:1}]}>
                 <Image source={RoomIcon} style={styles.icon} />
                 <Text style={[styles.value,{flexShrink:1}]}
-                numberOfLines={2}>{item?.bedName}</Text>
+                numberOfLines={1}>{item?.roomName}</Text>
+              </View>
+
+              <View style={[styles.inline,{flexShrink:1}]}>
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={[styles.value,{flexShrink:1}]}
+                numberOfLines={1}>{item?.bedName}</Text>
               </View>
             </View>
           </View>
