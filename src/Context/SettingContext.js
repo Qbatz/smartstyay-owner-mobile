@@ -742,10 +742,81 @@ const downloadInvoiceReport = async (hostelId) => {
   }
 };
 
+const getHostelPlans = async () => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/plans`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("PLANS RESPONSE →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log("PLANS ERROR →", err.response?.data || err.message);
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const getCurrentHostelPlan = async (hostelId) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/plans/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("CURRENT PLAN →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log("CURRENT PLAN ERROR →", err.response?.data || err.message);
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport , downloadExpenseReport, downloadInvoiceReport}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
+     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan }}>
       {children}
     </ElectricityContext.Provider>
   );

@@ -5,6 +5,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import StatusIcon from "../../../Assets/Images/StatusIcon.png";
 import Arrow from "../../../Assets/Images/Arrow_left.png";
 import crown from "../../../Assets/Images/crown.png";
+import BillingIcon from "../../../Assets/Images/direct-right.png";
+import ChecksIcon from "../../../Assets/Images/checks.png";
 
 export default function PlanDetailsScreen({ route, navigation }) {
   useFocusEffect(
@@ -125,17 +127,27 @@ export default function PlanDetailsScreen({ route, navigation }) {
 
        
             <View style={styles.featureRow}>
-              <Text style={styles.tick}>✔</Text>
+              <Image
+                source={ChecksIcon}
+                style={styles.tick}
+              />
               <Text style={styles.featureText}>WhatsApp Integration</Text>
             </View>
 
             <View style={styles.featureRow}>
-              <Text style={styles.tick}>✔</Text>
+            <Image
+                source={ChecksIcon}
+                style={styles.tick}
+              />
               <Text style={styles.featureText}>Digital KYC</Text>
             </View>
 
             <View style={styles.featureRow}>
-              <Text style={styles.tick}>✔</Text>
+                <Image
+                source={ChecksIcon}
+                style={styles.tick}
+              />
+
               <Text style={styles.featureText}>Legal E-Sign</Text>
             </View>
 
@@ -157,7 +169,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
           <View key={idx} style={styles.billCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
-                source={Calendar}
+                source={BillingIcon}
                 style={styles.billIcon}
               />
               <View>
@@ -242,7 +254,7 @@ const styles = StyleSheet.create({
   planUpgradeTitle: { fontSize: 16, fontWeight: "700" },
 
   featureRow: { flexDirection: "row", alignItems: "center", marginVertical: 6 },
-  tick: { color: "blue", fontSize: 16, marginRight: 6 },
+  tick: {height:16, width:16, marginRight:10},
   featureText: { fontSize: 14 },
 
   upgradePrice: { fontSize: 20, fontWeight: "700" },
