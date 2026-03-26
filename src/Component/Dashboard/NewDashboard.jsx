@@ -128,6 +128,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const [activeSubTab, setActiveSubTab] = useState("Activities");
   const [showExpiryScreen, setShowExpiredScreen] = useState(false);
+    const [selectedBill , setSelectedBill] = useState(null)
+
 
   const { setShowTabBar } = route.params || {};
 
@@ -208,6 +210,9 @@ expenseTrend: data?.finance?.expenseTrend || 0,
 profitTrend: data?.finance?.profitTrend || 0,
 expenseSummary: data?.expenseSummary || {},
  roomsBeds: data?.roomsBeds || {},
+
+ tenantcomplaint: data?.tenantcomplaint || [],
+dashboardRequests: data?.dashboardRequests || [],
   };
 };
 
@@ -472,6 +477,8 @@ const requestStats = [
   },
 ];
 
+
+
 const requestComplaints = [
   {
     count: dashboardList?.tenantComplaints?.pending || 0,
@@ -518,27 +525,56 @@ const CustomerOverviewshow = async(item) => {
 
   }
 
+
+  const handleShowRecordPayment = (item) => {
+    setShowRecordPayment(true)
+    setSelectedBill(item)
+  }
+  console.log("Recordpayment", showRecordPayment);
+  
+
+// const complaintList =
+//   dashboardList?.tenantcomplaint?.map((item) => ({
+//     id: item.tenantId,
+//     name: item.fullName || "-",
+//     room: item.roomName,
+//     title: item.complaintDescription,
+//     type: item.complaintType,
+//     status: item.status,
+//     time: item.complaintDate,
+//   })) || [];
+
+//  const requestList =
+//   dashboardList?.dashboardRequests?.map((item) => ({
+//     id: item.requestId,
+//     name: item.customerName || "-",
+//     room: item.roomName || "",
+//     title: item.description,
+//     type: item.type,
+//     status: item.status,
+//     time: item.date,
+//   })) || []
+
+
 const complaintList =
   dashboardList?.tenantcomplaint?.map((item) => ({
-    id: item.tenantId,
-    name: item.fullName || "-",
-    room: item.roomName,
-    title: item.complaintDescription,
-    type: item.complaintType,
-    status: item.status,
+    name: item.fullName,
+    room: item.roomName || "",
+    status: "Pending", 
+    type: item.complaintDescription || item.complaintName,
+    category: item.complaintType,
     time: item.complaintDate,
   })) || [];
 
- const requestList =
+  const requestList =
   dashboardList?.dashboardRequests?.map((item) => ({
-    id: item.requestId,
-    name: item.customerName || "-",
+    name: item.customerName,
     room: item.roomName || "",
-    title: item.description,
+    status: item.status, 
+    title: item.type, 
     type: item.type,
-    status: item.status,
     time: item.date,
-  })) || []
+  })) || [];
 
   const getStatusStyle = (status) => {
   const s = status?.toLowerCase();
@@ -1582,7 +1618,7 @@ const filteredLabels = labels.map((item, index) => {
 
                               <TouchableOpacity
                                 style={styles.renewBtn}
-                                onPress={() => navigation.navigate("Subscription")}
+                                onPress={() => navigation.navigate("SubscriptionPlans")}
                               >
                                 <Text style={styles.renewText}>
                                   Renew Now →
@@ -1941,12 +1977,37 @@ const filteredLabels = labels.map((item, index) => {
 
                           {/* Scrollable list */}
                           <ScrollView
-                            style={{ height: 260 }}
+                            style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
                           >
+                            {dashboardList?.checkins?.length > 0 ? (
+  dashboardList.checkins.map((item, index) => (
+    <View key={index} style={styles.bookingItem}>
+      <Text style={styles.bookingName}>{item.customerName}</Text>
 
-                           {dashboardList?.checkins?.map((item, index) => (
+      <Text style={styles.bookingInfo}>
+        {item.sharingType} {item.roomName} {item.bedName}
+      </Text>
+
+      <View style={styles.bookingActions}>
+        <TouchableOpacity style={styles.viewBtn} onPress={() => CustomerOverviewshow(item)}>
+          <Text style={styles.viewText}>View</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.checkinBtn} onPress={() => handleShowTennantCheckin(item)}>
+          <Text style={styles.checkinText}>Check-in</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  ))
+) : (
+  <View style={styles.noDataContainer}>
+    <Text style={styles.noDataText}>No Upcoming Check-ins</Text>
+  </View>
+)}
+
+                           {/* {dashboardList?.checkins?.map((item, index) => (
                               <View key={index} style={styles.bookingItem}>
 
                           <Text style={styles.bookingName}>{item.customerName}</Text>
@@ -1968,7 +2029,7 @@ const filteredLabels = labels.map((item, index) => {
                                 </View>
 
                               </View>
-                            ))}
+                            ))} */}
 
                           </ScrollView>
 
@@ -2004,18 +2065,16 @@ const filteredLabels = labels.map((item, index) => {
                           </View>
 
                           <ScrollView
-                           style={{ height: 260 }}
+                           style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
                           >
 
-                           {dashboardList?.overdueInvoices?.map((item, index) => (
+                           {/* {dashboardList?.overdueInvoices?.map((item, index) => (
                               <View key={index} style={styles.invoiceItem}>
 
-                                {/* TOP ROW */}
                                 <View style={styles.invoiceTopRow}>
 
-                                  {/* LEFT */}
                                   <View>
                                      <Text style={styles.invoiceName}>{item?.customerName}</Text>
 
@@ -2031,7 +2090,6 @@ const filteredLabels = labels.map((item, index) => {
                                     </View>
                                   </View>
 
-                                  {/* RIGHT */}
                                   <View style={{ alignItems: "flex-end" }}>
                                     <Text style={styles.amountText}>
       ₹ {item?.dueAmount}
@@ -2044,15 +2102,50 @@ const filteredLabels = labels.map((item, index) => {
 
                                 </View>
 
-                                {/* BUTTON */}
                                 <View style={styles.actionRow}>
-                                  <TouchableOpacity style={styles.paymentBtn}>
+                                  <TouchableOpacity style={styles.paymentBtn} onPress={()=>handleShowRecordPayment(item)}>
                                     <Text style={styles.paymentText}>Record Payment</Text>
                                   </TouchableOpacity>
                                 </View>
 
                               </View>
-                            ))}
+                            ))} */}
+
+                            {dashboardList?.overdueInvoices?.length > 0 ? (
+  dashboardList.overdueInvoices.map((item, index) => (
+    <View key={index} style={styles.invoiceItem}>
+      <View style={styles.invoiceTopRow}>
+        <View>
+          <Text style={styles.invoiceName}>{item?.customerName}</Text>
+
+          <View style={styles.invoiceSubRow}>
+            <Text style={styles.invoiceNumber}>{item?.invoice}</Text>
+
+            <View style={styles.statusBadges}>
+              <View style={styles.statusDot} />
+              <Text style={styles.statusText}>{item?.status}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={styles.amountText}>₹ {item?.dueAmount}</Text>
+          <Text style={styles.dateText}>{item?.dueDate}</Text>
+        </View>
+      </View>
+
+      <View style={styles.actionRow}>
+        <TouchableOpacity style={styles.paymentBtn} onPress={() => handleShowRecordPayment(item)}>
+          <Text style={styles.paymentText}>Record Payment</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  ))
+) : (
+  <View style={styles.noDataContainer}>
+    <Text style={styles.noDataText}>No Overdue Invoices</Text>
+  </View>
+)}
 
                           </ScrollView>
 
@@ -2455,9 +2548,9 @@ const filteredLabels = labels.map((item, index) => {
 
                                 </View>
 
-                                <Text style={styles.requestIssue}>
+                                {/* <Text style={styles.requestIssue}>
                                  {item.title}
-                                </Text>
+                                </Text> */}
 
                                 <View style={styles.requestBottomRow}>
                                   <Text style={styles.requestCategory}>
@@ -2476,7 +2569,10 @@ const filteredLabels = labels.map((item, index) => {
 
 
                           {/* Footer */}
-                          <TouchableOpacity style={styles.viewRequestsBtn}>
+                          <TouchableOpacity             style={[
+                styles.viewRequestsBtn,
+                 { opacity: 0.7 }
+              ]} disabled>
                             <Text style={styles.viewRequestsText}>
                               View All Requests
                             </Text>
@@ -2595,7 +2691,13 @@ const filteredLabels = labels.map((item, index) => {
 
 
                           {/* Footer */}
-                          <TouchableOpacity style={styles.viewRequestsBtn}>
+                          <TouchableOpacity 
+                          // style={styles.viewRequestsBtn}
+                           style={[
+                styles.viewRequestsBtn,
+                 { opacity: 0.7 }
+              ]}
+                          disabled>
                             <Text style={styles.viewRequestsText}>
                               View All Complaints
                             </Text>
@@ -2847,14 +2949,18 @@ const filteredLabels = labels.map((item, index) => {
 
                             <View>
                               <Text style={styles.statLabel}>Total Collected</Text>
-                              <Text style={styles.collectedValue}>₹ {dashboardList?.revenueSummary?.totalCollected?.amount || 0}</Text>
-
+                              {/* <Text style={styles.collectedValue}>₹ {dashboardList?.revenueSummary?.totalCollected?.amount || 0}</Text> */}
+                              <Text style={styles.collectedValue}>
+  ₹ {Number(dashboardList?.revenueSummary?.totalCollected?.amount || 0).toFixed(2)}
+</Text>
                               <Text style={styles.statSub}>↓ {dashboardList?.revenueSummary?.totalCollected?.percentageChange || 0}% from last Month</Text>
                             </View>
 
                             <View>
                               <Text style={styles.statLabel}>Total Outstanding</Text>
-                              <Text style={styles.outstandingValue}>₹ {dashboardList?.revenueSummary?.totalOutstanding?.amount || 0}</Text>
+          <Text style={styles.outstandingValue}>
+  ₹ {Number(dashboardList?.revenueSummary?.totalOutstanding?.amount || 0).toFixed(2)}
+</Text>
 
                               <Text style={styles.statSubGreen}>↑ {dashboardList?.revenueSummary?.totalOutstanding?.percentageChange || 0}% from last Month</Text>
                             </View>
@@ -3141,10 +3247,14 @@ const filteredLabels = labels.map((item, index) => {
         animationType="fade"
         onRequestClose={() => setSharingModalVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setSharingModalVisible(false)}>
-          <View style={styles.modalOverlay}>
+   <View style={styles.modalOverlay}>
 
-            <TouchableWithoutFeedback>
+    {/* backdrop */}
+    <TouchableWithoutFeedback onPress={() => setSharingModalVisible(false)}>
+      <View style={StyleSheet.absoluteFillObject} />
+    </TouchableWithoutFeedback>
+
+          
               <View style={styles.modalContainer}>
                 <View style={{ display: 'flex', flexDirection: 'row', }}>
                   <Image source={SharingImg} style={{ height: 15, width: 15, alignItems: 'center', marginTop: 2, marginRight: 5 }} />
@@ -3152,7 +3262,9 @@ const filteredLabels = labels.map((item, index) => {
                   <Text style={styles.modalTitle}>Detailed Sharing Breakdown</Text>
                 </View>
                 {/* 1 Sharing */}
-              <ScrollView>
+              <ScrollView style={{ maxHeight: 430 }}
+                            showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled>
   {sharingData.map((item, index) => (
     <View style={styles.shareCard} key={index}>
       
@@ -3192,19 +3304,17 @@ const filteredLabels = labels.map((item, index) => {
 </ScrollView>
 
               </View>
-            </TouchableWithoutFeedback>
-
+         
           </View>
-        </TouchableWithoutFeedback>
+        {/* </TouchableWithoutFeedback> */}
       </Modal>
 
 
-      {/* <RecordPaymentSheet
+      <RecordPaymentSheet
   visible={showRecordPayment}
   onClose={() => setShowRecordPayment(false)}
   selectedBill={selectedBill}
-  bankList={bankList}
-/> */}
+/>
 
       {/* {showExpiryModal && (
   <SubscriptionFullScreenAlert
@@ -4718,13 +4828,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor:'grey'
   },
 
   viewRequestsText: {
     fontSize: 14,
     fontFamily: "Gilroy-Medium",
-    color: "#374151",
+    // color: "#374151",
+    color:'#fff',
     marginRight: 8
   },
 
@@ -5322,7 +5434,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  
+  noDataContainer: {
+  height: 260,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+noDataText: {
+  color: "#999",
+  fontSize: 14,
+  fontFamily: "Gilroy-Medium",
+},
 
 
 });

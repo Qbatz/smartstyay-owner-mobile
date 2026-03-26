@@ -39,6 +39,10 @@ export default function SubscriptionExpired({setTabBar,onClose}){
     }, [])
   );
 
+  const handleSubscriptionPage = () => {
+    navigation.navigate("SubscriptionPlans")  
+  }
+
 
   return (
 
@@ -51,6 +55,7 @@ export default function SubscriptionExpired({setTabBar,onClose}){
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 10,
+    paddingVertical:30,
     zIndex: 999,
  }}>
 
@@ -94,7 +99,7 @@ export default function SubscriptionExpired({setTabBar,onClose}){
             alignItems: "center"
           }}
         >
-          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }} onPress={handleSubscriptionPage} >
             Renew Now →
           </Text>
         </TouchableOpacity>
