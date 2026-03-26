@@ -128,7 +128,7 @@ export default function TenantCheckIn({ navigation, route }) {
     const res = await getAllRoomsByFloor(floorId);
     if (res.success) {
       console.log("RoomData", res.data);
-      
+
       setRooms(res.data);
     } else {
       setRooms([]);
@@ -210,7 +210,7 @@ export default function TenantCheckIn({ navigation, route }) {
     if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
     );
 
     setOpenDropdownId(null);
@@ -309,16 +309,25 @@ export default function TenantCheckIn({ navigation, route }) {
     const updated = extraCharges.map((e) => {
       let titleError = "";
       let amountError = "";
+      let typeError = "";
 
       const titleFilled = e.title?.trim()?.length > 0;
       const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
 
       const amt = Number(e.amount);
 
-      // ✅ CASE 1: type not selected -> ignore row (no validation)
+      // case 1: if not selected type --show error message
       if (!e.type) {
-        return { ...e, titleError: "", amountError: "" };
+        typeError = "Please select type";
+        valid = false;
+
+        return { ...e, typeError, titleError: "", amountError: "" };
       }
+
+      // ✅ CASE 1: type not selected -> ignore row (no validation)
+      // if (!e.type) {
+      //   return { ...e, titleError: "", amountError: "" };
+      // }
 
       // ✅ CASE 2: Maintenance -> amount mandatory
       if (e.type === "Maintenance") {
@@ -330,7 +339,7 @@ export default function TenantCheckIn({ navigation, route }) {
           valid = false;
         }
 
-        return { ...e, titleError: "", amountError };
+        return { ...e, typeError, titleError: "", amountError };
       }
 
       // ✅ CASE 3: Others -> reason + amount both mandatory
@@ -361,7 +370,7 @@ export default function TenantCheckIn({ navigation, route }) {
         return { ...e, titleError, amountError };
       }
 
-      return { ...e, titleError: "", amountError: "" };
+      return { ...e, typeError, titleError: "", amountError: "" };
     });
 
     setExtraCharges(updated);
@@ -408,7 +417,12 @@ export default function TenantCheckIn({ navigation, route }) {
       }, 800);
 
     } else {
-      alert(res.message);
+      setModalType("error");
+      setMessage(res.message || "Checkin Failed");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 1000);
     }
   };
 
@@ -505,11 +519,11 @@ export default function TenantCheckIn({ navigation, route }) {
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() =>{  
-                       setFloorOpen(!floorOpen)
-                       setRoomOpen(false);
-                       setBedOpen(false)
-                    } }
+                    onPress={() => {
+                      setFloorOpen(!floorOpen)
+                      setRoomOpen(false);
+                      setBedOpen(false)
+                    }}
                     activeOpacity={0.9}
                   >
                     <Text style={styles.selectText}>
@@ -522,33 +536,33 @@ export default function TenantCheckIn({ navigation, route }) {
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
 
-{floors?.length === 0 ? (
-  <View style={{ padding: 12 }}>
-    <Text style={{ color: "#999", textAlign: "center" }}>
-      No Floors Available
-    </Text>
-  </View>
-) : (
-                        floors?.map((v) => (
+                        {floors?.length === 0 ? (
+                          <View style={{ padding: 12 }}>
+                            <Text style={{ color: "#999", textAlign: "center" }}>
+                              No Floors Available
+                            </Text>
+                          </View>
+                        ) : (
+                          floors?.map((v) => (
 
-                          <TouchableOpacity
-                            key={v.id}
-                            style={[styles.option, selectedFloor?.id === v.id && { backgroundColor: '#E6F0FF' }]}
-                            onPress={() => {
-                              setSelectedFloor(v);
-                              setFloorOpen(false);
+                            <TouchableOpacity
+                              key={v.id}
+                              style={[styles.option, selectedFloor?.id === v.id && { backgroundColor: '#E6F0FF' }]}
+                              onPress={() => {
+                                setSelectedFloor(v);
+                                setFloorOpen(false);
 
-                              setSelectedRoom(null);
-                              setSelectedBed(null);
-                              setRooms([]);
-                              loadRooms(v.id);
-                              setFloorError("")
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.name}</Text>
-                          </TouchableOpacity>
+                                setSelectedRoom(null);
+                                setSelectedBed(null);
+                                setRooms([]);
+                                loadRooms(v.id);
+                                setFloorError("")
+                              }}
+                            >
+                              <Text style={styles.optionText}>{v.name}</Text>
+                            </TouchableOpacity>
                           ))
-)}
+                        )}
                       </ScrollView>
                     </View>
                   )}
@@ -563,16 +577,15 @@ export default function TenantCheckIn({ navigation, route }) {
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() => 
-                    {
-                       setFloorOpen(false)
-                       setRoomOpen(!roomOpen)
-                       setBedOpen(false)
+                    onPress={() => {
+                      setFloorOpen(false)
+                      setRoomOpen(!roomOpen)
+                      setBedOpen(false)
                     }
-                      
-                     }
+
+                    }
                     activeOpacity={0.9}
-                    // disabled={!rooms.length}
+                  // disabled={!rooms.length}
                   >
                     <Text style={styles.selectText}>
                       {selectedRoom ? selectedRoom.name : "Select a Room"}
@@ -580,38 +593,38 @@ export default function TenantCheckIn({ navigation, route }) {
                     <Image source={DownArrow} style={styles.arrow} />
                   </TouchableOpacity>
 
-                  {roomOpen &&  (
+                  {roomOpen && (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
- {rooms.length === 0 ? (
-        <View style={{ padding: 12 }}>
-          <Text style={{ color: "#999", textAlign: "center" }}>
-            No Rooms Available
-          </Text>
-        </View>
-      ) : (
-                        rooms.map((r) => (
-                          <TouchableOpacity
-                            key={r.id}
-                            style={[styles.option, selectedRoom?.id === r.id && { backgroundColor: '#E6F0FF' }]}
-                            onPress={() => {
-                              setSelectedRoom(r);
-                              setRoomOpen(false);
-                              setRoomError("")
-                            }}
+                        {rooms.length === 0 ? (
+                          <View style={{ padding: 12 }}>
+                            <Text style={{ color: "#999", textAlign: "center" }}>
+                              No Rooms Available
+                            </Text>
+                          </View>
+                        ) : (
+                          rooms.map((r) => (
+                            <TouchableOpacity
+                              key={r.id}
+                              style={[styles.option, selectedRoom?.id === r.id && { backgroundColor: '#E6F0FF' }]}
+                              onPress={() => {
+                                setSelectedRoom(r);
+                                setRoomOpen(false);
+                                setRoomError("")
+                              }}
 
-                          >
-                            {console.log(r)}
-                            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                            >
+                              {console.log(r)}
+                              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <Text style={styles.optionText}> {r.name}  </Text>
-                              <View style={{backgroundColor:'#dee3f2', borderRadius:10,padding:3,}}>
-                               <Text style={styles.optionText}> {r?.sharingType} </Text>
+                                <View style={{ backgroundColor: '#dee3f2', borderRadius: 10, padding: 3, }}>
+                                  <Text style={styles.optionText}> {r?.sharingType} </Text>
+                                </View>
                               </View>
-                            </View>
-                            {/* <Text style={styles.optionText}> {r.name} - {r?.sharingType} </Text> */}
-                          </TouchableOpacity>
+                              {/* <Text style={styles.optionText}> {r.name} - {r?.sharingType} </Text> */}
+                            </TouchableOpacity>
                           ))
-      )}
+                        )}
                       </ScrollView>
                     </View>
                   )}
@@ -624,15 +637,14 @@ export default function TenantCheckIn({ navigation, route }) {
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
-                    onPress={() =>
-                         {
-                       setFloorOpen(false)
-                       setRoomOpen(false)
-                       setBedOpen(!bedOpen)
+                    onPress={() => {
+                      setFloorOpen(false)
+                      setRoomOpen(false)
+                      setBedOpen(!bedOpen)
                     }
-                      }
+                    }
                     activeOpacity={0.9}
-                    // disabled={!filteredBeds.length}
+                  // disabled={!filteredBeds.length}
                   >
                     <Text style={styles.selectText}>
                       {selectedBed ? selectedBed.bedName : "Select a Bed"}
@@ -641,37 +653,37 @@ export default function TenantCheckIn({ navigation, route }) {
                     <Image source={DownArrow} style={styles.arrow} />
                   </TouchableOpacity>
 
-                  {bedOpen &&  (
+                  {bedOpen && (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}>
                         {filteredBeds.length === 0 ? (
-        <View style={{ padding: 12 }}>
-          <Text style={{ color: "#999", textAlign: "center" }}>
-            No Beds Available
-          </Text>
-        </View>
-      ) : (
-                        
-                        filteredBeds.map((b) => (
-
-                          <TouchableOpacity
-                            key={b.bedId}
-                            style={[styles.option, selectedBed?.bedId === b.bedId && { backgroundColor: '#E6F0FF' }]}
-                            onPress={() => {
-                              setSelectedBed(b);
-                              setBedOpen(false);
-                              setBedError("")
-                              //  setRentalAmount(String(b.rentAmount));
-                            }}
-                          >
-                            {console.log(b)}
-                            {console.log(selectedBed)}
-                            <Text style={styles.optionText}>
-                              {b.bedName}
+                          <View style={{ padding: 12 }}>
+                            <Text style={{ color: "#999", textAlign: "center" }}>
+                              No Beds Available
                             </Text>
-                          </TouchableOpacity>
+                          </View>
+                        ) : (
+
+                          filteredBeds.map((b) => (
+
+                            <TouchableOpacity
+                              key={b.bedId}
+                              style={[styles.option, selectedBed?.bedId === b.bedId && { backgroundColor: '#E6F0FF' }]}
+                              onPress={() => {
+                                setSelectedBed(b);
+                                setBedOpen(false);
+                                setBedError("")
+                                //  setRentalAmount(String(b.rentAmount));
+                              }}
+                            >
+                              {console.log(b)}
+                              {console.log(selectedBed)}
+                              <Text style={styles.optionText}>
+                                {b.bedName}
+                              </Text>
+                            </TouchableOpacity>
                           ))
-      )}
+                        )}
                       </ScrollView>
                     </View>
                   )}
@@ -732,7 +744,7 @@ export default function TenantCheckIn({ navigation, route }) {
                     <Text style={styles.label}>Non Refundable Amount</Text>
 
                     <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                      <Text style={{ color: "#fff",  fontFamily: "Gilroy-Semibold"  }}>Add</Text>
+                      <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -837,6 +849,10 @@ export default function TenantCheckIn({ navigation, route }) {
                       {item.titleError && (
                         <ErrorMessage message={item.titleError} type="error" />
                       )}
+
+                      {item.typeError && (
+                        <ErrorMessage message={item.typeError} type="error" />
+                      )}
                       {/* {item.amountError ? (
   <Text style={{ color: "red", fontSize: 12, marginTop: 4 }}>
     {item.amountError}
@@ -878,7 +894,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                 <View style={styles.BtnRow}>
                   <TouchableOpacity style={styles.CancelBtn} onPress={() => navigation.goBack()}>
-                    <Text style={{ color: "grey",  fontFamily: "Gilroy-Semibold"  }}>
+                    <Text style={{ color: "grey", fontFamily: "Gilroy-Semibold" }}>
                       Cancel
                     </Text>
                   </TouchableOpacity>
@@ -975,13 +991,13 @@ const styles = StyleSheet.create({
 
   segmentText: { color: "#4B5563", fontFamily: "Gilroy-Semibold" },
 
-  segmentTextActive: { color: "#fff",  fontFamily: "Gilroy-Semibold"  },
+  segmentTextActive: { color: "#fff", fontFamily: "Gilroy-Semibold" },
 
   container: { paddingHorizontal: 16 },
 
   field: { marginBottom: 12 },
 
-  label: { color: "#4B4B4B", marginBottom: 6 ,  fontFamily: "Gilroy-Semibold" },
+  label: { color: "#4B4B4B", marginBottom: 6, fontFamily: "Gilroy-Semibold" },
 
   input: {
     borderWidth: 1,
@@ -990,7 +1006,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     backgroundColor: "#fff",
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   pickerWrap: {
@@ -1035,7 +1051,7 @@ const styles = StyleSheet.create({
   fixedLabel: {
     fontSize: 14,
     color: "#000",
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
   closeInside: {
@@ -1067,7 +1083,7 @@ const styles = StyleSheet.create({
     marginRight: 6
   },
 
-  addText: { color: "#fff", fontSize: 12,  fontFamily: "Gilroy-Semibold"  },
+  addText: { color: "#fff", fontSize: 12, fontFamily: "Gilroy-Semibold" },
 
   BtnRow: {
     flexDirection: "row",
@@ -1092,7 +1108,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  submitText: { color: "#fff",  fontFamily: "Gilroy-Semibold"  },
+  submitText: { color: "#fff", fontFamily: "Gilroy-Semibold" },
 
 
 
@@ -1212,7 +1228,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   figmaRightBox: {
@@ -1225,7 +1241,7 @@ const styles = StyleSheet.create({
     borderColor: "#E3E3E3",
     justifyContent: "center",
     marginRight: 20,
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   figmaCloseBtn: {
