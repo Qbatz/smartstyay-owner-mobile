@@ -113,7 +113,7 @@ export default function ReserveToCheckin({ route, navigation }) {
     if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "",typeError:"" } : i))
     );
 
     setOpenDropdownId(null);
@@ -153,6 +153,7 @@ export default function ReserveToCheckin({ route, navigation }) {
     const updated = extraCharges.map((e) => {
       let titleError = "";
       let amountError = "";
+      let typeError = "";
 
       const titleFilled = e.title?.trim()?.length > 0;
       const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
@@ -160,8 +161,17 @@ export default function ReserveToCheckin({ route, navigation }) {
       const amt = Number(e.amount);
 
       // ✅ CASE 1: type not selected -> ignore row (no validation)
-      if (!e.type) {
-        return { ...e, titleError: "", amountError: "" };
+      // if (!e.type) {
+      //   return { ...e, titleError: "", amountError: "" };
+      // }
+
+      // case 1: if not selected type --show error message
+
+       if (!e.type) {
+        typeError = "Please select type";
+        valid = false;
+
+        return { ...e, typeError, titleError: "", amountError: "" };
       }
 
       // ✅ CASE 2: Maintenance -> amount mandatory
@@ -200,7 +210,7 @@ export default function ReserveToCheckin({ route, navigation }) {
         return { ...e, titleError, amountError };
       }
 
-      return { ...e, titleError: "", amountError: "" };
+      return { ...e,typeError, titleError: "", amountError: "" };
     });
 
     setExtraCharges(updated);
@@ -547,6 +557,10 @@ export default function ReserveToCheckin({ route, navigation }) {
 
                    {item.titleError && (
                         <ErrorMessage message={item.titleError} type="error" />
+                      )}
+
+                      {item.typeError && (
+                        <ErrorMessage message={item.typeError} type="error" />
                       )}
                     
                       {item.amountError && (

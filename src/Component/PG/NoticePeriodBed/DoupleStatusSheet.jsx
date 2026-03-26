@@ -386,8 +386,10 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
               }</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Last Invoice</Text>
-              <Text style={styles.link}>{selectedBed.currentTenantInfo[0]?.lastInvoiceNumber} & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
+              <Text style={styles.label}> {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? "Request Date" : "Last Invoice"}</Text>
+              <Text style={styles.link}>
+                {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? selectedBed.currentTenantInfo[0]?.noticeDate || "N/A" :
+                 `${selectedBed.currentTenantInfo[0]?.lastInvoiceNumber & selectedBed.currentTenantInfo[0]?.totalInvoices} "more" ` }</Text>
             </View>
 
             {showOccupiedMenu && (

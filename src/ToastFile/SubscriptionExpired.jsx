@@ -13,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import ExpiryImg from "../Assets/Images/subscription_expiry.png";
+import SmartStayLogo from "../Assets/Images/smarstay_icon.png"
 
 
 export default function SubscriptionExpired({setTabBar,onClose}){
@@ -61,8 +62,12 @@ export default function SubscriptionExpired({setTabBar,onClose}){
 
   <View>
 
-      <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 20 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700" }}>Smartstay</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 20,marginTop:20 }}>
+        <View style={{flexDirection:'row',alignItems:'center'}}>
+          <Image source={SmartStayLogo} style={{width:41.5,height:39}}/>
+          <Text style={{ fontSize: 20, fontWeight: "700",marginLeft:5 }}>Smartstay</Text>
+        </View>
+        
 
         <TouchableOpacity onPress={() =>{
          onClose()
