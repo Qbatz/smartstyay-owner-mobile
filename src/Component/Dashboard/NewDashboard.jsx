@@ -100,13 +100,13 @@ export default function DashboardNewDesign({ initialParams, route }) {
   console.log("initialParams", initialParams, route);
 
   const insets = useSafeAreaInsets();
-  const { getDashboardByHostel, loading , GetParticularCustomerDetails } = useCustomer();
+  const { getDashboardByHostel , GetParticularCustomerDetails } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-  const {getDashboard , getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const {getDashboard , getParticularHostelDetails, PGDetails , loading } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -219,6 +219,9 @@ dashboardRequests: data?.dashboardRequests || [],
 const sharingData = dashboardList?.roomsBeds?.sharingInfo || [];
 
 console.log("sharingData", sharingData);
+
+console.log("dashboardList", dashboardList);
+
 
 
 const occupancyTrendData =
@@ -1757,28 +1760,45 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                             <Text style={styles.sharingTitle}>Sharing Breakdown</Text>
 
-                            <TouchableOpacity onPress={() => setSharingModalVisible(true)}>
+                            <TouchableOpacity
+  onPress={() => {
+    if (sharingData && sharingData.length > 0) {
+      setSharingModalVisible(true);
+    }
+  }}
+  disabled={!sharingData || sharingData.length === 0}
+  style={{
+    opacity: sharingData && sharingData.length > 0 ? 1 : 0.4,
+  }}
+>
                               <Image source={SharingBreakdownImg} style={styles.downupIcons} />
                             </TouchableOpacity>
                           </View>
-{sharingData.map((item, index) => (
-  <View style={styles.shareRow} key={index}>
-    <View style={styles.progressTrack}>
-      <View
-        style={[
-          styles.progressBarBlue,
-          {
-            width: `${item?.occupancyRatio || 0}%`,
-          },
-        ]}
-      />
-    </View>
 
-    <Text style={styles.shareText}>
-      {item?.shareType}: {item?.totalBeds}
-    </Text>
-  </View>
-))}
+{sharingData && sharingData.length > 0 ? (
+  sharingData.map((item, index) => (
+    <View style={styles.shareRow} key={index}>
+      <View style={styles.progressTrack}>
+        <View
+          style={[
+            styles.progressBarBlue,
+            {
+              width: `${item?.occupancyRatio || 0}%`,
+            },
+          ]}
+        />
+      </View>
+
+      <Text style={styles.shareText}>
+        {item?.shareType}: {item?.totalBeds}
+      </Text>
+    </View>
+  ))
+) : (
+  <Text style={{ color: "red", marginTop: 10 , fontFamily:"Gilroy-Semibold" }}>
+    No sharing details are there!
+  </Text>
+)}
 
                         </View>
 
@@ -1985,10 +2005,15 @@ const filteredLabels = labels.map((item, index) => {
   dashboardList.checkins.map((item, index) => (
     <View key={index} style={styles.bookingItem}>
       <Text style={styles.bookingName}>{item.customerName}</Text>
-
+      
+      <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
       <Text style={styles.bookingInfo}>
-        {item.sharingType} {item.roomName} {item.bedName}
+        {item?.sharingType} {item?.roomName} {item?.bedName}
       </Text>
+      <Text style={styles.bookingInfo}>
+        Check-in : {item?.joiningDate}
+      </Text>
+      </View>
 
       <View style={styles.bookingActions}>
         <TouchableOpacity style={styles.viewBtn} onPress={() => CustomerOverviewshow(item)}>
@@ -2119,7 +2144,8 @@ const filteredLabels = labels.map((item, index) => {
           <Text style={styles.invoiceName}>{item?.customerName}</Text>
 
           <View style={styles.invoiceSubRow}>
-            <Text style={styles.invoiceNumber}>{item?.invoice}</Text>
+
+            <Text style={styles.invoiceNumber}>{item?.invoiceNumber}</Text>
 
             <View style={styles.statusBadges}>
               <View style={styles.statusDot} />
@@ -2390,7 +2416,7 @@ const filteredLabels = labels.map((item, index) => {
   </View>
 
   {expenseBreakdown.length === 0 ? (
-    <Text style={{ textAlign: "center", color: "#999", marginTop: 10 }}>
+    <Text style={{ textAlign: "center", color: "#999", marginTop: 10 , fontFamily:"Gilroy-Semibold"}}>
       No Data Available
     </Text>
   ) : (
@@ -4212,7 +4238,8 @@ const styles = StyleSheet.create({
   bookingInfo: {
     fontSize: 12,
     color: "#6B7280",
-    marginTop: 3
+    marginTop: 3,
+      fontFamily: "Gilroy-Bold",
   },
 
   bookingActions: {
@@ -4274,7 +4301,8 @@ const styles = StyleSheet.create({
   invoiceNumber: {
     fontSize: 12,
     color: "#6B7280",
-    marginRight: 8
+    marginRight: 8,
+      fontFamily: "Gilroy-Bold",
   },
 
   statusBadges: {
