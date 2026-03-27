@@ -289,7 +289,7 @@ export default function CheckoutList({ searchText }) {
 
   return (
     <>
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 , paddingRight:15}}>
 
 
         {/* ✅ Menu open iruntha outside click la close pannum */}

@@ -67,6 +67,35 @@ const updateElectricity = async (hostelId, unitPrice) => {
       return { success: false, data: err.response?.data };
     }
   };
+
+const NewupdateElectricityRule = async (hostelId, payload) => {
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+const query = new URLSearchParams({
+  typeofReading: payload.typeOfReading,   // ✅ FIX
+  charge: payload.charge ?? 0,
+  shouldIncludeInRent: payload.shouldIncludeInRent,
+  frequent: payload.frequent || "MONTHLY",
+}).toString();;
+
+    const url = `/v2/hostel/electricity/config/${hostelId}?${query}`;
+
+    console.log("EB CONFIG URL →", url);
+
+    const res = await axios.put(url, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    console.log("EB CONFIG ERROR →", err?.response?.data);
+    return { success: false, data: err?.response?.data };
+  }
+};
+
 const changeRoomHostelElectricity = async (payload) => {
   try {
     const token = await retriveData("token");
@@ -816,7 +845,7 @@ const getCurrentHostelPlan = async (hostelId) => {
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
     getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
-     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan }}>
+     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule }}>
       {children}
     </ElectricityContext.Provider>
   );

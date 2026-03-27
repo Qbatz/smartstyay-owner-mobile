@@ -23,7 +23,8 @@ import CalendarIcon from "../../../Assets/Images/calendar.png";
 import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import ProfileImage from "../../../Assets/Images/Avatar.png";
-import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png";
+import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png"
+
 
 
 const RecordPaymentSheet = ({
@@ -61,6 +62,9 @@ const RecordPaymentSheet = ({
     setPaidDate(null);
     setSelectedMode("");
     setTransactionId("");
+    setAmountError("");
+    setDateError("");
+    setModeError("");
   }
 }, [visible]);
 
@@ -110,6 +114,29 @@ console.log("normalize", normalizedBill);
   })
 ).current;
 
+ useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(recordSheetY, {
+        toValue: -e.endCoordinates.height + 120,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(recordSheetY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
 useEffect(() => {
   if (visible) {
     recordSheetY.setValue(300);
@@ -133,7 +160,11 @@ useEffect(() => {
  const today = dayjs();
 
 
-  const invoiceDate = dayjs(normalizedBill?.invoiceDate, "DD-MM-YYYY");
+ const invoiceDate = dayjs(
+  normalizedBill?.invoiceDate,
+  ["DD/MM/YYYY", "DD-MM-YYYY"],
+  true
+);
 
   const isDisabledPaidDate = (d) => {
     if (!d) return false;
@@ -200,53 +231,20 @@ useEffect(() => {
     setTransactionId(filteredText);
   };
 
-  // 👉 save
-  const handleSave = async () => {
-    let isValid = true;
+  
 
-    setAmountError("");
-    setDateError("");
-    setModeError("");
+  const handleClose = () => {
+      onClose()
+      setAmountError("");
+      setDateError("");
+      setModeError("");
+     setPaidAmount("");
+    setBalanceAmount(0);
+    setPaidDate(null);
+    setSelectedMode("");
+    setTransactionId("");
 
-    const formattedPaidDate = formatDateForPayload(paidDate);
-
-    if (!paidAmount || Number(paidAmount) <= 0) {
-      setAmountError("Please Enter Amount");
-      isValid = false;
-    }
-
-    if (!formattedPaidDate) {
-      setDateError("Please Select Date");
-      isValid = false;
-    }
-
-    if (!selectedMode) {
-      setModeError("Please Select Transaction Type");
-      isValid = false;
-    }
-
-    if (!isValid) return;
-
-    try {
-      const res = await RecordPayment({
-        hostelId: activeHostelId,
-        invoiceId: normalizedBill?.invoiceId,
-        data: {
-          bankId: selectedMode,
-          paymentDate: formattedPaidDate,
-          referenceId: transactionId,
-          amount: Number(paidAmount),
-        },
-      });
-
-      if (res.success) {
-        await GetAllBillDetails(activeHostelId);
-        onClose();
-      }
-    } catch (e) {
-      console.log("error", e);
-    }
-  };
+  }
 
 
    const handleSaveRecordPayment = async () => {
@@ -298,8 +296,7 @@ useEffect(() => {
   
         if (res.success) {
           await GetAllBillDetails(activeHostelId);
-          setShowBillDetails(false)
-          setShowRecordPayment(false);
+          handleClose()
   
           setModalType("success");
           setModalMessage("Payment recorded successfully");
@@ -562,13 +559,13 @@ useEffect(() => {
 
   {/* BUTTONS */}
        <View style={styles.btnRow}>
-                     <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                     <TouchableOpacity style={styles.cancelBtn} onPress={handleClose}>
                        <Text style={styles.cancelText}>Cancel</Text>
                      </TouchableOpacity>
  
                      <TouchableOpacity
                        style={styles.saveBtn}
-                    //    onPress={handleSaveRecordPayment}
+                       onPress={handleSaveRecordPayment}
                      >
                        <Text style={styles.saveText}>Record</Text>
                      </TouchableOpacity>
@@ -747,5 +744,20 @@ calendarContainer: {
   elevation: 20,
   zIndex: 2,
 },
+initialCircle: {
+    width: 45,
+    height: 45,
+    borderRadius: 21,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 5
+  },
+
+  initialText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Bold",
+    color: "#4B5563",
+  },
 
 })
