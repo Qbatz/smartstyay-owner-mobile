@@ -177,7 +177,7 @@ export default function ReserveToCheckin({ route, navigation }) {
       // ✅ CASE 2: Maintenance -> amount mandatory
       if (e.type === "Maintenance") {
         if (!amountFilled) {
-          amountError = "Please enter maintenance amount";
+          amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
           amountError = "Amount must be greater than 0";
@@ -189,17 +189,16 @@ export default function ReserveToCheckin({ route, navigation }) {
 
       // ✅ CASE 3: Others -> reason + amount both mandatory
       if (e.type === "Others") {
+        typeError="";
         // both empty -> ok (optional row)
-        if (!titleFilled && !amountFilled) {
-          return { ...e, titleError: "", amountError: "" };
-        }
+        // if (!titleFilled && !amountFilled) {
+        //   return { ...e,typeError, titleError: "", amountError: "" };
+        // }
 
         if (!titleFilled) {
           titleError = "Please enter reason";
           valid = false;
-        }
-
-        if (!amountFilled) {
+        }else if (!amountFilled) {
           amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
@@ -207,7 +206,7 @@ export default function ReserveToCheckin({ route, navigation }) {
           valid = false;
         }
 
-        return { ...e, titleError, amountError };
+        return { ...e,typeError, titleError, amountError };
       }
 
       return { ...e,typeError, titleError: "", amountError: "" };
