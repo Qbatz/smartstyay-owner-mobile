@@ -203,7 +203,7 @@ export default function AssignTenant({ navigation, route }) {
     if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError:"" } : i))
     );
 
     setOpenDropdownId(null);
@@ -332,6 +332,7 @@ export default function AssignTenant({ navigation, route }) {
     const updated = extraCharges.map((e) => {
       let titleError = "";
       let amountError = "";
+      let typeError = "";
 
       const titleFilled = e.title?.trim()?.length > 0;
       const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
@@ -340,20 +341,22 @@ export default function AssignTenant({ navigation, route }) {
 
 
       if (!e.type) {
-        return { ...e, titleError: "", amountError: "" };
+         typeError = "Please select type";
+        valid = false;
+        return { ...e,typeError, titleError: "", amountError: "" };
       }
 
 
       if (e.type === "Maintenance") {
         if (!amountFilled) {
-          amountError = "Please enter maintenance amount";
+          amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
           amountError = "Amount must be greater than 0";
           valid = false;
         }
 
-        return { ...e, titleError: "", amountError };
+        return { ...e,typeError:"", titleError: "", amountError };
       }
 
       // ✅ CASE 3: Others -> reason + amount both mandatory
@@ -381,10 +384,10 @@ export default function AssignTenant({ navigation, route }) {
           valid = false;
         }
 
-        return { ...e, titleError, amountError };
+        return { ...e,typeError, titleError, amountError };
       }
 
-      return { ...e, titleError: "", amountError: "" };
+      return { ...e,typeError:"", titleError: "", amountError: "" };
     });
 
     setExtraCharges(updated);
@@ -1223,6 +1226,10 @@ export default function AssignTenant({ navigation, route }) {
                     {item.titleError && (
                       <ErrorMessage message={item.titleError} type="error" />
                     )}
+
+                     {item.typeError && (
+                        <ErrorMessage message={item.typeError} type="error" />
+                      )}
 
                     {item.amountError && (
                       <ErrorMessage message={item.amountError} type="error" />

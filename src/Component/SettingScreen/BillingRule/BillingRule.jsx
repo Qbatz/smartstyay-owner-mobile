@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
 
   backIcon: { width: 20, height: 20, marginRight: 10 , marginLeft:8},
 
-  headerTitle: { fontSize: 20, fontWeight: "700", color: "#000" },
+  headerTitle: { fontSize: 20, fontFamily:'Gilroy-Semibold', color: "#000" },
 
 LongstayIcon: {
   width: 28,
@@ -230,13 +230,14 @@ row: {
 
   title: {
     fontSize: 16,
-    fontWeight: "600"
+    fontFamily:'Gilroy-Medium'
   },
 
   subtitle: {
     fontSize: 13,
     color: "#666",
-    marginTop: 3
+    marginTop: 3,
+    fontFamily:'Gilroy-Medium'
   },
     emptyContainer: {
     flex: 1,

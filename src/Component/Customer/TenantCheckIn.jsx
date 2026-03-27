@@ -349,12 +349,13 @@ export default function TenantCheckIn({ navigation, route }) {
         //   return { ...e, titleError: "", amountError: "" };
         // }
 
-        if (!titleFilled && !amountFilled) {
-          titleError = "Please enter reason";
-          valid = false;
-        }
+        // if (!titleFilled && !amountFilled) {
+        //   titleError = "Please enter reason";
+        //   valid = false;
+        // }
+        typeError="";
 
-        else if (!titleFilled) {
+       if (!titleFilled) {
           titleError = "Please enter reason";
           valid = false;
         }
@@ -367,7 +368,7 @@ export default function TenantCheckIn({ navigation, route }) {
           valid = false;
         }
 
-        return { ...e, titleError, amountError };
+        return { ...e,typeError, titleError, amountError };
       }
 
       return { ...e, typeError, titleError: "", amountError: "" };

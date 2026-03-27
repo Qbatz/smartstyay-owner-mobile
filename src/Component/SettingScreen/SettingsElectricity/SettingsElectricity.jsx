@@ -510,7 +510,7 @@ export default function ElectricitySettings({ navigation }) {
 
               {/* Unit Dropdown */}
               <View style={{ flexDirection: "row", alignItems: "center"}}>
-                <Text style={styles.label}>Unit</Text>
+                <Text style={styles.Sheetlabel}>Unit</Text>
                 <Text style={{ color: "red", fontSize: 16, marginLeft: 4,marginTop:3 }}>*</Text>
               </View>
               <TouchableOpacity style={styles.dropdownBox}>
@@ -519,7 +519,7 @@ export default function ElectricitySettings({ navigation }) {
               </TouchableOpacity>
 
               {/* Amount Input */}
-              <Text style={styles.label}>Amount / Unit</Text>
+              <Text style={styles.Sheetlabel}>Amount / Unit</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Eg: ₹ 10"
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
 
   backIcon: { width: 20, height: 20, marginRight: 10 },
 
-  headerTitle: { fontSize: 20, fontWeight: "700", color: "#000" },
+  headerTitle: { fontSize: 20,fontFamily:'Gilroy-Bold', color: "#000" },
 
   editBtn: {
     backgroundColor: "#2D6CDF",
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 
-  editBtnText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  editBtnText: { color: "#fff", fontSize: 14,fontFamily:'Gilroy-Medium' },
 
   card: {
     backgroundColor: "#fff",
@@ -611,8 +611,8 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
   },
 
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#222" },
-  cardSubtitle: { fontSize: 13, color: "#666", marginVertical: 6 },
+  cardTitle: { fontSize: 18,fontFamily:'Gilroy-Semibold' , color: "#222" },
+  cardSubtitle: { fontSize: 13, color: "#666", marginVertical: 6,fontFamily:'Gilroy-Medium' },
 
   row: {
     flexDirection: "row",
@@ -621,12 +621,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  label: { fontSize: 14, color: "#444" },
-  value: { fontSize: 15, fontWeight: "700" },
+  label: { fontSize: 14, color: "#444",fontFamily:'Gilroy-Regular'},
+  value: { fontSize: 15, fontFamily:'Gilroy-Semibold'},
 
   switchRow: { flexDirection: "row", alignItems: "center", gap: 12 },
 
-  switchText: { fontSize: 14, fontWeight: "600", color: "#3562FF" },
+  switchText: { fontSize: 14, fontFamily:'Gilroy-Medium', color: "#3562FF" },
 
   switch: {
     width: 42,
@@ -683,14 +683,14 @@ const styles = StyleSheet.create({
   },
 
   sheetTitle: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 20,
+    fontFamily:'Gilroy-Semibold',
     marginBottom: 16,
   },
 
-  label: {
+  Sheetlabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily:'Gilroy-Medium',
     marginTop: 12,
     marginBottom: 6,
   },
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  dropdownText: { fontSize: 15, color: "#333" },
+  dropdownText: { fontSize: 15, color: "#333",fontFamily:'Gilroy-Medium' },
 
   input: {
     borderWidth: 1,
@@ -735,6 +735,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: "#6B7280",
     fontSize: 15,
+    fontFamily:'Gilroy-Medium'
   },
 
   saveBtn: {
@@ -747,7 +748,7 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily:'Gilroy-Semibold',
   },
   downIcon: {
     width: 18,

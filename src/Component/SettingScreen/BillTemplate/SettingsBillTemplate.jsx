@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: "600",
+   fontFamily:"Gilroy-Bold",
     color: "#1E1E1E",
   },
   cardBox: {
@@ -158,10 +158,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: "600",
+    fontFamily:'Gilroy-Semibold',
   },
   subtitle: {
     fontSize: 14,
+    fontFamily:"Gilroy-Medium",
     marginTop: 4,
     color: "#8E8E93",
   },
@@ -180,7 +181,7 @@ emptyImage: {
 emptyText: {
   marginTop: 14,
   fontSize: 16,
-  fontWeight: "600",
+  fontFamily:'Gilroy-Medium',
   color: "#777",
 },
 });
