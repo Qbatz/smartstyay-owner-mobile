@@ -448,18 +448,30 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Booking Amount</Text>
-                          <Text style={styles.value}>₹  {item.bookingAmount}</Text>
+
+                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                            <Image source={Money} style={styles.icon} />
+                            <Text style={styles.value}>₹  {item.bookingAmount}</Text>
+                          </View>     
                         </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Check-In Date</Text>
-                          <Text style={styles.value}> {item.joiningDate}</Text>
+
+                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                              <Image source={Calendar} style={{width: 20, height: 20,marginRight:5}} />
+                               <Text style={styles.value}> {item.joiningDate}</Text>
+                          </View>
+                         
                         </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Last Invoice</Text>
-                          <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
-                          </Text>
+                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                            <Image source={Invoice} style={styles.icon} />
+                             <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}</Text>
+                          </View>
+                         
                         </View>
                         {showReservedMenu === index && (
                           <>

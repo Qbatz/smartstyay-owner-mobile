@@ -989,7 +989,7 @@ const styles = StyleSheet.create({
   },
 
   backArrow: { width: 22, height: 22, marginRight: 10 },
-  headerTitle: { fontSize: 20, fontWeight: "700" },
+  headerTitle: { fontSize: 20, fontFamily:'Gilroy-Bold'},
 
   card: {
     margin: 16,
@@ -1006,8 +1006,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   hostelName: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 19,
+    fontFamily:'Gilroy-Semibold',
     flexWrap: "wrap",
   },
 
@@ -1039,8 +1039,8 @@ const styles = StyleSheet.create({
   },
 
   col: { flex: 1, alignItems: "center" },
-  label: { fontSize: 12, color: "#6B7280" },
-  num: { fontSize: 18, fontWeight: "700", marginTop: 4 },
+  label: { fontSize: 12, color: "#6B7280",fontFamily:'Gilroy-Medium' },
+  num: { fontSize: 18, fontFamily:'Gilroy-Semibold', marginTop: 4 },
 
   roomImg: {
     width: 100,
@@ -1050,16 +1050,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  infoTitle: { marginTop: 14, fontWeight: "700" },
+  infoTitle: { marginTop: 14, fontFamily:'Gilroy-Medium'},
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 6 },
   infoIcon: { width: 18, height: 18, marginRight: 10 },
-  infoText: { fontSize: 14, fontWeight: "600", width: 240 },
+  infoText: { fontSize: 14, fontFamily:'Gilroy-Semibold', width: 240 },
 
   sectionTitle: {
     marginLeft: 16,
     marginTop: 10,
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 18,
+    fontFamily:'Gilroy-Semibold',
   },
 
   otherCard: {
@@ -1075,7 +1075,7 @@ const styles = StyleSheet.create({
   },
 
   otherImg: { width: 52, height: 52, borderRadius: 10 },
-  otherName: { fontSize: 16, fontWeight: "700" },
+  otherName: { fontSize: 16, fontFamily:'Gilroy-Semibold'},
 
   otherBadge: {
     backgroundColor: "#FFF3CF",
@@ -1110,7 +1110,7 @@ const styles = StyleSheet.create({
   },
 
   figAddIcon: { width: 23, height: 23, marginRight: 8, tintColor: "#2D6CDF" },
-  figAddText: { fontSize: 16, fontWeight: "600", color: "#2D6CDF" },
+  figAddText: { fontSize: 16, fontFamily:'Gilroy-Semibold', color: "#2D6CDF" },
 
   popupOverlay: {
     position: "absolute",

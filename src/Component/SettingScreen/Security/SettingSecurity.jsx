@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily:'Gilroy-Semibold'
   },
 
   item: {
@@ -247,10 +247,11 @@ const styles = StyleSheet.create({
     borderColor: "#F1F1F1",
   },
 
-  label: { fontSize: 16, fontWeight: "700" },
+  label: { fontSize: 16,fontFamily:'Gilroy-Semibold'},
 
   desc: {
     fontSize: 13,
+    fontFamily:'Gilroy-Regular',
     color: "#6B7280",
     lineHeight: 18,
     paddingRight: 40,
