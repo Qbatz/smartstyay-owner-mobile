@@ -2468,7 +2468,7 @@ const isNotDiscounted =
                         disabled={!isExportAllow}
                         onPress={handleWhatsappShareBill}>
                         <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                        <Text style={styles.reminderText}>Remainder</Text>
+                        <Text style={styles.reminderText}>Reminder </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity

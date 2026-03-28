@@ -532,6 +532,7 @@ const CustomerOverviewshow = async(item) => {
   const handleShowRecordPayment = (item) => {
     setShowRecordPayment(true)
     setSelectedBill(item)
+    
   }
   console.log("Recordpayment", showRecordPayment);
   

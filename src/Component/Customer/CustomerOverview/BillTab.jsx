@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useState , useContext } from "react";
 import { View, Text, StyleSheet ,TouchableOpacity,Image , ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission"
+import { BillContext } from "../../../Context/BillsContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 import AddIcon from "../../../Assets/Images/add-circle.png";
+import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 
-export default function BillTab({ customerDetails }) {
+export default function BillTab({ customerDetails , ShowBillsDetails }) {
   const invoiceList = customerDetails?.invoiceResponseList || [];
  const navigation = useNavigation();
   console.log("customerDetailsBillTab", invoiceList);
+    const { BillDetails, loading, GetAllBillDetails,
+      RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
+      , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+      downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid } = useContext(BillContext);
 
+      const { activeHostelId } = useContext(CommonContexts);
+
+  const [BillDetailshow, setBillDetailsShow] = useState(false)
+const [selectedBill, setSelectedBill] = useState(null);
                const {
             canWriteModule: canWriteTenant,
             canReadModule: canReadTenant,
@@ -49,11 +60,22 @@ const disableFinancialEdit =
   status === "VACATED" ||
   (status === "NOTICE" && isAfterLeavingDate);
 
+  const handleOpenBillDetails = (bill) => {
+    console.log("bill", bill);
+    
+    ShowBillsDetails()
+    
+  // setSelectedBill(bill);
+  // setBillDetailsShow(true);
+  const res = getBillsPdfDetails(activeHostelId, bill?.invoiceId);
+};
 
   const handleCreateBill = () => {
     if(!canWriteInvoice) return ;
 navigation.navigate("CreateBills" , {mode: "add",customerDetails})
 }
+
+
 
   return (
     <>
@@ -63,7 +85,7 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
       <ScrollView     showsVerticalScrollIndicator={false}
     contentContainerStyle={{ paddingBottom: 120 }} >
       {invoiceList.map((item, index) => (
-        <View key={index} style={styles.row}>
+        <TouchableOpacity key={index} style={styles.row} onPress={()=>handleOpenBillDetails(item)}>
           {/* LEFT */}
           <View>
             <Text style={styles.billId}>{item.invoiceNumber}</Text>
@@ -98,11 +120,16 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
             <Text style={styles.amount}>₹{item.totalAmount}</Text>
             <Text style={styles.date}>on {item.dueDate}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
       </ScrollView>
     
     </View>
+    {/* <BillDetailsSheet
+  visible={BillDetailshow}
+  onClose={() => setBillDetailsShow(false)}
+  bill={selectedBill}
+/> */}
 
        <TouchableOpacity 
           //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
