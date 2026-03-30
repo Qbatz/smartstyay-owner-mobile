@@ -10,6 +10,8 @@ import {
   Keyboard,
   TouchableWithoutFeedback, StyleSheet, NativeModules
 } from "react-native";
+import { BackHandler } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import { BillContext } from "../../../Context/BillsContext";
@@ -35,6 +37,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png"
 import RecordPaymentSheet from "./RecordPayment";
+import RefundPaymentSheet from "./RefundPayment"
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { useNavigation } from "@react-navigation/native";
 
@@ -55,7 +58,7 @@ const BillDetailsSheet = ({
 
 
   const { CommonModule } = NativeModules;
-   const navigation = useNavigation();
+  const navigation = useNavigation();
 
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
@@ -89,9 +92,8 @@ const BillDetailsSheet = ({
   const [showReceiptMenu, setShowReceiptMenu] = useState(false)
   const [showPayments, setShowPayments] = useState(false);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
+  const [showRefundPayement, setShowRefundPayment] = useState(false)
   const detailsSheetY = useRef(new Animated.Value(0)).current;
-
-
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -114,9 +116,9 @@ const BillDetailsSheet = ({
 
 
   const bill = BillPdfdetails;
-const invoice = BillPdfdetails?.invoiceInfo;
-const customer = BillPdfdetails?.customerInfo;
-const stay = BillPdfdetails?.stayInfo;
+  const invoice = BillPdfdetails?.invoiceInfo;
+  const customer = BillPdfdetails?.customerInfo;
+  const stay = BillPdfdetails?.stayInfo;
 
   // const normalizedBill = {
   //   invoiceId: selectedBill?.invoiceId,
@@ -143,6 +145,37 @@ const stay = BillPdfdetails?.stayInfo;
       getParticularHostelDetails(activeHostelId);
     }
   }, [activeHostelId])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+
+        if (showRecordPayment) {
+          setShowRecordPayment(false);
+          return true;
+        }
+
+        if (showRefundPayement) {
+          setShowRefundPayment(false);
+          return true;
+        }
+
+        if (visible) {
+          onClose();
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [visible, showRecordPayment, showRefundPayement])
+  );
 
 
 
@@ -297,36 +330,43 @@ const stay = BillPdfdetails?.stayInfo;
   }
 
   const handleShowRecordPayment = () => {
-    // setShowMenu(false);
+    setShowMenu(false);
     setShowRecordPayment(true);
   };
 
- const openMenu = (item) => {
-  const ref = dotsRefs.current[item?.invoiceId];
+  const handleShowRefundPayment = () => {
+    setShowMenu(false);
+    setShowRefundPayment(true);
+  };
 
-  if (ref) {
-    ref.measureInWindow((x, y, width, height) => {
-      setPopupPosition({
-        x,
-        y: y + height,
+
+
+  const openMenu = (item) => {
+    const ref = dotsRefs.current[item?.invoiceId];
+
+    if (ref) {
+      ref.measureInWindow((x, y, width, height) => {
+        setPopupPosition({
+          x,
+          y: y + height,
+        });
+        setShowMenu(true);
       });
-      setShowMenu(true);
-    });
-  }
-};
+    }
+  };
 
-const handleOpenReceiptFromBill = (pay) => {
-  console.log("open receipt", pay);
-};
+  const handleOpenReceiptFromBill = (pay) => {
+    console.log("open receipt", pay);
+  };
 
 
-const BillsStatusStyle = {
-  bg: "#E5E7EB",
-  dot: "#6B7280",
-  text: "#374151",
-};
+  const BillsStatusStyle = {
+    bg: "#E5E7EB",
+    dot: "#6B7280",
+    text: "#374151",
+  };
 
-console.log("bill", bill);
+  console.log("bill", bill);
 
 
   const isPaid = invoice?.paymentStatus === "Paid";
@@ -341,14 +381,14 @@ console.log("bill", bill);
   const FullyRefund = invoice?.paymentStatus === "Refunded";
 
   const invoiceType = bill?.configurations?.invoiceType;
-const paymentStatus = invoice?.paymentStatus;
-const isDiscounted = invoice?.isDiscounted;
-const invoiceMode = bill?.invoiceMode; // fallback if exists
+  const paymentStatus = invoice?.paymentStatus;
+  const isDiscounted = invoice?.isDiscounted;
+  const invoiceMode = bill?.invoiceMode; // fallback if exists
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
-const isExportAllow = isValidSubscription && canReadInvoice;
+  const isExportAllow = isValidSubscription && canReadInvoice;
 
-// const isDiscounted = BillPdfdetails?.invoiceInfo?.discountAmount > 0;
+  // const isDiscounted = BillPdfdetails?.invoiceInfo?.discountAmount > 0;
 
 
   const getOverdueDays = (dueDate) => {
@@ -368,25 +408,25 @@ const isExportAllow = isValidSubscription && canReadInvoice;
 
   const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
-const mappedBillForRecord = {
-  invoiceId: bill?.invoiceId,
+  const mappedBillForRecord = {
+    invoiceId: bill?.invoiceId,
 
-  dueAmount: invoice?.balanceAmount || invoice?.totalAmount || 0,
+    dueAmount: invoice?.balanceAmount || invoice?.totalAmount || 0,
 
-  invoiceDate: bill?.invoiceDate,
+    invoiceDate: bill?.invoiceDate,
 
-  fullName: customer?.fullName,
+    fullName: customer?.fullName,
 
-  invoiceType: bill?.configurations?.invoiceType,
+    invoiceType: bill?.configurations?.invoiceType,
 
-  invoiceNumber: bill?.invoiceNumber,
+    invoiceNumber: bill?.invoiceNumber,
 
-  profilePic: customer?.profilePic,
+    profilePic: customer?.profilePic,
 
-  initials: customer?.initials,
+    initials: customer?.initials,
 
-  customerName: customer?.fullName,
-};
+    customerName: customer?.fullName,
+  };
 
 
 
@@ -414,6 +454,8 @@ const mappedBillForRecord = {
 
   return (
     <>
+
+
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -424,6 +466,7 @@ const mappedBillForRecord = {
 
 
       <View style={styles.sheetOverlay}>
+        {loading && <Loader />}
 
         <TouchableWithoutFeedback onPress={() => {
           onClose()
@@ -480,21 +523,21 @@ const mappedBillForRecord = {
                 </View>
 
 
-              {
-  ((!isPaid) || 
-   (isPaid && bill?.invoiceMode === "Manual" && bill?.configurations?.invoiceType !== "Settlement")) && (
-    
-    <TouchableOpacity
-      ref={(ref) => (dotsRefs.current[bill?.invoiceId] = ref)}
-      onPress={() => openMenu(bill)}
-    >
-      <Image
-        source={Dots}
-        style={{ width: 30, height: 30 }}
-      />
-    </TouchableOpacity>
-  )
-}
+                {
+                  ((!isPaid) ||
+                    (isPaid && bill?.invoiceMode === "Manual" && bill?.configurations?.invoiceType !== "Settlement")) && (
+
+                    <TouchableOpacity
+                      ref={(ref) => (dotsRefs.current[bill?.invoiceId] = ref)}
+                      onPress={() => openMenu(bill)}
+                    >
+                      <Image
+                        source={Dots}
+                        style={{ width: 30, height: 30 }}
+                      />
+                    </TouchableOpacity>
+                  )
+                }
               </View>
             </View>
 
@@ -515,16 +558,16 @@ const mappedBillForRecord = {
 
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <TouchableOpacity
-                  // onPress={() =>{
-                
-                  //   if (!customer?.customerId) return;
-                  //   navigation.navigate("CustomerOverviewScreen", {
-                  //     customerId: customer?.customerId,
-                  //     customer: customer,
-                  //   })
-                        
-                  // }
-                  // }
+                // onPress={() =>{
+
+                //   if (!customer?.customerId) return;
+                //   navigation.navigate("CustomerOverviewScreen", {
+                //     customerId: customer?.customerId,
+                //     customer: customer,
+                //   })
+
+                // }
+                // }
                 >
                   <Text style={styles.userName}>{customer?.fullName || "--"}</Text>
                 </TouchableOpacity>
@@ -740,82 +783,82 @@ const mappedBillForRecord = {
             )}
 
 
-            {(paymentStatus === "Partially Refunded" || 
- paymentStatus === "Refunded") && 
-BillPdfdetails?.refundHistory?.length > 0&& (
-              <View style={{ marginTop: 25 }}>
+            {(paymentStatus === "Partially Refunded" ||
+              paymentStatus === "Refunded") &&
+              BillPdfdetails?.refundHistory?.length > 0 && (
+                <View style={{ marginTop: 25 }}>
 
-                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.paymentHeaderText}>
-                    Payments Made
-                  </Text>
+                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={styles.paymentHeaderText}>
+                      Payments Made
+                    </Text>
 
-                  <TouchableOpacity
-                    style={styles.paymentHeader}
-                    onPress={() => setShowPayments(!showPayments)}
-                  >
-                    <Image
-                      source={DownArrow}
-                      style={{ width: 18, height: 18, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                {showPayments && (
-                  <View style={{ marginTop: 10 }}>
-                    {BillPdfdetails?.refundHistory?.map((pay, index) => (
-                      <View key={index} style={styles.paymentCard}>
-
-                        <TouchableOpacity style={styles.paymentTopRow}>
-                          <Text >
-                            #{BillPdfdetails?.invoiceNumber}
-                            <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
-                          </Text>
-
-                          <Text style={styles.paymentAmount}>
-                            ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
-                          </Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.divider} />
-
-                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View>
-                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> date</Text>
-                          </View>
-                          <View>
-                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              {pay?.date ?? "N/A"}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View>
-                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
-                          </View>
-                          <View>
-                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              {pay?.paymentMode ?? "N/A"}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View>
-                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
-                          </View>
-                          <View>
-                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              {pay?.referenceNumber ?? "N/A"}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    ))}
+                    <TouchableOpacity
+                      style={styles.paymentHeader}
+                      onPress={() => setShowPayments(!showPayments)}
+                    >
+                      <Image
+                        source={DownArrow}
+                        style={{ width: 18, height: 18, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
+                      />
+                    </TouchableOpacity>
                   </View>
-                )}
 
-              </View>
-            )}
+                  {showPayments && (
+                    <View style={{ marginTop: 10 }}>
+                      {BillPdfdetails?.refundHistory?.map((pay, index) => (
+                        <View key={index} style={styles.paymentCard}>
+
+                          <TouchableOpacity style={styles.paymentTopRow}>
+                            <Text >
+                              #{BillPdfdetails?.invoiceNumber}
+                              <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
+                            </Text>
+
+                            <Text style={styles.paymentAmount}>
+                              ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+                            </Text>
+                          </TouchableOpacity>
+
+                          <View style={styles.divider} />
+
+                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View>
+                              <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> date</Text>
+                            </View>
+                            <View>
+                              <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                {pay?.date ?? "N/A"}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View>
+                              <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
+                            </View>
+                            <View>
+                              <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                {pay?.paymentMode ?? "N/A"}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View>
+                              <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
+                            </View>
+                            <View>
+                              <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                {pay?.referenceNumber ?? "N/A"}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                </View>
+              )}
 
 
 
@@ -928,7 +971,6 @@ BillPdfdetails?.refundHistory?.length > 0&& (
                 </View>
               </>
             )}
-
           </View>
 
 
@@ -952,63 +994,63 @@ BillPdfdetails?.refundHistory?.length > 0&& (
           >
 
             {invoice?.totalAmount < 0 &&
-paymentStatus !== "Refunded" &&
-paymentStatus !== "Cancelled" && (
-              <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
-              // onPress={handleShowRefundPayment} disabled={!canWriteInvoice}
-              >
-                <Image
-                  source={PaymentIcon}
-                  style={styles.popupIcon}
-                />
-                <Text style={styles.popupText}>Refund Amount</Text>
-              </TouchableOpacity>
-            )}
+              paymentStatus !== "Refunded" &&
+              paymentStatus !== "Cancelled" && (
+                <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
+                  onPress={handleShowRefundPayment} disabled={!canWriteInvoice}
+                >
+                  <Image
+                    source={PaymentIcon}
+                    style={styles.popupIcon}
+                  />
+                  <Text style={styles.popupText}>Refund Amount</Text>
+                </TouchableOpacity>
+              )}
 
 
 
 
 
             {isPaid &&
-bill?.invoiceMode === "Manual" && 
-paymentStatus === "Paid" &&
-invoiceType === "Rent" && (
-              <TouchableOpacity
-                style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                disabled={!canUpdateInvoice}
-                // style={styles.popupRow} 
-                onPress={() => setShowUnpaidModal(true)} >
-                <Image
-                  source={require("../../../Assets/Images/Union.png")}
-                  style={styles.popupIcon}
-                />
-                <Text style={styles.popupText}>UnPaid</Text>
-              </TouchableOpacity>
-            )}
+              bill?.invoiceMode === "Manual" &&
+              paymentStatus === "Paid" &&
+              invoiceType === "Rent" && (
+                <TouchableOpacity
+                  style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                  disabled={!canUpdateInvoice}
+                  // style={styles.popupRow} 
+                  onPress={() => setShowUnpaidModal(true)} >
+                  <Image
+                    source={require("../../../Assets/Images/Union.png")}
+                    style={styles.popupIcon}
+                  />
+                  <Text style={styles.popupText}>UnPaid</Text>
+                </TouchableOpacity>
+              )}
 
 
 
 
 
             {(bill?.invoiceMode === "Recurring" &&
-paymentStatus === "Pending") && (
-              <TouchableOpacity
-                style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                disabled={!canUpdateInvoice}
-              // onPress={handleEditBill} 
-              >
-                <Image
-                  source={require("../../../Assets/Images/ReAssign.png")}
-                  style={styles.popupIcon}
-                />
-                <Text style={styles.popupText}>Edit</Text>
-              </TouchableOpacity>
-            )}
+              paymentStatus === "Pending") && (
+                <TouchableOpacity
+                  style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                  disabled={!canUpdateInvoice}
+                // onPress={handleEditBill} 
+                >
+                  <Image
+                    source={require("../../../Assets/Images/ReAssign.png")}
+                    style={styles.popupIcon}
+                  />
+                  <Text style={styles.popupText}>Edit</Text>
+                </TouchableOpacity>
+              )}
 
             {paymentStatus === "Pending" &&
-(invoiceType === "Rent" || invoiceType === "Settlement") &&
-!isDiscounted &&
-               (
+              (invoiceType === "Rent" || invoiceType === "Settlement") &&
+              !isDiscounted &&
+              (
                 <TouchableOpacity
                   style={styles.popupRow}
                   onPress={() => {
@@ -1016,6 +1058,9 @@ paymentStatus === "Pending") && (
                     // setShowBillDetails(false)
                     navigation.navigate("DiscountInvoice", {
                       // bill: selectedBill,
+                      onSuccess: () => {
+                        onClose();
+                      },
                     });
                   }}
                 >
@@ -1070,8 +1115,19 @@ paymentStatus === "Pending") && (
       <RecordPaymentSheet
         visible={showRecordPayment}
         onClose={() => setShowRecordPayment(false)}
-         selectedBill={mappedBillForRecord}
+        selectedBill={mappedBillForRecord}
       />
+
+      <RefundPaymentSheet
+        visible={showRefundPayement}
+        onClose={() => setShowRefundPayment(false)}
+        selectedBill={mappedBillForRecord}
+        onSuccess={() => {
+          setShowRefundPayment(false)
+          onClose()
+        }}
+      />
+
 
     </>
 
@@ -1254,6 +1310,18 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
+  amountValue: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Bold",
+    color: "#000",
+  },
+  discountCard: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
+
   discountLabel: {
     fontSize: 13,
     color: "#6B7280",
@@ -1329,7 +1397,7 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     fontFamily: "Gilroy-Medium"
   },
-    billHeaderRow: {
+  billHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -1368,7 +1436,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Gilroy-Bold",
   },
- actionRow: {
+  actionRow: {
     flexDirection: "row",
     marginTop: 14,
     gap: 10
@@ -1413,7 +1481,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18
   },
-  
+
   userRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1445,7 +1513,7 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold",
     fontSize: 12,
   },
-    iconDark: {
+  iconDark: {
     width: 20,
     height: 20
   },
@@ -1455,7 +1523,7 @@ const styles = StyleSheet.create({
     height: 20,
     tintColor: "#fff"
   },
-    fixedBottomBar: {
+  fixedBottomBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -1465,7 +1533,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
   },
-    paidBtn: {
+  paidBtn: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
@@ -1520,7 +1588,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Gilroy-Semibold"
   },
-  
+
   paymentHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",

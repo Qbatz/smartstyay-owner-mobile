@@ -1116,8 +1116,8 @@ const getDashboardByHostel = async (hostelId) => {
   }
 };
 
-const AddManualDocument = async (hostelId, customerId, pickedFiles) => {
-  if (!hostelId || !customerId || !pickedFiles?.length) {
+const AddManualDocument = async (hostelId, customerId, pickedFiles , type) => {
+  if (!hostelId || !customerId || !pickedFiles?.length || !type) {
     return { success: false, message: "Missing data" };
   }
 
@@ -1139,7 +1139,7 @@ const AddManualDocument = async (hostelId, customerId, pickedFiles) => {
     });
 
     formData.append("payload", {
-      string: JSON.stringify({ type: "OTHER" }),
+      string: JSON.stringify({ type: type }),
       type: "application/json",
     });
 

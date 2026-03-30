@@ -56,6 +56,8 @@ import LongStayRecurring from "../src/Component/SettingScreen/BillingRule/LongSt
 import LongStay from "../src/Component/SettingScreen/BillingRule/LongStay";
 import RolesScreen from "../src/Component/SettingScreen/RoleScreen/RoleList";
 import BillTemplateSettings from "../src/Component/SettingScreen/BillTemplate/SettingsBillTemplate";
+import SignatureUpload from "../src/Component/SettingScreen/BillTemplate/SignatureUpload";
+import GlobalBillSettings from "../src/Component/SettingScreen/BillTemplate/GlobalBillSettings";
 import SubscriptionPlans from "../src/Component/SettingScreen/Subscription/SubscriptionPlan";
 import PlanDetailsScreen from "../src/Component/SettingScreen/Subscription/PlanDetailsScreen";
 import AgreementPolicy from "../src/Component/SettingScreen/SettingsAgreement/AgreementPolicy";
@@ -157,6 +159,9 @@ const SuccessFlow = (props) => {
                      <Navigation.Screen name="LongStay" component={LongStay} />
                     <Navigation.Screen name="RolesScreen" component={RolesScreen} />
                     <Navigation.Screen name="BillTemplate" component={BillTemplateSettings} />
+                    <Navigation.Screen name="SignatureUpload" component={SignatureUpload} />
+                    <Navigation.Screen name="GlobalBillSettings" component={GlobalBillSettings} />
+
                     <Navigation.Screen name="SubscriptionPlans" component={SubscriptionPlans} />
                     <Navigation.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
                     <Navigation.Screen name="Agreement" component={AgreementPolicy} />

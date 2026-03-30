@@ -129,12 +129,41 @@ export default function OverviewTab({ customerDetails,
       const res = await AddManualDocument(
         activeHostelId,
         customerDetails?.customerId,
-        results
+        results , "OTHER"
       );
       if (res?.success) {
         await GetParticularCustomerDetails(customerDetails?.customerId)
         setModalType("success");
         setMessage("Document Added successfully");
+        setShowSuccess(true);
+
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 800);
+      }
+
+    } catch (err) {
+      console.log("Cancelled or error 👉", err);
+    }
+  };
+
+  const HandleAddKycDocument = async () => {
+    try {
+      const results = await pick({
+        allowMultiSelection: true,
+        type: ['*/*'],
+        copyTo: 'cachesDirectory',
+      });
+          const res = await AddManualDocument(
+        activeHostelId,
+        customerDetails?.customerId,
+        results ,  "KYC"
+      );
+
+      if (res?.success) {
+        await GetParticularCustomerDetails(customerDetails?.customerId)
+        setModalType("success");
+        setMessage("Kyc Document Added successfully");
         setShowSuccess(true);
 
         setTimeout(() => {
@@ -942,6 +971,20 @@ export default function OverviewTab({ customerDetails,
                   ]}
                 />
               </TouchableOpacity>
+               <TouchableOpacity
+                                disabled={!isSubscriptionAllow}
+                                onPress={() => {
+                                  setDeleteDocumentId(doc.documentId);
+                                  setDeletePopup(true);
+                                }}>
+                                <Image
+                                  source={require("../../../Assets/Images/trash.png")}
+                                  style={[
+                                    styles.actionIcon,
+                                    (!isSubscriptionAllow) && { opacity: 0.4 }
+                                  ]}
+                                />
+                              </TouchableOpacity>
             </View>
           </View>
         ))
@@ -962,6 +1005,8 @@ export default function OverviewTab({ customerDetails,
     />
   </View>
 )}
+
+
            
 
               {docTab === "MANUAL" && (
@@ -1054,7 +1099,24 @@ export default function OverviewTab({ customerDetails,
 
 
             </View>
-            {docTab === "MANUAL" && (
+            {docTab === "KYC" && (
+              <TouchableOpacity
+                // style={styles.uploadFabInside}
+                style={[
+                  styles.uploadFabInside,
+                  (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                ]}
+                disabled={disableAssignBtn}
+                onPress={HandleAddKycDocument}
+
+              >
+                <Image
+                  source={require("../../../Assets/Images/Doc_Upload.png")}
+                  style={styles.uploadIcon}
+                />
+              </TouchableOpacity>
+            )}
+             {docTab === "MANUAL" && (
               <TouchableOpacity
                 // style={styles.uploadFabInside}
                 style={[
