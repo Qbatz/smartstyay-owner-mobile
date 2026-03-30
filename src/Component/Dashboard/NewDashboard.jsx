@@ -177,6 +177,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     totalAmount: data?.billingSummary?.totalAmount || 0,
     totalPaid: data?.billingSummary?.totalPaid || 0,
     totalPending: data?.billingSummary?.totalPending || 0,
+    refundedAmount:data?.billingSummary?.refundedAmount || 0,
     collectionRate: data?.billingSummary?.collectionRate || "0%",
     fromLastMonth : data?.billingSummary?.fromLastMonth || "0%",
     // TENANTS
@@ -1709,6 +1710,14 @@ const filteredLabels = labels.map((item, index) => {
                             <Text style={styles.billingValue}> ₹ {dashboardList?.totalPaid}</Text>
                           </View>
 
+                          
+                          <View style={styles.billingRow}>
+                            <Text style={styles.billingLabel}>Refunded</Text>
+                            <Text style={{    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+    color: "red"}}> ₹ {dashboardList?.refundedAmount}</Text>
+                          </View>
+
 
                           <View style={styles.billingRow}>
                             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
@@ -1902,19 +1911,21 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={styles.tenantsDivider} />
 
                           {/* Notice Period */}
-                          <Text style={styles.noticeTitle}>Notice Period</Text>
-
                           <View style={styles.noticeRow}>
-                            <Text style={styles.checkoutText}>
-                              Next Checkout : {dashboardList?.nextCheckout}
-                            </Text>
-
-                            <View style={styles.noticeBadge}>
+                          <Text style={styles.noticeTitle}>Notice Period</Text>
+ <View style={styles.noticeBadge}>
                               <Text style={styles.noticeBadgeText}>
                               {dashboardList?.noticePeriod} Tenants
                               </Text>
                             </View>
-                          </View>
+                          
+                             </View>
+                            <Text style={styles.checkoutText}>
+                              Next Checkout : {dashboardList?.nextCheckout}
+                            </Text>
+
+                           
+                       
 
                         </View>
 
@@ -1947,9 +1958,9 @@ const filteredLabels = labels.map((item, index) => {
 
                           {/* Refunded */}
                           <View style={styles.advanceRow}>
-                            <Text style={styles.advanceLabel}>Refunded</Text>
+                            <Text style={styles.advanceLabel}>Advance Holding</Text>
                             <Text style={styles.refundValue}>
-                            ₹{dashboardList?.otherAdvance}
+                            ₹{dashboardList?.advanceHolding}
                             </Text>
                           </View>
 
@@ -2557,9 +2568,11 @@ const filteredLabels = labels.map((item, index) => {
                                     {item?.name}
                                   </Text>
 
+                              {item?.room  &&
                                   <Text style={styles.requestRoom}>
                                     • {item.room}
                                   </Text>
+                                  }
 
                                   <View style={[
                                     styles.statusBadge,
@@ -2678,11 +2691,15 @@ const filteredLabels = labels.map((item, index) => {
                                     {item.name}
                                   </Text>
 
-                                  <Text style={styles.requestRoom}>
+
+                               {item.room && 
+                                <Text style={styles.requestRoom}>
                                     • {item.room}
                                   </Text>
+                               }
+                                 
 
-                                  <View style={[
+                                  {/* <View style={[
                                     styles.statusBadge,
                                     item.status === "Pending" && { backgroundColor: "#FFF1E6" },
                                     item.status === "In Progress" && { backgroundColor: "#E8F0FF" }
@@ -2694,7 +2711,7 @@ const filteredLabels = labels.map((item, index) => {
                                     ]}>
                                       {item.status}
                                     </Text>
-                                  </View>
+                                  </View> */}
 
                                 </View>
 
