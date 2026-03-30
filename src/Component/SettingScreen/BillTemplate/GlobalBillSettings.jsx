@@ -20,18 +20,28 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { BillContext } from "../../../Context/BillsContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import RemoveIcon from "../../../Assets/Images/remove.png";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 export default function GlobalBillSettings({ onBack }) {
 
+  const navigation = useNavigation();
+  const route = useRoute();
   const { activeHostelId } = useContext(CommonContexts)
-  const { getGlobalBillPdfDetail, postGlobalBilPdfDetails } = useContext(BillContext)
+  const { getGlobalBillPdfDetail, postGlobalBilPdfDetails, deleteTemplateImage } = useContext(BillContext)
   const [logoCustomize, setLogoCustomize] = useState(false);
   const [contactCustomize, setContactCustomize] = useState(true);
   const [emailCustomize, setEmailCustomize] = useState(true);
   const [signCustomize, setSignCustomize] = useState(false);
+  const [templateId, setTemplateId] = useState(null);
 
   const [uploadedLogo, setUploadedLogo] = useState(null);
   const [signatureImage, setSignatureImage] = useState(null);
+
+  const [originalLogo, setOriginalLogo] = useState(null); // API logo
+  const [isLogoDeleted, setIsLogoDeleted] = useState(false); // mark delete
+
+  const [isSignatureDeleted, setIsSignatureDeleted] = useState(false);
 
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -48,18 +58,39 @@ export default function GlobalBillSettings({ onBack }) {
   useEffect(() => {
 
     getGlobalBillPdfDetail(activeHostelId).then(r => {
-      console.log(r)
+      console.log("billglobal", r)
       setMobile(r.data?.mobile)
       setEmail(r.data?.emailId)
       setUploadedLogo(r.data?.logo)
+      setOriginalLogo(r.data?.logo)
       setSignatureImage(r.data?.signature)
       setLogoCustomize(r?.data?.isLogoCustomized)
       setEmailCustomize(r?.data?.isMailIdCustomized)
       setContactCustomize(r?.data?.isMobileCustomized)
       setSignCustomize(r?.data?.isSignatureCustomized)
+      setTemplateId(r?.data?.templateId)
     })
 
   }, [])
+
+  //  useEffect(() => {
+  //   if (route.params?.signature !== undefined) {
+  //     setSignatureImage(route.params.signature);
+  //     setIsSignatureDeleted(false);
+  //   }
+
+  //   if (route.params?.isDeleted) {
+  //     setSignatureImage(null);
+  //     setIsSignatureDeleted(true);
+  //   }
+  // }, [route.params]);
+
+
+  console.log("routes", route);
+  console.log("signatureImage", signatureImage);
+
+
+
 
   /* ---------------- IMAGE PICK FUNCTION ---------------- */
   async function pickImage(setFunction) {
@@ -95,6 +126,46 @@ export default function GlobalBillSettings({ onBack }) {
       }
     });
   }
+
+
+
+
+  const handleDeleteLogo = async () => {
+    if (uploadedLogo && uploadedLogo !== originalLogo) {
+       setShowSuccessModal(true),
+          setmessage("Logo deleted Successfully"),
+          setErrorType("success")
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1000);
+      // local
+      setUploadedLogo(null);
+
+    } else {
+      const res = await deleteTemplateImage({
+        hostelId: activeHostelId,
+        templateId: templateId,
+        type: "logo",
+      });
+
+      console.log("deletedlogo", res);
+
+
+      if (res.success) {
+        setShowSuccessModal(true),
+          setmessage("Logo deleted Successfully"),
+          setErrorType("success")
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1000);
+        setUploadedLogo(null);
+        setIsLogoDeleted(true);
+      }
+    }
+  };
+
 
 
   /* ---------------- VALIDATION ---------------- */
@@ -145,8 +216,9 @@ export default function GlobalBillSettings({ onBack }) {
         name: "hostelLogo.jpg",
       });
     }
-
-
+    if (isSignatureDeleted) {
+      payload.deleteSignature = true;
+    }
     if (signatureImage) {
       formData.append("billSignature", {
         uri: signatureImage,
@@ -237,6 +309,13 @@ export default function GlobalBillSettings({ onBack }) {
               style={styles.logoPreview}
             />
           )}
+          {uploadedLogo && (
+            <TouchableOpacity onPress={handleDeleteLogo} style={styles.deleteIcon}>
+              <Image source={RemoveIcon} style={{ width: 14, height: 14 }} />
+            </TouchableOpacity>
+          )}
+
+
         </TouchableOpacity>
 
 
@@ -296,7 +375,7 @@ export default function GlobalBillSettings({ onBack }) {
           <Text style={styles.customizeText}>Customize in Specific Templates</Text>
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.signatureBox}
           onPress={() => {
             pickImage(setSignatureImage)
@@ -308,28 +387,88 @@ export default function GlobalBillSettings({ onBack }) {
           ) : (
             <Text style={styles.signaturePlaceholder}>Upload Signature</Text>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
+        <TouchableOpacity
+          style={styles.signatureBox}
+          onPress={() =>
+            navigation.navigate("SignatureUpload", {
+              signature: signatureImage,
+              templateId: templateId,
+              onGoBack: (data) => {
+                if (data?.signature === null) {
+                  setSignatureImage(null);
+                  setIsSignatureDeleted(true); // ✅ IMPORTANT
+                } else {
+                  setSignatureImage(data?.signature);
+                  setIsSignatureDeleted(false);
+                }
+              },
+            })
+          }
+        >
+          {/* {signatureImage ? (
+    <Image source={{ uri: signatureImage }} style={styles.signaturePreview} />
+  ) : (
+    <Text style={styles.signaturePlaceholder}>Tap to Sign</Text>
+  )} */}
+          {signatureImage ? (
+            <Image
+              source={{
+                uri: signatureImage.startsWith("data:image")
+                  ? signatureImage // base64
+                  : signatureImage, // normal uri
+              }}
+              style={styles.signaturePreview}
+            />
+          ) : (
+            <Text style={styles.signaturePlaceholder}>Tap to Sign</Text>
+          )}
+
+        </TouchableOpacity>
         {signError && <ErrorMessage message={signError} type="error" />}
 
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} >
 
-        <View style={styles.signatureActions}>
-          <TouchableOpacity onPress={() => setSignatureImage(null)}>
-            <Text style={styles.footerClear}>Clear</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              if (!signatureImage) {
-                setSignError("Please upload a signature first");
-                // Alert.alert("Success", "Signature uploaded!");
-              } else {
-                setSignError("")
-              }
-            }}
+            onPress={() =>
+              navigation.navigate("SignatureUpload", {
+                signature: signatureImage,
+                templateId: templateId,
+                onGoBack: (data) => {
+                  if (data?.signature === null) {
+                    setSignatureImage(null);
+                    setIsSignatureDeleted(true);
+                  } else {
+                    setSignatureImage(data?.signature);
+                    setIsSignatureDeleted(false);
+                  }
+                },
+              })
+            }
           >
-            <Text style={styles.footerDone}>Done</Text>
+            <Text style={styles.footerClear}>Choose file to Upload</Text>
           </TouchableOpacity>
+
+          <View style={styles.signatureActions}>
+            <TouchableOpacity onPress={() => setSignatureImage(null)}>
+              <Text style={styles.footerClear}>Clear</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                if (!signatureImage) {
+                  setSignError("Please upload a signature first");
+                  // Alert.alert("Success", "Signature uploaded!");
+                } else {
+                  setSignError("")
+                }
+              }}
+            >
+              <Text style={styles.footerDone}>Done</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.bottomActionRow}>
@@ -400,6 +539,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#E4E4E7",
+    position: 'relative'
   },
   uploadIcon: { width: 25, height: 25, marginRight: 15 },
   uploadTitle: { color: "#3562FF", fontWeight: "600", fontSize: 15 },
@@ -498,5 +638,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     fontWeight: "700",
+  },
+  deleteIcon: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 12,
+    padding: 4,
+    elevation: 3,
   },
 });

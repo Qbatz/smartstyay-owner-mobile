@@ -24,6 +24,8 @@ export default function DiscountInvoiceScreen() {
   const navigation = useNavigation();
   const route = useRoute();
 
+   const onSuccess = route?.params?.onSuccess;
+
     const { BillDetails, loading, GetAllBillDetails,
       RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
       , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
@@ -220,8 +222,8 @@ const handleDiscountApply = async () => {
   if (hasError) return;
 
 const payload = {
-  hostelId: bill?.hostelId,
-  invoiceId: bill?.invoiceId,
+  hostelId: activeHostelId,
+  invoiceId: BillPdfdetails?.invoiceId,
   reason: reason || "",
   ...(discountType === "Amount" && {
     discountAmount: Number(discount),
@@ -260,6 +262,9 @@ const res = await ApplyBillDiscount(payload);
 
     setTimeout(() => {
       navigation.goBack();
+       if (onSuccess) {
+      onSuccess(); 
+    }
       setShowSuccessModal(false);
     }, 1500);
   } else {

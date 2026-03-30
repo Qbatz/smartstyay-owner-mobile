@@ -532,6 +532,7 @@ const CustomerOverviewshow = async(item) => {
   const handleShowRecordPayment = (item) => {
     setShowRecordPayment(true)
     setSelectedBill(item)
+    
   }
   console.log("Recordpayment", showRecordPayment);
   
@@ -568,6 +569,8 @@ const complaintList =
     category: item.complaintType,
     time: item.complaintDate,
   })) || [];
+
+  
 
   const requestList =
   dashboardList?.dashboardRequests?.map((item) => ({

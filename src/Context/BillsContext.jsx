@@ -772,6 +772,39 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
   }
 };
 
+const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v2/hostel/config/template/${hostelId}/${templateId}`,
+      {
+        data: {
+          type: type, // "logo" or "signature"
+        },
+      }
+    );
+
+    return {
+      success: true,
+      statusCode: res.status,
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <BillContext.Provider
@@ -803,7 +836,8 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
         getGlobalBillPdfDetail,
         postGlobalBilPdfDetails,
          MarkBillAsUnpaid,
-         ApplyBillDiscount
+         ApplyBillDiscount,
+         deleteTemplateImage
       }}
     >
       {children}

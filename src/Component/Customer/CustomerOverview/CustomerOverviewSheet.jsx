@@ -50,6 +50,7 @@ import MoveToNoticeIcon from "../../../Assets/Images/Logout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout_red.png"
 import Generate from "../../../Assets/Images/fsi.png"
 import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
+import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 
 
 export default function CustomerOverviewScreen({ route, navigation }) {
@@ -87,6 +88,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
+    const [BillDetailshow, setBillDetailsShow] = useState(false)
 
   useEffect(() => {
     CommonModule.fetchEnvironment().then(r => {
@@ -474,7 +476,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return <EBReadingTab customerDetails={customerDetails} />;
 
       case "Bill":
-        return <BillTab customerDetails={customerDetails} />;
+        return <BillTab customerDetails={customerDetails}   ShowBillsDetails={() => setBillDetailsShow(true)}/>;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;
@@ -1023,6 +1025,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   //   await saveAdditionalContact(activeHostelId, customerId, payload);
   //   setShowContactSheet(false);
   // }}
+/>
+  <BillDetailsSheet
+  visible={BillDetailshow}
+  onClose={() => setBillDetailsShow(false)}
+  // bill={selectedBill}
 />
     </>
   );
