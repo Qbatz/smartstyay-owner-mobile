@@ -839,6 +839,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
     hostelList?.[0] ??
     {};
+    console.log(activeHostel)
 
 
   const navigation = useNavigation();
@@ -2596,56 +2597,56 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
                           >
-{requestList?.length === 0 ? (
-  <Text style={{ textAlign: "center", color: "#999" }}>
-    No requests are there
-  </Text>
-) : (
-  requestList.map((item, index) => (
-                              <View key={index} style={styles.requestItem}>
+                            {requestList?.length === 0 ? (
+                              <Text style={{ textAlign: "center", color: "#999" }}>
+                                No requests are there
+                              </Text>
+                            ) : (
+                              requestList.map((item, index) => (
+                                <View key={index} style={styles.requestItem}>
 
-                                <View style={styles.requestTopRow}>
-                                  <Text style={styles.requestName}>
-                                    {item?.name}
-                                  </Text>
+                                  <View style={styles.requestTopRow}>
+                                    <Text style={styles.requestName}>
+                                      {item?.name}
+                                    </Text>
 
-                              {item?.room  &&
-                                  <Text style={styles.requestRoom}>
-                                    • {item.room}
-                                  </Text>
-                                  }
+                                    {item?.room &&
+                                      <Text style={styles.requestRoom}>
+                                        • {item.room}
+                                      </Text>
+                                    }
 
-                                  <View style={[
-                                    styles.statusBadge,
-                                    item?.status === "Pending" && { backgroundColor: "#FFF1E6" },
-                                    item?.status === "In Progress" && { backgroundColor: "#E8F0FF" }
-                                  ]}>
-                                    <Text style={[
-                                      styles.statusText,
-                                      item?.status === "Pending" && { color: "#EA580C" },
-                                      item?.status === "In Progress" && { color: "#2563EB" }
+                                    <View style={[
+                                      styles.statusBadge,
+                                      item?.status === "Pending" && { backgroundColor: "#FFF1E6" },
+                                      item?.status === "In Progress" && { backgroundColor: "#E8F0FF" }
                                     ]}>
-                                      {item?.status}
+                                      <Text style={[
+                                        styles.statusText,
+                                        item?.status === "Pending" && { color: "#EA580C" },
+                                        item?.status === "In Progress" && { color: "#2563EB" }
+                                      ]}>
+                                        {item?.status}
+                                      </Text>
+                                    </View>
+
+                                  </View>
+
+                               
+
+                                  <View style={styles.requestBottomRow}>
+                                    <Text style={styles.requestCategory}>
+                                      {item.type}
+                                    </Text>
+
+                                    <Text style={styles.requestTime}>
+                                      {item.time}
                                     </Text>
                                   </View>
 
                                 </View>
-
-                               
-
-                                <View style={styles.requestBottomRow}>
-                                  <Text style={styles.requestCategory}>
-                                   {item.type}
-                                  </Text>
-
-                                  <Text style={styles.requestTime}>
-                                   {item.time}
-                                  </Text>
-                                </View>
-
-                              </View>
-                             ))
-)}
+                              ))
+                            )}
                           </ScrollView>
 
 
@@ -2712,48 +2713,48 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled
                           >
-{complaintList?.length === 0 ? (
-  <Text style={{ textAlign: "center", color: "#999" }}>
-    No requests are there
-  </Text>
-) : (
-  complaintList.map((item, index) => (
-                              <View key={index} style={styles.requestItem}>
+                            {complaintList?.length === 0 ? (
+                              <Text style={{ textAlign: "center", color: "#999" }}>
+                                No requests are there
+                              </Text>
+                            ) : (
+                              complaintList.map((item, index) => (
+                                <View key={index} style={styles.requestItem}>
 
-                                <View style={styles.requestTopRow}>
-                                  <Text style={styles.requestName}>
-                                    {item.name}
-                                  </Text>
+                                  <View style={styles.requestTopRow}>
+                                    <Text style={styles.requestName}>
+                                      {item.name}
+                                    </Text>
 
 
-                               {item.room && 
-                                <Text style={styles.requestRoom}>
-                                    • {item.room}
-                                  </Text>
-                               }
-                                 
+                                    {item.room &&
+                                      <Text style={styles.requestRoom}>
+                                        • {item.room}
+                                      </Text>
+                                    }
+
 
                                 
 
-                                </View>
+                                  </View>
 
-                                <Text style={styles.requestIssue}>
-                                  {item?.type}
-                                </Text>
-
-                                <View style={styles.requestBottomRow}>
-                                  <Text style={styles.requestCategory}>
-                                    {item?.category}
+                                  <Text style={styles.requestIssue}>
+                                    {item?.type}
                                   </Text>
 
-                                  <Text style={styles.requestTime}>
-                                    {item?.time}
-                                  </Text>
-                                </View>
+                                  <View style={styles.requestBottomRow}>
+                                    <Text style={styles.requestCategory}>
+                                      {item?.category}
+                                    </Text>
 
-                              </View>
-                                                      ))
-)}
+                                    <Text style={styles.requestTime}>
+                                      {item?.time}
+                                    </Text>
+                                  </View>
+
+                                </View>
+                              ))
+                            )}
 
                           </ScrollView>
 
