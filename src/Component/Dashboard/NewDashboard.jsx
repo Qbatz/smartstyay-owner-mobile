@@ -77,7 +77,7 @@ import Loader from "../Loader/Loader"
 import OrangeLocationIcon from "../../Assets/Images/OrangeLocationIcon.png"
 import ExpiryImg from "../../Assets/Images/subscription_expiry.png";
 import SubscriptionExpiredSheet from "../../ToastFile/SubscriptionExpired"
-
+import RequestComplaintCard from "./RequestComplaintCard"
 
 import {
   BarChart,
@@ -565,7 +565,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     dashboardList?.tenantcomplaint?.map((item) => ({
       name: item.fullName,
       room: item.roomName || "",
-      status: "Pending",
+      status: "",
       type: item.complaintDescription || item.complaintName,
       category: item.complaintType,
       time: item.complaintDate,
@@ -1518,7 +1518,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                       activeTab === item.key && {
                         color: "#1E45E1",
                         fontFamily: "Gilroy-Bold",
-                        fontSize: 17,
+                        fontSize: 18,
                       },
                     ]}
                   >
@@ -1671,7 +1671,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
                             </View>
 
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                               style={styles.monthBtn}
                               onPress={() => {
                                 setTempMonth(selectedMonth);
@@ -1685,6 +1685,30 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
                               </View>
+                            </TouchableOpacity> */}
+
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
+                                <Image
+                                  source={DownArrow}
+                                  style={{ width: 14, height: 14, marginLeft: 5 }}
+                                />
+
+                              </View>
+
                             </TouchableOpacity>
                           </View>
 
@@ -1995,20 +2019,29 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.bookingTitle}>Upcoming Check-ins</Text>
                             </View>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
                           </View>
 
@@ -2079,7 +2112,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
 
                         <View style={styles.bookingsCard}>
-
+ 
 
                           <View style={styles.bookingHeader}>
                             <View style={styles.bookingHeaderLeft}>
@@ -2089,20 +2122,29 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.bookingTitle}>Overdue Invoices</Text>
                             </View>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
                           </View>
 
@@ -2502,11 +2544,10 @@ export default function DashboardNewDesign({ initialParams, route }) {
                       </>
                     )}
 
-                    {activeSubTab === "Requests & Complaint" && (
+                    {/* {activeSubTab === "Requests & Complaint" && (
                       <>
                         <View style={styles.requestsCard}>
 
-                          {/* Header */}
                           <View style={styles.requestHeader}>
 
                             <View style={styles.requestHeaderLeft}>
@@ -2536,23 +2577,21 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           </View>
 
 
-                          {/* Status Summary */}
-                          <View style={styles.requestStatsRow}>
-                            {requestStats.map((item, index) => (
-                              <View
-                                key={index}
-                                style={[styles.requestStatBox, { backgroundColor: item.bg }]}
-                              >
-                                <Text style={[styles.requestStatNumber, { color: item.text }]}>
-                                  {item.count}
-                                </Text>
-                                <Text style={styles.requestStatLabel}>{item.label}</Text>
-                              </View>
-                            ))}
-                          </View>
+                    <View style={styles.requestStatsRow}>
+  {requestStats.map((item, index) => (
+    <View
+      key={index}
+      style={[styles.requestStatBox, { backgroundColor: item.bg }]}
+    >
+      <Text style={[styles.requestStatNumber, { color: item.text }]}>
+        {item.count}
+      </Text>
+      <Text style={styles.requestStatLabel}>{item.label}</Text>
+    </View>
+  ))}
+</View>
 
 
-                          {/* Scrollable Request List */}
                           <ScrollView
                             style={{ maxHeight: 220 }}
                             showsVerticalScrollIndicator={false}
@@ -2593,9 +2632,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
                                   </View>
 
-                                  {/* <Text style={styles.requestIssue}>
-                                 {item.title}
-                                </Text> */}
+                               
 
                                   <View style={styles.requestBottomRow}>
                                     <Text style={styles.requestCategory}>
@@ -2613,23 +2650,20 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           </ScrollView>
 
 
-                          {/* Footer */}
-                          <TouchableOpacity style={[
-                            styles.viewRequestsBtn,
-                            { opacity: 0.7 }
-                          ]} disabled>
+                          <TouchableOpacity             style={[
+                styles.viewRequestsBtn,
+                 { opacity: 0.7 }
+              ]} disabled>
                             <Text style={styles.viewRequestsText}>
                               View All Requests
                             </Text>
                             <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-                            {/* <Text style={styles.viewArrow}>→</Text> */}
                           </TouchableOpacity>
 
                         </View>
 
                         <View style={styles.requestsCard}>
 
-                          {/* Header */}
                           <View style={styles.requestHeader}>
 
                             <View style={styles.requestHeaderLeft}>
@@ -2659,23 +2693,21 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           </View>
 
 
-                          {/* Status Summary */}
-                          <View style={styles.requestStatsRow}>
-                            {requestComplaints.map((item, index) => (
-                              <View
-                                key={index}
-                                style={[styles.requestStatBox, { backgroundColor: item.bg }]}
-                              >
-                                <Text style={[styles.requestStatNumber, { color: item.text }]}>
-                                  {item.count}
-                                </Text>
-                                <Text style={styles.requestStatLabel}>{item.label}</Text>
-                              </View>
-                            ))}
-                          </View>
+                         <View style={styles.requestStatsRow}>
+  {requestComplaints.map((item, index) => (
+    <View
+      key={index}
+      style={[styles.requestStatBox, { backgroundColor: item.bg }]}
+    >
+      <Text style={[styles.requestStatNumber, { color: item.text }]}>
+        {item.count}
+      </Text>
+      <Text style={styles.requestStatLabel}>{item.label}</Text>
+    </View>
+  ))}
+</View>
 
 
-                          {/* Scrollable Request List */}
                           <ScrollView
                             style={{ maxHeight: 220 }}
                             showsVerticalScrollIndicator={false}
@@ -2702,19 +2734,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                     }
 
 
-                                    {/* <View style={[
-                                    styles.statusBadge,
-                                    item.status === "Pending" && { backgroundColor: "#FFF1E6" },
-                                    item.status === "In Progress" && { backgroundColor: "#E8F0FF" }
-                                  ]}>
-                                    <Text style={[
-                                      styles.statusText,
-                                      item.status === "Pending" && { color: "#EA580C" },
-                                      item.status === "In Progress" && { color: "#2563EB" }
-                                    ]}>
-                                      {item.status}
-                                    </Text>
-                                  </View> */}
+                                
 
                                   </View>
 
@@ -2739,14 +2759,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           </ScrollView>
 
 
-                          {/* Footer */}
-                          <TouchableOpacity
-                            // style={styles.viewRequestsBtn}
-                            style={[
-                              styles.viewRequestsBtn,
-                              { opacity: 0.7 }
-                            ]}
-                            disabled>
+                          <TouchableOpacity 
+                           style={[
+                styles.viewRequestsBtn,
+                 { opacity: 0.7 }
+              ]}
+                          disabled>
                             <Text style={styles.viewRequestsText}>
                               View All Complaints
                             </Text>
@@ -2758,6 +2776,41 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
 
                       </>
+                    )} */}
+
+                    {activeSubTab === "Requests & Complaint" && (
+                      <>
+                        <View style={{ flex: 1 }}>
+                          <ScrollView
+                            nestedScrollEnabled={true}
+                            keyboardShouldPersistTaps="handled"
+                          >
+                            <RequestComplaintCard
+                              title="Tenant Requests"
+                              icon={TenantRequestImg}
+                              total={dashboardList?.tenantRequests?.total}
+                              stats={requestStats}
+                              list={requestList}
+                              selectedMonth={selectedMonth}
+                              onMonthPress={() => setMonthSheetOpen(true)}
+                              arrowIcon={RightArrowImg}
+                              viewText="View All Requests"
+                            />
+
+                            <RequestComplaintCard
+                              title="Tenant Complaints"
+                              icon={ComplaintRequestImg}
+                              total={dashboardList?.tenantComplaints?.total}
+                              stats={requestComplaints}
+                              list={complaintList}
+                              selectedMonth={selectedMonth}
+                              onMonthPress={() => setMonthSheetOpen(true)}
+                              arrowIcon={RightArrowImg}
+                              viewText="View All Complaints"
+                            />
+                          </ScrollView>
+                        </View>
+                      </>
                     )}
 
                     {activeSubTab === "Core Analytics" && (
@@ -2766,20 +2819,28 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           <View style={styles.chartHeader}>
                             <Text style={styles.chartTitle}>Occupancy Trend</Text>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+                             <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
                           </View>
                           <View style={{ flexDirection: "row" }}>
@@ -2920,20 +2981,28 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               Revenue Trend
                             </Text>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+                             <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
 
                           </View>
@@ -3326,6 +3395,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                       {item.availableRooms} Rooms Available
                     </Text>
                   </View>
+                  <View style={styles.divider} />
 
                   <View style={styles.shareCardRow}>
                     <View>
@@ -3521,7 +3591,7 @@ const styles = StyleSheet.create({
 
   tabBtn: { marginRight: 20 },
 
-  tabText: { fontSize: 17, color: "#6B7280", fontFamily: "Gilroy-Bold" },
+  tabText: { fontSize: 16, color: "#6B7280", fontFamily: "Gilroy-Bold" },
 
   underline: {
     height: 3,
@@ -3705,17 +3775,21 @@ const styles = StyleSheet.create({
   },
 
   monthBtn: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 10,
+    maxWidth: 120,
   },
 
   monthText: {
     fontSize: 13,
     color: "#374151",
     fontWeight: "500",
+    flexShrink: 1,
   },
   billingRow: {
     flexDirection: "row",
@@ -5499,5 +5573,9 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Medium",
   },
 
-
+  divider: {
+    height: 0.8,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+  },
 });
