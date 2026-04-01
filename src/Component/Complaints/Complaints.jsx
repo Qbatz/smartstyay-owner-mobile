@@ -69,7 +69,7 @@ export default function Complaints({ route }) {
   const [modalType, setModalType] = useState("success");
 
   const lastScrollY = useRef(0);
-const isTabBarVisible = useRef(true);
+  const isTabBarVisible = useRef(true);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -257,43 +257,43 @@ const isTabBarVisible = useRef(true);
   // }
 
   const handleScroll = (event) => {
-  const currentY = event.nativeEvent.contentOffset.y;
-  const diff = currentY - lastScrollY.current;
+    const currentY = event.nativeEvent.contentOffset.y;
+    const diff = currentY - lastScrollY.current;
 
-  if (Math.abs(diff) < 10) return;
+    if (Math.abs(diff) < 10) return;
 
-  if (diff > 0 && currentY > 50) {
-    if (isTabBarVisible.current) {
-      setShowTabBar(false);
-      isTabBarVisible.current = false;
+    if (diff > 0 && currentY > 50) {
+      if (isTabBarVisible.current) {
+        setShowTabBar(false);
+        isTabBarVisible.current = false;
+      }
+    } else if (diff < 0) {
+      if (!isTabBarVisible.current) {
+        setShowTabBar(true);
+        isTabBarVisible.current = true;
+      }
     }
-  } else if (diff < 0) {
-    if (!isTabBarVisible.current) {
-      setShowTabBar(true);
-      isTabBarVisible.current = true;
-    }
-  }
 
-  // lastScrollY.current = currentY;
-};
+    lastScrollY.current = currentY;
+  };
 
   // useLayoutEffect(() => {
   //   setShowTabBar(!showFilter && !showSheet && !showAssignSheet && !showStatusSheet && !showCommentSheet);
   // }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
   useLayoutEffect(() => {
-  if (
-    showFilter ||
-    showSheet ||
-    showAssignSheet ||
-    showStatusSheet ||
-    showCommentSheet
-  ) {
-    setShowTabBar(false);
-  } else {
-    setShowTabBar(isTabBarVisible.current);
-  }
-}, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
+    if (
+      showFilter ||
+      showSheet ||
+      showAssignSheet ||
+      showStatusSheet ||
+      showCommentSheet
+    ) {
+      setShowTabBar(false);
+    } else {
+      setShowTabBar(isTabBarVisible.current);
+    }
+  }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -331,17 +331,21 @@ const isTabBarVisible = useRef(true);
     return () => handler.remove();
   }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet])
 
-  // useEffect(() => {
-  //             const backHandler = BackHandler.addEventListener(
-  //               "hardwareBackPress",
-  //               () => {
-  //                 navigation.goBack();  
-  //                 return true;
-  //               }
-  //             );
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
 
-  //             return () => backHandler.remove();
-  //           }, [])
+        setShowTabBar(true);
+        isTabBarVisible.current = true;
+        
+        navigation.goBack();
+        return true;
+      }
+    );
+
+    return () => backHandler.remove();
+  }, [])
 
 
 
@@ -483,11 +487,11 @@ const isTabBarVisible = useRef(true);
 
 
         {!loading && complaintsList && complaintsList?.length > 0 &&
-          <View style={{flexDirection:'row',alignItems:'center',marginRight:20,marginBottom:10}}>
-            <TouchableOpacity onPress={()=>navigation.goBack()}>
-                   <Image source={LeftArrow} style={{ width: 20, height: 20,marginRight:6 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20, marginBottom: 10 }}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
             </TouchableOpacity>
-           
+
 
 
             <View style={styles.searchBox}>
@@ -520,7 +524,7 @@ const isTabBarVisible = useRef(true);
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 200 }}
             onScroll={handleScroll}
-             scrollEventThrottle={16}
+            scrollEventThrottle={16}
           />)}
 
         {!loading && complaintsList && complaintsList?.length === 0 && (
@@ -542,16 +546,16 @@ const isTabBarVisible = useRef(true);
         {!loading && complaintsList && complaintsList?.length > 0 &&
           <>
 
-            <TouchableOpacity  style={[
-    styles.filterBtn,
-    !canReadComplaints && { opacity: 0.4 } 
-  ]} disabled={!canReadComplaints} onPress={() => setShowFilter(true)}>
-        <Image
-          source={FilterIcon}
-          style={{ width: 25, height: 25 }}
-        />
+            <TouchableOpacity style={[
+              styles.filterBtn,
+              !canReadComplaints && { opacity: 0.4 }
+            ]} disabled={!canReadComplaints} onPress={() => setShowFilter(true)}>
+              <Image
+                source={FilterIcon}
+                style={{ width: 25, height: 25 }}
+              />
 
-      </TouchableOpacity>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[
@@ -748,7 +752,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontFamily: "Gilroy-Semibold" },
   row: { flexDirection: "row", alignItems: "center", marginTop: 5 },
   userIcon: { width: 20, height: 20, marginRight: 6 },
-  user: { color: "#4B4B4B", fontFamily: "Gilroy-Medium",fontSize:14 },
+  user: { color: "#4B4B4B", fontFamily: "Gilroy-Medium", fontSize: 14 },
 
   rightSection: { alignItems: "flex-end", justifyContent: "space-between" },
   time: { fontSize: 10, color: "#9C9C9C", fontFamily: "Gilroy-Regular" },
