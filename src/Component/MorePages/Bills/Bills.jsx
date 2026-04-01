@@ -2137,7 +2137,7 @@ const isNotDiscounted =
 
 
           {activeTab === "Invoices" && (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1}}>
 
               {!canReadInvoice && (
                 <View style={styles.centerContainer}>
@@ -2154,7 +2154,7 @@ const isNotDiscounted =
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{ paddingBottom: 50 }}
+                      contentContainerStyle={{ paddingBottom: 150 }}
                     >
 
 
@@ -2243,10 +2243,12 @@ const isNotDiscounted =
 
                           </View>
 
-                          <View style={{ flex: 1 }}>
+                          <View style={{ flex: 1,marginLeft:5,marginRight:10,}}>
                             {/* <Text style={styles.name}>{item.fullName}</Text> */}
 
-                            <Text style={styles.name}>{item.fullName}</Text>
+                            <Text style={styles.name}
+                            numberOfLines={1}
+                            ellipsizeMode="tail">{item.fullName}</Text>
 
 
 
@@ -2272,12 +2274,13 @@ const isNotDiscounted =
             />
           </TouchableOpacity> */}
                             <Text style={{
-                              fontSize: 14,
+                              fontSize: 16,
                               fontFamily: "Gilroy-Bold",
                               color: "#000",
                             }}>₹ {item?.invoiceAmount ?? "--"}</Text>
 
-                            <Text style={styles.dateText}>{item.invoiceDate}</Text>
+                            <Text style={{ fontSize: 10,color: "#6B7280",fontFamily: "Gilroy-Regular",marginTop:4}}>
+                              {item.invoiceDate}</Text>
                             {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
                               <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
                             )}
@@ -4877,6 +4880,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     paddingBottom: 6,
+    marginBottom:15
   },
   // dropdownMenu: {
   //   backgroundColor: "#fff",
@@ -4992,7 +4996,20 @@ const styles = StyleSheet.create({
   tenantRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 14,
+    paddingHorizontal:10,
+    backgroundColor:'#FFFFFF',
+     borderRadius: 10,       // ✅ rounded card
+  marginBottom: 10,    // ✅ space between cards
+
+  // shadow (iOS)
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 },
+
+  // elevation (Android)
+  elevation: 2,
   },
   profileImg: {
     width: 45,
@@ -5001,7 +5018,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   name: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
@@ -5096,7 +5113,7 @@ const styles = StyleSheet.create({
   FilterButton: {
     position: "absolute",
     bottom: 125,
-    right: 35,
+    right: 10,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
@@ -5106,7 +5123,7 @@ const styles = StyleSheet.create({
   addBtn: {
     position: "absolute",
     bottom: 60,
-    right: 30,
+    right: 10,
     backgroundColor: "#1D5DFF",
     width: 55,
     height: 55,

@@ -69,7 +69,7 @@ import { LoginContexts } from "./Context/LoginContext";
 import CreateMpin from "../src/Component/CreateAccount/CreatePin";
 import ConfirmMPin from "../src/Component/CreateAccount/ConfirmPin";
 import CustomerOverviewScreen from "../src/Component/Customer/CustomerOverview/CustomerOverviewSheet"
-import Reports from  "../src/Component/MorePages/Reports/Reports";
+import Reports from "../src/Component/MorePages/Reports/Reports";
 import FinalSettlementScreen from "../src/Component/Customer/FinalSettlementNew"
 import InvoiceRegister from "../src/Component/MorePages/Reports/InvoiceRegister"
 import TenantRegister from "../src/Component/MorePages/Reports/TenantRegister"
@@ -91,16 +91,16 @@ const SuccessFlow = (props) => {
 
     return <View style={{ flex: 1 }}>
 
-        
-        {console.log(loginContext.pinVerifid,loginContext.getRoute)}
-        
 
-       
+        {console.log(loginContext.pinVerifid, loginContext.getRoute)}
+
+
+
 
         {loginContext.getRoute === "ConfirmMpin" || loginContext.pinVerifid ?
 
             <NavigationContainer>
-                <Navigation.Navigator screenOptions={{headerShown:false}}>
+                <Navigation.Navigator screenOptions={{ headerShown: false }}>
 
                     <Navigation.Screen name="MyTabs" component={MyTabs} />
                     <Navigation.Screen name="AddTenant" component={AddTenant} />
@@ -156,7 +156,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="BillingRuleScreen" component={BillingRuleScreen} />
                     <Navigation.Screen name="BillingRule" component={BillingRule} />
                     <Navigation.Screen name="LongStayRecurring" component={LongStayRecurring} />
-                     <Navigation.Screen name="LongStay" component={LongStay} />
+                    <Navigation.Screen name="LongStay" component={LongStay} />
                     <Navigation.Screen name="RolesScreen" component={RolesScreen} />
                     <Navigation.Screen name="BillTemplate" component={BillTemplateSettings} />
                     <Navigation.Screen name="SignatureUpload" component={SignatureUpload} />
@@ -172,21 +172,21 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="TenantRegister" component={TenantRegister} />
                     <Navigation.Screen name="ExpenseRegister" component={ExpenseRegister} />
                     <Navigation.Screen name="ReceiptRegister" component={ReceiptRegister} />
-                     <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
-                      <Navigation.Screen name="FinalSettlementScreen" component={FinalSettlementScreen} />
-                      <Navigation.Screen name="HistoryAndComments" component={HistoryAndComments} />
-                     <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
-                       <Navigation.Screen name="DiscountInvoice" component={BillsDiscount} />
+                    <Navigation.Screen name="CustomerOverviewScreen" component={CustomerOverviewScreen} />
+                    <Navigation.Screen name="FinalSettlementScreen" component={FinalSettlementScreen} />
+                    <Navigation.Screen name="HistoryAndComments" component={HistoryAndComments} />
+                    <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
+                    <Navigation.Screen name="DiscountInvoice" component={BillsDiscount} />
                 </Navigation.Navigator>
             </NavigationContainer>
 
-             :
+            :
 
             <NavigationContainer>
-                <Navigation.Navigator screenOptions={{headerShown:false}}>
-                    <Navigation.Screen name="EnterMpin" component={EnterMPin}/>
-                      <Navigation.Screen name="CreateMpin" component={CreateMpin} />
-           <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+                <Navigation.Navigator screenOptions={{ headerShown: false }}>
+                    <Navigation.Screen name="EnterMpin" component={EnterMPin} />
+                    <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+                    <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
                 </Navigation.Navigator>
             </NavigationContainer>}
 
