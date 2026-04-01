@@ -494,7 +494,7 @@ const BillDetailsSheet = ({
           <ScrollView showsVerticalScrollIndicator={false}>
 
             <View style={styles.billHeaderRow}>
-              <Text style={styles.billHeaderText}>Bill Details</Text>
+              <Text style={styles.billHeaderText}>{bill?.invoiceNumber || "--"}</Text>
 
 
               <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -541,7 +541,7 @@ const BillDetailsSheet = ({
               </View>
             </View>
 
-            <View style={styles.userRow}>
+            {/* <View style={styles.userRow}>
               {customer?.profilePic ? (
                 <Image
                   source={{ uri: customer.profilePic }}
@@ -558,16 +558,7 @@ const BillDetailsSheet = ({
 
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <TouchableOpacity
-                // onPress={() =>{
-
-                //   if (!customer?.customerId) return;
-                //   navigation.navigate("CustomerOverviewScreen", {
-                //     customerId: customer?.customerId,
-                //     customer: customer,
-                //   })
-
-                // }
-                // }
+               
                 >
                   <Text style={styles.userName}>{customer?.fullName || "--"}</Text>
                 </TouchableOpacity>
@@ -584,8 +575,9 @@ const BillDetailsSheet = ({
                   <Text style={styles.billNumber}>{bill?.invoiceNumber || "--"}</Text>
                 </View>
               </View>
-            </View>
-            {(isPending || isPartial || partiallyRefund || pendingRefund) && (
+            </View> */}
+
+            {/* {(isPending || isPartial || partiallyRefund || pendingRefund) && (
               <View style={styles.actionRow}>
 
                 <TouchableOpacity
@@ -607,7 +599,7 @@ const BillDetailsSheet = ({
                 </TouchableOpacity>
 
               </View>
-            )}
+            )} */}
 
             <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
