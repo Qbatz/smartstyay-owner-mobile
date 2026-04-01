@@ -256,6 +256,9 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
   const filterTranslateY = useRef(new Animated.Value(500)).current;
 
+  const isSettlement =
+  selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED";
+
 
   useEffect(() => {
     Animated.timing(filterTranslateY, {
@@ -668,10 +671,10 @@ const isExportAllow = isValidSubscription && canReadTenant;
               }}
             >
               <View style={styles.tabContent}>
-                <Image
+                {/* <Image
                   source={activeTab === tab.key ? tab.active : tab.inactive}
                   style={styles.tabIcon}
-                />
+                /> */}
                 <Text
                   style={[
                     styles.tabText,
@@ -903,6 +906,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
                     //     </Text>
                     //   </View>
                     // </TouchableOpacity>
+                     <View key={item.customerId}>
                     <TouchableOpacity key={item.customerId} style={styles.tenantRow}   activeOpacity={0.7}
   onPress={() => openCustomerDetails(item)}>
 
@@ -942,6 +946,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
 
 
+                         
 
                       {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
                       <View 
@@ -949,19 +954,22 @@ const isExportAllow = isValidSubscription && canReadTenant;
                         // activeOpacity={0.7}
                         // onPress={() => handleOverViewScrren(item)}
                       >
-                        <Text style={styles.name}>{item.fullName}</Text>
+                        <Text style={styles.name}   numberOfLines={1}
+  ellipsizeMode="tail">{item.fullName}</Text>
 
                         <View style={styles.detailRow}>
                           {item.floorName && (
                             <View style={[styles.floorBadge, { flex: 1 }]}>
-                              <Text style={[styles.floorText]}>{item.floorName}</Text>
+                              <Text style={[styles.floorText]}   numberOfLines={1}
+  ellipsizeMode="tail">{item.floorName}</Text>
                             </View>
                           )}
 
                           {item.roomName && (
                             <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
                               <Image source={room} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.roomName}</Text>
+                              <Text style={[styles.detailText, { flexShrink: 1 }]}   numberOfLines={1}
+  ellipsizeMode="tail">{item.roomName}</Text>
 
                             </View>
 
@@ -970,7 +978,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
                           {item.bedName && (
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                               <Image source={Bed} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1 }]}>{item.bedName}</Text>
+                              <Text style={[styles.detailText, { flexShrink: 1 }]}   numberOfLines={1}
+  ellipsizeMode="tail">{item.bedName}</Text>
                             </View>
                           )}
                         </View>
@@ -1016,9 +1025,10 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
                       
                       </View>
+
                     </TouchableOpacity>
-
-
+                   <View style={styles.dividerLine} />
+</View>
                   ))}
 
 
@@ -1064,10 +1074,13 @@ const isExportAllow = isValidSubscription && canReadTenant;
             />
 
             <Animated.View
-              style={[
-                styles.bottomSheet,
-                { transform: [{ translateY: sheetTranslateY }] },
-              ]}
+               style={[
+    styles.bottomSheet,
+    {
+      height: isSettlement ? 440 : SHEET_HEIGHT,
+      transform: [{ translateY: sheetTranslateY }],
+    },
+  ]}
               {...detailPanResponder.panHandlers}
             >
 
@@ -1082,6 +1095,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
               style={{ width: 24, height: 24, transform: [{ rotate: "90deg" }] }}
             />
           </TouchableOpacity> */}
+
+
                 <TouchableOpacity
                   ref={detailDotsRef}
                   onPress={() => {
@@ -1096,6 +1111,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
                 </TouchableOpacity>
 
               </View>
+
+              <View style={styles.divider} />
 
 
 
@@ -1118,7 +1135,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
                 )}
 
 
-                <View style={{ marginLeft: 12 }}>
+                <View style={{ marginLeft: 12 , flex: 1}}>
                   <TouchableOpacity
   onPress={() => {
     closeDetailSheet();
@@ -1127,7 +1144,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
     });
   }}
 >
-  <Text style={styles.modalName}>
+  <Text style={styles.modalName} numberOfLines={1}
+  ellipsizeMode="tail">
     {selectedCustomer?.fullName}
   </Text>
 </TouchableOpacity>
@@ -1135,15 +1153,23 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
                   <View style={styles.detailRow}>
                     <View style={styles.floorBadge}>
-                      <Text style={styles.floorText}>{selectedCustomer?.hostelInfo?.floorName}</Text>
+                      <Text   style={[styles.floorText, { flexShrink: 1 }]}
+  numberOfLines={1}
+  ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.floorName}</Text>
                     </View>
                     <Image source={room} style={{ width: 18, height: 18, marginRight:4 }} />
-                    <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.roomName}</Text>
+                    <Text style={[styles.detailText, { flexShrink: 1 }]}
+  numberOfLines={1}
+  ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.roomName}</Text>
                     <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8 ,marginRight:4}} />
-                    <Text style={styles.detailText}>{selectedCustomer?.hostelInfo?.bedName}</Text>
+                    <Text style={[styles.detailText, { flexShrink: 1 }]}
+  numberOfLines={1}
+  ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.bedName}</Text>
                   </View>
                 </View>
               </View>
+
+              <View style={styles.divider} />
 
               <Text style={styles.infoLabel}>Email ID</Text>
               {/* <Text style={styles.infoValue}> <Image source={Call} style={{width:15,height:15,marginRight:5}} />{selectedCustomer?.email}</Text> */}
@@ -1268,7 +1294,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
               {
                 ["CHECK_IN", "OCCUPIED", "NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'column', }}>
                     <View style={{ marginTop: 10, }}>
                       <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
                         Rental Amount
@@ -1316,7 +1342,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
                         style={{ width: 15, height: 15, marginRight: 5 }}
                         resizeMode="contain"
                       />
-                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1, }}>
+                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Bold"  }}>
                         ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.bookingInfo?.bookingAmount)}</Text>
                     </View>
                   </View>
@@ -2060,12 +2086,14 @@ const styles = StyleSheet.create({
 
   },
   searchContainer: {
-    flexDirection: "row",
+  flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F6FA",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 55,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 30,
+    paddingHorizontal: 14,
+    paddingVertical: 2,
+    marginBottom: 10,
 
   },
   searchIcon: {
@@ -2193,6 +2221,7 @@ const styles = StyleSheet.create({
 
   activeText: {
     color: "#2D6CDF",
+     fontSize: 18,
     fontFamily: "Gilroy-Semibold",
   },
 
@@ -2207,8 +2236,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   profileImg: {
-    width: 45,
-    height: 45,
+    width: 55,
+    height: 55,
     borderRadius: 25,
     marginRight: 5,
   },
@@ -2286,7 +2315,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: SHEET_HEIGHT,
+    // height: SHEET_HEIGHT,
     // paddingBottom:20
   },
 
@@ -2303,7 +2332,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
 
   modalTitle: {
@@ -2648,13 +2677,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   initialCircle: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
     backgroundColor: "#E5E7EB",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 5
+    marginRight: 3
   },
 
   initialText: {
@@ -2741,5 +2770,16 @@ chipArrow: {
   height: 14,
   marginLeft: 6,
 },
+divider: {
+  height: 0.4,
+  backgroundColor: "#E5E7EB", 
+  marginBottom: 4,
+},
+dividerLine: {
+  height: 1,
+  backgroundColor: "#E5E7EB",
+   marginLeft: 55,
 
+  // marginVertical: 8,
+},
 });

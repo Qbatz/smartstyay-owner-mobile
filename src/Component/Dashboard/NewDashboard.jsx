@@ -77,14 +77,14 @@ import Loader from "../Loader/Loader"
 import OrangeLocationIcon from "../../Assets/Images/OrangeLocationIcon.png"
 import ExpiryImg from "../../Assets/Images/subscription_expiry.png";
 import SubscriptionExpiredSheet from "../../ToastFile/SubscriptionExpired"
-
+import RequestComplaintCard from "./RequestComplaintCard"
 
 import {
   BarChart,
   PieChart,
   Grid,
   YAxis,
-  XAxis , StackedBarChart 
+  XAxis, StackedBarChart
 } from "react-native-svg-charts";
 import { getHostels } from "../../Action/HostelAction";
 import { retriveData } from "../../Utils/Storage";
@@ -100,13 +100,13 @@ export default function DashboardNewDesign({ initialParams, route }) {
   console.log("initialParams", initialParams, route);
 
   const insets = useSafeAreaInsets();
-  const { getDashboardByHostel , GetParticularCustomerDetails } = useCustomer();
+  const { getDashboardByHostel, GetParticularCustomerDetails } = useCustomer();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-  const {getDashboard , getParticularHostelDetails, PGDetails , loading } = useContext(PGContext);
+  const { getDashboard, getParticularHostelDetails, PGDetails, loading } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -128,7 +128,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const [activeSubTab, setActiveSubTab] = useState("Activities");
   const [showExpiryScreen, setShowExpiredScreen] = useState(false);
-    const [selectedBill , setSelectedBill] = useState(null)
+  const [selectedBill, setSelectedBill] = useState(null)
 
 
   const { setShowTabBar } = route.params || {};
@@ -161,114 +161,114 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
 
   const mapDashboardData = (data) => {
-  return {
-    // ROOMS
-    totalRooms: data?.roomsBeds?.totalRooms || 0,
-    totalBeds: data?.roomsBeds?.totalBeds || 0,
-    occupiedBeds: data?.roomsBeds?.occupiedBeds || 0,
-    freeBeds: data?.roomsBeds?.availableBeds || 0,
+    return {
+      // ROOMS
+      totalRooms: data?.roomsBeds?.totalRooms || 0,
+      totalBeds: data?.roomsBeds?.totalBeds || 0,
+      occupiedBeds: data?.roomsBeds?.occupiedBeds || 0,
+      freeBeds: data?.roomsBeds?.availableBeds || 0,
 
-    // OCCUPANCY
-    occupancyRate: data?.occupancy?.occupancyRate?.replace("%", "") || 0,
-    occupancyRateFromLastMonth : data?.occupancy?.occupancyRateFromLastMonth?.replace("%", "") || 0,
+      // OCCUPANCY
+      occupancyRate: data?.occupancy?.occupancyRate?.replace("%", "") || 0,
+      occupancyRateFromLastMonth: data?.occupancy?.occupancyRateFromLastMonth?.replace("%", "") || 0,
 
-    // BILLING
-    totalInvoiceGenerated: data?.billingSummary?.totalInvoiceGenerated || 0,
-    totalAmount: data?.billingSummary?.totalAmount || 0,
-    totalPaid: data?.billingSummary?.totalPaid || 0,
-    totalPending: data?.billingSummary?.totalPending || 0,
-    refundedAmount:data?.billingSummary?.refundedAmount || 0,
-    collectionRate: data?.billingSummary?.collectionRate || "0%",
-    fromLastMonth : data?.billingSummary?.fromLastMonth || "0%",
-    // TENANTS
-    totalTenants: data?.tenantsSummary?.totalTenants || 0,
-    checkInTenants: data?.tenantsSummary?.checkInTenants || 0,
-    noticePeriod: data?.tenantsSummary?.noticePeriod || 0,
-    nextCheckout: data?.tenantsSummary?.nextCheckout || "",
+      // BILLING
+      totalInvoiceGenerated: data?.billingSummary?.totalInvoiceGenerated || 0,
+      totalAmount: data?.billingSummary?.totalAmount || 0,
+      totalPaid: data?.billingSummary?.totalPaid || 0,
+      totalPending: data?.billingSummary?.totalPending || 0,
+      refundedAmount: data?.billingSummary?.refundedAmount || 0,
+      collectionRate: data?.billingSummary?.collectionRate || "0%",
+      fromLastMonth: data?.billingSummary?.fromLastMonth || "0%",
+      // TENANTS
+      totalTenants: data?.tenantsSummary?.totalTenants || 0,
+      checkInTenants: data?.tenantsSummary?.checkInTenants || 0,
+      noticePeriod: data?.tenantsSummary?.noticePeriod || 0,
+      nextCheckout: data?.tenantsSummary?.nextCheckout || "",
 
-    // ADVANCE
-    totalAdvance: data?.advanceSummary?.totalAdvance || 0,
-    otherAdvance: data?.advanceSummary?.otherDeduction || 0,
-    advanceHolding: data?.advanceSummary?.advanceHolding || 0,
+      // ADVANCE
+      totalAdvance: data?.advanceSummary?.totalAdvance || 0,
+      otherAdvance: data?.advanceSummary?.otherDeduction || 0,
+      advanceHolding: data?.advanceSummary?.advanceHolding || 0,
 
-    // CHECKINS
-    checkins: data?.checkins || [],
+      // CHECKINS
+      checkins: data?.checkins || [],
 
-    // OVERDUE
-    overdueInvoices: data?.overdueInvoices || [],
+      // OVERDUE
+      overdueInvoices: data?.overdueInvoices || [],
 
-    // REQUESTS / COMPLAINTS
-    tenantRequests: data?.tenantRequests  || {},
-    tenantComplaints: data?.tenantComplaints || {},
+      // REQUESTS / COMPLAINTS
+      tenantRequests: data?.tenantRequests || {},
+      tenantComplaints: data?.tenantComplaints || {},
 
-    // FINANCE
-    totalIncome: data?.finance?.totalIncome || 0,
-    totalExpense: data?.finance?.totalExpense || 0,
-    netProfit: data?.finance?.netProfit || 0,
+      // FINANCE
+      totalIncome: data?.finance?.totalIncome || 0,
+      totalExpense: data?.finance?.totalExpense || 0,
+      netProfit: data?.finance?.netProfit || 0,
 
-    incomeTrend: data?.finance?.incomeTrend || 0,
-expenseTrend: data?.finance?.expenseTrend || 0,
-profitTrend: data?.finance?.profitTrend || 0,
-expenseSummary: data?.expenseSummary || {},
- roomsBeds: data?.roomsBeds || {},
+      incomeTrend: data?.finance?.incomeTrend || 0,
+      expenseTrend: data?.finance?.expenseTrend || 0,
+      profitTrend: data?.finance?.profitTrend || 0,
+      expenseSummary: data?.expenseSummary || {},
+      roomsBeds: data?.roomsBeds || {},
 
- tenantcomplaint: data?.tenantcomplaint || [],
-dashboardRequests: data?.dashboardRequests || [],
+      tenantcomplaint: data?.tenantcomplaint || [],
+      dashboardRequests: data?.dashboardRequests || [],
+    };
   };
-};
 
-const sharingData = dashboardList?.roomsBeds?.sharingInfo || [];
+  const sharingData = dashboardList?.roomsBeds?.sharingInfo || [];
 
-console.log("sharingData", sharingData);
+  console.log("sharingData", sharingData);
 
-console.log("dashboardList", dashboardList);
-
+  console.log("dashboardList", dashboardList);
 
 
-const occupancyTrendData =
-  dashboardList?.occupancyTrendSummary?.occupancyTrend?.map((item) => ({
-    label: item.date,
-    occupied: item.occupied,
-    vacant: item.vacant,
-  })) || [];
 
-  
-
-const financeData = {
-  totalIncome: dashboardList?.totalIncome || 0,
-  totalExpense: dashboardList?.totalExpense || 0,
-  netProfit: dashboardList?.netProfit || 0,
-
-  incomeTrend: dashboardList?.incomeTrend || 0,
-  expenseTrend: dashboardList?.expenseTrend || 0,
-  profitTrend: dashboardList?.profitTrend || 0,
-};
+  const occupancyTrendData =
+    dashboardList?.occupancyTrendSummary?.occupancyTrend?.map((item) => ({
+      label: item.date,
+      occupied: item.occupied,
+      vacant: item.vacant,
+    })) || [];
 
 
- useEffect(() => {
-  const fetchDashboard = async () => {
-    const res = await getDashboard(activeHostelId, {
-      billingFilter: "This Month",
-      complaintRequestFilter: "This Month",
-      financeFilter: "This Month",
-      occupancyFilter: "This Month"
-    });
 
-   if (res?.data) {
-      const mapped = mapDashboardData(res?.data);
+  const financeData = {
+    totalIncome: dashboardList?.totalIncome || 0,
+    totalExpense: dashboardList?.totalExpense || 0,
+    netProfit: dashboardList?.netProfit || 0,
 
-      setDashboardList({
-        ...mapped,
+    incomeTrend: dashboardList?.incomeTrend || 0,
+    expenseTrend: dashboardList?.expenseTrend || 0,
+    profitTrend: dashboardList?.profitTrend || 0,
+  };
 
-        occupancyTrendSummary: res.data.occupancyTrendSummary,
-        revenueSummary: res.data.revenueSummary,
-        revenueTrend : res.data.revenueTrend,
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      const res = await getDashboard(activeHostelId, {
+        billingFilter: "This Month",
+        complaintRequestFilter: "This Month",
+        financeFilter: "This Month",
+        occupancyFilter: "This Month"
       });
-    }
-  };
 
-  fetchDashboard();
-}, [activeHostelId])
+      if (res?.data) {
+        const mapped = mapDashboardData(res?.data);
+
+        setDashboardList({
+          ...mapped,
+
+          occupancyTrendSummary: res.data.occupancyTrendSummary,
+          revenueSummary: res.data.revenueSummary,
+          revenueTrend: res.data.revenueTrend,
+        });
+      }
+    };
+
+    fetchDashboard();
+  }, [activeHostelId])
 
 
   useEffect(() => {
@@ -371,16 +371,16 @@ const financeData = {
       setShowExpiredScreen(true);
 
       if (setShowTabBar) {
-        setShowTabBar(false); 
+        setShowTabBar(false);
       }
-    }else {
+    } else {
       setShowExpiredScreen(false);
 
-      if(setShowTabBar){
+      if (setShowTabBar) {
         setShowTabBar(true);
       }
     }
-  }, [isExpired,activeHostelId])
+  }, [isExpired, activeHostelId])
 
 
   const {
@@ -447,85 +447,85 @@ const financeData = {
     }
   ]
 
- const expenseBreakdown =
-  dashboardList?.expenseSummary?.breakdown?.map((item, index) => {
-    const colors = ["#155DFC", "#00A63E", "#F54900", "#9810FA"];
+  const expenseBreakdown =
+    dashboardList?.expenseSummary?.breakdown?.map((item, index) => {
+      const colors = ["#155DFC", "#00A63E", "#F54900", "#9810FA"];
 
-    return {
-      label: item.expenseType,
-      amount: `₹${item.amount}`,
-      percentage: item.percentage,
-      color: colors[index % colors.length],
-    };
-  }) || [];
-
-
-const requestStats = [
-  {
-    count: dashboardList?.tenantRequests?.pending || 0,
-    label: "Pending",
-    bg: "#FFF7ED",
-    text: "#CA3500",
-  },
-  {
-    count: dashboardList?.tenantRequests?.inprogress || 0,
-    label: "In Progress",
-    bg: "#EFF6FF",
-    text: "#1447E6",
-  },
-  {
-    count: dashboardList?.tenantRequests?.resolved || 0,
-    label: "Resolved",
-    bg: "#F0FDF4",
-    text: "#008236",
-  },
-];
+      return {
+        label: item.expenseType,
+        amount: `₹${item.amount}`,
+        percentage: item.percentage,
+        color: colors[index % colors.length],
+      };
+    }) || [];
 
 
+  const requestStats = [
+    {
+      count: dashboardList?.tenantRequests?.pending || 0,
+      label: "Pending",
+      bg: "#FFF7ED",
+      text: "#CA3500",
+    },
+    {
+      count: dashboardList?.tenantRequests?.inprogress || 0,
+      label: "In Progress",
+      bg: "#EFF6FF",
+      text: "#1447E6",
+    },
+    {
+      count: dashboardList?.tenantRequests?.resolved || 0,
+      label: "Resolved",
+      bg: "#F0FDF4",
+      text: "#008236",
+    },
+  ];
 
-const requestComplaints = [
-  {
-    count: dashboardList?.tenantComplaints?.pending || 0,
-    label: "Pending",
-    bg: "#FFF7ED",
-    text: "#CA3500",
-  },
-  {
-    count: dashboardList?.tenantComplaints?.inprogress || 0,
-    label: "In Progress",
-    bg: "#EFF6FF",
-    text: "#1447E6",
-  },
-  {
-    count: dashboardList?.tenantComplaints?.resolved || 0,
-    label: "Resolved",
-    bg: "#F0FDF4",
-    text: "#008236",
-  },
-];
 
 
-const CustomerOverviewshow = async(item) => {
-      const res = await GetParticularCustomerDetails(item?.tenantId)
-      console.log("responsedata", res);
-      
-      if(res?.success){
+  const requestComplaints = [
+    {
+      count: dashboardList?.tenantComplaints?.pending || 0,
+      label: "Pending",
+      bg: "#FFF7ED",
+      text: "#CA3500",
+    },
+    {
+      count: dashboardList?.tenantComplaints?.inprogress || 0,
+      label: "In Progress",
+      bg: "#EFF6FF",
+      text: "#1447E6",
+    },
+    {
+      count: dashboardList?.tenantComplaints?.resolved || 0,
+      label: "Resolved",
+      bg: "#F0FDF4",
+      text: "#008236",
+    },
+  ];
+
+
+  const CustomerOverviewshow = async (item) => {
+    const res = await GetParticularCustomerDetails(item?.tenantId)
+    console.log("responsedata", res);
+
+    if (res?.success) {
       navigation.navigate("CustomerOverviewScreen", {
-      customer: res?.data,
-    });
-      }
-}
+        customer: res?.data,
+      });
+    }
+  }
 
- const handleShowTennantCheckin = async(item) => {
-  console.log("item", item);
+  const handleShowTennantCheckin = async (item) => {
+    console.log("item", item);
 
-      const res = await GetParticularCustomerDetails(item.tenantId)
-      if(res?.success){
+    const res = await GetParticularCustomerDetails(item.tenantId)
+    if (res?.success) {
       navigation.navigate("BookingCheckIn", {
-      customerId: item?.tenantId,
-      customer: res?.data?.hostelInfo,
-    });
-      }
+        customerId: item?.tenantId,
+        customer: res?.data?.hostelInfo,
+      });
+    }
 
   }
 
@@ -533,65 +533,65 @@ const CustomerOverviewshow = async(item) => {
   const handleShowRecordPayment = (item) => {
     setShowRecordPayment(true)
     setSelectedBill(item)
-    
+
   }
   console.log("Recordpayment", showRecordPayment);
-  
-
-// const complaintList =
-//   dashboardList?.tenantcomplaint?.map((item) => ({
-//     id: item.tenantId,
-//     name: item.fullName || "-",
-//     room: item.roomName,
-//     title: item.complaintDescription,
-//     type: item.complaintType,
-//     status: item.status,
-//     time: item.complaintDate,
-//   })) || [];
-
-//  const requestList =
-//   dashboardList?.dashboardRequests?.map((item) => ({
-//     id: item.requestId,
-//     name: item.customerName || "-",
-//     room: item.roomName || "",
-//     title: item.description,
-//     type: item.type,
-//     status: item.status,
-//     time: item.date,
-//   })) || []
 
 
-const complaintList =
-  dashboardList?.tenantcomplaint?.map((item) => ({
-    name: item.fullName,
-    room: item.roomName || "",
-    status: "Pending", 
-    type: item.complaintDescription || item.complaintName,
-    category: item.complaintType,
-    time: item.complaintDate,
-  })) || [];
+  // const complaintList =
+  //   dashboardList?.tenantcomplaint?.map((item) => ({
+  //     id: item.tenantId,
+  //     name: item.fullName || "-",
+  //     room: item.roomName,
+  //     title: item.complaintDescription,
+  //     type: item.complaintType,
+  //     status: item.status,
+  //     time: item.complaintDate,
+  //   })) || [];
 
-  
+  //  const requestList =
+  //   dashboardList?.dashboardRequests?.map((item) => ({
+  //     id: item.requestId,
+  //     name: item.customerName || "-",
+  //     room: item.roomName || "",
+  //     title: item.description,
+  //     type: item.type,
+  //     status: item.status,
+  //     time: item.date,
+  //   })) || []
+
+
+  const complaintList =
+    dashboardList?.tenantcomplaint?.map((item) => ({
+      name: item.fullName,
+      room: item.roomName || "",
+      status: "",
+      type: item.complaintDescription || item.complaintName,
+      category: item.complaintType,
+      time: item.complaintDate,
+    })) || [];
+
+
 
   const requestList =
-  dashboardList?.dashboardRequests?.map((item) => ({
-    name: item.customerName,
-    room: item.roomName || "",
-    status: item.status, 
-    title: item.type, 
-    type: item.type,
-    time: item.date,
-  })) || [];
+    dashboardList?.dashboardRequests?.map((item) => ({
+      name: item.customerName,
+      room: item.roomName || "",
+      status: item.status,
+      title: item.type,
+      type: item.type,
+      time: item.date,
+    })) || [];
 
   const getStatusStyle = (status) => {
-  const s = status?.toLowerCase();
+    const s = status?.toLowerCase();
 
-  if (s === "pending") return { bg: "#FFF1E6", color: "#EA580C" };
-  if (s === "inprogress") return { bg: "#E8F0FF", color: "#2563EB" };
-  if (s === "resolved") return { bg: "#E8F7EE", color: "#16A34A" };
+    if (s === "pending") return { bg: "#FFF1E6", color: "#EA580C" };
+    if (s === "inprogress") return { bg: "#E8F0FF", color: "#2563EB" };
+    if (s === "resolved") return { bg: "#E8F7EE", color: "#16A34A" };
 
-  return { bg: "#eee", color: "#333" };
-};
+    return { bg: "#eee", color: "#333" };
+  };
 
 
   // const month = ["Aug", "Sep", "Oct"]
@@ -600,66 +600,66 @@ const complaintList =
 
   // const outstandingData = [1.2, 0.9, 0.5]
 
-        const revenueTrendData =
-  dashboardList?.revenueTrend?.map((item) => ({
-    month: item.month,
-    collected: item.collected,
-    outstanding: item.outstanding,
-  })) || [];
+  const revenueTrendData =
+    dashboardList?.revenueTrend?.map((item) => ({
+      month: item.month,
+      collected: item.collected,
+      outstanding: item.outstanding,
+    })) || [];
 
 
   const month = revenueTrendData.map(i => i.month);
-const collectedData = revenueTrendData.map(i => i.collected);
-const outstandingData = revenueTrendData.map(i => i.outstanding);
+  const collectedData = revenueTrendData.map(i => i.collected);
+  const outstandingData = revenueTrendData.map(i => i.outstanding);
 
-const formatToLakhs = (v) => `${(v / 100000).toFixed(0)}`;
+  const formatToLakhs = (v) => `${(v / 100000).toFixed(0)}`;
 
-// const barData = revenueTrendData
-//   .slice(-4)   
-//   .map(item => ({
-//     month: item.month,
-//     collected: Number(item.collected) || 0,
-//     outstanding: Number(item.outstanding) || 0,
-//   }));
+  // const barData = revenueTrendData
+  //   .slice(-4)   
+  //   .map(item => ({
+  //     month: item.month,
+  //     collected: Number(item.collected) || 0,
+  //     outstanding: Number(item.outstanding) || 0,
+  //   }));
 
-const barData = revenueTrendData.slice(-4);
-
-
-
-const yData = barData.map(d => Math.max(d.collected, d.outstanding));
+  const barData = revenueTrendData.slice(-4);
 
 
-const CustomBars = ({ x, y, bandwidth, data }) => (
-  <G>
-    {data.map((item, index) => {
-      const barWidth = bandwidth / 2;
 
-      return (
-        <G key={index}>
-          {/* Collected */}
-          <Rect
-            x={x(index) - barWidth / 2}   // ✅ center left
-            y={y(item.collected)}
-            width={barWidth}
-            height={Math.max(0, y(0) - y(item.collected))}
-            fill="#00A32E"
-            rx={6}
-          />
+  const yData = barData.map(d => Math.max(d.collected, d.outstanding));
 
-          {/* Outstanding */}
-          <Rect
-            x={x(index) + barWidth / 2}   // ✅ center right
-            y={y(item.outstanding)}
-            width={barWidth}
-            height={Math.max(0, y(0) - y(item.outstanding))}
-            fill="#F54900"
-            rx={6}
-          />
-        </G>
-      );
-    })}
-  </G>
-);
+
+  const CustomBars = ({ x, y, bandwidth, data }) => (
+    <G>
+      {data.map((item, index) => {
+        const barWidth = bandwidth / 2;
+
+        return (
+          <G key={index}>
+            {/* Collected */}
+            <Rect
+              x={x(index) - barWidth / 2}   // ✅ center left
+              y={y(item.collected)}
+              width={barWidth}
+              height={Math.max(0, y(0) - y(item.collected))}
+              fill="#00A32E"
+              rx={6}
+            />
+
+            {/* Outstanding */}
+            <Rect
+              x={x(index) + barWidth / 2}   // ✅ center right
+              y={y(item.outstanding)}
+              width={barWidth}
+              height={Math.max(0, y(0) - y(item.outstanding))}
+              fill="#F54900"
+              rx={6}
+            />
+          </G>
+        );
+      })}
+    </G>
+  );
 
   const quickActions = [
     {
@@ -991,9 +991,9 @@ const CustomBars = ({ x, y, bandwidth, data }) => (
   const advanceReturn = [10000, 12000, 21000, 30000, 50000];
 
 
-    const occupiedArray = occupancyTrendData.map(i => i.occupied);
-const vacantArray = occupancyTrendData.map(i => i.vacant);
-const labels = occupancyTrendData.map(i => i.label);
+  const occupiedArray = occupancyTrendData.map(i => i.occupied);
+  const vacantArray = occupancyTrendData.map(i => i.vacant);
+  const labels = occupancyTrendData.map(i => i.label);
 
   const padding = 20;
   const chartHeight = 250;
@@ -1001,7 +1001,7 @@ const labels = occupancyTrendData.map(i => i.label);
   const [chartWidth, setChartWidth] = useState(width - 40);
 
   // const maxY = Math.max(...advance, ...advanceReturn);
-  const maxY = Math.max(...occupiedArray, ...vacantArray, 10); 
+  const maxY = Math.max(...occupiedArray, ...vacantArray, 10);
 
   const getX = (i) =>
     (i / (months.length - 1)) * (chartWidth - padding * 2) + padding;
@@ -1009,21 +1009,21 @@ const labels = occupancyTrendData.map(i => i.label);
   const getY = (value) =>
     padding + (1 - value / maxY) * (chartHeight - padding * 2);
 
-const interval = 4;
+  const interval = 4;
 
-const filteredLabels = labels.map((item, index) => {
-  return index % interval === 1 ? item : "";
-});
+  const filteredLabels = labels.map((item, index) => {
+    return index % interval === 1 ? item : "";
+  });
 
 
-// safe fallback
+  // safe fallback
 
   const createPath = (array) =>
     array
       .map((v, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(v)}`)
       .join(" ");
 
-   
+
 
 
 
@@ -1081,31 +1081,31 @@ const filteredLabels = labels.map((item, index) => {
 
 
   const statsCards = [
-  {
-    title: "Revenue",
-    amount: `₹ ${financeData.totalIncome}`,
-    change: `${financeData.incomeTrend}%`,
-    isPositive: false,
-    bg: ["#FFFFFF", "#F2FFF5"],
-    icon: RevenueImg,
-  },
-  {
-    title: "Expenses",
-    amount: `₹ ${financeData.totalExpense}`,
-    change: `${financeData.expenseTrend}%`,
-    isPositive: true,
-    bg: ["#FFFFFF", "#FFF6EB"],
-    icon: ExpenseImg,
-  },
-  {
-    title: "Profit",
-    amount: `₹ ${financeData.netProfit}`,
-    change: `${financeData.profitTrend}%`,
-    isPositive: true,
-    bg: ["#FFFFFF", "#F6FAFF"],
-    icon: ProfitImg,
-  },
-];
+    {
+      title: "Revenue",
+      amount: `₹ ${financeData.totalIncome}`,
+      change: `${financeData.incomeTrend}%`,
+      isPositive: false,
+      bg: ["#FFFFFF", "#F2FFF5"],
+      icon: RevenueImg,
+    },
+    {
+      title: "Expenses",
+      amount: `₹ ${financeData.totalExpense}`,
+      change: `${financeData.expenseTrend}%`,
+      isPositive: true,
+      bg: ["#FFFFFF", "#FFF6EB"],
+      icon: ExpenseImg,
+    },
+    {
+      title: "Profit",
+      amount: `₹ ${financeData.netProfit}`,
+      change: `${financeData.profitTrend}%`,
+      isPositive: true,
+      bg: ["#FFFFFF", "#F6FAFF"],
+      icon: ProfitImg,
+    },
+  ];
 
 
   const data = [
@@ -1284,11 +1284,11 @@ const filteredLabels = labels.map((item, index) => {
       />
 
 
-    {
-      showExpiryScreen && <SubscriptionExpiredSheet setTabBar={()=>setShowTabBar(true)}
-       onClose={()=>setShowExpiredScreen(false)}/>
-    }
-   
+      {
+        showExpiryScreen && <SubscriptionExpiredSheet setTabBar={() => setShowTabBar(true)}
+          onClose={() => setShowExpiredScreen(false)} />
+      }
+
 
       <View style={[styles.safe, { paddingTop: insets.top }]}>
 
@@ -1517,7 +1517,7 @@ const filteredLabels = labels.map((item, index) => {
                       activeTab === item.key && {
                         color: "#1E45E1",
                         fontFamily: "Gilroy-Bold",
-                        fontSize: 17,
+                        fontSize: 18,
                       },
                     ]}
                   >
@@ -1670,7 +1670,7 @@ const filteredLabels = labels.map((item, index) => {
 
                             </View>
 
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                               style={styles.monthBtn}
                               onPress={() => {
                                 setTempMonth(selectedMonth);
@@ -1684,15 +1684,39 @@ const filteredLabels = labels.map((item, index) => {
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
                               </View>
+                            </TouchableOpacity> */}
+
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
+                                <Image
+                                  source={DownArrow}
+                                  style={{ width: 14, height: 14, marginLeft: 5 }}
+                                />
+
+                              </View>
+
                             </TouchableOpacity>
                           </View>
 
 
                           <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Invoices Generated</Text>
-                         <Text style={styles.billingValue}>
-  {dashboardList?.totalInvoiceGenerated}
-</Text>
+                            <Text style={styles.billingValue}>
+                              {dashboardList?.totalInvoiceGenerated}
+                            </Text>
                           </View>
 
 
@@ -1710,12 +1734,14 @@ const filteredLabels = labels.map((item, index) => {
                             <Text style={styles.billingValue}> ₹ {dashboardList?.totalPaid}</Text>
                           </View>
 
-                          
+
                           <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Refunded</Text>
-                            <Text style={{    fontSize: 16,
-    fontFamily: "Gilroy-Bold",
-    color: "red"}}> ₹ {dashboardList?.refundedAmount}</Text>
+                            <Text style={{
+                              fontSize: 16,
+                              fontFamily: "Gilroy-Bold",
+                              color: "red"
+                            }}> ₹ {dashboardList?.refundedAmount}</Text>
                           </View>
 
 
@@ -1735,7 +1761,7 @@ const filteredLabels = labels.map((item, index) => {
 
 
                           <View style={styles.progressBar}>
-                            <View style={[styles.progressFill, { width:  dashboardList?.collectionRate }]} />
+                            <View style={[styles.progressFill, { width: dashboardList?.collectionRate }]} />
                           </View>
 
 
@@ -1773,44 +1799,44 @@ const filteredLabels = labels.map((item, index) => {
                             <Text style={styles.sharingTitle}>Sharing Breakdown</Text>
 
                             <TouchableOpacity
-  onPress={() => {
-    if (sharingData && sharingData.length > 0) {
-      setSharingModalVisible(true);
-    }
-  }}
-  disabled={!sharingData || sharingData.length === 0}
-  style={{
-    opacity: sharingData && sharingData.length > 0 ? 1 : 0.4,
-  }}
->
+                              onPress={() => {
+                                if (sharingData && sharingData.length > 0) {
+                                  setSharingModalVisible(true);
+                                }
+                              }}
+                              disabled={!sharingData || sharingData.length === 0}
+                              style={{
+                                opacity: sharingData && sharingData.length > 0 ? 1 : 0.4,
+                              }}
+                            >
                               <Image source={SharingBreakdownImg} style={styles.downupIcons} />
                             </TouchableOpacity>
                           </View>
 
-{sharingData && sharingData.length > 0 ? (
-  sharingData.map((item, index) => (
-    <View style={styles.shareRow} key={index}>
-      <View style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressBarBlue,
-            {
-              width: `${item?.occupancyRatio || 0}%`,
-            },
-          ]}
-        />
-      </View>
+                          {sharingData && sharingData.length > 0 ? (
+                            sharingData.map((item, index) => (
+                              <View style={styles.shareRow} key={index}>
+                                <View style={styles.progressTrack}>
+                                  <View
+                                    style={[
+                                      styles.progressBarBlue,
+                                      {
+                                        width: `${item?.occupancyRatio || 0}%`,
+                                      },
+                                    ]}
+                                  />
+                                </View>
 
-      <Text style={styles.shareText}>
-        {item?.shareType}: {item?.totalBeds}
-      </Text>
-    </View>
-  ))
-) : (
-  <Text style={{ color: "red", marginTop: 10 , fontFamily:"Gilroy-Semibold" }}>
-    No sharing details are there!
-  </Text>
-)}
+                                <Text style={styles.shareText}>
+                                  {item?.shareType}: {item?.totalBeds}
+                                </Text>
+                              </View>
+                            ))
+                          ) : (
+                            <Text style={{ color: "red", marginTop: 10, fontFamily: "Gilroy-Semibold" }}>
+                              No sharing details are there!
+                            </Text>
+                          )}
 
                         </View>
 
@@ -1895,7 +1921,7 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={styles.tenantsRow}>
                             <Text style={styles.tenantsLabel}>Total Tenants</Text>
                             <Text style={styles.tenantsValue}>
-                             {dashboardList?.totalTenants}
+                              {dashboardList?.totalTenants}
                             </Text>
                           </View>
 
@@ -1903,7 +1929,7 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={styles.tenantsRow}>
                             <Text style={styles.tenantsLabel}>Check-in Tenants</Text>
                             <Text style={styles.checkinValue}>
-                               {dashboardList?.checkInTenants}
+                              {dashboardList?.checkInTenants}
                             </Text>
                           </View>
 
@@ -1912,20 +1938,20 @@ const filteredLabels = labels.map((item, index) => {
 
                           {/* Notice Period */}
                           <View style={styles.noticeRow}>
-                          <Text style={styles.noticeTitle}>Notice Period</Text>
- <View style={styles.noticeBadge}>
+                            <Text style={styles.noticeTitle}>Notice Period</Text>
+                            <View style={styles.noticeBadge}>
                               <Text style={styles.noticeBadgeText}>
-                              {dashboardList?.noticePeriod} Tenants
+                                {dashboardList?.noticePeriod} Tenants
                               </Text>
                             </View>
-                          
-                             </View>
-                            <Text style={styles.checkoutText}>
-                              Next Checkout : {dashboardList?.nextCheckout}
-                            </Text>
 
-                           
-                       
+                          </View>
+                          <Text style={styles.checkoutText}>
+                            Next Checkout : {dashboardList?.nextCheckout}
+                          </Text>
+
+
+
 
                         </View>
 
@@ -1952,7 +1978,7 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={styles.advanceRow}>
                             <Text style={styles.advanceLabel}>Total Advance</Text>
                             <Text style={styles.advanceValue}>
-                             ₹{dashboardList?.totalAdvance}
+                              ₹{dashboardList?.totalAdvance}
                             </Text>
                           </View>
 
@@ -1960,7 +1986,7 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={styles.advanceRow}>
                             <Text style={styles.advanceLabel}>Advance Holding</Text>
                             <Text style={styles.refundValue}>
-                            ₹{dashboardList?.advanceHolding}
+                              ₹{dashboardList?.advanceHolding}
                             </Text>
                           </View>
 
@@ -1992,20 +2018,29 @@ const filteredLabels = labels.map((item, index) => {
                               <Text style={styles.bookingTitle}>Upcoming Check-ins</Text>
                             </View>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
                           </View>
 
@@ -2016,37 +2051,37 @@ const filteredLabels = labels.map((item, index) => {
                             nestedScrollEnabled={true}
                           >
                             {dashboardList?.checkins?.length > 0 ? (
-  dashboardList.checkins.map((item, index) => (
-    <View key={index} style={styles.bookingItem}>
-      <Text style={styles.bookingName}>{item.customerName}</Text>
-      
-      <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-      <Text style={styles.bookingInfo}>
-        {item?.sharingType} {item?.roomName} {item?.bedName}
-      </Text>
-      <Text style={styles.bookingInfo}>
-        Check-in : {item?.joiningDate}
-      </Text>
-      </View>
+                              dashboardList.checkins.map((item, index) => (
+                                <View key={index} style={styles.bookingItem}>
+                                  <Text style={styles.bookingName}>{item.customerName}</Text>
 
-      <View style={styles.bookingActions}>
-        <TouchableOpacity style={styles.viewBtn} onPress={() => CustomerOverviewshow(item)}>
-          <Text style={styles.viewText}>View</Text>
-        </TouchableOpacity>
+                                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text style={styles.bookingInfo}>
+                                      {item?.sharingType} {item?.roomName} {item?.bedName}
+                                    </Text>
+                                    <Text style={styles.bookingInfo}>
+                                      Check-in : {item?.joiningDate}
+                                    </Text>
+                                  </View>
 
-        <TouchableOpacity style={styles.checkinBtn} onPress={() => handleShowTennantCheckin(item)}>
-          <Text style={styles.checkinText}>Check-in</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  ))
-) : (
-  <View style={styles.noDataContainer}>
-    <Text style={styles.noDataText}>No Upcoming Check-ins</Text>
-  </View>
-)}
+                                  <View style={styles.bookingActions}>
+                                    <TouchableOpacity style={styles.viewBtn} onPress={() => CustomerOverviewshow(item)}>
+                                      <Text style={styles.viewText}>View</Text>
+                                    </TouchableOpacity>
 
-                           {/* {dashboardList?.checkins?.map((item, index) => (
+                                    <TouchableOpacity style={styles.checkinBtn} onPress={() => handleShowTennantCheckin(item)}>
+                                      <Text style={styles.checkinText}>Check-in</Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                </View>
+                              ))
+                            ) : (
+                              <View style={styles.noDataContainer}>
+                                <Text style={styles.noDataText}>No Upcoming Check-ins</Text>
+                              </View>
+                            )}
+
+                            {/* {dashboardList?.checkins?.map((item, index) => (
                               <View key={index} style={styles.bookingItem}>
 
                           <Text style={styles.bookingName}>{item.customerName}</Text>
@@ -2076,7 +2111,7 @@ const filteredLabels = labels.map((item, index) => {
 
 
                         <View style={styles.bookingsCard}>
-
+ 
 
                           <View style={styles.bookingHeader}>
                             <View style={styles.bookingHeaderLeft}>
@@ -2086,30 +2121,39 @@ const filteredLabels = labels.map((item, index) => {
                               <Text style={styles.bookingTitle}>Overdue Invoices</Text>
                             </View>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
                           </View>
 
                           <ScrollView
-                           style={{ maxHeight: 260 }}
+                            style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
                           >
 
-                           {/* {dashboardList?.overdueInvoices?.map((item, index) => (
+                            {/* {dashboardList?.overdueInvoices?.map((item, index) => (
                               <View key={index} style={styles.invoiceItem}>
 
                                 <View style={styles.invoiceTopRow}>
@@ -2151,41 +2195,41 @@ const filteredLabels = labels.map((item, index) => {
                             ))} */}
 
                             {dashboardList?.overdueInvoices?.length > 0 ? (
-  dashboardList.overdueInvoices.map((item, index) => (
-    <View key={index} style={styles.invoiceItem}>
-      <View style={styles.invoiceTopRow}>
-        <View>
-          <Text style={styles.invoiceName}>{item?.customerName}</Text>
+                              dashboardList.overdueInvoices.map((item, index) => (
+                                <View key={index} style={styles.invoiceItem}>
+                                  <View style={styles.invoiceTopRow}>
+                                    <View>
+                                      <Text style={styles.invoiceName}>{item?.customerName}</Text>
 
-          <View style={styles.invoiceSubRow}>
+                                      <View style={styles.invoiceSubRow}>
 
-            <Text style={styles.invoiceNumber}>{item?.invoiceNumber}</Text>
+                                        <Text style={styles.invoiceNumber}>{item?.invoiceNumber}</Text>
 
-            <View style={styles.statusBadges}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>{item?.status}</Text>
-            </View>
-          </View>
-        </View>
+                                        <View style={styles.statusBadges}>
+                                          <View style={styles.statusDot} />
+                                          <Text style={styles.statusText}>{item?.status}</Text>
+                                        </View>
+                                      </View>
+                                    </View>
 
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.amountText}>₹ {item?.dueAmount}</Text>
-          <Text style={styles.dateText}>{item?.dueDate}</Text>
-        </View>
-      </View>
+                                    <View style={{ alignItems: "flex-end" }}>
+                                      <Text style={styles.amountText}>₹ {item?.dueAmount}</Text>
+                                      <Text style={styles.dateText}>{item?.dueDate}</Text>
+                                    </View>
+                                  </View>
 
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.paymentBtn} onPress={() => handleShowRecordPayment(item)}>
-          <Text style={styles.paymentText}>Record Payment</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  ))
-) : (
-  <View style={styles.noDataContainer}>
-    <Text style={styles.noDataText}>No Overdue Invoices</Text>
-  </View>
-)}
+                                  <View style={styles.actionRow}>
+                                    <TouchableOpacity style={styles.paymentBtn} onPress={() => handleShowRecordPayment(item)}>
+                                      <Text style={styles.paymentText}>Record Payment</Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                </View>
+                              ))
+                            ) : (
+                              <View style={styles.noDataContainer}>
+                                <Text style={styles.noDataText}>No Overdue Invoices</Text>
+                              </View>
+                            )}
 
                           </ScrollView>
 
@@ -2378,87 +2422,87 @@ const filteredLabels = labels.map((item, index) => {
 
                     {activeSubTab === "Expenses & Profit" && (
                       <>
-                       {statsCards.map((card, index) => (
-  <LinearGradient
-    key={index}
-    colors={card.bg}
-    style={styles.revenueCard}
-  >
-    <View style={styles.revenueHeader}>
-      <View style={styles.revenueLeft}>
-        <View style={styles.revenueIconBox}>
-          <Image source={card.icon} style={{ width: 18, height: 18 }} />
-        </View>
-        <Text style={styles.revenueTitle}>{card.title}</Text>
-      </View>
-    </View>
+                        {statsCards.map((card, index) => (
+                          <LinearGradient
+                            key={index}
+                            colors={card.bg}
+                            style={styles.revenueCard}
+                          >
+                            <View style={styles.revenueHeader}>
+                              <View style={styles.revenueLeft}>
+                                <View style={styles.revenueIconBox}>
+                                  <Image source={card.icon} style={{ width: 18, height: 18 }} />
+                                </View>
+                                <Text style={styles.revenueTitle}>{card.title}</Text>
+                              </View>
+                            </View>
 
-    <View style={styles.revenueAmountRow}>
-      <Text style={styles.revenueAmount}>{card.amount}</Text>
-      <Text style={styles.revenueMonth}> this month</Text>
-    </View>
+                            <View style={styles.revenueAmountRow}>
+                              <Text style={styles.revenueAmount}>{card.amount}</Text>
+                              <Text style={styles.revenueMonth}> this month</Text>
+                            </View>
 
-    <View style={styles.revenueChangeRow}>
-      <Image
-        source={card.isPositive ? TrendupImg : TrenddownImg}
-        style={styles.downupIcons}
-      />
-      <Text
-        style={{
-          color: card.isPositive ? "#16A34A" : "#EF4444",
-          fontFamily: "Gilroy-Bold",
-        }}
-      >
-        {card.change}
-      </Text>
-      <Text style={styles.revenueCompare}> vs last time</Text>
-    </View>
+                            <View style={styles.revenueChangeRow}>
+                              <Image
+                                source={card.isPositive ? TrendupImg : TrenddownImg}
+                                style={styles.downupIcons}
+                              />
+                              <Text
+                                style={{
+                                  color: card.isPositive ? "#16A34A" : "#EF4444",
+                                  fontFamily: "Gilroy-Bold",
+                                }}
+                              >
+                                {card.change}
+                              </Text>
+                              <Text style={styles.revenueCompare}> vs last time</Text>
+                            </View>
 
-    <View style={styles.revenueDivider} />
+                            <View style={styles.revenueDivider} />
 
-    <TouchableOpacity style={styles.reportRow}>
-      <Text style={styles.reportText}>View Report</Text>
-      <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-    </TouchableOpacity>
-  </LinearGradient>
-))}
-<View style={styles.expenseBreakdownCard}>
-  <View style={styles.expenseBreakdownHeader}>
-    <Text style={styles.expenseBreakdownTitle}>
-      Expense Breakdown
-    </Text>
-  </View>
+                            <TouchableOpacity style={styles.reportRow}>
+                              <Text style={styles.reportText}>View Report</Text>
+                              <Image source={RightArrowImg} style={styles.RightArrowIcon} />
+                            </TouchableOpacity>
+                          </LinearGradient>
+                        ))}
+                        <View style={styles.expenseBreakdownCard}>
+                          <View style={styles.expenseBreakdownHeader}>
+                            <Text style={styles.expenseBreakdownTitle}>
+                              Expense Breakdown
+                            </Text>
+                          </View>
 
-  {expenseBreakdown.length === 0 ? (
-    <Text style={{ textAlign: "center", color: "#999", marginTop: 10 , fontFamily:"Gilroy-Semibold"}}>
-      No Data Available
-    </Text>
-  ) : (
-    expenseBreakdown.map((item, index) => (
-      <View key={index} style={styles.expenseItem}>
-        <View style={styles.expenseTopRow}>
-          <Text style={styles.expenseLabel}>{item.label}</Text>
+                          {expenseBreakdown.length === 0 ? (
+                            <Text style={{ textAlign: "center", color: "#999", marginTop: 10, fontFamily: "Gilroy-Semibold" }}>
+                              No Data Available
+                            </Text>
+                          ) : (
+                            expenseBreakdown.map((item, index) => (
+                              <View key={index} style={styles.expenseItem}>
+                                <View style={styles.expenseTopRow}>
+                                  <Text style={styles.expenseLabel}>{item.label}</Text>
 
-          <Text style={styles.expenseAmount}>
-            {item.amount} ({item.percentage}%)
-          </Text>
-        </View>
+                                  <Text style={styles.expenseAmount}>
+                                    {item.amount} ({item.percentage}%)
+                                  </Text>
+                                </View>
 
-        <View style={styles.expenseProgressTrack}>
-          <View
-            style={[
-              styles.expenseProgressFill,
-              {
-                width: `${item.percentage}%`,
-                backgroundColor: item.color,
-              },
-            ]}
-          />
-        </View>
-      </View>
-    ))
-  )}
-</View>
+                                <View style={styles.expenseProgressTrack}>
+                                  <View
+                                    style={[
+                                      styles.expenseProgressFill,
+                                      {
+                                        width: `${item.percentage}%`,
+                                        backgroundColor: item.color,
+                                      },
+                                    ]}
+                                  />
+                                </View>
+                              </View>
+                            ))
+                          )}
+                        </View>
                         {/* <View style={styles.expenseBreakdownCard}>
 
                           <View style={styles.expenseBreakdownHeader}>
@@ -2499,11 +2543,10 @@ const filteredLabels = labels.map((item, index) => {
                       </>
                     )}
 
-                    {activeSubTab === "Requests & Complaint" && (
+                    {/* {activeSubTab === "Requests & Complaint" && (
                       <>
                         <View style={styles.requestsCard}>
 
-                          {/* Header */}
                           <View style={styles.requestHeader}>
 
                             <View style={styles.requestHeaderLeft}>
@@ -2533,7 +2576,6 @@ const filteredLabels = labels.map((item, index) => {
                           </View>
 
 
-                          {/* Status Summary */}
                     <View style={styles.requestStatsRow}>
   {requestStats.map((item, index) => (
     <View
@@ -2549,7 +2591,6 @@ const filteredLabels = labels.map((item, index) => {
 </View>
 
 
-                          {/* Scrollable Request List */}
                           <ScrollView
                             style={{ maxHeight: 220 }}
                             showsVerticalScrollIndicator={false}
@@ -2590,9 +2631,7 @@ const filteredLabels = labels.map((item, index) => {
 
                                 </View>
 
-                                {/* <Text style={styles.requestIssue}>
-                                 {item.title}
-                                </Text> */}
+                               
 
                                 <View style={styles.requestBottomRow}>
                                   <Text style={styles.requestCategory}>
@@ -2610,7 +2649,6 @@ const filteredLabels = labels.map((item, index) => {
                           </ScrollView>
 
 
-                          {/* Footer */}
                           <TouchableOpacity             style={[
                 styles.viewRequestsBtn,
                  { opacity: 0.7 }
@@ -2619,14 +2657,12 @@ const filteredLabels = labels.map((item, index) => {
                               View All Requests
                             </Text>
                             <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-                            {/* <Text style={styles.viewArrow}>→</Text> */}
                           </TouchableOpacity>
 
                         </View>
 
                         <View style={styles.requestsCard}>
 
-                          {/* Header */}
                           <View style={styles.requestHeader}>
 
                             <View style={styles.requestHeaderLeft}>
@@ -2656,7 +2692,6 @@ const filteredLabels = labels.map((item, index) => {
                           </View>
 
 
-                          {/* Status Summary */}
                          <View style={styles.requestStatsRow}>
   {requestComplaints.map((item, index) => (
     <View
@@ -2672,7 +2707,6 @@ const filteredLabels = labels.map((item, index) => {
 </View>
 
 
-                          {/* Scrollable Request List */}
                           <ScrollView
                             style={{ maxHeight: 220 }}
                             showsVerticalScrollIndicator={false}
@@ -2699,19 +2733,7 @@ const filteredLabels = labels.map((item, index) => {
                                }
                                  
 
-                                  {/* <View style={[
-                                    styles.statusBadge,
-                                    item.status === "Pending" && { backgroundColor: "#FFF1E6" },
-                                    item.status === "In Progress" && { backgroundColor: "#E8F0FF" }
-                                  ]}>
-                                    <Text style={[
-                                      styles.statusText,
-                                      item.status === "Pending" && { color: "#EA580C" },
-                                      item.status === "In Progress" && { color: "#2563EB" }
-                                    ]}>
-                                      {item.status}
-                                    </Text>
-                                  </View> */}
+                                
 
                                 </View>
 
@@ -2736,9 +2758,7 @@ const filteredLabels = labels.map((item, index) => {
                           </ScrollView>
 
 
-                          {/* Footer */}
                           <TouchableOpacity 
-                          // style={styles.viewRequestsBtn}
                            style={[
                 styles.viewRequestsBtn,
                  { opacity: 0.7 }
@@ -2755,6 +2775,41 @@ const filteredLabels = labels.map((item, index) => {
 
 
                       </>
+                    )} */}
+
+                    {activeSubTab === "Requests & Complaint" && (
+                      <>
+                        <View style={{ flex: 1 }}>
+                          <ScrollView
+                            nestedScrollEnabled={true}
+                            keyboardShouldPersistTaps="handled"
+                          >
+                            <RequestComplaintCard
+                              title="Tenant Requests"
+                              icon={TenantRequestImg}
+                              total={dashboardList?.tenantRequests?.total}
+                              stats={requestStats}
+                              list={requestList}
+                              selectedMonth={selectedMonth}
+                              onMonthPress={() => setMonthSheetOpen(true)}
+                              arrowIcon={RightArrowImg}
+                              viewText="View All Requests"
+                            />
+
+                            <RequestComplaintCard
+                              title="Tenant Complaints"
+                              icon={ComplaintRequestImg}
+                              total={dashboardList?.tenantComplaints?.total}
+                              stats={requestComplaints}
+                              list={complaintList}
+                              selectedMonth={selectedMonth}
+                              onMonthPress={() => setMonthSheetOpen(true)}
+                              arrowIcon={RightArrowImg}
+                              viewText="View All Complaints"
+                            />
+                          </ScrollView>
+                        </View>
+                      </>
                     )}
 
                     {activeSubTab === "Core Analytics" && (
@@ -2763,20 +2818,28 @@ const filteredLabels = labels.map((item, index) => {
                           <View style={styles.chartHeader}>
                             <Text style={styles.chartTitle}>Occupancy Trend</Text>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+                             <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
                           </View>
                           <View style={{ flexDirection: "row" }}>
@@ -2790,12 +2853,12 @@ const filteredLabels = labels.map((item, index) => {
                             </View> */}
 
                             <View style={{ width: 30, justifyContent: "space-between", marginTop: 10 }}>
-  {[maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0].map((v, i) => (
-    <Text key={i} style={{ fontSize: 10, color: "#6B7280" }}>
-      {Math.round(v)}
-    </Text>
-  ))}
-</View>
+                              {[maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0].map((v, i) => (
+                                <Text key={i} style={{ fontSize: 10, color: "#6B7280" }}>
+                                  {Math.round(v)}
+                                </Text>
+                              ))}
+                            </View>
 
 
                             <TouchableWithoutFeedback onPress={() => setTooltip(null)}>
@@ -2817,13 +2880,13 @@ const filteredLabels = labels.map((item, index) => {
                                     />
                                   ))}
 
-    
-<Path d={createPath(occupiedArray)} stroke="#10B981" strokeWidth={3} fill="none" />
-<Path d={createPath(vacantArray)} stroke="#F54900" strokeWidth={3} fill="none" />
+
+                                  <Path d={createPath(occupiedArray)} stroke="#10B981" strokeWidth={3} fill="none" />
+                                  <Path d={createPath(vacantArray)} stroke="#F54900" strokeWidth={3} fill="none" />
 
                                   {/* <Path d={createPath(occupiedArray)} stroke="#10B981" strokeWidth={3} fill="none" /> */}
 
-{/* <Path d={createPath(vacantArray)} stroke="#FF5733" strokeWidth={3} fill="none" /> */}
+                                  {/* <Path d={createPath(vacantArray)} stroke="#FF5733" strokeWidth={3} fill="none" /> */}
 
                                   {/* <Path d={createPath(advance)}
                                     stroke="#10B981"
@@ -2838,25 +2901,25 @@ const filteredLabels = labels.map((item, index) => {
                                     fill="none"
                                   /> */}
 
-                              {occupiedArray.map((v, i) => (
-  <Circle
-    key={i}
-    cx={getX(i)}
-    cy={getY(v)}
-    r={5}
-    fill="#10B981"
-  />
-))}
+                                  {occupiedArray.map((v, i) => (
+                                    <Circle
+                                      key={i}
+                                      cx={getX(i)}
+                                      cy={getY(v)}
+                                      r={5}
+                                      fill="#10B981"
+                                    />
+                                  ))}
 
-{vacantArray.map((v, i) => (
-  <Circle
-    key={i}
-    cx={getX(i)}
-    cy={getY(v)}
-    r={5}
-    fill="#F54900"
-  />
-))}
+                                  {vacantArray.map((v, i) => (
+                                    <Circle
+                                      key={i}
+                                      cx={getX(i)}
+                                      cy={getY(v)}
+                                      r={5}
+                                      fill="#F54900"
+                                    />
+                                  ))}
 
                                 </Svg>
 
@@ -2884,13 +2947,13 @@ const filteredLabels = labels.map((item, index) => {
                             </TouchableWithoutFeedback>
                           </View>
 
-<View style={styles.monthRow}>
-  {filteredLabels.map((m, i) => (
-    <Text key={i} style={styles.monthLabel}>
-      {m}
-    </Text>
-  ))}
-</View>
+                          <View style={styles.monthRow}>
+                            {filteredLabels.map((m, i) => (
+                              <Text key={i} style={styles.monthLabel}>
+                                {m}
+                              </Text>
+                            ))}
+                          </View>
 
 
                           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', marginTop: 10 }}>
@@ -2917,20 +2980,28 @@ const filteredLabels = labels.map((item, index) => {
                               Revenue Trend
                             </Text>
 
-                            <TouchableOpacity
-                              style={styles.monthBtn}
-                              onPress={() => {
-                                setTempMonth(selectedMonth);
-                                setMonthSheetOpen(true);
-                              }}
-                            >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+                             <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                              setTempMonth(selectedMonth);
+                              setMonthSheetOpen(true);
+                            }}>
+
+                              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+
+                                <Text
+                                  style={styles.monthText}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {selectedMonth || "Select Month"}
+                                </Text>
+
                                 <Image
                                   source={DownArrow}
                                   style={{ width: 14, height: 14, marginLeft: 5 }}
                                 />
+
                               </View>
+
                             </TouchableOpacity>
 
                           </View>
@@ -2951,42 +3022,42 @@ const filteredLabels = labels.map((item, index) => {
                           </View>
 
 
-                       <View style={{ flexDirection: "row", height: 220, marginTop: 10 }}>
+                          <View style={{ flexDirection: "row", height: 220, marginTop: 10 }}>
 
-  <YAxis
-    data={barData.map(d => Math.max(d.collected, d.outstanding))}
-    contentInset={{ top: 20, bottom: 20 }}
-    svg={{ fontSize: 10, fill: "#6B7280" }}
-    numberOfTicks={5}
-  />
+                            <YAxis
+                              data={barData.map(d => Math.max(d.collected, d.outstanding))}
+                              contentInset={{ top: 20, bottom: 20 }}
+                              svg={{ fontSize: 10, fill: "#6B7280" }}
+                              numberOfTicks={5}
+                            />
 
-  <View style={{ flex: 1, marginLeft: 10 }}>
+                            <View style={{ flex: 1, marginLeft: 10 }}>
 
- <BarChart
-  style={{ height: 200 }}
-  data={barData}
-  yAccessor={({ item }) => Math.max(item.collected, item.outstanding)}
-  contentInset={{ top: 20, bottom: 10, left: 25, right: 25 }} // 👈🔥 SAME AS XAxis
-  svg={{ fill: "transparent" }}
->
-      <Grid
-        svg={{
-          stroke: "#E5E7EB",
-          strokeDasharray: [4, 4],
-        }}
-      />
-      <CustomBars />
-    </BarChart>
+                              <BarChart
+                                style={{ height: 200 }}
+                                data={barData}
+                                yAccessor={({ item }) => Math.max(item.collected, item.outstanding)}
+                                contentInset={{ top: 20, bottom: 10, left: 25, right: 25 }} // 👈🔥 SAME AS XAxis
+                                svg={{ fill: "transparent" }}
+                              >
+                                <Grid
+                                  svg={{
+                                    stroke: "#E5E7EB",
+                                    strokeDasharray: [4, 4],
+                                  }}
+                                />
+                                <CustomBars />
+                              </BarChart>
 
-   <XAxis
-  style={{ marginTop: 10 }}
-  data={barData}
-  formatLabel={(value, index) => barData[index].month}
-  contentInset={{ left: 25, right: 25 }}   // 👈🔥 FIX
-  svg={{ fontSize: 11, fill: "#6B7280" }}
-/>
-  </View>
-</View>
+                              <XAxis
+                                style={{ marginTop: 10 }}
+                                data={barData}
+                                formatLabel={(value, index) => barData[index].month}
+                                contentInset={{ left: 25, right: 25 }}   // 👈🔥 FIX
+                                svg={{ fontSize: 11, fill: "#6B7280" }}
+                              />
+                            </View>
+                          </View>
 
                           <View style={styles.chartDivider} />
 
@@ -2997,16 +3068,16 @@ const filteredLabels = labels.map((item, index) => {
                               <Text style={styles.statLabel}>Total Collected</Text>
                               {/* <Text style={styles.collectedValue}>₹ {dashboardList?.revenueSummary?.totalCollected?.amount || 0}</Text> */}
                               <Text style={styles.collectedValue}>
-  ₹ {Number(dashboardList?.revenueSummary?.totalCollected?.amount || 0).toFixed(2)}
-</Text>
+                                ₹ {Number(dashboardList?.revenueSummary?.totalCollected?.amount || 0).toFixed(2)}
+                              </Text>
                               <Text style={styles.statSub}>↓ {dashboardList?.revenueSummary?.totalCollected?.percentageChange || 0}% from last Month</Text>
                             </View>
 
                             <View>
                               <Text style={styles.statLabel}>Total Outstanding</Text>
-          <Text style={styles.outstandingValue}>
-  ₹ {Number(dashboardList?.revenueSummary?.totalOutstanding?.amount || 0).toFixed(2)}
-</Text>
+                              <Text style={styles.outstandingValue}>
+                                ₹ {Number(dashboardList?.revenueSummary?.totalOutstanding?.amount || 0).toFixed(2)}
+                              </Text>
 
                               <Text style={styles.statSubGreen}>↑ {dashboardList?.revenueSummary?.totalOutstanding?.percentageChange || 0}% from last Month</Text>
                             </View>
@@ -3293,74 +3364,77 @@ const filteredLabels = labels.map((item, index) => {
         animationType="fade"
         onRequestClose={() => setSharingModalVisible(false)}
       >
-   <View style={styles.modalOverlay}>
+        <View style={styles.modalOverlay}>
 
-    {/* backdrop */}
-    <TouchableWithoutFeedback onPress={() => setSharingModalVisible(false)}>
-      <View style={StyleSheet.absoluteFillObject} />
-    </TouchableWithoutFeedback>
+          {/* backdrop */}
+          <TouchableWithoutFeedback onPress={() => setSharingModalVisible(false)}>
+            <View style={StyleSheet.absoluteFillObject} />
+          </TouchableWithoutFeedback>
 
-          
-              <View style={styles.modalContainer}>
-                <View style={{ display: 'flex', flexDirection: 'row', }}>
-                  <Image source={SharingImg} style={{ height: 15, width: 15, alignItems: 'center', marginTop: 2, marginRight: 5 }} />
 
-                  <Text style={styles.modalTitle}>Detailed Sharing Breakdown</Text>
+          <View style={styles.modalContainer}>
+            <View style={{ display: 'flex', flexDirection: 'row', }}>
+              <Image source={SharingImg} style={{ height: 15, width: 15, alignItems: 'center', marginTop: 2, marginRight: 5 }} />
+
+              <Text style={styles.modalTitle}>Detailed Sharing Breakdown</Text>
+            </View>
+            {/* 1 Sharing */}
+            <ScrollView style={{ maxHeight: 430 }}
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled>
+              {sharingData.map((item, index) => (
+                <View style={styles.shareCard} key={index}>
+
+                  <View style={styles.shareCardHeader}>
+                    <Text style={styles.shareCardTitle}>
+                      {item.shareType}
+                    </Text>
+
+                    <Text style={styles.roomsAvailable}>
+                      {item.availableRooms} Rooms Available
+                    </Text>
+                  </View>
+                  <View style={styles.divider} />
+
+                  <View style={styles.shareCardRow}>
+                    <View>
+                      <Text style={styles.cardLabel}>Rooms</Text>
+                      <Text style={styles.cardValue}>{item.totalRooms}</Text>
+                    </View>
+
+                    <View>
+                      <Text style={styles.cardLabel}>Total Beds</Text>
+                      <Text style={styles.cardValue}>{item.totalBeds}</Text>
+                    </View>
+
+                    <View>
+                      <Text style={styles.cardLabel}>Occupied</Text>
+                      <Text style={{
+                        fontSize: 28,
+                        fontFamily: "Gilroy-Bold",
+                        color: "#16A34A", marginTop: 6
+                      }}>
+                        {item.occupiedBeds}
+                      </Text>
+                    </View>
+                  </View>
+
                 </View>
-                {/* 1 Sharing */}
-              <ScrollView style={{ maxHeight: 430 }}
-                            showsVerticalScrollIndicator={false}
-                            nestedScrollEnabled>
-  {sharingData.map((item, index) => (
-    <View style={styles.shareCard} key={index}>
-      
-      <View style={styles.shareCardHeader}>
-        <Text style={styles.shareCardTitle}>
-          {item.shareType}
-        </Text>
+              ))}
+            </ScrollView>
 
-        <Text style={styles.roomsAvailable}>
-          {item.availableRooms} Rooms Available
-        </Text>
-      </View>
-
-      <View style={styles.shareCardRow}>
-        <View>
-          <Text style={styles.cardLabel}>Rooms</Text>
-          <Text style={styles.cardValue}>{item.totalRooms}</Text>
-        </View>
-
-        <View>
-          <Text style={styles.cardLabel}>Total Beds</Text>
-          <Text style={styles.cardValue}>{item.totalBeds}</Text>
-        </View>
-
-        <View>
-          <Text style={styles.cardLabel}>Occupied</Text>
-          <Text style={{    fontSize: 28,
-    fontFamily: "Gilroy-Bold",
-    color: "#16A34A" ,  marginTop: 6 }}>
-            {item.occupiedBeds}
-          </Text>
-        </View>
-      </View>
-
-    </View>
-  ))}
-</ScrollView>
-
-              </View>
-         
           </View>
+
+        </View>
         {/* </TouchableWithoutFeedback> */}
       </Modal>
 
 
       <RecordPaymentSheet
-  visible={showRecordPayment}
-  onClose={() => setShowRecordPayment(false)}
-  selectedBill={selectedBill}
-/>
+        visible={showRecordPayment}
+        onClose={() => setShowRecordPayment(false)}
+        selectedBill={selectedBill}
+      />
 
       {/* {showExpiryModal && (
   <SubscriptionFullScreenAlert
@@ -3516,7 +3590,7 @@ const styles = StyleSheet.create({
 
   tabBtn: { marginRight: 20 },
 
-  tabText: { fontSize: 17, color: "#6B7280", fontFamily: "Gilroy-Bold" },
+  tabText: { fontSize: 16, color: "#6B7280", fontFamily: "Gilroy-Bold" },
 
   underline: {
     height: 3,
@@ -3700,17 +3774,21 @@ const styles = StyleSheet.create({
   },
 
   monthBtn: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 10,
+    maxWidth: 120,
   },
 
   monthText: {
     fontSize: 13,
     color: "#374151",
     fontWeight: "500",
+    flexShrink: 1,
   },
   billingRow: {
     flexDirection: "row",
@@ -4259,7 +4337,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     marginTop: 3,
-      fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
   },
 
   bookingActions: {
@@ -4322,7 +4400,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     marginRight: 8,
-      fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
   },
 
   statusBadges: {
@@ -4877,14 +4955,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor:'grey'
+    backgroundColor: 'grey'
   },
 
   viewRequestsText: {
     fontSize: 14,
     fontFamily: "Gilroy-Medium",
     // color: "#374151",
-    color:'#fff',
+    color: '#fff',
     marginRight: 8
   },
 
@@ -5483,16 +5561,20 @@ const styles = StyleSheet.create({
   },
 
   noDataContainer: {
-  height: 260,
-  justifyContent: "center",
-  alignItems: "center",
-},
+    height: 260,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-noDataText: {
-  color: "#999",
-  fontSize: 14,
-  fontFamily: "Gilroy-Medium",
-},
+  noDataText: {
+    color: "#999",
+    fontSize: 14,
+    fontFamily: "Gilroy-Medium",
+  },
 
-
+  divider: {
+    height: 0.8,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+  },
 });

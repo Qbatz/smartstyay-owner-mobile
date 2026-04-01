@@ -71,12 +71,12 @@ export default function AnnouncementScreen({onGoBack }) {
             {"\n"}Check back again shortly.
           </Text>
     
-          <TouchableOpacity
+          {/* <TouchableOpacity
   style={styles.button}
   onPress={onGoBack}
 >
             <Text style={styles.buttonText}>← Go Back</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
   );
 }

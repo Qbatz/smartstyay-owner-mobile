@@ -74,6 +74,7 @@ export default function EBReadingTab(customerDetails) {
     });
   };
   return (
+    <View>
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 16 }}
@@ -148,6 +149,7 @@ export default function EBReadingTab(customerDetails) {
         })
       )}
     </ScrollView>
+    </View>
 
   );
 }
