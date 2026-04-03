@@ -344,23 +344,44 @@ const isExportAllow = isValidSubscription && canReadTenant;
   //   setShowTabBar(!showDetailModal && !showFilter && !showCheckout && !showNotice && !showInactiveSheet,!showReAssignbed);
   // }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet,showReAssignbed]);
 
+  // useLayoutEffect(() => {
+  //   setShowTabBar(
+  //     !showDetailModal &&
+  //     !showFilter &&
+  //     !showCheckout &&
+  //     !showNotice &&
+  //     !showInactiveSheet &&
+  //     !showReAssignbed
+  //   );
+  // }, [
+  //   showDetailModal,
+  //   showFilter,
+  //   showCheckout,
+  //   showNotice,
+  //   showInactiveSheet,
+  //   showReAssignbed
+  // ]);
+
+
   useLayoutEffect(() => {
-    setShowTabBar(
-      !showDetailModal &&
-      !showFilter &&
-      !showCheckout &&
-      !showNotice &&
-      !showInactiveSheet &&
-      !showReAssignbed
-    );
-  }, [
-    showDetailModal,
+  if (
+    showDetailModal ||
+    showFilter ||
+    showCheckout ||
+    showNotice ||
+    showInactiveSheet ||
+    showReAssignbed
+  ) {
+    setShowTabBar(false);
+  } else {
+    setShowTabBar(isTabBarVisible.current);
+  }
+}, [ showDetailModal,
     showFilter,
     showCheckout,
     showNotice,
     showInactiveSheet,
-    showReAssignbed
-  ]);
+    showReAssignbed]);
 
   useEffect(() => {
   const backHandler = BackHandler.addEventListener(
@@ -480,6 +501,30 @@ const isExportAllow = isValidSubscription && canReadTenant;
   //   }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
 
+  const lastScrollY = useRef(0);
+const isTabBarVisible = useRef(true);
+
+
+const handleScroll = (event) => {
+  const currentY = event.nativeEvent.contentOffset.y;
+  const diff = currentY - lastScrollY.current;
+
+  if (Math.abs(diff) < 10) return;
+
+  if (diff > 0 && currentY > 50) {
+    if (isTabBarVisible.current) {
+      setShowTabBar(false);
+      isTabBarVisible.current = false;
+    }
+  } else if (diff < 0) {
+    if (!isTabBarVisible.current) {
+      setShowTabBar(true);
+      isTabBarVisible.current = true;
+    }
+  }
+
+  lastScrollY.current = currentY;
+};
 
   const tabs = [
     { key: "Tenants", active: Profile, inactive: InProfile },
@@ -754,13 +799,16 @@ const isExportAllow = isValidSubscription && canReadTenant;
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 50 }}
+                  onScroll={handleScroll}
+                  scrollEventThrottle={16}
+
                 >
 
       
-                  {
+                  {/* {
                     customers?.listCustomers?.length > 0 &&
                     <Text style={styles.sectionTitle}>This Month</Text>
-                  }
+                  } */}
 
                   {/* {
           customers.map((item)=>{
@@ -1056,7 +1104,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
         )}
 
         {activeTab === "Checkout" && (
-          <CheckoutList searchText={searchText} />
+          <CheckoutList searchText={searchText} setShowTabBar={setShowTabBar}/>
         )}
         {activeTab === "Walk-In" && (
           <WalkinScreen setShowTabBar={setShowTabBar} navigation={navigation}
@@ -2082,7 +2130,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     // paddingVertical: 50,
     paddingTop: 50,
-    paddingBottom: 30
+    // paddingBottom: 30
 
   },
   searchContainer: {
