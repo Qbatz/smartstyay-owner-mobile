@@ -30,7 +30,7 @@ import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useNavigation } from "@react-navigation/native";
 
-export default function CheckoutList({ searchText }) {
+export default function CheckoutList({ searchText , setShowTabBar }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { getCheckoutCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -52,6 +52,30 @@ export default function CheckoutList({ searchText }) {
     canUpdateModule: canUpdateCheckout,
     canDeleteModule: canDeleteCheckout,
   } = useHasPermission("Checkout");
+
+  const lastScrollY = useRef(0);
+const isTabBarVisible = useRef(true);
+
+const handleScroll = (event) => {
+  const currentY = event.nativeEvent.contentOffset.y;
+  const diff = currentY - lastScrollY.current;
+
+  if (Math.abs(diff) < 10) return;
+
+  if (diff > 0 && currentY > 50) {
+    if (isTabBarVisible.current) {
+      setShowTabBar(false);   // ⬇️ scroll down
+      isTabBarVisible.current = false;
+    }
+  } else if (diff < 0) {
+    if (!isTabBarVisible.current) {
+      setShowTabBar(true);   // ⬆️ scroll up
+      isTabBarVisible.current = true;
+    }
+  }
+
+  lastScrollY.current = currentY;
+};
 
   const translateY = useRef(new Animated.Value(500)).current;
   console.log("selectedCustomer", selectedCustomer)
@@ -220,8 +244,8 @@ export default function CheckoutList({ searchText }) {
         <TouchableOpacity style={styles.card} onPress={() => openCustomerDetails(item)}>
           <View style={styles.leftRow}>
             <View>
-              {item?.profilePic ? <Image source={{ uri: item.profilePic }} style={{ width: 46, height: 46, borderRadius: 30 }} /> :
-                <View style={{ width: 46, height: 46, borderRadius: 30, backgroundColor: '#eef1ff', justifyContent: 'center', alignItems: 'center' }}>
+              {item?.profilePic ? <Image source={{ uri: item.profilePic }} style={{ width: 55, height: 55, borderRadius: 25 }} /> :
+                <View style={{ width: 55, height: 55, borderRadius: 25, backgroundColor: '#eef1ff', justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{item?.initials}</Text>
                 </View>}
             </View>
@@ -229,22 +253,21 @@ export default function CheckoutList({ searchText }) {
             <View style={[styles.info,{flex:1}]}>
               <View style={{ flexShrink: 1}}>
 
-                <Text style={styles.name} numberOfLines={1}
-                ellipsizeMode="clip">{item.firstName} {item.lastName}</Text>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="clip">{item.firstName} {item.lastName}</Text>
 
                 <View style={styles.row}>
                   <View style={styles.floorBadge}>
-                    <Text style={styles.floorText}>{item.floorName}</Text>
+                    <Text style={styles.floorText} numberOfLines={1} ellipsizeMode="clip">{item.floorName}</Text>
                   </View>
 
                   <View style={styles.iconRow}>
                     <Image source={RoomIcon} style={styles.icon} />
-                    <Text style={styles.detailText}>{item.roomName}</Text>
+                    <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="clip">{item.roomName}</Text>
                   </View>
 
                   <View style={styles.iconRow}>
                     <Image source={BedIcon} style={styles.icon} />
-                    <Text style={styles.detailText}>{item.bedName}</Text>
+                    <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="clip">{item.bedName}</Text>
                   </View>
                 </View>
               </View>
@@ -313,6 +336,8 @@ export default function CheckoutList({ searchText }) {
             renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 60 }}
             showsVerticalScrollIndicator={false}
+              onScroll={handleScroll}
+             scrollEventThrottle={16}
           />
         )}
 
@@ -511,6 +536,7 @@ export default function CheckoutList({ searchText }) {
 }
 
 const styles = StyleSheet.create({
+  
   card: {
     padding: 12,
     flexDirection: "row",

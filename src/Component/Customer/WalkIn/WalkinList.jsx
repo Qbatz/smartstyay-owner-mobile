@@ -261,7 +261,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
           contentContainerStyle={{ paddingBottom: 100 }}
         >
 
-{console.log("boys",filteredWalkins)}
+          {console.log("boys", filteredWalkins)}
 
           {filteredWalkins.map((item) => (
             <View key={item.customerId} style={styles.row}>
@@ -285,7 +285,13 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
 
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.fullName}</Text>
+                <Text
+                  style={[styles.name, { flexShrink: 1 }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item?.fullName}
+                </Text>
 
                 <View style={styles.phoneRow}>
                   <Image source={PhoneIcon} style={styles.phoneIcon} />
@@ -325,7 +331,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                 style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
                 disabled={!canWriteWalkin}
                 onPress={handleShowTennantCheckin}>
-                <Image source={Checkin} style={[styles.menuIcon , {tintColor: "#1E45E1",}]} />
+                <Image source={Checkin} style={[styles.menuIcon, { tintColor: "#1E45E1", }]} />
                 <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
 
@@ -687,12 +693,11 @@ const styles = StyleSheet.create({
   },
 
   avatarBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 12,
+    overflow: "hidden",
   },
 
   avatar: { width: 28, height: 28, },
@@ -715,14 +720,14 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     color: "#6B7280",
     fontSize: 13,
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   right: { alignItems: "flex-end" },
 
   dotIcon: { width: 26, height: 26, transform: [{ rotate: "90deg" }] },
 
-  date: { fontSize: 11, color: "#6B7280", marginTop: 4 , fontFamily: "Gilroy-Regular" },
+  date: { fontSize: 11, color: "#6B7280", marginTop: 4, fontFamily: "Gilroy-Regular" },
 
   filterBtn: {
     position: "absolute",
@@ -787,7 +792,7 @@ const styles = StyleSheet.create({
     tintColor: "#2563EB",
   },
 
-  filterTitle: { fontSize: 18,fontFamily: "Gilroy-Bold"  },
+  filterTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" },
 
   label: {
     marginTop: 12,
@@ -856,7 +861,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  resetText: { color: "#2563EB", fontSize: 15,fontFamily: "Gilroy-Semibold"},
+  resetText: { color: "#2563EB", fontSize: 15, fontFamily: "Gilroy-Semibold" },
 
   applyBtn: {
     width: "48%",
@@ -866,7 +871,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  applyText: { color: "#fff", fontSize: 15, fontFamily: "Gilroy-Semibold"},
+  applyText: { color: "#fff", fontSize: 15, fontFamily: "Gilroy-Semibold" },
 
 
 
@@ -905,7 +910,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 14,
     color: "#111",
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
   deleteOverlay: {
     flex: 1,
@@ -925,7 +930,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#111",
     marginBottom: 10,
   },
@@ -955,7 +960,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -989,7 +994,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     fontSize: 14,
-    fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
@@ -1010,27 +1015,36 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "Gilroy-Semibold"
   },
-  avatarBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#E5E7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-    overflow: "hidden",
-  },
+  // avatarBox: {
+  //   width: 48,
+  //   height: 48,
+  //   borderRadius: 24,
+  //   backgroundColor: "#E5E7EB",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   marginRight: 12,
+  //   overflow: "hidden",
+  // },
 
   avatarImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
 
+  // initialCircle: {
+  //   width: 55,
+  //   height: 55,
+  //   borderRadius: 25,
+  //   backgroundColor: "#2563EB",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  // },
+
   initialCircle: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
@@ -1039,7 +1053,7 @@ const styles = StyleSheet.create({
   initialText: {
     color: "#fff",
     fontSize: 16,
-   fontFamily: "Gilroy-Bold" 
+    fontFamily: "Gilroy-Bold"
   },
 
 
