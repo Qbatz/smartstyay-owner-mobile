@@ -56,11 +56,13 @@ const maxDate = today;
     const [selectedDate, setSelectedDate] = useState(null);
 
     const [error, setError] = useState("");
+    const [dateError,setDateError]=useState("")
 
     const resetState = () => {
         setSelectedDate(null);
         setReason("");
         setError("");
+        setDateError("")
         setShowCalendar(false);
         onClose()
     };
@@ -157,9 +159,10 @@ const maxDate = today;
 
     const handleUpdate = async () => {
         setError("");
+        setDateError("")
 
         if (!selectedDate) {
-            setError("Please select joining date");
+            setDateError("Please select joining date");
             return;
         }
 
@@ -173,7 +176,7 @@ const maxDate = today;
 
 
         if (oldDate && oldDate === newDate) {
-            setError("No changes detected in Joining Date");
+            setDateError("No changes detected in Joining Date");
             return;
         }
 
@@ -297,12 +300,16 @@ const maxDate = today;
                             <Image source={CalendarIcon} style={styles.calendarIcon} />
                         </TouchableOpacity>
 
+                        {dateError && (
+                            <ErrorMessage message={dateError} type="error" />
+                        )}
+
 
 
 
 
                         {/* REASON */}
-                        <Text style={styles.label}>Reason</Text>
+                        <Text style={[styles.label,{marginTop:16}]}>Reason</Text>
                         <TextInput
                             style={styles.textArea}
                             placeholder="Enter your reason"
@@ -356,6 +363,7 @@ const maxDate = today;
     setSelectedDate(day.dateString);
     setShowCalendar(false);
     setError("");
+    setDateError("")
   }}
   markedDates={{
     ...(selectedDate && {
@@ -433,7 +441,7 @@ const styles = StyleSheet.create({
         padding: 14,
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: 16,
+        // marginBottom: 16,
     },
     placeholder: {
         color: "#999",

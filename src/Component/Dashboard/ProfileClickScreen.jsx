@@ -9,6 +9,7 @@ import { removeData, storeData } from "../../Utils/Storage";
 import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../Utils/Constant";
 import Setting from '../../Assets/Images/setting.png';
 import Remove from '../../Assets/Images/remove.png';
+import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 
 
 
@@ -16,7 +17,7 @@ import Remove from '../../Assets/Images/remove.png';
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width
 
-export default function ProfileDrawer({ visible, onClose }) {
+export default function ProfileDrawer({ visible, onClose,setShowTabBar }) {
 
 
   const { logout } = useContext(LoginContexts)
@@ -33,6 +34,10 @@ export default function ProfileDrawer({ visible, onClose }) {
 const [modalMessage, setModalMessage] = useState("");
 const [modalType, setModalType] = useState("success");
 
+const isTabBarVisible = useRef(true);
+
+  // const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
+
 
 
 
@@ -41,6 +46,14 @@ const [modalType, setModalType] = useState("success");
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
 
   const loginContext=useContext(LoginContexts)
+
+  useEffect(() => {
+  if (visible) {
+    setShowTabBar?.(false);
+  } else {
+    setShowTabBar?.(true);
+  }
+}, [visible]);
 
   useFocusEffect(
   useCallback(() => {
@@ -51,6 +64,8 @@ const [modalType, setModalType] = useState("success");
       }
       return false;
     };
+
+    
 
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -156,6 +171,7 @@ const getInitials = (profile) => {
 
 
 console.log("profileDetails", profileDetails);
+
   if (!visible) return null;
 
   return (
@@ -180,7 +196,8 @@ console.log("profileDetails", profileDetails);
           styles.panel,
           {
             width: SCREEN_WIDTH * 0.60,
-            height: SCREEN_HEIGHT - tabHeight,
+            // height: SCREEN_HEIGHT - tabHeight,
+           height: visible ? SCREEN_HEIGHT : SCREEN_HEIGHT - tabHeight,
             transform: [{ translateX: slideX }],
           },
         ]}

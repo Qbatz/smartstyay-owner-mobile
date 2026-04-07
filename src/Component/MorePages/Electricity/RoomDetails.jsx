@@ -32,6 +32,7 @@ import DeleteIcon from "../../../Assets/Images/trash.png"
 import EditIcon from "../../../Assets/Images/editIcon.png"
 import Dots from "../../../Assets/Images/3dots.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
+import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 
 export default function RoomDetails({ route, navigation }) {
   const { activeHostelId } = useContext(CommonContexts);
@@ -692,6 +693,8 @@ export default function RoomDetails({ route, navigation }) {
               />
             </TouchableOpacity>
 
+           
+
             <Modal
               transparent
               visible={showActionMenu}
@@ -821,6 +824,8 @@ export default function RoomDetails({ route, navigation }) {
 
 
           </View>
+
+           <View style={{height:1,backgroundColor:'#EFEFEF',marginTop:8,marginBottom:8}}/>
 
           <View style={styles.detailsRow}>
             <View>
@@ -968,7 +973,7 @@ export default function RoomDetails({ route, navigation }) {
                       <Text style={styles.monthText}>{item?.fullName}</Text>
 
                       <View style={styles.occRow}>
-                        <Image source={RoomIcon} style={styles.smallIcon} />
+                        <Image source={BedIcon} style={styles.smallIcon} />
                         <Text style={styles.bedText}>{item?.bedName}</Text>
 
                         <View style={styles.unitTag2}>

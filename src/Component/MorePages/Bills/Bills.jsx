@@ -2087,7 +2087,7 @@ const isNotDiscounted =
         <SafeAreaView style={styles.container}>
 
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center",marginTop:10 }}>
 
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image source={ArrowLeft} style={styles.backIcon} />
@@ -2368,7 +2368,8 @@ const isNotDiscounted =
                 style={[
                   styles.transactionSheet,
                   {
-                    height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                    // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                    maxHeight:'95%',
                     transform: [{ translateY: detailsSheetY }]
                   }
                 ]}
@@ -4840,10 +4841,12 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F6FA",
-    borderRadius: 10,
+    // backgroundColor: "#F5F6FA",
+    borderRadius: 50,
+    borderWidth:1,borderColor:'#E4E4E4',
     paddingHorizontal: 12,
-    height: 55,
+    paddingVertical:6,
+    // height: 55,
     flex: 1,
   },
 

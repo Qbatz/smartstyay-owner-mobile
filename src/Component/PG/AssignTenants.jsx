@@ -710,7 +710,7 @@ export default function AssignTenant({ navigation, route }) {
 
             {activeTab === "Booking" && (
               <>
-                <Text style={styles.label}>Select Tenant <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>Tenant <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
 
@@ -952,7 +952,7 @@ export default function AssignTenant({ navigation, route }) {
 
             {activeTab === "CheckIn" && (
               <>
-                <Text style={styles.label}>Select Tenant <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>Tenant <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View style={{ position: "relative" }}>
 
@@ -1136,7 +1136,7 @@ export default function AssignTenant({ navigation, route }) {
             {activeTab === "CheckIn" && (
               <View style={styles.nonRefund}>
                 <View style={styles.extraHeader}>
-                  <Text style={{ fontWeight: "600", color: "#444", }}>Non Refundable Amount</Text>
+                  <Text style={{ fontWeight: "600", color: "#444",marginBottom:1}}>Non Refundable Amount</Text>
 
                   <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
                     <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
@@ -1534,8 +1534,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 18,
-    marginBottom: 6,
-    alignItems: 'center',
+    marginBottom: 18,
+    alignItems:"flex-end",
 
   },
 
