@@ -251,171 +251,172 @@ export default function EditRentalAmountSheet({
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type="success" />
+      <View style={styles.wrapper} pointerEvents="box-none">
+        {/* BACKDROP */}
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={resetState}
+        />
 
-      {/* BACKDROP */}
-      <TouchableOpacity
-        style={styles.backdrop}
-        activeOpacity={1}
-        onPress={resetState}
-      />
-
-      {/* SHEET */}
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheet,
-          {
-            height: sheetHeight,
-            transform: [
-              { translateY },
-              { translateY: Animated.multiply(keyboardOffset, -1) }, // ⭐ IMPORTANT
-            ],
-          },
-        ]}
-      >
-        <View style={styles.handle} />
-
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 24,
-            width: "100%",
-          }}
+        {/* SHEET */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              height: sheetHeight,
+              transform: [
+                { translateY },
+                { translateY: Animated.multiply(keyboardOffset, -1) }, // ⭐ IMPORTANT
+              ],
+            },
+          ]}
         >
-          <Text style={styles.title}>Edit Rental Amount</Text>
+          <View style={styles.handle} />
 
-
-
-          {type === "Rent-Revision" && (
-            <View style={styles.infoBanner}>
-              <Text style={styles.infoIcon}>?</Text>
-              <Text style={styles.infoText}>
-                Rent changes will apply from next billing cycle and are fully audit-logged
-              </Text>
-            </View>
-          )}
-
-          <Text style={styles.label}>Type <Text style={{ color: "red" }}>*</Text></Text>
-
-          <TouchableOpacity
-            style={styles.dropdownInput}
-            onPress={() => setShowTypeDropdown(!showTypeDropdown)}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: 24,
+              width: "100%",
+            }}
           >
-            <Text
-              style={[
-                styles.dropdownText,
-                !type && { color: "#9CA3AF" },
-              ]}
-            >
-              {type === "Edit-Rent"
-                ? "Edit Rent"
-                : type === "Rent-Revision"
-                  ? "Rent Revision"
-                  : "Select Type"}
-            </Text>
-            <Image source={DownArrow} style={styles.arrow} />
-          </TouchableOpacity>
+            <Text style={styles.title}>Edit Rental Amount</Text>
 
-          {showTypeDropdown && (
-            <View style={styles.dropdownBox}>
-              {[
-                { label: "Edit Rent", value: "Edit-Rent" },
-                { label: "Rent Revision", value: "Rent-Revision" },
-              ].map((item) => (
-                <TouchableOpacity
-                  key={item.value}
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setType(item.value);
-                    setShowTypeDropdown(false);
-                    setError("");
-                  }}
-                >
-                  <Text style={styles.dropdownItemText}>
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
 
-          {/* ================= RENT (ONLY AFTER TYPE) ================= */}
-          {type && (
-            <>
-              <Text style={[styles.label,{marginTop:15}]}>New Monthly Rent <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                placeholder="Enter rent"
-                value={monthlyRent}
-                onChangeText={(text) => {
-                  const onlyNum = text.replace(/[^0-9]/g, "").replace(/^0+/, "");
-                  setMonthlyRent(onlyNum);
-                  setRentError("");
-                }}
 
-              />
-              {renteError && <ErrorMessage message={renteError} />}
-            </>
-          )}
-
-          {/* ================= EFFECTIVE DATE ================= */}
-          {type === "Rent-Revision" && (
-            <>
-              <Text style={[styles.label,{marginTop:15}]}>Effective From <Text style={{ color: "red" }}>*</Text></Text>
-              <TouchableOpacity
-                style={styles.input}
-                onPress={() => setShowCalendar(true)}
-              >
-                <Text>
-                  {effectiveDate
-                    ? dayjs(effectiveDate).format("DD/MM/YYYY")
-                    : "DD/MM/YYYY"}
+            {type === "Rent-Revision" && (
+              <View style={styles.infoBanner}>
+                <Text style={styles.infoIcon}>?</Text>
+                <Text style={styles.infoText}>
+                  Rent changes will apply from next billing cycle and are fully audit-logged
                 </Text>
-              </TouchableOpacity>
-            </>
+              </View>
+            )}
 
-          )}
-          {dateError && <ErrorMessage message={dateError} />}
-
-          {/* ================= REASON ================= */}
-          {type && (
-            <>
-              <Text style={[styles.label,{marginTop:15}]}>Reason</Text>
-              <TextInput
-                style={[styles.input, { height: 90 }]}
-                multiline
-                placeholder="Enter reason"
-                value={reason}
-                onChangeText={setReason}
-              />
-            </>
-          )}
-
-          {error && <ErrorMessage message={error} />}
-
-          {/* ================= ACTIONS ================= */}
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={resetState}
-            style={{borderColor: "#1E40AF",borderWidth:1,paddingHorizontal: 30,paddingVertical: 12,borderRadius: 24,marginRight:8}}>
-              <Text style={styles.cancel}>Cancel</Text>
-            </TouchableOpacity>
+            <Text style={styles.label}>Type <Text style={{ color: "red" }}>*</Text></Text>
 
             <TouchableOpacity
-              style={[
-                styles.updateBtn,
-                !type && { opacity: 0.5 },
-              ]}
-              disabled={!type}
-              onPress={handleUpdate}
+              style={styles.dropdownInput}
+              onPress={() => setShowTypeDropdown(!showTypeDropdown)}
             >
-              <Text style={styles.updateText}>Update</Text>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  !type && { color: "#9CA3AF" },
+                ]}
+              >
+                {type === "Edit-Rent"
+                  ? "Edit Rent"
+                  : type === "Rent-Revision"
+                    ? "Rent Revision"
+                    : "Select Type"}
+              </Text>
+              <Image source={DownArrow} style={styles.arrow} />
             </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </Animated.View>
 
+            {showTypeDropdown && (
+              <View style={styles.dropdownBox}>
+                {[
+                  { label: "Edit Rent", value: "Edit-Rent" },
+                  { label: "Rent Revision", value: "Rent-Revision" },
+                ].map((item) => (
+                  <TouchableOpacity
+                    key={item.value}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setType(item.value);
+                      setShowTypeDropdown(false);
+                      setError("");
+                    }}
+                  >
+                    <Text style={styles.dropdownItemText}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* ================= RENT (ONLY AFTER TYPE) ================= */}
+            {type && (
+              <>
+                <Text style={[styles.label, { marginTop: 15 }]}>New Monthly Rent <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="Enter rent"
+                  value={monthlyRent}
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                    setMonthlyRent(onlyNum);
+                    setRentError("");
+                  }}
+
+                />
+                {renteError && <ErrorMessage message={renteError} />}
+              </>
+            )}
+
+            {/* ================= EFFECTIVE DATE ================= */}
+            {type === "Rent-Revision" && (
+              <>
+                <Text style={[styles.label, { marginTop: 15 }]}>Effective From <Text style={{ color: "red" }}>*</Text></Text>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setShowCalendar(true)}
+                >
+                  <Text>
+                    {effectiveDate
+                      ? dayjs(effectiveDate).format("DD/MM/YYYY")
+                      : "DD/MM/YYYY"}
+                  </Text>
+                </TouchableOpacity>
+              </>
+
+            )}
+            {dateError && <ErrorMessage message={dateError} />}
+
+            {/* ================= REASON ================= */}
+            {type && (
+              <>
+                <Text style={[styles.label, { marginTop: 15 }]}>Reason</Text>
+                <TextInput
+                  style={[styles.input, { height: 90 }]}
+                  multiline
+                  placeholder="Enter reason"
+                  value={reason}
+                  onChangeText={setReason}
+                />
+              </>
+            )}
+
+            {error && <ErrorMessage message={error} />}
+
+            {/* ================= ACTIONS ================= */}
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={resetState}
+                style={{ borderColor: "#1E40AF", borderWidth: 1, paddingHorizontal: 30, paddingVertical: 12, borderRadius: 24, marginRight: 8 }}>
+                <Text style={styles.cancel}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.updateBtn,
+                  !type && { opacity: 0.5 },
+                ]}
+                disabled={!type}
+                onPress={handleUpdate}
+              >
+                <Text style={styles.updateText}>Update</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </Animated.View>
+
+      </View>
 
       {showCalendar && (
         <View style={styles.calendarOverlay}>
@@ -465,6 +466,11 @@ export default function EditRentalAmountSheet({
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
+  wrapper: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+    zIndex: 1000,
+  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.35)",
@@ -536,7 +542,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 10,
-    alignItems:'center'
+    alignItems: 'center'
   },
   cancel: {
     color: "#2563EB",
@@ -547,7 +553,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 24,
-    marginLeft:5
+    marginLeft: 5
   },
   updateText: {
     color: "#fff",

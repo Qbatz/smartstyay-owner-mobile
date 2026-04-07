@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from "react-native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 import plusIcon from "../../../Assets/Images/plusIcon.png";
@@ -11,6 +11,7 @@ import EyeClose from "../../../Assets/Images/EyeIcon.png";
 import { useGeneral } from "../../../Context/GeneralContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 
 
 
@@ -37,6 +38,8 @@ export default function AddGeneralScreen({ navigation, route }) {
   const [modalType, setModalType] = useState("success");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+
+   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
 
 
@@ -579,6 +582,35 @@ if (pinError) newErrors.pincode = pinError;
     });
   };
 
+  const openCamera = () => {
+      launchCamera(
+        {
+          mediaType: "photo",
+          quality: 0.7,
+        },
+        (response) => {
+          if (response.didCancel) return;
+          if (response.assets && response.assets.length > 0) {
+            setSelectedImage(response.assets[0]);
+          }
+        }
+      );
+    };
+    const openGallery = () => {
+      launchImageLibrary(
+        { mediaType: "photo", quality: 0.7 },
+        async (response) => {
+          if (response.didCancel) return;
+  
+          if (response.assets?.length > 0) {
+            const image = response.assets[0];
+            setSelectedImage(image); // UI update
+            
+          }
+        }
+      );
+    };
+
   const StateName = [
     { label: "Andhra Pradesh", value: "Andhra Pradesh" },
     { label: "Arunachal Pradesh", value: "Arunachal Pradesh" },
@@ -691,7 +723,7 @@ if (pinError) newErrors.pincode = pinError;
         {/* ✅ FIXED PROFILE SECTION */}
         <TouchableOpacity
           style={styles.profileSection}
-          onPress={pickImage}
+          onPress={()=>setShowProfileSheet(true)}
           activeOpacity={0.8}
         >
           <View style={styles.profileCircle}>
@@ -1121,6 +1153,32 @@ if (pinError) newErrors.pincode = pinError;
             <View style={{ height: 40 }} />
           </ScrollView>
         </KeyboardAvoidingView>
+
+        <ImagePickerSheet
+          visible={showProfileSheet}
+          onClose={() => setShowProfileSheet(false)}
+          title="Change Profile Picture"
+          options={[
+            {
+              label: "Take Picture",
+              icon: require("../../../Assets/Images/CameraIcon.png"),
+              showArrow: true,
+              onPress: openCamera,
+            },
+            {
+              label: "Select from Gallery",
+              icon: require("../../../Assets/Images/GalleryIcon.png"),
+              showArrow: true,
+              onPress: openGallery,
+            },
+            {
+              label: "Remove Picture",
+              icon: require("../../../Assets/Images/DeleteIcon.png"),
+              showArrow: false,
+              onPress: () => console.log("remove"),
+            },
+          ]}
+        />
       </View>
     </>
   );

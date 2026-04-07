@@ -92,6 +92,7 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import SubscriptionFullScreenAlert from "./SubscriptionBannerAlert";
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
+import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 
 
 
@@ -130,8 +131,14 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const [showExpiryScreen, setShowExpiredScreen] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null)
 
+  const [showProfileTopBar,setShowProfileTopBar]=useState(true)
+
 
   const { setShowTabBar } = route.params || {};
+
+  const isTabBarVisible = useRef(true);
+  
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,setShowProfileTopBar);
 
 
   const subTabs = [
@@ -1329,6 +1336,11 @@ export default function DashboardNewDesign({ initialParams, route }) {
           </View>
         </View> */}
 
+        {
+          showProfileTopBar && (
+
+         
+
           <View style={styles.headerTop}>
             {/* <View style={styles.hostelRow}>
     <Image source={PgImg} style={{ width: 38, height: 38 }} />
@@ -1490,6 +1502,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
             </View>
           </View>
 
+           )
+        }
+
 
           <ScrollView
             horizontal
@@ -1599,7 +1614,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
                   </View>
 
                   <ScrollView showsVerticalScrollIndicator={false}
-                    nestedScrollEnabled={true}>
+                    nestedScrollEnabled={true}
+                    onScroll={handleScroll}>
 
 
 
@@ -3328,6 +3344,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
         <ProfileDrawer
           visible={drawerVisible}
           onClose={() => setDrawerVisible(false)}
+          setShowTabBar={setShowTabBar}
         />
 
         <FilterBottomSheet

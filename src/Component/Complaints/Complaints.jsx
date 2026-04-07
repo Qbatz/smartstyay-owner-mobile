@@ -27,6 +27,7 @@ import AssignBottomSheet from "../Complaints/AssignCompliance";
 import CommentBottomSheet from "../Complaints/CommentBox";
 import ChangeStatus from "../Complaints/ComplianceStatus";
 import LeftArrow from "../../Assets/Images/Arrow_left.png"
+import {useHideTabbarOnScroll} from "../../Utils/useHideTabbarOnScroll"
 
 export default function Complaints({ route }) {
 
@@ -70,6 +71,8 @@ export default function Complaints({ route }) {
 
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
+
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -256,26 +259,26 @@ export default function Complaints({ route }) {
   //     lastScrollY.current = currentY;
   // }
 
-  const handleScroll = (event) => {
-    const currentY = event.nativeEvent.contentOffset.y;
-    const diff = currentY - lastScrollY.current;
+  // const handleScroll = (event) => {
+  //   const currentY = event.nativeEvent.contentOffset.y;
+  //   const diff = currentY - lastScrollY.current;
 
-    if (Math.abs(diff) < 10) return;
+  //   if (Math.abs(diff) < 10) return;
 
-    if (diff > 0 && currentY > 50) {
-      if (isTabBarVisible.current) {
-        setShowTabBar(false);
-        isTabBarVisible.current = false;
-      }
-    } else if (diff < 0) {
-      if (!isTabBarVisible.current) {
-        setShowTabBar(true);
-        isTabBarVisible.current = true;
-      }
-    }
+  //   if (diff > 0 && currentY > 50) {
+  //     if (isTabBarVisible.current) {
+  //       setShowTabBar(false);
+  //       isTabBarVisible.current = false;
+  //     }
+  //   } else if (diff < 0) {
+  //     if (!isTabBarVisible.current) {
+  //       setShowTabBar(true);
+  //       isTabBarVisible.current = true;
+  //     }
+  //   }
 
-    lastScrollY.current = currentY;
-  };
+  //   lastScrollY.current = currentY;
+  // };
 
   // useLayoutEffect(() => {
   //   setShowTabBar(!showFilter && !showSheet && !showAssignSheet && !showStatusSheet && !showCommentSheet);
@@ -295,57 +298,98 @@ export default function Complaints({ route }) {
     }
   }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
-  useLayoutEffect(() => {
-    const backAction = () => {
+  useEffect(() => {
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    () => {
 
       if (showFilter) {
         setShowFilter(false);
         return true;
       }
+
       if (showAssignSheet) {
         setShowAssignSheet(false);
         return true;
       }
+
       if (showSheet) {
         setShowSheet(false);
         return true;
       }
+
       if (showStatusSheet) {
         setShowStatusSheet(false);
         return true;
       }
+
       if (showCommentSheet) {
         setShowCommentSheet(false);
         return true;
       }
 
+      setShowTabBar(true);
+      isTabBarVisible.current = true;
 
-      return false;
-    };
+      navigation.goBack();
+      return true;
+    }
+  );
 
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+  return () => backHandler.remove();
+}, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
-    return () => handler.remove();
-  }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet])
+  // useLayoutEffect(() => {
+  //   const backAction = () => {
 
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
+  //     if (showFilter) {
+  //       setShowFilter(false);
+  //       return true;
+  //     }
+  //     if (showAssignSheet) {
+  //       setShowAssignSheet(false);
+  //       return true;
+  //     }
+  //     if (showSheet) {
+  //       setShowSheet(false);
+  //       return true;
+  //     }
+  //     if (showStatusSheet) {
+  //       setShowStatusSheet(false);
+  //       return true;
+  //     }
+  //     if (showCommentSheet) {
+  //       setShowCommentSheet(false);
+  //       return true;
+  //     }
 
-        setShowTabBar(true);
-        isTabBarVisible.current = true;
-        
-        navigation.goBack();
-        return true;
-      }
-    );
 
-    return () => backHandler.remove();
-  }, [])
+  //     return false;
+  //   };
+
+  //   const handler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     backAction
+  //   );
+
+  //   return () => handler.remove();
+  // }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet])
+
+  // useEffect(() => {
+  //   const backHandler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     () => {
+
+  //       setShowTabBar(true);
+  //       isTabBarVisible.current = true;
+
+  //       navigation.goBack();
+  //       return true;
+  //     }
+  //   );
+
+  //   return () => backHandler.remove();
+  // }, [])
 
 
 

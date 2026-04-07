@@ -39,6 +39,9 @@ import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
 import OccupiedAndReservedBedSheet from "../PG/OccupiedAndReservedStatus";
 import Loader from "../Loader/Loader";
 import { useHasPermission } from "../../Utils/useHasPermission";
+import {useHideTabbarOnScroll} from "../../Utils/useHideTabbarOnScroll"
+import { UIContext } from "../Tabs/UIContext";
+
 
 
 const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
@@ -100,6 +103,13 @@ export default function PGPageFull({ route }) {
   const [showCheckout, setShowCheckout] = useState(false);
   const [inactiveTenant, setInactiveTenant] = useState(null);
   // const [matchedBed, setMatchedBed] = useState(null);
+
+  const[showFloorBar,setShowFloorBar]=useState(true)
+
+   const { setShowTabBar } = route.params
+
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,setShowFloorBar);
+
 
 
   const {
@@ -521,6 +531,14 @@ useFocusEffect(
     setShowAddBed(false);
     setShowManageBed(false);
   }, [])
+)
+
+useFocusEffect(
+  useCallback(()=>{
+    return()=>{
+      setShowTabBar(true);
+    }
+  },[])
 )
 
 
@@ -1080,7 +1098,7 @@ useFocusEffect(
           ></ScrollView>
         </View>
 
-        {!showReadBlockedState && (
+        {!showReadBlockedState && showFloorBar && (
 
           <View style={{ flexDirection: "row", marginLeft: 13 }}>
             <ScrollView
@@ -1214,6 +1232,7 @@ useFocusEffect(
             scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
+            onScroll={handleScroll}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
               const bedCount = bedsByRoom[item.id]?.length || 0;

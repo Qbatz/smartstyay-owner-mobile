@@ -52,6 +52,7 @@ import moment from "moment";
 import RentMoney from "../../Assets/Images/RentMoney.png"
 import DirectionImage from "../../Assets/Images/direction-down.png"
 import SuccessModal from "../../ToastFile/ToastPage";
+import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
@@ -79,6 +80,8 @@ export default function TenantsScreen({ route }) {
   const {CommonModule}=NativeModules;
   console.log("activeHostelId", activeHostelId)
   console.log("reassignCustomer", reassignCustomer);
+
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
   
 
   const sheetTranslateY = useRef(
@@ -336,6 +339,8 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
+   const isTabBarVisible = useRef(true);
+
 
 
 
@@ -388,6 +393,10 @@ const isExportAllow = isValidSubscription && canReadTenant;
     "hardwareBackPress",
     () => {
       if (navigation.canGoBack()) {
+
+        setShowTabBar(true);
+        isTabBarVisible.current=true;
+        
         navigation.goBack();
       }
       return true;
@@ -501,30 +510,30 @@ const isExportAllow = isValidSubscription && canReadTenant;
   //   }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
 
-  const lastScrollY = useRef(0);
-const isTabBarVisible = useRef(true);
+//   const lastScrollY = useRef(0);
+// const isTabBarVisible = useRef(true);
 
 
-const handleScroll = (event) => {
-  const currentY = event.nativeEvent.contentOffset.y;
-  const diff = currentY - lastScrollY.current;
+// const handleScroll = (event) => {
+//   const currentY = event.nativeEvent.contentOffset.y;
+//   const diff = currentY - lastScrollY.current;
 
-  if (Math.abs(diff) < 10) return;
+//   if (Math.abs(diff) < 10) return;
 
-  if (diff > 0 && currentY > 50) {
-    if (isTabBarVisible.current) {
-      setShowTabBar(false);
-      isTabBarVisible.current = false;
-    }
-  } else if (diff < 0) {
-    if (!isTabBarVisible.current) {
-      setShowTabBar(true);
-      isTabBarVisible.current = true;
-    }
-  }
+//   if (diff > 0 && currentY > 50) {
+//     if (isTabBarVisible.current) {
+//       setShowTabBar(false);
+//       isTabBarVisible.current = false;
+//     }
+//   } else if (diff < 0) {
+//     if (!isTabBarVisible.current) {
+//       setShowTabBar(true);
+//       isTabBarVisible.current = true;
+//     }
+//   }
 
-  lastScrollY.current = currentY;
-};
+//   lastScrollY.current = currentY;
+// };
 
   const tabs = [
     { key: "Tenants", active: Profile, inactive: InProfile },

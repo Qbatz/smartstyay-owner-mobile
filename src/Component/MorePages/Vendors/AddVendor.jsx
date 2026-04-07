@@ -16,10 +16,11 @@ import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
+import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 
 export default function AddVendorSheet({ onClose, vendorData }) {
 
@@ -90,6 +91,8 @@ const [countryCodeOpen, setCountryCodeOpen] = useState(false);
 
   const [initialData, setInitialData] = useState(null);
 const [noChangeError, setNoChangeError] = useState("");
+
+ const [showProfileSheet, setShowProfileSheet] = useState(false);
 
 const scrollRef = useRef(null);
 const mobileRef = useRef(null);
@@ -370,6 +373,36 @@ if (!mobile.trim()) {
       }
     });
   };
+
+   const openCamera = () => {
+        launchCamera(
+          {
+            mediaType: "photo",
+            quality: 0.7,
+          },
+          (response) => {
+            if (response.didCancel) return;
+            if (response.assets && response.assets.length > 0) {
+              setSelectedImage(response.assets[0]);
+            }
+          }
+        );
+      };
+      const openGallery = () => {
+        launchImageLibrary(
+          { mediaType: "photo", quality: 0.7 },
+          async (response) => {
+            if (response.didCancel) return;
+    
+            if (response.assets?.length > 0) {
+              const image = response.assets[0];
+              setSelectedImage(image); // UI update
+              
+            }
+          }
+        );
+      };
+
   const handleSubmit = async () => {
   if (!validate()) return;
 
@@ -736,7 +769,7 @@ if (!mobile.trim()) {
 
 
           <View style={styles.profileRow}>
-            <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
+            <TouchableOpacity style={styles.profileContainer} onPress={()=>setShowProfileSheet(true)}>
               <View style={styles.profileCircle}>
 
 
@@ -1179,6 +1212,32 @@ if (!mobile.trim()) {
 </TouchableOpacity>
           </View>
         </ScrollView>
+
+         <ImagePickerSheet
+                  visible={showProfileSheet}
+                  onClose={() => setShowProfileSheet(false)}
+                  title="Change Profile Picture"
+                  options={[
+                    {
+                      label: "Take Picture",
+                      icon: require("../../../Assets/Images/CameraIcon.png"),
+                      showArrow: true,
+                      onPress: openCamera,
+                    },
+                    {
+                      label: "Select from Gallery",
+                      icon: require("../../../Assets/Images/GalleryIcon.png"),
+                      showArrow: true,
+                      onPress: openGallery,
+                    },
+                    {
+                      label: "Remove Picture",
+                      icon: require("../../../Assets/Images/DeleteIcon.png"),
+                      showArrow: false,
+                      onPress: () => console.log("remove"),
+                    },
+                  ]}
+                />
       </Animated.View>
     </View>
      </>
