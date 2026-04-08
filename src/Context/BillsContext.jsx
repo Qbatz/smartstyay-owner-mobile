@@ -735,11 +735,17 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
 
     const axios = getAxios();
 
+    // const payload = {
+    //   discountAmount: discountAmount || 0,
+    //   discountPercentage: discountPercentage || 0,
+    //   reason: reason || "",
+    // };
+
     const payload = {
-      discountAmount: discountAmount || 0,
-      discountPercentage: discountPercentage || 0,
-      reason: reason || "",
-    };
+  reason: reason || "",
+  ...(discountAmount !== undefined && { discountAmount }),
+  ...(discountPercentage !== undefined && { discountPercentage }),
+};
 
     const res = await axios.post(
       `/v2/bills/discount/${hostelId}/${invoiceId}`,
@@ -761,6 +767,39 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
     setErrorMsg(msg);
 
     return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v2/hostel/config/template/${hostelId}/${templateId}`,
+      {
+        data: {
+          type: type, // "logo" or "signature"
+        },
+      }
+    );
+
+    return {
+      success: true,
+      statusCode: res.status,
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
   } finally {
     setLoading(false);
   }
@@ -797,7 +836,8 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
         getGlobalBillPdfDetail,
         postGlobalBilPdfDetails,
          MarkBillAsUnpaid,
-         ApplyBillDiscount
+         ApplyBillDiscount,
+         deleteTemplateImage
       }}
     >
       {children}

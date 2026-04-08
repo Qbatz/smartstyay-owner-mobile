@@ -13,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import ExpiryImg from "../Assets/Images/subscription_expiry.png";
+import SmartStayLogo from "../Assets/Images/smarstay_icon.png"
 
 
 export default function SubscriptionExpired({setTabBar,onClose}){
@@ -39,6 +40,10 @@ export default function SubscriptionExpired({setTabBar,onClose}){
     }, [])
   );
 
+  const handleSubscriptionPage = () => {
+    navigation.navigate("SubscriptionPlans")  
+  }
+
 
   return (
 
@@ -51,13 +56,18 @@ export default function SubscriptionExpired({setTabBar,onClose}){
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 10,
+    paddingVertical:30,
     zIndex: 999,
  }}>
 
   <View>
 
-      <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 20 }}>
-        <Text style={{ fontSize: 20, fontWeight: "700" }}>Smartstay</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 20,marginTop:20 }}>
+        <View style={{flexDirection:'row',alignItems:'center'}}>
+          <Image source={SmartStayLogo} style={{width:41.5,height:39}}/>
+          <Text style={{ fontSize: 20, fontWeight: "700",marginLeft:5 }}>Smartstay</Text>
+        </View>
+        
 
         <TouchableOpacity onPress={() =>{
          onClose()
@@ -94,7 +104,7 @@ export default function SubscriptionExpired({setTabBar,onClose}){
             alignItems: "center"
           }}
         >
-          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }} onPress={handleSubscriptionPage} >
             Renew Now →
           </Text>
         </TouchableOpacity>

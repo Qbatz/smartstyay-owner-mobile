@@ -113,7 +113,7 @@ export default function ReserveToCheckin({ route, navigation }) {
     if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "" } : i))
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "",typeError:"" } : i))
     );
 
     setOpenDropdownId(null);
@@ -153,6 +153,7 @@ export default function ReserveToCheckin({ route, navigation }) {
     const updated = extraCharges.map((e) => {
       let titleError = "";
       let amountError = "";
+      let typeError = "";
 
       const titleFilled = e.title?.trim()?.length > 0;
       const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
@@ -160,14 +161,23 @@ export default function ReserveToCheckin({ route, navigation }) {
       const amt = Number(e.amount);
 
       // ✅ CASE 1: type not selected -> ignore row (no validation)
-      if (!e.type) {
-        return { ...e, titleError: "", amountError: "" };
+      // if (!e.type) {
+      //   return { ...e, titleError: "", amountError: "" };
+      // }
+
+      // case 1: if not selected type --show error message
+
+       if (!e.type) {
+        typeError = "Please select type";
+        valid = false;
+
+        return { ...e, typeError, titleError: "", amountError: "" };
       }
 
       // ✅ CASE 2: Maintenance -> amount mandatory
       if (e.type === "Maintenance") {
         if (!amountFilled) {
-          amountError = "Please enter maintenance amount";
+          amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
           amountError = "Amount must be greater than 0";
@@ -179,17 +189,16 @@ export default function ReserveToCheckin({ route, navigation }) {
 
       // ✅ CASE 3: Others -> reason + amount both mandatory
       if (e.type === "Others") {
+        typeError="";
         // both empty -> ok (optional row)
-        if (!titleFilled && !amountFilled) {
-          return { ...e, titleError: "", amountError: "" };
-        }
+        // if (!titleFilled && !amountFilled) {
+        //   return { ...e,typeError, titleError: "", amountError: "" };
+        // }
 
         if (!titleFilled) {
           titleError = "Please enter reason";
           valid = false;
-        }
-
-        if (!amountFilled) {
+        }else if (!amountFilled) {
           amountError = "Please enter amount";
           valid = false;
         } else if (isNaN(amt) || amt <= 0) {
@@ -197,10 +206,10 @@ export default function ReserveToCheckin({ route, navigation }) {
           valid = false;
         }
 
-        return { ...e, titleError, amountError };
+        return { ...e,typeError, titleError, amountError };
       }
 
-      return { ...e, titleError: "", amountError: "" };
+      return { ...e,typeError, titleError: "", amountError: "" };
     });
 
     setExtraCharges(updated);
@@ -547,6 +556,10 @@ export default function ReserveToCheckin({ route, navigation }) {
 
                    {item.titleError && (
                         <ErrorMessage message={item.titleError} type="error" />
+                      )}
+
+                      {item.typeError && (
+                        <ErrorMessage message={item.typeError} type="error" />
                       )}
                     
                       {item.amountError && (

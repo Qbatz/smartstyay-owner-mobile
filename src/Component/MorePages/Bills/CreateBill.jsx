@@ -469,10 +469,10 @@ const handleDueDateChange = (date) => {
     hasError = true;
   }
 
-  if (!dueDate) {
-    setDueDateErr("Please Select Due Date");
-    hasError = true;
-  }
+  // if (!dueDate) {
+  //   setDueDateErr("Please Select Due Date");
+  //   hasError = true;
+  // }
 
   if (!items.length) {
     setItemErr("Please add at least one item");
@@ -496,7 +496,7 @@ const handleDueDateChange = (date) => {
   const payload = {
     customerId: selectedCustomer.id,
     invoiceDate: dayjs(invoiceDate).format("DD-MM-YYYY"),
-    dueDate: dayjs(dueDate).format("DD-MM-YYYY"),
+    // dueDate: dayjs(dueDate).format("DD-MM-YYYY"),
     invoiceNumber: invoiceNo,
     total_amount: totalAmount,
     items: items.map((i) => ({
@@ -772,7 +772,7 @@ const handleDueDateChange = (date) => {
                                 )}
 
 
-
+{/* 
      <Text style={styles.label}>
   Due Date <Text style={{ color: "red" }}>*</Text>
 </Text>
@@ -790,37 +790,13 @@ const handleDueDateChange = (date) => {
   <Image source={CalendarIcon} style={{ width: 20, height: 20 }} />
 </TouchableOpacity>
 
-{/* <Modal
-  transparent
-  visible={openDueDate}
-  animationType="fade"
-  onRequestClose={() => setOpenDueDate(false)}
->
-  <View style={styles.datePickerOverlay}>
-    <TouchableOpacity
-      style={styles.outsideTouch}
-      activeOpacity={1}
-      onPress={() => setOpenDueDate(false)}
-    />
 
-    <View style={styles.datePickerBox}>
-      <DatePicker
-        mode="single"
-        date={dueDate || new Date()}
-        onChange={(d) => {
-        handleDueDateChange(d.date);
-        setOpenDueDate(false);
-        }}
-      />
-    </View>
-  </View>
-</Modal> */}
 
 
 
       {dueDateErr && (
                     <ErrorMessage message={dueDateErr} type="error" />
-                                )}
+                                )} */}
 
 
 

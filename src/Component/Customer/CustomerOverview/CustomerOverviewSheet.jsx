@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity, TouchableWithoutFeedback,
   Image, BackHandler,
-  NativeModules
+  NativeModules , Animated , Linking
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -40,6 +40,9 @@ import CheckinIcon from "../../../Assets/Images/Checkin_Icon.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import CustomerTransaction from "./CustomerTransaction"
 import ReAssignIcon from "../../../Assets/Images/ReAssign.png";
+import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
+import Call from "../../../Assets/Images/call.png";
+import StayIcon from "../../../Assets/Images/swap.png"
 import ReassignBedSheet from "../ReAssignBed";
 import MoveNoticeSheet from "../MoveToNoticePeriod";
 import InactiveTenantSheet from "../../PG/ReservedBed/MakeUsInActiveSheet";
@@ -50,6 +53,8 @@ import MoveToNoticeIcon from "../../../Assets/Images/Logout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout_red.png"
 import Generate from "../../../Assets/Images/fsi.png"
 import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
+import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
+import ImagePickerSheet from "./ImagePickerSheet"
 
 
 export default function CustomerOverviewScreen({ route, navigation }) {
@@ -87,6 +92,28 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
+    const [BillDetailshow, setBillDetailsShow] = useState(false)
+
+    const scrollY = useRef(new Animated.Value(0)).current;
+const [showHeader, setShowHeader] = useState(false);
+
+const translateY = scrollY.interpolate({
+  inputRange: [0, 150],
+  outputRange: [0, -150],
+  extrapolate: "clamp",
+});
+
+const opacity = scrollY.interpolate({
+  inputRange: [0, 120],
+  outputRange: [1, 0],
+  extrapolate: "clamp",
+});
+
+const headerTranslateY = scrollY.interpolate({
+  inputRange: [0, 120],
+  outputRange: [-60, 0], // header slide down
+  extrapolate: "clamp",
+});
 
   useEffect(() => {
     CommonModule.fetchEnvironment().then(r => {
@@ -112,6 +139,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription && canUpdateTenant;
+  const isSubscriptionReadAllow = isValidSubscription && canReadTenant;
 
   console.log("customerDetails", customerDetails)
   useEffect(() => {
@@ -148,26 +176,34 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       setCustomerDetails(res.data)
     }
   }
+
+
+  const [showProfileSheet, setShowProfileSheet] = useState(false);
+
   const handleProfilePress = () => {
-    Alert.alert(
-      "Change Profile Picture",
-      "Choose an option",
-      [
-        {
-          text: "Camera",
-          onPress: () => openCamera(),
-        },
-        {
-          text: "Gallery",
-          onPress: () => openGallery(),
-        },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-      ]
-    );
-  };
+  setShowProfileSheet(true);
+};
+
+  // const handleProfilePress = () => {
+  //   Alert.alert(
+  //     "Change Profile Picture",
+  //     "Choose an option",
+  //     [
+  //       {
+  //         text: "Camera",
+  //         onPress: () => openCamera(),
+  //       },
+  //       {
+  //         text: "Gallery",
+  //         onPress: () => openGallery(),
+  //       },
+  //       {
+  //         text: "Cancel",
+  //         style: "cancel",
+  //       },
+  //     ]
+  //   );
+  // };
 
   const openCamera = () => {
     launchCamera(
@@ -224,6 +260,50 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     );
   };
 
+
+  
+  const handleCallPhone = (mobile) => {
+    console.log("mobile", mobile)
+    if (mobile?.mobileNo) {
+      CommonModule.makeCall(mobile?.mobileNo)
+    }
+  }
+
+
+  
+  const handleOpenWhatsapp = (item) => {
+    console.log("mobile", item);
+    if (!item) return;
+  
+    let mobile = item?.mobileNo || item?.mobile;
+    let countryCode = item?.countryCode || "91";
+  
+    if (!mobile) {
+      setModalType("warning");
+      setMessage("Mobile number not available");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+      return;
+    }
+  
+    mobile = mobile.toString().replace(/\D/g, "");
+  
+    if (mobile.startsWith(countryCode)) {
+      mobile = mobile.slice(countryCode.length);
+    }
+  
+    const phoneNumber = `${countryCode}${mobile}`;
+    const url = `https://wa.me/${phoneNumber}`;
+  
+    console.log("url", url);
+  
+    Linking.openURL(url).catch(() => {
+      setModalType("warning");
+      setMessage("WhatsApp not installed");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+    });
+  };
 
   // const openGallery = () => {
   //   launchImageLibrary(
@@ -348,6 +428,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     });
   };
 
+
+ 
 
 
 
@@ -474,7 +556,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return <EBReadingTab customerDetails={customerDetails} />;
 
       case "Bill":
-        return <BillTab customerDetails={customerDetails} />;
+        return <BillTab customerDetails={customerDetails}   ShowBillsDetails={() => setBillDetailsShow(true)}/>;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;
@@ -504,69 +586,104 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
+
+        <View style={{ flex: 1 }}>
+        
+
+  {showHeader && (
+    <Animated.View style={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 60,
+      backgroundColor: "#fff",
+      // justifyContent: "center",
+      alignItems: "center",
+      zIndex: 100,
+      // elevation: 10,
+      borderBottomWidth: 0.5,
+      borderColor: "#ddd",
+      display:'flex',flexDirection:'row', justifyContent:'space-between',
+        transform: [{ translateY: headerTranslateY }],
+    }}>
+      <View style={{flexDirection:'row'}}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+            {/* <Text style={styles.back}>←</Text> */}
+            <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
+          </TouchableOpacity>
+      <Text style={{ fontSize: 16, fontWeight: "600" }}>
+        {customerDetails?.fullName}
+      </Text>
+      </View>
+
+       {customerDetails?.customerCurrentStatus != "VACATED" && (
+              <TouchableOpacity onPress={(e) => {
+                openMenu(e, customerDetails);
+              }}>
+                <Image
+                  source={MoreDot}
+                  style={{ width: 20, height: 20, }}
+                />
+
+              </TouchableOpacity>
+
+            )}
+    </Animated.View>
+  )}
+
+        <Animated.ScrollView
+  onScroll={(event) => {
+    const y = event.nativeEvent.contentOffset.y;
+
+    if (y > 80 && !showHeader) {
+      setShowHeader(true);
+    } else if (y <= 80 && showHeader) {
+      setShowHeader(false);
+    }
+
+    scrollY.setValue(y);
+  }}
+  scrollEventThrottle={16}
+    stickyHeaderIndices={[2]}
+  contentContainerStyle={{ paddingBottom: 100 }}
+>
         {/* HEADER */}
+
+
+
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             {/* <Text style={styles.back}>←</Text> */}
             <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Tenant Profile</Text>
+         
 
-          {/* {
-            environment !== "PROD" && (
-              customerDetails?.customerCurrentStatus !== "VACATED" && (
-                <Image source={CheckinIcon} style={{ height: 25, width: 22 }} />
-              )
-            )
-          } */}
 
-          {/* <View style={styles.notificationDot} /> */}
+           {customerDetails?.customerCurrentStatus != "VACATED" && (
+              <TouchableOpacity onPress={(e) => {
+                openMenu(e, customerDetails);
+              }}>
+                <Image
+                  source={MoreDot}
+                  style={{ width: 20, height: 20, }}
+                />
+
+              </TouchableOpacity>
+
+            )}
         </View>
 
-        {/* PROFILE CARD */}
-        {/* <View style={styles.profileCard}>
-        <Image source={ProfileImg} style={styles.avatar} />
+   
+        <Animated.View style={[
+  styles.profileCard,
+ {
+    transform: [{ translateY }],
+    opacity
+  }
+]}>
 
-        <View style={{ flex: 1 }}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{customerDetails?.fullName}</Text>
-            <Text style={styles.verified}>✔</Text>
-            <TouchableOpacity onPress={() => setShowStayHistory(true)}>
-  <Text style={[styles.verified, { color: "#2563EB" }]}>
-    Stay
-  </Text>
-</TouchableOpacity>
-          </View>
-
-          <View style={styles.metaRow}>
-            <View style={styles.floorBadge}>
-              <Text style={styles.floorText}>{customerDetails?.hostelInfo?.floorName}</Text>
-            </View>
-
-            <Image source={RoomIcon} style={styles.icon} />
-            <Text style={styles.metaText}>{customerDetails?.hostelInfo?.roomName}</Text>
-
-            <Image source={BedIcon} style={styles.icon} />
-            <Text style={styles.metaText}>{customerDetails?.hostelInfo?.bedName}</Text>
-          </View>
-        </View>
-
-        
-      </View> */}
-        <View style={styles.profileCard}>
-
-          {/* PROFILE IMAGE */}
-          {/* <Image source={ProfileImg} style={styles.avatar} /> */}
-          {/* <TouchableOpacity onPress={handleProfilePress}>
-  <Image
-    source={
-      profileImage?.uri
-        ? { uri: profileImage.uri }
-        : ProfileImg
-    }
-    style={styles.avatar}
-  />
-</TouchableOpacity> */}
+ 
           <View
             style={{
               flexDirection: 'row',
@@ -611,7 +728,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
 
-            {customerDetails?.customerCurrentStatus != "VACATED" && (
+            {/* {customerDetails?.customerCurrentStatus != "VACATED" && (
               <TouchableOpacity onPress={(e) => {
                 openMenu(e, customerDetails);
               }}>
@@ -622,7 +739,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
               </TouchableOpacity>
 
-            )}
+            )} */}
 
 
           </View>
@@ -664,9 +781,34 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 </Text>
               </View>
 
+
+               <View style={styles.actionRow}>
+              
+                              <TouchableOpacity
+                                style={[styles.reminderBtn, !isSubscriptionReadAllow && { opacity: 0.4 }]}
+                                disabled={!isSubscriptionReadAllow}
+                                onPress={()=>handleOpenWhatsapp(customerDetails)}
+                                >
+                                <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                                <Text style={styles.reminderText}>Chat </Text>
+                              </TouchableOpacity>
+              
+                              <TouchableOpacity
+                                style={[styles.callBtn, !isSubscriptionReadAllow && { opacity: 0.4 }]}
+                                disabled={!isSubscriptionReadAllow}
+                                onPress={() => {
+                                  handleCallPhone(customerDetails)
+                                }}
+                                >
+                                <Image source={Call} style={styles.actionIcon} />
+                                <Text style={styles.callText}>Call</Text>
+                              </TouchableOpacity>
+              
+                            </View>
+
          
 
-          {
+          {/* {
             customerDetails?.customerCurrentStatus == "VACATED" && (
               <View style={{
                 paddingVertical: 8, paddingHorizontal: 10, backgroundColor: "#fbd5d2", borderRadius: 10,
@@ -679,8 +821,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           }
 
 
-          {/* BUTTON ROW */}
-
+         
           {
             customerDetails?.customerCurrentStatus !== "VACATED" && (
               <View style={styles.actionRow}>
@@ -726,16 +867,21 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 </TouchableOpacity>
                 </View>
             )
-          }
+          } */}
 
 
-        </View>
+        </Animated.View>
 
 
 
         {/* TABS */}
         <View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabRow}>
+
+           <View style={{
+    backgroundColor: "#fff",
+    zIndex: 5,  paddingTop: showHeader ? 70 : 0 
+  }}>
+       <View style={styles.tabRow}>
             {["Overview", "EB Reading", "Bill", "Transactions"].map((tab) => {
               const isActive = activeTab === tab;
               return (
@@ -751,7 +897,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          </View>
+          </View>
         </View>
 
         {/* CONTENT */}
@@ -760,7 +907,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         </View>
 
 
-
+</Animated.ScrollView>
 
       </View>
 
@@ -917,6 +1064,22 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
                   )}
 
+            {selectedItem &&
+                  !["BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+                  <TouchableOpacity
+                      style={[
+                        styles.popupRow,
+                        !canUpdateTenant && { opacity: 0.4 }]}
+                      disabled={!canUpdateTenant}
+                      onPress={() => {
+                        setShowStayHistory(true)
+                        setMenuVisible(false)
+                      }}
+                    >
+                      <Image source={StayIcon} style={styles.popupIcon} />
+                      <Text style={styles.popupText}>Stay History</Text>
+                    </TouchableOpacity>
+  )}
 
 
 
@@ -975,6 +1138,33 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         />
       }
 
+
+   <ImagePickerSheet
+  visible={showProfileSheet}
+  onClose={() => setShowProfileSheet(false)}
+  title="Change Profile Picture"
+  options={[
+    {
+      label: "Take Picture",
+      icon: require("../../../Assets/Images/CameraIcon.png"),
+      showArrow: true,
+      onPress: openCamera,
+    },
+    {
+      label: "Select from Gallery",
+      icon: require("../../../Assets/Images/GalleryIcon.png"),
+      showArrow: true,
+      onPress: openGallery,
+    },
+    {
+      label: "Remove Picture",
+      icon: require("../../../Assets/Images/DeleteIcon.png"),
+      showArrow: false,
+      onPress: () => console.log("remove"),
+    },
+  ]}
+/>
+
       <EditBasicDetailsSheet
         visible={showEdit}
         onClose={() => setShowEdit(false)}
@@ -1024,6 +1214,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   //   setShowContactSheet(false);
   // }}
 />
+  <BillDetailsSheet
+  visible={BillDetailshow}
+  onClose={() => setBillDetailsShow(false)}
+  // bill={selectedBill}
+/>
+</View>
     </>
   );
 }
@@ -1037,8 +1233,10 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
+    justifyContent:'space-between',
     alignItems: "center",
     marginBottom: 14,
+    
   },
   back: { fontSize: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "600", flex: 1 },
@@ -1052,23 +1250,24 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: "column",
     backgroundColor: "#fff",
-    borderRadius: 16,
+    // borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     alignItems: "center",
+    // backgroundColor:'#f1f4ff'
 
     // ✅ Border
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    // borderWidth: 1,
+    // borderColor: "#E5E7EB",
 
     // ✅ Shadow (iOS)
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 8,
 
     // ✅ Shadow (Android)
-    elevation: 3,
+    // elevation: 3,
   },
 
 
@@ -1169,7 +1368,7 @@ const styles = StyleSheet.create({
 
   stayBtn: {
     flex: 1,
-    backgroundColor: "#7990de",
+    backgroundColor: "#c0caec",
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
@@ -1255,6 +1454,51 @@ const styles = StyleSheet.create({
   popupText: {
     fontSize: 14,
     color: "#333",
+  },
+    actionRow: {
+    flexDirection: "row",
+    marginTop: 14,
+    gap: 10
+  },
+
+  reminderBtn: {
+    display: 'flex',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F7EE",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  callBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    backgroundColor: "#E8F0FF",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flex: 1
+  },
+
+  reminderText: {
+    color: "#00A653",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+
+  callText: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Semibold",
+    marginLeft: 6
+  },
+
+  actionIcon: {
+    width: 18,
+    height: 18
   },
 
 });

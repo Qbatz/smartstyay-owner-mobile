@@ -10,6 +10,7 @@ import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 
 
 
@@ -42,7 +43,7 @@ export default function AddTenant() {
 ];
 
 
-
+    const [showProfileSheet, setShowProfileSheet] = useState(false);
 
 
     const pickImage = () => {
@@ -64,6 +65,41 @@ export default function AddTenant() {
             }
         });
     };
+
+
+     const openCamera = () => {
+        launchCamera(
+          {
+            mediaType: "photo",
+            quality: 0.7,
+          },
+          (response) => {
+            if (response.didCancel) return;
+            if (response.assets && response.assets.length > 0) {
+            //   setProfileImage(response.assets[0]);
+            const source = { uri: response.assets[0].uri };
+                setSelectedImage(source);
+            }
+          }
+        );
+      };
+      const openGallery = () => {
+        launchImageLibrary(
+          { mediaType: "photo", quality: 0.7 },
+          async (response) => {
+            if (response.didCancel) return;
+    
+            if (response.assets?.length > 0) {
+            //   const image = response.assets[0];
+            //   setProfileImage(image); // UI update
+    const source = { uri: response.assets[0].uri };
+                setSelectedImage(source);
+                     
+            }
+          }
+        );
+      };
+    
 
     useFocusEffect(
         useCallback(() => {
@@ -395,7 +431,7 @@ export default function AddTenant() {
                                         style={styles.editIcon}
                                     />
                                 </TouchableOpacity> */}
-                                        <TouchableOpacity style={styles.editIconWrapper} onPress={pickImage}>
+                                        <TouchableOpacity style={styles.editIconWrapper} onPress={()=>setShowProfileSheet(true)}>
                                             <Image
                                                 source={require("../../Assets/Images/edit.png")}
                                                 style={styles.editIcon}
@@ -801,6 +837,32 @@ export default function AddTenant() {
                         )}
                     </ScrollView>
                 </KeyboardAvoidingView>
+
+                <ImagePickerSheet
+                  visible={showProfileSheet}
+                  onClose={() => setShowProfileSheet(false)}
+                  title="Change Profile Picture"
+                  options={[
+                    {
+                      label: "Take Picture",
+                      icon: require("../../Assets/Images/CameraIcon.png"),
+                      showArrow: true,
+                      onPress: openCamera,
+                    },
+                    {
+                      label: "Select from Gallery",
+                      icon: require("../../Assets/Images/GalleryIcon.png"),
+                      showArrow: true,
+                      onPress: openGallery,
+                    },
+                    {
+                      label: "Remove Picture",
+                      icon: require("../../Assets/Images/DeleteIcon.png"),
+                      showArrow: false,
+                      onPress: () => console.log("remove"),
+                    },
+                  ]}
+                />
             </SafeAreaView>
         </>
     );

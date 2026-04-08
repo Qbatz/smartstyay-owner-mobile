@@ -67,6 +67,35 @@ const updateElectricity = async (hostelId, unitPrice) => {
       return { success: false, data: err.response?.data };
     }
   };
+
+const NewupdateElectricityRule = async (hostelId, payload) => {
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+const query = new URLSearchParams({
+  typeofReading: payload.typeOfReading,   // ✅ FIX
+  charge: payload.charge ?? 0,
+  shouldIncludeInRent: payload.shouldIncludeInRent,
+  frequent: payload.frequent || "MONTHLY",
+}).toString();;
+
+    const url = `/v2/hostel/electricity/config/${hostelId}?${query}`;
+
+    console.log("EB CONFIG URL →", url);
+
+    const res = await axios.put(url, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return { success: true, data: res.data };
+
+  } catch (err) {
+    console.log("EB CONFIG ERROR →", err?.response?.data);
+    return { success: false, data: err?.response?.data };
+  }
+};
+
 const changeRoomHostelElectricity = async (payload) => {
   try {
     const token = await retriveData("token");
@@ -137,7 +166,7 @@ const addBillingRecurring = async (payload) => {
     return { success: true, data: res.data };
 
   } catch (err) {
-    return { success: false, data: err.response?.data };
+    return { success: false, data: err?.response?.data || err?.messag};
   }
 };
 
@@ -742,10 +771,81 @@ const downloadInvoiceReport = async (hostelId) => {
   }
 };
 
+const getHostelPlans = async () => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/plans`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("PLANS RESPONSE →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log("PLANS ERROR →", err.response?.data || err.message);
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const getCurrentHostelPlan = async (hostelId) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/plans/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("CURRENT PLAN →", res.data);
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (err) {
+    console.log("CURRENT PLAN ERROR →", err.response?.data || err.message);
+
+    return {
+      success: false,
+      data: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport , downloadExpenseReport, downloadInvoiceReport}}>
+    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
+     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule }}>
       {children}
     </ElectricityContext.Provider>
   );

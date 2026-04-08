@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder , NativeModules
+  PanResponder , NativeModules , Linking
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -26,6 +26,7 @@ import InactiveTenantSheet from "../ReservedBed/MakeUsInActiveSheet";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { PGContext } from "../../../Context/PGContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveToNotice, onReAssign, handleEditBed, selectedBed, onBedAdded, handleMakeUsInActive, handleCheckIn }) {
   const translateY = useRef(new Animated.Value(300)).current;
@@ -41,6 +42,10 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
    const {CommonModule}=NativeModules;
      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
  const { activeHostelId } = useContext(CommonContexts);
+
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
 
 
          useEffect(() => {
@@ -131,6 +136,42 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
   } = useHasPermission("Paying Guests");
 
+
+  const handleOpenWhatsapp = (item) => {
+    console.log("mobile", item);
+    if (!item) return;
+  
+    let mobile = item?.mobileNo || item?.mobile;
+    let countryCode = item?.countryCode || "91";
+  
+    if (!mobile) {
+      setModalType("warning");
+      setModalMessage("Mobile number not available");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+  
+    mobile = mobile.toString().replace(/\D/g, "");
+  
+    if (mobile.startsWith(countryCode)) {
+      mobile = mobile.slice(countryCode.length);
+    }
+  
+    const phoneNumber = `${countryCode}${mobile}`;
+    const url = `https://wa.me/${phoneNumber}`;
+  
+    console.log("url", url);
+  
+    Linking.openURL(url).catch(() => {
+      setModalType("warning");
+      setModalMessage("WhatsApp not installed");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    });
+  };
+  
+
 const isValidSubscription = PGDetails?.isSubscriptionActive;
 const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
@@ -140,6 +181,14 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   return (
     <>
+
+       <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+
       <View style={styles.overlay}>
 
         <TouchableWithoutFeedback onPress={closeSheet}>
@@ -275,15 +324,17 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
                                 <View style={styles.actionRow}>
             
-                                  {/* <TouchableOpacity style={styles.chatBtn} >
+                                  <TouchableOpacity
+                                   style={[styles.chatBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                   disabled={!isSubscriptionAllow} 
+                                   onPress={() =>handleOpenWhatsapp(selectedBed?.currentTenantInfo[0])}>
                                     <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                     <Text style={styles.chatText}>Chat</Text>
-                                  </TouchableOpacity> */}
+                                  </TouchableOpacity>
             
                                   <TouchableOpacity
-                                         style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
-                                 disabled={!isSubscriptionAllow}
-                                  // style={styles.callBtn} 
+                                  style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                                  disabled={!isSubscriptionAllow}
                                   onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
                                     <Image source={Call} style={styles.actionIcon} />
                                     <Text style={styles.callText}>Call</Text>
@@ -397,18 +448,30 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Booking Amount</Text>
-                          <Text style={styles.value}>₹  {item.bookingAmount}</Text>
+
+                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                            <Image source={Money} style={styles.icon} />
+                            <Text style={styles.value}>₹  {item.bookingAmount}</Text>
+                          </View>     
                         </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Check-In Date</Text>
-                          <Text style={styles.value}> {item.joiningDate}</Text>
+
+                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                              <Image source={Calendar} style={{width: 20, height: 20,marginRight:5}} />
+                               <Text style={styles.value}> {item.joiningDate}</Text>
+                          </View>
+                         
                         </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Last Invoice</Text>
-                          <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
-                          </Text>
+                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                            <Image source={Invoice} style={styles.icon} />
+                             <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}</Text>
+                          </View>
+                         
                         </View>
                         {showReservedMenu === index && (
                           <>

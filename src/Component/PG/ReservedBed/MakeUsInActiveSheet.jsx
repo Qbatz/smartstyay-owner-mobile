@@ -15,6 +15,7 @@ import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import { useCustomer } from "../../../Context/CustomerContext";
 import CalendarImage from "../../../Assets/Images/calendar.png";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -36,6 +37,11 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [refundFromError, setRefundFromError] = useState("");
+    const [refundFrom, setRefundFrom] = useState("");
+    const [showRefundFrom, setShowRefundFrom] = useState(false);
+
+
   console.log("bookingDetails", bookingDetails)
   const today = dayjs().format("YYYY-MM-DD");
   const [customers, setCustomers] = useState([]);
@@ -135,6 +141,10 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const handleClose = () => {
     setComments("");
     setCommentError("");
+    setJoiningDateError("")
+    setRefundFromError("")
+    setRefundFrom("")
+    setShowRefundFrom(false)
     setJoiningDate(null);
     setOpenJoinDatePic(false);
     onClose();
@@ -172,6 +182,13 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   });
 
 
+   const refundBankOptions = (bankdetails?.listBanks || []).map((b) => ({
+  label: `${b?.holderName || ""} - ${b?.bankName || ""}`,
+  value: b?.bankId,
+}));
+
+
+
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 400,
@@ -181,10 +198,16 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   }, [visible]);
 
   if (!visible && !showSuccess) return null;
+
+
   const handleConfirmCancel = async () => {
     let valid = true;
     if (!joiningDate) {
       setJoiningDateError("Please select joining date");
+      valid = false;
+    }
+      if (!refundFrom) {
+      setRefundFromError("Please Select Refund Account");
       valid = false;
     }
 
@@ -194,11 +217,10 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
     const payload = {
       reason: comments,
       cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-      bankId: bankdetails?.listBanks?.[0]?.bankId,
-
+      bankId: refundFrom,
     };
 
-    console.log("CANCEL PAYLOAD 👉", payload);
+    console.log("PAYLOAD", payload);
 
     const res = await cancelBooking(
       customerId,
@@ -221,7 +243,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
     } else {
       setModalType("warning");
-      setMessage(res.message);
+      setMessage(res?.message);
       setShowSuccess(true);
 
 
@@ -287,7 +309,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             <View style={styles.profileRow}>
               {(selectedItem?.profilePic || matchedCustomer?.profilePic) ? <Image source={{ uri: selectedItem?.profilePic || matchedCustomer?.profilePic }} style={styles.profileImg} /> :
                 <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
-                  <Text style={{ fontSize: 16, fontWeight: 600 }}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
+                  <Text style={{ fontSize: 16,fontFamily: "Gilroy-Semibold"}}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
                 </View>}
 
 
@@ -334,6 +356,76 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             {joiningDateError && (
               <ErrorMessage message={joiningDateError} type="error" />
             )}
+
+            <View style={{ position: "relative" }}>
+            
+                                <Text style={styles.label}>
+                                  Refund From <Text style={{ color: "red" }}>*</Text>
+                                </Text>
+                                {/* INPUT */}
+                                <TouchableOpacity
+                                  style={styles.inputBox}
+                                  onPress={() => {
+                                    setRefundFromError("");
+                                    setShowRefundFrom(v => !v);
+                                  }}
+                                >
+                                  <Text style={{ fontSize: 15 }}>
+                                    {refundFrom
+                                      ? refundBankOptions.find(o => o.value === refundFrom)?.label
+                                      : "Select bank"}
+                                  </Text>
+            
+                                  <Image
+                                    source={DownArrow}
+                                    style={{ width: 18, height: 18, tintColor: "#555" }}
+                                  />
+                                </TouchableOpacity>
+            
+                                {/* DROPDOWN */}
+                                {showRefundFrom && (
+                                  <View style={styles.transactiondropdown}>
+                                    <ScrollView
+                                      nestedScrollEnabled
+                                      scrollEnabled={refundBankOptions.length > 3}
+                                      showsVerticalScrollIndicator={false}
+                                    >
+                                      {refundBankOptions.map(opt => {
+                                        const isSelected = refundFrom === opt.value;
+            
+                                        return (
+                                          <TouchableOpacity
+                                            key={opt.value}
+                                            style={[
+                                              styles.dropdownRow,
+                                              isSelected && styles.dropdownRowSelected,
+                                            ]}
+                                            onPress={() => {
+                                              setRefundFrom(opt.value);
+                                              setShowRefundFrom(false);
+                                              setRefundFromError("");
+                                            }}
+                                          >
+                                            <Text
+                                              style={
+                                                isSelected
+                                                  ? styles.dropdownTextSelected
+                                                  : styles.dropdownText
+                                              }
+                                            >
+                                              {opt.label}
+                                            </Text>
+                                          </TouchableOpacity>
+                                        );
+                                      })}
+                                    </ScrollView>
+                                  </View>
+                                )}
+                              </View>
+            
+                              {refundFromError && (
+                                <ErrorMessage message={refundFromError} type="error" />
+                              )}
 
             {/* Reason */}
             <Text style={[styles.label, { marginTop: 12 }]}>
@@ -457,18 +549,20 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 20,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
   subTitle: {
     fontSize: 14,
     color: "#666",
-    marginTop: 4
+    marginTop: 7,
+    marginBottom:5,
+    fontFamily: "Gilroy-Semibold"
   },
 
   label: {
     marginTop: 15,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#333",
   },
 
@@ -481,6 +575,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    fontFamily: "Gilroy-Regular" 
   },
 
   textArea: {
@@ -491,12 +586,14 @@ const styles = StyleSheet.create({
     height: 100,
     marginTop: 6,
     textAlignVertical: "top",
+    fontFamily: "Gilroy-Regular" 
   },
 
   btnRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+    marginBottom:30
   },
 
   cancelBtn: {
@@ -511,6 +608,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 15,
     color: "#555",
+     fontFamily: "Gilroy-Bold" ,
   },
 
   confirmBtn: {
@@ -524,7 +622,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
 
@@ -547,10 +645,11 @@ calendarOverlay: {
     marginBottom: 120,
     borderWidth: 1,
     borderColor: "#5555",
+    
   },
   profileRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   profileImg: { width: 50, height: 50, borderRadius: 25 },
-  name: { fontSize: 16, fontWeight: "600" },
+  name: { fontSize: 16, fontFamily: "Gilroy-Semibold"},
 
   badgeRow: { flexDirection: "row", marginTop: 5 },
   badgeYellow: {
@@ -566,6 +665,68 @@ calendarOverlay: {
     paddingVertical: 4,
     borderRadius: 8,
   },
-  badgeText: { fontSize: 12 },
+  badgeText: { fontSize: 12 , fontFamily: "Gilroy-Regular"},
+  inputBox: {
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E2E2",
+    paddingHorizontal: 14,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    // marginBottom: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    fontFamily: "Gilroy-Regular"
+  },
+    transactiondropdown: {
+    position: "absolute",
+    top: 77,          // 👈 input height
+    left: 0,
+    right: 0,
 
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 9999,
+    elevation: 20,
+
+    maxHeight: 160,
+    fontFamily: "Gilroy-Semibold"
+  },
+
+
+
+
+  dropdownContent: {
+    // minHeight: 130,   
+    height: 'auto',
+    maxHeight: 130
+  },
+
+  dropdownRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+
+  dropdownRowSelected: {
+    backgroundColor: "#1E45E1",
+  },
+
+  dropdownText: {
+    color: "#111",
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold"
+  },
+
+  dropdownTextSelected: {
+    color: "#fff", // 👈 WHITE
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+
+  arrow: { fontSize: 18, color: "#555" },
 });

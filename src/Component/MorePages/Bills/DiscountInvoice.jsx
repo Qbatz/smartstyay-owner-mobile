@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  SafeAreaView,
+  SafeAreaView,ScrollView
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useEffect } from "react";
@@ -16,12 +16,15 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import room from "../../../Assets/Images/PG_active.png";
 import Bed from "../../../Assets/Images/bed.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function DiscountInvoiceScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+
+   const onSuccess = route?.params?.onSuccess;
 
     const { BillDetails, loading, GetAllBillDetails,
       RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
@@ -166,6 +169,22 @@ console.log({
     discountType === "Percentage" ? Number(discount) : 0,
 });
 
+
+const sendpayload = {
+  hostelId: bill?.hostelId,
+  invoiceId: bill?.invoiceId,
+  reason: reason || "",
+  ...(discountType === "Amount" && {
+    discountAmount: Number(discount),
+  }),
+  ...(discountType === "Percentage" && {
+    discountPercentage: Number(discount),
+  }),
+};
+
+console.log("sendpayload", sendpayload);
+
+
 const handleDiscountApply = async () => {
   let hasError = false;
 
@@ -202,22 +221,39 @@ const handleDiscountApply = async () => {
 
   if (hasError) return;
 
-const res = await ApplyBillDiscount({
-  hostelId: bill?.hostelId,
-  invoiceId: bill?.invoiceId,
+const payload = {
+  hostelId: activeHostelId,
+  invoiceId: BillPdfdetails?.invoiceId,
+  reason: reason || "",
+  ...(discountType === "Amount" && {
+    discountAmount: Number(discount),
+  }),
+  ...(discountType === "Percentage" && {
+    discountPercentage: Number(discount),
+  }),
+};
 
-  discountAmount:
-    discountType === "Amount"
-      ? Number(discount)
-      : discountValue,
+console.log("payload", payload);
 
-  discountPercentage:
-    discountType === "Percentage"
-      ? Number(discount)
-      : 0,
 
-  reason,
-});
+const res = await ApplyBillDiscount(payload);
+
+// const res = await ApplyBillDiscount({
+//   hostelId: bill?.hostelId,
+//   invoiceId: bill?.invoiceId,
+
+//   discountAmount:
+//     discountType === "Amount"
+//       ? Number(discount)
+//       : discountValue,
+
+//   discountPercentage:
+//     discountType === "Percentage"
+//       ? Number(discount)
+//       : 0,
+
+//   reason,
+// });
 
   if (res?.success) {
     setModalType("success");
@@ -226,6 +262,9 @@ const res = await ApplyBillDiscount({
 
     setTimeout(() => {
       navigation.goBack();
+       if (onSuccess) {
+      onSuccess(); 
+    }
       setShowSuccessModal(false);
     }, 1500);
   } else {
@@ -304,29 +343,47 @@ const res = await ApplyBillDiscount({
 </Text>
 
 <TouchableOpacity
-  style={styles.dropdown}
-  onPress={() => setShowReasonDropdown(!showReasonDropdown)}
+  style={styles.customerdropdownBox}
+  onPress={() => setShowReasonDropdown((v) => !v)}
 >
   <Text style={{ color: reason ? "#000" : "#9CA3AF" }}>
-    {reason || "Select"}
+    {reason || "Select Reason"}
   </Text>
+
+  <Image source={DownArrow} style={styles.arrowIcon} />
 </TouchableOpacity>
 
 {showReasonDropdown && (
-  <View style={styles.dropdownList}>
-    {reasons.map((item, index) => (
-      <TouchableOpacity
-        key={index}
-        style={styles.dropdownItem}
-        onPress={() => {
-          setReason(item);
-          setShowReasonDropdown(false);
-          setReasonErr("")
-        }}
-      >
-        <Text>{item}</Text>
-      </TouchableOpacity>
-    ))}
+  <View style={styles.customerDropdownMenu}>
+    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+      {reasons.map((item, index) => {
+        const isSelected = reason === item;
+
+        return (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.customerOption,
+              isSelected && styles.customerOptionSelected,
+            ]}
+            onPress={() => {
+              setReason(item);
+              setShowReasonDropdown(false);
+              setReasonErr("");
+            }}
+          >
+            <Text
+              style={[
+                styles.customerOptionText,
+                isSelected && styles.customerOptionTextSelected,
+              ]}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
   </View>
 )}
  {reasonErr && (
@@ -383,19 +440,41 @@ const res = await ApplyBillDiscount({
     placeholder={discountType === "Amount" ? "₹ 0.00" : "0 %"}
     keyboardType="numeric"
     value={discount}
-   onChangeText={(text) => {
-  setDiscount(text);
+    onChangeText={(text) => {
+  // ✅ allow only numbers + dot
+  let cleaned = text.replace(/[^0-9.]/g, "");
 
-  const num = Number(text);
+  // ✅ prevent multiple dots
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "." + parts[1];
+  }
 
-  if (text && !isNaN(num) && num > 0) {
+  setDiscount(cleaned);
+
+  const num = Number(cleaned);
+
+  if (cleaned && !isNaN(num) && num > 0) {
     setDiscountErr("");
   }
 
-  if (text && (isNaN(num) || num <= 0)) {
+  if (cleaned && (isNaN(num) || num <= 0)) {
     setDiscountErr("Enter valid discount");
   }
 }}
+//    onChangeText={(text) => {
+//   setDiscount(text);
+
+//   const num = Number(text);
+
+//   if (text && !isNaN(num) && num > 0) {
+//     setDiscountErr("");
+//   }
+
+//   if (text && (isNaN(num) || num <= 0)) {
+//     setDiscountErr("Enter valid discount");
+//   }
+// }}
   />
 
   <View style={styles.toggleBox}>
@@ -758,5 +837,49 @@ activeText: {
 
 inactiveText: {
   color: "#000",
+},
+customerdropdownBox: {
+  borderWidth: 1,
+  borderColor: "#D4D4D4",
+  borderRadius: 10,
+  padding: 14,
+  marginTop: 6,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+customerDropdownMenu: {
+  marginTop: 4,
+  borderWidth: 1,
+  borderColor: "#DDDDDD",
+  borderRadius: 10,
+  backgroundColor: "#fff",
+  overflow: "hidden",
+},
+
+customerOption: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+},
+
+customerOptionSelected: {
+  backgroundColor: "#1D5BEE",
+},
+
+customerOptionText: {
+  fontSize: 15,
+  color: "#111",
+},
+
+customerOptionTextSelected: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
+arrowIcon: {
+  width: 18,
+  height: 18,
+  tintColor: "#6A6A6A",
 },
 });

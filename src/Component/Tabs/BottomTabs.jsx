@@ -9,7 +9,7 @@ import { useCallback } from "react"
 import { SafeAreaView } from "react-native-safe-area-context";
 import { UIContext } from "./UIContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import HomeScreen from "../Dashboard/DashboardPage";
+import HomeScreen from "../Dashboard/NewDashboard";
 import Tenant from "../Customer/Tenants";
 import Complaints from "../Complaints/Complaints";
 import PGList from "../PG/PGList";

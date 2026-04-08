@@ -443,7 +443,6 @@ export default function BillsDesign({ route }) {
 
     console.log("REFUND DATA", payload);
 
-    setShowRefundPayment(false);
   };
 
 
@@ -1358,13 +1357,13 @@ export default function BillsDesign({ route }) {
         invoiceId: selectedBill.invoiceId,
       });
 
-      if (res.success) {
-        setRefundInitDetails(res.data);
+      if (res?.success) {
+        setRefundInitDetails(res?.data);
       } else {
-        alert(res.message);
+        console.log(res.message);
       }
     } catch (err) {
-      alert("Failed to load refund details");
+      console.log("Failed to load refund details");
     } finally {
       setRefundLoading(false);
     }
@@ -1528,13 +1527,14 @@ export default function BillsDesign({ route }) {
 
 
   const handleShowRefundPayment = () => {
-
     resetRefundForm();
     setShowMenu(false);
     setShowRefundPayment(true);
     setShowRefundFrom(false);
-
   }
+
+  console.log("showrefund", showRefundPayment);
+  
 
   useEffect(() => {
     if (
@@ -1905,22 +1905,25 @@ export default function BillsDesign({ route }) {
 
     const res = await CreateRefund({
       hostelId: activeHostelId,
-      invoiceId: selectedBill.invoiceId,
+      invoiceId: selectedBill?.invoiceId,
       payload,
     });
 
-    if (res.success) {
+    if (res?.success) {
       setModalType("success");
       setModalMessage("Refund successfully");
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
+
+       setShowBillDetails(false)
       GetAllBillDetails(activeHostelId);
       setShowRefundPayment(false);
+      resetRefundForm();
       setRefundAmount("");
       setRefundDate(null);
       setRefundFrom("");
       setTransactionId("");
-    } else if (res.refundableError) {
+    } else if (res?.refundableError) {
       setModalType("warning");
       setModalMessage(res?.refundableError);
       setShowSuccessModal(true);
@@ -2006,6 +2009,8 @@ export default function BillsDesign({ route }) {
   const cancelled = selectedBill?.paymentStatus === "Cancelled";
   const pendingRefund = selectedBill?.paymentStatus === "Pending Refund";
   const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
+  const FullyRefund = selectedBill?.paymentStatus === "Refunded"
+
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadInvoice;
@@ -2082,7 +2087,7 @@ const isNotDiscounted =
         <SafeAreaView style={styles.container}>
 
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center",marginTop:10 }}>
 
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image source={ArrowLeft} style={styles.backIcon} />
@@ -2132,7 +2137,7 @@ const isNotDiscounted =
 
 
           {activeTab === "Invoices" && (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1}}>
 
               {!canReadInvoice && (
                 <View style={styles.centerContainer}>
@@ -2149,7 +2154,7 @@ const isNotDiscounted =
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{ paddingBottom: 50 }}
+                      contentContainerStyle={{ paddingBottom: 150 }}
                     >
 
 
@@ -2238,10 +2243,12 @@ const isNotDiscounted =
 
                           </View>
 
-                          <View style={{ flex: 1 }}>
+                          <View style={{ flex: 1,marginLeft:5,marginRight:10,}}>
                             {/* <Text style={styles.name}>{item.fullName}</Text> */}
 
-                            <Text style={styles.name}>{item.fullName}</Text>
+                            <Text style={styles.name}
+                            numberOfLines={1}
+                            ellipsizeMode="tail">{item.fullName}</Text>
 
 
 
@@ -2267,12 +2274,13 @@ const isNotDiscounted =
             />
           </TouchableOpacity> */}
                             <Text style={{
-                              fontSize: 14,
+                              fontSize: 16,
                               fontFamily: "Gilroy-Bold",
                               color: "#000",
                             }}>₹ {item?.invoiceAmount ?? "--"}</Text>
 
-                            <Text style={styles.dateText}>{item.invoiceDate}</Text>
+                            <Text style={{ fontSize: 10,color: "#6B7280",fontFamily: "Gilroy-Regular",marginTop:4}}>
+                              {item.invoiceDate}</Text>
                             {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
                               <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
                             )}
@@ -2285,7 +2293,7 @@ const isNotDiscounted =
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
-                  )}
+                  )} 
 
                   {(
                     !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
@@ -2360,7 +2368,8 @@ const isNotDiscounted =
                 style={[
                   styles.transactionSheet,
                   {
-                    height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                    // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                    maxHeight:'95%',
                     transform: [{ translateY: detailsSheetY }]
                   }
                 ]}
@@ -2403,7 +2412,7 @@ const isNotDiscounted =
 
 
                       {
-                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual")) && (
+                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" &&  selectedBill?.invoiceType !== "Settlement")) && (
                           <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                             onPress={() => openMenu(selectedBill)}>
                             <Image
@@ -2463,7 +2472,7 @@ const isNotDiscounted =
                         disabled={!isExportAllow}
                         onPress={handleWhatsappShareBill}>
                         <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                        <Text style={styles.reminderText}>Remainder</Text>
+                        <Text style={styles.reminderText}>Reminder </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -2785,7 +2794,7 @@ const isNotDiscounted =
 
                 <View style={styles.fixedBottomBar}>
 
-                  {(isPaid || cancelled || pendingRefund || partiallyRefund) && (
+                  {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
                     <>
                       <TouchableOpacity
                         style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -3302,7 +3311,7 @@ const isNotDiscounted =
                   </TouchableOpacity>
                 )}
 
-{selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "SETTLEMENT") &&
+{selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
   !selectedBill?.isDiscounted && (
     <TouchableOpacity
       style={styles.popupRow}
@@ -3878,10 +3887,12 @@ const isNotDiscounted =
 
 
           {showRefundPayment && (
-            <View style={styles.sheetOverlay}>
-              <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
-                <View style={{ flex: 1 }} />
-              </TouchableWithoutFeedback>
+            <View style={styles.sheetOverlay} pointerEvents="box-none">
+            <View style={{ flex: 1 }}>
+  <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
+    <View style={{ flex: 1 }} />
+  </TouchableWithoutFeedback>
+</View>
 
               <Animated.View
                 style={[
@@ -4237,7 +4248,7 @@ const isNotDiscounted =
 
                   {/* BUTTON ROW */}
                   <View style={styles.btnRow}>
-                    <TouchableOpacity style={styles.cancelBtn} >
+                    <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowRefundPayment(false)}>
                       <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
 
@@ -4830,10 +4841,12 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F6FA",
-    borderRadius: 10,
+    // backgroundColor: "#F5F6FA",
+    borderRadius: 50,
+    borderWidth:1,borderColor:'#E4E4E4',
     paddingHorizontal: 12,
-    height: 55,
+    paddingVertical:6,
+    // height: 55,
     flex: 1,
   },
 
@@ -4870,6 +4883,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     paddingBottom: 6,
+    marginBottom:15
   },
   // dropdownMenu: {
   //   backgroundColor: "#fff",
@@ -4985,7 +4999,20 @@ const styles = StyleSheet.create({
   tenantRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 14,
+    paddingHorizontal:10,
+    backgroundColor:'#FFFFFF',
+     borderRadius: 10,       // ✅ rounded card
+  marginBottom: 10,    // ✅ space between cards
+
+  // shadow (iOS)
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 },
+
+  // elevation (Android)
+  elevation: 2,
   },
   profileImg: {
     width: 45,
@@ -4994,7 +5021,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   name: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
@@ -5089,7 +5116,7 @@ const styles = StyleSheet.create({
   FilterButton: {
     position: "absolute",
     bottom: 125,
-    right: 35,
+    right: 10,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
@@ -5099,7 +5126,7 @@ const styles = StyleSheet.create({
   addBtn: {
     position: "absolute",
     bottom: 60,
-    right: 30,
+    right: 10,
     backgroundColor: "#1D5DFF",
     width: 55,
     height: 55,

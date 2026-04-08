@@ -110,7 +110,7 @@ export default function TemplatesScreen({ navigation, onBack }) {
       {/* ---------------- TABS (Hide during preview) ---------------- */}
       {!PREVIEW_ACTIVE && (
         <View style={styles.tabsContainer}>
-          {["Bills", "Security Deposit", "Receipts"].map((t) => (
+          {["Bills", "Security Deposit", "Receipts"].map((t,index,arr) => (
             <TouchableOpacity
               key={t}
               onPress={() => {
@@ -119,7 +119,8 @@ export default function TemplatesScreen({ navigation, onBack }) {
               }}
               style={[
                 styles.tabButton,
-                activeTab === t && { backgroundColor: "#1E45E1" },
+                index !== arr.length - 1 && { marginRight: 10 },
+                activeTab === t && { backgroundColor: "#1E45E1",borderColor:'#1E45E1' },
               ]}
             >
               <Text
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
 
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "#F2F6FF",
+    // backgroundColor: "#F2F6FF",
     marginHorizontal: 16,
     marginTop: 16,
     padding: 4,
@@ -232,9 +233,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 30,
     alignItems: "center",
+    borderWidth:1,
+    borderColor:'#D6D6D6'
   },
 
-  tabText: { color: "#1E45E1", fontWeight: "500" },
+  tabText: { color: "#4B4B4B", fontWeight: "500" },
 
   previewBtn: {
     position: "absolute",
