@@ -30,7 +30,8 @@ export default function DiscountInvoiceScreen() {
       RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
       , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
       downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
-    ApplyBillDiscount  } = useContext(BillContext);
+         UpdateBillDiscount,
+    ApplyBillDiscount ,  } = useContext(BillContext);
       const { activeHostelId } = useContext(CommonContexts);
 
         const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -40,6 +41,11 @@ export default function DiscountInvoiceScreen() {
   const bill = route?.params?.bill
 
   console.log("BillPdfdetails", BillPdfdetails);
+
+  const discountAmountParam = route?.params?.discountAmount;
+const discountPercentageParam = route?.params?.discountPercentage;
+const totalamount = route?.params?.totalAmount
+const reasonParam = route?.params?.DiscountReason;
   
 
   const [discountType, setDiscountType] = useState("Amount"); 
@@ -59,7 +65,7 @@ const reasons = [
 ];
 
 const invoiceAmount = Number(
-  BillPdfdetails?.invoiceInfo?.totalAmount || 0
+  BillPdfdetails?.invoiceInfo?.subTotal || totalamount
 );
 
 const discountValue =
@@ -83,6 +89,41 @@ const parseDate = (dateStr) => {
 const dueDate = parseDate(dueDateStr);
 
 const isOverdue = dueDate && today > dueDate;
+
+
+// useEffect(() => {
+//   if (route?.params?.isEdit) {
+//     if (discountPercentageParam > 0) {
+//       setDiscountType("Percentage");
+//       setDiscount(String(discountPercentageParam));
+//     } else {
+//       setDiscountType("Amount");
+//       setDiscount(String(discountAmountParam || 0));
+//     }
+//   }
+// }, [discountAmountParam, discountPercentageParam]);
+
+useEffect(() => {
+  if (route?.params?.isEdit) {
+
+    const subTotal =
+      BillPdfdetails?.invoiceInfo?.subTotal || totalamount;
+
+    const amount =
+      discountAmountParam > 0
+        ? discountAmountParam
+        : (subTotal * Number(discountPercentageParam || 0)) / 100;
+
+    // ✅ amount set
+    setDiscountType("Amount");
+    setDiscount(String(Number(amount).toFixed(2)));
+
+    // ✅ 🔥 reason set panna vendiyathu
+    if (reasonParam) {
+      setReason(reasonParam);
+    }
+  }
+}, [discountAmountParam, discountPercentageParam, reasonParam]);
 
   useEffect(() => {
   const backAction = () => {
@@ -184,6 +225,7 @@ const sendpayload = {
 
 console.log("sendpayload", sendpayload);
 
+const isEdit = route?.params?.isEdit;
 
 const handleDiscountApply = async () => {
   let hasError = false;
@@ -191,90 +233,138 @@ const handleDiscountApply = async () => {
   setReasonErr("");
   setDiscountErr("");
 
-  // ✅ Reason
   if (!reason) {
     setReasonErr("Please select reason");
     hasError = true;
   }
 
-  // ❌ Empty / invalid
   if (!isValidNumber(discount)) {
     setDiscountErr("Enter valid discount");
     hasError = true;
   }
 
-  // ✅ Percentage validation (MAIN FIX)
-  if (discountType === "Percentage") {
-    if (Number(discount) > 100) {
-      setDiscountErr("Percentage cannot exceed 100%");
-      hasError = true;
-    }
+  if (discountType === "Percentage" && Number(discount) > 100) {
+    setDiscountErr("Percentage cannot exceed 100%");
+    hasError = true;
   }
 
-  // ✅ Amount validation
-  if (discountType === "Amount") {
-    if (Number(discount) > invoiceAmount) {
-      setDiscountErr("Discount cannot exceed amount");
-      hasError = true;
-    }
+  if (discountType === "Amount" && Number(discount) > invoiceAmount) {
+    setDiscountErr("Discount cannot exceed amount");
+    hasError = true;
   }
 
   if (hasError) return;
 
-const payload = {
-  hostelId: activeHostelId,
-  invoiceId: BillPdfdetails?.invoiceId,
-  reason: reason || "",
-  ...(discountType === "Amount" && {
-    discountAmount: Number(discount),
-  }),
-  ...(discountType === "Percentage" && {
-    discountPercentage: Number(discount),
-  }),
-};
+  const payload = {
+    hostelId: activeHostelId,
+    invoiceId: BillPdfdetails?.invoiceId,
+    reason: reason || "",
+    ...(discountType === "Amount" && {
+      discountAmount: Number(discount),
+    }),
+    ...(discountType === "Percentage" && {
+      discountPercentage: Number(discount),
+    }),
+  };
 
-console.log("payload", payload);
+  const apiFunction = isEdit ? UpdateBillDiscount : ApplyBillDiscount;
 
+  console.log("apifunction",apiFunction);
+  console.log("payload",payload);
+  
 
-const res = await ApplyBillDiscount(payload);
-
-// const res = await ApplyBillDiscount({
-//   hostelId: bill?.hostelId,
-//   invoiceId: bill?.invoiceId,
-
-//   discountAmount:
-//     discountType === "Amount"
-//       ? Number(discount)
-//       : discountValue,
-
-//   discountPercentage:
-//     discountType === "Percentage"
-//       ? Number(discount)
-//       : 0,
-
-//   reason,
-// });
+  const res = await apiFunction(payload);
 
   if (res?.success) {
     setModalType("success");
-    setModalMessage("Discount Added Successfully");
+    setModalMessage(
+      isEdit ? "Discount Updated Successfully" : "Discount Added Successfully"
+    );
     setShowSuccessModal(true);
 
     setTimeout(() => {
       navigation.goBack();
-       if (onSuccess) {
-      onSuccess(); 
-    }
+      if (onSuccess) onSuccess();
       setShowSuccessModal(false);
     }, 1500);
   } else {
     setModalType("warning");
     setModalMessage(res?.message || "Something went wrong");
     setShowSuccessModal(true);
-
-    setTimeout(() => setShowSuccessModal(false), 3000);
   }
 };
+
+// const handleDiscountApply = async () => {
+//   let hasError = false;
+
+//   setReasonErr("");
+//   setDiscountErr("");
+
+//   if (!reason) {
+//     setReasonErr("Please select reason");
+//     hasError = true;
+//   }
+
+//   if (!isValidNumber(discount)) {
+//     setDiscountErr("Enter valid discount");
+//     hasError = true;
+//   }
+
+//   if (discountType === "Percentage") {
+//     if (Number(discount) > 100) {
+//       setDiscountErr("Percentage cannot exceed 100%");
+//       hasError = true;
+//     }
+//   }
+
+//   if (discountType === "Amount") {
+//     if (Number(discount) > invoiceAmount) {
+//       setDiscountErr("Discount cannot exceed amount");
+//       hasError = true;
+//     }
+//   }
+
+//   if (hasError) return;
+
+// const payload = {
+//   hostelId: activeHostelId,
+//   invoiceId: BillPdfdetails?.invoiceId,
+//   reason: reason || "",
+//   ...(discountType === "Amount" && {
+//     discountAmount: Number(discount),
+//   }),
+//   ...(discountType === "Percentage" && {
+//     discountPercentage: Number(discount),
+//   }),
+// };
+
+// console.log("payload", payload);
+
+
+// const res = await ApplyBillDiscount(payload);
+
+
+
+//   if (res?.success) {
+//     setModalType("success");
+//     setModalMessage("Discount Added Successfully");
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => {
+//       navigation.goBack();
+//        if (onSuccess) {
+//       onSuccess(); 
+//     }
+//       setShowSuccessModal(false);
+//     }, 1500);
+//   } else {
+//     setModalType("warning");
+//     setModalMessage(res?.message || "Something went wrong");
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => setShowSuccessModal(false), 3000);
+//   }
+// };
 
   return (
 
@@ -434,11 +524,13 @@ const res = await ApplyBillDiscount(payload);
             {discountType} to apply (Discount)
           </Text>
 
-        <View style={styles.inputWrapper}>
+        <View style={styles.inputWrapper} pointerEvents="box-none">
   <TextInput
     style={styles.inputField}
     placeholder={discountType === "Amount" ? "₹ 0.00" : "0 %"}
     keyboardType="numeric"
+    editable={true}
+    autoFocus={true}
     value={discount}
     onChangeText={(text) => {
   // ✅ allow only numbers + dot
