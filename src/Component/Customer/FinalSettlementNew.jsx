@@ -21,8 +21,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import RoomIcon from "../../Assets/Images/Room_Icon.png";
 import BedIcon from "../../Assets/Images/Bed_Icon.png";
 import EditIcon from "../../Assets/Images/edit.png";
+import DiscountIcon from "../../Assets/Images/discount-shape.png";
 import { Calendar } from "react-native-calendars";
 import SuccessModal from "../../ToastFile/ToastPage";
+import FinalSettlementDiscount from "./FinalSettlementDiscountSheet"
+
 
 
 
@@ -53,6 +56,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   console.log("kam", selectedItem)
   const scrollRef = useRef(null);
+
+  const [discountshow , setDiscountshow] = useState(false)
 
   console.log("actualcheckoutdate", actualCheckoutDate);
 
@@ -448,6 +453,21 @@ export default function FinalSettlementScreen({ navigation, route }) {
       setShowSuccess(true);
     }
   };
+
+  const handleDiscount = () => {
+    console.log("clicked", discountshow);
+    
+    setDiscountshow(true)
+  }
+  console.log("clicked", discountshow);
+
+  const labels = settlementDetails?.settlementInfo?.label;
+  const isRefundable = settlementDetails?.settlementInfo?.isRefundable;
+  const discountApplied =
+  Number(settlementDetails?.settlementInfo?.discountAmount || 0) > 0;
+
+  console.log("settlement", settlementDetails?.settlementInfo);
+  
 
   return (
     <>
@@ -938,8 +958,70 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   {/* Final Settlement Title */}
                   <Text style={styles.sectionTitle}>Final Settlement</Text>
 
-                  {/* Refundable Rent */}
-                  <View style={styles.rowBetween}>
+
+{Array.isArray(labels) && labels.length > 0 ? (
+  labels.map((item, index) => {
+    
+    const isNegativeAmount =
+      !isRefundable || item?.type === "debit";
+
+    return (
+      <View key={index} style={styles.rowBetween}>
+        <Text style={styles.label}>{item?.label}</Text>
+
+        <Text
+          style={
+            isNegativeAmount
+              ? styles.negativeamountlabel
+              : styles.value
+          }
+        >
+          {isNegativeAmount ? "- " : ""}₹ {item?.amount}
+        </Text>
+      </View>
+    );
+  })
+) : (
+  // ✅ STATIC (DEFAULT UI)
+  <>
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Refundable Rent</Text>
+      <Text style={styles.value}>
+      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableRent}
+      </Text>
+    </View>
+
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Refundable Advance</Text>
+      <Text style={styles.value}>
+       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
+      </Text>
+    </View>
+
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Total Deductions</Text>
+      <Text style={styles.negativeamountlabel}>
+      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions}
+      </Text>
+    </View>
+
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Electricity</Text>
+      <Text style={styles.negativeamountlabel}>
+       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.electricityAmount}
+      </Text>
+    </View>
+
+    <View style={styles.rowBetween}>
+      <Text style={styles.label}>Unpaid Invoices</Text>
+      <Text style={styles.negativeamountlabel}>
+       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
+      </Text>
+    </View>
+  </>
+)}
+
+                  {/* <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Rent</Text>
                     <Text style={styles.value}>
                       ₹{" "}
@@ -947,7 +1029,6 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
                   </View>
 
-                  {/* Refundable Advance */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Advance</Text>
                     <Text style={styles.value}>
@@ -957,7 +1038,6 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
                   </View>
 
-                  {/* Total Deductions */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Total Deductions</Text>
                     <Text style={styles.negativeamountlabel}>
@@ -967,7 +1047,6 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
                   </View>
 
-                  {/* Electricity */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Electricity</Text>
                     <Text style={styles.negativeamountlabel}>
@@ -975,7 +1054,6 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
                   </View>
 
-                  {/* Unpaid Invoices */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Unpaid Invoices</Text>
                     <Text style={styles.negativeamountlabel}>
@@ -983,7 +1061,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                         settlementDetails?.settlementInfo?.unpaidInvoiceAmount || 0
                       ).toFixed(2)}
                     </Text>
-                  </View>
+                  </View> */}
 
                 </View>
               )}
@@ -1140,6 +1218,58 @@ export default function FinalSettlementScreen({ navigation, route }) {
               </Text>
             </View>
 
+            {discountApplied ? (
+  <View style={styles.discountAppliedCard}>
+    
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={styles.tickCircle}>
+        <Text style={styles.tick}>✓</Text>
+      </View>
+
+      <Text style={styles.discountText}>
+        ₹ {settlementDetails?.settlementInfo?.discountAmount} discount applied on this invoice
+      </Text>
+    </View>
+
+    <TouchableOpacity onPress={handleDiscount}>
+      <Text style={styles.Discountarrow}>›</Text>
+    </TouchableOpacity>
+
+  </View>
+) : (
+        <View style={{ marginBottom: 12 }}>
+  <TouchableOpacity
+    onPress={handleDiscount}
+    activeOpacity={0.8}
+    style={{flexDirection:'row'}}
+    
+  >
+    <Text style={{ fontSize: 14, color: "#338BFF", fontFamily: "Gilroy-Medium" }}>
+      Make Discount
+    </Text>
+
+    <Image  source={DiscountIcon} style={{height:18, width:18, marginLeft:7}}/>
+  </TouchableOpacity>
+</View>
+)}
+
+
+{/*          
+            <View style={{ marginBottom: 12 }}>
+  <TouchableOpacity
+    onPress={handleDiscount}
+    activeOpacity={0.8}
+    style={{flexDirection:'row'}}
+    
+  >
+    <Text style={{ fontSize: 14, color: "#338BFF", fontFamily: "Gilroy-Medium" }}>
+      Make Discount
+    </Text>
+
+    <Image  source={DiscountIcon} style={{height:18, width:18, marginLeft:7}}/>
+  </TouchableOpacity>
+</View> */}
+
             {/* Buttons */}
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
@@ -1242,6 +1372,19 @@ export default function FinalSettlementScreen({ navigation, route }) {
           </View>
         </View>
       </Modal>
+
+      <FinalSettlementDiscount
+      visible={discountshow}
+  onClose={() => setDiscountshow(false)}
+  selectedBill={{
+    invoiceId: settlementDetails?.settlementInfo?.invoiceId, 
+    totalAmount: Math.abs(Number(ReturnAmount || 0)),
+  }}
+  onSuccess={() => {
+    setDiscountshow(false);
+    fetchSettlement(); // refresh
+  }}
+      />
     </>
   );
 }
@@ -1759,7 +1902,50 @@ negativeamountlabel : {
     fontSize:17,
    fontFamily: "Gilroy-Bold" ,
    marginBottom:5
-  }
+  },
+  discountAppliedCard: {
+  backgroundColor: "#F3F4F6",
+  borderRadius: 12,
+  padding: 12,
+  marginBottom: 12,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+tickCircle: {
+  width: 28,
+  height: 28,
+  borderRadius: 14,
+  backgroundColor: "#16A34A",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+tick: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "bold",
+},
+
+discountText: {
+  fontSize: 13,
+  color: "#111",
+  fontFamily: "Gilroy-Medium",
+},
+
+Discountarrow: {
+  fontSize: 22,
+  color: "#1D4ED8",
+  fontWeight: "bold",
+},
+
+makeDiscountText: {
+  fontSize: 14,
+  color: "#338BFF",
+  fontFamily: "Gilroy-Medium",
+},
 
 
   // rightMuted: {
