@@ -22,5 +22,7 @@ RCT_EXTERN_METHOD(downloadAndViewDocument:(NSString *)url
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(makeCall:(NSString *)phoneNumber)
+RCT_EXTERN_METHOD(fetchEnvironment:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 @end

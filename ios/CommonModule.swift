@@ -141,4 +141,11 @@ class CommonModule: NSObject {
            }
        }
    }
+  @objc
+   func fetchEnvironment(_ resolve: RCTPromiseResolveBlock,
+                         rejecter reject: RCTPromiseRejectBlock) {
+
+     resolve("dev")
+   }
+  
 }
