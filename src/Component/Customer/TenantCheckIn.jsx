@@ -483,6 +483,7 @@ export default function TenantCheckIn({ navigation, route }) {
             ref={scrollRef}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
+            nestedScrollEnabled={true}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 150,
@@ -535,7 +536,8 @@ export default function TenantCheckIn({ navigation, route }) {
 
                   {floorOpen && (
                     <View style={styles.dropdownMenu}>
-                      <ScrollView style={{ maxHeight: 160 }}>
+                      <ScrollView style={{ maxHeight: 160 }}
+                      nestedScrollEnabled={true}>
 
                         {floors?.length === 0 ? (
                           <View style={{ padding: 12 }}>
@@ -596,7 +598,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                   {roomOpen && (
                     <View style={styles.dropdownMenu}>
-                      <ScrollView style={{ maxHeight: 160 }}>
+                      <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}>
                         {rooms.length === 0 ? (
                           <View style={{ padding: 12 }}>
                             <Text style={{ color: "#999", textAlign: "center" }}>
@@ -656,7 +658,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
                   {bedOpen && (
                     <View style={styles.dropdownMenu}>
-                      <ScrollView style={{ maxHeight: 160 }}>
+                      <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}>
                         {filteredBeds.length === 0 ? (
                           <View style={{ padding: 12 }}>
                             <Text style={{ color: "#999", textAlign: "center" }}>

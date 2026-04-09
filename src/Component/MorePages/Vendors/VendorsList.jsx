@@ -321,7 +321,7 @@ export default function VendorsList({ navigation }) {
             <View style={{ flex: 1 }}>
               <Text style={styles.infoLabel}>Address</Text>
               <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
-                <Image source={CallIcon} style={{ width: 16, height: 16 }} />
+                <Image source={LocationPic} style={{ width: 16, height: 16 }} />
                 <Text
                   style={[styles.infoValue, { marginLeft: 5 }]}
                   numberOfLines={2}
@@ -850,8 +850,8 @@ const styles = StyleSheet.create({
   addIcon: { width: 60, height: 60, },
   menuBox: {
     position: "absolute",
-    top: 30,
-    right: 55,
+    top: 45,
+    right: 45,
     backgroundColor: "#fff",
     padding: 12,
     width: 150,

@@ -274,7 +274,7 @@ const EnterMPin = (props) => {
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 15 }}>
                 <Text style={style.title}>Welcome Back</Text>
 
-                <Animated.Image
+                {/* <Animated.Image
                     source={WaveIcon}
                     style={[
                         style.hand,
@@ -286,7 +286,7 @@ const EnterMPin = (props) => {
                             transform: [{ rotate: rotateInterpolate }],
                         },
                     ]}
-                />
+                /> */}
 
             </View>
 

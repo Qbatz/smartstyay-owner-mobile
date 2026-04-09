@@ -1,5 +1,5 @@
 // PGPageFull.js
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -104,11 +104,11 @@ export default function PGPageFull({ route }) {
   const [inactiveTenant, setInactiveTenant] = useState(null);
   // const [matchedBed, setMatchedBed] = useState(null);
 
-  const[showFloorBar,setShowFloorBar]=useState(true)
+  // const[showFloorBar,setShowFloorBar]=useState(true)
 
    const { setShowTabBar } = route.params
 
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,setShowFloorBar);
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,undefined);
 
 
 
@@ -904,7 +904,83 @@ useFocusEffect(
 
   const showReadBlockedState = activeHostelId && !canReadPayingGuests;
 
+  const floorAccumulator = useRef(0);
+const [showFloorBar, setShowFloorBar] = useState(true);
+const lastScrollY = useRef(0);
+const isHiddenRef = useRef(false);
+const floorAnim = useRef(new Animated.Value(1)).current;
+const [floorHeight, setFloorHeight] = useState(0);
+const scrollAccumulator = useRef(0);
+const ticking = useRef(false);
 
+const animatedHeight = floorAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: [0, floorHeight || 80], // fallback
+});
+
+
+
+const onScroll = (e) => {
+  handleScroll(e);       // tabbar
+  handleFloorScroll(e);  // floor bar
+};
+
+
+
+// const handleFloorScroll = (event) => {
+//   const currentY = event.nativeEvent.contentOffset.y;
+//   const diff = currentY - lastScrollY.current;
+
+//   floorAccumulator.current += diff;
+
+//   if (floorAccumulator.current > 30) {
+//     setShowFloorBar(false);
+//     floorAccumulator.current = 0;
+//   } else if (floorAccumulator.current < -30) {
+//     setShowFloorBar(true);
+//     floorAccumulator.current = 0;
+//   }
+
+//   lastScrollY.current = currentY;
+// };
+
+
+//  const handleFloorScroll = (event) => {
+//   const currentY = event.nativeEvent.contentOffset.y;
+//   const diff = currentY - lastScrollY.current;
+
+//   // 🔽 scroll down → hide ONLY ONCE
+//   if (diff > 8 && currentY > 80 && !isHiddenRef.current) {
+//     isHiddenRef.current = true;
+//     setShowFloorBar(false);
+//   }
+
+//   // 🔼 scroll up → show ONLY ONCE
+//   if (diff < -8 && isHiddenRef.current) {
+//     isHiddenRef.current = false;
+//     setShowFloorBar(true);
+//   }
+
+//   lastScrollY.current = currentY;
+// };
+
+// const isHiddenRef = useRef(false);
+
+const handleFloorScroll = (event) => {
+  const y = event.nativeEvent.contentOffset.y;
+
+  // 🔽 SCROLL DOWN → hide (based on position)
+  if (y > 70 && !isHiddenRef.current) {
+    isHiddenRef.current = true;
+    setShowFloorBar(false);
+  }
+
+  // 🔼 SCROLL UP → show immediately when near top
+  if (y < 40 && isHiddenRef.current) {
+    isHiddenRef.current = false;
+    setShowFloorBar(true);
+  }
+};
 
   return (
     <>
@@ -1098,7 +1174,8 @@ useFocusEffect(
           ></ScrollView>
         </View>
 
-        {!showReadBlockedState && showFloorBar && (
+      
+        {!showReadBlockedState && showFloorBar &&(
 
           <View style={{ flexDirection: "row", marginLeft: 13 }}>
             <ScrollView
@@ -1232,7 +1309,7 @@ useFocusEffect(
             scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
-            onScroll={handleScroll}
+            onScroll={onScroll}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
               const bedCount = bedsByRoom[item.id]?.length || 0;
