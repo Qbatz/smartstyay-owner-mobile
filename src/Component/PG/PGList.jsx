@@ -909,7 +909,7 @@ useFocusEffect(
   const floorAccumulator = useRef(0);
 const [showFloorBar, setShowFloorBar] = useState(true);
 const lastScrollY = useRef(0);
-const floorAnim = useRef(new Animated.Value(0)).current;
+const floorAnim = useRef(new Animated.Value(1)).current;
 const [floorHeight, setFloorHeight] = useState(0);
 
 const animatedHeight = floorAnim.interpolate({
@@ -978,18 +978,18 @@ const handleFloorScroll = (event) => {
   // 🔽 scroll down → hide
   if (diff > 5 && currentY > 50) {
     Animated.timing(floorAnim, {
-      toValue: -90, // 👈 move up (height of bar)
+      toValue: 0,
       duration: 200,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
   }
 
   // 🔼 scroll up → show instantly
   if (diff < -2) {
     Animated.timing(floorAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: false,
     }).start();
   }
 
@@ -1190,16 +1190,25 @@ const handleFloorScroll = (event) => {
         </View>
 
         <Animated.View  
-        style={{
-    transform: [{ translateY: floorAnim }],
-    position: "absolute",   // 👈 IMPORTANT
-    top: 110,               // 👈 adjust based on your header height
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    backgroundColor: "#fff", // 👈 important to hide background glitch
-    paddingVertical: 8,
+        onLayout={(e) => {
+    const h = e.nativeEvent.layout.height;
+    if (h !== floorHeight) setFloorHeight(h);
   }}
+  style={{
+    overflow: "hidden",
+    height: animatedHeight,
+  }}
+
+  //       style={{
+  //   transform: [{ translateY: floorAnim }],
+  //   position: "absolute",   // 👈 IMPORTANT
+  //   top: 110,               // 👈 adjust based on your header height
+  //   left: 0,
+  //   right: 0,
+  //   zIndex: 10,
+  //   backgroundColor: "#fff", // 👈 important to hide background glitch
+  //   paddingVertical: 8,
+  // }}
   >
         {!showReadBlockedState && (
 
