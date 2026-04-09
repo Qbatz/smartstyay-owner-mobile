@@ -36,6 +36,8 @@ export default function FinalSettlementDiscountSheet({
 
   const [showReasonDropdown, setShowReasonDropdown] = useState(false);
 
+  
+
 const reasons = [
   "Loyalty Discount",
   "Promotional Offer",
@@ -76,6 +78,15 @@ const reasons = [
   })
 ).current;
 
+useEffect(() => {
+  if (selectedBill?.discountAmount) {
+    setDiscount(String(selectedBill.discountAmount));
+    setDiscountType("Amount");
+  }
+}, [selectedBill]);
+
+const isEdit = selectedBill?.discountAmount > 0;
+
 
 
 useEffect(() => {
@@ -110,6 +121,10 @@ useEffect(() => {
       duration: 200,
       useNativeDriver: true,
     }).start(() => onClose());
+    setDiscount("")
+    setDiscountErr("")
+    setReason("")
+    setReasonErr("")
   };
 
   const isValidNumber = (val) => {
@@ -157,12 +172,25 @@ useEffect(() => {
       }),
     };
 
-    const res = await ApplyBillDiscount(payload);
+    const apiFunction = isEdit ? UpdateBillDiscount : ApplyBillDiscount;
+
+    console.log("apifunction",apiFunction);
+     console.log("apifunction",payload);
+
+const res = await apiFunction(payload);
+    // const res = await ApplyBillDiscount(payload);
 
     if (res?.success) {
-      handleClose();
-      if (onSuccess) onSuccess();
-    }
+  handleClose();
+
+  if (onSuccess) onSuccess();
+
+  console.log(
+    isEdit
+      ? "Discount Updated Successfully"
+      : "Discount Added Successfully"
+  );
+}
   };
 
   if (!visible) return null;
@@ -185,7 +213,7 @@ useEffect(() => {
 
         <ScrollView>
 
-          <Text style={styles.title}>Discount Settlement</Text>
+          <Text style={styles.title}>{isEdit ? "Edit Discount Settlement" : "Discount Settlement"} </Text>
 
           {/* Amount */}
           <View style={styles.card}>
@@ -249,6 +277,7 @@ useEffect(() => {
             <TextInput
               style={styles.inputField}
               keyboardType="numeric"
+              placeholder="Enter Discount"
               value={discount}
              onChangeText={(text) => {
   let cleaned = text.replace(/[^0-9.]/g, "");
