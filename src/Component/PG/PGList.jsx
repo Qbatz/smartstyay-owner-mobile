@@ -904,13 +904,14 @@ useFocusEffect(
 
   const showReadBlockedState = activeHostelId && !canReadPayingGuests;
 
-  
-
   const floorAccumulator = useRef(0);
 const [showFloorBar, setShowFloorBar] = useState(true);
 const lastScrollY = useRef(0);
+const isHiddenRef = useRef(false);
 const floorAnim = useRef(new Animated.Value(1)).current;
 const [floorHeight, setFloorHeight] = useState(0);
+const scrollAccumulator = useRef(0);
+const ticking = useRef(false);
 
 const animatedHeight = floorAnim.interpolate({
   inputRange: [0, 1],
@@ -923,6 +924,7 @@ const onScroll = (e) => {
   handleScroll(e);       // tabbar
   handleFloorScroll(e);  // floor bar
 };
+
 
 
 // const handleFloorScroll = (event) => {
@@ -942,60 +944,43 @@ const onScroll = (e) => {
 //   lastScrollY.current = currentY;
 // };
 
-//   const handleFloorScroll = (event) => {
+
+//  const handleFloorScroll = (event) => {
 //   const currentY = event.nativeEvent.contentOffset.y;
 //   const diff = currentY - lastScrollY.current;
 
-//   floorAccumulator.current += diff;
+//   // 🔽 scroll down → hide ONLY ONCE
+//   if (diff > 8 && currentY > 80 && !isHiddenRef.current) {
+//     isHiddenRef.current = true;
+//     setShowFloorBar(false);
+//   }
 
-//   // 🔽 SCROLL DOWN → HIDE
-//   if (floorAccumulator.current > 30) {
-//   Animated.timing(floorAnim, {
-//     toValue: 0, // hide
-//     duration: 200,
-//     useNativeDriver: false, // ⚠️ required for height
-//   }).start();
-
-//   floorAccumulator.current = 0;
-// }
-
-// else if (floorAccumulator.current < -30) {
-//   Animated.timing(floorAnim, {
-//     toValue: 1, // show
-//     duration: 200,
-//     useNativeDriver: false,
-//   }).start();
-
-//   floorAccumulator.current = 0;
-// }
+//   // 🔼 scroll up → show ONLY ONCE
+//   if (diff < -8 && isHiddenRef.current) {
+//     isHiddenRef.current = false;
+//     setShowFloorBar(true);
+//   }
 
 //   lastScrollY.current = currentY;
 // };
+
+// const isHiddenRef = useRef(false);
+
 const handleFloorScroll = (event) => {
-  const currentY = event.nativeEvent.contentOffset.y;
-  const diff = currentY - lastScrollY.current;
+  const y = event.nativeEvent.contentOffset.y;
 
-  // 🔽 scroll down → hide
-  if (diff > 5 && currentY > 50) {
-    Animated.timing(floorAnim, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+  // 🔽 SCROLL DOWN → hide (based on position)
+  if (y > 70 && !isHiddenRef.current) {
+    isHiddenRef.current = true;
+    setShowFloorBar(false);
   }
 
-  // 🔼 scroll up → show instantly
-  if (diff < -2) {
-    Animated.timing(floorAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+  // 🔼 SCROLL UP → show immediately when near top
+  if (y < 40 && isHiddenRef.current) {
+    isHiddenRef.current = false;
+    setShowFloorBar(true);
   }
-
-  lastScrollY.current = currentY;
 };
-
 
   return (
     <>
@@ -1189,28 +1174,8 @@ const handleFloorScroll = (event) => {
           ></ScrollView>
         </View>
 
-        <Animated.View  
-        onLayout={(e) => {
-    const h = e.nativeEvent.layout.height;
-    if (h !== floorHeight) setFloorHeight(h);
-  }}
-  style={{
-    overflow: "hidden",
-    height: animatedHeight,
-  }}
-
-  //       style={{
-  //   transform: [{ translateY: floorAnim }],
-  //   position: "absolute",   // 👈 IMPORTANT
-  //   top: 110,               // 👈 adjust based on your header height
-  //   left: 0,
-  //   right: 0,
-  //   zIndex: 10,
-  //   backgroundColor: "#fff", // 👈 important to hide background glitch
-  //   paddingVertical: 8,
-  // }}
-  >
-        {!showReadBlockedState && (
+      
+        {!showReadBlockedState && showFloorBar &&(
 
           <View style={{ flexDirection: "row", marginLeft: 13 }}>
             <ScrollView
@@ -1281,7 +1246,6 @@ const handleFloorScroll = (event) => {
           </View>
         )
         }
-        </Animated.View>
 
         {showReadBlockedState && (
           <View style={styles.centerContainer}>
@@ -1340,7 +1304,7 @@ const handleFloorScroll = (event) => {
         {console.log('haha', rooms)}
         {!showReadBlockedState && (
           <FlatList
-            contentContainerStyle={{ padding: 16, paddingBottom: 140,paddingTop:110 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
             data={rooms}
             scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
             keyboardShouldPersistTaps="always"
