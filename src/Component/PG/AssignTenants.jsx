@@ -640,7 +640,7 @@ export default function AssignTenant({ navigation, route }) {
         </View>
 
 
-        <Text style={styles.roomText}> Floor :{selectedBed?.floorName} | Room No :{selectedBed?.roomName} | Bed : {selectedBed?.bedName}</Text>
+        <Text style={styles.roomText}>{selectedBed?.floorName} | {selectedBed?.roomName} | {selectedBed?.bedName}</Text>
 
 
         <View style={styles.tabRow}>

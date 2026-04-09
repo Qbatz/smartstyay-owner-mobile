@@ -211,14 +211,58 @@ const headerTranslateY = scrollY.interpolate({
         mediaType: "photo",
         quality: 0.7,
       },
-      (response) => {
+      async(response) => {
         if (response.didCancel) return;
         if (response.assets && response.assets.length > 0) {
-          setProfileImage(response.assets[0]);
+           const image = response.assets[0];
+
+//            let fileUri = image.uri;
+
+// // 🔥 Fix for Redmi (content URI issue)
+// if (fileUri.startsWith("content://")) {
+//   fileUri = image.uri; // keep as is (React Native supports it)
+// } else if (!fileUri.startsWith("file://")) {
+//   fileUri = `file://${fileUri}`;
+// }
+
+// const file = {
+//   uri: fileUri,
+//   type: image.type || "image/jpeg",
+//   name: image.fileName || `photo_${Date.now()}.jpg`,
+// };
+           setProfileImage(image); 
+
+             const res = await editBasicDetails(
+            customerDetails.customerId,
+            {
+              firstName: customerDetails?.firstName || "",
+              lastName: customerDetails?.lastName || "",
+              mailId: customerDetails?.emailId || "",
+              phoneNumber: customerDetails?.phoneNumber || "",
+            },
+            image
+          );
+
+          if (res.success) {
+            setModalType("success");
+            setMessage(res.data);
+            setShowSuccess(true);
+
+
+            setTimeout(() => {
+              setShowSuccess(false);
+
+            }, 900);
+            fetchCustomerDetails();
+          } else {
+            alert(res.message);
+          }
+           
         }
       }
     );
   };
+
   const openGallery = () => {
     launchImageLibrary(
       { mediaType: "photo", quality: 0.7 },
@@ -229,7 +273,6 @@ const headerTranslateY = scrollY.interpolate({
           const image = response.assets[0];
           setProfileImage(image); // UI update
 
-          // ✅ Send existing details as payload
           const res = await editBasicDetails(
             customerDetails.customerId,
             {

@@ -5,7 +5,7 @@ import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import Profile from "../../Assets/Images/Tenant_inactive.png";
 // import Profile from "../../Assets/Images/profile.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { useCustomer } from "../../Context/CustomerContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";

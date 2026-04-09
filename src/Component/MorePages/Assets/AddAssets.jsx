@@ -512,6 +512,7 @@ for (let i = -365; i <= 365; i++) {
 <ScrollView
     ref={scrollRef}
   keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
   keyboardDismissMode="on-drag"
   contentContainerStyle={{ paddingBottom: 210 , paddingRight:15 }}
 >
@@ -886,7 +887,7 @@ const styles = StyleSheet.create({
         padding: 20,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        maxHeight: "88%",
+        maxHeight: "98%",
     },
     handle: {
         width: 60,

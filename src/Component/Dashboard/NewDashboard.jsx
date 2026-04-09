@@ -139,6 +139,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const isTabBarVisible = useRef(true);
   
   const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,setShowProfileTopBar);
+  console.log("Hitler",showProfileTopBar)
 
 
   const subTabs = [
@@ -1615,7 +1616,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
                   <ScrollView showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
-                    onScroll={handleScroll}>
+                    onScroll={handleScroll} >
 
 
 

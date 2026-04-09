@@ -1,5 +1,5 @@
 // PGPageFull.js
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -104,11 +104,11 @@ export default function PGPageFull({ route }) {
   const [inactiveTenant, setInactiveTenant] = useState(null);
   // const [matchedBed, setMatchedBed] = useState(null);
 
-  const[showFloorBar,setShowFloorBar]=useState(true)
+  // const[showFloorBar,setShowFloorBar]=useState(true)
 
    const { setShowTabBar } = route.params
 
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,setShowFloorBar);
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,undefined);
 
 
 
@@ -904,6 +904,97 @@ useFocusEffect(
 
   const showReadBlockedState = activeHostelId && !canReadPayingGuests;
 
+  
+
+  const floorAccumulator = useRef(0);
+const [showFloorBar, setShowFloorBar] = useState(true);
+const lastScrollY = useRef(0);
+const floorAnim = useRef(new Animated.Value(0)).current;
+const [floorHeight, setFloorHeight] = useState(0);
+
+const animatedHeight = floorAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: [0, floorHeight || 80], // fallback
+});
+
+
+
+const onScroll = (e) => {
+  handleScroll(e);       // tabbar
+  handleFloorScroll(e);  // floor bar
+};
+
+
+// const handleFloorScroll = (event) => {
+//   const currentY = event.nativeEvent.contentOffset.y;
+//   const diff = currentY - lastScrollY.current;
+
+//   floorAccumulator.current += diff;
+
+//   if (floorAccumulator.current > 30) {
+//     setShowFloorBar(false);
+//     floorAccumulator.current = 0;
+//   } else if (floorAccumulator.current < -30) {
+//     setShowFloorBar(true);
+//     floorAccumulator.current = 0;
+//   }
+
+//   lastScrollY.current = currentY;
+// };
+
+//   const handleFloorScroll = (event) => {
+//   const currentY = event.nativeEvent.contentOffset.y;
+//   const diff = currentY - lastScrollY.current;
+
+//   floorAccumulator.current += diff;
+
+//   // 🔽 SCROLL DOWN → HIDE
+//   if (floorAccumulator.current > 30) {
+//   Animated.timing(floorAnim, {
+//     toValue: 0, // hide
+//     duration: 200,
+//     useNativeDriver: false, // ⚠️ required for height
+//   }).start();
+
+//   floorAccumulator.current = 0;
+// }
+
+// else if (floorAccumulator.current < -30) {
+//   Animated.timing(floorAnim, {
+//     toValue: 1, // show
+//     duration: 200,
+//     useNativeDriver: false,
+//   }).start();
+
+//   floorAccumulator.current = 0;
+// }
+
+//   lastScrollY.current = currentY;
+// };
+const handleFloorScroll = (event) => {
+  const currentY = event.nativeEvent.contentOffset.y;
+  const diff = currentY - lastScrollY.current;
+
+  // 🔽 scroll down → hide
+  if (diff > 5 && currentY > 50) {
+    Animated.timing(floorAnim, {
+      toValue: -90, // 👈 move up (height of bar)
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  // 🔼 scroll up → show instantly
+  if (diff < -2) {
+    Animated.timing(floorAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  lastScrollY.current = currentY;
+};
 
 
   return (
@@ -1098,7 +1189,19 @@ useFocusEffect(
           ></ScrollView>
         </View>
 
-        {!showReadBlockedState && showFloorBar && (
+        <Animated.View  
+        style={{
+    transform: [{ translateY: floorAnim }],
+    position: "absolute",   // 👈 IMPORTANT
+    top: 110,               // 👈 adjust based on your header height
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: "#fff", // 👈 important to hide background glitch
+    paddingVertical: 8,
+  }}
+  >
+        {!showReadBlockedState && (
 
           <View style={{ flexDirection: "row", marginLeft: 13 }}>
             <ScrollView
@@ -1169,6 +1272,7 @@ useFocusEffect(
           </View>
         )
         }
+        </Animated.View>
 
         {showReadBlockedState && (
           <View style={styles.centerContainer}>
@@ -1227,12 +1331,12 @@ useFocusEffect(
         {console.log('haha', rooms)}
         {!showReadBlockedState && (
           <FlatList
-            contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 140,paddingTop:110 }}
             data={rooms}
             scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
-            onScroll={handleScroll}
+            onScroll={onScroll}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
               const bedCount = bedsByRoom[item.id]?.length || 0;
