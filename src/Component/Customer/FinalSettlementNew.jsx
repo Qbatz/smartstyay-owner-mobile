@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback , useContext} from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import { useCustomer } from "../../Context/CustomerContext";
+import { CommonContexts } from "../../Context/CommonContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import AddRoomReadingSheet from "../Customer/AddRoomReadingSheet";
 import { useFocusEffect } from '@react-navigation/native';
@@ -25,7 +26,7 @@ import DiscountIcon from "../../Assets/Images/discount-shape.png";
 import { Calendar } from "react-native-calendars";
 import SuccessModal from "../../ToastFile/ToastPage";
 import FinalSettlementDiscount from "./FinalSettlementDiscountSheet"
-
+import SettlementDiscountAction from "./settlementdiscountAction"
 
 
 
@@ -33,6 +34,8 @@ import FinalSettlementDiscount from "./FinalSettlementDiscountSheet"
 export default function FinalSettlementScreen({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { getSettlementByCustomerId, submitSettlement } = useCustomer();
+   const { activeHostelId } = useContext(CommonContexts);
+
   const [openUnpaid, setOpenUnpaid] = useState(false);
   const [openRefundRent, setOpenRefundRent] = useState(false);
   const [openEBill, setOpenEBill] = useState(false);
@@ -58,6 +61,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const scrollRef = useRef(null);
 
   const [discountshow , setDiscountshow] = useState(false)
+  const [showActionSheet, setShowActionSheet] = useState(false);
 
   console.log("actualcheckoutdate", actualCheckoutDate);
 
@@ -247,6 +251,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
     }, 0);
   useEffect(() => {
     if (!settlementDetails?.settlementInfo) return;
+    
 
     const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
 
@@ -454,18 +459,18 @@ export default function FinalSettlementScreen({ navigation, route }) {
     }
   };
 
-  const handleDiscount = () => {
-    console.log("clicked", discountshow);
-    
-    setDiscountshow(true)
+ const handleDiscount = () => {
+  if (discountApplied) {
+    setShowActionSheet(true);   // 👈 open action sheet
+  } else {
+    setDiscountshow(true);      // 👈 open discount sheet
   }
+};
   console.log("clicked", discountshow);
 
-  const labels = settlementDetails?.settlementInfo?.label;
   const isRefundable = settlementDetails?.settlementInfo?.isRefundable;
-  const discountApplied =
-  Number(settlementDetails?.settlementInfo?.discountAmount || 0) > 0;
-
+  const discountApplied = settlementDetails?.currentMonthRentInfo?.isDiscountApplied;
+  const label = settlementDetails?.settlementInfo?.label;
   console.log("settlement", settlementDetails?.settlementInfo);
   
 
@@ -958,38 +963,27 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   {/* Final Settlement Title */}
                   <Text style={styles.sectionTitle}>Final Settlement</Text>
 
+<View style={styles.rowBetween}>
+  <Text style={styles.label}>
+    {label ? label : "Refundable Rent"}
+  </Text>
 
-{Array.isArray(labels) && labels.length > 0 ? (
-  labels.map((item, index) => {
-    
-    const isNegativeAmount =
-      !isRefundable || item?.type === "debit";
+  <Text style={styles.value}>
+    {!isRefundable ? "- " : ""} ₹ {
+      label
+        ? settlementDetails?.settlementInfo?.payableAmount
+        : settlementDetails?.settlementInfo?.refundableRent
+    }
+  </Text>
+</View>
 
-    return (
-      <View key={index} style={styles.rowBetween}>
-        <Text style={styles.label}>{item?.label}</Text>
-
-        <Text
-          style={
-            isNegativeAmount
-              ? styles.negativeamountlabel
-              : styles.value
-          }
-        >
-          {isNegativeAmount ? "- " : ""}₹ {item?.amount}
-        </Text>
-      </View>
-    );
-  })
-) : (
-  // ✅ STATIC (DEFAULT UI)
-  <>
-    <View style={styles.rowBetween}>
+  
+    {/* <View style={styles.rowBetween}>
       <Text style={styles.label}>Refundable Rent</Text>
       <Text style={styles.value}>
       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableRent}
       </Text>
-    </View>
+    </View> */}
 
     <View style={styles.rowBetween}>
       <Text style={styles.label}>Refundable Advance</Text>
@@ -1018,8 +1012,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
        {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
       </Text>
     </View>
-  </>
-)}
+ 
 
                   {/* <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Rent</Text>
@@ -1206,7 +1199,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           <View style={styles.bottomFixed}>
 
             <View style={styles.totalContainer}>
-              <Text style={styles.totalLabel}>Total Refund Payable</Text>
+              <Text style={styles.totalLabel}>{isRefundable ? "Total Refund Payable" : "Outstanding Amount Payable"}</Text>
               <Text
                 style={[
                   styles.totalAmount,
@@ -1227,7 +1220,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
       </View>
 
       <Text style={styles.discountText}>
-        ₹ {settlementDetails?.settlementInfo?.discountAmount} discount applied on this invoice
+        ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount} discount applied on this invoice
       </Text>
     </View>
 
@@ -1377,14 +1370,37 @@ export default function FinalSettlementScreen({ navigation, route }) {
       visible={discountshow}
   onClose={() => setDiscountshow(false)}
   selectedBill={{
-    invoiceId: settlementDetails?.settlementInfo?.invoiceId, 
-    totalAmount: Math.abs(Number(ReturnAmount || 0)),
-  }}
+  invoiceId: settlementDetails?.currentMonthRentInfo?.currentInvoiceId,
+  totalAmount: settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0,
+  discountAmount: settlementDetails?.currentMonthRentInfo?.discountAmount || 0,
+}}
   onSuccess={() => {
     setDiscountshow(false);
     fetchSettlement(); // refresh
   }}
       />
+      <SettlementDiscountAction
+  visible={showActionSheet}
+  onClose={() => setShowActionSheet(false)}
+  
+  discountAmount={
+    settlementDetails?.currentMonthRentInfo?.discountAmount
+  }
+
+  hostelId={activeHostelId}
+  invoiceId={
+    settlementDetails?.currentMonthRentInfo?.currentInvoiceId
+  }
+
+  onEdit={() => {
+    setShowActionSheet(false);
+    setDiscountshow(true); // 👈 open edit sheet
+  }}
+
+  onSuccess={() => {
+    fetchSettlement(); // 👈 refresh after delete
+  }}
+/>
     </>
   );
 }
