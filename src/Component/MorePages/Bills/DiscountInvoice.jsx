@@ -38,6 +38,10 @@ export default function DiscountInvoiceScreen() {
         const [modalMessage, setModalMessage] = useState("");
         const [modalType, setModalType] = useState("success");
 
+        const [initialDiscount, setInitialDiscount] = useState("");
+const [initialReason, setInitialReason] = useState("");
+const [initialType, setInitialType] = useState("");
+
   const bill = route?.params?.bill
 
   console.log("BillPdfdetails", BillPdfdetails);
@@ -103,6 +107,27 @@ const isOverdue = dueDate && today > dueDate;
 //   }
 // }, [discountAmountParam, discountPercentageParam]);
 
+// useEffect(() => {
+//   if (route?.params?.isEdit) {
+
+//     const subTotal =
+//       BillPdfdetails?.invoiceInfo?.subTotal || totalamount;
+
+//     const amount =
+//       discountAmountParam > 0
+//         ? discountAmountParam
+//         : (subTotal * Number(discountPercentageParam || 0)) / 100;
+
+//     setDiscountType("Amount");
+//     setDiscount(String(Number(amount).toFixed(2)));
+
+//     if (reasonParam) {
+//       setReason(reasonParam);
+//     }
+//   }
+// }, [discountAmountParam, discountPercentageParam, reasonParam]);
+
+
 useEffect(() => {
   if (route?.params?.isEdit) {
 
@@ -114,13 +139,18 @@ useEffect(() => {
         ? discountAmountParam
         : (subTotal * Number(discountPercentageParam || 0)) / 100;
 
-    // ✅ amount set
-    setDiscountType("Amount");
-    setDiscount(String(Number(amount).toFixed(2)));
+    const formattedAmount = String(Number(amount));
 
-    // ✅ 🔥 reason set panna vendiyathu
+    setDiscountType("Amount");
+    setDiscount(formattedAmount);
+
+    // ✅ store initial values
+    setInitialDiscount(formattedAmount);
+    setInitialType("Amount");
+
     if (reasonParam) {
       setReason(reasonParam);
+      setInitialReason(reasonParam);
     }
   }
 }, [discountAmountParam, discountPercentageParam, reasonParam]);
@@ -267,6 +297,26 @@ const handleDiscountApply = async () => {
     }),
   };
 
+  // ✅ NO CHANGE CHECK
+if (isEdit) {
+  const currentDiscount = String(Number(discount || 0).toFixed(2));
+  const initial = String(Number(initialDiscount || 0).toFixed(2));
+
+  const isSameDiscount = currentDiscount === initial;
+  const isSameReason = (reason || "") === (initialReason || "");
+  const isSameType = discountType === initialType;
+
+  if (isSameDiscount && isSameReason && isSameType) {
+    setModalType("warning");
+    setModalMessage("No changes detected");
+    setShowSuccessModal(true);
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+
+    return; 
+  }
+}
+
   const apiFunction = isEdit ? UpdateBillDiscount : ApplyBillDiscount;
 
   console.log("apifunction",apiFunction);
@@ -382,7 +432,7 @@ const handleDiscountApply = async () => {
          <TouchableOpacity onPress={() => navigation.goBack()}>
                               <Image source={ArrowLeft} style={styles.backIcon} />
                             </TouchableOpacity>
-        <Text style={styles.headerTitle}>Discount Invoice</Text>
+        <Text style={styles.headerTitle}>{isEdit ? "Edit Discount Invoice" : "Discount Invoice"}</Text>
       </View>
 
       {/* User Section */}
