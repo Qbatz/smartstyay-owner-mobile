@@ -52,7 +52,7 @@ export const useHideTabbarOnScroll = (
   const lastScrollY = useRef(0);
   const isHidden = useRef(false);
 
-  const scrollAccumulator = useRef(0); // 👈 KEY FIX
+  const scrollAccumulator = useRef(0); 
 
   const handleScroll = (event) => {
     const currentY = event.nativeEvent.contentOffset.y;

@@ -108,7 +108,7 @@ export default function PGPageFull({ route }) {
 
    const { setShowTabBar } = route.params
 
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,undefined);
+  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
 
 
 
@@ -913,16 +913,10 @@ const [floorHeight, setFloorHeight] = useState(0);
 const scrollAccumulator = useRef(0);
 const ticking = useRef(false);
 
-const animatedHeight = floorAnim.interpolate({
-  inputRange: [0, 1],
-  outputRange: [0, floorHeight || 80], // fallback
-});
-
-
 
 const onScroll = (e) => {
-  handleScroll(e);       // tabbar
-  handleFloorScroll(e);  // floor bar
+  handleScroll(e);     
+  handleFloorScroll(e);  
 };
 
 
@@ -966,20 +960,61 @@ const onScroll = (e) => {
 
 // const isHiddenRef = useRef(false);
 
+// const handleFloorScroll = (event) => {
+//   const y = event.nativeEvent.contentOffset.y;
+
+//   // 🔽 SCROLL DOWN → hide (based on position)
+//   if (y > 70 && !isHiddenRef.current) {
+//     isHiddenRef.current = true;
+//     setShowFloorBar(false);
+//   }
+
+//   // 🔼 SCROLL UP → show immediately when near top
+//   if (y < 40 && isHiddenRef.current) {
+//     isHiddenRef.current = false;
+//     setShowFloorBar(true);
+//   }
+// };
+// const handleFloorScroll = (event) => {
+//   lastScrollY.current = event.nativeEvent.contentOffset.y;
+// };
+
+// const handleScrollEnd = () => {
+//   const y = lastScrollY.current;
+
+//   if (y > 80 && !isHiddenRef.current) {
+//     isHiddenRef.current = true;
+//     setShowFloorBar(false);
+//   } else if (y < 80 && isHiddenRef.current) {
+//     isHiddenRef.current = false;
+//     setShowFloorBar(true);
+//   }
+// };
+const triggerPoint = useRef(0); // 👈 prevents frequent updates
+
 const handleFloorScroll = (event) => {
   const y = event.nativeEvent.contentOffset.y;
 
-  // 🔽 SCROLL DOWN → hide (based on position)
-  if (y > 70 && !isHiddenRef.current) {
+  if (
+    y - triggerPoint.current > 30 &&  
+    y > 60 &&
+    !isHiddenRef.current
+  ) {
     isHiddenRef.current = true;
+    triggerPoint.current = y;
     setShowFloorBar(false);
   }
 
-  // 🔼 SCROLL UP → show immediately when near top
-  if (y < 40 && isHiddenRef.current) {
+  else if (
+    triggerPoint.current - y > 30 &&   
+    isHiddenRef.current
+  ) {
     isHiddenRef.current = false;
+    triggerPoint.current = y;
     setShowFloorBar(true);
   }
+
+  lastScrollY.current = y;
 };
 
   return (
@@ -1310,6 +1345,8 @@ const handleFloorScroll = (event) => {
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
             onScroll={onScroll}
+  scrollEventThrottle={16}
+
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
               const bedCount = bedsByRoom[item.id]?.length || 0;
