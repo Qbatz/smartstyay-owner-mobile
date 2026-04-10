@@ -1211,40 +1211,48 @@ export default function FinalSettlementScreen({ navigation, route }) {
               </Text>
             </View>
 
-            {discountApplied ? (
-  <View style={styles.discountAppliedCard}>
-    
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <View style={styles.tickCircle}>
-        <Text style={styles.tick}>✓</Text>
+  {Number(ReturnAmount) > 0 && (
+  discountApplied ? (
+    <View style={styles.discountAppliedCard}>
+      
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={styles.tickCircle}>
+          <Text style={styles.tick}>✓</Text>
+        </View>
+
+        <Text style={styles.discountText}>
+          ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount} discount applied on this invoice
+        </Text>
       </View>
 
-      <Text style={styles.discountText}>
-        ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount} discount applied on this invoice
-      </Text>
+      <TouchableOpacity onPress={handleDiscount}>
+        <Text style={styles.Discountarrow}>›</Text>
+      </TouchableOpacity>
+
     </View>
+  ) : (
+    <View style={{ marginBottom: 12 }}>
+      <TouchableOpacity
+        onPress={handleDiscount}
+        activeOpacity={0.8}
+        style={{ flexDirection: 'row' }}
+      >
+        <Text style={styles.makeDiscountText}>
+          Make Discount
+        </Text>
 
-    <TouchableOpacity onPress={handleDiscount}>
-      <Text style={styles.Discountarrow}>›</Text>
-    </TouchableOpacity>
-
-  </View>
-) : (
-        <View style={{ marginBottom: 12 }}>
-  <TouchableOpacity
-    onPress={handleDiscount}
-    activeOpacity={0.8}
-    style={{flexDirection:'row'}}
-    
-  >
-    <Text style={{ fontSize: 14, color: "#338BFF", fontFamily: "Gilroy-Medium" }}>
-      Make Discount
-    </Text>
-
-    <Image  source={DiscountIcon} style={{height:18, width:18, marginLeft:7}}/>
-  </TouchableOpacity>
-</View>
+        <Image
+          source={DiscountIcon}
+          style={{ height: 18, width: 18, marginLeft: 7 }}
+        />
+      </TouchableOpacity>
+    </View>
+  )
 )}
+
+
+
+
 
 
 {/*          
