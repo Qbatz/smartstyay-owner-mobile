@@ -772,6 +772,93 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
   }
 };
 
+const UpdateBillDiscount = async ({
+  hostelId,
+  invoiceId,
+  discountAmount,
+  discountPercentage,
+  reason,
+}) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const payload = {
+      reason: reason || "",
+      ...(discountAmount !== undefined && { discountAmount }),
+      ...(discountPercentage !== undefined && { discountPercentage }),
+    };
+
+    const res = await axios.put(
+      `/v2/bills/discount/${hostelId}/${invoiceId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      await GetAllBillDetails(hostelId); 
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return { success: false, message: "Discount update failed" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const DeleteBillDiscount = async ({ hostelId, invoiceId }) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v2/bills/discount/${hostelId}/${invoiceId}`
+    );
+
+    console.log();
+    
+
+    if (res?.status === 200 || res?.status === 204) {
+      await GetAllBillDetails(hostelId); 
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return { success: false, message: "Failed to remove discount" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
   try {
     setLoading(true);
@@ -837,7 +924,9 @@ const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
         postGlobalBilPdfDetails,
          MarkBillAsUnpaid,
          ApplyBillDiscount,
-         deleteTemplateImage
+         deleteTemplateImage,
+         UpdateBillDiscount,
+         DeleteBillDiscount,
       }}
     >
       {children}

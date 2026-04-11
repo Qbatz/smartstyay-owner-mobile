@@ -52,6 +52,7 @@ import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -89,6 +90,7 @@ import TickIcon from "../../../Assets/Images/check.png";
 import { Dimensions } from "react-native";
 import BillBookings from "./Bill_Bookings";
 import { s, vs } from "../../../Utils/rnScale";
+import DiscountActionSheet from "./DiscountActionSheet"
 
 
 
@@ -260,6 +262,8 @@ export default function BillsDesign({ route }) {
   const isBillLocked = true;
 
   const { CommonModule } = NativeModules;
+
+
 
 
 
@@ -574,7 +578,7 @@ export default function BillsDesign({ route }) {
   const statusStyle = getStatusStyle(selectedReceipt?.paymentStatus);
 
 
-  
+
   console.log("statusstyle", statusStyle)
 
 
@@ -1534,7 +1538,7 @@ export default function BillsDesign({ route }) {
   }
 
   console.log("showrefund", showRefundPayment);
-  
+
 
   useEffect(() => {
     if (
@@ -1915,7 +1919,7 @@ export default function BillsDesign({ route }) {
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
 
-       setShowBillDetails(false)
+      setShowBillDetails(false)
       GetAllBillDetails(activeHostelId);
       setShowRefundPayment(false);
       resetRefundForm();
@@ -2016,13 +2020,13 @@ export default function BillsDesign({ route }) {
   const isExportAllow = isValidSubscription && canReadInvoice;
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
- 
 
-const isDiscounted =
-  BillPdfdetails?.invoiceInfo?.isDiscounted === true;
 
-const isNotDiscounted =
-  BillPdfdetails?.invoiceInfo?.isDiscounted === false;
+  const isDiscounted =
+    BillPdfdetails?.invoiceInfo?.isDiscounted === true;
+
+  const isNotDiscounted =
+    BillPdfdetails?.invoiceInfo?.isDiscounted === false;
 
 
   const getOverdueDays = (dueDate) => {
@@ -2087,7 +2091,7 @@ const isNotDiscounted =
         <SafeAreaView style={styles.container}>
 
 
-          <View style={{ flexDirection: "row", alignItems: "center",marginTop:10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
 
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image source={ArrowLeft} style={styles.backIcon} />
@@ -2137,7 +2141,7 @@ const isNotDiscounted =
 
 
           {activeTab === "Invoices" && (
-            <View style={{ flex: 1}}>
+            <View style={{ flex: 1 }}>
 
               {!canReadInvoice && (
                 <View style={styles.centerContainer}>
@@ -2243,12 +2247,12 @@ const isNotDiscounted =
 
                           </View>
 
-                          <View style={{ flex: 1,marginLeft:5,marginRight:10,}}>
+                          <View style={{ flex: 1, marginLeft: 5, marginRight: 10, }}>
                             {/* <Text style={styles.name}>{item.fullName}</Text> */}
 
                             <Text style={styles.name}
-                            numberOfLines={1}
-                            ellipsizeMode="tail">{item.fullName}</Text>
+                              numberOfLines={1}
+                              ellipsizeMode="tail">{item.fullName}</Text>
 
 
 
@@ -2279,7 +2283,7 @@ const isNotDiscounted =
                               color: "#000",
                             }}>₹ {item?.invoiceAmount ?? "--"}</Text>
 
-                            <Text style={{ fontSize: 10,color: "#6B7280",fontFamily: "Gilroy-Regular",marginTop:4}}>
+                            <Text style={{ fontSize: 10, color: "#6B7280", fontFamily: "Gilroy-Regular", marginTop: 4 }}>
                               {item.invoiceDate}</Text>
                             {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
                               <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
@@ -2293,7 +2297,7 @@ const isNotDiscounted =
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
-                  )} 
+                  )}
 
                   {(
                     !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
@@ -2353,6 +2357,8 @@ const isNotDiscounted =
             <Receipt onSelectReceipt={handleOpenReceiptSheet} />
           )}
 
+
+        <>
           {showBillDetails && (
             <View style={styles.sheetOverlay}>
 
@@ -2369,7 +2375,7 @@ const isNotDiscounted =
                   styles.transactionSheet,
                   {
                     // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
-                    maxHeight:'95%',
+                    maxHeight: '95%',
                     transform: [{ translateY: detailsSheetY }]
                   }
                 ]}
@@ -2412,7 +2418,7 @@ const isNotDiscounted =
 
 
                       {
-                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" &&  selectedBill?.invoiceType !== "Settlement")) && (
+                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" && selectedBill?.invoiceType !== "Settlement")) && (
                           <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                             onPress={() => openMenu(selectedBill)}>
                             <Image
@@ -2511,37 +2517,61 @@ const isNotDiscounted =
                     </View>
                   </View>
 
-{isDiscounted && (
-  <View style={styles.discountCard}>
+                  {isDiscounted && (
+                    <View style={styles.discountCard}>
 
-    {/* Actual Amount */}
-    <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-      <Text style={styles.discountLabel}>Actual Amount</Text>
-      <Text style={styles.discountValue}>
-        ₹ {(
-          (BillPdfdetails?.invoiceInfo?.totalAmount || 0) +
-          (BillPdfdetails?.invoiceInfo?.discountAmount || 0)
-        ).toFixed(2)}
-      </Text>
-    </View>
+                      {/* Actual Amount */}
+                      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.discountLabel}>Actual Amount</Text>
+                        <Text style={styles.discountValue}>
+                          ₹ {(
+                            (BillPdfdetails?.invoiceInfo?.totalAmount || 0) +
+                            (BillPdfdetails?.invoiceInfo?.discountAmount || 0)
+                          ).toFixed(2)}
+                        </Text>
+                      </View>
 
-    {/* Discount */}
-    <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between' , marginTop:6}}>
-      <Text style={styles.discountLabel}>Discount</Text>
-      <Text style={styles.discountMinus}>
-        - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
-      </Text>
-    </View>
+                      {/* Discount */}
+                      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                          <Text style={styles.discountLabel}>Discount</Text>
+                          <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
+                            <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
+                          </TouchableOpacity>
+                        </View>
+                        <Text style={styles.discountMinus}>
+                          - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
+                        </Text>
 
-    {/* Badge */}
-    <View style={styles.discountBadge}>
-      <Text style={styles.discountBadgeText}>
-        ✔ Discount Applied
-      </Text>
-    </View>
+                      </View>
 
-  </View>
-)}
+                      {/* <TouchableOpacity
+    onPress={() => { 
+        setShowMenu(false);
+        setShowBillDetails(false)
+        navigation.navigate("DiscountInvoice", {
+  bill: selectedBill,
+  isEdit: true, 
+});
+      }}>
+    <Text>Edit</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+   
+      >
+    <Text>Delete</Text>
+    </TouchableOpacity> */}
+
+                      {/* Badge */}
+                      <View style={styles.discountBadge}>
+                        <Text style={styles.discountBadgeText}>
+                          ✔ Discount Applied
+                        </Text>
+                      </View>
+
+                    </View>
+                  )}
                   {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
                     <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
@@ -2855,6 +2885,40 @@ const isNotDiscounted =
               </Animated.View>
             </View>
           )}
+
+         <DiscountActionSheet
+  visible={showDiscountSheet}
+  onClose={() => setShowDiscountSheet(false)}
+  discountAmount={BillPdfdetails?.invoiceInfo?.discountAmount || 0}
+  totalAmount = {BillPdfdetails?.invoiceInfo?.totalAmount || 0}
+  hostelId={selectedBill?.hostelId}
+  invoiceId={selectedBill?.invoiceId}
+  onEdit={() => {
+    navigation.navigate("DiscountInvoice", {
+      bill: selectedBill,
+      isEdit: true,
+        discountAmount: BillPdfdetails?.invoiceInfo?.discountAmount,
+  discountPercentage: BillPdfdetails?.invoiceInfo?.discountPercentage,
+  totalAmount: BillPdfdetails?.invoiceInfo?.subTotal, 
+  DiscountReason : BillPdfdetails?.invoiceInfo?.discountReason
+    });
+  }}
+
+  onEditSuccess={()=>{
+    setShowBillDetails(false); 
+  }}
+
+
+  onSuccess={() => {
+    setShowBillDetails(false); // 🔥 close parent sheet
+    setShowSuccessModal(true);
+    setModalType("success");
+    setModalMessage("Discount removed successfully");
+
+    setTimeout(() => setShowSuccessModal(false), 1500);
+  }}
+/>
+          </>
 
           {showReceiptDetails && (
             <View style={styles.sheetOverlay}>
@@ -3279,7 +3343,7 @@ const isNotDiscounted =
                   </Text>
                 </TouchableOpacity> */}
 
-                
+
                 {isPaid && (selectedBill?.invoiceMode === "Manual" && selectedBill?.paymentStatus === "Paid" && selectedBill?.invoiceType === "Rent") && (
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
@@ -3311,25 +3375,25 @@ const isNotDiscounted =
                   </TouchableOpacity>
                 )}
 
-{selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
-  !selectedBill?.isDiscounted && (
-    <TouchableOpacity
-      style={styles.popupRow}
-      onPress={() => { 
-        setShowMenu(false);
-        setShowBillDetails(false)
-        navigation.navigate("DiscountInvoice", {
-          bill: selectedBill,
-        });
-      }}
-    >
-      <Image
-        source={require("../../../Assets/Images/discount-circle.png")}
-        style={styles.popupIcon}
-      />
-      <Text style={styles.popupText}>Make as discount</Text>
-    </TouchableOpacity>
-)}
+                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
+                  !selectedBill?.isDiscounted && (
+                    <TouchableOpacity
+                      style={styles.popupRow}
+                      onPress={() => {
+                        setShowMenu(false);
+                        setShowBillDetails(false)
+                        navigation.navigate("DiscountInvoice", {
+                          bill: selectedBill,
+                        });
+                      }}
+                    >
+                      <Image
+                        source={require("../../../Assets/Images/discount-circle.png")}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Make as discount</Text>
+                    </TouchableOpacity>
+                  )}
 
 
 
@@ -3888,11 +3952,11 @@ const isNotDiscounted =
 
           {showRefundPayment && (
             <View style={styles.sheetOverlay} pointerEvents="box-none">
-            <View style={{ flex: 1 }}>
-  <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
-    <View style={{ flex: 1 }} />
-  </TouchableWithoutFeedback>
-</View>
+              <View style={{ flex: 1 }}>
+                <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
+                  <View style={{ flex: 1 }} />
+                </TouchableWithoutFeedback>
+              </View>
 
               <Animated.View
                 style={[
@@ -4805,6 +4869,8 @@ const isNotDiscounted =
 
 
 
+
+
           {/* {showNotice && (
   <MoveNoticeModal
     visible={showNotice}
@@ -4843,9 +4909,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: "#F5F6FA",
     borderRadius: 50,
-    borderWidth:1,borderColor:'#E4E4E4',
+    borderWidth: 1, borderColor: '#E4E4E4',
     paddingHorizontal: 12,
-    paddingVertical:6,
+    paddingVertical: 6,
     // height: 55,
     flex: 1,
   },
@@ -4883,7 +4949,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     paddingBottom: 6,
-    marginBottom:15
+    marginBottom: 15
   },
   // dropdownMenu: {
   //   backgroundColor: "#fff",
@@ -5000,19 +5066,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 14,
-    paddingHorizontal:10,
-    backgroundColor:'#FFFFFF',
-     borderRadius: 10,       // ✅ rounded card
-  marginBottom: 10,    // ✅ space between cards
+    paddingHorizontal: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,       // ✅ rounded card
+    marginBottom: 10,    // ✅ space between cards
 
-  // shadow (iOS)
-  shadowColor: "#000",
-  shadowOpacity: 0.05,
-  shadowRadius: 5,
-  shadowOffset: { width: 0, height: 2 },
+    // shadow (iOS)
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
 
-  // elevation (Android)
-  elevation: 2,
+    // elevation (Android)
+    elevation: 2,
   },
   profileImg: {
     width: 45,
@@ -6293,41 +6359,41 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold"
   },
   discountCard: {
-  backgroundColor: "#F3F4F6",
-  borderRadius: 12,
-  padding: 12,
-  marginTop: 12,
-},
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
 
-discountLabel: {
-  fontSize: 13,
-  color: "#6B7280",
-  fontFamily: "Gilroy-Medium",
-},
+  discountLabel: {
+    fontSize: 13,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Medium",
+  },
 
-discountValue: {
-  fontSize: 14,
-  fontFamily: "Gilroy-Bold",
-},
+  discountValue: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+  },
 
-discountMinus: {
-  fontSize: 14,
-  fontFamily: "Gilroy-Bold",
-  color: "#000",
-},
+  discountMinus: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+    color: "#000",
+  },
 
-discountBadge: {
-  backgroundColor: "#16A34A",
-  alignSelf: "flex-end",
-  marginTop: 10,
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  borderRadius: 20,
-},
+  discountBadge: {
+    backgroundColor: "#16A34A",
+    alignSelf: "flex-end",
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
 
-discountBadgeText: {
-  color: "#fff",
-  fontSize: 12,
-  fontFamily: "Gilroy-Semibold",
-},
+  discountBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
 });
