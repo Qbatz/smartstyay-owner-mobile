@@ -62,6 +62,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [discountshow , setDiscountshow] = useState(false)
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showLastRentDetails, setShowLastRentDetails] = useState(false);
+  const [discountValue, setDiscountValue] = useState("");
+const [isEditingDiscount, setIsEditingDiscount] = useState(false);
 
   console.log("actualcheckoutdate", actualCheckoutDate);
 
@@ -165,6 +168,14 @@ export default function FinalSettlementScreen({ navigation, route }) {
     }, [selectedItem, selectedBed, actualCheckoutDate])
   );
 
+
+  useEffect(() => {
+  if (settlementDetails?.currentMonthRentInfo?.discountAmount) {
+    setDiscountValue(
+      String(settlementDetails.currentMonthRentInfo.discountAmount)
+    );
+  }
+}, [settlementDetails]);
 
 
   // useEffect(() => {
@@ -435,7 +446,12 @@ export default function FinalSettlementScreen({ navigation, route }) {
       selectedBed?.currentTenantInfo[0]?.tenetId;
 
 
-    const payload = extraDeductionsPayload;
+      const payload = {
+  discountAmount: Number(discountValue) || 0,
+  deductions: extraDeductionsPayload,
+}
+
+    // const payload = extraDeductionsPayload;
 
 
 
@@ -697,10 +713,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
               )}
             </View>
 
-            {/* ✅ REFUNDABLE RENT (INLINE ACCORDION) */}
             <View style={styles.refundCard}>
 
-              {/* HEADER */}
               <TouchableOpacity
                 style={styles.refundHeader}
                 onPress={() => setOpenRefundRent(!openRefundRent)}
@@ -728,8 +742,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
               {openRefundRent && (
                 <View style={styles.refundBody}>
 
-                  {/* LAST RENT */}
-                  <View style={styles.rowBetween}>
+                  {/* <View style={styles.rowBetween}>
                     <Text style={styles.descText}>
                       Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
                     </Text>
@@ -740,9 +753,51 @@ export default function FinalSettlementScreen({ navigation, route }) {
                         settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
                       ).toLocaleString("en-IN")}
                     </Text>
-                  </View>
+                  </View> */}
+                  <TouchableOpacity
+  style={styles.rowBetween}
+  onPress={() => setShowLastRentDetails(!showLastRentDetails)}
+  activeOpacity={0.7}
+>
+  <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <Text style={styles.descText}>
+      Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
+    </Text>
 
-                  {/* ACTUAL STAY */}
+    <Image
+      source={DownArrow}
+      style={[
+        styles.arrowSmall,
+        showLastRentDetails && { transform: [{ rotate: "180deg" }] },
+      ]}
+    />
+  </View>
+
+  <Text style={styles.amountText}>
+    ₹ {Number(
+      settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
+    ).toLocaleString("en-IN")}
+  </Text>
+</TouchableOpacity>
+
+{showLastRentDetails && (
+  <View style={styles.detailCard}>
+    <Text style={styles.sectionLabel}>Actual Rent</Text>
+    <Text style={styles.rightMuted}>
+      ₹ {settlementDetails?.currentMonthRentInfo?.actualRent || 0}
+    </Text>
+  </View>
+)}
+
+{showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
+  <View style={styles.detailCard}>
+    <Text style={styles.sectionLabel}>Discount</Text>
+    <Text style={styles.rightMuted}>
+      ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount}
+    </Text>
+  </View>
+)}
+
                   <TouchableOpacity
                     style={styles.rowBetween}
                     onPress={() => setShowDetails(!showDetails)}
@@ -1189,7 +1244,105 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
 
 
+<View style={{
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 14,
+  marginHorizontal: 16,
+  marginTop: 10,
+  borderWidth: 1,
+  borderColor: "#E5E7EB"
+}}>
 
+  <Text style={{ fontFamily: "Gilroy-Semibold", marginBottom: 10 }}>
+    Discount (Current Month)
+  </Text>
+
+  {!isEditingDiscount ? (
+    // ✅ VIEW MODE
+    <View style={{
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+     borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+      padding: 12
+    }}>
+      <Text style={{ fontSize: 16, fontFamily: "Gilroy-Bold" }}>
+        ₹ {discountValue || 0}
+      </Text>
+
+     <TouchableOpacity
+  onPress={() => setIsEditingDiscount(true)}
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E0ECFF",   // 🔥 light blue bg
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  }}
+>
+  <Image
+    source={EditIcon}
+    style={{
+      width: 16,
+      height: 16,
+      tintColor: "#2563EB",
+      marginRight: 6,
+    }}
+  />
+
+  <Text
+    style={{
+      color: "#2563EB",
+      fontFamily: "Gilroy-Semibold",
+      fontSize: 13,
+    }}
+  >
+    Edit
+  </Text>
+</TouchableOpacity>
+    </View>
+  ) : (
+    // ✅ EDIT MODE
+    <View style={{
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      // backgroundColor: "#EEF2FF",
+      padding: 5,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+      
+    }}>
+      <TextInput
+        value={discountValue}
+        onChangeText={(t) => setDiscountValue(t.replace(/[^0-9]/g, ""))}
+        keyboardType="numeric"
+        placeholder="Enter discount"
+        style={{ flex: 1, fontSize: 16 }}
+      />
+
+      <TouchableOpacity
+        onPress={() => setIsEditingDiscount(false)}
+        style={{
+          backgroundColor: "#DEF7EC",
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          borderRadius: 8
+        }}
+      >
+        <Text style={{ color: "#03543F", fontFamily: "Gilroy-Bold" }}>
+          Set
+        </Text>
+      </TouchableOpacity>
+    </View>
+  )}
+
+</View>
 
 
 
