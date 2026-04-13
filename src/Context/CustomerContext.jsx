@@ -1120,8 +1120,10 @@ const AddManualDocument = async (hostelId, customerId, pickedFiles , type) => {
   if (!hostelId || !customerId || !pickedFiles?.length || !type) {
     return { success: false, message: "Missing data" };
   }
-
+  
   try {
+    setLoading(true)
+
     const token = await retriveData("token");
     const axios = getAxios();
 
@@ -1171,6 +1173,8 @@ const AddManualDocument = async (hostelId, customerId, pickedFiles , type) => {
         error?.response?.data?.message ||
         "Document upload failed",
     };
+  } finally{
+    setLoading(false)
   }
 };
 

@@ -34,6 +34,7 @@ import DocumentViewer from "./DocumentViewer"
 import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 import AmenitiesClipPath from "../../../Assets/Images/amenitiesClipPath.png";
 import RequestAmenitiesIcon from "../../../Assets/Images/requestAmenitiesIcon.png"
+import Loader from "../../Loader/Loader";
 // import RNFS from "react-native-fs";
 
 
@@ -46,7 +47,7 @@ export default function OverviewTab({ customerDetails,
   const { activeHostelId } = useContext(CommonContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { AddManualDocument, ParticularcustomerDetails, AddAdditionalContacts,
-    GetParticularCustomerDetails, deleteManualDocument } = useCustomer();
+    GetParticularCustomerDetails, deleteManualDocument, loading } = useCustomer();
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
@@ -255,6 +256,7 @@ export default function OverviewTab({ customerDetails,
 
   return (
     <>
+    {loading && <Loader/>}
       <SuccessModal
         visible={showSuccess}
         message={message}
