@@ -1,6 +1,8 @@
 import React, { createContext, useState } from "react";
 import base64 from "react-native-base64";
 import { getAxios } from "../Config/AxiosConfig";
+import axios from "axios";
+import { retriveData } from "../Utils/Storage";
 
 
 export const PGContext = createContext();
@@ -161,41 +163,60 @@ export default function PGProvider({ children }) {
     }
   };
 
-const getDashboard = async (hostelId, filters = {}) => {
-  try {
-    setPgLoading(true);
-    setPgError(null);
+  const getDashboard = async (hostelId, filters = {}) => {
+    try {
+      setPgLoading(true);
+      setPgError(null);
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const response = await axios.get(`/v2/dashboard/new/${hostelId}`, {
-      params: {
-        billingFilter: filters?.billingFilter,
-        complaintRequestFilter: filters?.complaintRequestFilter,
-        financeFilter: filters?.financeFilter,
-        occupancyFilter: filters?.occupancyFilter,
-      },
-      paramsSerializer: params => {
-        const qs = require("qs");
-        return qs.stringify(params, { arrayFormat: "repeat" });
-      },
-    });
+      const response = await axios.get(`/v2/dashboard/new/${hostelId}`, {
+        params: {
+          billingFilter: filters?.billingFilter,
+          complaintRequestFilter: filters?.complaintRequestFilter,
+          financeFilter: filters?.financeFilter,
+          occupancyFilter: filters?.occupancyFilter,
+        },
+        paramsSerializer: params => {
+          const qs = require("qs");
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
 
-    return response;
+      return response;
 
-  } catch (error) {
-    console.log("GET DASHBOARD ERROR:", error?.response || error);
-    setPgError(error);
-    return error?.response || error;
+    } catch (error) {
+      console.log("GET DASHBOARD ERROR:", error?.response || error);
+      setPgError(error);
+      return error?.response || error;
 
-  } finally {
-    setPgLoading(false);
+    } finally {
+      setPgLoading(false);
+    }
+  };
+
+  const deleteAdditionalImages = async (hostelId, imageId) => {
+
+
+
+    try {
+      const axios=getAxios();
+       const token = await retriveData("token");
+
+      const res = await axios.delete(`/v2/hostel/${hostelId}/additional-images/${imageId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return res;
+    } catch(error){
+      return {status: error.response.status, message: error.response.data}
+    }
   }
-};
 
 
   return (
-    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails,getDashboard, PGDetails, pgLoading, pgError }}>
+    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, getDashboard, PGDetails, pgLoading, pgError,deleteAdditionalImages }}>
       {children}
     </PGContext.Provider>
   );

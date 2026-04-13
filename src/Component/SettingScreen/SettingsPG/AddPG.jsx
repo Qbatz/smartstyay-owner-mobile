@@ -33,7 +33,7 @@ export default function AddPG({ navigation, route }) {
   const isEdit = route?.params?.mode === "edit";
   const editData = route?.params?.data || null;
 
-  const { addPG, editPG } = useContext(PGContext);
+  const { addPG, editPG, deleteAdditionalImages } = useContext(PGContext);
   const { hostelList, updateHostelList, setActiveHostelId, activeHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
@@ -342,13 +342,13 @@ export default function AddPG({ navigation, route }) {
         setModalType("success");
         setModalMessage("PG Updated Successfully");
         setShowSuccessModal(true);
-        setTimeout(() =>{
+        setTimeout(() => {
           setShowSuccessModal(false)
           navigation.goBack();
         }
-           
-        , 1500);
-       
+
+          , 1500);
+
       } else {
         alert("Update Failed");
       }
@@ -361,8 +361,9 @@ export default function AddPG({ navigation, route }) {
       setModalType("success");
       setModalMessage("PG Added Successfully");
       setShowSuccessModal(true);
-      setTimeout(() =>{ setShowSuccessModal(false)
-         navigation.goBack()
+      setTimeout(() => {
+        setShowSuccessModal(false)
+        navigation.goBack()
       }, 1500);
       const fresh = await getHostels()
       const data = fresh.data
@@ -383,6 +384,8 @@ export default function AddPG({ navigation, route }) {
 
 
   };
+
+
 
 
 
@@ -569,7 +572,7 @@ export default function AddPG({ navigation, route }) {
                 value={email}
                 onChangeText={(t) => {
                   const cleaned = removeEmojis(t);
-                  const lowerCaseText = cleaned.toLowerCase(); 
+                  const lowerCaseText = cleaned.toLowerCase();
                   setEmail(lowerCaseText);
                   setErrors({ ...errors, email: "" });
                   setTopWarning("");
@@ -667,94 +670,94 @@ export default function AddPG({ navigation, route }) {
                 /> */}
 
 
-<TextInput
-  style={styles.select}
-  placeholder="Select State"
-  placeholderTextColor="#9CA3AF"
-  value={stateOpen ? stateQuery : state}
-  editable={true}
-  showSoftInputOnFocus={true}
-  // onFocus={() => {
-  //   setStateOpen(true);
-  //   setStateQuery(state || ""); 
-  // }}
-  onFocus={() => {
-  setStateOpen(true);
-  setStateQuery("");   
-}}
-  onPressIn={() => {
-    setStateOpen(true);
-  }}
-  onChangeText={(t) => {
-    setStateQuery(t);
-    setStateOpen(true);
-    setErrors({ ...errors, state: "" });
-    setTopWarning("");
-  }}
-/>
+                <TextInput
+                  style={styles.select}
+                  placeholder="Select State"
+                  placeholderTextColor="#9CA3AF"
+                  value={stateOpen ? stateQuery : state}
+                  editable={true}
+                  showSoftInputOnFocus={true}
+                  // onFocus={() => {
+                  //   setStateOpen(true);
+                  //   setStateQuery(state || ""); 
+                  // }}
+                  onFocus={() => {
+                    setStateOpen(true);
+                    setStateQuery("");
+                  }}
+                  onPressIn={() => {
+                    setStateOpen(true);
+                  }}
+                  onChangeText={(t) => {
+                    setStateQuery(t);
+                    setStateOpen(true);
+                    setErrors({ ...errors, state: "" });
+                    setTopWarning("");
+                  }}
+                />
 
                 <Image source={DownArrow} style={styles.arrowIcon} />
 
                 {stateOpen && (
 
-                   <>
-    <TouchableOpacity
-      // style={{
-      //   position: "absolute",
-      //   top: -1000,
-      //   bottom: -1000,
-      //   left: -1000,
-      //   right: -1000,
-      // }}
-      // activeOpacity={1}
-      // onPress={() => setStateOpen(false)}
-       style={{
-    position: "absolute",
-    top: -1000,
-    bottom: -1000,
-    left: -1000,
-    right: -1000,
-  }}
-  activeOpacity={1}
-  onPress={() => setStateOpen(false)}
-    />
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
-                      style={{ flex: 1 }}
-                    >
-                      {filteredStateList.length > 0 ? (
-                        filteredStateList.map((v, index) => (
-                          <TouchableOpacity key={index}
-                            style={[
-                              styles.option,
-                              state === v.label && styles.selectedOption
-                            ]}
-                            onPress={() => {
-                              setState(v.label);
-                              setStateQuery("");
-                              setStateOpen(false);
-                              setErrors({ ...errors, state: "" });
-                              setTopWarning("");
-                            }}
-                          >
-                            <Text
+                  <>
+                    <TouchableOpacity
+                      // style={{
+                      //   position: "absolute",
+                      //   top: -1000,
+                      //   bottom: -1000,
+                      //   left: -1000,
+                      //   right: -1000,
+                      // }}
+                      // activeOpacity={1}
+                      // onPress={() => setStateOpen(false)}
+                      style={{
+                        position: "absolute",
+                        top: -1000,
+                        bottom: -1000,
+                        left: -1000,
+                        right: -1000,
+                      }}
+                      activeOpacity={1}
+                      onPress={() => setStateOpen(false)}
+                    />
+                    <View style={styles.dropdownMenu}>
+                      <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
+                        style={{ flex: 1 }}
+                      >
+                        {filteredStateList.length > 0 ? (
+                          filteredStateList.map((v, index) => (
+                            <TouchableOpacity key={index}
                               style={[
-                                styles.optionText,
-                                state === v.label && styles.selectedOptionText
+                                styles.option,
+                                state === v.label && styles.selectedOption
                               ]}
+                              onPress={() => {
+                                setState(v.label);
+                                setStateQuery("");
+                                setStateOpen(false);
+                                setErrors({ ...errors, state: "" });
+                                setTopWarning("");
+                              }}
                             >
-                              {v.label}
-                            </Text>
-                          </TouchableOpacity>
+                              <Text
+                                style={[
+                                  styles.optionText,
+                                  state === v.label && styles.selectedOptionText
+                                ]}
+                              >
+                                {v.label}
+                              </Text>
+                            </TouchableOpacity>
 
-                        ))
-                      ) : (
-                        <Text style={styles.noResult}>No state found</Text>
-                      )}
-                    </ScrollView>
-                  </View>
+                          ))
+                        ) : (
+                          <Text style={styles.noResult}>No state found</Text>
+                        )}
+                      </ScrollView>
+                    </View>
 
-                  <TouchableOpacity/>
+                    <TouchableOpacity />
                   </>
                 )}
               </View>
@@ -764,12 +767,20 @@ export default function AddPG({ navigation, route }) {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingRight: 10,marginTop:12 }} 
+                contentContainerStyle={{ paddingRight: 10, marginTop: 12 }}
               >
-                {renderImageBox(img1, setImg1)}
-                {renderImageBox(img2, setImg2)}
-                {renderImageBox(img3, setImg3)}
-                {renderImageBox(img4, setImg4)}
+                {renderImageBox(img1, setImg1, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+                  setModalMessage,
+                  setModalType)}
+                {renderImageBox(img2, setImg2, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+                  setModalMessage,
+                  setModalType)}
+                {renderImageBox(img3, setImg3, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+                  setModalMessage,
+                  setModalType)}
+                {renderImageBox(img4, setImg4, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+                  setModalMessage,
+                  setModalType)}
               </ScrollView>
 
               {topWarning !== "" && (
@@ -881,8 +892,41 @@ function renderSelect(
 
 
 
-function renderImageBox(image, setImage) { {console.log(image)}
-const imageUri= image?.uri?.image || image?.uri;
+function renderImageBox(image, setImage, activeHostelId, deleteAdditionalImages,  setShowSuccessModal,
+  setModalMessage,
+  setModalType) {
+  { console.log(image) }
+  const imageUri = image?.uri?.image || image?.uri;
+  console.log("binthu", imageUri)
+
+  const deleteAdditionalPic = async (image) => {
+    setImage(null);
+
+    if (image?.uri?.id) {
+      const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
+
+      console.log(res)
+      if (res?.status == 200) {
+        console.log("Deleted Successfully")
+        // setShowSuccessModal(true)
+        // setModalMessage(res.data || "updated")
+        // setModalType("success")
+        // setTimeout(() => {
+        //   setShowSuccessModal(false)
+        // }, 1500);
+      } else {
+        setShowSuccessModal(true)
+        setModalMessage(res.message || "Something Went Wrong")
+        setModalType("error")
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1000);
+      }
+    } else {
+      setImage(null)
+    }
+
+  };
   return (
     <View style={{ position: "relative" }}>
       <ScrollView horizontal showsHorizontalScrollIndicator>
@@ -906,7 +950,9 @@ const imageUri= image?.uri?.image || image?.uri;
         </TouchableOpacity>
 
         {image?.uri && (
-          <TouchableOpacity onPress={() => setImage(null)} style={styles.deleteIcon}>
+          <TouchableOpacity onPress={() => {
+            deleteAdditionalPic(image)
+          }} style={styles.deleteIcon}>
             <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
         )}
@@ -1081,14 +1127,14 @@ const styles = StyleSheet.create({
     bottom: 52,
     left: 0,
     right: 0,
-    backgroundColor: "#fff", 
+    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 12,
     zIndex: 9999,
-    elevation: 25,         
+    elevation: 25,
     maxHeight: 220,
-    overflow: "hidden",  
+    overflow: "hidden",
   },
 
 

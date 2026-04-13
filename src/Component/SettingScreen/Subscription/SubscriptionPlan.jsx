@@ -27,7 +27,7 @@ export default function SubscriptionPlans({ navigation }) {
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
 
-  const { getHostelPlans, getCurrentHostelPlan, loading } = UseSetting();
+  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
   const insets = useSafeAreaInsets();
@@ -113,33 +113,58 @@ export default function SubscriptionPlans({ navigation }) {
     setExpandedPlan(expandedPlan === id ? null : id);
   };
 
-  const selectplan = async () => {
+  const selectplan = async (planId) => {
     console.log("ppapapap")
+    console.log(planId)
 
     const apiKey = "1003.b2a3acfd49c278e09485f9d3a07e6728.07ecfeb8627ef8e907173b524a161bee"
     const accountId = "60035196766"
-    initialize("1003.b2a3acfd49c278e09485f9d3a07e6728.07ecfeb8627ef8e907173b524a161bee", "60035196766", "india", "sandbox ")
 
-    try {
-      const result = await showCheckout({
-        paymentSessionId: '7615000000339033',
-        description: 'Order #43435',
-        // name: 'John Doe',
-        // email: 'john@example.com',
-        // phone: '+919876543215',
-        paymentMethod: 'upi',
-      });
-      console.log('Payment ID:', result.paymentId);
-      console.log('Signature:', result.signature);
-      if (result.mandateId) {
-        console.log('Mandate ID:', result.mandateId);
+    const payload = {
+      planCode: planId,
+      // discountAmount: "100",
+    }
+
+    const res = await postSubscription(activeHostelId, payload);
+
+    console.log(res)
+
+    if (res?.status == 200) {
+      const apiKey = res?.data?.apiKey;
+      const accountId = res?.data?.accountId;
+      const sessionId = res?.data?.sessionId;
+      const environment = res?.data?.environment;
+
+      initialize( apiKey, accountId, "india", environment)
+
+
+      try {
+        const result = await showCheckout({
+          paymentSessionId: sessionId,
+          description: 'Order #43435',
+          // name: 'John Doe',
+          // email: 'john@example.com',
+          // phone: '+919876543215',
+          paymentMethod: 'upi',
+        });
+        console.log('Payment ID:', result.paymentId);
+        console.log('Signature:', result.signature);
+        if (result.mandateId) {
+          console.log('Mandate ID:', result.mandateId);
+        }
+
+      } catch (e) {
+        console.log('Error Code:', e?.code);
+        console.log('Error Message:', e?.message);
+
       }
 
-    } catch (e) {
-      console.log('Error Code:', e?.code);
-      console.log('Error Message:', e?.message);
+
 
     }
+
+
+
   }
   // const Plans = [
   //   {
@@ -420,7 +445,10 @@ export default function SubscriptionPlans({ navigation }) {
 
                   <TouchableOpacity
                     style={styles.seeMoreBtn}
-                    onPress={selectplan}
+                    onPress={() => {
+                      selectplan(item?.planCode)
+                    }}
+
                   // onPress={() => handleExpand(item.id)}
                   >
                     <Text style={styles.seeMoreText}>{expanded ? "See less →" : "See more →"}</Text>
