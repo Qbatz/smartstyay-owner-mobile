@@ -36,7 +36,7 @@ export default function CreateBill({navigation}) {
         errorMsg,} = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
 
-    const { CreateManualBill, GetAllBillDetails,
+    const { CreateManualBill, GetAllBillDetails, UpdateBill , GetBillDetailsById
   // loading: billLoading,
   // errorMsg: billError,
 } = useContext(BillContext);
@@ -139,11 +139,19 @@ useEffect(() => {
   const [modalType, setModalType] = useState("success");
 
 
-  const selectedTypes = items.map((i) => i.type);
+  // const selectedTypes = items.map((i) => i.type);
+  const selectedTypes = items.map((i) =>
+  i.type?.toLowerCase().trim()
+);
 
-  const filteredOptions = itemOptions.filter(
-    (op) => op === "Others" || !selectedTypes.includes(op)
-  );
+const filteredOptions = itemOptions.filter((op) => {
+  if (op === "Others") return true;
+
+  return !selectedTypes.includes(op.toLowerCase().trim());
+});
+  // const filteredOptions = itemOptions.filter(
+  //   (op) => op === "Others" || !selectedTypes.includes(op)
+  // );
 
 
 // { id, name }
@@ -176,6 +184,56 @@ useEffect(() => {
     fetchCustomersDetails();
   }
 }, [selectedCustomer?.id]);
+
+useEffect(() => {
+  const fetchBillDetails = async () => {
+    if (mode !== "edit" || !data?.invoiceId) return;
+
+    const res = await GetBillDetailsById({
+      hostelId: activeHostelId,
+      invoiceId: data.invoiceId,
+    });
+
+    if (!res?.success) {
+      console.log("Bill details error", res?.message);
+      return;
+    }
+
+    const bill = res.data;
+
+    console.log("BILL DETAILS API", bill);
+
+    // ✅ Customer
+    setSelectedCustomer({
+      id: data.customerId,
+      name: data.fullName,
+    });
+
+    // ✅ Invoice
+    setInvoiceNo(bill.invoiceNumber || "");
+
+    // ✅ Date
+    setInvoiceDate(
+      bill.startDate ? dayjs(bill.startDate, "DD/MM/YYYY") : null
+    );
+
+    setDueDate(
+      bill.dueDate ? dayjs(bill.dueDate, "DD/MM/YYYY") : null
+    );
+
+    // 🔥 MOST IMPORTANT
+    setItems(
+  (bill.invoiceItems || []).map((item) => ({
+    type: item.description,
+    description: item.description,
+    amount: String(item.amount),
+    isExisting: true,   // 🔥 IMPORTANT
+  }))
+);
+  };
+
+  fetchBillDetails();
+}, [mode, data?.invoiceId]);
 
 console.log("selectedCustomer", selectedCustomer , ParticularcustomerDetails);
 
@@ -421,11 +479,18 @@ const handleDueDateChange = (date) => {
       : "0";
   }
 
+  // const newCard = {
+  //   type,
+  //   description: type === "Others" ? "" : type,
+  //   amount,
+  // };
+
   const newCard = {
-    type,
-    description: type === "Others" ? "" : type,
-    amount,
-  };
+  type,
+  description: type === "Others" ? "" : type,
+  amount,
+  isExisting: false,   
+};
 
   setItems((prev) => [...prev, newCard]);
   setDropdownOpen(false);
@@ -506,26 +571,80 @@ const handleDueDateChange = (date) => {
   };
 
   console.log("FINAL PAYLOAD", payload);
+let res;
 
-  const res = await CreateManualBill(payload);
+if (mode === "edit") {
 
-    if (!res?.success) {
-    setModalType("warning");
-    setModalMessage(res?.message || "Something went wrong");
-    setShowSuccessModal(true);
+//   const changedItems = items.map((i) => ({
+//   type: i.description,
+//   amount: Number(i.amount),
+// }));
 
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+const changedItems = items
+  .filter((i) => !i.isExisting)
+  .map((i) => ({
+    type: i.description,   
+    amount: Number(i.amount),
+  }));
 
-  setModalType("success");
-  setModalMessage(res.data);
+  console.log("changesitems", changedItems);
+  
+
+  if (mode === "edit" && changedItems?.length === 0) {
+  setModalType("warning");
+  setModalMessage("No changes detected");
   setShowSuccessModal(true);
-  await GetAllBillDetails(activeHostelId);
 
-    navigation.goBack();
+   setTimeout(() => setShowSuccessModal(false), 1500);
+  return;
+}
+
+res = await UpdateBill({
+  hostelId: activeHostelId,
+  invoiceId: data?.invoiceId,
+  payload: changedItems,
+});
+
+  console.log("edit bill",payload);
+  // res = await UpdateBill({
+  //   hostelId: activeHostelId,
+  //   invoiceId: data?.invoiceId,
+  //   payload,
+  // });
+} else {
+  res = await CreateManualBill(payload);
+  console.log("addbill",payload);
+  
+}
+
+
+console.log("billres", res);
+
+   if (!res?.success) {
+  setModalType("warning");
+  setModalMessage(res?.message || "Something went wrong");
+  setShowSuccessModal(true);
 
   setTimeout(() => setShowSuccessModal(false), 1500);
+  return;
+}
+
+
+setModalType("success");
+
+if (mode === "edit") {
+  setModalMessage("Bill updated successfully");   
+} else {
+  setModalMessage(res?.data || "Bill Created successfully") ; 
+}
+
+setShowSuccessModal(true);
+  await GetAllBillDetails(activeHostelId);
+
+setTimeout(() => {
+  setShowSuccessModal(false);
+  navigation.goBack();
+}, 1500);
 
 
   // if (res.success) {
@@ -664,6 +783,7 @@ const handleDueDateChange = (date) => {
                 id: item.customerId,
                 name: item.fullName,
               });
+              
 
               setCustomerOpen(false);
               setCustomerErr("");
@@ -848,7 +968,7 @@ const handleDueDateChange = (date) => {
             <Text style={styles.cardIndex}>
               {String(index + 1).padStart(2, "0")}
             </Text>
-            <TouchableOpacity onPress={() => removeCard(index)}>
+            <TouchableOpacity  onPress={() => !item.isExisting && removeCard(index)}>
               <Image source={RemoveIcon} style={{height:18 , width:18}}/>
             </TouchableOpacity>
           </View>
@@ -857,7 +977,8 @@ const handleDueDateChange = (date) => {
           <TextInput
             style={styles.input}
             value={item.description}
-            editable={item.type === "Others"}
+             editable={!item.isExisting && item.type === "Others"}
+            // editable={item.type === "Others"}
             // onChangeText={(txt) => updateCard(index, "description", txt)}
              onChangeText={(txt) => {
     const cleanedText = removeEmojis(txt);
@@ -875,6 +996,7 @@ const handleDueDateChange = (date) => {
             keyboardType="numeric"
             value={item.amount}
             placeholder="Enter Amount"
+            editable={!item.isExisting}   
             // editable={item.type !== "Room rent"} 
             onChangeText={(txt) => updateCard(index, "amount", txt)}
             ref={(r) => (inputRefs.current[`amt-${index}`] = r)}

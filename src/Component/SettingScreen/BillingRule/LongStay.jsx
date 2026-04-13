@@ -29,7 +29,7 @@ export default function LongStay({ navigation }) {
 
     const { activeHostelId } = useContext(CommonContexts);
     const { getBillingConfig, loading, addBillingRecurring } = UseSetting();
-      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
     const [billingMethod, setBillingMethod] = useState("fixed");
     const [billingstartDate, setBillingStartDate] = useState(null);
@@ -90,11 +90,11 @@ export default function LongStay({ navigation }) {
         }, [activeHostelId])
     );
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+    useEffect(() => {
+        if (activeHostelId) {
+            getParticularHostelDetails(activeHostelId);
+        }
+    }, [activeHostelId])
 
     const {
         canWriteModule: canWriteBills,
@@ -124,7 +124,7 @@ export default function LongStay({ navigation }) {
 
         if (billingData) {
             console.log("billingdata", billingData);
-            
+
 
             const billingStart = billingData?.billStartDate
             const dueDate = billingData?.billDueDate
@@ -144,8 +144,8 @@ export default function LongStay({ navigation }) {
                 billingstartDate: billingStart,
                 duedate: dueDate,
                 gracedate: grace,
-                reminderDays: reminders, 
-                noticeperiod :notice,
+                reminderDays: reminders,
+                noticeperiod: notice,
                 billingschedule: billingschedule
             })
 
@@ -153,41 +153,57 @@ export default function LongStay({ navigation }) {
 
     }, [billingData])
 
+    const FIXED_DAYS = 28;
+    const days = Array.from({ length: FIXED_DAYS }, (_, i) => i + 1);
 
 
+    const daysInMonth = 28;
 
-  const daysInMonth = 28;
+    const getDaysInMonth = () => {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    };
 
-const days = Array.from({ length: 28 }, (_, i) => i + 1);
+    const currentMonthDays = getDaysInMonth();
 
-   const getEndDate = (date) => {
-  if (!date) return "";
+    // const days = Array.from({ length: 28 }, (_, i) => i + 1);
 
-  if (date === 1) {
-    return daysInMonth;
-  }
+    // const getEndDate = (date) => {
+    //     if (!date) return "";
 
-  return date - 1;
-};
+    //     if (date === 1) {
+    //         return daysInMonth;
+    //     }
 
-const days28 = Array.from({ length: 28 }, (_, i) => i + 1);
-const noticedays = Array.from({ length: 31 }, (_, i) => i + 1);
+    //     return date - 1;
+    // };
 
-const end = Math.min(billingstartDate + gracedate, daysInMonth);
+    const getEndDate = (startDate) => {
+        if (!startDate) return "";
 
-const getGraceInfoText = () => {
-  if (!gracedate || !billingstartDate) return "";
+        return startDate === 1
+            ? currentMonthDays
+            : startDate - 1;
+    };
 
-  const start = billingstartDate;
+    const days28 = Array.from({ length: 28 }, (_, i) => i + 1);
+    const noticedays = Array.from({ length: 31 }, (_, i) => i + 1);
 
-  const end = Math.min(billingstartDate + gracedate, daysInMonth);
+    const end = Math.min(billingstartDate + gracedate, daysInMonth);
 
-  const next = end + 1;
+    const getGraceInfoText = () => {
+        if (!gracedate || !billingstartDate) return "";
 
-  const format = (num) => (num < 10 ? `0${num}` : num);
+        const start = billingstartDate;
 
-  return `Full rent will apply if tenant joins from ${format(start)} to ${format(end)} of the month. Prorated rent applies from ${format(next)} onwards.`;
-};
+        const end = Math.min(billingstartDate + gracedate, daysInMonth);
+
+        const next = end + 1;
+
+        const format = (num) => (num < 10 ? `0${num}` : num);
+
+        return `Full rent will apply if tenant joins from ${format(start)} to ${format(end)} of the month. Prorated rent applies from ${format(next)} onwards.`;
+    };
 
     const addSlab = () => {
         setSlabs([
@@ -232,8 +248,8 @@ const getGraceInfoText = () => {
             const res = await addBillingRecurring({
                 hostelId: activeHostelId,
                 startDate: billingstartDate,
-                 calculationType: "FIXED",
-                 billingModel: billingSchedule === "PREPAID" ? "PREPAID" : "POSTPAID",
+                calculationType: billingMethod === "joining_date_based" ? "JOINING_DATE_BASED" : "FIXED",
+                billingModel: billingSchedule === "PREPAID" ? "PREPAID" : "POSTPAID",
             })
 
             if (res?.success) {
@@ -256,44 +272,44 @@ const getGraceInfoText = () => {
 
     }
 
-   console.log("duedate", duedate);
+    console.log("duedate", duedate);
 
-   
-  const isValidSubscription = PGDetails?.isSubscriptionActive;
-  const isSubscriptionAllow = isValidSubscription && canWriteBills;
-   
-    const [noticedayErr, setNoticeDayErr]  = useState("")
+    const isLocked = PGDetails && !PGDetails?.canModifyBilling;
+    const isValidSubscription = PGDetails?.isSubscriptionActive;
+    const isSubscriptionAllow = isValidSubscription && canWriteBills;
+
+    const [noticedayErr, setNoticeDayErr] = useState("")
 
     const handleSaveChanges = async () => {
 
         const newErrors = {}
 
         if (!noticePeriod) {
-           setNoticeDayErr("Please select notice days")
+            setNoticeDayErr("Please select notice days")
         }
 
         // if (billingstartDate && duedate && duedate <= billingstartDate) {
         //     newErrors.dueDate = "Due date must be after billing date"
         // }
 
-//      const payload = {
-//   dueDate: duedate,
-//   gracePeriodDays: gracedate || "",
-//   reminderDays: reminderDays || []
-// }
+        //      const payload = {
+        //   dueDate: duedate,
+        //   gracePeriodDays: gracedate || "",
+        //   reminderDays: reminderDays || []
+        // }
 
-const payload = {
-//   hostelId: activeHostelId,
-//   startDate: billingstartDate,
-  dueDate: duedate,
-  noticeDays: noticePeriod,
-  gracePeriodDays: gracedate || "",
-//   billingModel: billingSchedule === "prepaid" ? "PREPAID" : "POSTPAID",
-//   calculationType: "FIXED",
-  reminderDays: reminderDays || []
-};
+        const payload = {
+            //   hostelId: activeHostelId,
+            //   startDate: billingstartDate,
+            dueDate: duedate,
+            noticeDays: noticePeriod,
+            gracePeriodDays: gracedate || "",
+            //   billingModel: billingSchedule === "prepaid" ? "PREPAID" : "POSTPAID",
+            //   calculationType: "FIXED",
+            reminderDays: reminderDays || []
+        };
         console.log("payload", payload);
-        
+
 
 
         // const isChanged =
@@ -314,15 +330,15 @@ const payload = {
 
         if (Object.keys(newErrors).length === 0) {
 
-      const res =  await addBillingRecurring({
+            const res = await addBillingRecurring({
                 hostelId: activeHostelId,
                 ...payload
             })
 
             console.log("Response", res);
-            
 
-              if (res?.success) {
+
+            if (res?.success) {
                 setModalType("success");
                 setMessage("Updated Successfully");
                 setShowSuccess(true);
@@ -339,10 +355,10 @@ const payload = {
                 setMessage(res?.data);
                 setShowSuccess(true);
                 console.log("Error", res?.data);
-                      setTimeout(() => {
+                setTimeout(() => {
                     setShowSuccess(false);
                 }, 1200);
-                
+
             }
 
         }
@@ -379,8 +395,14 @@ const payload = {
 
                         {/* Monthly Recurring */}
                         <TouchableOpacity
-                            style={styles.radioRow}
-                            onPress={() => setBillingMethod("fixed")}
+                            style={[
+                                styles.radioRow,
+                                isLocked && { opacity: 0.4 }
+                            ]}
+                            onPress={() => {
+                                if (isLocked) return;
+                                setBillingMethod("fixed");
+                            }}
                         >
                             <View style={styles.radioTextContainer}>
                                 <Text style={styles.radioTitle}>Monthly Recurring</Text>
@@ -398,8 +420,17 @@ const payload = {
 
                         <TouchableOpacity
                             style={styles.radioRow}
-                            // onPress={() => setBillingMethod("joining")}
-                            disabled
+                            onPress={() => {
+                                if (isLocked) return;
+                                setBillingMethod("joining_date_based");
+                                setBillingSchedule("PREPAID");
+                            }}
+                        // onPress={() => {
+                        //     setBillingMethod("joining_date_based");
+                        //     setBillingSchedule("PREPAID");
+                        // }}
+                        // onPress={() => setBillingMethod("joining")}
+                        // disabled
                         >
                             <View style={styles.radioTextContainer}>
                                 <Text style={styles.radioTitle}>Tenant Joining Based</Text>
@@ -435,7 +466,8 @@ const payload = {
                                 setOpenGracePeriod(false);
                                 setOpenDueWithin(false);
                             }}
-                            disabled={billingMethod === "joining_date_based"}
+                            // disabled={billingMethod === "joining_date_based"}
+                            disabled={billingMethod === "joining_date_based" || isLocked}
                         >
                             <Text style={styles.dropdownText}>
                                 {billingstartDate ? billingstartDate : "Select Date"}
@@ -501,58 +533,82 @@ const payload = {
                         )}
 
 
-                         <View style={{        backgroundColor: "#F8FAFF",
-        padding: 18,
-        // paddingTop:10,
-       marginTop:10,
-        borderRadius: 10,
-        // marginBottom: 18,
-        elevation: 2,
-        shadowColor: "#0000000D",}}>
+                        <View style={{
+                            backgroundColor: "#F8FAFF",
+                            padding: 18,
+                            // paddingTop:10,
+                            marginTop: 10,
+                            borderRadius: 10,
+                            // marginBottom: 18,
+                            elevation: 2,
+                            shadowColor: "#0000000D",
+                        }}>
 
-                        <Text style={styles.sectionTitle}>Billing Schedule</Text>
-                    
-
-                        {/* Monthly Recurring */}
-                        <TouchableOpacity
-                            style={styles.radioRow}
-                       onPress={() => setBillingSchedule("PREPAID")}
-                        >
-                            <View style={styles.radioTextContainer}>
-                                <Text style={styles.radioTitle}>Prepaid</Text>
-                                <Text style={styles.radioSub}>
-                                   Invoices will generate at the start date of month
-                                </Text>
-                            </View>
-
-                            <View style={styles.radioOuter}>
-                                {billingSchedule === "PREPAID" && <View style={styles.radioInner} />}
-                            </View>
-                        </TouchableOpacity>
+                            <Text style={styles.sectionTitle}>Billing Schedule</Text>
 
 
-                        {/* Tenant Joining */}
+                            {/* Monthly Recurring */}
+                            <TouchableOpacity
+                                style={styles.radioRow}
+                                // onPress={() => setBillingSchedule("PREPAID")}
+                                onPress={() => {
+                                    if (isLocked) return;
+                                    setBillingSchedule("PREPAID");
+                                }}
+                            >
+                                <View style={styles.radioTextContainer}>
+                                    <Text style={styles.radioTitle}>Prepaid</Text>
+                                    <Text style={styles.radioSub}>
+                                        Invoices will generate at the start date of month
+                                    </Text>
+                                </View>
 
-                        <TouchableOpacity
-                            style={styles.radioRow}
-                          onPress={() => setBillingSchedule("POSTPAID")}
-                        >
-                            <View style={styles.radioTextContainer}>
-                                <Text style={styles.radioTitle}>Postpaid</Text>
-                                <Text style={styles.radioSub}>
-                                   Invoices will generate at the end date of month
-                                </Text>
-                            </View>
-
-                            <View style={styles.radioOuter}>
-                                {billingSchedule === "POSTPAID" && <View style={styles.radioInner} />}
-                            </View>
-                        </TouchableOpacity>
+                                <View style={styles.radioOuter}>
+                                    {billingSchedule === "PREPAID" && <View style={styles.radioInner} />}
+                                </View>
+                            </TouchableOpacity>
 
 
+                            {/* Tenant Joining */}
+
+                            {/* <TouchableOpacity
+                                style={[
+                                    styles.radioRow,
+                                    billingMethod === "joining_date_based" && { opacity: 0.4 }
+                                ]}
+                                onPress={() => {
+                                    if (billingMethod === "joining_date_based") return;
+                                    setBillingSchedule("POSTPAID");
+                                }}
+                                disabled={billingMethod === "joining_date_based"}
+                            > */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.radioRow,
+                                    (billingMethod === "joining_date_based" || isLocked) && { opacity: 0.4 }
+                                ]}
+                                onPress={() => {
+                                    if (billingMethod === "joining_date_based" || isLocked) return;
+                                    setBillingSchedule("POSTPAID");
+                                }}
+                                disabled={billingMethod === "joining_date_based" || isLocked}
+                            >
+                                <View style={styles.radioTextContainer}>
+                                    <Text style={styles.radioTitle}>Postpaid</Text>
+                                    <Text style={styles.radioSub}>
+                                        Invoices will generate at the end date of month
+                                    </Text>
+                                </View>
+
+                                <View style={styles.radioOuter}>
+                                    {billingSchedule === "POSTPAID" && <View style={styles.radioInner} />}
+                                </View>
+                            </TouchableOpacity>
 
 
-                    </View>
+
+
+                        </View>
                         {/* Button */}
                         <View style={styles.BtnRow} >
 
@@ -564,26 +620,28 @@ const payload = {
 
                         <View style={styles.configRow}>
                             <View>
-                            {PGDetails && !PGDetails?.canModifyBilling && (
-                                <View style={styles.configBadge}>
-                                    <Text style={styles.configIcon}>✓</Text>
-                                    <Text style={styles.configText}>Configured</Text>
-                                </View>
-                            )}
-                         </View>
+                                {isLocked && (
+                                    <View style={styles.configBadge}>
+                                        <Text style={styles.configIcon}>✓</Text>
+                                        <Text style={styles.configText}>Configured</Text>
+                                    </View>
+                                )}
+                            </View>
 
                             <TouchableOpacity
                                 style={[
                                     styles.saveBtn,
-                                    { opacity: PGDetails && !PGDetails?.canModifyBilling ? 0.4 : 1 }
+                                    { opacity: isLocked ? 0.4 : 1 }
                                 ]}
-                                disabled={!PGDetails?.canModifyBilling}
+                                // disabled={!PGDetails?.canModifyBilling}
+                                disabled={isLocked}
                                 onPress={handleSaveConfiguration}
                             >
                                 <Text style={styles.saveText}>
-                                    {!PGDetails?.canModifyBilling
+                                    {/* {!PGDetails?.canModifyBilling
                                         ? "Edit Configuration"
-                                        : "Save Configuration"}
+                                        : "Save Configuration"} */}
+                                    {isLocked ? "Configured" : "Save Configuration"}
                                 </Text>
                             </TouchableOpacity>
 
@@ -641,7 +699,7 @@ const payload = {
                             <View style={{ flexDirection: 'row', marginTop: 8 }}>
                                 <Image
                                     source={GracePeriodIcon}
-                                    style={{ height: 13, width: 13, marginRight: 4, marginTop:3 }}
+                                    style={{ height: 13, width: 13, marginRight: 4, marginTop: 3 }}
                                 />
 
                                 <Text style={styles.infoText}>
@@ -782,12 +840,12 @@ const payload = {
                         </Text>
                     </View>
 
-                       <View style={styles.card}>
+                    <View style={styles.card}>
                         <Text style={styles.sectionTitle}>Notice Period (Due days)</Text>
                         <Text style={styles.sectionSub}>Set default notice period days to get serve by tenants.
                         </Text>
 
-                        <Text style={styles.label}>Notice period (Days) <Text style={{color:'red'}}>*</Text></Text>
+                        <Text style={styles.label}>Notice period (Days) <Text style={{ color: 'red' }}>*</Text></Text>
 
                         <TouchableOpacity style={styles.dropdown} onPress={() => {
                             setOpenNoticeDays(!openNoticeDays);
@@ -795,7 +853,7 @@ const payload = {
                             setOpenDueWithin(false);
                         }}>
                             <Text style={styles.dropdownText}>
-                               {noticePeriod ? noticePeriod : "Select Date"}</Text>
+                                {noticePeriod ? noticePeriod : "Select Date"}</Text>
                             <Image source={ArrowDown} style={{ width: 18, height: 18, transform: [{ rotate: openGracePeriod ? "180deg" : "0deg" }] }} />
                         </TouchableOpacity>
                         {openNoticeDays && (
@@ -831,7 +889,7 @@ const payload = {
                             <View style={{ flexDirection: 'row', marginTop: 8 }}>
                                 <Image
                                     source={GracePeriodIcon}
-                                    style={{ height: 13, width: 13, marginRight: 4, marginTop:3 }}
+                                    style={{ height: 13, width: 13, marginRight: 4, marginTop: 3 }}
                                 />
 
                                 <Text style={styles.infoText}>
@@ -841,7 +899,7 @@ const payload = {
                             </View>
                         ) : null}
 
-                           {noticedayErr && <ErrorMessage message={noticedayErr} />}
+                        {noticedayErr && <ErrorMessage message={noticedayErr} />}
 
                     </View>
 
@@ -1121,9 +1179,9 @@ const payload = {
                         </TouchableOpacity> */}
 
                         <TouchableOpacity
-                        //  style={styles.saveChangesBtn}
-                         style={[styles.saveChangesBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
-                         disabled={!isSubscriptionAllow}
+                            //  style={styles.saveChangesBtn}
+                            style={[styles.saveChangesBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                            disabled={!isSubscriptionAllow}
                             onPress={handleSaveChanges}
 
                         >

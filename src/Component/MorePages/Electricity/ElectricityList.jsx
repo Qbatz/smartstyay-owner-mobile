@@ -1363,10 +1363,11 @@ sheetHandle: {
 
 sheetTitle: {
   fontSize: 20,
-  fontWeight: "700",
+ fontFamily: "Gilroy-Bold" ,
   marginBottom: 20,
   color: "#000",
 },
+
 
 sheetRoomRow: {
   flexDirection: "row",
@@ -1376,15 +1377,15 @@ sheetRoomRow: {
 
 sheetRoomIcon: { width: 40, height: 40, marginRight: 12 },
 
-sheetRoomName: { fontSize: 16, fontWeight: "700" },
+sheetRoomName: { fontSize: 16, fontFamily: "Gilroy-Bold" ,},
 sheetFloor: { color: "#777", marginTop: 3 },
 
 sheetDateLabel: { color: "#555", fontSize: 12 },
-sheetDateValue: { fontSize: 14, fontWeight: "700", color: "#000" },
+sheetDateValue: { fontSize: 14, fontFamily: "Gilroy-Bold" , color: "#000" },
 
 sheetLabel: {
   fontSize: 14,
-  fontWeight: "600",
+  fontFamily: "Gilroy-Semibold" ,
   color: "#000",
   marginBottom: 8,
 },
@@ -1447,7 +1448,7 @@ calendarIcon: {
   tintColor: "#6B7280",
 },
 
-lastReading: { color: "#1E45E1", fontWeight: "600" },
+lastReading: { color: "#1E45E1", fontFamily: "Gilroy-Semibold" ,},
 
 sheetBtnRow: {
   flexDirection: "row",
@@ -1472,8 +1473,8 @@ sheetAdd: {
   alignItems: "center",
 },
 
-sheetCancelTxt: { color: "#000", fontSize: 16, fontWeight: "600" },
-sheetAddTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },
+sheetCancelTxt: { color: "#000", fontSize: 16,  fontFamily: "Gilroy-Semibold" ,},
+sheetAddTxt: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold" ,},
 readingRow: {
   flexDirection: "row",
   justifyContent: "space-between",
@@ -1495,7 +1496,7 @@ readingInput: {
 lastReadingText: {
   fontSize: 14,
   color: "#1E45E1",
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
   marginTop: 4,                // aligns exactly like Figma
 },
 
@@ -1515,7 +1516,7 @@ lastReadingText: {
   tabText: {
     fontSize: 16,
     color: "#7A7A7A",
-    fontWeight: "600",
+     fontFamily: "Gilroy-Semibold" ,
   },
 
   tabActive: {
@@ -1552,7 +1553,7 @@ hostelIcon: {
 },
 hostelName: {
   fontSize: 16,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   marginBottom: 6,
 },
 hostelStatsRow: {
@@ -1565,7 +1566,7 @@ statLabel: {
 },
 statValue: {
   fontSize: 14,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
 },
 amountBox: {
   backgroundColor: "#FFF6E5",
@@ -1580,7 +1581,7 @@ amountLabel: {
 },
 amountValue: {
   fontSize: 16,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
 },
 
   /* LIST ROW */
@@ -1604,7 +1605,7 @@ amountValue: {
 
   iconImg: { width: 26, height: 26, tintColor: "#3F6AFF" },
 
-  roomName: { fontSize: 16, fontWeight: "700", color: "#000" },
+  roomName: { fontSize: 16, fontFamily: "Gilroy-Bold" ,color: "#000" },
 
   subRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
 
@@ -1616,13 +1617,13 @@ amountValue: {
     marginRight: 12,
   },
 
-  tagText: { fontSize: 12, fontWeight: "600", color: "#A47E00" },
+  tagText: { fontSize: 12,  fontFamily: "Gilroy-Semibold" , color: "#A47E00" },
 
   people: { flexDirection: "row", alignItems: "center" },
   // peopleIcon: { width: 16, height: 16},
-  peopleText: { marginLeft: 3, color: "#3D6AE8", fontWeight: "600" , },
+  peopleText: { marginLeft: 3, color: "#3D6AE8",  fontFamily: "Gilroy-Semibold" , },
 
-  price: { fontSize: 16, fontWeight: "700", color: "#000" },
+  price: { fontSize: 16, fontFamily: "Gilroy-Bold" , color: "#000" },
   month: { color: "#6B7280", fontSize: 13, marginTop: 4 },
  fab: {
   position: "absolute",
@@ -1672,18 +1673,18 @@ amountValue: {
     borderTopRightRadius: 25,
     height: "55%",           
   }, filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  filterTitle: { fontSize: 20, fontWeight: "700" },
-  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
+  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold" ,},
+  resetTextSmall: { color: "#2D6CDF",  fontFamily: "Gilroy-Semibold" ,},
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111", fontWeight: "600" },
+  quickText: { color: "#111",  fontFamily: "Gilroy-Semibold" ,},
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" },applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontWeight: "700" },
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" ,},applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" ,},
    dropdownMenu: {
     position: "absolute",
     left: 0,
@@ -1750,7 +1751,7 @@ hostelImage: {
 
 hostelTitle: {
   fontSize: 16,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   flexShrink: 1,       
   flexWrap: "wrap",
 },
@@ -1770,7 +1771,7 @@ addBtn: {
 
 addText: {
   color: "#1E45E1",
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   fontSize: 13,
 },
 
@@ -1798,7 +1799,7 @@ statLabel: {
 
 statValue: {
   fontSize: 15,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   marginTop: 4,
 },
 
@@ -1823,7 +1824,7 @@ badge: {
 
 badgeText: {
   fontSize: 12,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
   color: "#333",
 },
 
@@ -1857,7 +1858,7 @@ roomIcon: {
 
 roomName: {
   fontSize: 15,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
 },
 
 roomMeta: {
@@ -1875,19 +1876,20 @@ floorBadge: {
 
 floorText: {
   fontSize: 11,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
   color: "#8A6A00",
 },
 
 roomAmount: {
   fontSize: 15,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
 },
 
 roomMonth: {
   fontSize: 12,
   color: "#777",
   marginTop: 2,
+   fontFamily: "Gilroy-Semibold" ,
 },
 
  deleteOverlay: {
@@ -1908,7 +1910,7 @@ deleteBox: {
 
 deleteTitle: {
   fontSize: 18,
-  fontWeight: "700",
+  fontFamily: "Gilroy-Bold" ,
   color: "#111",
   marginBottom: 10,
 },
@@ -1938,7 +1940,7 @@ cancelBtn: {
 
 cancelText: {
   fontSize: 16,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
   color: "#2D6CDF",
 },
 
@@ -1952,7 +1954,7 @@ deleteBtn: {
 
 deleteBtnText: {
   fontSize: 16,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
   color: "#fff",
 }, 
 
@@ -2080,7 +2082,7 @@ actionItem: {
 
 editText: {
   fontSize: 14,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" ,
   color: "#1E45E1",
 },
 

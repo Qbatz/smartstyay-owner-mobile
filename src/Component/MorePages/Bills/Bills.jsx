@@ -1942,11 +1942,11 @@ export default function BillsDesign({ route }) {
 
 
 
-  const handleEditBill = () => {
+  const handleEditBill = (item) => {
 
     navigation.navigate("CreateBills", {
       mode: "edit",
-      // data: item,  
+      data: item,  
     });
   }
 
@@ -3366,7 +3366,7 @@ export default function BillsDesign({ route }) {
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                     disabled={!canUpdateInvoice}
-                    onPress={handleEditBill} >
+                    onPress={()=> handleEditBill(selectedBill)} >
                     <Image
                       source={require("../../../Assets/Images/ReAssign.png")}
                       style={styles.popupIcon}
