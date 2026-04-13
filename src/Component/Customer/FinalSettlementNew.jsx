@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback , useContext} from "react";
+import React, { useRef, useState, useEffect, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -34,7 +34,7 @@ import SettlementDiscountAction from "./settlementdiscountAction"
 export default function FinalSettlementScreen({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { getSettlementByCustomerId, submitSettlement } = useCustomer();
-   const { activeHostelId } = useContext(CommonContexts);
+  const { activeHostelId } = useContext(CommonContexts);
 
   const [openUnpaid, setOpenUnpaid] = useState(false);
   const [openRefundRent, setOpenRefundRent] = useState(false);
@@ -60,11 +60,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
   console.log("kam", selectedItem)
   const scrollRef = useRef(null);
 
-  const [discountshow , setDiscountshow] = useState(false)
+  const [discountshow, setDiscountshow] = useState(false)
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showLastRentDetails, setShowLastRentDetails] = useState(false);
   const [discountValue, setDiscountValue] = useState("");
-const [isEditingDiscount, setIsEditingDiscount] = useState(false);
+  const [isEditingDiscount, setIsEditingDiscount] = useState(false);
 
   console.log("actualcheckoutdate", actualCheckoutDate);
 
@@ -170,12 +170,12 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
 
 
   useEffect(() => {
-  if (settlementDetails?.currentMonthRentInfo?.discountAmount) {
-    setDiscountValue(
-      String(settlementDetails.currentMonthRentInfo.discountAmount)
-    );
-  }
-}, [settlementDetails]);
+    if (settlementDetails?.currentMonthRentInfo?.discountAmount) {
+      setDiscountValue(
+        String(settlementDetails.currentMonthRentInfo.discountAmount)
+      );
+    }
+  }, [settlementDetails]);
 
 
   // useEffect(() => {
@@ -260,9 +260,31 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
       const amt = Number(item.amount);
       return sum + (isNaN(amt) ? 0 : amt);
     }, 0);
+
+
+  // useEffect(() => {
+  //   if (!settlementDetails?.settlementInfo) return;
+
+
+  //   const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+
+  //   let finalAmount = 0;
+
+  //   if (amountTobePaid < 0) {
+  //     finalAmount = isRefundable
+  //       ? amountTobePaid + userEnteredDeductionsTotal
+  //       : amountTobePaid - userEnteredDeductionsTotal;
+  //   } else {
+  //     finalAmount = isRefundable
+  //       ? amountTobePaid - userEnteredDeductionsTotal
+  //       : amountTobePaid + userEnteredDeductionsTotal;
+  //   }
+
+  //   setReturnAmount(finalAmount);
+  // }, [settlementDetails, userEnteredDeductionsTotal]);
+
   useEffect(() => {
     if (!settlementDetails?.settlementInfo) return;
-    
 
     const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
 
@@ -278,8 +300,16 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
         : amountTobePaid + userEnteredDeductionsTotal;
     }
 
+    // const discount = Number(discountValue) || 0;
+    // finalAmount -= discount;
+
+    const discount = Number(discountValue) || 0;
+finalAmount += discount;
+
     setReturnAmount(finalAmount);
-  }, [settlementDetails, userEnteredDeductionsTotal]);
+  }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
+
+
   const isNegative = Number(ReturnAmount) < 0;
 
   // ✅ Map default deductions
@@ -438,18 +468,78 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
         : item.type,        // 👈 Maintenance / DueAmount
       amount: Number(item.amount),
     }));
+
+  const validateDiscount = () => {
+    let valid = true;
+
+    const discount = Number(discountValue);
+
+    if (discountValue === "") {
+      setMessage("Please enter discount amount");
+      setModalType("warning");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+      valid = false;
+    } else if (isNaN(discount) || discount < 0) {
+      setMessage("Invalid discount amount");
+      setModalType("warning");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+      valid = false;
+    } else if (discount > Number(settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0)) {
+      setMessage("Discount cannot be greater than rent amount");
+      setModalType("warning");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+      valid = false
+    }
+
+    return valid;
+  };
+
+
+   console.log("discountvalue", discountValue);
+   
+
   const handleGenerate = async () => {
     const chargeValid = validateExtraCharges();
-    if (!chargeValid) return;
+    //   const discountValid = validateDiscount();
+
+    // if (!chargeValid || !discountValid) return;
+
+    let discountValid = true;
+
+    // 👉 only validate if value entered
+    if (discountValue !== "") {
+      discountValid = validateDiscount();
+    }
+
+    if (!chargeValid || !discountValid) return;
+
+    // if (!chargeValid) return;
     const customerId =
       selectedItem?.customerId ||
       selectedBed?.currentTenantInfo[0]?.tenetId;
 
 
-      const payload = {
-  discountAmount: Number(discountValue) || 0,
-  deductions: extraDeductionsPayload,
-}
+          const payload = {
+      discountAmount: Number(discountValue) || 0,
+      deductions: extraDeductionsPayload,
+    }
+
+    // const payload = {
+    //   ...(discountValue !== "" && {
+    //     discountAmount: Number(discountValue)
+    //   }),
+    //   deductions: extraDeductionsPayload,
+    // };
 
     // const payload = extraDeductionsPayload;
 
@@ -475,20 +565,20 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
     }
   };
 
- const handleDiscount = () => {
-  if (discountApplied) {
-    setShowActionSheet(true);   // 👈 open action sheet
-  } else {
-    setDiscountshow(true);      // 👈 open discount sheet
-  }
-};
+  const handleDiscount = () => {
+    if (discountApplied) {
+      setShowActionSheet(true);   // 👈 open action sheet
+    } else {
+      setDiscountshow(true);      // 👈 open discount sheet
+    }
+  };
   console.log("clicked", discountshow);
 
   const isRefundable = settlementDetails?.settlementInfo?.isRefundable;
   const discountApplied = settlementDetails?.currentMonthRentInfo?.isDiscountApplied;
   const label = settlementDetails?.settlementInfo?.label;
   console.log("settlement", settlementDetails?.settlementInfo);
-  
+
 
   return (
     <>
@@ -533,7 +623,7 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
                       alignItems: "center", justifyContent: "center"
                     }}>
                       <Text style={{
-                        fontSize: 17,fontFamily: "Gilroy-Semibold", color: "#374151",
+                        fontSize: 17, fontFamily: "Gilroy-Semibold", color: "#374151",
                       }}>
                         {settlementDetails?.customerInfo?.initials}
                       </Text>
@@ -600,7 +690,7 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
               </View>
 
               <View style={styles.rowBetween}>
-           
+
                 <View style={styles.gridCol}>
                   <Text style={styles.gridLabel}>Actual Checkout Date</Text>
 
@@ -634,7 +724,7 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
               </View>
 
 
-              
+
             </View>
 
             {/* ✅ UNPAID INVOICES (INLINE ACCORDION) */}
@@ -755,48 +845,48 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
                     </Text>
                   </View> */}
                   <TouchableOpacity
-  style={styles.rowBetween}
-  onPress={() => setShowLastRentDetails(!showLastRentDetails)}
-  activeOpacity={0.7}
->
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
-    <Text style={styles.descText}>
-      Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
-    </Text>
+                    style={styles.rowBetween}
+                    onPress={() => setShowLastRentDetails(!showLastRentDetails)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Text style={styles.descText}>
+                        Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
+                      </Text>
 
-    <Image
-      source={DownArrow}
-      style={[
-        styles.arrowSmall,
-        showLastRentDetails && { transform: [{ rotate: "180deg" }] },
-      ]}
-    />
-  </View>
+                      <Image
+                        source={DownArrow}
+                        style={[
+                          styles.arrowSmall,
+                          showLastRentDetails && { transform: [{ rotate: "180deg" }] },
+                        ]}
+                      />
+                    </View>
 
-  <Text style={styles.amountText}>
-    ₹ {Number(
-      settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
-    ).toLocaleString("en-IN")}
-  </Text>
-</TouchableOpacity>
+                    <Text style={styles.amountText}>
+                      ₹ {Number(
+                        settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
+                      ).toLocaleString("en-IN")}
+                    </Text>
+                  </TouchableOpacity>
 
-{showLastRentDetails && (
-  <View style={styles.detailCard}>
-    <Text style={styles.sectionLabel}>Actual Rent</Text>
-    <Text style={styles.rightMuted}>
-      ₹ {settlementDetails?.currentMonthRentInfo?.actualRent || 0}
-    </Text>
-  </View>
-)}
+                  {showLastRentDetails && (
+                    <View style={styles.detailCard}>
+                      <Text style={styles.sectionLabel}>Actual Rent</Text>
+                      <Text style={styles.rightMuted}>
+                        ₹ {settlementDetails?.currentMonthRentInfo?.actualRent || 0}
+                      </Text>
+                    </View>
+                  )}
 
-{showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
-  <View style={styles.detailCard}>
-    <Text style={styles.sectionLabel}>Discount</Text>
-    <Text style={styles.rightMuted}>
-      ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount}
-    </Text>
-  </View>
-)}
+                  {showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
+                    <View style={styles.detailCard}>
+                      <Text style={styles.sectionLabel}>Discount</Text>
+                      <Text style={styles.rightMuted}>
+                        ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount}
+                      </Text>
+                    </View>
+                  )}
 
                   <TouchableOpacity
                     style={styles.rowBetween}
@@ -1018,56 +1108,56 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
                   {/* Final Settlement Title */}
                   <Text style={styles.sectionTitle}>Final Settlement</Text>
 
-<View style={styles.rowBetween}>
-  <Text style={styles.label}>
-    {label ? label : "Refundable Rent"}
-  </Text>
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.label}>
+                      {label ? label : "Refundable Rent"}
+                    </Text>
 
-  <Text style={styles.value}>
-    {!isRefundable ? "- " : ""} ₹ {
-      label
-        ? settlementDetails?.settlementInfo?.payableAmount
-        : settlementDetails?.settlementInfo?.refundableRent
-    }
-  </Text>
-</View>
+                    <Text style={styles.value}>
+                      {!isRefundable ? "- " : ""} ₹ {
+                        label
+                          ? settlementDetails?.settlementInfo?.payableAmount
+                          : settlementDetails?.settlementInfo?.refundableRent
+                      }
+                    </Text>
+                  </View>
 
-  
-    {/* <View style={styles.rowBetween}>
+
+                  {/* <View style={styles.rowBetween}>
       <Text style={styles.label}>Refundable Rent</Text>
       <Text style={styles.value}>
       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableRent}
       </Text>
     </View> */}
 
-    <View style={styles.rowBetween}>
-      <Text style={styles.label}>Refundable Advance</Text>
-      <Text style={styles.value}>
-       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
-      </Text>
-    </View>
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.label}>Refundable Advance</Text>
+                    <Text style={styles.value}>
+                      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
+                    </Text>
+                  </View>
 
-    <View style={styles.rowBetween}>
-      <Text style={styles.label}>Total Deductions</Text>
-      <Text style={styles.negativeamountlabel}>
-      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions}
-      </Text>
-    </View>
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.label}>Total Deductions</Text>
+                    <Text style={styles.negativeamountlabel}>
+                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions}
+                    </Text>
+                  </View>
 
-    <View style={styles.rowBetween}>
-      <Text style={styles.label}>Electricity</Text>
-      <Text style={styles.negativeamountlabel}>
-       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.electricityAmount}
-      </Text>
-    </View>
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.label}>Electricity</Text>
+                    <Text style={styles.negativeamountlabel}>
+                      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.electricityAmount}
+                    </Text>
+                  </View>
 
-    <View style={styles.rowBetween}>
-      <Text style={styles.label}>Unpaid Invoices</Text>
-      <Text style={styles.negativeamountlabel}>
-       {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
-      </Text>
-    </View>
- 
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.label}>Unpaid Invoices</Text>
+                    <Text style={styles.negativeamountlabel}>
+                      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
+                    </Text>
+                  </View>
+
 
                   {/* <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Rent</Text>
@@ -1126,223 +1216,222 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
               </View>
 
 
-{extraCharges.length === 0 ? (
-  <View style={{    paddingVertical: 20,
-    alignItems: "center",
-    justifyContent: "center",backgroundColor:"#fff",  margin:10, borderRadius:10}}>
-    <Text style={styles.emptyText}>No deductions available</Text>
-  </View>
-) : (
+              {extraCharges.length === 0 ? (
+                <View style={{
+                  paddingVertical: 20,
+                  alignItems: "center",
+                  justifyContent: "center", backgroundColor: "#fff", margin: 10, borderRadius: 10
+                }}>
+                  <Text style={styles.emptyText}>No deductions available</Text>
+                </View>
+              ) : (
 
-              extraCharges.map((item) => (
-                <View key={item.id} style={styles.figmaRowWrapper}>
-                  {!item.isDefault && (
-                    <TouchableOpacity
-                      onPress={() => removeCharge(item.id)}
-                      style={styles.figmaCloseBtn}
-                    >
-                      <Image source={Delete} style={styles.figmaCloseText} />
-                    </TouchableOpacity>
-                  )}
-
-                  <View style={styles.figmaRow}>
-                    {item.type === "" ? (
+                extraCharges.map((item) => (
+                  <View key={item.id} style={styles.figmaRowWrapper}>
+                    {!item.isDefault && (
                       <TouchableOpacity
-                        disabled={item.isDefault}
-                        style={[
-                          styles.figmaLeftBox,
-                          item.isDefault && { opacity: 0.6 },
-                        ]}
-                        onPress={() =>
-                          setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                        }
+                        onPress={() => removeCharge(item.id)}
+                        style={styles.figmaCloseBtn}
                       >
-                        <Text style={{ color: "#777" }}>Select...</Text>
-                        <Image source={DownArrow} style={styles.smallArrow} />
+                        <Image source={Delete} style={styles.figmaCloseText} />
                       </TouchableOpacity>
-                    ) : item.type === "Others" ? (
-                      <TextInput
-                        style={styles.figmaLeftBox}
-                        placeholder="Enter reason"
-                        value={item.title}
-                        onChangeText={(t) => updateTitle(item.id, t)}
-                        onFocus={() => {
-                          setTimeout(() => {
-                            scrollRef.current?.scrollTo({
-                              y: 900,   // 👈 adjust if needed
-                              animated: true,
-                            });
-                          }, 200);
-                        }}
-                      />
-                    ) : (
-                      <View
-                        style={[
-                          styles.figmaLeftBox,
-                          { backgroundColor: "#EFEFEF" },
-                        ]}
-                      >
-                        <Text>Maintenance</Text>
-                      </View>
                     )}
 
-                    {item.type === "" ? (
-                      <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                        <Text style={{ color: "#999" }}>Enter amount</Text>
-                      </View>
-                    ) : (
-                      <TextInput
-                        editable={!item.isDefault}
-                        style={styles.figmaRightBox}
-                        value={item.amount}
-                        placeholder="Enter Amount"
-                        keyboardType="numeric"
-                        onChangeText={(t) => updateAmount(item.id, t)}
-                        onFocus={() => {
-                          setTimeout(() => {
-                            scrollRef.current?.scrollTo({
-                              y: 900,   // 👈 adjust if needed
-                              animated: true,
-                            });
-                          }, 200);
-                        }}
-                      />
+                    <View style={styles.figmaRow}>
+                      {item.type === "" ? (
+                        <TouchableOpacity
+                          disabled={item.isDefault}
+                          style={[
+                            styles.figmaLeftBox,
+                            item.isDefault && { opacity: 0.6 },
+                          ]}
+                          onPress={() =>
+                            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                          }
+                        >
+                          <Text style={{ color: "#777" }}>Select...</Text>
+                          <Image source={DownArrow} style={styles.smallArrow} />
+                        </TouchableOpacity>
+                      ) : item.type === "Others" ? (
+                        <TextInput
+                          style={styles.figmaLeftBox}
+                          placeholder="Enter reason"
+                          value={item.title}
+                          onChangeText={(t) => updateTitle(item.id, t)}
+                          onFocus={() => {
+                            setTimeout(() => {
+                              scrollRef.current?.scrollTo({
+                                y: 900,   // 👈 adjust if needed
+                                animated: true,
+                              });
+                            }, 200);
+                          }}
+                        />
+                      ) : (
+                        <View
+                          style={[
+                            styles.figmaLeftBox,
+                            { backgroundColor: "#EFEFEF" },
+                          ]}
+                        >
+                          <Text>Maintenance</Text>
+                        </View>
+                      )}
 
+                      {item.type === "" ? (
+                        <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                          <Text style={{ color: "#999" }}>Enter amount</Text>
+                        </View>
+                      ) : (
+                        <TextInput
+                          editable={!item.isDefault}
+                          style={styles.figmaRightBox}
+                          value={item.amount}
+                          placeholder="Enter Amount"
+                          keyboardType="numeric"
+                          onChangeText={(t) => updateAmount(item.id, t)}
+                          onFocus={() => {
+                            setTimeout(() => {
+                              scrollRef.current?.scrollTo({
+                                y: 900,   // 👈 adjust if needed
+                                animated: true,
+                              });
+                            }, 200);
+                          }}
+                        />
+
+                      )}
+                    </View>
+
+                    {item.titleError && (
+                      <ErrorMessage message={item.titleError} type="error" />
+                    )}
+
+                    {item.amountError && (
+                      <ErrorMessage message={item.amountError} type="error" />
+                    )}
+
+                    {openDropdownId === item.id && item.type === "" && (
+                      <View style={styles.nonRefundDropdown}>
+                        {TYPE_OPTIONS.map((t) => {
+                          const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                          return (
+                            <TouchableOpacity
+                              key={t}
+                              disabled={disabled}
+                              onPress={() => !disabled && selectType(item.id, t)}
+                              style={{ opacity: disabled ? 0.3 : 1 }}
+                            >
+                              <Text style={styles.dropdownItem}>{t}</Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
                     )}
                   </View>
-
-                  {item.titleError && (
-                    <ErrorMessage message={item.titleError} type="error" />
-                  )}
-
-                  {item.amountError && (
-                    <ErrorMessage message={item.amountError} type="error" />
-                  )}
-
-                  {openDropdownId === item.id && item.type === "" && (
-                    <View style={styles.nonRefundDropdown}>
-                      {TYPE_OPTIONS.map((t) => {
-                        const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
-                        return (
-                          <TouchableOpacity
-                            key={t}
-                            disabled={disabled}
-                            onPress={() => !disabled && selectType(item.id, t)}
-                            style={{ opacity: disabled ? 0.3 : 1 }}
-                          >
-                            <Text style={styles.dropdownItem}>{t}</Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
-                </View>
-              ))
-            )}
+                ))
+              )}
             </View>
 
 
 
-<View style={{
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 14,
-  marginHorizontal: 16,
-  marginTop: 10,
-  borderWidth: 1,
-  borderColor: "#E5E7EB"
-}}>
+            <View style={{
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: 14,
+              marginHorizontal: 16,
+              marginTop: 10,
+              borderWidth: 1,
+              borderColor: "#E5E7EB"
+            }}>
 
-  <Text style={{ fontFamily: "Gilroy-Semibold", marginBottom: 10 }}>
-    Discount (Current Month)
-  </Text>
+              <Text style={{ fontFamily: "Gilroy-Semibold", marginBottom: 10 }}>
+                Discount (Current Month)
+              </Text>
 
-  {!isEditingDiscount ? (
-    // ✅ VIEW MODE
-    <View style={{
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 12,
-      padding: 12
-    }}>
-      <Text style={{ fontSize: 16, fontFamily: "Gilroy-Bold" }}>
-        ₹ {discountValue || 0}
-      </Text>
+              {!isEditingDiscount ? (
+                <View style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                  borderRadius: 12,
+                  padding: 12
+                }}>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Bold" }}>
+                    ₹ {discountValue || 0}
+                  </Text>
 
-     <TouchableOpacity
-  onPress={() => setIsEditingDiscount(true)}
-  style={{
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E0ECFF",   // 🔥 light blue bg
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-  }}
->
-  <Image
-    source={EditIcon}
-    style={{
-      width: 16,
-      height: 16,
-      tintColor: "#2563EB",
-      marginRight: 6,
-    }}
-  />
+                  <TouchableOpacity
+                    onPress={() => setIsEditingDiscount(true)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "#E0ECFF",
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Image
+                      source={EditIcon}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        tintColor: "#2563EB",
+                        marginRight: 6,
+                      }}
+                    />
 
-  <Text
-    style={{
-      color: "#2563EB",
-      fontFamily: "Gilroy-Semibold",
-      fontSize: 13,
-    }}
-  >
-    Edit
-  </Text>
-</TouchableOpacity>
-    </View>
-  ) : (
-    // ✅ EDIT MODE
-    <View style={{
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      // backgroundColor: "#EEF2FF",
-      padding: 5,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 12,
-      
-    }}>
-      <TextInput
-        value={discountValue}
-        onChangeText={(t) => setDiscountValue(t.replace(/[^0-9]/g, ""))}
-        keyboardType="numeric"
-        placeholder="Enter discount"
-        style={{ flex: 1, fontSize: 16 }}
-      />
+                    <Text
+                      style={{
+                        color: "#2563EB",
+                        fontFamily: "Gilroy-Semibold",
+                        fontSize: 13,
+                      }}
+                    >
+                      Edit
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: 5,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                  borderRadius: 12,
 
-      <TouchableOpacity
-        onPress={() => setIsEditingDiscount(false)}
-        style={{
-          backgroundColor: "#DEF7EC",
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          borderRadius: 8
-        }}
-      >
-        <Text style={{ color: "#03543F", fontFamily: "Gilroy-Bold" }}>
-          Set
-        </Text>
-      </TouchableOpacity>
-    </View>
-  )}
+                }}>
+                  <TextInput
+                    value={discountValue}
+                    onChangeText={(t) => setDiscountValue(t.replace(/[^0-9]/g, ""))}
+                    keyboardType="numeric"
+                    placeholder="Enter discount"
+                    style={{ flex: 1, fontSize: 16 }}
+                  />
 
-</View>
+                  <TouchableOpacity
+                    onPress={() => setIsEditingDiscount(false)}
+                    style={{
+                      backgroundColor: "#DEF7EC",
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 8
+                    }}
+                  >
+                    <Text style={{ color: "#03543F", fontFamily: "Gilroy-Bold" }}>
+                      Set
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+            </View>
 
 
 
@@ -1364,7 +1453,7 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
               </Text>
             </View>
 
-  {Number(ReturnAmount) > 0 && (
+            {/* {Number(ReturnAmount) > 0 && (
   discountApplied ? (
     <View style={styles.discountAppliedCard}>
       
@@ -1401,28 +1490,13 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
       </TouchableOpacity>
     </View>
   )
-)}
+)} */}
 
 
 
 
 
 
-{/*          
-            <View style={{ marginBottom: 12 }}>
-  <TouchableOpacity
-    onPress={handleDiscount}
-    activeOpacity={0.8}
-    style={{flexDirection:'row'}}
-    
-  >
-    <Text style={{ fontSize: 14, color: "#338BFF", fontFamily: "Gilroy-Medium" }}>
-      Make Discount
-    </Text>
-
-    <Image  source={DiscountIcon} style={{height:18, width:18, marginLeft:7}}/>
-  </TouchableOpacity>
-</View> */}
 
             {/* Buttons */}
             <View style={styles.buttonRow}>
@@ -1528,40 +1602,40 @@ const [isEditingDiscount, setIsEditingDiscount] = useState(false);
       </Modal>
 
       <FinalSettlementDiscount
-      visible={discountshow}
-  onClose={() => setDiscountshow(false)}
-  selectedBill={{
-  invoiceId: settlementDetails?.currentMonthRentInfo?.currentInvoiceId,
-  totalAmount: settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0,
-  discountAmount: settlementDetails?.currentMonthRentInfo?.discountAmount || 0,
-}}
-  onSuccess={() => {
-    setDiscountshow(false);
-    fetchSettlement(); // refresh
-  }}
+        visible={discountshow}
+        onClose={() => setDiscountshow(false)}
+        selectedBill={{
+          invoiceId: settlementDetails?.currentMonthRentInfo?.currentInvoiceId,
+          totalAmount: settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0,
+          discountAmount: settlementDetails?.currentMonthRentInfo?.discountAmount || 0,
+        }}
+        onSuccess={() => {
+          setDiscountshow(false);
+          fetchSettlement(); // refresh
+        }}
       />
       <SettlementDiscountAction
-  visible={showActionSheet}
-  onClose={() => setShowActionSheet(false)}
-  
-  discountAmount={
-    settlementDetails?.currentMonthRentInfo?.discountAmount
-  }
+        visible={showActionSheet}
+        onClose={() => setShowActionSheet(false)}
 
-  hostelId={activeHostelId}
-  invoiceId={
-    settlementDetails?.currentMonthRentInfo?.currentInvoiceId
-  }
+        discountAmount={
+          settlementDetails?.currentMonthRentInfo?.discountAmount
+        }
 
-  onEdit={() => {
-    setShowActionSheet(false);
-    setDiscountshow(true); // 👈 open edit sheet
-  }}
+        hostelId={activeHostelId}
+        invoiceId={
+          settlementDetails?.currentMonthRentInfo?.currentInvoiceId
+        }
 
-  onSuccess={() => {
-    fetchSettlement(); // 👈 refresh after delete
-  }}
-/>
+        onEdit={() => {
+          setShowActionSheet(false);
+          setDiscountshow(true); // 👈 open edit sheet
+        }}
+
+        onSuccess={() => {
+          fetchSettlement(); // 👈 refresh after delete
+        }}
+      />
     </>
   );
 }
@@ -1582,7 +1656,7 @@ const styles = StyleSheet.create({
   },
 
   backIcon: { width: 18, height: 18, marginRight: 10 },
-  headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold"  },
+  headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" },
 
   customerCard: {
     backgroundColor: "#F8FAFC",
@@ -1594,11 +1668,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 
-  customerName: { fontSize: 16, fontFamily: "Gilroy-Bold" , marginBottom: 4 },
+  customerName: { fontSize: 16, fontFamily: "Gilroy-Bold", marginBottom: 4 },
 
-  smallLabel: { fontSize: 12, color: "#6B7280",fontFamily: "Gilroy-Regular"  },
+  smallLabel: { fontSize: 12, color: "#6B7280", fontFamily: "Gilroy-Regular" },
   value: { fontSize: 14, fontFamily: "Gilroy-Semibold", marginTop: 4 },
-  refundText: { fontSize: 14,fontFamily: "Gilroy-Bold" , color: "green", marginTop: 4 },
+  refundText: { fontSize: 14, fontFamily: "Gilroy-Bold", color: "green", marginTop: 4 },
 
   accordionCard: {
     borderWidth: 1,
@@ -1619,8 +1693,8 @@ const styles = StyleSheet.create({
 
   arrowImg: { width: 18, height: 18, tintColor: "#111", marginRight: 10 },
 
-  cardTitle: { flex: 1, fontSize: 14, fontFamily: "Gilroy-Bold"  },
-  amountText: { fontSize: 14, fontFamily: "Gilroy-Bold"  },
+  cardTitle: { flex: 1, fontSize: 14, fontFamily: "Gilroy-Bold" },
+  amountText: { fontSize: 14, fontFamily: "Gilroy-Bold" },
 
   accordionBody: {
     borderTopWidth: 1,
@@ -1629,19 +1703,19 @@ const styles = StyleSheet.create({
   },
 
 
-  th: { fontSize: 12, fontFamily: "Gilroy-Bold" , color: "#6B7280" },
+  th: { fontSize: 12, fontFamily: "Gilroy-Bold", color: "#6B7280" },
   invoiceRow: { flexDirection: "row", paddingVertical: 10 },
   invText: { fontSize: 13, color: "#111" },
 
-  sectionLabel: { fontSize: 13, fontFamily: "Gilroy-Bold" , marginBottom: 8 },
+  sectionLabel: { fontSize: 13, fontFamily: "Gilroy-Bold", marginBottom: 8 },
   descText: { fontSize: 13, color: "#6B7280" },
 
   ebRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   ebLeft: { flex: 1, fontSize: 13 },
-  ebRight: { fontSize: 13, fontFamily: "Gilroy-Bold"  },
+  ebRight: { fontSize: 13, fontFamily: "Gilroy-Bold" },
 
   pendingRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  addText: { color: "#1D4ED8",fontFamily: "Gilroy-Bold"  },
+  addText: { color: "#1D4ED8", fontFamily: "Gilroy-Bold" },
 
   totalRow: {
     flexDirection: "row",
@@ -1684,7 +1758,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 14,
     color: "#6B7280",
-   fontFamily: "Gilroy-Medium"
+    fontFamily: "Gilroy-Medium"
   },
 
   totalAmount: {
@@ -1718,7 +1792,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D4ED8",
   },
 
-  generateTxt: { fontSize: 15, fontFamily: "Gilroy-Bold" , color: "#fff" },
+  generateTxt: { fontSize: 15, fontFamily: "Gilroy-Bold", color: "#fff" },
 
   // ✅ NON REFUND
   nonRefund: {
@@ -1732,11 +1806,11 @@ const styles = StyleSheet.create({
   extraHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems:'center',
+    alignItems: 'center',
     marginTop: 5,
   },
 
-  label: {fontFamily: "Gilroy-Semibold" },
+  label: { fontFamily: "Gilroy-Semibold" },
 
   addBtn: {
     backgroundColor: "#2D6CDF",
@@ -1823,7 +1897,7 @@ const styles = StyleSheet.create({
   smallRow: { flexDirection: "row", alignItems: "center", },
   badge: { backgroundColor: "#FFEFCF", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
   Roombadge: { backgroundColor: "#FFE0D9", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 8 },
-  badgeText: { color: "black", fontSize: 12 ,fontFamily: "Gilroy-Regular" },
+  badgeText: { color: "black", fontSize: 12, fontFamily: "Gilroy-Regular" },
   smallIcon: { width: 16, height: 16, marginHorizontal: 4 },
   badgeLabel: { fontSize: 13 },
   gridCol: {
@@ -1834,11 +1908,11 @@ const styles = StyleSheet.create({
   gridLabel: {
     color: "#6B7280",
     fontSize: 13,
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   gridValue: {
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     fontSize: 14,
     marginTop: 3,
   },
@@ -1876,7 +1950,7 @@ const styles = StyleSheet.create({
 
   calendarTitle: {
     fontSize: 16,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginBottom: 10,
     color: "#111",
   },
@@ -1897,7 +1971,7 @@ const styles = StyleSheet.create({
 
   ebText: {
     fontSize: 14,
-   fontFamily: "Gilroy-Medium",
+    fontFamily: "Gilroy-Medium",
     color: "#111827",
   },
 
@@ -1924,7 +1998,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontSize: 20,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     lineHeight: 28,
   },
 
@@ -1960,12 +2034,12 @@ const styles = StyleSheet.create({
 
   totalText: {
     fontSize: 14,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   totalAmount: {
     fontSize: 14,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
   linkText: {
     color: "#2563EB",
@@ -2018,13 +2092,13 @@ const styles = StyleSheet.create({
 
   refundTitle: {
     fontSize: 14,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginLeft: 6,
   },
 
   refundAmount: {
     fontSize: 16,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   refundBody: {
@@ -2038,15 +2112,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 9,
-    marginTop:5
+    marginTop: 5
   },
 
-negativeamountlabel : {
-  fontSize:12,
-  fontFamily: "Gilroy-Bold",
-  color:"red"
-}
-,
+  negativeamountlabel: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Bold",
+    color: "red"
+  }
+  ,
 
 
 
@@ -2075,54 +2149,54 @@ negativeamountlabel : {
     justifyContent: "space-between",
     flexWrap: "wrap",
   },
-  sectionTitle : {
-    fontSize:17,
-   fontFamily: "Gilroy-Bold" ,
-   marginBottom:5
+  sectionTitle: {
+    fontSize: 17,
+    fontFamily: "Gilroy-Bold",
+    marginBottom: 5
   },
   discountAppliedCard: {
-  backgroundColor: "#F3F4F6",
-  borderRadius: 12,
-  padding: 12,
-  marginBottom: 12,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 
-tickCircle: {
-  width: 28,
-  height: 28,
-  borderRadius: 14,
-  backgroundColor: "#16A34A",
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 10,
-},
+  tickCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#16A34A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
 
-tick: {
-  color: "#fff",
-  fontSize: 16,
-  fontWeight: "bold",
-},
+  tick: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 
-discountText: {
-  fontSize: 13,
-  color: "#111",
-  fontFamily: "Gilroy-Medium",
-},
+  discountText: {
+    fontSize: 13,
+    color: "#111",
+    fontFamily: "Gilroy-Medium",
+  },
 
-Discountarrow: {
-  fontSize: 22,
-  color: "#1D4ED8",
-  fontWeight: "bold",
-},
+  Discountarrow: {
+    fontSize: 22,
+    color: "#1D4ED8",
+    fontWeight: "bold",
+  },
 
-makeDiscountText: {
-  fontSize: 14,
-  color: "#338BFF",
-  fontFamily: "Gilroy-Medium",
-},
+  makeDiscountText: {
+    fontSize: 14,
+    color: "#338BFF",
+    fontFamily: "Gilroy-Medium",
+  },
 
 
   // rightMuted: {

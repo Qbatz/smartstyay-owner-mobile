@@ -1002,7 +1002,7 @@ disabled={!canWriteBanking || item?.isDeleted}
 
             <Text style={{
               fontSize: 18,
-              fontWeight: "700",
+              fontFamily: "Gilroy-Bold" ,
               marginBottom: 10,
             }}>Transaction Details</Text>
 
@@ -1046,7 +1046,7 @@ disabled={!canWriteBanking || item?.isDeleted}
                 <Text style={{
                   fontSize: 14,
                   color: "#000",
-                  fontWeight: "600", marginLeft: -3
+                  fontFamily: "Gilroy-Semibold", marginLeft: -3
                 }}> {selectedTransaction?.raw?.accountHolder}</Text>
               </View>
 
@@ -1454,7 +1454,7 @@ const styles = StyleSheet.create({
 
   heading: {
     fontSize: 22,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
   },
 
   /* SEARCH BAR */
@@ -1470,11 +1470,11 @@ const styles = StyleSheet.create({
   },
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 15, color: "#000" },
+  searchInput: { flex: 1, fontSize: 15, color: "#000" , fontFamily: "Gilroy-Regular" },
 
   sectionTitle: {
     fontSize: 17,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   rowBetween: {
@@ -1494,7 +1494,7 @@ const styles = StyleSheet.create({
 
   addBankText: {
     color: "#fff",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     fontSize: 12,
   },
 
@@ -1541,19 +1541,20 @@ const styles = StyleSheet.create({
 
   bankTitle: {
     fontSize: 17,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   bankSub: {
     color: "#777",
     fontSize: 13,
+     fontFamily: "Gilroy-Semibold",
   },
 
-  name: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginTop: 4,
-  },
+  // name: {
+  //   fontSize: 15,
+  // fontFamily: "Gilroy-Semibold",
+  //   marginTop: 4,
+  // },
 
   acc: {
     fontSize: 13,
@@ -1591,10 +1592,10 @@ const styles = StyleSheet.create({
 
 
   balanceText: { color: "#777" },
-  balanceAmount: { fontWeight: "700", fontSize: 16 },
+  balanceAmount: { fontFamily: "Gilroy-Bold" , fontSize: 16 },
   addAmountText: {
     color: "#1D5DFF",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -1610,7 +1611,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     flexWrap: "wrap",
     flexShrink: 1,     // 🔥 MUST
   },
@@ -1631,13 +1632,14 @@ const styles = StyleSheet.create({
   defaultText: {
     color: "green",
     fontSize: 11,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
   },
 
   changeText: {
     color: "blue",
     marginTop: 2,
     fontSize: 11,
+     fontFamily: "Gilroy-Semibold",
   },
 
   /* TRANSACTION CARD */
@@ -1664,7 +1666,7 @@ const styles = StyleSheet.create({
 
   transTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     flexShrink: 1,        // 🔥 MUST
     flexWrap: "wrap",
   },
@@ -1673,6 +1675,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666",
     marginTop: 2,
+     fontFamily: "Gilroy-Semibold",
   },
 
   transRight: {
@@ -1689,10 +1692,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  transTitle: { fontSize: 16, fontWeight: "600" },
-  category: { fontSize: 13, color: "#666" },
-  date: { fontSize: 12, color: "#777" },
-  amount: { fontSize: 16, fontWeight: "700" },
+  transTitle: { fontSize: 16, fontFamily: "Gilroy-Semibold",},
+  // category: { fontSize: 13, color: "#666" },
+  date: { fontSize: 12, color: "#777" , fontFamily: "Gilroy-Semibold",},
+  amount: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
 
   /* FLOATING BUTTONS */
   filterBtn: {
@@ -1794,7 +1797,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     color: "#111",
     marginBottom: 10,
   },
@@ -1824,7 +1827,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -1838,7 +1841,7 @@ const styles = StyleSheet.create({
 
   deleteBtnText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#fff",
   },
 
@@ -1877,7 +1880,7 @@ const styles = StyleSheet.create({
 
   sheetTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     marginBottom: 20,
   },
 
@@ -1906,7 +1909,7 @@ const styles = StyleSheet.create({
 
   backIcon: { width: 22, height: 22, marginRight: 10 },
 
-  title: { fontSize: 18, fontWeight: "700" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold" ,},
 
   divider: { height: 1, backgroundColor: "#E8E8E8", marginVertical: 12 },
 
@@ -1914,12 +1917,12 @@ const styles = StyleSheet.create({
   colLeft: { width: "48%" },
   colRight: { width: "48%" },
 
-  label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6 },
-  value: { fontSize: 15, fontWeight: "600", color: "#000" },
+  label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6 ,fontFamily: "Gilroy-Semibold", },
+  value: { fontSize: 15, fontFamily: "Gilroy-Semibold", color: "#000" },
 
   assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20 },
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
-  assignText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  assignText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold" ,},
 
   iconBox: {
     height: 45,
@@ -1966,12 +1969,12 @@ const styles = StyleSheet.create({
   valueText: {
     fontSize: 14,
     color: "#000",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
   },
 
   amountText: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
     marginBottom: 20,
   },
 
@@ -2006,8 +2009,8 @@ const styles = StyleSheet.create({
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
-  filterTitle: { fontSize: 20, fontWeight: "700" },
-  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
+  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold" ,},
+  resetTextSmall: { color: "#2D6CDF", ffontFamily: "Gilroy-Semibold",},
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
@@ -2029,12 +2032,12 @@ const styles = StyleSheet.create({
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111", fontWeight: "600" },
+  quickText: { color: "#111", fontFamily: "Gilroy-Semibold", },
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 42, marginBottom: 25 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" },
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" ,},
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontWeight: "700" },
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" ,},
 
   addBalanceSheet: {
     backgroundColor: "#fff",
@@ -2052,12 +2055,12 @@ const styles = StyleSheet.create({
 
   sheetTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   label: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
     // marginTop: 10,
     marginBottom: 6,
   },
@@ -2083,7 +2086,7 @@ const styles = StyleSheet.create({
   addBalanceBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   emptyContainer: {
@@ -2102,7 +2105,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
-    fontWeight: "500",
+     fontFamily: "Gilroy-Medium" ,
   },
 
 });

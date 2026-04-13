@@ -118,6 +118,34 @@ export default function BillsProvider({ children }) {
     }
   };
 
+  const UpdateBill = async ({ hostelId, invoiceId, payload }) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bills/${hostelId}/${invoiceId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      await GetAllBillDetails(hostelId);
+
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Update failed" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const RecordPayment = async ({ hostelId, invoiceId, data }) => {
     try {
@@ -892,6 +920,35 @@ const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
   }
 };
 
+const GetBillDetailsById = async ({ hostelId, invoiceId }) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/details/${hostelId}/${invoiceId}`
+    );
+
+    if (res.status === 200) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return { success: false, message: "Failed to fetch bill details" };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return { success: false, message: msg };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <BillContext.Provider
@@ -907,6 +964,7 @@ const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
         GetAllBillDetails,
         // GetFilteredBills, 
         CreateManualBill,
+        UpdateBill,
         RecordPayment,
         GetInitializeRefundDetails,
         CreateRefund,
@@ -927,6 +985,7 @@ const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
          deleteTemplateImage,
          UpdateBillDiscount,
          DeleteBillDiscount,
+         GetBillDetailsById,
       }}
     >
       {children}

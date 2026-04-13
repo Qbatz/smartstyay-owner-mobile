@@ -355,7 +355,7 @@ useEffect(() => {
       style={styles.dropdownBox}
       onPress={() => setOpen(!open)}
     >
-      <Text style={{ color: selected ? "#000" : "#9CA3AF" }}>
+      <Text style={{ color: selected ? "#000" : "#9CA3AF" ,fontFamily: "Gilroy-Regular" }}>
         {selected?.name || "Select"}
       </Text>
       <Text>⌄</Text>
@@ -1164,7 +1164,7 @@ const styles = StyleSheet.create({
 
   sheetTitle: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
 
   closeIcon: {
@@ -1191,6 +1191,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     color: "#555",
+    fontFamily: "Gilroy-Semibold"
   },
 
   label: {
@@ -1198,6 +1199,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginTop: 10,
     color: "#444",
+    fontFamily: "Gilroy-Semibold"
   },
 
   input: {
@@ -1205,6 +1207,7 @@ const styles = StyleSheet.create({
     borderColor: "#D9D9D9",
     borderRadius: 10,
     padding: 10,
+    fontFamily: "Gilroy-Regular" 
   },
 
   addBtn: {
@@ -1219,7 +1222,7 @@ const styles = StyleSheet.create({
   addBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold" ,
   },
   dropdownBox: {
   borderWidth: 1,
@@ -1231,6 +1234,7 @@ const styles = StyleSheet.create({
   justifyContent: "space-between",
   alignItems: "center",
   backgroundColor: "#fff",
+  fontFamily: "Gilroy-Regular" 
 },
 
 dropdownMenu: {
@@ -1241,12 +1245,14 @@ dropdownMenu: {
   backgroundColor: "#fff",
   maxHeight: 160,
   elevation: 6,
+  fontFamily: "Gilroy-Regular" 
 },
 
 option: {
   padding: 12,
   borderBottomWidth: 1,
   borderBottomColor: "#EEE",
+  fontFamily: "Gilroy-Regular" 
 },
 sheetOverlay: {
   position: "absolute",
