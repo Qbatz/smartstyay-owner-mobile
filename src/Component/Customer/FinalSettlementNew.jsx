@@ -303,8 +303,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
     // const discount = Number(discountValue) || 0;
     // finalAmount -= discount;
 
-    const discount = Number(discountValue) || 0;
-finalAmount += discount;
+//     const discount = Number(discountValue) || 0;
+// finalAmount += discount;
+
+const discount = Number(discountValue) || 0;
+finalAmount -= discount;
 
     setReturnAmount(finalAmount);
   }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
