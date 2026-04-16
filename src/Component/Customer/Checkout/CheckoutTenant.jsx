@@ -179,7 +179,8 @@ export default function CheckoutBottomSheet({
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeSheet} />
+      <View style={styles.wrapper} pointerEvents="box-none">
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={closeSheet} />
 
 
       <Animated.View
@@ -254,6 +255,7 @@ export default function CheckoutBottomSheet({
           </View>
         </ScrollView>
       </Animated.View>
+      </View>
     </>
   );
 }
@@ -266,6 +268,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: "rgba(0,0,0,0.4)"
+  },
+  wrapper: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: "flex-end",
+        zIndex: 1000,
+    },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   sheet: {
     position: "absolute",

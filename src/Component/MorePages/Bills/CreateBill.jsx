@@ -62,7 +62,7 @@ const scrollToInput = (ref) => {
 
 
 
-  const itemOptions = ["Room rent", "EB", "Others"];
+  const itemOptions = ["Rent", "EB", "Others"];
 
     const route = useRoute();
     const { mode, data,customerDetails } = route.params || {};
@@ -155,6 +155,7 @@ const filteredOptions = itemOptions.filter((op) => {
 
 
 // { id, name }
+console.log(filteredOptions)
 
 const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
@@ -394,7 +395,7 @@ useEffect(() => {
 
   setItems((prev) =>
     prev.map((item) =>
-      item.type === "Room rent"
+      item.type === "Rent"
         ? { ...item, amount: String(rent) }
         : item
     )
@@ -468,12 +469,18 @@ const handleDueDateChange = (date) => {
   setDueDate(date);
 };
 
+ useEffect(() => {
+  if (selectedCustomer && items.length === 0 && filteredOptions.length > 0) {
+    handleSelectItem(filteredOptions[0]); 
+  }
+}, [selectedCustomer]);
+
        
 
   const handleSelectItem = (type) => {
   let amount = "";
 
-  if (type === "Room rent") {
+  if (type === "Rent") {
     amount = selectedCustomer
       ? String(getRoomRentAmount())
       : "0";
@@ -960,7 +967,7 @@ setTimeout(() => {
     </ScrollView>
   </View>
 )}
-
+{console.log(items)}
 
       {items.map((item, index) => (
         <View key={index} style={styles.itemCard}>
@@ -1157,7 +1164,7 @@ ItemdropdownBox: {
   alignItems: "center",
   paddingHorizontal: 14,
   justifyContent: "space-between",
-  marginBottom: 12,
+  marginBottom: 4,
 },
 
 itemDropdownMenu: {
@@ -1230,6 +1237,7 @@ itemOptionTextSelected: {
     padding: 15,
     borderRadius: 14,
     marginBottom: 20,
+    marginTop:10
   },
   cardHeader: {
     flexDirection: "row",

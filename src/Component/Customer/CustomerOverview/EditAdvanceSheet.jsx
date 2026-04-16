@@ -160,7 +160,7 @@ const handleUpdate = async () => {
   return (
     <>
       <SuccessModal visible={false} />
-
+<View style={styles.wrapper} pointerEvents="box-none">
       {/* BACKDROP */}
       <TouchableOpacity
         style={styles.backdrop}
@@ -234,10 +234,16 @@ const handleUpdate = async () => {
           </View>
         </ScrollView>
       </Animated.View>
+      </View>
     </>
   );
 }
 const styles = StyleSheet.create({
+  wrapper: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: "flex-end",
+        zIndex: 1000,
+    },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.35)",

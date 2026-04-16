@@ -135,7 +135,7 @@ export default function SubscriptionPlans({ navigation }) {
       const sessionId = res?.data?.sessionId;
       const environment = res?.data?.environment;
 
-      initialize( apiKey, accountId, "india", environment)
+      initialize(apiKey, accountId, "india", environment)
 
 
       try {
@@ -157,13 +157,10 @@ export default function SubscriptionPlans({ navigation }) {
         console.log('Error Code:', e?.code);
         console.log('Error Message:', e?.message);
       }
-    }else {
-    console.log("API Error:", res?.data);
-
-    alert(res?.data?.message || "Something went wrong. Please try again.");
-  }
-
-
+    } else {
+      console.log("API Error:", res?.data);
+      alert(res?.data?.message || "Something went wrong. Please try again.");
+    }
 
   }
   // const Plans = [
