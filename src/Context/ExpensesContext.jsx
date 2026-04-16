@@ -155,7 +155,7 @@ const AddExpense = async (payload,hostelId) => {
       payload
     );
    console.log("response", res.status);
-   console.log(res)
+   console.log("Addresponse",res)
    
     if (res?.status === 201) {
       return { success: true, data: res.data };
