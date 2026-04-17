@@ -156,12 +156,12 @@ export default function SubscriptionPlans({ navigation }) {
       } catch (e) {
         console.log('Error Code:', e?.code);
         console.log('Error Message:', e?.message);
-
       }
+    }else {
+    console.log("API Error:", res?.data);
 
-
-
-    }
+    alert(res?.data?.message || "Something went wrong. Please try again.");
+  }
 
 
 

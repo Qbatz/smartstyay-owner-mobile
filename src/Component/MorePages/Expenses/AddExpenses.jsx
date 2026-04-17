@@ -417,6 +417,7 @@ const handleSubmitExpense = async () => {
     payload = {
       categoryId: selectedCategory.categoryId,
       subCategoryId: selectedSubCategory?.subCategoryId || null,
+            // subCategory: selectedSubCategory?.subCategoryId || null,
       purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
       count: Number(unitCount) || 1,
       totalAmount: Number(purchaseAmount),
@@ -425,13 +426,16 @@ const handleSubmitExpense = async () => {
   } else {
     payload = {
       categoryId: selectedCategory.categoryId,
-      subCategoryId: selectedSubCategory?.subCategoryId || null,
+      subCategory: selectedSubCategory?.subCategoryId || null,
       purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
       count: Number(unitCount) || 1,
       totalAmount: Number(purchaseAmount),
       description,
       bankId: selectedMode.id
     };
+
+    console.log("payload", payload);
+    
   }
 
   let res;
