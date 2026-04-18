@@ -3368,7 +3368,7 @@ export default function BillsDesign({ route }) {
                     disabled={!canUpdateInvoice}
                     onPress={()=> handleEditBill(selectedBill)} >
                     <Image
-                      source={require("../../../Assets/Images/ReAssign.png")}
+                      source={require("../../../Assets/Images/edit.png")}
                       style={styles.popupIcon}
                     />
                     <Text style={styles.popupText}>Edit</Text>

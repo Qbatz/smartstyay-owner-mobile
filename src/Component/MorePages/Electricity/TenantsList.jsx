@@ -11,6 +11,7 @@ import Loader from "../../../Component/Loader/Loader"
 import dayjs from "dayjs";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 
+
 export default function TenantsList() {
 
      const { activeHostelId } = useContext(CommonContexts);
