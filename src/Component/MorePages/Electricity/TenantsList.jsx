@@ -3,6 +3,7 @@ import React, { useState,useRef,useEffect , useContext } from "react";
 import { View, Text, StyleSheet, Image, ScrollView,TouchableOpacity} from "react-native";
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
+import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 import { useNavigation } from "@react-navigation/native";
 import {ElectricityContext} from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -103,7 +104,7 @@ export default function TenantsList() {
               </View>
 
               <View style={[styles.inline,{flexShrink:1}]}>
-                <Image source={RoomIcon} style={styles.icon} />
+                <Image source={BedIcon} style={styles.icon} />
                 <Text style={[styles.value,{flexShrink:1}]}
                 numberOfLines={1}>{item?.bedName}</Text>
               </View>

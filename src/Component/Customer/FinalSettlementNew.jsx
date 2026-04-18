@@ -303,11 +303,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
     // const discount = Number(discountValue) || 0;
     // finalAmount -= discount;
 
-//     const discount = Number(discountValue) || 0;
-// finalAmount += discount;
+    //     const discount = Number(discountValue) || 0;
+    // finalAmount += discount;
 
-const discount = Number(discountValue) || 0;
-finalAmount -= discount;
+    const discount = Number(discountValue) || 0;
+    finalAmount -= discount;
 
     setReturnAmount(finalAmount);
   }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
@@ -508,8 +508,8 @@ finalAmount -= discount;
   };
 
 
-   console.log("discountvalue", discountValue);
-   
+  console.log("discountvalue", discountValue);
+
 
   const handleGenerate = async () => {
     const chargeValid = validateExtraCharges();
@@ -532,7 +532,7 @@ finalAmount -= discount;
       selectedBed?.currentTenantInfo[0]?.tenetId;
 
 
-          const payload = {
+    const payload = {
       discountAmount: Number(discountValue) || 0,
       deductions: extraDeductionsPayload,
     }
@@ -635,27 +635,34 @@ finalAmount -= discount;
                 </View>
                 <View style={{ display: "flex", flexDirection: 'column' }}>
                   <Text style={styles.customerName}>{settlementDetails?.customerInfo?.fullName}</Text>
-                  <View style={styles.smallRow} >
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed?.floorName || selectedItem?.hostelInfo?.floorName}</Text>
-                    </View>
 
-                    <View style={styles.Roombadge}>
-                      <Text style={styles.badgeText}>
-                        {selectedItem || selectedBed ? `${selectedItem?.roomName || selectedBed?.roomName || selectedItem?.hostelInfo?.roomName || ""} - ${selectedItem?.bedName || selectedBed?.bedName || selectedItem?.hostelInfo?.bedName || ""}` : ""}
-                      </Text>
-                    </View>
+                  <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#4B4B4B' }}>
+                    +{settlementDetails?.customerInfo?.countryCode} {settlementDetails?.customerInfo?.mobile}</Text>
+
+                </View>
+
+              </View>
+              <View style={styles.smallRow} >
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{selectedItem?.floorName || selectedBed?.floorName || selectedItem?.hostelInfo?.floorName}</Text>
+                </View>
+
+                <View style={styles.Roombadge}>
+                  <Text style={styles.badgeText}>
+                    {selectedItem || selectedBed ? `${selectedItem?.roomName || selectedBed?.roomName || selectedItem?.hostelInfo?.roomName || ""} - ${selectedItem?.bedName || selectedBed?.bedName || selectedItem?.hostelInfo?.bedName || ""}` : ""}
+                  </Text>
+                </View>
 
 
 
-                    {/* <Image source={RoomIcon} style={styles.smallIcon} />
+                {/* <Image source={RoomIcon} style={styles.smallIcon} />
                                            <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
                    
                                            <Image source={BedIcon} style={styles.smallIcon} />
                                            <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text> */}
-                  </View>
-                </View>
               </View>
+
+              <View style={{borderWidth:0.2,marginTop:12,marginBottom:8,borderColor: "#E5E7EB"}}/>
 
 
 
@@ -743,7 +750,7 @@ finalAmount -= discount;
                 />
                 <Text style={styles.cardTitle}>Unpaid Invoices</Text>
                 <Text style={styles.amountText}>  ₹{
-                  settlementDetails?.unpaidInvoices?.reduce(
+                  settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
                     (sum, inv) => sum + Number(inv.payableAmount || 0),
                     0
                   ) || 0
@@ -764,10 +771,10 @@ finalAmount -= discount;
 
 
                   {/* ✅ DATA EXISTS */}
-                  {Array.isArray(settlementDetails?.unpaidInvoices) &&
-                    settlementDetails.unpaidInvoices.length > 0 ? (
+                  {Array.isArray(settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices) &&
+                    settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.length > 0 ? (
                     <>
-                      {settlementDetails.unpaidInvoices.map((item, index) => (
+                      {settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.map((item, index) => (
                         <View key={index} style={styles.invoiceRow}>
                           <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
                             {item.invoiceNumber}
@@ -827,7 +834,7 @@ finalAmount -= discount;
                 <Text style={styles.refundAmount}>
                   ₹{" "}
                   {Number(
-                    settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
+                    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
                   ).toLocaleString("en-IN")}
                 </Text>
               </TouchableOpacity>
