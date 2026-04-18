@@ -1138,7 +1138,22 @@ export default function LongStay({ navigation }) {
                                                     keyboardType="numeric"
                                                     placeholder="₹"
                                                     value={slab.amount}
-                                                    onChangeText={(text) => updateSlab(slab.id, "amount", text)}
+                                                    onChangeText={(text) => {
+                                                        let cleaned = text.replace(/[^0-9.]/g, "");
+
+                                                        const parts = cleaned.split(".");
+
+                                                        if (parts.length > 2) {
+                                                            cleaned = parts[0] + "." + parts[1];
+                                                        }
+
+                                                        if (parts[1]?.length > 2) {
+                                                            cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                        }
+
+                                                        updateSlab(slab.id, "amount", cleaned);
+                                                    }}
+                                                // onChangeText={(text) => updateSlab(slab.id, "amount", text)}
                                                 />
 
                                             </View>

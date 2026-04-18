@@ -318,8 +318,8 @@ export default function ReserveToCheckin({ route, navigation }) {
           </TouchableOpacity>
 
           <Text style={styles.roomInfo}>
-            {selectedBed?.floorName} |
-            Room No {selectedBed?.roomName} |{" "}
+            {selectedBed?.floorName} | {" "}
+             {selectedBed?.roomName} | {" "}
             {selectedBed?.bedName}
           </Text>
 
