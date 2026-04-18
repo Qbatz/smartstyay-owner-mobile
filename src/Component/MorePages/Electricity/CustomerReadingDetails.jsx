@@ -11,6 +11,7 @@ import {ElectricityContext} from "../../../Context/ElectricityContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
+import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import calendarCheck from "../../../Assets/Images/calendarcheck.png";
 import UserProfile from "../../../Assets/Images/profileElec.png";
@@ -64,6 +65,21 @@ export default function CustomerReading({ route, navigation }) {
     .format("MMMM YYYY");
 };
 
+const formatDateRange = (start, end) => {
+  if (!start || !end) return "--";
+
+  const startDate = dayjs(start, ["DD/MM/YYYY", "D/MM/YYYY"]);
+  const endDate = dayjs(end, ["DD/MM/YYYY", "D/MM/YYYY"]);
+
+  // Same month & year
+  if (startDate.month() === endDate.month() && startDate.year() === endDate.year()) {
+    return `${startDate.format("DD")} - ${endDate.format("DD")} ${endDate.format("MMMM")}`;
+  }
+
+  // Different month
+  return `${startDate.format("DD MMM")} - ${endDate.format("DD MMM")}`;
+};
+
   return (
     <View style={styles.container}>
 
@@ -71,7 +87,7 @@ export default function CustomerReading({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image source={BackIcon} style={styles.backIcon} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Room Overview</Text>
+        <Text style={styles.headerTitle}>EB Bill Overview</Text>
       </View>
 
       {/* TOP CARD */}
@@ -92,7 +108,7 @@ export default function CustomerReading({ route, navigation }) {
               <Image source={RoomIcon} style={styles.icon} />
               <Text style={styles.roomText}>{tenant?.roomName}</Text>
 
-              <Image source={RoomIcon} style={styles.icon} />
+              <Image source={BedIcon} style={styles.icon} />
               <Text style={styles.roomText}>{tenant?.bedName}</Text>
             </View>
           </View>
@@ -144,14 +160,16 @@ export default function CustomerReading({ route, navigation }) {
                 <Image source={RoomIcon} style={styles.icon} />
                 <Text style={styles.bedText}>{item?.roomName}</Text>
 
-                <Image source={RoomIcon} style={styles.icon} />
+                <Image source={BedIcon} style={styles.icon} />
                 <Text style={styles.bedText}>{item?.bedName}</Text>
               </View>
             </View>
 
             <View style={{ alignItems: "flex-end" }}>
               <Text style={styles.amount}>₹{item?.amount}</Text>
-              <Text style={styles.dateSmall}>{item?.startDate}</Text>
+           <Text style={styles.dateSmall}>
+         {formatDateRange(item?.startDate, item?.endDate)}
+          </Text>
             </View>
 
           </View>
@@ -163,7 +181,7 @@ export default function CustomerReading({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop:30 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop:40 },
 
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 18 },

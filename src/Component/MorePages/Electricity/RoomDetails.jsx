@@ -488,6 +488,36 @@ export default function RoomDetails({ route, navigation }) {
 
   console.log("deleteData", deleteData);
 
+  const formatDateRange = (start, end) => {
+  if (!start) return "--";
+
+  const startDate = dayjs(start, ["DD/MM/YYYY", "DD-MM-YYYY"]);
+  const endDate = end
+    ? dayjs(end, ["DD/MM/YYYY", "DD-MM-YYYY"])
+    : null;
+
+  // If no end date → show single date
+  if (!endDate) {
+    return startDate.format("DD MMM");
+  }
+
+  // Same day
+  if (startDate.isSame(endDate, "day")) {
+    return startDate.format("DD MMM");
+  }
+
+  // Same month
+  if (
+    startDate.month() === endDate.month() &&
+    startDate.year() === endDate.year()
+  ) {
+    return `${startDate.format("DD")} - ${endDate.format("DD")} ${endDate.format("MMMM")}`;
+  }
+
+  // Different month
+  return `${startDate.format("DD MMM")} - ${endDate.format("DD MMM")}`;
+};
+
 
   const handleConfirmReadingDelete = async () => {
     const res = await DeleteRoomReading({
@@ -863,6 +893,9 @@ export default function RoomDetails({ route, navigation }) {
               <View style={styles.monthBox}>
                 <Image source={calendarCheck} style={styles.calendarIcon} />
                 <Text style={styles.monthText}> {formatApiMonth(matchedRoomData?.entryDate)}</Text>
+                {/* <Text style={styles.date}>
+  {formatDateRange(matchedRoomData?.startDate, matchedRoomData?.endDate)}
+</Text> */}
               </View>
 
             </View>
@@ -938,7 +971,9 @@ export default function RoomDetails({ route, navigation }) {
                         <Text style={styles.price}>
                           ₹ {item?.amount ?? 0}
                         </Text>
-                        <Text style={styles.date}>{item?.entryDate}</Text>
+                       <Text style={styles.date}>
+  {formatDateRange(item?.startDate, item?.endDate)}
+</Text>
                       </View>
                     </View>
                   )} />
@@ -984,7 +1019,10 @@ export default function RoomDetails({ route, navigation }) {
 
                     <View style={{ alignItems: "flex-end" }}>
                       <Text style={styles.price}>₹ {item?.totalAmount}</Text>
-                      <Text style={styles.date}>{item?.billingDate}</Text>
+                      {/* <Text style={styles.date}>{item?.billingDate}</Text> */}
+                      <Text style={styles.date}>
+                  {formatDateRange(item?.startDate || item?.billingDate, item?.endDate)}
+                  </Text>
                     </View>
                   </View>
                 )} />
