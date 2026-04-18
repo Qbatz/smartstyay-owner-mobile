@@ -66,6 +66,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [discountValue, setDiscountValue] = useState("");
   const [isEditingDiscount, setIsEditingDiscount] = useState(false);
 
+  const [appliedDiscount, setAppliedDiscount] = useState(0);   // final applied
+
   console.log("actualcheckoutdate", actualCheckoutDate);
 
 
@@ -283,6 +285,31 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //   setReturnAmount(finalAmount);
   // }, [settlementDetails, userEnteredDeductionsTotal]);
 
+  // useEffect(() => {
+  //   if (!settlementDetails?.settlementInfo) return;
+
+  //   const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+
+  //   let finalAmount = 0;
+
+  //   if (amountTobePaid < 0) {
+  //     finalAmount = isRefundable
+  //       ? amountTobePaid + userEnteredDeductionsTotal
+  //       : amountTobePaid - userEnteredDeductionsTotal;
+  //   } else {
+  //     finalAmount = isRefundable
+  //       ? amountTobePaid - userEnteredDeductionsTotal
+  //       : amountTobePaid + userEnteredDeductionsTotal;
+  //   }
+
+
+
+  //   const discount = Number(discountValue) || 0;
+  //   finalAmount -= discount;
+
+  //   setReturnAmount(finalAmount);
+  // }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
+
   useEffect(() => {
     if (!settlementDetails?.settlementInfo) return;
 
@@ -300,17 +327,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
         : amountTobePaid + userEnteredDeductionsTotal;
     }
 
-    // const discount = Number(discountValue) || 0;
-    // finalAmount -= discount;
-
-    //     const discount = Number(discountValue) || 0;
-    // finalAmount += discount;
-
-    const discount = Number(discountValue) || 0;
-    finalAmount -= discount;
+    finalAmount -= Number(appliedDiscount || 0);
 
     setReturnAmount(finalAmount);
-  }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
+
+  }, [settlementDetails, userEnteredDeductionsTotal, appliedDiscount]);
 
 
   const isNegative = Number(ReturnAmount) < 0;
@@ -472,41 +493,71 @@ export default function FinalSettlementScreen({ navigation, route }) {
       amount: Number(item.amount),
     }));
 
+  // const validateDiscount = () => {
+  //   let valid = true;
+
+  //   const discount = Number(discountValue);
+
+  //   if (discountValue === "") {
+  //     setMessage("Please enter discount amount");
+  //     setModalType("warning");
+  //     setShowSuccess(true);
+
+  //     setTimeout(() => {
+  //       setShowSuccess(false);
+  //     }, 1500);
+  //     valid = false;
+  //   } else if (isNaN(discount) || discount < 0) {
+  //     setMessage("Invalid discount amount");
+  //     setModalType("warning");
+  //     setShowSuccess(true);
+  //     setTimeout(() => {
+  //       setShowSuccess(false);
+  //     }, 1500);
+  //     valid = false;
+  //   } else if (discount > Number(settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0)) {
+  //     setMessage("Discount cannot be greater than rent amount");
+  //     setModalType("warning");
+  //     setShowSuccess(true);
+  //     setTimeout(() => {
+  //       setShowSuccess(false);
+  //     }, 1500);
+  //     valid = false
+  //   }
+
+  //   return valid;
+  // }
+
   const validateDiscount = () => {
     let valid = true;
 
     const discount = Number(discountValue);
+    const baseAmount = Math.abs(
+      Number(settlementDetails?.settlementInfo?.amountTobePaid || 0)
+    );
 
     if (discountValue === "") {
       setMessage("Please enter discount amount");
       setModalType("warning");
       setShowSuccess(true);
-
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1500);
+      setTimeout(() => setShowSuccess(false), 1500);
       valid = false;
     } else if (isNaN(discount) || discount < 0) {
       setMessage("Invalid discount amount");
       setModalType("warning");
       setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1500);
+      setTimeout(() => setShowSuccess(false), 1500);
       valid = false;
-    } else if (discount > Number(settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0)) {
-      setMessage("Discount cannot be greater than rent amount");
+    } else if (discount > baseAmount) {
+      setMessage("Discount cannot be greater than payable amount");
       setModalType("warning");
       setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1500);
-      valid = false
+      setTimeout(() => setShowSuccess(false), 1500);
+      valid = false;
     }
 
     return valid;
   };
-
 
   console.log("discountvalue", discountValue);
 
@@ -662,7 +713,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                                            <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text> */}
               </View>
 
-              <View style={{borderWidth:0.2,marginTop:12,marginBottom:8,borderColor: "#E5E7EB"}}/>
+              <View style={{ borderWidth: 0.2, marginTop: 12, marginBottom: 8, borderColor: "#E5E7EB" }} />
 
 
 
@@ -1419,14 +1470,35 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 }}>
                   <TextInput
                     value={discountValue}
-                    onChangeText={(t) => setDiscountValue(t.replace(/[^0-9]/g, ""))}
+                    onChangeText={(t) => {
+                      let cleaned = t.replace(/[^0-9.]/g, "");
+
+                      const parts = cleaned.split(".");
+
+                      if (parts.length > 2) {
+                        cleaned = parts[0] + "." + parts[1];
+                      }
+
+                      if (parts[1]?.length > 2) {
+                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                      }
+                      setDiscountValue(cleaned)
+                    }
+                    }
+
+
+
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
                   />
 
                   <TouchableOpacity
-                    onPress={() => setIsEditingDiscount(false)}
+                    onPress={() => {
+                      if (!validateDiscount()) return;
+                      setAppliedDiscount(Number(discountValue) || 0);
+                      setIsEditingDiscount(false);
+                    }}
                     style={{
                       backgroundColor: "#DEF7EC",
                       paddingHorizontal: 12,
