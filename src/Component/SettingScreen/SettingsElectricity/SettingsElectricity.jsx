@@ -495,7 +495,7 @@ if (!isChanged) {
       // }}
 
                 onChangeText={(text) => {
-  let cleaned = text.replace(/[^0-9.]/g, "");
+  let cleaned = text.replace(/[^0-9]/g, "");
 
   const parts = cleaned.split(".");
   if (parts.length > 2) {
@@ -580,7 +580,7 @@ if (!isChanged) {
       // }}
 
           onChangeText={(text) => {
-  let cleaned = text.replace(/[^0-9.]/g, "");
+  let cleaned = text.replace(/[^0-9]/g, "");
 
   const parts = cleaned.split(".");
   if (parts.length > 2) {

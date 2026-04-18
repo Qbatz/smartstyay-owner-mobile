@@ -584,7 +584,8 @@ if (isEdit) {
     value={discount}
     onChangeText={(text) => {
   // ✅ allow only numbers + dot
-  let cleaned = text.replace(/[^0-9.]/g, "");
+  const cleaned = text.replace(/[^0-9]/g, "");
+  // let cleaned = text.replace(/[^0-9.]/g, "");
 
   // ✅ prevent multiple dots
   const parts = cleaned.split(".");

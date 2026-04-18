@@ -622,7 +622,7 @@ export default function AmenitySettings({ navigation }) {
       }, 1500);
     }
 
-    openAssign(currentAmenityId);
+    openAssign(currentAmenityId)
   };
 
 
@@ -674,7 +674,7 @@ export default function AmenitySettings({ navigation }) {
                   style={{ width: 21, height: 17, resizeMode: "contain" }}
                 />
                 <Text
-                  style={[styles.metaText, { marginLeft: 2, flexShrink: 1 }]}
+                  style={[styles.metaText, { marginLeft: 2, flexShrink: 1 ,fontFamily: "Gilroy-Semibold" }]}
                 >
                   {user.roomName}
                 </Text>
@@ -698,7 +698,7 @@ export default function AmenitySettings({ navigation }) {
                   style={{ width: 21, height: 17, resizeMode: "contain" }}
                 />
                 <Text
-                  style={[styles.metaText, { marginLeft: 4, flexShrink: 1 }]}
+                  style={[styles.metaText, { marginLeft: 4, flexShrink: 1 ,fontFamily: "Gilroy-Semibold" }]}
                 >
                   {user.bedName}
                 </Text>
@@ -766,7 +766,7 @@ export default function AmenitySettings({ navigation }) {
                   style={{ width: 21, height: 17, resizeMode: "contain" }}
                 />
                 <Text
-                  style={[styles.metaText, { marginLeft: 2, flexShrink: 1 }]}
+                  style={[styles.metaText, { marginLeft: 2, flexShrink: 1 ,fontFamily: "Gilroy-Semibold" }]}
                 >
                   {user.roomName}
                 </Text>
@@ -790,7 +790,7 @@ export default function AmenitySettings({ navigation }) {
                   style={{ width: 21, height: 17, resizeMode: "contain" }}
                 />
                 <Text
-                  style={[styles.metaText, { marginLeft: 4, flexShrink: 1 }]}
+                  style={[styles.metaText, { marginLeft: 4, flexShrink: 1 ,fontFamily: "Gilroy-Semibold" }]}
                 >
                   {user.bedName}
                 </Text>
@@ -1241,7 +1241,7 @@ export default function AmenitySettings({ navigation }) {
                       renderItem={({ item }) => <UserRow user={item} />}
                       scrollEnabled={false}
                       ListEmptyComponent={
-                        <Text style={{ padding: 16, color: "#666" }}>
+                        <Text style={{ padding: 16, color: "#666" ,fontFamily: "Gilroy-Semibold"}}>
                           No unassigned users
                         </Text>
                       }
@@ -1306,7 +1306,7 @@ export default function AmenitySettings({ navigation }) {
                       renderItem={({ item }) => <UserAssignedRow user={item} />}
                       scrollEnabled={false}
                       ListEmptyComponent={
-                        <Text style={{ padding: 16, color: "#666" }}>
+                        <Text style={{ padding: 16, color: "#666" ,fontFamily: "Gilroy-Semibold"}}>
                           No assigned users
                         </Text>
                       }
@@ -1348,8 +1348,8 @@ export default function AmenitySettings({ navigation }) {
                     }}
                     style={[styles.downBtn, { opacity: anyUnassignedSelected ? 1 : 0.45 }]}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: 600, color: '#ffffff' }}>Assign</Text>
-                    <Image source={Arrowdown} style={{ height: 22, width: 22 }} />
+                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold",  color: '#ffffff' }}>Assign</Text>
+                    <Image source={Arrowdown} style={{ height: 20, width: 20 , marginLeft:5}} />
                   </TouchableOpacity>
                 </View>
 
@@ -1365,8 +1365,8 @@ export default function AmenitySettings({ navigation }) {
                     }}
                     style={[styles.upBtn, { opacity: anyAssignedSelected ? 1 : 0.45 }]}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: 600, color: '#ffffff' }}>UnAssign</Text>
-                    <Image source={Arrowup} style={{ height: 22, width: 22 }} />
+                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", color: '#ffffff' }}>UnAssign</Text>
+                    <Image source={Arrowup} style={{ height: 20, width: 20 , marginLeft:5}} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1384,13 +1384,13 @@ const styles = StyleSheet.create({
 
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   backIcon: { width: 20, height: 20, marginRight: 10 },
-  headerTitle: { fontSize: 20, fontWeight: "700", flex: 1 },
+  headerTitle: { fontSize: 20, fontFamily: "Gilroy-Bold" , flex: 1 },
 
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyImg: { width: 200, height: 160, marginBottom: 10 },
-  emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 },
+  emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 ,fontFamily: "Gilroy-Bold" },
   addButtonEmpty: { backgroundColor: "#1E45E1", paddingHorizontal: 45, paddingVertical: 14, borderRadius: 10 },
-  addBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  addBtnText: { color: "#fff", fontSize: 15, fontFamily: "Gilroy-Bold"  },
 
   amenityCard: {
     backgroundColor: "#FFFFFF",
@@ -1404,8 +1404,8 @@ const styles = StyleSheet.create({
   },
 
   cardTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  cardTitle: { fontSize: 17, fontWeight: "700", color: "#000" },
-  priceRow: { fontSize: 15, color: "#111", marginTop: 4, fontWeight: "600" },
+  cardTitle: { fontSize: 17, fontFamily: "Gilroy-Bold" , color: "#000" },
+  priceRow: { fontSize: 15, color: "#111", marginTop: 4, fontFamily: "Gilroy-Semibold"},
   perMonth: { fontSize: 14, color: "#737373" },
 
   rightIcons: { flexDirection: "row", alignItems: "center" },
@@ -1415,8 +1415,8 @@ const styles = StyleSheet.create({
   line: { height: 1, backgroundColor: "#E6E6E6", marginVertical: 14 },
 
   bottomRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  prorateLabel: { fontSize: 16, fontWeight: "600", color: "#555" },
-  onOffText: { fontSize: 14, marginRight: 6, color: "#3562FF", fontWeight: "600" },
+  prorateLabel: { fontSize: 16, fontFamily: "Gilroy-Semibold", color: "#555" },
+  onOffText: { fontSize: 14, marginRight: 6, color: "#3562FF", fontFamily: "Gilroy-Semibold"},
 
   switchRow: {
     flexDirection: "row",
@@ -1426,7 +1426,7 @@ const styles = StyleSheet.create({
 
   switchLabel: {
     fontSize: 14,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold"
   },
   switch: {
     width: 40,
@@ -1443,7 +1443,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  knobText: { fontSize: 10, fontWeight: "700" },
+  knobText: { fontSize: 10, fontFamily: "Gilroy-Bold" },
 
   floatingBtn: {
     position: "absolute",
@@ -1461,13 +1461,13 @@ const styles = StyleSheet.create({
   /* delete modal */
   deleteOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", alignItems: "center" },
   deleteBox: { width: "90%", backgroundColor: "#fff", padding: 20, borderRadius: 12, alignItems: "center" },
-  deleteTitle: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
+  deleteTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" , marginBottom: 6 },
   deleteSub: { color: "#666", marginBottom: 12, textAlign: "center" },
   deleteBtnRow: { flexDirection: "row", width: "100%" },
   cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: "#1D5DFF", marginRight: 8, alignItems: "center" },
-  cancelText: { color: "#1D5DFF", fontWeight: "700" },
+  cancelText: { color: "#1D5DFF", fontFamily: "Gilroy-Bold"  },
   deleteBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center" },
-  deleteBtnText: { color: "#fff", fontWeight: "700" },
+  deleteBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" },
 
   sheetOverlay: {
     position: "absolute",
@@ -1493,11 +1493,11 @@ const styles = StyleSheet.create({
   },
   handleWrapper: { alignItems: "center", paddingVertical: 12 },
   sheetHandle: { width: 50, height: 5, borderRadius: 8, backgroundColor: "#ccc" },
-  sheetTitle: { fontSize: 18, fontWeight: "700", marginBottom: 16 },
-  inputLabel: { fontSize: 14, fontWeight: "600", marginBottom: 6 },
-  inputBox: { borderWidth: 1, borderColor: "#E4E4E7", borderRadius: 12, padding: 12, fontSize: 15 },
+  sheetTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" , marginBottom: 16 },
+  inputLabel: { fontSize: 14, fontFamily: "Gilroy-Semibold", marginBottom: 6 },
+  inputBox: { borderWidth: 1, borderColor: "#E4E4E7", borderRadius: 12, padding: 12, fontSize: 15 ,fontFamily: "Gilroy-Regular"},
   addTypeBtn: { backgroundColor: "#1D5DFF", paddingVertical: 14, borderRadius: 12, alignItems: "center", marginBottom: 10 },
-  addTypeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  addTypeText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold"  },
 
   assignSheet: {
     width: "100%",
@@ -1513,8 +1513,8 @@ const styles = StyleSheet.create({
   assignHandleWrapper: { alignItems: "center", paddingVertical: 8 },
   assignHandle: { width: 50, height: 5, borderRadius: 8, backgroundColor: "#ccc", marginBottom: 8 },
 
-  assignTitle: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
-  sectionLabel: { color: "#333", fontWeight: "700", marginTop: 8, marginBottom: 6 },
+  assignTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" , marginBottom: 6 },
+  sectionLabel: { color: "#333", fontFamily: "Gilroy-Bold" , marginTop: 8, marginBottom: 6 },
 
   userRow: {
     flexDirection: "row",
@@ -1525,11 +1525,12 @@ const styles = StyleSheet.create({
   },
   userLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
   avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#E8EAF6", alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#1D3BFF", fontWeight: "700" },
-  userName: { fontWeight: "700", fontSize: 15, flexShrink: 1 },
+  avatarText: { color: "#1D3BFF", fontFamily: "Gilroy-Bold"  },
+  userName: { fontFamily: "Gilroy-Bold" , fontSize: 15, flexShrink: 1 },
   floorBadge: { backgroundColor: "#FDE7A8", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginRight: 8 },
-  floorBadgeText: { fontSize: 12, fontWeight: "700", color: "#6b4a00" },
+  floorBadgeText: { fontSize: 12, fontFamily: "Gilroy-Bold" , color: "#6b4a00" },
   metaText: { color: "#666", marginLeft: 6 },
+
 
   checkbox: {
     width: 24,
@@ -1591,7 +1592,7 @@ const styles = StyleSheet.create({
 
   menuText: {
     fontSize: 16,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 

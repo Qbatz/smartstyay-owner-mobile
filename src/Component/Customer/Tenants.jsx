@@ -53,6 +53,8 @@ import RentMoney from "../../Assets/Images/RentMoney.png"
 import DirectionImage from "../../Assets/Images/direction-down.png"
 import SuccessModal from "../../ToastFile/ToastPage";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
+import ListView from "../../Assets/Images/listview.png";
+import RoomView from "../../Assets/Images/Roomview.png";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
@@ -78,6 +80,15 @@ export default function TenantsScreen({ route }) {
   const [overviewScreen, setOverviewScreen] = useState(false)
   const [searchText, setSearchText] = useState("");
   const {CommonModule}=NativeModules;
+
+const [tenantFilter, setTenantFilter] = useState("All");
+const [viewType, setViewType] = useState("Room View");
+const [tenantStatus, setTenantStatus] = useState("All");
+const [period, setPeriod] = useState("All");
+const [sharingType, setSharingType] = useState("All");
+
+const [activeDropdown, setActiveDropdown] = useState(null);
+
   console.log("activeHostelId", activeHostelId)
   console.log("reassignCustomer", reassignCustomer);
 
@@ -535,6 +546,74 @@ const isExportAllow = isValidSubscription && canReadTenant;
 //   lastScrollY.current = currentY;
 // };
 
+const handleApply = () => {
+  console.log({
+    tenantFilter,
+    viewType,
+    tenantStatus,
+    period,
+    sharingType,
+  });
+
+  setShowFilter(false);
+};
+
+const viewIcons = {
+  "List View": ListView,
+  "Room View": RoomView,
+};
+
+const renderDropdown = (label, value, setValue, options, keyName ) => (
+  <>
+    <Text style={styles.label}>{label}</Text>
+
+    <View style={{ position: "relative" }}>
+      <TouchableOpacity
+        style={styles.dropdownBox}
+        onPress={() =>
+          setActiveDropdown(activeDropdown === keyName ? null : keyName)
+        }
+      >
+        <Text style={styles.dropdownText}>{value}</Text>
+        <Text style={styles.arrow}>⌄</Text>
+      </TouchableOpacity>
+
+      {activeDropdown === keyName && (
+        <View style={styles.dropdownMenu}>
+          <ScrollView nestedScrollEnabled>
+           {options.map((v) => (
+  <TouchableOpacity
+    key={v}
+    style={[
+      styles.dropdownItem,
+      value === v && styles.activeItem
+    ]}
+    onPress={() => {
+      setValue(v);
+      setActiveDropdown(null);
+    }}
+  >
+    {keyName === "view" && viewIcons[v] && (
+      <Image source={viewIcons[v]} style={styles.viewIcon} />
+    )}
+
+    <Text
+      style={[
+        styles.dropdownItemText,
+        value === v && { fontWeight: "600", color: "#1E45E1" }
+      ]}
+    >
+      {v}
+    </Text>
+  </TouchableOpacity>
+))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  </>
+);
+
   const tabs = [
     { key: "Tenants", active: Profile, inactive: InProfile },
     { key: "Checkout", active: ActiveCheckout, inactive: CheckoutIcon },
@@ -768,10 +847,15 @@ const isExportAllow = isValidSubscription && canReadTenant;
                     </Text>
                   </View>
                 )}
-                   {/* { customers?.listCustomers?.length > 0 && (
+                  { customers?.listCustomers?.length > 0 && (
         <View style={styles.filterRow}>
   <TouchableOpacity style={styles.filterChipActive}>
     <Text style={styles.filterChipTextActive}>All</Text>
+     <Image
+      source={DirectionImage}
+      style={styles.chipArrow}
+      resizeMode="contain"
+    />
   </TouchableOpacity>
 
 <TouchableOpacity style={styles.filterChip}>
@@ -802,7 +886,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
   </TouchableOpacity>
 </View>
                     )
-                  } */}
+                  } 
     
 
                 <ScrollView
@@ -1893,64 +1977,50 @@ const isExportAllow = isValidSubscription && canReadTenant;
                 </View>
               </View>
 
-              {/* STATUS DROPDOWN */}
-              <Text style={styles.label}>Status</Text>
-              <View style={{ position: "relative" }}>
-                <TouchableOpacity
-                  style={styles.dropdownBox}
-                  onPress={() => setShowStatusDropdown(!showStatusDropdown)}
-                >
-                  <Text style={styles.dropdownText}>{status}</Text>
-                  <Text style={styles.arrow}>⌄</Text>
-                </TouchableOpacity>
+             {renderDropdown(
+  "Tenants",
+  tenantFilter,
+  setTenantFilter,
+  ["Arun", "Allwin", ],
+  "tenant"
+)}
 
-                {showStatusDropdown && (
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView nestedScrollEnabled={true}>
-                      {["All", "Active", "In-Active", "Checked Out", "Notice"].map((v) => (
-                        <TouchableOpacity
-                          key={v}
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            setStatus(v);
-                            setShowStatusDropdown(false);
-                          }}
-                        >
-                          <Text style={styles.dropdownItemText}>{v}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
+{renderDropdown(
+  "View",
+  viewType,
+  setViewType,
+  ["List View", "Room View"],
+  "view"
+)}
 
-              {/* Date Range */}
-              <View style={styles.dateRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>From</Text>
-                  <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                    <Text>{formatDate(fromDate)}</Text>
-                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.calIcon} />
-                  </TouchableOpacity>
-                </View>
+{renderDropdown(
+  "Tenant Status",
+  tenantStatus,
+  setTenantStatus,
+  ["All", "Checkin", "Booking", "Checked Out", "Notice"],
+  "status"
+)}
 
-                <View style={{ width: 15 }} />
+{renderDropdown(
+  "Period",
+  period,
+  setPeriod,
+  ["Today", "This Week", "This Month", "Last Month"],
+  "period"
+)}
 
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>To</Text>
-                  <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                    <Text>{formatDate(toDate)}</Text>
-                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.calIcon} />
-                  </TouchableOpacity>
-                </View>
-              </View>
+{renderDropdown(
+  "Sharing Type",
+  sharingType,
+  setSharingType,
+  ["Single", "Double", "Triple"],
+  "sharing"
+)}
+            
 
-              {/* Quick Filter */}
-              <View style={styles.quickRow}>
-                <TouchableOpacity style={styles.quickBtn}><Text style={styles.quickText}>Today</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.quickBtn}><Text style={styles.quickText}>This Week</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.quickBtn}><Text style={styles.quickText}>This Month</Text></TouchableOpacity>
-              </View>
+             
+
+             
 
               {/* Buttons */}
               <View style={styles.bottomButtons}>
@@ -2200,7 +2270,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     elevation: 7,
     zIndex: 9999,
-    maxHeight: 150,
+    maxHeight: 130,
     overflow: "hidden",
   },
   menuBackdrop: {
@@ -2239,6 +2309,8 @@ const styles = StyleSheet.create({
 
 
   dropdownItem: {
+     flexDirection: "row",   
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
@@ -2246,6 +2318,7 @@ const styles = StyleSheet.create({
   dropdownItemText: {
     fontSize: 14,
     color: "#111",
+    flex: 1,
   },
 
 
@@ -2526,15 +2599,27 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
+  // dropdownBox: {
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   padding: 12,
+  //   borderRadius: 10,
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   alignItems: "center",
+  // },
+
   dropdownBox: {
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    padding: 12,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+  backgroundColor: "#F9FAFB",
+  borderRadius: 12,
+  padding: 14,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
+
 
   dropdownText: {
     color: "#111",
@@ -2789,6 +2874,8 @@ filterChip: {
 },
 
 filterChipActive: {
+  display:'flex',
+  flexDirection:'row',
   backgroundColor: "#E6F0FF",
   paddingVertical: 8,
   paddingHorizontal: 24,
@@ -2838,5 +2925,15 @@ dividerLine: {
    marginLeft: 55,
 
   // marginVertical: 8,
+},
+activeItem: {
+  backgroundColor: "#EEF2FF", // light blue
+  borderLeftWidth: 3,
+  borderLeftColor: "#1E45E1",
+},
+viewIcon: {
+  width: 18,
+  height: 18,
+  marginRight: 10,
 },
 });
