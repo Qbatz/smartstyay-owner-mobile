@@ -686,15 +686,6 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
             )}
 
 
-
-
-
-
-
-
-
-
-
             <Text style={styles.label}>Price  <Text style={{ color: "red" }}>*</Text></Text>
             <View ref={priceRef}>
               <TextInput

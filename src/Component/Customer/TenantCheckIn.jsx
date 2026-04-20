@@ -834,9 +834,21 @@ export default function TenantCheckIn({ navigation, route }) {
                             }}
                             onChangeText={(t) => {
                               // const onlyNumbers = t.replace(/[^0-9]/g, "");
-                              const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                              // const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
 
-                              updateAmount(item.id, onlyNumbers)
+                                         let cleaned = t.replace(/[^0-9.]/g, "");
+
+                      const parts = cleaned.split(".");
+
+                      if (parts.length > 2) {
+                        cleaned = parts[0] + "." + parts[1];
+                      }
+
+                      if (parts[1]?.length > 2) {
+                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                      }
+
+                              updateAmount(item.id, cleaned)
                             }
                             }
                           />

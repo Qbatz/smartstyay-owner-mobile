@@ -711,19 +711,7 @@ if (isEdit) {
   }
 }}
 
-//    onChangeText={(text) => {
-//   setDiscount(text);
 
-//   const num = Number(text);
-
-//   if (text && !isNaN(num) && num > 0) {
-//     setDiscountErr("");
-//   }
-
-//   if (text && (isNaN(num) || num <= 0)) {
-//     setDiscountErr("Enter valid discount");
-//   }
-// }}
   />
 
   <View style={styles.toggleBox}>

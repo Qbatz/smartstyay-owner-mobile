@@ -414,13 +414,42 @@ export default function BankingScreen() {
 
 
 
-  const handleAddBankAmount = (v) => {
-    if (!/^\d*$/.test(v)) return;
-    if (/^0+$/.test(v)) return;
+  // const handleAddBankAmount = (v) => {
+  //   if (!/^\d*$/.test(v)) return;
+  //   if (/^0+$/.test(v)) return;
 
-    setAddBankAmount(v);
-    setAmountError("");
-  };
+  //   setAddBankAmount(v);
+  //   setAmountError("");
+  // }
+
+const handleAddBankAmount = (v) => {
+  let cleaned = v.replace(/[^0-9.]/g, "");
+
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "." + parts[1];
+  }
+
+  if (parts[1]?.length > 2) {
+    cleaned = parts[0] + "." + parts[1].slice(0, 2);
+  }
+
+  const num = Number(cleaned);
+
+  if (cleaned && num === 0) {
+    setAddBankAmount(cleaned);
+    setAmountError("Amount must be greater than 0");
+    return;
+  }
+
+  if (cleaned && (isNaN(num) || num < 0)) {
+    setAmountError("Enter valid amount");
+    return;
+  }
+
+  setAddBankAmount(cleaned);
+  setAmountError("");
+};
 
   const closeAddBalancePopup = () => {
     setShowAddBalance(false);
@@ -432,34 +461,66 @@ export default function BankingScreen() {
 
 
 
-  const handleAddAmountSubmit = async () => {
-    if (!addBankAmount.trim()) {
-      setAmountError("Please Enter Amount");
-      return;
-    }
+  // const handleAddAmountSubmit = async () => {
+  //   if (!addBankAmount.trim()) {
+  //     setAmountError("Please Enter Amount");
+  //     return;
+  //   }
 
-    const res = await AddBankAmount(
-      activeHostelId,
-      selectedBankId,
-      addBankAmount
-    );
+  //   const res = await AddBankAmount(
+  //     activeHostelId,
+  //     selectedBankId,
+  //     addBankAmount
+  //   );
 
-    if (res.success) {
-      setModalType("success");
-      setModalMessage(res?.message || "Amount Added Successfully");
-      setShowSuccessModal(true);
+  //   if (res.success) {
+  //     setModalType("success");
+  //     setModalMessage(res?.message || "Amount Added Successfully");
+  //     setShowSuccessModal(true);
 
-      closeAddBalancePopup()
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1200);
+  //     closeAddBalancePopup()
+  //     setTimeout(() => {
+  //       setShowSuccessModal(false);
+  //     }, 1200);
 
-    } else {
-      setAmountError(res?.message);
-    }
-  };
+  //   } else {
+  //     setAmountError(res?.message);
+  //   }
+  // };
 
+const handleAddAmountSubmit = async () => {
+  const num = Number(addBankAmount);
 
+  if (!addBankAmount.trim()) {
+    setAmountError("Please Enter Amount");
+    return;
+  }
+
+  if (isNaN(num) || num <= 0) {
+    setAmountError("Amount must be greater than 0");
+    return;
+  }
+
+  const res = await AddBankAmount(
+    activeHostelId,
+    selectedBankId,
+    addBankAmount
+  );
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage(res?.message || "Amount Added Successfully");
+    setShowSuccessModal(true);
+
+    closeAddBalancePopup();
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1200);
+  } else {
+    setAmountError(res?.message);
+  }
+};
 
   const addBalanceTranslateY = useRef(new Animated.Value(0)).current;
 

@@ -203,7 +203,7 @@ export default function AssignTenant({ navigation, route }) {
     if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
     setExtraCharges(prev =>
-      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError:"" } : i))
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
     );
 
     setOpenDropdownId(null);
@@ -341,9 +341,9 @@ export default function AssignTenant({ navigation, route }) {
 
 
       if (!e.type) {
-         typeError = "Please select type";
+        typeError = "Please select type";
         valid = false;
-        return { ...e,typeError, titleError: "", amountError: "" };
+        return { ...e, typeError, titleError: "", amountError: "" };
       }
 
 
@@ -356,7 +356,7 @@ export default function AssignTenant({ navigation, route }) {
           valid = false;
         }
 
-        return { ...e,typeError:"", titleError: "", amountError };
+        return { ...e, typeError: "", titleError: "", amountError };
       }
 
       // ✅ CASE 3: Others -> reason + amount both mandatory
@@ -384,10 +384,10 @@ export default function AssignTenant({ navigation, route }) {
           valid = false;
         }
 
-        return { ...e,typeError, titleError, amountError };
+        return { ...e, typeError, titleError, amountError };
       }
 
-      return { ...e,typeError:"", titleError: "", amountError: "" };
+      return { ...e, typeError: "", titleError: "", amountError: "" };
     });
 
     setExtraCharges(updated);
@@ -630,7 +630,7 @@ export default function AssignTenant({ navigation, route }) {
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center',marginBottom:5 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
@@ -1136,7 +1136,7 @@ export default function AssignTenant({ navigation, route }) {
             {activeTab === "CheckIn" && (
               <View style={styles.nonRefund}>
                 <View style={styles.extraHeader}>
-                  <Text style={{ fontWeight: "600", color: "#444",marginBottom:1}}>Non Refundable Amount</Text>
+                  <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Non Refundable Amount</Text>
 
                   <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
                     <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
@@ -1217,7 +1217,24 @@ export default function AssignTenant({ navigation, route }) {
                             scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
                           }}
 
-                          onChangeText={(t) => updateAmount(item.id, t)}
+                          onChangeText={(t) => {
+
+                            let cleaned = t.replace(/[^0-9.]/g, "");
+
+                            const parts = cleaned.split(".");
+
+                            if (parts.length > 2) {
+                              cleaned = parts[0] + "." + parts[1];
+                            }
+
+                            if (parts[1]?.length > 2) {
+                              cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                            }
+
+                            updateAmount(item.id, cleaned)
+                          }
+
+                          }
                         />
                       )}
 
@@ -1227,9 +1244,9 @@ export default function AssignTenant({ navigation, route }) {
                       <ErrorMessage message={item.titleError} type="error" />
                     )}
 
-                     {item.typeError && (
-                        <ErrorMessage message={item.typeError} type="error" />
-                      )}
+                    {item.typeError && (
+                      <ErrorMessage message={item.typeError} type="error" />
+                    )}
 
                     {item.amountError && (
                       <ErrorMessage message={item.amountError} type="error" />
@@ -1454,7 +1471,7 @@ const styles = StyleSheet.create({
   backArrow: {
     fontSize: 18,
     fontWeight: "600",
-    marginLeft:4
+    marginLeft: 4
     // marginBottom: 5,
   },
 
@@ -1535,7 +1552,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 18,
     marginBottom: 18,
-    alignItems:"flex-end",
+    alignItems: "flex-end",
 
   },
 
