@@ -399,7 +399,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   };
 
   const updateAmount = (id, amount) => {
-    const onlyNum = amount.replace(/[^0-9]/g, "");
+    const onlyNum = amount.replace(/[^0-9.]/g, "")
     setExtraCharges((prev) =>
       prev.map((i) =>
         i.id === id ? { ...i, amount: onlyNum, amountError: "" } : i
@@ -407,9 +407,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
     );
   };
 
+  
+
   const removeCharge = (id) => {
     setExtraCharges((prev) => prev.filter((i) => i.id !== id));
-  };
+  }
 
   const selectType = (id, type) => {
     const maintenanceExists = extraCharges.some(
@@ -1350,7 +1352,24 @@ export default function FinalSettlementScreen({ navigation, route }) {
                           value={item.amount}
                           placeholder="Enter Amount"
                           keyboardType="numeric"
-                          onChangeText={(t) => updateAmount(item.id, t)}
+                          onChangeText={(t) => {
+
+                               let cleaned = t.replace(/[^0-9.]/g, "");
+
+                      const parts = cleaned.split(".");
+
+                      if (parts.length > 2) {
+                        cleaned = parts[0] + "." + parts[1];
+                      }
+
+                      if (parts[1]?.length > 2) {
+                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                      }
+              updateAmount(item?.id, cleaned)
+
+                          }
+                            
+                           }
                           onFocus={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({

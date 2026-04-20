@@ -207,20 +207,45 @@ useEffect(() => {
   };
 
   // 👉 amount change
-  const handlePaidAmountChange = (value) => {
-    setAmountError("");
+  // const handlePaidAmountChange = (value) => {
+  //   setAmountError("");
 
-    let num = Number(value);
-    if (isNaN(num)) num = 0;
+  //   let num = Number(value);
+  //   if (isNaN(num)) num = 0;
 
-    if (num > (normalizedBill?.dueAmount || 0)) {
-      num = normalizedBill?.dueAmount || 0;
-    }
+  //   if (num > (normalizedBill?.dueAmount || 0)) {
+  //     num = normalizedBill?.dueAmount || 0;
+  //   }
 
-    setPaidAmount(String(num));
-    setBalanceAmount((normalizedBill?.dueAmount || 0) - num);
-  };
+  //   setPaidAmount(String(num));
+  //   setBalanceAmount((normalizedBill?.dueAmount || 0) - num);
+  // };
 
+  const handlePaidAmountChange = (text) => {
+  setAmountError("");
+
+  let cleaned = text.replace(/[^0-9.]/g, "");
+
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "." + parts[1];
+  }
+
+  if (parts[1]?.length > 2) {
+    cleaned = parts[0] + "." + parts[1].slice(0, 2);
+  }
+
+  let num = parseFloat(cleaned);
+  if (isNaN(num)) num = 0;
+
+  if (num > (normalizedBill?.dueAmount || 0)) {
+    num = normalizedBill?.dueAmount || 0;
+    cleaned = String(num);
+  }
+
+  setPaidAmount(cleaned);
+  setBalanceAmount((normalizedBill?.dueAmount || 0) - num);
+};
 
     const handleTransactionChange = (text) => {
     const filteredText = text.replace(
