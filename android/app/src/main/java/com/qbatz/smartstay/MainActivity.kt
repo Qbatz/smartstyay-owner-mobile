@@ -28,7 +28,8 @@ class MainActivity : ReactActivity() {
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+//        super.onCreate(savedInstanceState)
+        super.onCreate(null)
         checkCameraPermission()
     }
 

@@ -130,7 +130,7 @@ export default function EBReadingTab(customerDetails) {
                   </View>
 
                   <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={RoomIcon} style={{ width: 21, height: 17, resizeMode: 'contain' }} />
+                    <Image source={BedIcon} style={{ width: 21, height: 17, resizeMode: 'contain' }} />
                     <Text numberOfLines={1} style={[styles.iconText, { flexShrink: 1 }]}> {item.bedName}</Text>
                   </View>
 
