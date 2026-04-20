@@ -292,6 +292,8 @@ export default function VendorsList({ navigation }) {
             </TouchableOpacity>
           </View>
 
+          <View style={{borderWidth:0.4,borderColor:'#E7E7E7',marginTop:15,marginHorizontal:5}}/>
+
           <View style={styles.infoRow}>
             <View style={styles.infoCol}>
               <Text style={styles.infoLabel}>Mail ID</Text>
