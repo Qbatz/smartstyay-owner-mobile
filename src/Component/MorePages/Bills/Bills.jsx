@@ -1198,18 +1198,44 @@ export default function BillsDesign({ route }) {
     console.log("res", res);
   }
 
-  const handlePaidAmountChange = (value) => {
+  // const handlePaidAmountChange = (value) => {
+  //   setAmountError("");
+
+  //   let num = Number(value);
+
+  //   if (isNaN(num)) num = 0;
+
+  //   if (num > (selectedBill?.dueAmount || 0)) {
+  //     num = selectedBill?.dueAmount || 0;
+  //   }
+
+  //   setPaidAmount(String(num));
+  //   setBalanceAmount((selectedBill?.dueAmount || 0) - num);
+  // }
+
+  const handlePaidAmountChange = (text) => {
     setAmountError("");
 
-    let num = Number(value);
+    let cleaned = text.replace(/[^0-9.]/g, "");
 
+    const parts = cleaned.split(".");
+    if (parts.length > 2) {
+      cleaned = parts[0] + "." + parts[1];
+    }
+
+    if (parts[1]?.length > 2) {
+      cleaned = parts[0] + "." + parts[1].slice(0, 2);
+    }
+
+    let num = parseFloat(cleaned);
     if (isNaN(num)) num = 0;
 
     if (num > (selectedBill?.dueAmount || 0)) {
       num = selectedBill?.dueAmount || 0;
+      cleaned = String(num);
     }
 
-    setPaidAmount(String(num));
+    setPaidAmount(cleaned);
     setBalanceAmount((selectedBill?.dueAmount || 0) - num);
   };
 
@@ -1946,7 +1972,7 @@ export default function BillsDesign({ route }) {
 
     navigation.navigate("CreateBills", {
       mode: "edit",
-      data: item,  
+      data: item,
     });
   }
 
@@ -2358,194 +2384,194 @@ export default function BillsDesign({ route }) {
           )}
 
 
-        <>
-          {showBillDetails && (
-            <View style={styles.sheetOverlay}>
+          <>
+            {showBillDetails && (
+              <View style={styles.sheetOverlay}>
 
-              <TouchableWithoutFeedback onPress={() => {
-                setShowBillDetails(false)
-                setShowPayments(!showPayments)
-              }}
-              >
-                <View style={{ flex: 1 }} />
-              </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={() => {
+                  setShowBillDetails(false)
+                  setShowPayments(!showPayments)
+                }}
+                >
+                  <View style={{ flex: 1 }} />
+                </TouchableWithoutFeedback>
 
-              <Animated.View
-                style={[
-                  styles.transactionSheet,
-                  {
-                    // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
-                    maxHeight: '95%',
-                    transform: [{ translateY: detailsSheetY }]
-                  }
-                ]}
-                {...billDetailsPan.panHandlers}
-              >
-                <View style={styles.sheetHandle} />
-
-
-
-                <ScrollView showsVerticalScrollIndicator={false}>
-
-                  <View style={styles.billHeaderRow}>
-                    <Text style={styles.billHeaderText}>Bill Details</Text>
+                <Animated.View
+                  style={[
+                    styles.transactionSheet,
+                    {
+                      // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                      maxHeight: '95%',
+                      transform: [{ translateY: detailsSheetY }]
+                    }
+                  ]}
+                  {...billDetailsPan.panHandlers}
+                >
+                  <View style={styles.sheetHandle} />
 
 
-                    <View style={{ display: 'flex', flexDirection: 'row' }}>
+
+                  <ScrollView showsVerticalScrollIndicator={false}>
+
+                    <View style={styles.billHeaderRow}>
+                      <Text style={styles.billHeaderText}>Bill Details</Text>
 
 
-                      <View
-                        style={[
-                          styles.statusBadge,
-                          { backgroundColor: BillsStatusStyle.bg },
-                        ]}
-                      >
+                      <View style={{ display: 'flex', flexDirection: 'row' }}>
+
+
                         <View
                           style={[
-                            styles.statusDot,
-                            { backgroundColor: BillsStatusStyle.dot },
-                          ]}
-                        />
-                        <Text
-                          style={[
-                            styles.statusText,
-                            { color: BillsStatusStyle.text },
+                            styles.statusBadge,
+                            { backgroundColor: BillsStatusStyle.bg },
                           ]}
                         >
-                          {selectedBill?.paymentStatus}
-                        </Text>
+                          <View
+                            style={[
+                              styles.statusDot,
+                              { backgroundColor: BillsStatusStyle.dot },
+                            ]}
+                          />
+                          <Text
+                            style={[
+                              styles.statusText,
+                              { color: BillsStatusStyle.text },
+                            ]}
+                          >
+                            {selectedBill?.paymentStatus}
+                          </Text>
+                        </View>
+
+
+                        {
+                          ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" && selectedBill?.invoiceType !== "Settlement")) && (
+                            <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
+                              onPress={() => openMenu(selectedBill)}>
+                              <Image
+                                source={Dots}
+                                style={{ width: 30, height: 30, }}
+                              />
+                            </TouchableOpacity>
+                          )}
                       </View>
-
-
-                      {
-                        ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" && selectedBill?.invoiceType !== "Settlement")) && (
-                          <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
-                            onPress={() => openMenu(selectedBill)}>
-                            <Image
-                              source={Dots}
-                              style={{ width: 30, height: 30, }}
-                            />
-                          </TouchableOpacity>
-                        )}
                     </View>
-                  </View>
 
-                  <View style={styles.userRow}>
-                    {selectedBill?.profilePic ? (
-                      <Image
-                        source={{ uri: selectedBill.profilePic }}
-                        style={styles.userImg}
-                      />
-                    ) : (
-                      <View style={styles.initialCircle}>
-                        <Text style={styles.initialText}>
-                          {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
-                        </Text>
+                    <View style={styles.userRow}>
+                      {selectedBill?.profilePic ? (
+                        <Image
+                          source={{ uri: selectedBill.profilePic }}
+                          style={styles.userImg}
+                        />
+                      ) : (
+                        <View style={styles.initialCircle}>
+                          <Text style={styles.initialText}>
+                            {selectedBill?.initials || selectedBill?.fullName?.slice(0, 2)?.toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+
+
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate("CustomerOverviewScreen", {
+                              customerId: selectedBill?.customerId,
+                              customer: selectedBill,
+                            })
+                          }
+                        >
+                          <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
+                        </TouchableOpacity>
+
+                        <View style={{ flexDirection: "row", marginTop: 4 }}>
+                          <View style={styles.invTypeBadge}>
+                            <Text style={styles.invTypeText}>{selectedBill?.invoiceType}</Text>
+                          </View>
+
+                          <Image source={Bills_Black_Icon} style={{
+                            width: 12,
+                            height: 12, marginTop: 5, marginRight: 5
+                          }} />
+                          <Text style={styles.billNumber}>{selectedBill?.invoiceNumber || "--"}</Text>
+                        </View>
+                      </View>
+                    </View>
+                    {(isPending || isPartial || partiallyRefund || pendingRefund) && (
+                      <View style={styles.actionRow}>
+
+                        <TouchableOpacity
+                          style={[styles.reminderBtn, !isExportAllow && { opacity: 0.4 }]}
+                          disabled={!isExportAllow}
+                          onPress={handleWhatsappShareBill}>
+                          <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                          <Text style={styles.reminderText}>Reminder </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[styles.callBtn, !isExportAllow && { opacity: 0.4 }]}
+                          disabled={!isExportAllow}
+                          onPress={() => {
+                            handleCallPhone(BillPdfdetails?.customerInfo?.customerMobileNo)
+                          }}>
+                          <Image source={Call} style={styles.actionIcon} />
+                          <Text style={styles.callText}>Call</Text>
+                        </TouchableOpacity>
+
                       </View>
                     )}
 
+                    <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Total Amount</Text>
+                      </View>
+                      <View>
+                        <View style={{ display: 'flex', flexDirection: 'column' }}>
+                          <Text style={styles.amountValue}>
+                            {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
+                            ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ? Number(BillPdfdetails?.invoiceInfo?.totalAmount).toFixed(2) : "0.00"}
+                          </Text>
+                          {isPaid && (
+                            <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate("CustomerOverviewScreen", {
-                            customerId: selectedBill?.customerId,
-                            customer: selectedBill,
-                          })
-                        }
-                      >
-                        <Text style={styles.userName}>{selectedBill?.fullName || "--"}</Text>
-                      </TouchableOpacity>
+                              <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
+                              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
 
-                      <View style={{ flexDirection: "row", marginTop: 4 }}>
-                        <View style={styles.invTypeBadge}>
-                          <Text style={styles.invTypeText}>{selectedBill?.invoiceType}</Text>
+                            </View>
+                          )}
                         </View>
 
-                        <Image source={Bills_Black_Icon} style={{
-                          width: 12,
-                          height: 12, marginTop: 5, marginRight: 5
-                        }} />
-                        <Text style={styles.billNumber}>{selectedBill?.invoiceNumber || "--"}</Text>
                       </View>
                     </View>
-                  </View>
-                  {(isPending || isPartial || partiallyRefund || pendingRefund) && (
-                    <View style={styles.actionRow}>
 
-                      <TouchableOpacity
-                        style={[styles.reminderBtn, !isExportAllow && { opacity: 0.4 }]}
-                        disabled={!isExportAllow}
-                        onPress={handleWhatsappShareBill}>
-                        <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                        <Text style={styles.reminderText}>Reminder </Text>
-                      </TouchableOpacity>
+                    {isDiscounted && (
+                      <View style={styles.discountCard}>
 
-                      <TouchableOpacity
-                        style={[styles.callBtn, !isExportAllow && { opacity: 0.4 }]}
-                        disabled={!isExportAllow}
-                        onPress={() => {
-                          handleCallPhone(BillPdfdetails?.customerInfo?.customerMobileNo)
-                        }}>
-                        <Image source={Call} style={styles.actionIcon} />
-                        <Text style={styles.callText}>Call</Text>
-                      </TouchableOpacity>
+                        {/* Actual Amount */}
+                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                          <Text style={styles.discountLabel}>Actual Amount</Text>
+                          <Text style={styles.discountValue}>
+                            ₹ {(
+                              (BillPdfdetails?.invoiceInfo?.totalAmount || 0) +
+                              (BillPdfdetails?.invoiceInfo?.discountAmount || 0)
+                            ).toFixed(2)}
+                          </Text>
+                        </View>
 
-                    </View>
-                  )}
-
-                  <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View>
-                      <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Total Amount</Text>
-                    </View>
-                    <View>
-                      <View style={{ display: 'flex', flexDirection: 'column' }}>
-                        <Text style={styles.amountValue}>
-                          {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
-                          ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ? Number(BillPdfdetails?.invoiceInfo?.totalAmount).toFixed(2) : "0.00"}
-                        </Text>
-                        {isPaid && (
-                          <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-
-                            <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
-                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
-
+                        {/* Discount */}
+                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={styles.discountLabel}>Discount</Text>
+                            <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
+                              <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
+                            </TouchableOpacity>
                           </View>
-                        )}
-                      </View>
+                          <Text style={styles.discountMinus}>
+                            - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
+                          </Text>
 
-                    </View>
-                  </View>
-
-                  {isDiscounted && (
-                    <View style={styles.discountCard}>
-
-                      {/* Actual Amount */}
-                      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={styles.discountLabel}>Actual Amount</Text>
-                        <Text style={styles.discountValue}>
-                          ₹ {(
-                            (BillPdfdetails?.invoiceInfo?.totalAmount || 0) +
-                            (BillPdfdetails?.invoiceInfo?.discountAmount || 0)
-                          ).toFixed(2)}
-                        </Text>
-                      </View>
-
-                      {/* Discount */}
-                      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
-                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                          <Text style={styles.discountLabel}>Discount</Text>
-                          <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
-                            <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
-                          </TouchableOpacity>
                         </View>
-                        <Text style={styles.discountMinus}>
-                          - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
-                        </Text>
 
-                      </View>
-
-                      {/* <TouchableOpacity
+                        {/* <TouchableOpacity
     onPress={() => { 
         setShowMenu(false);
         setShowBillDetails(false)
@@ -2563,361 +2589,361 @@ export default function BillsDesign({ route }) {
     <Text>Delete</Text>
     </TouchableOpacity> */}
 
-                      {/* Badge */}
-                      <View style={styles.discountBadge}>
-                        <Text style={styles.discountBadgeText}>
-                          ✔ Discount Applied
-                        </Text>
+                        {/* Badge */}
+                        <View style={styles.discountBadge}>
+                          <Text style={styles.discountBadgeText}>
+                            ✔ Discount Applied
+                          </Text>
+                        </View>
+
+                      </View>
+                    )}
+                    {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
+                      <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>{pay?.description ?? "N/A"}</Text>
+                        </View>
+                        <View>
+                          <Text style={styles.amountValue}>
+                            ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+
+
+
+                    {(isPartial || partiallyRefund) && (
+                      <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={[
+                              styles.amountValue,
+                              { color: "#FF0000" },
+                            ]}
+                          >
+                            ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0}
+                          </Text>
+                        </View>
                       </View>
 
-                    </View>
-                  )}
-                  {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
-                    <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <View>
-                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>{pay?.description ?? "N/A"}</Text>
-                      </View>
-                      <View>
-                        <Text style={styles.amountValue}>
-                          ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
+                    )}
 
 
 
-                  {(isPartial || partiallyRefund) && (
-                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <View>
-                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
-                      </View>
-                      <View>
-                        <Text
-                          style={[
-                            styles.amountValue,
-                            { color: "#FF0000" },
-                          ]}
+
+                    {(isPaid || isPartial) && BillPdfdetails?.paymentHistory?.length > 0 && (
+                      <View style={{ marginTop: 25 }}>
+                        <TouchableOpacity
+                          onPress={() => setShowPayments(!showPayments)}
                         >
-                          ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0}
-                        </Text>
+                          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+
+                            <Text style={styles.paymentHeaderText}>
+                              Payments Made
+                            </Text>
+
+
+
+
+                            <Image
+                              source={DownArrow}
+                              style={{ width: 22, height: 22, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
+                            />
+
+                          </View>
+                        </TouchableOpacity>
+                        {showPayments && (
+                          <View style={{ marginTop: 10 }}>
+                            {BillPdfdetails?.paymentHistory?.map((pay, index) => (
+                              <View key={index} style={styles.paymentCard}>
+
+                                <View style={styles.paymentTopRow}>
+                                  <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)} style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
+                                      #{pay?.referenceNumber}
+                                    </Text>
+                                    <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 }} />
+                                  </TouchableOpacity>
+
+                                  <Text style={styles.paymentAmount}>
+                                    ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+                                  </Text>
+                                </View>
+
+                                <View style={styles.divider} />
+
+                                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1, }}>
+                                  <View style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> Date</Text>
+                                  </View>
+                                  <View>
+                                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                      {pay?.date ?? "N/A"}
+                                    </Text>
+                                  </View>
+                                </View>
+
+
+
+                                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                  <View>
+                                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
+                                  </View>
+                                  <View>
+                                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                      {pay?.paymentMode ?? "N/A"}
+                                    </Text>
+                                  </View>
+                                </View>
+                                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                  <View>
+                                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
+                                  </View>
+                                  <View>
+                                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                      {pay?.referenceNumber ?? "N/A"}
+                                    </Text>
+                                  </View>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+
                       </View>
-                    </View>
-
-                  )}
+                    )}
 
 
+                    {(selectedBill?.paymentStatus === "Partially Refunded" || selectedBill?.paymentStatus === "Refunded") && BillPdfdetails?.refundHistory?.length > 0 && (
+                      <View style={{ marginTop: 25 }}>
 
-
-                  {(isPaid || isPartial) && BillPdfdetails?.paymentHistory?.length > 0 && (
-                    <View style={{ marginTop: 25 }}>
-                      <TouchableOpacity
-                        onPress={() => setShowPayments(!showPayments)}
-                      >
                         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-
                           <Text style={styles.paymentHeaderText}>
                             Payments Made
                           </Text>
 
-
-
-
-                          <Image
-                            source={DownArrow}
-                            style={{ width: 22, height: 22, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
-                          />
-
+                          <TouchableOpacity
+                            style={styles.paymentHeader}
+                            onPress={() => setShowPayments(!showPayments)}
+                          >
+                            <Image
+                              source={DownArrow}
+                              style={{ width: 18, height: 18, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
+                            />
+                          </TouchableOpacity>
                         </View>
-                      </TouchableOpacity>
-                      {showPayments && (
-                        <View style={{ marginTop: 10 }}>
-                          {BillPdfdetails?.paymentHistory?.map((pay, index) => (
-                            <View key={index} style={styles.paymentCard}>
 
-                              <View style={styles.paymentTopRow}>
-                                <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)} style={{ display: 'flex', flexDirection: 'row' }}>
-                                  <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
-                                    #{pay?.referenceNumber}
+                        {showPayments && (
+                          <View style={{ marginTop: 10 }}>
+                            {BillPdfdetails?.refundHistory?.map((pay, index) => (
+                              <View key={index} style={styles.paymentCard}>
+
+                                <TouchableOpacity style={styles.paymentTopRow}>
+                                  <Text >
+                                    #{BillPdfdetails?.invoiceNumber}
+                                    <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
                                   </Text>
-                                  <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 }} />
+
+                                  <Text style={styles.paymentAmount}>
+                                    ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+                                  </Text>
                                 </TouchableOpacity>
 
-                                <Text style={styles.paymentAmount}>
-                                  ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
-                                </Text>
-                              </View>
+                                <View style={styles.divider} />
 
-                              <View style={styles.divider} />
-
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1, }}>
-                                <View style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> Date</Text>
+                                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                  <View>
+                                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> date</Text>
+                                  </View>
+                                  <View>
+                                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                      {pay?.date ?? "N/A"}
+                                    </Text>
+                                  </View>
                                 </View>
-                                <View>
-                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.date ?? "N/A"}
-                                  </Text>
+                                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                  <View>
+                                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
+                                  </View>
+                                  <View>
+                                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                      {pay?.paymentMode ?? "N/A"}
+                                    </Text>
+                                  </View>
                                 </View>
-                              </View>
-
-
-
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <View>
-                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
-                                </View>
-                                <View>
-                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.paymentMode ?? "N/A"}
-                                  </Text>
-                                </View>
-                              </View>
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <View>
-                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
-                                </View>
-                                <View>
-                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.referenceNumber ?? "N/A"}
-                                  </Text>
+                                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                  <View>
+                                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
+                                  </View>
+                                  <View>
+                                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                                      {pay?.referenceNumber ?? "N/A"}
+                                    </Text>
+                                  </View>
                                 </View>
                               </View>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-
-                    </View>
-                  )}
-
-
-                  {(selectedBill?.paymentStatus === "Partially Refunded" || selectedBill?.paymentStatus === "Refunded") && BillPdfdetails?.refundHistory?.length > 0 && (
-                    <View style={{ marginTop: 25 }}>
-
-                      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={styles.paymentHeaderText}>
-                          Payments Made
-                        </Text>
-
-                        <TouchableOpacity
-                          style={styles.paymentHeader}
-                          onPress={() => setShowPayments(!showPayments)}
-                        >
-                          <Image
-                            source={DownArrow}
-                            style={{ width: 18, height: 18, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
-                          />
-                        </TouchableOpacity>
-                      </View>
-
-                      {showPayments && (
-                        <View style={{ marginTop: 10 }}>
-                          {BillPdfdetails?.refundHistory?.map((pay, index) => (
-                            <View key={index} style={styles.paymentCard}>
-
-                              <TouchableOpacity style={styles.paymentTopRow}>
-                                <Text >
-                                  #{BillPdfdetails?.invoiceNumber}
-                                  <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
-                                </Text>
-
-                                <Text style={styles.paymentAmount}>
-                                  ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
-                                </Text>
-                              </TouchableOpacity>
-
-                              <View style={styles.divider} />
-
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <View>
-                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> date</Text>
-                                </View>
-                                <View>
-                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.date ?? "N/A"}
-                                  </Text>
-                                </View>
-                              </View>
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <View>
-                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
-                                </View>
-                                <View>
-                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.paymentMode ?? "N/A"}
-                                  </Text>
-                                </View>
-                              </View>
-                              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <View>
-                                  <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
-                                </View>
-                                <View>
-                                  <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                    {pay?.referenceNumber ?? "N/A"}
-                                  </Text>
-                                </View>
-                              </View>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-
-                    </View>
-                  )}
-
-
-
-
-                  <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View>
-                      <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Invoice date</Text>
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                        {BillPdfdetails?.invoiceDate ?? "--"}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {!isPaid && (
-                    <View
-                      style={{
-                        marginTop: 10,
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Due date</Text>
-
-                      <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                          {BillPdfdetails?.dueDate ?? "--"}
-                        </Text>
-
-                        {overdueDays > 0 && (
-                          <Text
-                            style={{
-                              color: "#F97316",
-                              fontSize: 12,
-                              marginTop: 4,
-                            }}
-                          >
-                            Overdue by {overdueDays}{" "}
-                            {overdueDays === 1 ? "Day" : "Days"}
-                          </Text>
+                            ))}
+                          </View>
                         )}
+
+                      </View>
+                    )}
+
+
+
+
+                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Invoice date</Text>
+                      </View>
+                      <View>
+                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                          {BillPdfdetails?.invoiceDate ?? "--"}
+                        </Text>
                       </View>
                     </View>
-                  )}
 
-
-
-
-                </ScrollView>
-
-
-
-
-
-                <View style={styles.fixedBottomBar}>
-
-                  {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
-                    <>
-                      <TouchableOpacity
-                        style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
-                        disabled={!isExportAllow}
-                        onPress={handleshareBill}
+                    {!isPaid && (
+                      <View
+                        style={{
+                          marginTop: 10,
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                        }}
                       >
-                        <Image source={ShareIcon} style={styles.iconDark} />
-                        <Text style={styles.paidText}>Share</Text>
-                      </TouchableOpacity>
+                        <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Due date</Text>
 
-                      <TouchableOpacity
-                        style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
-                        disabled={!isExportAllow}
-                        onPress={handleDownloadBillsPdf}>
-                        <Image source={DownloadIcon} style={styles.iconDark} />
-                        <Text style={styles.paidText}>Download</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                            {BillPdfdetails?.dueDate ?? "--"}
+                          </Text>
 
-                  {(isPending || isPartial) && (
-                    <>
-                      <View style={styles.bottomActionItem}>
+                          {overdueDays > 0 && (
+                            <Text
+                              style={{
+                                color: "#F97316",
+                                fontSize: 12,
+                                marginTop: 4,
+                              }}
+                            >
+                              Overdue by {overdueDays}{" "}
+                              {overdueDays === 1 ? "Day" : "Days"}
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                    )}
+
+
+
+
+                  </ScrollView>
+
+
+
+
+
+                  <View style={styles.fixedBottomBar}>
+
+                    {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
+                      <>
                         <TouchableOpacity
-                          style={[styles.iconBtn, !isExportAllow && { opacity: 0.4 }]}
+                          style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
                           disabled={!isExportAllow}
                           onPress={handleshareBill}
                         >
                           <Image source={ShareIcon} style={styles.iconDark} />
+                          <Text style={styles.paidText}>Share</Text>
                         </TouchableOpacity>
-                        <Text style={styles.bottomText}>Share</Text>
-                      </View>
 
-                      <View style={styles.bottomActionItem}>
                         <TouchableOpacity
-                          style={[styles.downloadBtn, !isExportAllow && { opacity: 0.4 }]}
-                          disabled={!isExportAllow} onPress={handleDownloadBillsPdf}>
+                          style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
+                          disabled={!isExportAllow}
+                          onPress={handleDownloadBillsPdf}>
                           <Image source={DownloadIcon} style={styles.iconDark} />
+                          <Text style={styles.paidText}>Download</Text>
                         </TouchableOpacity>
-                        <Text style={styles.bottomText}>Download</Text>
-                      </View>
+                      </>
+                    )}
 
-                      <View style={styles.bottomActionItem}>
-                        <TouchableOpacity
-                          style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
-                          onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
-                        >
-                          <Image source={PlusIcon} style={styles.iconWhite} />
-                        </TouchableOpacity>
-                        <Text style={styles.bottomText}>Record</Text>
-                      </View>
-                    </>
-                  )}
+                    {(isPending || isPartial) && (
+                      <>
+                        <View style={styles.bottomActionItem}>
+                          <TouchableOpacity
+                            style={[styles.iconBtn, !isExportAllow && { opacity: 0.4 }]}
+                            disabled={!isExportAllow}
+                            onPress={handleshareBill}
+                          >
+                            <Image source={ShareIcon} style={styles.iconDark} />
+                          </TouchableOpacity>
+                          <Text style={styles.bottomText}>Share</Text>
+                        </View>
 
-                </View>
+                        <View style={styles.bottomActionItem}>
+                          <TouchableOpacity
+                            style={[styles.downloadBtn, !isExportAllow && { opacity: 0.4 }]}
+                            disabled={!isExportAllow} onPress={handleDownloadBillsPdf}>
+                            <Image source={DownloadIcon} style={styles.iconDark} />
+                          </TouchableOpacity>
+                          <Text style={styles.bottomText}>Download</Text>
+                        </View>
 
+                        <View style={styles.bottomActionItem}>
+                          <TouchableOpacity
+                            style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                            onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
+                          >
+                            <Image source={PlusIcon} style={styles.iconWhite} />
+                          </TouchableOpacity>
+                          <Text style={styles.bottomText}>Record</Text>
+                        </View>
+                      </>
+                    )}
 
-              </Animated.View>
-            </View>
-          )}
-
-         <DiscountActionSheet
-  visible={showDiscountSheet}
-  onClose={() => setShowDiscountSheet(false)}
-  discountAmount={BillPdfdetails?.invoiceInfo?.discountAmount || 0}
-  totalAmount = {BillPdfdetails?.invoiceInfo?.totalAmount || 0}
-  hostelId={selectedBill?.hostelId}
-  invoiceId={selectedBill?.invoiceId}
-  onEdit={() => {
-    navigation.navigate("DiscountInvoice", {
-      bill: selectedBill,
-      isEdit: true,
-        discountAmount: BillPdfdetails?.invoiceInfo?.discountAmount,
-  discountPercentage: BillPdfdetails?.invoiceInfo?.discountPercentage,
-  totalAmount: BillPdfdetails?.invoiceInfo?.subTotal, 
-  DiscountReason : BillPdfdetails?.invoiceInfo?.discountReason
-    });
-  }}
-
-  onEditSuccess={()=>{
-    setShowBillDetails(false); 
-  }}
+                  </View>
 
 
-  onSuccess={() => {
-    setShowBillDetails(false); // 🔥 close parent sheet
-    setShowSuccessModal(true);
-    setModalType("success");
-    setModalMessage("Discount removed successfully");
+                </Animated.View>
+              </View>
+            )}
 
-    setTimeout(() => setShowSuccessModal(false), 1500);
-  }}
-/>
+            <DiscountActionSheet
+              visible={showDiscountSheet}
+              onClose={() => setShowDiscountSheet(false)}
+              discountAmount={BillPdfdetails?.invoiceInfo?.discountAmount || 0}
+              totalAmount={BillPdfdetails?.invoiceInfo?.totalAmount || 0}
+              hostelId={selectedBill?.hostelId}
+              invoiceId={selectedBill?.invoiceId}
+              onEdit={() => {
+                navigation.navigate("DiscountInvoice", {
+                  bill: selectedBill,
+                  isEdit: true,
+                  discountAmount: BillPdfdetails?.invoiceInfo?.discountAmount,
+                  discountPercentage: BillPdfdetails?.invoiceInfo?.discountPercentage,
+                  totalAmount: BillPdfdetails?.invoiceInfo?.subTotal,
+                  DiscountReason: BillPdfdetails?.invoiceInfo?.discountReason
+                });
+              }}
+
+              onEditSuccess={() => {
+                setShowBillDetails(false);
+              }}
+
+
+              onSuccess={() => {
+                setShowBillDetails(false); // 🔥 close parent sheet
+                setShowSuccessModal(true);
+                setModalType("success");
+                setModalMessage("Discount removed successfully");
+
+                setTimeout(() => setShowSuccessModal(false), 1500);
+              }}
+            />
           </>
 
           {showReceiptDetails && (
@@ -3366,7 +3392,7 @@ export default function BillsDesign({ route }) {
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                     disabled={!canUpdateInvoice}
-                    onPress={()=> handleEditBill(selectedBill)} >
+                    onPress={() => handleEditBill(selectedBill)} >
                     <Image
                       source={require("../../../Assets/Images/edit.png")}
                       style={styles.popupIcon}
@@ -4030,7 +4056,45 @@ export default function BillsDesign({ route }) {
                   <Text style={styles.label}>
                     Refund amount <Text style={{ color: "red", fontSize: 16 }}>*</Text>
                   </Text>
+
                   <TextInput
+                    style={styles.input}
+                    placeholder="Enter Amount"
+                    keyboardType="numeric"
+                    value={refundAmount}
+                    onChangeText={(val) => {
+
+                      let cleaned = val.replace(/[^0-9.]/g, "");
+
+                      const parts = cleaned.split(".");
+                      if (parts.length > 2) {
+                        cleaned = parts[0] + "." + parts[1];
+                      }
+
+                      if (parts[1]?.length > 2) {
+                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                      }
+
+                      const num = Number(cleaned);
+                      const max = Math.abs(
+                        Number(refundInitDetails?.pendingRefund || 0)
+                      );
+
+                      if (num > max) {
+                        setRefundAmountError(`Amount cannot exceed ₹${max}`);
+                        return;
+                      }
+
+                      setRefundAmount(cleaned);
+
+                      if (cleaned && (!num || num <= 0)) {
+                        setRefundAmountError("Enter valid amount");
+                      } else {
+                        setRefundAmountError("");
+                      }
+                    }}
+                  />
+                  {/* <TextInput
                     style={styles.input}
                     placeholder="Enter Amount"
                     keyboardType="numeric"
@@ -4052,7 +4116,7 @@ export default function BillsDesign({ route }) {
                       setRefundAmount(numericValue);
                       setRefundAmountError("");
                     }}
-                  />
+                  /> */}
 
 
                   {refundAmountError && (

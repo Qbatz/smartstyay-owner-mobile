@@ -33,7 +33,7 @@ export default function BookingCheckIn({ navigation, route }) {
     const { customerId, customer } = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
-    
+
     const [tab, setTab] = useState("long");
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
@@ -357,8 +357,8 @@ export default function BookingCheckIn({ navigation, route }) {
                 //     return { ...e, titleError: "", amountError: "" };
                 // }
 
-                if(!titleFilled && !amountFilled){
-                    titleError= "Please enter reason";
+                if (!titleFilled && !amountFilled) {
+                    titleError = "Please enter reason";
                     valid = false;
                 }
 
@@ -509,7 +509,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         keyboardDismissMode="on-drag"
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{
-                            flexGrow:1,
+                            flexGrow: 1,
                             paddingBottom: 80, // ✅ button row height + extra space
                         }}
                     >
@@ -794,8 +794,19 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         keyboardType="numeric"
                                                         value={item.amount}
                                                         onChangeText={(t) => {
-                                                           const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
-                                                            updateAmount(item.id, onlyNumbers)
+
+                                                            let cleaned = t.replace(/[^0-9.]/g, "");
+
+                                                            const parts = cleaned.split(".");
+
+                                                            if (parts.length > 2) {
+                                                                cleaned = parts[0] + "." + parts[1];
+                                                            }
+
+                                                            if (parts[1]?.length > 2) {
+                                                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                            }
+                                                            updateAmount(item.id, cleaned)
                                                         }
                                                         }
 
@@ -851,9 +862,9 @@ export default function BookingCheckIn({ navigation, route }) {
 
                         {tab === "short" && (
 
-                            <View style={{justifyContent:'center',alignItems:'center',flex:1}}>
-                                <Image source={CommingSoon} style={{width:315,height:220,resizeMode:'contain'}}/>
-                                <Text style={{fontSize:16,fontWeight:600}}>Comming Soon</Text></View>
+                            <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                                <Image source={CommingSoon} style={{ width: 315, height: 220, resizeMode: 'contain' }} />
+                                <Text style={{ fontSize: 16, fontWeight: 600 }}>Comming Soon</Text></View>
                         )}
                     </ScrollView>
                     {tab === "long" && (

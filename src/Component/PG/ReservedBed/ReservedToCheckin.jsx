@@ -318,8 +318,8 @@ export default function ReserveToCheckin({ route, navigation }) {
           </TouchableOpacity>
 
           <Text style={styles.roomInfo}>
-            {selectedBed?.floorName} |
-            Room No {selectedBed?.roomName} |{" "}
+            {selectedBed?.floorName} | {" "}
+             {selectedBed?.roomName} | {" "}
             {selectedBed?.bedName}
           </Text>
 
@@ -543,9 +543,19 @@ export default function ReserveToCheckin({ route, navigation }) {
                         value={item.amount}
                         onChangeText={(t) => {
                           // const onlyNum = t.replace(/[^0-9]/g, "")
-                           const onlyNum = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                                   let cleaned = t.replace(/[^0-9.]/g, "");
+
+                      const parts = cleaned.split(".");
+
+                      if (parts.length > 2) {
+                        cleaned = parts[0] + "." + parts[1];
+                      }
+
+                      if (parts[1]?.length > 2) {
+                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                      }
                        
-                          updateAmount(item.id, onlyNum)
+                          updateAmount(item.id, cleaned)
 
                         }
                         }

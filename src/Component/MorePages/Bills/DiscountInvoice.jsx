@@ -56,6 +56,7 @@ const reasonParam = route?.params?.DiscountReason;
 const [discount, setDiscount] = useState("");
 const [reason, setReason] = useState("");
 const [showReasonDropdown, setShowReasonDropdown] = useState(false);
+const [isCustomReason, setIsCustomReason] = useState(false);
 
 const [reasonErr, setReasonErr] = useState("")
 const [discountErr, setDiscountErr] = useState("")
@@ -66,6 +67,7 @@ const reasons = [
   "Service Issue",
   "Partial Stay",
   "Special Approval",
+   "Other",
 ];
 
 const invoiceAmount = Number(
@@ -148,10 +150,21 @@ useEffect(() => {
     setInitialDiscount(formattedAmount);
     setInitialType("Amount");
 
+    // if (reasonParam) {
+    //   setReason(reasonParam);
+    //   setInitialReason(reasonParam);
+    // }
     if (reasonParam) {
-      setReason(reasonParam);
-      setInitialReason(reasonParam);
-    }
+  setReason(reasonParam);
+  setInitialReason(reasonParam);
+
+  
+  if (!reasons.includes(reasonParam)) {
+    setIsCustomReason(true)
+  } else {
+    setIsCustomReason(false);
+  }
+}
   }
 }, [discountAmountParam, discountPercentageParam, reasonParam]);
 
@@ -482,18 +495,108 @@ if (isEdit) {
   Reason for Discount <Text style={{ color: "red" }}>*</Text>
 </Text>
 
-<TouchableOpacity
+{/* <TouchableOpacity
   style={styles.customerdropdownBox}
-  onPress={() => setShowReasonDropdown((v) => !v)}
+  onPress={() => {
+  if (item === "Other") {
+    setReason("");
+    setIsCustomReason(true)
+  } else {
+    setReason(item);
+    setIsCustomReason(false);
+  }
+
+  setShowReasonDropdown(false);
+  setReasonErr("");
+}}
 >
   <Text style={{ color: reason ? "#000" : "#9CA3AF" }}>
     {reason || "Select Reason"}
   </Text>
 
   <Image source={DownArrow} style={styles.arrowIcon} />
-</TouchableOpacity>
+</TouchableOpacity> */}
 
-{showReasonDropdown && (
+
+{!isCustomReason ? (
+  <>
+    <TouchableOpacity
+      style={styles.customerdropdownBox}
+      onPress={() => setShowReasonDropdown((v) => !v)}
+    >
+      <Text style={{ color: reason ? "#000" : "#9CA3AF" }}>
+        {reason || "Select Reason"}
+      </Text>
+
+      <Image source={DownArrow} style={styles.arrowIcon} />
+    </TouchableOpacity>
+
+    {showReasonDropdown && (
+      <View style={styles.customerDropdownMenu}>
+        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+          {reasons.map((item, index) => {
+            const isSelected = reason === item;
+
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.customerOption,
+                  isSelected && styles.customerOptionSelected,
+                ]}
+                onPress={() => {
+                  if (item === "Other") {
+                    setReason("");
+                    setIsCustomReason(true);
+                  } else {
+                    setReason(item);
+                    setIsCustomReason(false);
+                  }
+
+                  setShowReasonDropdown(false);
+                  setReasonErr("");
+                }}
+              >
+                <Text
+                  style={[
+                    styles.customerOptionText,
+                    isSelected && styles.customerOptionTextSelected,
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+    )}
+  </>
+) : (
+  // ✅ CUSTOM INPUT MODE
+  <View style={styles.customInputBox}>
+    <TextInput
+      style={{ flex: 1 }}
+      placeholder="Enter reason"
+      value={reason}
+      onChangeText={(text) => {
+        setReason(text);
+        if (text) setReasonErr("");
+      }}
+    />
+
+    {/* ❌ DELETE ICON */}
+    <TouchableOpacity
+      onPress={() => {
+        setReason("");
+        setIsCustomReason(false); // back to dropdown
+      }}
+    >
+      <Text style={{ color: "red", fontSize: 18 }}>✕</Text>
+    </TouchableOpacity>
+  </View>
+)}
+{/* {showReasonDropdown && (
   <View style={styles.customerDropdownMenu}>
     <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
       {reasons.map((item, index) => {
@@ -525,7 +628,7 @@ if (isEdit) {
       })}
     </ScrollView>
   </View>
-)}
+)} */}
  {reasonErr && (
                     <ErrorMessage message={reasonErr} type="error" />
                   )}
@@ -583,15 +686,17 @@ if (isEdit) {
     autoFocus={true}
     value={discount}
     onChangeText={(text) => {
-  // ✅ allow only numbers + dot
-  const cleaned = text.replace(/[^0-9]/g, "");
-  // let cleaned = text.replace(/[^0-9.]/g, "");
+   let cleaned = text.replace(/[^0-9.]/g, "");
 
-  // ✅ prevent multiple dots
-  const parts = cleaned.split(".");
-  if (parts.length > 2) {
-    cleaned = parts[0] + "." + parts[1];
-  }
+                      const parts = cleaned.split(".");
+
+                      if (parts.length > 2) {
+                        cleaned = parts[0] + "." + parts[1];
+                      }
+
+                      if (parts[1]?.length > 2) {
+                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                      }
 
   setDiscount(cleaned);
 
@@ -605,19 +710,8 @@ if (isEdit) {
     setDiscountErr("Enter valid discount");
   }
 }}
-//    onChangeText={(text) => {
-//   setDiscount(text);
 
-//   const num = Number(text);
 
-//   if (text && !isNaN(num) && num > 0) {
-//     setDiscountErr("");
-//   }
-
-//   if (text && (isNaN(num) || num <= 0)) {
-//     setDiscountErr("Enter valid discount");
-//   }
-// }}
   />
 
   <View style={styles.toggleBox}>
@@ -631,6 +725,8 @@ if (isEdit) {
         setDiscountType("Amount");
         setDiscountErr("")
       }}
+
+      
     >
       <Text
         style={
@@ -1025,4 +1121,16 @@ arrowIcon: {
   height: 18,
   tintColor: "#6A6A6A",
 },
+customInputBox: {
+  borderWidth: 1,
+  borderColor: "#D4D4D4",
+  borderRadius: 10,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  marginTop: 6,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
 });
