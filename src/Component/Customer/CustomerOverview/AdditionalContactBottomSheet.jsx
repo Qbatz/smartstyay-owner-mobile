@@ -8,7 +8,7 @@ import {
   Dimensions,
   TextInput,
   ScrollView,
-  BackHandler, Keyboard , Image
+  BackHandler, Keyboard, Image
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -78,31 +78,11 @@ export default function AdditionalContactBottomSheet({
     "Other",
   ];
 
-const openSheet = () => {
-  Animated.spring(translateY, {
-    toValue: 0,
-    useNativeDriver: true,
-  }).start();
-      setFullName("");
-    setRelationship("");
-    setOccupation("");
-    setMobile("");
-
-    setNameErr("");
-    setRelationErr("");
-    setOccupationErr("");
-    setMobileErr("");
-    setFormErr("");
-};
-
-
- const closeSheet = () => {
-  Animated.timing(translateY, {
-    toValue: SCREEN_HEIGHT,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => {
-    // ✅ reset AFTER close animation
+  const openSheet = () => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
     setFullName("");
     setRelationship("");
     setOccupation("");
@@ -113,10 +93,30 @@ const openSheet = () => {
     setOccupationErr("");
     setMobileErr("");
     setFormErr("");
+  };
 
-    onClose();
-  });
-};
+
+  const closeSheet = () => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // ✅ reset AFTER close animation
+      setFullName("");
+      setRelationship("");
+      setOccupation("");
+      setMobile("");
+
+      setNameErr("");
+      setRelationErr("");
+      setOccupationErr("");
+      setMobileErr("");
+      setFormErr("");
+
+      onClose();
+    });
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -174,21 +174,21 @@ const openSheet = () => {
     }
   }, [ParticularcustomerDetails]);
 
-useEffect(() => {
-  if (visible) {
-    openSheet();
+  useEffect(() => {
+    if (visible) {
+      openSheet();
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        closeSheet();
-        return true;
-      }
-    );
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          closeSheet();
+          return true;
+        }
+      );
 
-    return () => backHandler.remove();
-  }
-}, [visible]);
+      return () => backHandler.remove();
+    }
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -225,10 +225,10 @@ useEffect(() => {
       valid = false;
     }
     else if (mobile === "0000000000") {
-  setMobileErr("All digits cannot be zero");
-  valid = false;
-}
-     else {
+      setMobileErr("All digits cannot be zero");
+      valid = false;
+    }
+    else {
       setMobileErr("");
     }
 
@@ -236,19 +236,19 @@ useEffect(() => {
   };
 
   const isChanged = () => {
-  if (!initialState) return true;
+    if (!initialState) return true;
 
-  return (
-    fullName.trim() !== initialState.fullName ||
-    relationship.trim() !== initialState.relationship ||
-    occupation.trim() !== initialState.occupation ||
-    mobile.trim() !== initialState.mobile
-  );
-};
+    return (
+      fullName.trim() !== initialState.fullName ||
+      relationship.trim() !== initialState.relationship ||
+      occupation.trim() !== initialState.occupation ||
+      mobile.trim() !== initialState.mobile
+    );
+  };
 
 
-console.log("occupation", occupation)
-console.log("relationship", relationship)
+  console.log("occupation", occupation)
+  console.log("relationship", relationship)
 
 
   const handleSave = async () => {
@@ -269,7 +269,7 @@ console.log("relationship", relationship)
     };
 
     console.log("payload", payload);
-    
+
 
     const res = await AddAdditionalContacts(
       activeHostelId,
@@ -295,7 +295,7 @@ console.log("relationship", relationship)
       setModalType("error");
       setShowSuccess(true);
 
-            setTimeout(() => {
+      setTimeout(() => {
         setShowSuccess(false);
       }, 1200);
 
@@ -344,14 +344,18 @@ console.log("relationship", relationship)
           {/* Name */}
           <Text style={styles.label}>Guardian Full Name <Text style={{ color: "red" }}>*</Text></Text>
           <TextInput
+            style={styles.input}
             placeholder="Enter name"
             value={fullName}
-            onChangeText={(t) =>{ 
-              setFullName(t)
+            onChangeText={(t) => {
+
+              const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+
+              setFullName(cleaned);
               setNameErr("")
               setFormErr("")
             }}
-            style={styles.input}
+
           />
 
           {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
@@ -367,21 +371,25 @@ console.log("relationship", relationship)
               <TextInput
                 placeholder="Select Relationship"
                 value={relationship}
-                editable={isRelationOther} // 🔥 only editable if "Other"
-               onChangeText={(t) => {
-  setRelationship(t);
-  setRelationErr("");
-  setFormErr("");
-}}
+                editable={isRelationOther}
+                onChangeText={(t) => {
+                  const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                    .replace(/\s+/g, " ");
+
+                  setRelationship(cleaned);
+                  setRelationErr("")
+                  setFormErr("");
+                }}
+
                 style={{ flex: 1 }}
               />
-               <Image
-                              source={DownArrow}
-                              style={[
-                                styles.arrowIcon,
-                                showRelationDropdown && { transform: [{ rotate: "180deg" }] }
-                              ]}
-                            />
+              <Image
+                source={DownArrow}
+                style={[
+                  styles.arrowIcon,
+                  showRelationDropdown && { transform: [{ rotate: "180deg" }] }
+                ]}
+              />
             </View>
           </TouchableOpacity>
 
@@ -426,22 +434,27 @@ console.log("relationship", relationship)
                 placeholder="Select Occupation"
                 value={occupation}
                 editable={isOccupationOther}
-               onChangeText={(t) => {
-  setOccupation(t);
-  setOccupationErr("");
-  setFormErr("");
-}}
+                onChangeText={(t) => {
+
+                  const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                    .replace(/\s+/g, " ");
+
+                  setOccupation(cleaned);
+                  // setOccupation(t);
+                  setOccupationErr("");
+                  setFormErr("");
+                }}
                 style={{ flex: 1 }}
               />
 
 
-                            <Image
-                              source={DownArrow}
-                              style={[
-                                styles.arrowIcon,
-                                showOccupationDropdown  && { transform: [{ rotate: "180deg" }] }
-                              ]}
-                            />
+              <Image
+                source={DownArrow}
+                style={[
+                  styles.arrowIcon,
+                  showOccupationDropdown && { transform: [{ rotate: "180deg" }] }
+                ]}
+              />
 
             </View>
           </TouchableOpacity>
@@ -476,7 +489,26 @@ console.log("relationship", relationship)
 
           {/* Mobile */}
           <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
-          <TextInput
+          <View style={styles.input}>
+  {/* Country Code */}
+  <Text style={{ marginRight: 8, fontSize: 14 }}>+91</Text>
+  <View style={styles.divider} />
+  {/* Mobile Input */}
+  <TextInput
+    placeholder="Enter Mobile Number"
+    keyboardType="number-pad"
+    maxLength={10}
+    value={mobile}
+    onChangeText={(t) => {
+      const validmobile = t.replace(/[^0-9]/g, "");
+      setMobile(validmobile);
+      setMobileErr("");
+      setFormErr("");
+    }}
+    style={{ flex: 1 }}
+  />
+</View>
+          {/* <TextInput
             placeholder="Enter Mobile Number"
             keyboardType="number-pad"
             maxLength={10}
@@ -488,7 +520,7 @@ console.log("relationship", relationship)
               setFormErr("")
             }}
             style={styles.input}
-          />
+          /> */}
 
           {mobileErr ? <ErrorMessage message={mobileErr} type="error" /> : null}
           {formErr ? <ErrorMessage message={formErr} type="error" /> : null}
@@ -498,7 +530,7 @@ console.log("relationship", relationship)
         {/* Buttons */}
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
-            <Text style={{fontFamily: "Gilroy-Semibold"}}>Cancel</Text>
+            <Text style={{ fontFamily: "Gilroy-Semibold" }}>Cancel</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.addBtn} onPress={handleSave}>
@@ -544,7 +576,7 @@ const styles = {
 
   title: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginBottom: 15,
   },
 
@@ -608,10 +640,16 @@ const styles = {
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-arrowIcon: {
-  marginLeft:5,
-  width: 23,
-  height: 23,
-  // tintColor: "#6B7280",
+  arrowIcon: {
+    marginLeft: 5,
+    width: 23,
+    height: 23,
+    // tintColor: "#6B7280",
+  },
+  divider: {
+  width: 1,
+  height: 50,
+  backgroundColor: "#E5E7EB",
+  marginHorizontal: 10,
 },
 };

@@ -45,6 +45,7 @@ import Trash from "../../../Assets/Images/trash.png";
 import AddUserBottomSheet from "../Users/AddUser";
 import EditProfileSheet from "../GeneralPages/EditProfileSheet"
 import LogoutIcon from "../../../Assets/Images/Logout.png"
+import EmailLinkIcon from "../../../Assets/Images/maximize.png"
 import { removeData, storeData } from "../../../Utils/Storage";
 import { LoginContexts } from "../../../Context/LoginContext";
 import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
@@ -484,7 +485,7 @@ export default function GeneralDetailsScreen({ navigation }) {
         }
           style={{ flexDirection: "row", marginBottom: 10, padding: 16, }}>
 
-          {item.profilePic ? <Image source={{ uri: item.profilePic }} style={{ width: 50, height: 50, borderRadius: 25, resizeMode: 'contain' }} />
+          {item?.profilePic ? <Image source={{ uri: item?.profilePic }} style={{ width: 50, height: 50, borderRadius: 25, resizeMode: 'contain' }} />
             : <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#F0F7FF', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
                 {(item.firstName?.charAt(0).toUpperCase() || "") + (item.lastName?.charAt(0).toUpperCase() || "")}
@@ -766,9 +767,9 @@ export default function GeneralDetailsScreen({ navigation }) {
               <View style={{  flexDirection: 'row',width:'100%'}}>
                 <View style={{flex: 1, alignItems: 'center', paddingLeft: 10}}>
                   <View style={styles.avatar}>
-                    {profileDetails?.profileImage ? (
+                    {profileDetails?.profilePic ? (
                       <Image
-                        source={{ uri: profileDetails.profileImage }}
+                        source={{ uri: profileDetails.profilePic }}
                         style={styles.profileImg}
                       />
                     ) : (
@@ -854,16 +855,52 @@ export default function GeneralDetailsScreen({ navigation }) {
                 </Text>
               </View>
 
-              <View style={styles.infoRow}>
+              {/* <View style={styles.infoRow}>
                 <Image
                   source={require("../../../Assets/Images/sms.png")}
                   style={styles.infoIcon}
                 />
-                <Text style={[styles.infoText,{fontFamily:'Gilroy-Medium'}]}>
+                <Text style={[styles.infoText,{fontFamily:'Gilroy-Medium',}]}>
                   {profileDetails?.mailId || "N/A"}
-                </Text>
-              </View>
+                    <Image
+                  source={EmailLinkIcon}
+                  style={{    width: 14,
+    height: 14,
+    marginRight: 10,
+    marginLeft:15,
 
+    tintColor: "#222222",}}
+                />
+                </Text>
+              
+              </View> */}
+
+              <View style={styles.infoRow}>
+  <Image
+    source={require("../../../Assets/Images/sms.png")}
+    style={styles.infoIcon}
+  />
+
+  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+    <Text style={[styles.infoText, { fontFamily: "Gilroy-Medium" }]}>
+      {profileDetails?.mailId || "N/A"}
+    </Text>
+
+    <Image
+      source={EmailLinkIcon}
+      style={{
+        width: 14,
+        height: 14,
+        marginLeft: 8, // 👈 margin will work now
+        tintColor: "#222222",
+      }}
+    />
+  </View>
+</View>
+<Text style={styles.lastUpdatedText}>
+  Profile last updated - 
+  <Text style={{color:'#222222', fontFamily: "Gilroy-Semibold",}}>{profileDetails?.lastUpdated || "-"}</Text> 
+</Text>
 
             </View>
           )}
@@ -1479,6 +1516,7 @@ const styles = StyleSheet.create({
   cards: {
     backgroundColor: "#fff",
     padding: 18,
+    paddingBottom: 30, 
     marginHorizontal: 10,
     borderRadius: 14,
     elevation: 2,
@@ -1757,5 +1795,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Gilroy-Bold",
   },
+lastUpdatedText: {
+  position: "absolute",
+  bottom: 10,
+  right: 15,
+  fontSize: 12,
+  color: "#9CA3AF",
+  fontFamily: "Gilroy-Semibold",
+},
+infoText: {
+  fontSize: 14,
+  color: "#333",
+  lineHeight: 20,
+  flexShrink: 1, // 👈 important
+}
 
 });
