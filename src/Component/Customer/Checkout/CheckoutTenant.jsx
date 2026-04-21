@@ -19,6 +19,8 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import Profile from "../../../Assets/Images/profile.png";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import RoomIcon from "../../../Assets/Images/Room_Icon.png"
+import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 
 
 export default function CheckoutBottomSheet({
@@ -172,6 +174,7 @@ export default function CheckoutBottomSheet({
       }, 800);
     }
   };
+  console.log(matchedCustomer)
 
 
   if (!visible) return null;
@@ -201,7 +204,13 @@ export default function CheckoutBottomSheet({
           {/* CARD */}
           <View style={styles.card}>
             <View style={styles.row}>
-              <Image source={matchedCustomer?.profilePic || Profile} style={styles.avatar} />
+              {matchedCustomer?.profilePic ? 
+               <Image source={matchedCustomer?.profilePic || Profile} style={styles.avatar} /> :
+               <View style={[styles.avatar,{alignItems:'center',backgroundColor:'#e6e7eb',justifyContent:'center'}]}>
+                  <Text style={{fontSize:16,fontFamily:'Gilroy-Bold'}}>{matchedCustomer?.initials}</Text>
+               </View>
+              }
+             
 
               <View style={{ marginLeft: 12 }}>
                 <Text style={styles.name}>{matchedCustomer?.fullName}</Text>
@@ -210,9 +219,9 @@ export default function CheckoutBottomSheet({
                   <View style={styles.badge}>
                     <Text style={styles.badgeTxt}>{matchedCustomer?.floorName}</Text>
                   </View>
-                  <Image source={require("../../../Assets/Images/profile.png")} style={styles.icon} />
+                  <Image source={RoomIcon} style={styles.icon} />
                   <Text style={styles.val}>{matchedCustomer?.roomName}</Text>
-                  <Image source={require("../../../Assets/Images/bed.png")} style={styles.icon} />
+                  <Image source={BedIcon} style={styles.icon} />
                   <Text style={styles.val}>{matchedCustomer?.bedName}</Text>
                 </View>
               </View>
@@ -226,7 +235,7 @@ export default function CheckoutBottomSheet({
                 <Text style={styles.labelVal}>{checkoutDateDettail?.checkoutDate}</Text>
               </View>
 
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1}}>
                 <Text style={styles.label}>Status</Text>
                 <Text style={[styles.labelVal, { color: "green" }]}>Checkout</Text>
               </View>
@@ -298,7 +307,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginTop: 10,
   },
-  row: { flexDirection: "row", alignItems: "center" },
+  row: { flexDirection: "row", alignItems: "center", },
   avatar: { width: 50, height: 50, borderRadius: 30 },
   name: { fontSize: 17, fontWeight: "700", color: "#111" },
   detailsRow: { flexDirection: "row", marginTop: 6, alignItems: "center" },

@@ -1024,7 +1024,8 @@ const BillDetailsSheet = ({
 
 
 
-            {(bill?.invoiceMode === "Recurring" &&
+            {(
+              // bill?.invoiceMode === "Recurring" &&
               paymentStatus === "Pending") && (
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
