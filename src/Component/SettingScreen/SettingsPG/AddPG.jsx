@@ -706,24 +706,7 @@ export default function AddPG({ navigation, route }) {
               <View style={{ position: "relative", marginBottom: 6 }}>
 
 
-                {/* <TextInput
-                  style={styles.select}
-                  placeholder="Select State"
-                  placeholderTextColor="#9CA3AF"
-                  value={stateOpen ? stateQuery : state}
-                  editable={true}
-                  onFocus={() => {
-                    setStateOpen(true);
-                    setStateQuery("");
-                  }}
-                  onChangeText={(t) => {
-                    setStateQuery(t);
-                    setStateOpen(true);
-                    setErrors({ ...errors, state: "" });
-                    setTopWarning("");
-                  }}
-                  keyboardShouldPersistTaps="handled"
-                /> */}
+               
 
 
                 <TextInput
@@ -733,10 +716,7 @@ export default function AddPG({ navigation, route }) {
                   value={stateOpen ? stateQuery : state}
                   editable={true}
                   showSoftInputOnFocus={true}
-                  // onFocus={() => {
-                  //   setStateOpen(true);
-                  //   setStateQuery(state || ""); 
-                  // }}
+               
                   onFocus={() => {
                     setStateOpen(true);
                     setStateQuery("");
@@ -758,15 +738,7 @@ export default function AddPG({ navigation, route }) {
 
                   <>
                     <TouchableOpacity
-                      // style={{
-                      //   position: "absolute",
-                      //   top: -1000,
-                      //   bottom: -1000,
-                      //   left: -1000,
-                      //   right: -1000,
-                      // }}
-                      // activeOpacity={1}
-                      // onPress={() => setStateOpen(false)}
+                   
                       style={{
                         position: "absolute",
                         top: -1000,

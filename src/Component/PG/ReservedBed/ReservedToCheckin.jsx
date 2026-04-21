@@ -543,7 +543,7 @@ export default function ReserveToCheckin({ route, navigation }) {
                         value={item.amount}
                         onChangeText={(t) => {
                           // const onlyNum = t.replace(/[^0-9]/g, "")
-                                   let cleaned = t.replace(/[^0-9.]/g, "");
+                      let cleaned = t.replace(/[^0-9.]/g, "");
 
                       const parts = cleaned.split(".");
 

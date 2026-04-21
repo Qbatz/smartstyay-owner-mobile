@@ -14,8 +14,8 @@ import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import FloorIcon from "../../../Assets/Images/FloorImg.png";
-import RoomIcon from "../../../Assets/Images/RoomImg.png";
-import BedIcon from "../../../Assets/Images/RoomImg.png";
+import RoomIcon from "../../../Assets/Images/NewRoomIcon.png";
+import BedIcon from "../../../Assets/Images/NewBedIcon.png";
 import SwapIcon from "../../../Assets/Images/swap.png";
 import CalendarImg from "../../../Assets/Images/calendar.png";
 import Assign from "../../../Assets/Images/exchange.png";
@@ -451,7 +451,8 @@ useEffect(() => {
               <Text style={styles.valueText}>{selectedBed.roomName}</Text>
             </View>
             <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center'}}>
-              <Image source={BedIcon} style={styles.icon} />
+              <Image source={BedIcon} style={{height:17, width:13,   marginRight: 5,
+    tintColor: "#1E45E1",}} />
               <Text style={styles.valueText}>{selectedBed.bedName}</Text>
             </View>
           </View>
@@ -472,7 +473,8 @@ useEffect(() => {
               <Image source={RoomIcon} style={styles.icon} />
               <Text style={styles.valueText}>{selectedNewBed.bed.roomName}</Text></View>
             <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
-              <Image source={BedIcon} style={styles.icon} />
+              <Image source={BedIcon} style={{height:17, width:13,   marginRight: 5,
+    tintColor: "#1E45E1",}}/>
               <Text style={styles.valueText}>{selectedNewBed.bed.bedName}</Text></View>
           </View>
 
@@ -488,7 +490,7 @@ useEffect(() => {
 }}
             style={styles.inputBoxDate}
           >
-            <Text style={{ color: selectedDate ? "#000" : "#999" }}>
+            <Text style={{ color: selectedDate ? "#000" : "#999" ,fontFamily: "Gilroy-Regular" }}>
               {selectedDate
                 ? dayjs(selectedDate).format("DD/MM/YYYY")
                 : "Select Date"}
@@ -676,7 +678,7 @@ sheet: {
 
   title: {
     fontSize: 18,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold" ,
     marginBottom: 18,
   },
 
@@ -684,13 +686,15 @@ sheet: {
     marginTop: 14,
     marginBottom: 6,
     fontSize: 14,
-    color: "#555",
+    color: "#222222",
+    fontFamily: "Gilroy-Medium"
   },
   sectionLabel1: {
-    marginTop: 14,
+    marginTop: 5,
     marginBottom: 16,
     fontSize: 14,
-    color: "#555",
+    color: "#222222",
+     fontFamily: "Gilroy-Medium"
   },
 
   row: {
@@ -721,8 +725,9 @@ sheet: {
 
   valueText: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     flexShrink:1,
+    color:"#222222"
   },
 
   swapIcon: {
@@ -733,13 +738,14 @@ sheet: {
  swapWrapper: {
   alignItems: "center",    
   justifyContent: "center", 
-  paddingTop:30
+  paddingTop:10
 },
 
   inputField: {
      flex: 1,  
     fontSize: 15,
     color: "#000",
+    fontFamily: "Gilroy-Regular"
   },
   inputBoxDate: {
     borderWidth: 1,
@@ -749,7 +755,8 @@ sheet: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 50, paddingLeft: 14
+    height: 50, paddingLeft: 14,
+    fontFamily: "Gilroy-Regular"
   },
 
   inputBox: {
@@ -761,7 +768,8 @@ sheet: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 50
+    height: 50,
+    fontFamily: "Gilroy-Regular"
   },
 
 
@@ -777,12 +785,13 @@ sheet: {
   cancel: {
     fontSize: 16,
     color: "#777",
+      fontFamily: "Gilroy-Semibold",
   },
 
   assignBtn: {
     backgroundColor: "#1E45E1",
-    paddingVertical: 12,
-    paddingHorizontal: 26,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
@@ -805,7 +814,7 @@ sheet: {
   assignText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -864,7 +873,8 @@ sheet: {
 
   checkboxLabel: {
     fontSize: 13,
-    color: "#444",
+    color: "#4B4B4B",
+    fontFamily: "Gilroy-Medium" 
   },
 
 });
