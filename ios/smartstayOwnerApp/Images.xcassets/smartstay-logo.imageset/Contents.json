@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "Smartstay Ower Icon 67px white.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Smartstay Ower Icon 120px white.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Smartstay Ower Icon 120px white 1.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
