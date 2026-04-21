@@ -20,6 +20,11 @@ class CommonModule: NSObject {
   }
   
   @objc
+  func fetchEnvironment(_ resolve: RCTPromiseResolveBlock,
+                    rejecter reject: RCTPromiseRejectBlock) {
+        resolve("dev")
+  }
+  @objc
   func checkInternet(_ resolve: @escaping RCTPromiseResolveBlock,
                      rejecter reject: @escaping RCTPromiseRejectBlock) {
     
@@ -134,7 +139,6 @@ class CommonModule: NSObject {
        guard let url = URL(string: phone) else {
            return
        }
-      print(phone)
        DispatchQueue.main.async {
            if UIApplication.shared.canOpenURL(url) {
                UIApplication.shared.open(url, options: [:], completionHandler: nil)
