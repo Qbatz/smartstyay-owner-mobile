@@ -89,6 +89,9 @@ export default function AdminResetPasswordSheet({ visible, onClose }) {
 const passwordRegex =
 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,}$/;
 
+const cleanPassword = (text) => {
+  return text.replace(/[^A-Za-z0-9@$!%*?&^#]/g, "");
+};
 
 const handleUpdate = async () => {
 
@@ -198,7 +201,8 @@ const handleUpdate = async () => {
             placeholder="Enter old password"
             value={oldPass}
             onChangeText={(t) => {
-              setOldPass(t);
+               setOldPass(cleanPassword(t));
+              // setOldPass(t);
               setApiError("");
               setOldError("")
             }}
@@ -229,8 +233,10 @@ const handleUpdate = async () => {
             placeholder="Enter new password"
             value={newPass}
             onChangeText={(t) => {
-             const cleaned = t.replace(/[^A-Za-z0-9@$!%*?&^#]/g, "");
-             setNewPass(cleaned);
+            //  const cleaned = t.replace(/[^A-Za-z0-9@$!%*?&^#]/g, "");
+            //  setNewPass(cleaned);
+
+              setNewPass(cleanPassword(t));
             //   setNewPass(t);
               setApiError("");
               setNewError("")
@@ -262,7 +268,8 @@ const handleUpdate = async () => {
             placeholder="Confirm password"
             value={confirmPass}
             onChangeText={(t) => {
-              setConfirmPass(t);
+              // setConfirmPass(t);
+              setConfirmPass(cleanPassword(t));
               setApiError("");
               setConfirmError("")
             }}

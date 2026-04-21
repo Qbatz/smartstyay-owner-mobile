@@ -121,6 +121,8 @@ const headerTranslateY = scrollY.interpolate({
     })
   }, [])
 
+
+
   useEffect(() => {
     if (activeHostelId) {
       getParticularHostelDetails(activeHostelId);

@@ -551,7 +551,9 @@ if (pinError) newErrors.pincode = pinError;
   //   }
   // };
 
-
+  const cleanPassword = (text) => {
+  return text.replace(/[^A-Za-z0-9@$!%*?&^#]/g, "");
+};
 
 
   useEffect(() => {
@@ -891,10 +893,11 @@ if (pinError) newErrors.pincode = pinError;
                   <TextInput
                     style={styles.passwordInput}
                     placeholder="Enter Password"
-                    secureTextEntry={!showPassword}   // 👁 show / hide logic
+                    secureTextEntry={!showPassword} 
                     value={password}
                     onChangeText={(t) => {
-                      setPassword(t);
+                      setPassword(cleanPassword(t));
+                      // setPassword(t);
                       setErrors({ ...errors, password: "" });
                     }}
                   />
@@ -1020,85 +1023,97 @@ if (pinError) newErrors.pincode = pinError;
 
             <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
 
-            <View style={{ position: "relative" }}>
-              <TextInput
-                style={styles.select}
-                placeholder="Select state"
-                placeholderTextColor="#9CA3AF"
-                value={stateOpen ? stateQuery : selectedState}
+              <View style={{ position: "relative", marginBottom: 6 }}>
+            
+            
+                           
+            
+            
+                            <TextInput
+                              style={styles.select}
+                              placeholder="Select State"
+                              placeholderTextColor="#9CA3AF"
+                              value={stateOpen ? stateQuery : selectedState}
+                              editable={true}
+                              showSoftInputOnFocus={true}
+                           
+                              onFocus={() => {
+                                setStateOpen(true);
+                                setStateQuery("");
+                              }}
+                              onPressIn={() => {
+                                setStateOpen(true);
+                              }}
+                             
 
-                onFocus={() => {
+                               onChangeText={(t) => {
+                  setStateQuery(t);   
                   setStateOpen(true);
-                  setStateQuery("");   // 🔥 cursor focus panna fresh search
+                     setErrors({ ...errors, selectedState: "" });
                 }}
-                onChangeText={(t) => {
-                  setStateQuery(t);    // 🔥 typing always search
-                  setStateOpen(true);
-                }}
-              />
-              <TouchableOpacity
-                style={styles.arrowTouchable}
-                activeOpacity={0.7}
-                onPress={() => {
-                  setStateOpen(!stateOpen);
 
-
-                  if (stateOpen) setStateQuery("");
-                }}
-              >
-                <Image source={DownArrow} style={styles.arrowIcon} />
-              </TouchableOpacity>
-
-
-              {/* <Image source={DownArrow} style={styles.arrowIcon} /> */}
-
-              {stateOpen && (
-                <>
-                  <TouchableWithoutFeedback
-                    onPress={() => {
-                      setStateOpen(false);
-                      setStateQuery("");
-                    }}
-                  >
-                    <View style={styles.dropdownOverlay} />
-                  </TouchableWithoutFeedback>
-
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView
-                      keyboardShouldPersistTaps="always"
-                      nestedScrollEnabled={true}
-                      showsVerticalScrollIndicator={true}
-                    >
-                      {filteredStateList.length > 0 ? (
-                        filteredStateList.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={styles.option}
-                            onPress={() => {
-                              setSelectedState(v.label);
+                
+                            />
+            
+                            <Image source={DownArrow} style={styles.arrowIcon} />
+            
+                            {stateOpen && (
+            
+                              <>
+                                <TouchableOpacity
+                               
+                                  style={{
+                                    position: "absolute",
+                                    top: -1000,
+                                    bottom: -1000,
+                                    left: -1000,
+                                    right: -1000,
+                                  }}
+                                  activeOpacity={1}
+                                  onPress={() => setStateOpen(false)}
+                                />
+                                <View style={styles.dropdownMenu}>
+                                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
+                                    style={{ flex: 1 }}
+                                  >
+                                    {filteredStateList.length > 0 ? (
+                                      filteredStateList.map((v, index) => (
+                                        <TouchableOpacity key={index}
+                                          style={[
+                                            styles.option,
+                                            selectedState === v.label && styles.selectedOption
+                                          ]}
+                                          onPress={() => {
+                                              setSelectedState(v.label);
                               setStateQuery("");
                               setStateOpen(false);
                               setErrors({ ...errors, selectedState: "" });
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.label}</Text>
-                          </TouchableOpacity>
-                        ))
-                      ) : (
-                        <Text style={styles.noResult}>No state found</Text>
-                      )}
+                                          }}
+                                        >
+                                          <Text
+                                            style={[
+                                              styles.optionText,
+                                              selectedState === v.label && styles.selectedOptionText
+                                            ]}
+                                          >
+                                            {v.label}
+                                          </Text>
+                                        </TouchableOpacity>
+            
+                                      ))
+                                    ) : (
+                                      <Text style={styles.noResult}>No state found</Text>
+                                    )}
+                                  </ScrollView>
+                                </View>
+            
+                                <TouchableOpacity />
+                              </>
+                            )}
+                          </View>
+            
 
-                      
-                     
-                    </ScrollView>
-                  </View>
-                </>
-              )}
-
-            </View>
-            {/* {errors.state && (
-            <Text style={styles.errText}>{errors.state}</Text>
-          )} */}
+            
             {errors.selectedState && (
               <ErrorMessage message={errors.selectedState} type="error" />
             )}
@@ -1391,14 +1406,14 @@ const styles = StyleSheet.create({
     width: "100%",
     display: "flex"
   },
-  arrowIcon: {
-    // position: "absolute",
-    // right: 12,
-    // top: 14,
+ arrowIcon: {
+   position: "absolute",
+    right: 12,
+    top: 14,
     width: 18,
     height: 18,
     tintColor: "#777",
-  },
+},
   fixedBtnWrapper: {
     paddingHorizontal: 0,
     paddingBottom: 15,
