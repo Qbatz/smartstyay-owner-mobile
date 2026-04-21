@@ -27,6 +27,7 @@ import EmptyProfilePlusImage from "../../../Assets/Images/plusIcon.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import DeleteIcon from "../../../Assets/Images/trash.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 
 export default function AddPG({ navigation, route }) {
 
@@ -179,6 +180,35 @@ export default function AddPG({ navigation, route }) {
     const res = await launchCamera({ mediaType: "photo", saveToPhotos: true });
     if (res?.assets?.length) setImage(res.assets[0]);
   };
+
+   const openCamera = () => {
+      launchCamera(
+        {
+          mediaType: "photo",
+          quality: 0.7,
+        },
+        (response) => {
+          if (response.didCancel) return;
+          if (response.assets && response.assets.length > 0) {
+            setPhoto(response.assets[0]);
+          }
+        }
+      );
+    };
+    const openGallery = () => {
+      launchImageLibrary(
+        { mediaType: "photo", quality: 0.7 },
+        async (response) => {
+          if (response.didCancel) return;
+  
+          if (response.assets?.length > 0) {
+            const image = response.assets[0];
+            setPhoto(image); // UI update
+  
+          }
+        }
+      );
+    };
 
   const [photoModal, setPhotoModal] = useState(false);
 
@@ -452,7 +482,7 @@ export default function AddPG({ navigation, route }) {
               </View>
 
 
-              <Modal
+              {/* <Modal
                 visible={photoModal}
                 transparent
                 animationType="slide"
@@ -494,7 +524,33 @@ export default function AddPG({ navigation, route }) {
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
-              </Modal>
+              </Modal> */}
+
+               <ImagePickerSheet
+                          visible={photoModal}
+                          onClose={() => setPhotoModal(false)}
+                          title="Change Profile Picture"
+                          options={[
+                            {
+                              label: "Take Picture",
+                              icon: require("../../../Assets/Images/CameraIcon.png"),
+                              showArrow: true,
+                              onPress: openCamera,
+                            },
+                            {
+                              label: "Select from Gallery",
+                              icon: require("../../../Assets/Images/GalleryIcon.png"),
+                              showArrow: true,
+                              onPress: openGallery,
+                            },
+                            {
+                              label: "Remove Picture",
+                              icon: require("../../../Assets/Images/DeleteIcon.png"),
+                              showArrow: false,
+                              onPress: () => console.log("remove"),
+                            },
+                          ]}
+                        />
 
 
 

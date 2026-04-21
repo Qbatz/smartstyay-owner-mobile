@@ -96,7 +96,7 @@ export default function AssignAmenitiesSheet({
       }, 1200);
     }
   }
-}, [visible, availableAmenities]);
+}, [visible]);
 
 
   const resetState = () => {
@@ -246,6 +246,7 @@ export default function AssignAmenitiesSheet({
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
+       <View style={styles.wrapper} pointerEvents="box-none">
       <TouchableOpacity
         style={styles.backdrop}
         activeOpacity={1}
@@ -384,6 +385,7 @@ export default function AssignAmenitiesSheet({
           </View>
         </ScrollView>
       </Animated.View>
+      </View>
 
       {/* ✅ Dropdown overlay */}
       {showDropdown && (
@@ -437,6 +439,11 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  wrapper: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+    zIndex: 1000,
   },
 
   dropdownBackdrop: {

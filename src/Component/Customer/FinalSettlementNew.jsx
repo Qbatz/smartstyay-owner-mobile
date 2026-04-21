@@ -56,6 +56,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
   );
+  const [deductionAmount,setDeductionAmount]=useState("")
 
   console.log("kam", selectedItem)
   const scrollRef = useRef(null);
@@ -393,6 +394,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   };
 
   const updateTitle = (id, title) => {
+    console.log("binthu",id,title)
     setExtraCharges((prev) =>
       prev.map((i) => (i.id === id ? { ...i, title, titleError: "" } : i))
     );
@@ -407,7 +409,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
     );
   };
 
-  
+  const totalDeduction = extraCharges.reduce((sum, item) => {
+  return sum + Number(item.amount || 0);
+}, 0);
 
   const removeCharge = (id) => {
     setExtraCharges((prev) => prev.filter((i) => i.id !== id));
@@ -1177,7 +1181,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
 
                     <Text style={styles.value}>
-                      {!isRefundable ? "- " : ""} ₹ {
+                      {/* {!isRefundable ? "- " : ""}  */}
+                      ₹ {
                         label
                           ? settlementDetails?.settlementInfo?.payableAmount
                           : settlementDetails?.settlementInfo?.refundableRent
@@ -1196,28 +1201,29 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Advance</Text>
                     <Text style={styles.value}>
-                      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
+                      {/* {!isRefundable ? "- " : ""}  */}
+                       ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
                     </Text>
                   </View>
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Total Deductions</Text>
                     <Text style={styles.negativeamountlabel}>
-                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions}
+                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions || totalDeduction } 
                     </Text>
                   </View>
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Electricity</Text>
                     <Text style={styles.negativeamountlabel}>
-                      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.electricityAmount}
+                       ₹ {settlementDetails?.settlementInfo?.electricityAmount}
                     </Text>
                   </View>
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Unpaid Invoices</Text>
                     <Text style={styles.negativeamountlabel}>
-                      {!isRefundable ? "- " : ""}  ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
+                        ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
                     </Text>
                   </View>
 
