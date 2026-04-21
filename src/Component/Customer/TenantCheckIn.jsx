@@ -355,9 +355,9 @@ export default function TenantCheckIn({ navigation, route }) {
         //   titleError = "Please enter reason";
         //   valid = false;
         // }
-        typeError="";
+        typeError = "";
 
-       if (!titleFilled) {
+        if (!titleFilled) {
           titleError = "Please enter reason";
           valid = false;
         }
@@ -370,7 +370,7 @@ export default function TenantCheckIn({ navigation, route }) {
           valid = false;
         }
 
-        return { ...e,typeError, titleError, amountError };
+        return { ...e, typeError, titleError, amountError };
       }
 
       return { ...e, typeError, titleError: "", amountError: "" };
@@ -449,6 +449,22 @@ export default function TenantCheckIn({ navigation, route }) {
               <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Tenant Check-In</Text>
+          </View>
+
+          <View style={{ paddingHorizontal: 16, paddingTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <View>
+              {customer?.profilePic ? <Image source={customer?.profilePic} style={{ width: 50, height: 50, borderRadius: 25 }} /> :
+                <View style={{ width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: '#e6e7eb' }}>
+                  <Text style={{ fontSize: 20, fontFamily: 'Gilroy-Bold' }}>{customer?.initials}</Text>
+                </View>}
+            </View>
+
+            <View style={{marginLeft:8}}>
+              <Text style={{fontSize:18,fontFamily:'Gilroy-Semibold'}}>{customer?.fullName}</Text>
+              <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',color:'#4B4B4B',marginTop:8}}>
+                +{customer?.countryCode} {customer?.mobile || N/A}</Text>
+            </View>
+
           </View>
 
           <View style={styles.segmentRow}>
@@ -539,7 +555,7 @@ export default function TenantCheckIn({ navigation, route }) {
                   {floorOpen && (
                     <View style={styles.dropdownMenu}>
                       <ScrollView style={{ maxHeight: 160 }}
-                      nestedScrollEnabled={true}>
+                        nestedScrollEnabled={true}>
 
                         {floors?.length === 0 ? (
                           <View style={{ padding: 12 }}>
@@ -836,17 +852,17 @@ export default function TenantCheckIn({ navigation, route }) {
                               // const onlyNumbers = t.replace(/[^0-9]/g, "");
                               // const onlyNumbers = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
 
-                                         let cleaned = t.replace(/[^0-9.]/g, "");
+                              let cleaned = t.replace(/[^0-9.]/g, "");
 
-                      const parts = cleaned.split(".");
+                              const parts = cleaned.split(".");
 
-                      if (parts.length > 2) {
-                        cleaned = parts[0] + "." + parts[1];
-                      }
+                              if (parts.length > 2) {
+                                cleaned = parts[0] + "." + parts[1];
+                              }
 
-                      if (parts[1]?.length > 2) {
-                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                      }
+                              if (parts[1]?.length > 2) {
+                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                              }
 
                               updateAmount(item.id, cleaned)
                             }
