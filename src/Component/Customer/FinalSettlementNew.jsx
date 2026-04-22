@@ -940,8 +940,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   {showLastRentDetails && (
                     <View style={styles.detailCard}>
                       <Text style={styles.sectionLabel}>Actual Rent</Text>
-                      <Text style={styles.rightMuted}>
-                        ₹ {settlementDetails?.currentMonthRentInfo?.actualRent || 0}
+                      <Text style={styles.amountText}>
+                        ₹ {settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0}
                       </Text>
                     </View>
                   )}
@@ -1379,7 +1379,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                           onFocus={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({
-                                y: 900,   // 👈 adjust if needed
+                                y: 900,   
                                 animated: true,
                               });
                             }, 200);
@@ -1411,7 +1411,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                             >
                               <Text style={styles.dropdownItem}>{t}</Text>
                             </TouchableOpacity>
-                          );
+                          )
                         })}
                       </View>
                     )}
@@ -1557,6 +1557,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
               >
                 {isNegative ? "-" : ""}₹{" "}
                 {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
+                {/* {Math.round(Math.abs(Number(ReturnAmount))).toLocaleString("en-IN")} */}
               </Text>
             </View>
 

@@ -962,19 +962,14 @@ if (pinError) newErrors.pincode = pinError;
 
             <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter City" value={city}
-              // onChangeText={(t) => {
-              //   setCity(t);
-              //   setErrors({ ...errors, city: "" });
-              // }} 
+            
               onChangeText={(t) => {
   const cleaned = t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
   setCity(cleaned);
   setErrors({ ...errors, city: "" });
 }}
               />
-            {/* {errors.city && (
-            <Text style={styles.errText}>{errors.city}</Text>
-          )} */}
+           
             {errors.city && (
               <ErrorMessage message={errors.city} type="error" />
             )}
@@ -1024,10 +1019,6 @@ if (pinError) newErrors.pincode = pinError;
             <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
 
               <View style={{ position: "relative", marginBottom: 6 }}>
-            
-            
-                           
-            
             
                             <TextInput
                               style={styles.select}
