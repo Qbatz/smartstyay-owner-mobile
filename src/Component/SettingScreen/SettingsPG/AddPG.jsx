@@ -28,13 +28,14 @@ import EditIcon from "../../../Assets/Images/editIcon.png";
 import DeleteIcon from "../../../Assets/Images/trash.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
+import Loader from "../../Loader/Loader";
 
 export default function AddPG({ navigation, route }) {
 
   const isEdit = route?.params?.mode === "edit";
   const editData = route?.params?.data || null;
 
-  const { addPG, editPG, deleteAdditionalImages } = useContext(PGContext);
+  const { addPG, editPG, deleteAdditionalImages,pgLoading } = useContext(PGContext);
   const { hostelList, updateHostelList, setActiveHostelId, activeHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
@@ -424,6 +425,7 @@ export default function AddPG({ navigation, route }) {
   return (
 
     <>
+    {pgLoading && <Loader/>}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -826,7 +828,8 @@ export default function AddPG({ navigation, route }) {
 
 
 
-              <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+              <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}
+              disabled={pgLoading}>
                 <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
               </TouchableOpacity>
 

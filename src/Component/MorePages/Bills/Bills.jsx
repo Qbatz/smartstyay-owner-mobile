@@ -261,6 +261,8 @@ export default function BillsDesign({ route }) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
 
+  const isTriggeredRef=useRef(false)
+
   const { CommonModule } = NativeModules;
 
 
@@ -1246,8 +1248,9 @@ export default function BillsDesign({ route }) {
     return dayjs(date).format("DD-MM-YYYY");
   };
 
-
   const handleSaveRecordPayment = async () => {
+     if (isTriggeredRef.current) return; 
+  isTriggeredRef.current = true;
     let isValid = true;
 
     setAmountError("");
@@ -1279,7 +1282,11 @@ export default function BillsDesign({ route }) {
       isValid = false;
     }
 
-    if (!isValid) return;
+    if (!isValid){
+       isTriggeredRef.current = false;
+        return;
+      } ;
+  
 
     try {
       setRecordLoading(true);
@@ -1319,6 +1326,7 @@ export default function BillsDesign({ route }) {
       setTimeout(() => setShowSuccessModal(false), 1500);
     } finally {
       setRecordLoading(false);
+       isTriggeredRef.current=false;
     }
   };
 
@@ -2104,7 +2112,7 @@ export default function BillsDesign({ route }) {
   return (
 
     <>
-      {loading && <Loader />}
+      {(loading || recordLoading) && <Loader />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -3964,8 +3972,9 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={styles.saveBtn}
+                      style={[styles.saveBtn, isTriggeredRef.current && {opacity:0.6}]}
                       onPress={handleSaveRecordPayment}
+                      disabled={isTriggeredRef.current}
                     >
                       <Text style={styles.saveText}>Record</Text>
                     </TouchableOpacity>

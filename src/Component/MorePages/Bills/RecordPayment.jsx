@@ -55,6 +55,9 @@ const RecordPaymentSheet = ({
   const [showPaymentMode, setShowPaymentMode] = useState(false);
   const recordSheetY = useRef(new Animated.Value(0)).current;
 
+  const [isTriggered,setIsTriggered]=useState(false);
+  const isTriggeredRef=useRef(false)
+
   useEffect(() => {
   if (visible) {
     setPaidAmount("");
@@ -270,9 +273,13 @@ useEffect(() => {
     setTransactionId("");
 
   }
-
+console.log("isTrigg",isTriggered)
 
    const handleSaveRecordPayment = async () => {
+    // if(isTriggered) return;
+    // setIsTriggered(true)
+      if (isTriggeredRef.current) return; 
+  isTriggeredRef.current = true;
       let isValid = true;
   
       setAmountError("");
@@ -304,7 +311,10 @@ useEffect(() => {
         isValid = false;
       }
   
-      if (!isValid) return;
+      if (!isValid){
+       isTriggeredRef.current = false;
+        return;
+      } ;
   
       try {
   
@@ -340,12 +350,15 @@ useEffect(() => {
         setModalMessage("Something went wrong");
         setShowSuccessModal(true);
         setTimeout(() => setShowSuccessModal(false), 1500);
-      } 
+      } finally{
+        isTriggeredRef.current=false;
+      }
 
     };
 
 
   if (!visible) return null;
+  console.log("patti",isTriggeredRef.current)
 
   return (
     <>
@@ -589,8 +602,9 @@ useEffect(() => {
                      </TouchableOpacity>
  
                      <TouchableOpacity
-                       style={styles.saveBtn}
+                       style={[styles.saveBtn,isTriggeredRef.current && {opacity:0.6}]}
                        onPress={handleSaveRecordPayment}
+                       disabled={isTriggeredRef.current}
                      >
                        <Text style={styles.saveText}>Record</Text>
                      </TouchableOpacity>
