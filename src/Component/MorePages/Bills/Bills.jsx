@@ -2360,7 +2360,7 @@ export default function BillsDesign({ route }) {
                     style={[styles.FilterButton, !canReadInvoice && { opacity: 0.4 }]}
                     disabled={!canReadInvoice}
                     onPress={() => setShowFilter(true)}>
-                    <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
+                    <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -5108,7 +5108,7 @@ const styles = StyleSheet.create({
   tabContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 15,
     fontFamily: "Gilroy-Semibold"
   },
 
@@ -5255,11 +5255,15 @@ const styles = StyleSheet.create({
   FilterButton: {
     position: "absolute",
     bottom: 125,
-    right: 10,
+    right: 15,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
     elevation: 5,
+      width: 55,
+    height: 55,
+       justifyContent: "center",
+    alignItems: "center",
   },
 
   addBtn: {
