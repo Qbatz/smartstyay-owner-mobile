@@ -137,7 +137,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 999,
+    // zIndex: 999,
+    //  elevation: 9999,  
+     zIndex: 100000,     
+  elevation: 100000,
      backgroundColor: "rgba(0,0,0,0.4)",
   },
 

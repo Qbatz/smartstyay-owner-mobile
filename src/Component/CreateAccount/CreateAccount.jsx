@@ -49,6 +49,8 @@ export default function CreateAccount() {
   const [backendMobileError, setBackendMobileError] = useState("");
   const [backendPasswordError, setBackendPasswordError] = useState("");
 
+  const [isCreating, setIsCreating] = useState(false);
+
   // ✅ REFS
   const scrollRef = useRef(null);
 
@@ -93,10 +95,15 @@ export default function CreateAccount() {
     scrollToY(pos.current);
     setTimeout(() => ref.current?.focus(), 200);
   };
+  console.log("isCreate",isCreating)
   const createAccountClick = async () => {
+    if(isCreating) return;
+    setIsCreating(true)
     Keyboard.dismiss();
+    
 
     // reset errors
+    try{
     setFirstNameError("");
     setEmailError("");
     setMobileError("");
@@ -225,18 +232,21 @@ export default function CreateAccount() {
       if (res?.message?.emailStatus) {
         setBackendEmailError(res.message.emailStatus);
         focusField(emailRef, emailPos);
+        setIsCreating(false)
         return;
       }
 
       if (res?.message?.mobileStatus) {
         setBackendMobileError(res.message.mobileStatus);
         focusField(mobileRef, mobilePos);
+         setIsCreating(false)
         return;
       }
 
       if (res?.message?.passwordStatus) {
         setBackendPasswordError(res.message.passwordStatus);
         focusField(passwordRef, passwordPos);
+         setIsCreating(false)
         return;
       }
 
@@ -245,6 +255,11 @@ export default function CreateAccount() {
       setModelType("error");
 
       setTimeout(() => setShowSuccessModal(false), 2000);
+    }
+    }catch(error){
+      console.log(error)
+    }finally{
+      setIsCreating(false)
     }
   };
 
@@ -614,8 +629,10 @@ export default function CreateAccount() {
 
       </KeyboardAvoidingView>
       <View style={styles.bottomFixed}>
-        <TouchableOpacity onPress={createAccountClick} style={styles.button}>
-          <Text style={styles.buttonText}>Create Account</Text>
+        <TouchableOpacity onPress={createAccountClick}
+        disabled={isCreating}
+         style={styles.button}>
+          <Text style={styles.buttonText}>{isCreating ? "Creating..." : "Create Account"}</Text>
         </TouchableOpacity>
 
         <Text style={styles.footerText}>

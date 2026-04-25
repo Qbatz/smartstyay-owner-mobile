@@ -652,15 +652,15 @@ const headerTranslateY = scrollY.interpolate({
       display:'flex',flexDirection:'row', justifyContent:'space-between',
         transform: [{ translateY: headerTranslateY }],
     }}>
-      <View style={{flexDirection:'row'}}>
+      {/* <View style={{flexDirection:'row',backgroundColor:'red',flex:1}}> */}
       <TouchableOpacity onPress={() => navigation.goBack()}>
             {/* <Text style={styles.back}>←</Text> */}
-            <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
+            <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 3 }} />
           </TouchableOpacity>
-      <Text style={{ fontSize: 16, fontWeight: "600" }}>
+      <Text style={{ fontSize: 16, fontWeight: "600" ,textAlign:'center',flex:1}} numberOfLines={2}>
         {customerDetails?.fullName}
       </Text>
-      </View>
+      {/* </View> */}
 
        {customerDetails?.customerCurrentStatus != "VACATED" && (
               <TouchableOpacity onPress={(e) => {
@@ -692,6 +692,7 @@ const headerTranslateY = scrollY.interpolate({
   scrollEventThrottle={16}
     stickyHeaderIndices={[2]}
   contentContainerStyle={{ paddingBottom: 100 }}
+  showsVerticalScrollIndicator={false}
 >
         {/* HEADER */}
 

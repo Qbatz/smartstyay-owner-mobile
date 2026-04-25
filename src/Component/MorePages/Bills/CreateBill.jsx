@@ -168,6 +168,7 @@ export default function CreateBill({ navigation }) {
 
   // { id, name }
 
+  console.log(items)
   const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
 
@@ -176,6 +177,35 @@ export default function CreateBill({ navigation }) {
       fetchCustomers();
     }
   }, [activeHostelId])
+
+//   useEffect(() => {
+//   if (selectedCustomer && items.length === 0) {
+//     setItems([
+//       {
+//         type: "Room rent",
+//         description: "",
+//         amount: "",
+//         isExisting: false,
+//       },
+//     ]);
+//   }
+// }, [selectedCustomer]);
+useEffect(() => {
+  if (!selectedCustomer) return;
+  if (items.length > 0) return;
+  if (!filteredOptions?.length) return;
+
+  const firstOption = filteredOptions[0];
+
+  setItems([
+    {
+      type: firstOption,
+      description: firstOption === "Others" ? "" : firstOption,
+      amount: "",
+      isExisting: false,
+    },
+  ]);
+}, [selectedCustomer, filteredOptions]);
 
 
   const fetchCustomers = async () => {

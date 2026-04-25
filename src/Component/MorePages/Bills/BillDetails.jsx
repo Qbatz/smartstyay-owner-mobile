@@ -141,6 +141,12 @@ const BillDetailsSheet = ({
   }, [activeHostelId]);
 
   useEffect(() => {
+      if (activeHostelId && canReadInvoice) {
+        GetAllBillDetails(activeHostelId);
+      }
+    }, [activeHostelId, canReadInvoice]);
+
+  useEffect(() => {
     if (activeHostelId) {
       getParticularHostelDetails(activeHostelId);
     }
@@ -180,6 +186,9 @@ const BillDetailsSheet = ({
 
 
 
+
+const invoiceDetail= BillDetails?.listInvoices?.find((item)=> item?.invoiceId === BillPdfdetails?.invoiceId)
+console.log(invoiceDetail,"billa")
 
   const billDetailsPan = useRef(
     PanResponder.create({
@@ -428,6 +437,13 @@ const BillDetailsSheet = ({
     customerName: customer?.fullName,
   };
 
+  const handleEditBill = (item) => {
+
+    navigation.navigate("CreateBills", {
+      mode: "edit",
+      data: item,
+    });
+  }
 
 
 
@@ -1004,7 +1020,7 @@ const BillDetailsSheet = ({
 
 
             {isPaid &&
-              bill?.invoiceMode === "Manual" &&
+              invoiceDetail?.invoiceMode === "Manual" &&
               paymentStatus === "Paid" &&
               invoiceType === "Rent" && (
                 <TouchableOpacity
@@ -1025,12 +1041,12 @@ const BillDetailsSheet = ({
 
 
             {(
-              // bill?.invoiceMode === "Recurring" &&
+              invoiceDetail?.invoiceMode === "Recurring" &&
               paymentStatus === "Pending") && (
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                   disabled={!canUpdateInvoice}
-                // onPress={handleEditBill} 
+                onPress={()=>handleEditBill(invoiceDetail)} 
                 >
                   <Image
                     source={require("../../../Assets/Images/ReAssign.png")}

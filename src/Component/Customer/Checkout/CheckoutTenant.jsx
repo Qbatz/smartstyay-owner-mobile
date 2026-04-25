@@ -10,6 +10,8 @@ import {
   PanResponder,
   Dimensions,
   ScrollView,
+  KeyboardAvoidingView,Platform,
+  Keyboard
 } from "react-native";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -43,6 +45,7 @@ export default function CheckoutBottomSheet({
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
 
 
@@ -93,16 +96,31 @@ export default function CheckoutBottomSheet({
     }, [activeHostelId])
   );
 
+  useEffect(() => {
+  const show = Keyboard.addListener("keyboardDidShow", (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hide = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    show.remove();
+    hide.remove();
+  };
+}, []);
+
 
 
   // const fetchCustomers = async () => {
   //   const data = await getCustomersByHostel(activeHostelId);
   //   setCustomers(data || []);
   // };
-   const fetchCustomers = async () => {
-  const data = await getCustomersByHostel(activeHostelId);
-  setCustomers(data?.listCustomers || []);
-};
+  const fetchCustomers = async () => {
+    const data = await getCustomersByHostel(activeHostelId);
+    setCustomers(data?.listCustomers || []);
+  };
 
   const matchedCustomer = customers.find(
     c =>
@@ -144,7 +162,7 @@ export default function CheckoutBottomSheet({
     }
 
     const res = await confirmCheckout(customerId);
-    console.log("checkout",res)
+    console.log("checkout", res)
 
     if (res.success) {
 
@@ -182,92 +200,107 @@ export default function CheckoutBottomSheet({
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeSheet} />
+      
+        <View style={styles.wrapper} pointerEvents="box-none">
+         
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeSheet} />
 
 
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheet,
-          { transform: [{ translateY: sheetY }] },
-        ]}
+          <Animated.View
+            {...panResponder.panHandlers}
+            style={[
+              styles.sheet,
+              { transform: [{ translateY: sheetY }],paddingBottom: keyboardHeight },
+            ]}
+          >
+             <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View style={styles.handle} />
+            <View style={styles.handle} />
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Check-out Tenant</Text>
+            <ScrollView showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled">
+              <Text style={styles.title}>Check-out Tenant</Text>
 
-          {/* <Text style={styles.notice}>
+              {/* <Text style={styles.notice}>
             Notice Days : <Text style={{ color: "#2D6CDF" }}>{noticeDays}</Text>
           </Text> */}
 
-          {/* CARD */}
-          <View style={styles.card}>
-            <View style={styles.row}>
-              {matchedCustomer?.profilePic ? 
-               <Image source={matchedCustomer?.profilePic || Profile} style={styles.avatar} /> :
-               <View style={[styles.avatar,{alignItems:'center',backgroundColor:'#e6e7eb',justifyContent:'center'}]}>
-                  <Text style={{fontSize:16,fontFamily:'Gilroy-Bold'}}>{matchedCustomer?.initials}</Text>
-               </View>
-              }
-             
+              {/* CARD */}
+              <View style={styles.card}>
+                <View style={styles.row}>
+                  {matchedCustomer?.profilePic ?
+                    <Image source={matchedCustomer?.profilePic || Profile} style={styles.avatar} /> :
+                    <View style={[styles.avatar, { alignItems: 'center', backgroundColor: '#e6e7eb', justifyContent: 'center' }]}>
+                      <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold' }}>{matchedCustomer?.initials}</Text>
+                    </View>
+                  }
 
-              <View style={{ marginLeft: 12 }}>
-                <Text style={styles.name}>{matchedCustomer?.fullName}</Text>
 
-                <View style={styles.detailsRow}>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeTxt}>{matchedCustomer?.floorName}</Text>
+                  <View style={{ marginLeft: 12 }}>
+                    <Text style={styles.name}>{matchedCustomer?.fullName}</Text>
+
+                    <View style={styles.detailsRow}>
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeTxt}>{matchedCustomer?.floorName}</Text>
+                      </View>
+                      <Image source={RoomIcon} style={styles.icon} />
+                      <Text style={styles.val}>{matchedCustomer?.roomName}</Text>
+                      <Image source={BedIcon} style={styles.icon} />
+                      <Text style={styles.val}>{matchedCustomer?.bedName}</Text>
+                    </View>
                   </View>
-                  <Image source={RoomIcon} style={styles.icon} />
-                  <Text style={styles.val}>{matchedCustomer?.roomName}</Text>
-                  <Image source={BedIcon} style={styles.icon} />
-                  <Text style={styles.val}>{matchedCustomer?.bedName}</Text>
+                </View>
+
+                <View style={styles.line} />
+
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.label}>Checkout Date</Text>
+                    <Text style={styles.labelVal}>{checkoutDateDettail?.checkoutDate}</Text>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.label}>Status</Text>
+                    <Text style={[styles.labelVal, { color: "green" }]}>Checkout</Text>
+                  </View>
                 </View>
               </View>
-            </View>
 
-            <View style={styles.line} />
+              {/* REASON */}
+              <Text style={styles.label}>Reason</Text>
+              <TextInput
+                style={styles.reasonBox}
+                multiline
+                placeholder="Enter reason..."
+                value={reason}
+                onChangeText={setReason}
+              />
 
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.label}>Checkout Date</Text>
-                <Text style={styles.labelVal}>{checkoutDateDettail?.checkoutDate}</Text>
+              <View style={styles.btnRow}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
+                  <Text style={styles.cancelTxt}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.outBtn} onPress={handleConfirmCheckout}>
+                  <Text style={styles.outTxt}>Check-Out</Text>
+                </TouchableOpacity>
               </View>
-
-              <View style={{ flex: 1}}>
-                <Text style={styles.label}>Status</Text>
-                <Text style={[styles.labelVal, { color: "green" }]}>Checkout</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* REASON */}
-          <Text style={styles.label}>Reason</Text>
-          <TextInput
-            style={styles.reasonBox}
-            multiline
-            placeholder="Enter reason..."
-            value={reason}
-            onChangeText={setReason}
-          />
-
-          <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
-              <Text style={styles.cancelTxt}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.outBtn} onPress={handleConfirmCheckout}>
-              <Text style={styles.outTxt}>Check-Out</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </Animated.View>
+            </ScrollView>
+            </KeyboardAvoidingView>
+          </Animated.View>
+        </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+    zIndex: 1000,
+  },
   overlay: {
     position: "absolute",
     top: 0,

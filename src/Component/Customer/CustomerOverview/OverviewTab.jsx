@@ -260,7 +260,7 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
 
   return (
     <>
-    {loading && <Loader/>}
+    {/* {loading && <Loader/>} */}
       <SuccessModal
         visible={showSuccess}
         message={message}
