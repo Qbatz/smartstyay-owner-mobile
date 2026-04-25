@@ -500,17 +500,17 @@ const styles = StyleSheet.create({
         bottom: 0,
         backgroundColor: "rgba(0,0,0,0.4)",
         justifyContent: "flex-end",
-        alignItems: "center",   // ⭐ IMPORTANT
+        alignItems: "center",  
         zIndex: 2000,
     },
 
 
     calendarSheet: {
         backgroundColor: "#fff",
-        width: "90%",           // ⭐ better than 80%
+        width: "90%",         
         borderRadius: 20,
         padding: 12,
-        marginBottom: 80,       // ⭐ THIS moves it UP
+        marginBottom: 80,      
     },
 
 

@@ -35,7 +35,7 @@ export default function AddPG({ navigation, route }) {
   const isEdit = route?.params?.mode === "edit";
   const editData = route?.params?.data || null;
 
-  const { addPG, editPG, deleteAdditionalImages,pgLoading } = useContext(PGContext);
+  const { addPG, editPG, deleteAdditionalImages, pgLoading } = useContext(PGContext);
   const { hostelList, updateHostelList, setActiveHostelId, activeHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
 
@@ -83,6 +83,9 @@ export default function AddPG({ navigation, route }) {
   const [state, setState] = useState(editData?.state || "");
   const [stateQuery, setStateQuery] = useState("")
   const [stateOpen, setStateOpen] = useState(false)
+
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   const stateList = [
@@ -182,34 +185,34 @@ export default function AddPG({ navigation, route }) {
     if (res?.assets?.length) setImage(res.assets[0]);
   };
 
-   const openCamera = () => {
-      launchCamera(
-        {
-          mediaType: "photo",
-          quality: 0.7,
-        },
-        (response) => {
-          if (response.didCancel) return;
-          if (response.assets && response.assets.length > 0) {
-            setPhoto(response.assets[0]);
-          }
+  const openCamera = () => {
+    launchCamera(
+      {
+        mediaType: "photo",
+        quality: 0.7,
+      },
+      (response) => {
+        if (response.didCancel) return;
+        if (response.assets && response.assets.length > 0) {
+          setPhoto(response.assets[0]);
         }
-      );
-    };
-    const openGallery = () => {
-      launchImageLibrary(
-        { mediaType: "photo", quality: 0.7 },
-        async (response) => {
-          if (response.didCancel) return;
-  
-          if (response.assets?.length > 0) {
-            const image = response.assets[0];
-            setPhoto(image); // UI update
-  
-          }
+      }
+    );
+  };
+  const openGallery = () => {
+    launchImageLibrary(
+      { mediaType: "photo", quality: 0.7 },
+      async (response) => {
+        if (response.didCancel) return;
+
+        if (response.assets?.length > 0) {
+          const image = response.assets[0];
+          setPhoto(image); // UI update
+
         }
-      );
-    };
+      }
+    );
+  };
 
   const [photoModal, setPhotoModal] = useState(false);
 
@@ -276,6 +279,9 @@ export default function AddPG({ navigation, route }) {
 
 
   const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     let errors = {};
 
     if (!hostelName.trim())
@@ -314,6 +320,7 @@ export default function AddPG({ navigation, route }) {
 
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
+      isSubmittingRef.current = false;
       return;
     }
 
@@ -356,62 +363,72 @@ export default function AddPG({ navigation, route }) {
 
     console.log("FINAL PG PAYLOAD ===>", finalPayload);
 
-    if (isEdit) {
+    try {
+      if (isEdit) {
 
-      if (!hasChanges()) {
-        setTopWarning("No changes detected");
+        if (!hasChanges()) {
+          setTopWarning("No changes detected");
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+          return;
+        }
+
+        const res = await editPG(finalPayload);
+        console.log(res)
+        if (res?.status === 200 || res?.status === 201) {
+          const fresh = await getHostels();
+          console.log("updateddata", fresh);
+          const reordered = reorderHostels(fresh.data, activeHostelId);
+          updateHostelList(reordered);
+          setModalType("success");
+          setModalMessage("PG Updated Successfully");
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false)
+            navigation.goBack();
+          }
+
+            , 1500);
+
+        } else {
+          alert("Update Failed");
+        }
         return;
       }
 
-      const res = await editPG(finalPayload);
-      console.log(res)
-      if (res?.status === 200 || res?.status === 201) {
-        const fresh = await getHostels();
-        console.log("updateddata", fresh);
-        const reordered = reorderHostels(fresh.data, activeHostelId);
-        updateHostelList(reordered);
+      const res = await addPG(finalPayload)
+
+      if (res?.status === 201) {
         setModalType("success");
-        setModalMessage("PG Updated Successfully");
+        setModalMessage("PG Added Successfully");
         setShowSuccessModal(true);
         setTimeout(() => {
           setShowSuccessModal(false)
-          navigation.goBack();
+          navigation.goBack()
+        }, 1500);
+        const fresh = await getHostels()
+        const data = fresh.data
+
+        if (!hostelList || hostelList.length === 0) {
+          const newHostelId = data[0].hostelId
+          setActiveHostelId(newHostelId)
+          updateHostelList(data)
         }
 
-          , 1500);
+        else {
+          const reordered = reorderHostels(data, activeHostelId)
+          updateHostelList(reordered)
+        }
 
-      } else {
-        alert("Update Failed");
+        // navigation.goBack()
       }
-      return;
+    } catch (e) {
+      console.log(e)
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
 
-    const res = await addPG(finalPayload)
-
-    if (res?.status === 201) {
-      setModalType("success");
-      setModalMessage("PG Added Successfully");
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false)
-        navigation.goBack()
-      }, 1500);
-      const fresh = await getHostels()
-      const data = fresh.data
-
-      if (!hostelList || hostelList.length === 0) {
-        const newHostelId = data[0].hostelId
-        setActiveHostelId(newHostelId)
-        updateHostelList(data)
-      }
-
-      else {
-        const reordered = reorderHostels(data, activeHostelId)
-        updateHostelList(reordered)
-      }
-
-      // navigation.goBack()
-    }
 
 
   };
@@ -425,7 +442,7 @@ export default function AddPG({ navigation, route }) {
   return (
 
     <>
-    {pgLoading && <Loader/>}
+      {pgLoading && <Loader />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -528,31 +545,31 @@ export default function AddPG({ navigation, route }) {
                 </View>
               </Modal> */}
 
-               <ImagePickerSheet
-                          visible={photoModal}
-                          onClose={() => setPhotoModal(false)}
-                          title="Change Profile Picture"
-                          options={[
-                            {
-                              label: "Take Picture",
-                              icon: require("../../../Assets/Images/CameraIcon.png"),
-                              showArrow: true,
-                              onPress: openCamera,
-                            },
-                            {
-                              label: "Select from Gallery",
-                              icon: require("../../../Assets/Images/GalleryIcon.png"),
-                              showArrow: true,
-                              onPress: openGallery,
-                            },
-                            {
-                              label: "Remove Picture",
-                              icon: require("../../../Assets/Images/DeleteIcon.png"),
-                              showArrow: false,
-                              onPress: () => console.log("remove"),
-                            },
-                          ]}
-                        />
+              <ImagePickerSheet
+                visible={photoModal}
+                onClose={() => setPhotoModal(false)}
+                title="Change Profile Picture"
+                options={[
+                  {
+                    label: "Take Picture",
+                    icon: require("../../../Assets/Images/CameraIcon.png"),
+                    showArrow: true,
+                    onPress: openCamera,
+                  },
+                  {
+                    label: "Select from Gallery",
+                    icon: require("../../../Assets/Images/GalleryIcon.png"),
+                    showArrow: true,
+                    onPress: openGallery,
+                  },
+                  {
+                    label: "Remove Picture",
+                    icon: require("../../../Assets/Images/DeleteIcon.png"),
+                    showArrow: false,
+                    onPress: () => console.log("remove"),
+                  },
+                ]}
+              />
 
 
 
@@ -708,7 +725,7 @@ export default function AddPG({ navigation, route }) {
               <View style={{ position: "relative", marginBottom: 6 }}>
 
 
-               
+
 
 
                 <TextInput
@@ -718,7 +735,7 @@ export default function AddPG({ navigation, route }) {
                   value={stateOpen ? stateQuery : state}
                   editable={true}
                   showSoftInputOnFocus={true}
-               
+
                   onFocus={() => {
                     setStateOpen(true);
                     setStateQuery("");
@@ -740,7 +757,7 @@ export default function AddPG({ navigation, route }) {
 
                   <>
                     <TouchableOpacity
-                   
+
                       style={{
                         position: "absolute",
                         top: -1000,
@@ -829,7 +846,7 @@ export default function AddPG({ navigation, route }) {
 
 
               <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}
-              disabled={pgLoading}>
+                disabled={isSubmitting}>
                 <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
               </TouchableOpacity>
 
@@ -923,7 +940,7 @@ function renderSelect(
 
 
 
-function renderImageBox(image, setImage, activeHostelId, deleteAdditionalImages,  setShowSuccessModal,
+function renderImageBox(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
   setModalMessage,
   setModalType) {
   { console.log(image) }

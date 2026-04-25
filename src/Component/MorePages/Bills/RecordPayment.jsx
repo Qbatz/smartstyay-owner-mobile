@@ -358,7 +358,6 @@ console.log("isTrigg",isTriggered)
 
 
   if (!visible) return null;
-  console.log("patti",isTriggeredRef.current)
 
   return (
     <>

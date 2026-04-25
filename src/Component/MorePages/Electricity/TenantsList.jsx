@@ -57,7 +57,6 @@ export default function TenantsList() {
     return dayjs(date, ["DD/MM/YYYY", "D/MM/YYYY"]).format("MMMM");
   };
 
-  console.log("pattit",EbTenantReading)
 
 
   return (

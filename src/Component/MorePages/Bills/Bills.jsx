@@ -2360,7 +2360,7 @@ export default function BillsDesign({ route }) {
                     style={[styles.FilterButton, !canReadInvoice && { opacity: 0.4 }]}
                     disabled={!canReadInvoice}
                     onPress={() => setShowFilter(true)}>
-                    <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
+                    <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -3638,7 +3638,7 @@ export default function BillsDesign({ route }) {
               <Animated.View
                 style={[
                   styles.transactionSheet,
-                  { height: "90%", transform: [{ translateY: recordSheetY }] }
+                  { maxHeight: "95%", transform: [{ translateY: recordSheetY }] }
                 ]}
                 {...recordPan.panHandlers}
               >
@@ -3890,7 +3890,7 @@ export default function BillsDesign({ route }) {
                         setShowPaymentMode(v => !v);
                       }}
                     >
-                      <Text style={{ fontSize: 15 }}>
+                      <Text style={{ fontSize: 15,flex:1 }}>
                         {selectedMode
                           ? transactionOptions.find(o => o.value === selectedMode)?.label
                           : "Select payment mode"}
@@ -5108,7 +5108,7 @@ const styles = StyleSheet.create({
   tabContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 15,
+    gap: 6,
     fontFamily: "Gilroy-Semibold"
   },
 
@@ -5255,15 +5255,11 @@ const styles = StyleSheet.create({
   FilterButton: {
     position: "absolute",
     bottom: 125,
-    right: 15,
+    right: 10,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
     elevation: 5,
-      width: 55,
-    height: 55,
-       justifyContent: "center",
-    alignItems: "center",
   },
 
   addBtn: {

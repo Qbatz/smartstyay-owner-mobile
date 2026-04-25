@@ -256,7 +256,7 @@ export default function OverviewTab({ customerDetails,
 
   return (
     <>
-    {loading && <Loader/>}
+    {/* {loading && <Loader/>} */}
       <SuccessModal
         visible={showSuccess}
         message={message}
