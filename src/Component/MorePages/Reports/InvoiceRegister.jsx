@@ -9,6 +9,7 @@ import {
   PanResponder,
   BackHandler,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { PGContext } from "../../../Context/PGContext";
@@ -22,6 +23,10 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "./FilterBottomSheet";
+
+  
+
+
 
 const InvoiceRegister = ({navigation}) => {
        const { CommonModule } = NativeModules;
@@ -52,6 +57,7 @@ const slideAnim = useState(new Animated.Value(500))[0];
         canDeleteModule: canDeleteReports,
       } = useHasPermission("Reports")
 
+    
       
 
 useEffect(() => {
@@ -183,20 +189,18 @@ console.log("invoiceReports", invoiceReports);
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
 const isExportAllow = isValidSubscription && canReadReports;
-
+const insets = useSafeAreaInsets()
 
   return (
          <>
           {loading && <Loader />}
-<SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-         <View style={styles.container}>
-             {/* <View style={styles.headerRow}>
-                   <TouchableOpacity  onPress={() => {navigation.goBack()}}>
-                     <Image source={ArrowLeft} style={styles.backIcon} />
-                   </TouchableOpacity>
-                   <Text style={styles.title}> Invoices
-           </Text>
-                 </View> */}
+<SafeAreaView 
+  style={{ flex: 1, backgroundColor: "#fff" }}
+  edges={["left", "right", "bottom"]} // ❌ remove top safe area
+>
+  {/* <View style={styles.container}> */}
+         <View style={[styles.container, { paddingTop: insets.top }]}>
+           
 
 
                          <View style={styles.headerRow}>
@@ -273,7 +277,6 @@ const isExportAllow = isValidSubscription && canReadReports;
       <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
   </TouchableOpacity>
 
-  {/* TYPE BUTTON */}
   <TouchableOpacity
     style={[
       styles.filterBox,
@@ -494,9 +497,11 @@ const styles = StyleSheet.create({
  container: {
   flex: 1,
   paddingHorizontal: 16,
-  paddingTop: 60,
+  //  paddingTop: insets.top,
+  // paddingTop: 60,
   backgroundColor: "#fff",
 },
+
 
 overlay: {
   position: "absolute",
@@ -533,7 +538,8 @@ headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent:'space-between',
-    marginBottom:6
+    marginBottom:10,
+      // marginTop: 10,
   },
   monthBtn: {
   paddingHorizontal: 10,
@@ -563,12 +569,9 @@ monthText: {
 
   summaryCard: {
   borderRadius: 14,
-  padding: 16,
+  paddingVertical: 16,
+  paddingHorizontal: 16, 
   marginBottom: 14,
-//   shadowColor: "#000",
-//   shadowOpacity: 0.04,
-//   shadowRadius: 8,
-//   elevation: 5,
 },
 
 divider: {

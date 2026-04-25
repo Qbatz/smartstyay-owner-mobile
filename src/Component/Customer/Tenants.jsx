@@ -10,7 +10,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal, Animated, BackHandler, PanResponder,
-  NativeModules , Linking 
+  NativeModules , Linking , Platform
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -2212,27 +2212,48 @@ const styles = StyleSheet.create({
     // paddingBottom: 30
 
   },
+  // searchContainer: {
+  // flexDirection: "row",
+  //   alignItems: "center",
+  //   borderWidth: 1,
+  //   borderColor: "#D9D9D9",
+  //   borderRadius: 30,
+  //   paddingHorizontal: 14,
+  //   paddingVertical: 2,
+  //   marginBottom: 10,
+
+  // },
   searchContainer: {
   flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#D9D9D9",
-    borderRadius: 30,
-    paddingHorizontal: 14,
-    paddingVertical: 2,
-    marginBottom: 10,
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 30,
+  paddingHorizontal: 14,
+  height: 44, 
+},
 
-  },
   searchIcon: {
     width: 18,
     height: 18,
     marginRight: 8,
   },
+  // searchInput: {
+  //   flex: 1,
+  //   fontSize: 15,
+  //   color: "#111827",
+  // },
   searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: "#111827",
-  },
+  flex: 1,
+  fontSize: 15,
+  color: "#111827",
+
+  paddingVertical: 0,
+
+  ...(Platform.OS === "ios" && {
+    height: 40, 
+  }),
+},
   outsideTouch: {
     position: "absolute",
     top: 0,
