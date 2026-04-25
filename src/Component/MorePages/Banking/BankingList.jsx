@@ -14,7 +14,7 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder, KeyboardAvoidingView, Keyboard, SafeAreaView
+  PanResponder, KeyboardAvoidingView, Keyboard, SafeAreaView 
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
@@ -48,8 +48,8 @@ import MoneyMinus from "../../../Assets/Images/money-minus.png";
 import ArrowUp from "../../../Assets/Images/arrow-up.png";
 import ArrowDown from "../../../Assets/Images/arrow-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
-import DownArrow from "../../../Assets/Images/direction-down.png";
-
+import DownArrow from "../../../Assets/Images/direction-down.png"; 
+import SearchIcon from "../../../Assets/Images/SearchIcon.png";
 
 
 
@@ -749,7 +749,8 @@ const handleAddAmountSubmit = async () => {
 
           <View style={styles.searchBox}>
             <Image
-              source={{ uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png" }}
+              // source={{ uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png" }}
+              source={SearchIcon}
               style={styles.searchIcon}
             />
             <TextInput
@@ -1518,20 +1519,41 @@ const styles = StyleSheet.create({
    fontFamily: "Gilroy-Bold" ,
   },
 
-  /* SEARCH BAR */
+  // searchBox: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   borderWidth: 1,
+  //   borderColor: "#D9D9D9",
+  //   borderRadius: 14,
+  //   paddingHorizontal: 14,
+  //   paddingVertical: 6,
+  //   marginBottom: 6,
+  // },
+
   searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#D9D9D9",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginBottom: 6,
-  },
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 14,
+  paddingHorizontal: 14,
+  height: 44, 
+},
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 15, color: "#000" , fontFamily: "Gilroy-Regular" },
+  searchInput: {
+  flex: 1,
+  fontSize: 15,
+  color: "#000",
+  fontFamily: "Gilroy-Regular",
+
+  paddingVertical: 0, 
+
+  ...(Platform.OS === "ios" && {
+    height: 40, 
+  }),
+},
+  // searchInput: { flex: 1, fontSize: 15, color: "#000" , fontFamily: "Gilroy-Regular" },
 
   sectionTitle: {
     fontSize: 17,
