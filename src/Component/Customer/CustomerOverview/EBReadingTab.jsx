@@ -165,6 +165,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     elevation: 2,
+             shadowColor: "#000",        
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 4,
   },
   monthRow: {
     flexDirection: "row",

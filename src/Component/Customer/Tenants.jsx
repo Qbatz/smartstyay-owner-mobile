@@ -768,15 +768,11 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
       {loading && <Loader />}
 
       <SafeAreaView style={styles.container}>
+          <View style={{ paddingHorizontal: 16 }}>
 
-        {/* 🔍 Search Bar */}
         <View style={styles.searchContainer}>
           <Image source={SearchIcon} style={styles.searchIcon} />
-          {/* <TextInput
-            style={styles.searchInput}
-            placeholder="Search Customers"
-            placeholderTextColor="#9CA3AF"
-          /> */}
+         
           <TextInput
             // style={styles.searchInput}
             style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
@@ -821,6 +817,8 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
           ))}
         </View>
 
+        </View>
+
         {activeTab === "Tenants" && (
 
 
@@ -847,6 +845,8 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                     </Text>
                   </View>
                 )}
+                  <View style={{ paddingHorizontal: 16 }}>
+                    <>
                   { customers?.listCustomers?.length > 0 && (
         <View style={styles.filterRow}>
   <TouchableOpacity style={styles.filterChipActive}>
@@ -887,11 +887,17 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
 </View>
                     )
                   } 
+                  </>
+                  </View>
+                  
     
 
                 <ScrollView
                   showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ paddingBottom: 50 }}
+                   contentContainerStyle={{
+    paddingBottom: 50,
+    paddingHorizontal: 16,  
+  }}
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
 
@@ -2206,7 +2212,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     // paddingVertical: 50,
     paddingTop: 50,
     // paddingBottom: 30
