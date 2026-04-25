@@ -3421,21 +3421,32 @@ export default function BillsDesign({ route }) {
 
 
 
+{selectedBill?.canEdit && (
+  <TouchableOpacity
+    style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+    disabled={!canUpdateInvoice}
+    onPress={() => handleEditBill(selectedBill)}
+  >
+    <Image
+      source={EditIcon}
+      style={styles.popupIcon}
+    />
+    <Text style={styles.popupText}>Edit</Text>
+  </TouchableOpacity>
+)}
 
-
-                {(selectedBill?.invoiceMode === "Recurring" && selectedBill?.paymentStatus === "Pending") && (
+                {/* {(selectedBill?.canEdit === "Recurring" && selectedBill?.paymentStatus === "Pending") && (
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                     disabled={!canUpdateInvoice}
                     onPress={() => handleEditBill(selectedBill)} >
                     <Image
-                      // source={require("../../../Assets/Images/edit.png")}
                       source={EditIcon}
                       style={styles.popupIcon}
                     />
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
-                )}
+                )} */}
 
                 {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
                   !selectedBill?.isDiscounted && (

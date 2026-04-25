@@ -20,7 +20,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-
+import MonthPicker from "react-native-month-year-picker";
 
 
 export default function EditRentalAmountSheet({
@@ -58,7 +58,7 @@ export default function EditRentalAmountSheet({
 
   const { editRentalAmount } = useCustomer();
   const { getBillingConfig } = UseSetting();
-  const [billingData, setBillingData] = useState("")
+  // const [billingData, setBillingData] = useState("")
   const { activeHostelId } = useContext(CommonContexts);
 
   const [type, setType] = useState(null);
@@ -67,6 +67,10 @@ export default function EditRentalAmountSheet({
   const [monthlyRent, setMonthlyRent] = useState("");
   const [effectiveDate, setEffectiveDate] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [effectiveMonth, setEffectiveMonth] = useState(null);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+const [selectedYear, setSelectedYear] = useState(dayjs().year());
+
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [renteError, setRentError] = useState("");
@@ -74,6 +78,65 @@ export default function EditRentalAmountSheet({
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [billingData, setBillingData] = useState(null);
+
+  // const billStartDate = billingData?.billStartDate;
+// const billDueDate = billingData?.billDueDate;
+const typeOfBilling = billingData?.typeOfBilling;
+
+const billStartDate = Number(billingData?.billStartDate) || 1;
+const billDueDate = Number(billingData?.billDueDate) || 1;
+
+console.log("billingdata",billingData );
+
+const today = dayjs();
+
+let startMonth;
+let endMonth;
+
+if (billingData && billStartDate && billDueDate) {
+  if (typeOfBilling === "Joining Date Based") {
+    startMonth = today.add(1, "month").startOf("month");
+    endMonth = today.add(3, "month").endOf("month");
+  } else {
+    let cycleMonth = today.month();
+    let cycleYear = today.year();
+
+    if (today.date() > billStartDate) {
+      const nextMonth = today.add(1, "month");
+      cycleMonth = nextMonth.month();
+      cycleYear = nextMonth.year();
+    }
+
+    const start = dayjs()
+      .year(cycleYear)
+      .month(cycleMonth)
+      .date(billStartDate)
+      .startOf("day");
+
+    const end = start
+      .add(2, "month")
+      .date(billDueDate)
+      .endOf("day");
+
+    startMonth = start;
+    endMonth = end;
+  }
+}
+
+
+const isMonthDisabled = (year, monthIndex) => {
+  if (!startMonth || !endMonth) return true;
+
+  const current = dayjs()
+    .year(year)
+    .month(monthIndex)
+    .startOf("month");
+
+  return current.isBefore(startMonth, "month") || current.isAfter(endMonth, "month");
+}
+
+  
 
   /* ================= RESET ================= */
   const resetState = () => {
@@ -130,7 +193,6 @@ export default function EditRentalAmountSheet({
       maxDate: end.format("YYYY-MM-DD"),
     };
   };
-  const billStartDate = billingData?.billStartDate;
 
   const billingRange = billStartDate
     ? getBillingCycleRange(billStartDate)
@@ -205,8 +267,8 @@ export default function EditRentalAmountSheet({
       valid = false;
     }
 
-    if (type === "Rent-Revision" && !effectiveDate) {
-      setDateError("Please select effective date");
+    if (type === "Rent-Revision" && !effectiveMonth) {
+      setDateError("Please select effective Month");
       valid = false;
     }
 
@@ -221,11 +283,15 @@ export default function EditRentalAmountSheet({
     const payload = {
       newRent: newAmount,
       reason,
-      effectiveDate:
-        type === "Rent-Revision"
-          ? dayjs(effectiveDate).format("DD-MM-YYYY")
-          : "",
-    };
+      // effectiveDate:
+      //   type === "Rent-Revision"
+      //     ? dayjs(effectiveDate).format("DD-MM-YYYY")
+      //     : "",
+          effectiveDate:
+  type === "Rent-Revision"
+    ? dayjs(effectiveMonth).format("MM-YYYY")
+    : ""
+    }
 
     const res = await editRentalAmount(
       customerDetails.hostelId,
@@ -247,6 +313,9 @@ export default function EditRentalAmountSheet({
       setError(res?.message || "Update failed");
     }
   };
+
+  console.log("showdatepicker", showCalendar);
+  
 
   return (
     <>
@@ -364,7 +433,7 @@ export default function EditRentalAmountSheet({
             {type === "Rent-Revision" && (
               <>
                 <Text style={[styles.label, { marginTop: 15 }]}>Effective From <Text style={{ color: "red" }}>*</Text></Text>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.input}
                   onPress={() => setShowCalendar(true)}
                 >
@@ -373,10 +442,23 @@ export default function EditRentalAmountSheet({
                       ? dayjs(effectiveDate).format("DD/MM/YYYY")
                       : "DD/MM/YYYY"}
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+
+               <TouchableOpacity
+  style={styles.input}
+  onPress={() => setShowMonthPicker(true)}
+>
+  <Text>
+    {effectiveMonth
+      ? dayjs(effectiveMonth).format("MM/YYYY")
+      : "MM/YYYY"}
+  </Text>
+</TouchableOpacity>
               </>
 
             )}
+
+
             {dateError && <ErrorMessage message={dateError} />}
 
             {/* ================= REASON ================= */}
@@ -418,7 +500,77 @@ export default function EditRentalAmountSheet({
 
       </View>
 
-      {showCalendar && (
+<View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+             {showMonthPicker && (
+  <View style={styles.calendarOverlay}>
+      <TouchableWithoutFeedback onPress={() => setShowMonthPicker(false)}>
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    />
+  </TouchableWithoutFeedback>
+    <View style={styles.calendarSheet}>
+
+      {/* YEAR HEADER */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+        <TouchableOpacity onPress={() => setSelectedYear(selectedYear - 1)}>
+          <Text>{"<<"}</Text>
+        </TouchableOpacity>
+
+        <Text style={{ fontWeight: "600" }}>{selectedYear}</Text>
+
+        <TouchableOpacity onPress={() => setSelectedYear(selectedYear + 1)}>
+          <Text>{">>"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* MONTH GRID */}
+ <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+  {dayjs.monthsShort().map((m, index) => {
+    
+    const disabled = isMonthDisabled(selectedYear, index);
+
+    return (
+      <TouchableOpacity
+        key={index}
+        disabled={disabled}
+        style={{
+          width: "33%",
+          padding: 12,
+          alignItems: "center",
+          opacity: disabled ? 0.3 : 1,
+        }}
+        onPress={() => {
+          if (disabled) return;
+
+          const date = dayjs()
+            .year(selectedYear)
+            .month(index)
+            .startOf("month");
+
+          setEffectiveMonth(date.toDate());
+          setShowMonthPicker(false);
+        }}
+      >
+        <Text style={{ color: disabled ? "#aaa" : "#000" }}>
+          {m}
+        </Text>
+      </TouchableOpacity>
+    );
+  })}
+</View>
+
+    </View>
+  </View>
+)}
+</View>
+
+      {/* {showCalendar && (
         <View style={styles.calendarOverlay}>
           <TouchableWithoutFeedback
             onPress={() => setShowCalendar(false)}
@@ -426,18 +578,7 @@ export default function EditRentalAmountSheet({
             <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
           </TouchableWithoutFeedback>
           <View style={styles.calendarSheet}>
-            {/* <Calendar
-              onDayPress={(day) => {
-                setEffectiveDate(day.dateString);
-                setShowCalendar(false);
-              }}
-              markedDates={{
-                [effectiveDate]: {
-                  selected: true,
-                  selectedColor: "#2563EB",
-                },
-              }}
-            /> */}
+         
             <Calendar
               minDate={billingRange?.minDate}
               maxDate={billingRange?.maxDate}
@@ -459,10 +600,12 @@ export default function EditRentalAmountSheet({
 
           </View>
         </View>
-      )}
+      )} */}
     </>
   );
 }
+
+
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
@@ -559,21 +702,29 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
-  calendarOverlay: {
-    // ...StyleSheet.absoluteFillObject,
-    // backgroundColor: "rgba(0,0,0,0.4)",
-    // justifyContent: "flex-end",
-    // alignItems: "center",
-      position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        justifyContent: "flex-end",
-        alignItems: "center",   
-        zIndex: 2000,
-  },
+
+ calendarOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  zIndex: 9999,        
+  elevation: 10,      
+},
+
+//   calendarOverlay: {
+    
+//       position: "absolute",
+//         top: 0,
+//         left: 0,
+//         right: 0,
+//         bottom: 0,
+//         backgroundColor: "rgba(0,0,0,0.4)",
+//         justifyContent: "flex-end",
+//         alignItems: "center",   
+//         zIndex: 2000,
+//   },
+
   calendarSheet: {
     backgroundColor: "#fff",
     width: "90%",

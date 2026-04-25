@@ -239,6 +239,10 @@ export default function OverviewTab({ customerDetails,
   ].includes(customerDetails?.hostelInfo?.currentStatus);
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
+const isNewRentApplied = customerDetails?.isNewRentApplied;
+const newRent = customerDetails?.newRentAmount;
+const oldRent = customerDetails?.hostelInfo?.monthlyRent;
+
   const isBookedTenant = customerDetails?.customerCurrentStatus === "BOOKED";
   const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
 
@@ -690,24 +694,7 @@ export default function OverviewTab({ customerDetails,
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
-                  {/* {
-                  !["VACATED","NOTICE"].includes (customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus ) && (
-                      <TouchableOpacity
-                        disabled={!isJoiningDateEditable && !canUpdateTenant && isBookedTenant}
-                        style={!isJoiningDateEditable && !canUpdateTenant && { opacity: 0.4 }}
-                        onPress={handleEditMonthlyRent}
-                      >
-                        <Image
-                          source={EditIcon}
-                          style={[
-                            styles.editIconSmall,
-                            !isJoiningDateEditable && styles.disabledIcon,
-                          ]}
-                        />
-                      </TouchableOpacity>
-
-                    )
-                  } */}
+                 
                   {
                     !disableFinancialEdit && isSubscriptionAllow && (
                       <>
@@ -737,28 +724,13 @@ export default function OverviewTab({ customerDetails,
                 </Text>
               </View>
 
+ 
+
               {/* Advance Amount */}
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
-                  {/* {
-                   !["VACATED","NOTICE"].includes (customerDetails?.hostelInfo?.monthlyRent && customerDetails?.hostelInfo?.currentStatus )  && (
-                      <TouchableOpacity
-                        disabled={!isJoiningDateEditable && !canUpdateTenant && !canEditAdvance && isBookedTenant}
-                        style={!isJoiningDateEditable && !canUpdateTenant && !canEditAdvance && isBookedTenant &&  { opacity: 0.4 }}
-                        onPress={handleEditAdvance}
-                      >
-                        <Image
-                          source={EditIcon}
-                          style={[
-                            styles.editIconSmall,
-                            !isJoiningDateEditable && styles.disabledIcon,
-                          ]}
-                        />
-                      </TouchableOpacity>
-
-                    )
-                  } */}
+                 
 
                   {
                     !disableFinancialEdit && isSubscriptionAllow && (
@@ -832,6 +804,13 @@ export default function OverviewTab({ customerDetails,
                   </View>
                 )
               )}
+
+                           {isNewRentApplied && (
+  <View style={styles.amountBox}>
+    <Text style={styles.amountValue}>Monthly New Rent</Text>
+    <Text style={styles.amountLabel}>₹ {newRent || 0}</Text>
+  </View>
+)}
 
 
 
@@ -1534,6 +1513,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 14,
     elevation: 2,
+         shadowColor: "#000",        
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 4,
   },
   cardHeader: {
     flexDirection: "row",
@@ -1682,6 +1665,13 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 14,
     elevation: 2,
+
+      shadowColor: "#000",        
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 4,
+
+  // elevation: 2, 
   },
 
   sectionHeader: {
@@ -1734,6 +1724,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 14,
     elevation: 2,
+         shadowColor: "#000",        
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 4,
   },
 
   docTabRow: {
@@ -1905,7 +1899,11 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 14,
     elevation: 2,
-    position: "relative",   // 🔥 Important
+    position: "relative",  
+         shadowColor: "#000",        
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 4,
   },
 
   docContentWrapper: {
