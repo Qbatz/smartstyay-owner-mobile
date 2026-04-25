@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard
+  BackHandler, Keyboard , Platform
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -35,7 +35,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import PaymentIcon from "../../../Assets/Images/RecordPayIcon.png";
 import Profile from "../../../Assets/Images/profile.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
-import SearchIcon from "../../../Assets/Images/Asset_search.png";
+// import SearchIcon from "../../../Assets/Images/Asset_search.png";
+import SearchIcon from "../../../Assets/Images/SearchIcon.png";
 import InProfile from "../../../Assets/Images/inActiveuser.png";
 import ActiveCheckout from "../../../Assets/Images/Active_checkout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout.png";
@@ -2125,7 +2126,7 @@ export default function BillsDesign({ route }) {
         <SafeAreaView style={styles.container}>
 
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
+          {/* <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
 
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image source={ArrowLeft} style={styles.backIcon} />
@@ -2146,7 +2147,33 @@ export default function BillsDesign({ route }) {
               />
             </View>
 
-          </View>
+          </View> */}
+
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
+
+  <TouchableOpacity onPress={() => navigation.goBack()}>
+    <Image source={ArrowLeft} style={styles.backIcon} />
+  </TouchableOpacity>
+
+  <View style={{ flex: 1 }}>
+    <View style={styles.searchContainer}>
+      <Image source={SearchIcon} style={styles.searchIcon} />
+
+      <TextInput
+         style={styles.searchInput}
+                placeholder="Search Invoices"
+                placeholderTextColor="#9CA3AF"
+                value={searchText}
+                onChangeText={(text) => {
+                  setSearchText(text);
+                  handleSearch(text);
+                }}
+                editable={canReadInvoice}
+      />
+    </View>
+  </View>
+
+</View>
 
 
 
@@ -3402,7 +3429,8 @@ export default function BillsDesign({ route }) {
                     disabled={!canUpdateInvoice}
                     onPress={() => handleEditBill(selectedBill)} >
                     <Image
-                      source={require("../../../Assets/Images/edit.png")}
+                      // source={require("../../../Assets/Images/edit.png")}
+                      source={EditIcon}
                       style={styles.popupIcon}
                     />
                     <Text style={styles.popupText}>Edit</Text>
@@ -4978,28 +5006,32 @@ const styles = StyleSheet.create({
     // paddingTop: 60
   },
   searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    // backgroundColor: "#F5F6FA",
-    borderRadius: 50,
-    borderWidth: 1, borderColor: '#E4E4E4',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    // height: 55,
-    flex: 1,
-  },
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 30,
+  paddingHorizontal: 14,
+  height: 44,
+},
 
   searchIcon: {
     width: 18,
     height: 18,
     marginRight: 8,
   },
+
   searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: "#111827",
-    fontFamily: "Gilroy-Medium",
-  },
+  flex: 1,
+  fontSize: 15,
+  color: "#000",
+  fontFamily: "Gilroy-Regular",
+  paddingVertical: 0,
+
+  ...(Platform.OS === "ios" && {
+    height: 40,
+  }),
+},
 
   backIcon: {
     width: 22,

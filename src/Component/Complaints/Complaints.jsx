@@ -8,7 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image, BackHandler, Animated, PanResponder,
-  ScrollView, Dimensions
+  ScrollView, Dimensions , Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -27,6 +27,7 @@ import AssignBottomSheet from "../Complaints/AssignCompliance";
 import CommentBottomSheet from "../Complaints/CommentBox";
 import ChangeStatus from "../Complaints/ComplianceStatus";
 import LeftArrow from "../../Assets/Images/Arrow_left.png"
+import SearchIcon from "../../Assets/Images/SearchIcon.png";
 import {useHideTabbarOnScroll} from "../../Utils/useHideTabbarOnScroll"
 
 export default function Complaints({ route }) {
@@ -531,32 +532,52 @@ export default function Complaints({ route }) {
 
 
         {!loading && complaintsList && complaintsList?.length > 0 &&
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20, marginBottom: 10 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
-            </TouchableOpacity>
+          // <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20, marginBottom: 10 }}>
+          //   <TouchableOpacity onPress={() => navigation.goBack()}>
+          //     <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
+          //   </TouchableOpacity>
 
 
 
-            <View style={styles.searchBox}>
-              <Image
-                source={{
-                  uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png",
-                }}
-                style={styles.searchIcon}
-              />
+          //   <View style={styles.searchBox}>
+          //     <Image
+          //       source={{
+          //         uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png",
+          //       }}
+          //       style={styles.searchIcon}
+          //     />
 
-              <TextInput
-                placeholder="Search Complaints"
-                placeholderTextColor="#A1A1A1"
-                style={[
-                  styles.searchInput,
-                  !canReadComplaints && { opacity: 0.5 }
-                ]}
-                pointerEvents={canReadComplaints ? "auto" : "none"}
-              />
-            </View>
-          </View>
+          //     <TextInput
+          //       placeholder="Search Complaints"
+          //       placeholderTextColor="#A1A1A1"
+          //       style={[
+          //         styles.searchInput,
+          //         !canReadComplaints && { opacity: 0.5 }
+          //       ]}
+          //       pointerEvents={canReadComplaints ? "auto" : "none"}
+          //     />
+          //   </View>
+          // </View>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+  <TouchableOpacity onPress={() => navigation.goBack()}>
+    <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
+  </TouchableOpacity>
+
+  <View style={{ flex: 1 }}>
+    <View style={styles.searchBox}>
+      <Image
+       source={SearchIcon}
+        style={styles.searchIcon}
+      />
+
+      <TextInput
+        placeholder="Search Complaints"
+        placeholderTextColor="#9CA3AF"
+        style={styles.searchInput}
+      />
+    </View>
+  </View>
+</View>
         }
 
         {!loading && complaintsList && complaintsList?.length > 0 && (
@@ -770,20 +791,28 @@ const styles = StyleSheet.create({
   },
 
 
-
   searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#D9D9D9",
-    borderRadius: 30,
-    paddingHorizontal: 14,
-    paddingVertical: 2,
-    // marginBottom: 5,
-  },
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#D9D9D9",
+  borderRadius: 30,
+  paddingHorizontal: 14,
+  height: 44,
+},
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 15, color: "#000", fontFamily: "Gilroy-Regular" },
+  searchInput: {
+  flex: 1,
+  fontSize: 15,
+  color: "#000",
+  fontFamily: "Gilroy-Regular",
+  paddingVertical: 0, 
+  ...(Platform.OS === "ios" && {
+    height: 40,
+  }),
+},
+  // searchInput: { flex: 1, fontSize: 15, color: "#000", fontFamily: "Gilroy-Regular" },
 
   card: {
     paddingVertical: 15,

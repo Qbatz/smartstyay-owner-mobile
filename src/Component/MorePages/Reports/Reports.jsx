@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   Dimensions,
   Image,
-  ScrollView,
+  ScrollView,Platform
 } from "react-native";
 import { Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -34,7 +34,8 @@ import DirectionImage from "../../../Assets/Images/direction-down.png"
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.42;
-const HEADER_HEIGHT = 120;
+// const HEADER_HEIGHT = 120;
+const HEADER_HEIGHT = Platform.OS === "ios" ? 90 : 120;
 
 const Reports = () => {
 
@@ -254,7 +255,7 @@ const handleSwipe = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: HEADER_HEIGHT + 10,
+          paddingTop: HEADER_HEIGHT ,
           paddingBottom: 40,
         }}
       >
@@ -302,7 +303,6 @@ const handleSwipe = () => {
         </TouchableOpacity>
 
 
-        {/* REGISTERS */}
        
         <View style={styles.registerScroll}>
           <Text style={styles.sectionTitle}>Registers</Text>
@@ -330,7 +330,6 @@ const handleSwipe = () => {
 
 export default Reports;
 
-/* ---------------- COMPONENTS ---------------- */
 
 const AnimatedNumber = ({ value, duration = 800 }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -390,7 +389,6 @@ const RegisterCard = ({ icon, title, desc, bgColor, onPress }) => (
 );
 
 
-/* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" , paddingTop:30 },
@@ -433,27 +431,68 @@ const styles = StyleSheet.create({
 
   cardRow: { paddingLeft: 16, paddingTop: 4},
 
+  // summaryCard: {
+  //   width: CARD_WIDTH,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 10,
+  //   padding: 14,
+  //   marginRight: 12,
+  //   marginBottom:5,
+  //   elevation: 2,
+  // },
   summaryCard: {
-    width: CARD_WIDTH,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 14,
-    marginRight: 12,
-    marginBottom:5,
-    elevation: 2,
-  },
+  width: CARD_WIDTH,
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  padding: 14,
+  marginRight: 12,
+  marginBottom: 5,
 
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-    elevation: 3,
-    backgroundColor: "#fff",
-  },
+  elevation: 3,
 
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+
+  // borderWidth: 1,
+  // borderColor: "#E5E7EB",
+},
+
+  // iconBox: {
+  //   width: 36,
+  //   height: 36,
+  //   borderRadius: 10,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  //   marginBottom: 8,
+  //   elevation: 3,
+  //   backgroundColor: "#fff",
+  // },
+iconBox: {
+  width: 36,
+  height: 36,
+  borderRadius: 10,
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 8,
+
+  // ✅ Add this
+  backgroundColor: "#FFFFFF",
+
+  // ✅ Border (IMPORTANT)
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+
+  // ✅ iOS shadow
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 3,
+
+  // ✅ Android shadow
+  elevation: 3,
+},
   cardIcon: { width: 20, height: 20 },
 
   cardTitle: { fontSize: 12, color: "#6B7280" },
@@ -468,15 +507,31 @@ const styles = StyleSheet.create({
 
   sectionTitle: { fontSize: 16, fontWeight: "700", marginBottom: 12 },
 
-  registerCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    elevation: 1,
-  },
+  // registerCard: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   backgroundColor: "#fff",
+  //   borderRadius: 14,
+  //   padding: 14,
+  //   marginBottom: 12,
+  //   elevation: 1,
+  // },
+registerCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#fff",
+  borderRadius: 14,
+  padding: 14,
+  marginBottom: 12,
+  elevation: 2,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 3,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
+  
 
   registerIconBox: {
     width: 42,
@@ -521,11 +576,11 @@ headerRow: {
   height: 50,
   flexDirection: "row",
   alignItems: "center",
-  justifyContent: "space-between", // ✅ key line
+  justifyContent: "space-between", 
 },
 
 title: {
-  flex: 1,                         // ✅ center control
+  flex: 1,                        
   fontSize: 18,
   fontWeight: "700",
   // textAlign: "center",

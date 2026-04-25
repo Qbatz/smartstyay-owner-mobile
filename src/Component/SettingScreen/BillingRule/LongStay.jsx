@@ -1150,7 +1150,6 @@ export default function LongStay({ navigation }) {
                                                         if (parts[1]?.length > 2) {
                                                             cleaned = parts[0] + "." + parts[1].slice(0, 2);
                                                         }
-
                                                         updateSlab(slab.id, "amount", cleaned);
                                                     }}
                                                 // onChangeText={(text) => updateSlab(slab.id, "amount", text)}
@@ -1216,7 +1215,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#F4F6F8",
-        paddingHorizontal: 16
+        paddingHorizontal: 16,
+        paddingInline:16
     },
 
     headerRow: {
