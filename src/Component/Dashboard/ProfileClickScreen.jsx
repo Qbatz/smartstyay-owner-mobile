@@ -10,6 +10,7 @@ import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../Utils/Constant";
 import Setting from '../../Assets/Images/setting.png';
 import Remove from '../../Assets/Images/remove.png';
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
+import SmartstayLogo from "../../Assets/Images/smarstay_icon.png"
 
 
 
@@ -86,11 +87,12 @@ const isTabBarVisible = useRef(true);
     }, 100);
     return () => clearInterval(interval);
   }, []);
+  const DRAWER_WIDTH = SCREEN_WIDTH * 0.70;
 
   // SLIDE ANIMATION
   useEffect(() => {
     Animated.timing(slideX, {
-      toValue: visible ? SCREEN_WIDTH * 0.40 : SCREEN_WIDTH,
+      toValue: visible ? SCREEN_WIDTH * 0.30: SCREEN_WIDTH,
       duration: 250,
       useNativeDriver: true,
     }).start();
@@ -195,7 +197,7 @@ console.log("profileDetails", profileDetails);
         style={[
           styles.panel,
           {
-            width: SCREEN_WIDTH * 0.60,
+            width: SCREEN_WIDTH * 0.70,
             // height: SCREEN_HEIGHT - tabHeight,
            height: visible ? SCREEN_HEIGHT : SCREEN_HEIGHT - tabHeight,
             transform: [{ translateX: slideX }],
@@ -206,8 +208,9 @@ console.log("profileDetails", profileDetails);
         {/* HEADER */}
         <View style={styles.header}>
   <View style={styles.headerTitleWrapper}>
-    <Text style={styles.title}>
-      {activeHostel?.name || "Smartstay"}
+    <Image source={SmartstayLogo} style={{width:32.67,height:27.4}}/>
+    <Text style={[styles.title,{marginLeft:5}]}>Smartstay
+      {/* {activeHostel?.name || "Smartstay"} */}
     </Text>
   </View>
 
@@ -294,7 +297,11 @@ console.log("profileDetails", profileDetails);
            style={styles.logoutRow}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
+          
         </View>
+
+        <Text style={{marginBottom:8,marginHorizontal:14,fontSize:14,fontFamily:'Gilroy-Medium',color: "#333"}}>
+          Smartstay version 2</Text>
 
       </Animated.View>
 
@@ -367,6 +374,7 @@ header: {
 headerTitleWrapper: {
   flex: 1,         
   paddingRight: 12, 
+  flexDirection:'row'
 },
 
 title: {
@@ -377,7 +385,7 @@ title: {
   flexWrap: "wrap", 
 },
 
-  close: {width:15,height:15},
+  close: {width:15,height:15,tintColor:'#222222'},
 
   profileRow: {
     flexDirection: "row",

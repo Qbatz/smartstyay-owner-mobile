@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext , useRef} from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   View,
   Text,
@@ -21,21 +21,22 @@ import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import Loader from "../../Loader/Loader";
 
 
 export default function AddExpenses({ navigation, route }) {
 
 
   const { fetchExpenses, IntializeexpensesList, GetInitializeExpense,
-    UpdateExpense,  expenses, expensesList, GetExpenseList, loading, AddExpense,  } = useContext(ExpensesContext);
+    UpdateExpense, expenses, expensesList, GetExpenseList, loading, AddExpense, } = useContext(ExpensesContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const editData = route?.params?.editData || null;
 
-  
 
-    console.log("IntializeexpensesList", editData);
-    const isEditMode = !!editData;
+
+  console.log("IntializeexpensesList", editData);
+  const isEditMode = !!editData;
 
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -54,9 +55,9 @@ export default function AddExpenses({ navigation, route }) {
   const [description, setDescription] = useState("");
 
 
-const scrollRef = useRef(null);
-const descriptionRef = useRef(null);
- 
+  const scrollRef = useRef(null);
+  const descriptionRef = useRef(null);
+
   const [unitCountOpen, setUnitCountOpen] = useState(false);
 
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -84,11 +85,14 @@ const descriptionRef = useRef(null);
   const [subCategoryErr, setSubCategoryErr] = useState("");
   const [dateErr, setDateErr] = useState("");
   const [amountErr, setAmountErr] = useState("");
-  const [unitcountErr , setUnitCountErr] = useState("")
+  const [unitcountErr, setUnitCountErr] = useState("")
   const [modeErr, setModeErr] = useState("");
-  const [nochangeErr, setNochangeErr] =  useState("");
+  const [nochangeErr, setNochangeErr] = useState("");
 
   const [initialData, setInitialData] = useState(null);
+
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const paymentOptions =
     IntializeexpensesList?.banks?.map((b) => ({
@@ -115,90 +119,90 @@ const descriptionRef = useRef(null);
 
 
   useEffect(() => {
-  if (!editData || !IntializeexpensesList) return;
+    if (!editData || !IntializeexpensesList) return;
 
-  // ✅ CATEGORY
-  const cat = IntializeexpensesList?.listExpenses?.find(
-    (c) => c.categoryId === editData.categoryId
-  );
-  setSelectedCategory(cat || null);
-
-  // ✅ SUB CATEGORY
-  if (cat && editData.subCategoryId) {
-    const sub = cat.subCategories?.find(
-      (s) => s.subCategoryId === editData.subCategoryId
+    // ✅ CATEGORY
+    const cat = IntializeexpensesList?.listExpenses?.find(
+      (c) => c.categoryId === editData.categoryId
     );
-    setSelectedSubCategory(sub || null);
-  }
+    setSelectedCategory(cat || null);
 
-  // ✅ DATE
-  if (editData.transactionDate) {
-    setPurchaseDate(
-      dayjs(editData.transactionDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+    // ✅ SUB CATEGORY
+    if (cat && editData.subCategoryId) {
+      const sub = cat.subCategories?.find(
+        (s) => s.subCategoryId === editData.subCategoryId
+      );
+      setSelectedSubCategory(sub || null);
+    }
+
+    // ✅ DATE
+    if (editData.transactionDate) {
+      setPurchaseDate(
+        dayjs(editData.transactionDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+      );
+    }
+
+    // ✅ AMOUNTS
+    setPurchaseAmount(String(editData.totalAmount || ""));
+    setUnitCount(String(editData.itemsCount || ""));
+    setPerUnit(String(editData.unitPrice || ""));
+
+    // ✅ DESCRIPTION
+    setDescription(editData.description || "");
+
+    // ✅ MODE OF PAYMENT
+    const mode = IntializeexpensesList?.banks?.find(
+      (b) => b.bankId === editData.bankId
     );
-  }
-
-  // ✅ AMOUNTS
-  setPurchaseAmount(String(editData.totalAmount || ""));
-  setUnitCount(String(editData.itemsCount || ""));
-  setPerUnit(String(editData.unitPrice || ""));
-
-  // ✅ DESCRIPTION
-  setDescription(editData.description || "");
-
-  // ✅ MODE OF PAYMENT
-  const mode = IntializeexpensesList?.banks?.find(
-    (b) => b.bankId === editData.bankId
-  );
-  if (mode) {
-    setSelectedMode({
-      id: mode.bankId,
-      name: `${mode.holderName} - ${mode.bankName}`,
-    });
-  }
-}, [editData, IntializeexpensesList]);
+    if (mode) {
+      setSelectedMode({
+        id: mode.bankId,
+        name: `${mode.holderName} - ${mode.bankName}`,
+      });
+    }
+  }, [editData, IntializeexpensesList]);
 
 
 
-// useEffect(() => {
-//   if (editData) {
+  // useEffect(() => {
+  //   if (editData) {
 
-//     const data = {
-//       categoryId: editData.categoryId,
-//       subCategoryId: editData.subCategoryId,
-//       purchaseDate: editData.transactionDate,
-//       count: editData.itemsCount,
-//       totalAmount: editData.totalAmount,
-//       description: editData.description || ""
-//     };
+  //     const data = {
+  //       categoryId: editData.categoryId,
+  //       subCategoryId: editData.subCategoryId,
+  //       purchaseDate: editData.transactionDate,
+  //       count: editData.itemsCount,
+  //       totalAmount: editData.totalAmount,
+  //       description: editData.description || ""
+  //     };
 
-//     setInitialData(data);
-//   }
-// }, [editData]);
+  //     setInitialData(data);
+  //   }
+  // }, [editData]);
 
-useEffect(() => {
-  if (editData) {
-    const data = {
-      categoryId: editData?.categoryId,
-      subCategoryId: editData?.subCategoryId || null,
-      purchaseDate: editData?.transactionDate,
-      count: editData?.itemsCount,
-      totalAmount: editData?.totalAmount,
-      description: editData?.description || ""
-    };
+  useEffect(() => {
+    if (editData) {
+      const data = {
+        categoryId: editData?.categoryId,
+        subCategoryId: editData?.subCategoryId || null,
+        purchaseDate: editData?.transactionDate,
+        count: editData?.itemsCount,
+        totalAmount: editData?.totalAmount,
+        description: editData?.description || ""
+      };
 
-    setInitialData(data);
-  }
-}, [editData]);
+      setInitialData(data);
+    }
+  }, [editData]);
 
-const [minDate, setMinDate] = useState(null);
+  const [minDate, setMinDate] = useState(null);
 
-useEffect(() => {
-  if (editData?.transactionDate) {
-    const originalDate = dayjs(editData?.transactionDate, "DD/MM/YYYY");
-    setMinDate(originalDate);
-  }
-}, [editData]);
+  useEffect(() => {
+    if (editData?.transactionDate) {
+      const originalDate = dayjs(editData?.transactionDate, "DD/MM/YYYY");
+      setMinDate(originalDate);
+    }
+  }, [editData]);
 
 
 
@@ -236,27 +240,27 @@ useEffect(() => {
 
 
   const today = dayjs();
-  
-const isDisabledDate = (d) => {
-  if (!d) return false;
 
-  if (d.isAfter(today, "day")) return true;
+  const isDisabledDate = (d) => {
+    if (!d) return false;
 
-  if (isEditMode && minDate && d.isBefore(minDate, "day")) return true;
+    if (d.isAfter(today, "day")) return true;
 
-  return false;
-}
+    if (isEditMode && minDate && d.isBefore(minDate, "day")) return true;
+
+    return false;
+  }
 
 
-  
-        
-        
-       const markedDates = {};
-  
+
+
+
+  const markedDates = {};
+
   for (let i = -365; i <= 365; i++) {
     const d = dayjs().add(i, "day");
     const key = d.format("YYYY-MM-DD");
-  
+
     if (isDisabledDate(d)) {
       markedDates[key] = {
         disabled: true,
@@ -277,19 +281,19 @@ const isDisabledDate = (d) => {
 
 
   const scrollToField = (ref) => {
-  if (!ref?.current || !scrollRef.current) return;
+    if (!ref?.current || !scrollRef.current) return;
 
-  ref.current.measureLayout(
-    scrollRef.current,
-    (x, y) => {
-      scrollRef.current.scrollTo({
-        y: y - 100,
-        animated: true,
-      });
-    },
-    () => {}
-  );
-};
+    ref.current.measureLayout(
+      scrollRef.current,
+      (x, y) => {
+        scrollRef.current.scrollTo({
+          y: y - 100,
+          animated: true,
+        });
+      },
+      () => { }
+    );
+  };
 
 
   const renderSelectField = (label, selected, open, setOpen, list, onSelect) => (
@@ -347,357 +351,368 @@ const isDisabledDate = (d) => {
 
 
   const isValidPositiveNumber = (val) => {
-  if (!val) return false;
-  const num = Number(val);
-  return !isNaN(num) && num > 0;
-};
-
-const hasChanges = () => {
-
-  const currentData = {
-    categoryId: selectedCategory?.categoryId || null,
-    subCategoryId: selectedSubCategory?.subCategoryId || null,
-    purchaseDate: dayjs(purchaseDate).format("DD/MM/YYYY"),
-    count: Number(unitCount) || 1,
-    totalAmount: Number(purchaseAmount),
-    description: description || ""
+    if (!val) return false;
+    const num = Number(val);
+    return !isNaN(num) && num > 0;
   };
 
-  return JSON.stringify(initialData) !== JSON.stringify(currentData);
-};
+  const hasChanges = () => {
 
-
-const handleSubmitExpense = async () => {
-
-  let hasError = false;
-
-  setCategoryErr("");
-  setSubCategoryErr("");
-  setDateErr("");
-  setAmountErr("");
-  setUnitCountErr("");
-  setModeErr("");
-  setNochangeErr("");
-
-  if (!selectedCategory) {
-    setCategoryErr("Please Select Category");
-    hasError = true;
-  }
-
-  if (subCategoryList.length > 0 && !selectedSubCategory) {
-    setSubCategoryErr("Please select sub category");
-    hasError = true;
-  }
-
-  if (!purchaseDate) {
-    setDateErr("Please Select Purchase Date");
-    hasError = true;
-  }
-
-  if (!purchaseAmount || Number(purchaseAmount) <= 0) {
-    setAmountErr("Enter Valid Amount");
-    hasError = true;
-  }
-
-  if (!selectedMode && !isEditMode) {
-    setModeErr("Please Select Mode of Transaction");
-    hasError = true;
-  }
-
-  if (hasError) return;
-
-  if (isEditMode && !hasChanges()) {
-    setNochangeErr("No changes detected");
-    return;
-  }
-
-  let payload;
-
-  if (isEditMode) {
-    payload = {
-      categoryId: selectedCategory.categoryId,
+    const currentData = {
+      categoryId: selectedCategory?.categoryId || null,
       subCategoryId: selectedSubCategory?.subCategoryId || null,
-            // subCategory: selectedSubCategory?.subCategoryId || null,
-      purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+      purchaseDate: dayjs(purchaseDate).format("DD/MM/YYYY"),
       count: Number(unitCount) || 1,
       totalAmount: Number(purchaseAmount),
-      description
-    };
-  } else {
-    payload = {
-      categoryId: selectedCategory.categoryId,
-      subCategory: selectedSubCategory?.subCategoryId || null,
-      purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-      count: Number(unitCount) || 1,
-      totalAmount: Number(purchaseAmount),
-      description,
-      bankId: selectedMode.id
+      description: description || ""
     };
 
-    console.log("payload", payload);
-    
-  }
-
-  let res;
-
-  if (isEditMode) {
-    res = await UpdateExpense(activeHostelId, editData.expenseId, payload);
-  } else {
-    res = await AddExpense(payload, activeHostelId);
-  }
-
-  if (res?.success) {
-
-    await GetExpenseList(activeHostelId);
-
-    setModalType("success");
-    setModalMessage(
-      isEditMode
-        ? "Expense updated successfully"
-        : "Expense added successfully"
-    );
-
-    setShowSuccessModal(true);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-      if (route?.params?.onUpdated) {
-      route.params.onUpdated();
-        }
-      navigation.goBack();
-    }, 1500);
-
-  } else {
-
-    setModalType("error");
-    setModalMessage(res?.message || "Something went wrong");
-    setShowSuccessModal(true);
-
-    setTimeout(() => setShowSuccessModal(false), 2000);
-  }
-};
-
-// const handleSubmitExpense = async () => {
-
-//   let hasError = false;
-
-//   setCategoryErr("");
-//   setSubCategoryErr("");
-//   setDateErr("");
-//   setAmountErr("");
-//   setUnitCountErr("");
-//   setModeErr("");
-//   setNochangeErr("")
-
-//   if (!selectedCategory) {
-//     setCategoryErr("Please Select Category");
-//     hasError = true;
-//   }
-
-//   if (subCategoryList.length > 0 && !selectedSubCategory) {
-//     setSubCategoryErr("Please select sub category");
-//     hasError = true;
-//   }
-
-//   if (!purchaseDate) {
-//     setDateErr("Please Select Purchase Date");
-//     hasError = true;
-//   }
-
-//   if (!purchaseAmount || Number(purchaseAmount) <= 0) {
-//     setAmountErr("Enter Valid Amount");
-//     hasError = true;
-//   }
-
-//   if (!selectedMode) {
-//     setModeErr("Please Select Mode of Transaction");
-//     hasError = true;
-//   }
-
-//   if (hasError) return;
+    return JSON.stringify(initialData) !== JSON.stringify(currentData);
+  };
 
 
- 
+  const handleSubmitExpense = async () => {
+    if (isSubmittingRef.current === true) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
-// if (!hasChanges()) {
-//   setNochangeErr("No changes detected");
-//   return;
-// }
+    try {
+      let hasError = false;
 
-// let payload;
+      setCategoryErr("");
+      setSubCategoryErr("");
+      setDateErr("");
+      setAmountErr("");
+      setUnitCountErr("");
+      setModeErr("");
+      setNochangeErr("");
 
-// // if (isEditMode) {
-// //   payload = {
-// //     categoryId: selectedCategory.categoryId,
-// //     subCategoryId: selectedSubCategory?.subCategoryId || null,
-// //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-// //     count: Number(unitCount) || 1,
-// //     totalAmount: Number(purchaseAmount),
-// //     description,
-// //   };
-// // } else {
-// //   payload = {
-// //     categoryId: selectedCategory.categoryId,
-// //     subCategoryId: selectedSubCategory?.subCategoryId || null,
-// //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-// //     count: Number(unitCount) || 1,
-// //     totalAmount: Number(purchaseAmount),
-// //     description,
-// //     bankId: selectedMode.id,
-// //   };
-// // }
+      if (!selectedCategory) {
+        setCategoryErr("Please Select Category");
+        hasError = true;
+      }
 
-//   let res;
+      if (subCategoryList.length > 0 && !selectedSubCategory) {
+        setSubCategoryErr("Please select sub category");
+        hasError = true;
+      }
 
-//   if (isEditMode) {
+      if (!purchaseDate) {
+        setDateErr("Please Select Purchase Date");
+        hasError = true;
+      }
 
-//       payload = {
-//     categoryId: selectedCategory.categoryId,
-//     subCategoryId: selectedSubCategory?.subCategoryId || null,
-//     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-//     count: Number(unitCount) || 1,
-//     totalAmount: Number(purchaseAmount),
-//     description,
-//   };
+      if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+        setAmountErr("Enter Valid Amount");
+        hasError = true;
+      }
 
-   
+      if (!selectedMode && !isEditMode) {
+        setModeErr("Please Select Mode of Transaction");
+        hasError = true;
+      }
 
-//     res = await UpdateExpense(
-//       activeHostelId,
-//       editData.expenseId,
-//       payload
-//     );
+      if (hasError) return;
 
-//   } else {
-//       payload = {
-//     categoryId: selectedCategory.categoryId,
-//     subCategoryId: selectedSubCategory?.subCategoryId || null,
-//     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-//     count: Number(unitCount) || 1,
-//     totalAmount: Number(purchaseAmount),
-//     description,
-//     bankId: selectedMode.id,
-//   };
+      if (isEditMode && !hasChanges()) {
+        setNochangeErr("No changes detected");
+        return;
+      }
 
-//     res = await AddExpense(payload, activeHostelId);
+      let payload;
 
-//   }
+      if (isEditMode) {
+        payload = {
+          categoryId: selectedCategory.categoryId,
+          subCategoryId: selectedSubCategory?.subCategoryId || null,
+          // subCategory: selectedSubCategory?.subCategoryId || null,
+          purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+          count: Number(unitCount) || 1,
+          totalAmount: Number(purchaseAmount),
+          description
+        };
+      } else {
+        payload = {
+          categoryId: selectedCategory.categoryId,
+          subCategory: selectedSubCategory?.subCategoryId || null,
+          purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+          count: Number(unitCount) || 1,
+          totalAmount: Number(purchaseAmount),
+          description,
+          bankId: selectedMode.id
+        };
 
-//   if (res?.success) {
+        console.log("payload", payload);
 
-//     await GetExpenseList(activeHostelId);
+      }
 
-//     setModalType("success");
-//     setModalMessage(
-//       isEditMode
-//         ? "Expense updated successfully"
-//         : "Expense added successfully"
-//     );
+      let res;
 
-//     setShowSuccessModal(true);
+      if (isEditMode) {
+        res = await UpdateExpense(activeHostelId, editData.expenseId, payload);
+      } else {
+        res = await AddExpense(payload, activeHostelId);
+      }
 
-//     setTimeout(() => {
-//       setShowSuccessModal(false);
-//       navigation.goBack();
-//     }, 1500);
+      if (res?.success) {
 
-//   } else {
+        await GetExpenseList(activeHostelId);
 
-//     setModalType("error");
-//     setModalMessage(res?.message || "Something went wrong");
-//     setShowSuccessModal(true);
+        setModalType("success");
+        setModalMessage(
+          isEditMode
+            ? "Expense updated successfully"
+            : "Expense added successfully"
+        );
 
-//     setTimeout(() => setShowSuccessModal(false), 2000);
-//   }
-// };
+        setShowSuccessModal(true);
 
-//   const handleSaveExpense = async () => {
-//     let hasError = false;
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          if (route?.params?.onUpdated) {
+            route.params.onUpdated();
+          }
+          navigation.goBack();
+        }, 1500);
 
-//     setCategoryErr("");
-//     setSubCategoryErr("");
-//     setDateErr("");
-//     setAmountErr("");
-//     setUnitCountErr("")
-//     setModeErr("");
+      } else {
 
-//     if (!selectedCategory) {
-//       setCategoryErr("Please Select Category")
-//       hasError = true;
-//     }
+        setModalType("error");
+        setModalMessage(res?.message || "Something went wrong");
+        setShowSuccessModal(true);
 
-//     if (subCategoryList.length > 0 && !selectedSubCategory) {
-//       setSubCategoryErr("Please select sub category");
-//       hasError = true;
-//     }
+        setTimeout(() => setShowSuccessModal(false), 2000);
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false)
+    }
+  };
 
-//     if (!purchaseDate) {
-//       setDateErr("Please Select Purchase Date");
-//       hasError = true;
-//     }
+  // const handleSubmitExpense = async () => {
 
-//     if (!purchaseAmount || Number(purchaseAmount) <= 0) {
-//       setAmountErr("Enter Valid Amount");
-//       hasError = true;
-//     }
+  //   let hasError = false;
 
-//     if (!isValidPositiveNumber(purchaseAmount)) {
-//   setAmountErr("Amount must be greater than 0");
-//   hasError = true;
-// }
+  //   setCategoryErr("");
+  //   setSubCategoryErr("");
+  //   setDateErr("");
+  //   setAmountErr("");
+  //   setUnitCountErr("");
+  //   setModeErr("");
+  //   setNochangeErr("")
 
-// if (unitCount && !isValidPositiveNumber(unitCount)) {
-//   setUnitCountErr("Unit count must be greater than 0");
-//   hasError = true;
-// }
+  //   if (!selectedCategory) {
+  //     setCategoryErr("Please Select Category");
+  //     hasError = true;
+  //   }
 
-//     if (!selectedMode) {
-//       setModeErr("Please Select Mode of Transaction");
-//       hasError = true;
-//     }
+  //   if (subCategoryList.length > 0 && !selectedSubCategory) {
+  //     setSubCategoryErr("Please select sub category");
+  //     hasError = true;
+  //   }
+
+  //   if (!purchaseDate) {
+  //     setDateErr("Please Select Purchase Date");
+  //     hasError = true;
+  //   }
+
+  //   if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+  //     setAmountErr("Enter Valid Amount");
+  //     hasError = true;
+  //   }
+
+  //   if (!selectedMode) {
+  //     setModeErr("Please Select Mode of Transaction");
+  //     hasError = true;
+  //   }
+
+  //   if (hasError) return;
 
 
-//     if (hasError) return
 
-//     const payload = {
-//       categoryId: selectedCategory.categoryId,
-//       subCategory: selectedSubCategory
-//         ? selectedSubCategory.subCategoryId
-//         : null,
-//       purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-//       count: Number(unitCount) || 1,
-//       totalAmount: Number(purchaseAmount),
-//       description,
-//       bankId: selectedMode.id,
-//     }
 
-//     const res = await AddExpense(payload,activeHostelId);
+  // if (!hasChanges()) {
+  //   setNochangeErr("No changes detected");
+  //   return;
+  // }
 
-//     if (res.success) {
-//       await GetExpenseList(activeHostelId);
+  // let payload;
 
-//       setModalType("success");
-//       setModalMessage("Expense Added successfully");
-//       setShowSuccessModal(true);
+  // // if (isEditMode) {
+  // //   payload = {
+  // //     categoryId: selectedCategory.categoryId,
+  // //     subCategoryId: selectedSubCategory?.subCategoryId || null,
+  // //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+  // //     count: Number(unitCount) || 1,
+  // //     totalAmount: Number(purchaseAmount),
+  // //     description,
+  // //   };
+  // // } else {
+  // //   payload = {
+  // //     categoryId: selectedCategory.categoryId,
+  // //     subCategoryId: selectedSubCategory?.subCategoryId || null,
+  // //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+  // //     count: Number(unitCount) || 1,
+  // //     totalAmount: Number(purchaseAmount),
+  // //     description,
+  // //     bankId: selectedMode.id,
+  // //   };
+  // // }
 
-//       setTimeout(() => {
-//         setShowSuccessModal(false);
-//         navigation.goBack();
-//       }, 1500);
-//     } else {
-//       setModalType("error");
-//       setModalMessage(res?.message || "Something went wrong");
-//       setShowSuccessModal(true);
+  //   let res;
 
-//       setTimeout(() => setShowSuccessModal(false), 2000);
-//     }
-//   };
+  //   if (isEditMode) {
+
+  //       payload = {
+  //     categoryId: selectedCategory.categoryId,
+  //     subCategoryId: selectedSubCategory?.subCategoryId || null,
+  //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+  //     count: Number(unitCount) || 1,
+  //     totalAmount: Number(purchaseAmount),
+  //     description,
+  //   };
+
+
+
+  //     res = await UpdateExpense(
+  //       activeHostelId,
+  //       editData.expenseId,
+  //       payload
+  //     );
+
+  //   } else {
+  //       payload = {
+  //     categoryId: selectedCategory.categoryId,
+  //     subCategoryId: selectedSubCategory?.subCategoryId || null,
+  //     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+  //     count: Number(unitCount) || 1,
+  //     totalAmount: Number(purchaseAmount),
+  //     description,
+  //     bankId: selectedMode.id,
+  //   };
+
+  //     res = await AddExpense(payload, activeHostelId);
+
+  //   }
+
+  //   if (res?.success) {
+
+  //     await GetExpenseList(activeHostelId);
+
+  //     setModalType("success");
+  //     setModalMessage(
+  //       isEditMode
+  //         ? "Expense updated successfully"
+  //         : "Expense added successfully"
+  //     );
+
+  //     setShowSuccessModal(true);
+
+  //     setTimeout(() => {
+  //       setShowSuccessModal(false);
+  //       navigation.goBack();
+  //     }, 1500);
+
+  //   } else {
+
+  //     setModalType("error");
+  //     setModalMessage(res?.message || "Something went wrong");
+  //     setShowSuccessModal(true);
+
+  //     setTimeout(() => setShowSuccessModal(false), 2000);
+  //   }
+  // };
+
+  //   const handleSaveExpense = async () => {
+  //     let hasError = false;
+
+  //     setCategoryErr("");
+  //     setSubCategoryErr("");
+  //     setDateErr("");
+  //     setAmountErr("");
+  //     setUnitCountErr("")
+  //     setModeErr("");
+
+  //     if (!selectedCategory) {
+  //       setCategoryErr("Please Select Category")
+  //       hasError = true;
+  //     }
+
+  //     if (subCategoryList.length > 0 && !selectedSubCategory) {
+  //       setSubCategoryErr("Please select sub category");
+  //       hasError = true;
+  //     }
+
+  //     if (!purchaseDate) {
+  //       setDateErr("Please Select Purchase Date");
+  //       hasError = true;
+  //     }
+
+  //     if (!purchaseAmount || Number(purchaseAmount) <= 0) {
+  //       setAmountErr("Enter Valid Amount");
+  //       hasError = true;
+  //     }
+
+  //     if (!isValidPositiveNumber(purchaseAmount)) {
+  //   setAmountErr("Amount must be greater than 0");
+  //   hasError = true;
+  // }
+
+  // if (unitCount && !isValidPositiveNumber(unitCount)) {
+  //   setUnitCountErr("Unit count must be greater than 0");
+  //   hasError = true;
+  // }
+
+  //     if (!selectedMode) {
+  //       setModeErr("Please Select Mode of Transaction");
+  //       hasError = true;
+  //     }
+
+
+  //     if (hasError) return
+
+  //     const payload = {
+  //       categoryId: selectedCategory.categoryId,
+  //       subCategory: selectedSubCategory
+  //         ? selectedSubCategory.subCategoryId
+  //         : null,
+  //       purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+  //       count: Number(unitCount) || 1,
+  //       totalAmount: Number(purchaseAmount),
+  //       description,
+  //       bankId: selectedMode.id,
+  //     }
+
+  //     const res = await AddExpense(payload,activeHostelId);
+
+  //     if (res.success) {
+  //       await GetExpenseList(activeHostelId);
+
+  //       setModalType("success");
+  //       setModalMessage("Expense Added successfully");
+  //       setShowSuccessModal(true);
+
+  //       setTimeout(() => {
+  //         setShowSuccessModal(false);
+  //         navigation.goBack();
+  //       }, 1500);
+  //     } else {
+  //       setModalType("error");
+  //       setModalMessage(res?.message || "Something went wrong");
+  //       setShowSuccessModal(true);
+
+  //       setTimeout(() => setShowSuccessModal(false), 2000);
+  //     }
+  //   };
 
 
 
   return (
 
     <>
+    {loading && <Loader/>}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -714,18 +729,18 @@ const handleSubmitExpense = async () => {
         </View>
 
         <ScrollView
-        //  ref={scrollRef}
+          //  ref={scrollRef}
           // showsVerticalScrollIndicator={false}
           style={styles.container}
           // contentContainerStyle={{ paddingBottom: 40 }}
           //  keyboardShouldPersistTaps="handled"
           // keyboardDismissMode="on-drag"
-  // contentContainerStyle={{ paddingBottom: 120 }}
+          // contentContainerStyle={{ paddingBottom: 120 }}
 
-      ref={scrollRef}
-  keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="on-drag"
-  contentContainerStyle={{ paddingBottom: 250 }}
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={{ paddingBottom: 250 }}
         >
 
           <Text style={styles.label}>
@@ -738,7 +753,7 @@ const handleSubmitExpense = async () => {
               setCategoryOpen(!categoryOpen)
               setSubCategoryOpen(false);
               setModePaymentOpen(false);
-              
+
             }}
           >
             <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
@@ -770,7 +785,7 @@ const handleSubmitExpense = async () => {
                           setSelectedCategory(item);
                           setSelectedSubCategory(null);
                           setCategoryErr("");
-                            setNochangeErr("");
+                          setNochangeErr("");
                           setCategoryOpen(false);
                         }}
 
@@ -817,7 +832,7 @@ const handleSubmitExpense = async () => {
               setSubCategoryOpen(!subCategoryOpen);
               setCategoryOpen(false);
               setModePaymentOpen(false);
-      
+
             }}
 
           >
@@ -884,21 +899,21 @@ const handleSubmitExpense = async () => {
           <TouchableOpacity
             activeOpacity={0.7}
             // disabled={isEditMode}
-  onPress={() => {
-    // if (!isEditMode)
-      setOpenPurchaseDate(true);
-      setNochangeErr("");
-  }}
+            onPress={() => {
+              // if (!isEditMode)
+              setOpenPurchaseDate(true);
+              setNochangeErr("");
+            }}
           >
             <View style={styles.dateInputWrapper}>
               <TextInput
                 style={styles.dateInput}
                 placeholder="DD-MM-YYYY"
                 value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
-                editable={false}  
+                editable={false}
                 pointerEvents="none"
               />
-          
+
               <Image
                 source={require("../../../Assets/Images/calendar.png")}
                 style={styles.calendarIcon}
@@ -906,7 +921,7 @@ const handleSubmitExpense = async () => {
             </View>
           </TouchableOpacity>
 
-        
+
 
           {dateErr && <ErrorMessage message={dateErr} type="error" />}
 
@@ -920,15 +935,15 @@ const handleSubmitExpense = async () => {
             onChangeText={(t) => {
               let cleaned = t.replace(/[^0-9.]/g, "");
 
-  const parts = cleaned.split(".");
+              const parts = cleaned.split(".");
 
-  if (parts.length > 2) {
-    cleaned = parts[0] + "." + parts[1];
-  }
+              if (parts.length > 2) {
+                cleaned = parts[0] + "." + parts[1];
+              }
 
-  if (parts[1]?.length > 2) {
-    cleaned = parts[0] + "." + parts[1].slice(0, 2);
-  }
+              if (parts[1]?.length > 2) {
+                cleaned = parts[0] + "." + parts[1].slice(0, 2);
+              }
               setPurchaseAmount(cleaned);
               setAmountErr("");
               setNochangeErr("");
@@ -953,9 +968,9 @@ const handleSubmitExpense = async () => {
             }
             placeholder="Enter unit count"
           />
-      {unitcountErr ? <ErrorMessage message={unitcountErr} type="error" /> : null}
+          {unitcountErr ? <ErrorMessage message={unitcountErr} type="error" /> : null}
 
- 
+
 
           {/* Per Unit */}
           <Text style={styles.label}>Per Unit Amount</Text>
@@ -978,11 +993,11 @@ const handleSubmitExpense = async () => {
           <TouchableOpacity
             // style={styles.expensesDropdownBox}
 
-              style={[
-    styles.expensesDropdownBox,
-    isEditMode && { opacity: 0.4 }
-  ]}
-  disabled={isEditMode}
+            style={[
+              styles.expensesDropdownBox,
+              isEditMode && { opacity: 0.4 }
+            ]}
+            disabled={isEditMode}
             onPress={() => {
               setModePaymentOpen(!modePaymentOpen);
               setCategoryOpen(false);
@@ -1047,22 +1062,22 @@ const handleSubmitExpense = async () => {
 
           {/* Description */}
           <Text style={styles.label}>Description</Text>
-             <View ref={descriptionRef}>
-          <TextInput
-            style={styles.textarea}
-            multiline
-            value={description}
+          <View ref={descriptionRef}>
+            <TextInput
+              style={styles.textarea}
+              multiline
+              value={description}
               onChangeText={(text) => {
-              setDescription(text)
-              setNochangeErr("")
-               }}
-            placeholder="Add a short description"
-            placeholderTextColor="#999"
-            onFocus={() => scrollToField(descriptionRef)}
-          />
+                setDescription(text)
+                setNochangeErr("")
+              }}
+              placeholder="Add a short description"
+              placeholderTextColor="#999"
+              onFocus={() => scrollToField(descriptionRef)}
+            />
           </View>
 
-           {nochangeErr ? <ErrorMessage message={nochangeErr} type="error" /> : null}
+          {nochangeErr ? <ErrorMessage message={nochangeErr} type="error" /> : null}
 
           {/* BUTTONS */}
           <View style={styles.btnRow}>
@@ -1071,19 +1086,20 @@ const handleSubmitExpense = async () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-  style={[
-    styles.saveBtn,
-  ]}
-  onPress={handleSubmitExpense}
->
-  <Text style={styles.saveText}>
-    {isEditMode ? "Update Expense" : "Add Expense"}
-  </Text>
-</TouchableOpacity>
+              style={[
+                styles.saveBtn,
+              ]}
+              onPress={handleSubmitExpense}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.saveText}>
+                {isEditMode ? "Update Expense" : "Add Expense"}
+              </Text>
+            </TouchableOpacity>
 
           </View>
 
-         
+
 
           {/* <Modal
             transparent
@@ -1122,51 +1138,51 @@ const handleSubmitExpense = async () => {
 
         </ScrollView>
       </SafeAreaView>
-       {openPurchaseDate && (
-            <View style={styles.dateOverlay}>
-              <TouchableWithoutFeedback onPress={() => setOpenPurchaseDate(false)}>
-                <View style={styles.overlayBg} />
-              </TouchableWithoutFeedback>
-          
-              <View style={styles.calendarContainer}>
-                <Calendar
-                  markingType="custom"
-                  markedDates={{
-                    ...markedDates,
-                    ...(purchaseDate && {
-                      [purchaseDate]: {
-                        selected: true,
-                        selectedColor: "#2563EB",
-                        customStyles: {
-                          container: {
-                            backgroundColor: "#2563EB",
-                            borderRadius: 8,
-                          },
-                          text: {
-                            color: "#FFFFFF",
-                          },
-                        },
+      {openPurchaseDate && (
+        <View style={styles.dateOverlay}>
+          <TouchableWithoutFeedback onPress={() => setOpenPurchaseDate(false)}>
+            <View style={styles.overlayBg} />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.calendarContainer}>
+            <Calendar
+              markingType="custom"
+              markedDates={{
+                ...markedDates,
+                ...(purchaseDate && {
+                  [purchaseDate]: {
+                    selected: true,
+                    selectedColor: "#2563EB",
+                    customStyles: {
+                      container: {
+                        backgroundColor: "#2563EB",
+                        borderRadius: 8,
                       },
-                    }),
-                  }}
-                  current={purchaseDate || dayjs().format("YYYY-MM-DD")}
-                  onDayPress={(day) => {
-                    // 🚫 STOP FUTURE DATE CLICK
-                    if (markedDates[day.dateString]?.disabled) return;
-          
-                    setPurchaseDate(day.dateString);
-                    setOpenPurchaseDate(false);
-                     setDateErr("");
-                  }}
-                  theme={{
-                    todayTextColor: "#2563EB",
-                    arrowColor: "#111827",
-                    textDisabledColor: "#9CA3AF",
-                  }}
-                />
-              </View>
-            </View>
-          )}
+                      text: {
+                        color: "#FFFFFF",
+                      },
+                    },
+                  },
+                }),
+              }}
+              current={purchaseDate || dayjs().format("YYYY-MM-DD")}
+              onDayPress={(day) => {
+                // 🚫 STOP FUTURE DATE CLICK
+                if (markedDates[day.dateString]?.disabled) return;
+
+                setPurchaseDate(day.dateString);
+                setOpenPurchaseDate(false);
+                setDateErr("");
+              }}
+              theme={{
+                todayTextColor: "#2563EB",
+                arrowColor: "#111827",
+                textDisabledColor: "#9CA3AF",
+              }}
+            />
+          </View>
+        </View>
+      )}
     </>
   );
 }
@@ -1390,28 +1406,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
   },
-  
-dateOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 9999,
-},
 
-overlayBg: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: "rgba(0,0,0,0.3)",
-},
+  dateOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
 
-calendarContainer: {
-  backgroundColor: "#fff",
-  borderRadius: 20,
-  padding: 10,
-  width: "85%",
-  elevation: 10,
-},
+  overlayBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+
+  calendarContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 10,
+    width: "85%",
+    elevation: 10,
+  },
 });

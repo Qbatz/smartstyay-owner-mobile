@@ -262,6 +262,8 @@ export default function BillsDesign({ route }) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
 
+  const isTriggeredRef=useRef(false)
+
   const { CommonModule } = NativeModules;
 
 
@@ -1247,8 +1249,9 @@ export default function BillsDesign({ route }) {
     return dayjs(date).format("DD-MM-YYYY");
   };
 
-
   const handleSaveRecordPayment = async () => {
+     if (isTriggeredRef.current) return; 
+  isTriggeredRef.current = true;
     let isValid = true;
 
     setAmountError("");
@@ -1280,7 +1283,11 @@ export default function BillsDesign({ route }) {
       isValid = false;
     }
 
-    if (!isValid) return;
+    if (!isValid){
+       isTriggeredRef.current = false;
+        return;
+      } ;
+  
 
     try {
       setRecordLoading(true);
@@ -1320,6 +1327,7 @@ export default function BillsDesign({ route }) {
       setTimeout(() => setShowSuccessModal(false), 1500);
     } finally {
       setRecordLoading(false);
+       isTriggeredRef.current=false;
     }
   };
 
@@ -2105,7 +2113,7 @@ export default function BillsDesign({ route }) {
   return (
 
     <>
-      {loading && <Loader />}
+      {(loading || recordLoading) && <Loader />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -2379,7 +2387,7 @@ export default function BillsDesign({ route }) {
                     style={[styles.FilterButton, !canReadInvoice && { opacity: 0.4 }]}
                     disabled={!canReadInvoice}
                     onPress={() => setShowFilter(true)}>
-                    <Image source={FilterIcon} style={{ width: 25, height: 25 }} />
+                    <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -3658,7 +3666,7 @@ export default function BillsDesign({ route }) {
               <Animated.View
                 style={[
                   styles.transactionSheet,
-                  { height: "90%", transform: [{ translateY: recordSheetY }] }
+                  { maxHeight: "95%", transform: [{ translateY: recordSheetY }] }
                 ]}
                 {...recordPan.panHandlers}
               >
@@ -3910,7 +3918,7 @@ export default function BillsDesign({ route }) {
                         setShowPaymentMode(v => !v);
                       }}
                     >
-                      <Text style={{ fontSize: 15 }}>
+                      <Text style={{ fontSize: 15,flex:1 }}>
                         {selectedMode
                           ? transactionOptions.find(o => o.value === selectedMode)?.label
                           : "Select payment mode"}
@@ -3992,8 +4000,9 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={styles.saveBtn}
+                      style={[styles.saveBtn, isTriggeredRef.current && {opacity:0.6}]}
                       onPress={handleSaveRecordPayment}
+                      disabled={isTriggeredRef.current}
                     >
                       <Text style={styles.saveText}>Record</Text>
                     </TouchableOpacity>
@@ -5131,7 +5140,7 @@ const styles = StyleSheet.create({
   tabContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 15,
+    gap: 6,
     fontFamily: "Gilroy-Semibold"
   },
 
@@ -5278,15 +5287,11 @@ const styles = StyleSheet.create({
   FilterButton: {
     position: "absolute",
     bottom: 125,
-    right: 15,
+    right: 10,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
     elevation: 5,
-      width: 55,
-    height: 55,
-       justifyContent: "center",
-    alignItems: "center",
   },
 
   addBtn: {
