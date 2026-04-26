@@ -242,6 +242,7 @@ export default function OverviewTab({ customerDetails,
 const isNewRentApplied = customerDetails?.isNewRentApplied;
 const newRent = customerDetails?.newRentAmount;
 const oldRent = customerDetails?.hostelInfo?.monthlyRent;
+const newRentLabel = customerDetails?.newRentLabel;
 
   const isBookedTenant = customerDetails?.customerCurrentStatus === "BOOKED";
   const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
@@ -688,9 +689,8 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
 
             <Text style={styles.sectionTitle}>Financial Details</Text>
 
-            {/* ROW 1 : Monthly Rent + Advance */}
+
             <View style={styles.twoColumnRow}>
-              {/* Monthly Rent */}
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
@@ -727,7 +727,25 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
  
 
               {/* Advance Amount */}
-              <View style={styles.amountBox}>
+        
+            </View>
+
+                                      {isNewRentApplied && (
+                                        <>
+  <View style={styles.amountBox}>
+    <Text style={styles.amountValue}>Monthly New Rent</Text>
+    <Text style={styles.amountLabel}>₹ {newRent || 0}</Text>
+  </View>
+
+    <View style={styles.newRentBox}>
+          <Text style={styles.newRentText}>
+          Rent Update sheduled , Effective From {newRentLabel} Onwards
+          </Text>
+        </View>
+        </>
+)}
+
+      <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Advance Amount</Text>
                  
@@ -766,7 +784,6 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
                   ₹ {customerDetails?.advanceInfo?.advanceAmount || 0}
                 </Text>
               </View>
-            </View>
 
             {/* ROW 2 : Booking Amount + Maintenance */}
             <View style={styles.twoColumnRow}>
@@ -780,15 +797,16 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
 
               {/* Maintenance (show only if exists) */}
 
+
+            </View>
+
+
               <View style={styles.amountBox}>
                 <Text style={styles.amountValue}>Maintenance</Text>
                 <Text style={styles.amountLabel}>
                   ₹ {customerDetails.hostelInfo?.maintenance || 0}
                 </Text>
               </View>
-
-            </View>
-
             {/* ROW 3+ : Other Deductions (2 per row) */}
             {Array.isArray(customerDetails?.hostelInfo?.otherDeductionsBreakup) &&
               customerDetails.hostelInfo.otherDeductionsBreakup.length > 0 &&
@@ -805,71 +823,11 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
                 )
               )}
 
-                           {isNewRentApplied && (
-  <View style={styles.amountBox}>
-    <Text style={styles.amountValue}>Monthly New Rent</Text>
-    <Text style={styles.amountLabel}>₹ {newRent || 0}</Text>
-  </View>
-)}
+ 
 
 
 
-            {/* <Text style={styles.sectionTitle}>Financial Details</Text>
-
-            <View style={styles.amountRow}>
-              <View style={styles.amountValueRow}>
-                <Text style={styles.amountValue}>Monthly Rent</Text>
-                <TouchableOpacity onPress={handleEditMonthlyRent} disabled={!isJoiningDateEditable} activeOpacity={0.7}>
-                  <Image source={EditIcon} style={[
-                    styles.editIconSmall,
-                    !isJoiningDateEditable && styles.disabledIcon,
-                  ]} />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.amountLabel}>₹ {customerDetails?.hostelInfo?.monthlyRent || "N/A"}</Text>
-
-
-            </View>
-
-            <View style={styles.amountRow}>
-              <View style={styles.amountValueRow}>
-                <Text style={styles.amountValue}>Advance amount</Text>
            
-                <TouchableOpacity onPress={handleEditAdvance}  disabled={!isJoiningDateEditable}
-                  activeOpacity={0.7}>
-  <Image source={EditIcon}   style={[
-                      styles.editIconSmall,
-                      !isJoiningDateEditable && styles.disabledIcon,
-                    ]} />
-</TouchableOpacity>
-
-              </View>
-              <Text style={styles.amountLabel}>₹ { customerDetails?.advanceInfo?.advanceAmount || "N/A"}</Text>
-
-
-            </View>
-
-            <View style={styles.amountRow}>
-              <Text style={styles.amountValue}>Booking amount</Text>
-              <Text style={styles.amountLabel}>₹ { customerDetails?.bookingInfo?.bookingAmount || "N/A"}</Text>
-            </View>
-
-            <View style={styles.amountRow}>
-              <Text style={styles.amountValue}>Maintenance</Text>
-              <Text style={styles.amountLabel}>₹{ customerDetails?.hostelInfo?.maintenance || 0}</Text>
-            </View>
-            {Array.isArray(customerDetails?.hostelInfo?.otherDeductionsBreakup) &&
-  customerDetails.hostelInfo.otherDeductionsBreakup.length > 0 &&
-  customerDetails.hostelInfo.otherDeductionsBreakup.map((item, index) => (
-    <View style={styles.amountRow} key={index}>
-      <Text style={styles.amountValue}>
-        {item.type}
-      </Text>
-      <Text style={styles.amountLabel}>
-        ₹ {item.amount}
-      </Text>
-    </View>
-))} */}
 
 
 
@@ -970,7 +928,7 @@ const oldRent = customerDetails?.hostelInfo?.monthlyRent;
           </View>
         ))
       ) : (
-        <Text style={{ textAlign: "center", color: "#9CA3AF" }}>
+        <Text style={{ textAlign: "center", color: "#9CA3AF" ,fontFamily: "Gilroy-Semibold"}}>
           No KYC Documents
         </Text>
       )}
@@ -1504,7 +1462,6 @@ const Amenity = ({ title, price, children }) => (
   </View>
 );
 
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   card: {
@@ -1523,7 +1480,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
   },
-  cardTitle: { fontSize: 15, fontWeight: "600" },
+  cardTitle: { fontSize: 15, fontFamily: "Gilroy-Semibold"},
   editIcon: {
     width: 18,
     height: 18,
@@ -1542,20 +1499,20 @@ const styles = StyleSheet.create({
   assignText: { color: "#fff", fontSize: 12 },
 
   infoRow: { marginBottom: 12 },
-  label: { fontSize: 12, color: "#6B7280" },
+  label: { fontSize: 12, color: "#6B7280",fontFamily: "Gilroy-Semibold" },
   valueRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
-  value: { fontSize: 14, fontWeight: "500" },
+  value: { fontSize: 14, fontFamily: "Gilroy-Medium" },
   icon: { width: 14, height: 14, marginRight: 6 },
 
-  amount: { fontWeight: "600", color: "#2563EB" },
+  amount: { fontFamily: "Gilroy-Semibold", color: "#2563EB" },
   editSmall: { width: 14, height: 14, marginLeft: 6 },
   addressHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // 🔥 left tabs + right icon
+    justifyContent: "space-between", 
     marginBottom: 12,
-    borderBottomWidth: 1,          // ✅ bottom border
-    borderBottomColor: "#E0E0E0",  // light gray (or red if you want)
+    borderBottomWidth: 1,         
+    borderBottomColor: "#E0E0E0", 
     paddingBottom: 10,
   },
 
@@ -1568,11 +1525,12 @@ const styles = StyleSheet.create({
   tabText: {
     marginRight: 18,
     color: "#9CA3AF",
+    fontFamily: "Gilroy-Semibold"
   },
 
   activeTab: {
     color: "#2563EB",
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     borderBottomWidth: 2,
     borderColor: "#2563EB",
   },
@@ -1591,10 +1549,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 10,
   },
-  amenityTitle: { fontWeight: "600" },
+  amenityTitle: { fontFamily: "Gilroy-Semibold" },
   amenityPrice: { fontSize: 12, color: "#666", marginTop: 2 },
 
-  subTitle: { marginTop: 14, fontWeight: "600" },
+  subTitle: { marginTop: 14, fontFamily: "Gilroy-Semibold"},
 
   actionRow: {
     flexDirection: "row",
@@ -1615,7 +1573,7 @@ const styles = StyleSheet.create({
     width: "48%",
     alignItems: "center",
   },
-  btnText: { color: "#fff", fontWeight: "600" },
+  btnText: { color: "#fff", fontFamily: "Gilroy-Semibold"},
   detailRow: {
     marginBottom: 14,
   },
@@ -1624,11 +1582,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#9CA3AF",
     marginBottom: 4,
+    fontFamily: "Gilroy-Semibold"
   },
 
   detailValue: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" ,
     color: "#111827",
   },
   phoneIcon: {
@@ -1680,7 +1639,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
   divider: {
@@ -1699,7 +1658,7 @@ const styles = StyleSheet.create({
 
   amountLabel: {
     fontSize: 12,
-
+fontFamily: "Gilroy-Bold",
     marginBottom: 0,
     color: "#2563EB",
   },
@@ -1708,7 +1667,7 @@ const styles = StyleSheet.create({
 
   amountValue: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
 
   },
 
@@ -1743,7 +1702,7 @@ const styles = StyleSheet.create({
 
   docActiveTab: {
     color: "#2563EB",
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     borderBottomWidth: 2,
     borderColor: "#2563EB",
     paddingBottom: 4,
@@ -1762,7 +1721,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
   },
   docLeft: {
-    flexDirection: "row",              // 🔥 icon + text row
+    flexDirection: "row",             
     alignItems: "center",
     flex: 1,
   },
@@ -1776,7 +1735,7 @@ const styles = StyleSheet.create({
 
   docTitle: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" 
   },
 
   docMeta: {
@@ -1800,8 +1759,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
 
-    paddingBottom: 10,         // ✅ header & content gap
-    marginBottom: 12,          // ✅ divider ku gap
+    paddingBottom: 10,         
+    marginBottom: 12,         
     borderBottomWidth: 1,
     borderBottomColor: "#E6E6E6",
   },
@@ -1864,7 +1823,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginBottom: 16,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" 
   },
 
   addBtn: {
@@ -1877,7 +1836,7 @@ const styles = StyleSheet.create({
   addBtnText: {
     color: "#0b0a0a",
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   addBtnTextDisabled: {
@@ -1950,7 +1909,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: '700',
+  fontFamily: "Gilroy-Bold" ,
     color: '#111',
     textAlign: 'center',
   },
@@ -1983,7 +1942,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#444',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "Gilroy-Semibold"
   },
 
   deleteBtn: {
@@ -1999,7 +1958,7 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: "Gilroy-Bold" 
   },
   addSmallBtn: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
@@ -2039,7 +1998,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   phoneText: {
@@ -2056,7 +2015,7 @@ const styles = StyleSheet.create({
 
   value: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Medium" 
   },
 
   phoneRow: {
@@ -2075,7 +2034,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "#F97316",
     fontSize: 11,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   rightIcons: {
@@ -2096,5 +2055,25 @@ const styles = StyleSheet.create({
     height: 23,
     // tintColor: "#6B7280",
   },
+  newRentAmount: {
+  fontSize: 16,
+ fontFamily: "Gilroy-Bold",
+  marginTop: 6,
+  color: "#111827",
+},
+
+newRentBox: {
+  backgroundColor: "#FFF4E5",
+  paddingVertical: 8,
+  paddingHorizontal: 10,
+  borderRadius: 10,
+  marginTop: 8,
+},
+
+newRentText: {
+  color: "#C26B00",
+  fontSize: 12,
+  fontFamily: "Gilroy-Semibold" 
+},
 
 });

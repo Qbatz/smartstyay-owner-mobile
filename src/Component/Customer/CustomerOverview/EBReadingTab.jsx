@@ -140,7 +140,7 @@ export default function EBReadingTab(customerDetails) {
               {/* RIGHT */}
               <View style={styles.rightBox}>
                 <Text style={styles.amount}>₹{item?.amount}</Text>
-                <Text style={[styles.range,{marginTop:12}]}>
+                <Text style={[styles.range,{marginTop:12 , fontFamily: "Gilroy-Semibold"}]}>
                   {formatDate(item.startDate)} → {formatDate(item.endDate)}
                 </Text>
               </View>
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   monthText: {
     fontSize: 14,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
   metaRow: {
@@ -202,18 +202,20 @@ const styles = StyleSheet.create({
   floorText: {
     fontSize: 11,
     color: "#92400E",
+    fontFamily: "Gilroy-Semibold"
   },
   iconText: {
     fontSize: 12,
     color: "#2563EB",
     marginRight: 10,
+    fontFamily: "Gilroy-Semibold"
   },
   rightBox: {
     alignItems: "flex-end",
   },
   amount: {
     fontSize: 15,
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold"
   },
   range: {
     fontSize: 11,
