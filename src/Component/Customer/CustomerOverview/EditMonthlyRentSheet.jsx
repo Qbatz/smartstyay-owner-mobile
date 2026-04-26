@@ -702,14 +702,29 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
+
  calendarOverlay: {
   ...StyleSheet.absoluteFillObject,
   backgroundColor: "rgba(0,0,0,0.4)",
   justifyContent: "flex-end",
   alignItems: "center",
-  zIndex: 9999,        // 🔥 ADD THIS
-  elevation: 10,       // 🔥 AND THIS (Android)
+  zIndex: 9999,        
+  elevation: 10,      
 },
+
+//   calendarOverlay: {
+    
+//       position: "absolute",
+//         top: 0,
+//         left: 0,
+//         right: 0,
+//         bottom: 0,
+//         backgroundColor: "rgba(0,0,0,0.4)",
+//         justifyContent: "flex-end",
+//         alignItems: "center",   
+//         zIndex: 2000,
+//   },
+
   calendarSheet: {
     backgroundColor: "#fff",
     width: "90%",

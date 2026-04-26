@@ -261,7 +261,7 @@ const newRentLabel = customerDetails?.newRentLabel;
 
   return (
     <>
-    {loading && <Loader/>}
+    {/* {loading && <Loader/>} */}
       <SuccessModal
         visible={showSuccess}
         message={message}
