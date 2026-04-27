@@ -372,7 +372,8 @@ const newRentLabel = customerDetails?.newRentLabel;
             <View style={styles.addressHeader}>
               {/* LEFT : Tabs */}
               <View style={styles.tabRow}>
-                <TouchableOpacity onPress={() => setAddressTab("KYC")}>
+                <TouchableOpacity style={{flex:1,justifyContent:'center',alignItems:'center'}} 
+                onPress={() => setAddressTab("KYC")}>
                   <Text
                     style={[
                       styles.tabText,
@@ -383,7 +384,8 @@ const newRentLabel = customerDetails?.newRentLabel;
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => setAddressTab("MANUAL")}>
+                <TouchableOpacity style={{flex:1,justifyContent:'center',alignItems:'center'}} 
+                onPress={() => setAddressTab("MANUAL")}>
                   <Text
                     style={[
                       styles.tabText,

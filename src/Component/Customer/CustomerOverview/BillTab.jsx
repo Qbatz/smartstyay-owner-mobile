@@ -131,7 +131,7 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
   bill={selectedBill}
 /> */}
 
-       <TouchableOpacity 
+       {/* <TouchableOpacity 
           //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
                         style={[
       styles.addBtn,
@@ -141,7 +141,7 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
               disabled={disableFinancialEdit || !canWriteInvoice }
        onPress={handleCreateBill}>
             <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
            </>
   );
 }

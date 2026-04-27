@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity, TouchableWithoutFeedback,
   Image, BackHandler,
-  NativeModules , Animated , Linking
+  NativeModules, Animated, Linking
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -55,12 +55,14 @@ import Generate from "../../../Assets/Images/fsi.png"
 import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 import ImagePickerSheet from "./ImagePickerSheet"
+import AddIcon from "../../../Assets/Images/add-circle.png";
+
 
 
 export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
-    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
@@ -92,28 +94,28 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
-    const [BillDetailshow, setBillDetailsShow] = useState(false)
+  const [BillDetailshow, setBillDetailsShow] = useState(false)
 
-    const scrollY = useRef(new Animated.Value(0)).current;
-const [showHeader, setShowHeader] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [showHeader, setShowHeader] = useState(false);
 
-const translateY = scrollY.interpolate({
-  inputRange: [0, 150],
-  outputRange: [0, -150],
-  extrapolate: "clamp",
-});
+  const translateY = scrollY.interpolate({
+    inputRange: [0, 150],
+    outputRange: [0, -150],
+    extrapolate: "clamp",
+  });
 
-const opacity = scrollY.interpolate({
-  inputRange: [0, 120],
-  outputRange: [1, 0],
-  extrapolate: "clamp",
-});
+  const opacity = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
 
-const headerTranslateY = scrollY.interpolate({
-  inputRange: [0, 120],
-  outputRange: [-60, 0], // header slide down
-  extrapolate: "clamp",
-});
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [-60, 0], // header slide down
+    extrapolate: "clamp",
+  });
 
   useEffect(() => {
     CommonModule.fetchEnvironment().then(r => {
@@ -183,8 +185,8 @@ const headerTranslateY = scrollY.interpolate({
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const handleProfilePress = () => {
-  setShowProfileSheet(true);
-};
+    setShowProfileSheet(true);
+  };
 
   // const handleProfilePress = () => {
   //   Alert.alert(
@@ -213,28 +215,28 @@ const headerTranslateY = scrollY.interpolate({
         mediaType: "photo",
         quality: 0.7,
       },
-      async(response) => {
+      async (response) => {
         if (response.didCancel) return;
         if (response.assets && response.assets.length > 0) {
-           const image = response.assets[0];
+          const image = response.assets[0];
 
-//            let fileUri = image.uri;
+          //            let fileUri = image.uri;
 
-// // 🔥 Fix for Redmi (content URI issue)
-// if (fileUri.startsWith("content://")) {
-//   fileUri = image.uri; // keep as is (React Native supports it)
-// } else if (!fileUri.startsWith("file://")) {
-//   fileUri = `file://${fileUri}`;
-// }
+          // // 🔥 Fix for Redmi (content URI issue)
+          // if (fileUri.startsWith("content://")) {
+          //   fileUri = image.uri; // keep as is (React Native supports it)
+          // } else if (!fileUri.startsWith("file://")) {
+          //   fileUri = `file://${fileUri}`;
+          // }
 
-// const file = {
-//   uri: fileUri,
-//   type: image.type || "image/jpeg",
-//   name: image.fileName || `photo_${Date.now()}.jpg`,
-// };
-           setProfileImage(image); 
+          // const file = {
+          //   uri: fileUri,
+          //   type: image.type || "image/jpeg",
+          //   name: image.fileName || `photo_${Date.now()}.jpg`,
+          // };
+          setProfileImage(image);
 
-             const res = await editBasicDetails(
+          const res = await editBasicDetails(
             customerDetails.customerId,
             {
               firstName: customerDetails?.firstName || "",
@@ -259,7 +261,7 @@ const headerTranslateY = scrollY.interpolate({
           } else {
             alert(res.message);
           }
-           
+
         }
       }
     );
@@ -306,7 +308,7 @@ const headerTranslateY = scrollY.interpolate({
   };
 
 
-  
+
   const handleCallPhone = (mobile) => {
     console.log("mobile", mobile)
     if (mobile?.mobileNo) {
@@ -315,14 +317,14 @@ const headerTranslateY = scrollY.interpolate({
   }
 
 
-  
+
   const handleOpenWhatsapp = (item) => {
     console.log("mobile", item);
     if (!item) return;
-  
+
     let mobile = item?.mobileNo || item?.mobile;
     let countryCode = item?.countryCode || "91";
-  
+
     if (!mobile) {
       setModalType("warning");
       setMessage("Mobile number not available");
@@ -330,18 +332,18 @@ const headerTranslateY = scrollY.interpolate({
       setTimeout(() => setShowSuccess(false), 1500);
       return;
     }
-  
+
     mobile = mobile.toString().replace(/\D/g, "");
-  
+
     if (mobile.startsWith(countryCode)) {
       mobile = mobile.slice(countryCode.length);
     }
-  
+
     const phoneNumber = `${countryCode}${mobile}`;
     const url = `https://wa.me/${phoneNumber}`;
-  
+
     console.log("url", url);
-  
+
     Linking.openURL(url).catch(() => {
       setModalType("warning");
       setMessage("WhatsApp not installed");
@@ -474,7 +476,7 @@ const headerTranslateY = scrollY.interpolate({
   };
 
 
- 
+
 
 
 
@@ -589,7 +591,37 @@ const headerTranslateY = scrollY.interpolate({
   //   }
   // }
 
+  const {
+    canWriteModule: canWriteInvoice,
+    canReadModule: canReadInvoice,
+    canUpdateModule: canUpdateInvoice,
+    canDeleteModule: canDeleteInvoice,
+  } = useHasPermission("Bills")
 
+  const parseDate = (dateStr) => {
+    if (!dateStr) return null;
+
+    const [day, month, year] = dateStr.split("/");
+    return new Date(`${year}-${month}-${day}`);
+  };
+
+
+  const requestedLeavingDate =
+    customerDetails?.checkoutInfo?.requestedLeavingDate;
+
+  const leavingDateObj = parseDate(requestedLeavingDate);
+  const today = new Date();
+
+  const isAfterLeavingDate =
+    leavingDateObj && today > leavingDateObj;
+
+
+  const status = customerDetails?.customerCurrentStatus;
+
+  const disableFinancialEdit =
+    status === "BOOKED" ||
+    status === "VACATED" ||
+    (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {
     if (!canReadTenant) {
@@ -601,7 +633,7 @@ const headerTranslateY = scrollY.interpolate({
         return <EBReadingTab customerDetails={customerDetails} />;
 
       case "Bill":
-        return <BillTab customerDetails={customerDetails}   ShowBillsDetails={() => setBillDetailsShow(true)}/>;
+        return <BillTab customerDetails={customerDetails} ShowBillsDetails={() => setBillDetailsShow(true)} />;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;
@@ -624,6 +656,10 @@ const headerTranslateY = scrollY.interpolate({
         );
     }
   };
+  const handleCreateBill = () => {
+    if (!canWriteInvoice) return;
+    navigation.navigate("CreateBills", { mode: "add", customerDetails })
+  }
 
   const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
 
@@ -633,135 +669,135 @@ const headerTranslateY = scrollY.interpolate({
       <View style={styles.container}>
 
         <View style={{ flex: 1 }}>
-        
 
-  {showHeader && (
-    <Animated.View style={{
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 60,
-      backgroundColor: "#fff",
-      // justifyContent: "center",
-      alignItems: "center",
-      zIndex: 100,
-      // elevation: 10,
-      borderBottomWidth: 0.5,
-      borderColor: "#ddd",
-      display:'flex',flexDirection:'row', justifyContent:'space-between',
-        transform: [{ translateY: headerTranslateY }],
-    }}>
-      {/* <View style={{flexDirection:'row',backgroundColor:'red',flex:1}}> */}
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-            {/* <Text style={styles.back}>←</Text> */}
-            <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 3 }} />
-          </TouchableOpacity>
-      <Text style={{ fontSize: 16, fontWeight: "600" ,textAlign:'center',flex:1}} numberOfLines={2}>
-        {customerDetails?.fullName}
-      </Text>
-      {/* </View> */}
 
-       {customerDetails?.customerCurrentStatus != "VACATED" && (
-              <TouchableOpacity onPress={(e) => {
-                openMenu(e, customerDetails);
-              }}>
-                <Image
-                  source={MoreDot}
-                  style={{ width: 20, height: 20, }}
-                />
-
+          {showHeader && (
+            <Animated.View style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 60,
+              backgroundColor: "#fff",
+              // justifyContent: "center",
+              alignItems: "center",
+              zIndex: 100,
+              // elevation: 10,
+              borderBottomWidth: 0.5,
+              borderColor: "#ddd",
+              display: 'flex', flexDirection: 'row', justifyContent: 'space-between',
+              transform: [{ translateY: headerTranslateY }],
+            }}>
+              {/* <View style={{flexDirection:'row',backgroundColor:'red',flex:1}}> */}
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                {/* <Text style={styles.back}>←</Text> */}
+                <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 3 }} />
               </TouchableOpacity>
+              <Text style={{ fontSize: 16, fontWeight: "600", textAlign: 'center', flex: 1 }} numberOfLines={2}>
+                {customerDetails?.fullName}
+              </Text>
+              {/* </View> */}
 
-            )}
-    </Animated.View>
-  )}
+              {customerDetails?.customerCurrentStatus != "VACATED" && (
+                <TouchableOpacity onPress={(e) => {
+                  openMenu(e, customerDetails);
+                }}>
+                  <Image
+                    source={MoreDot}
+                    style={{ width: 20, height: 20, }}
+                  />
 
-        <Animated.ScrollView
-  onScroll={(event) => {
-    const y = event.nativeEvent.contentOffset.y;
+                </TouchableOpacity>
 
-    if (y > 80 && !showHeader) {
-      setShowHeader(true);
-    } else if (y <= 80 && showHeader) {
-      setShowHeader(false);
-    }
+              )}
+            </Animated.View>
+          )}
 
-    scrollY.setValue(y);
-  }}
-  scrollEventThrottle={16}
-    stickyHeaderIndices={[2]}
-  contentContainerStyle={{ paddingBottom: 100 }}
-  showsVerticalScrollIndicator={false}
->
-        {/* HEADER */}
+          <Animated.ScrollView
+            onScroll={(event) => {
+              const y = event.nativeEvent.contentOffset.y;
 
+              if (y > 80 && !showHeader) {
+                setShowHeader(true);
+              } else if (y <= 80 && showHeader) {
+                setShowHeader(false);
+              }
 
-
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            {/* <Text style={styles.back}>←</Text> */}
-            <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
-          </TouchableOpacity>
-         
-
-
-           {customerDetails?.customerCurrentStatus != "VACATED" && (
-              <TouchableOpacity onPress={(e) => {
-                openMenu(e, customerDetails);
-              }}>
-                <Image
-                  source={MoreDot}
-                  style={{ width: 20, height: 20, }}
-                />
-
-              </TouchableOpacity>
-
-            )}
-        </View>
-
-   
-        <Animated.View style={[
-  styles.profileCard,
- {
-    transform: [{ translateY }],
-    opacity
-  }
-]}>
-
- 
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              // alignItems: 'center',
+              scrollY.setValue(y);
             }}
+            scrollEventThrottle={16}
+            stickyHeaderIndices={[2]}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
           >
-            <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
-              <TouchableOpacity onPress={handleProfilePress}>
-                <View style={{ width: 90, height: 90 }}>
-                  {profileImage?.uri || customerDetails?.profilePic ? (
-                    <Image
-                      source={{
-                        uri: profileImage?.uri || customerDetails?.profilePic,
-                      }}
-                      style={styles.avatar}
-                    />
-                  ) : (
-                    <View style={{
-                      width: 90, height: 90, borderRadius: 45, backgroundColor: "#E5E7EB",
-                      alignItems: "center", justifyContent: "center"
-                    }}>
-                      <Text style={{
-                        fontSize: 20, fontWeight: "600", color: "#374151",
-                      }}>
-                        {customerDetails?.initials}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+            {/* HEADER */}
 
-                {/* <Image
+
+
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                {/* <Text style={styles.back}>←</Text> */}
+                <Image source={BackIcon} style={{ height: 20, width: 20, marginRight: 15 }} />
+              </TouchableOpacity>
+
+
+
+              {customerDetails?.customerCurrentStatus != "VACATED" && (
+                <TouchableOpacity onPress={(e) => {
+                  openMenu(e, customerDetails);
+                }}>
+                  <Image
+                    source={MoreDot}
+                    style={{ width: 20, height: 20, }}
+                  />
+
+                </TouchableOpacity>
+
+              )}
+            </View>
+
+
+            <Animated.View style={[
+              styles.profileCard,
+              {
+                transform: [{ translateY }],
+                opacity
+              }
+            ]}>
+
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  width: '100%',
+                  // alignItems: 'center',
+                }}
+              >
+                <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
+                  <TouchableOpacity onPress={handleProfilePress}>
+                    <View style={{ width: 90, height: 90 }}>
+                      {profileImage?.uri || customerDetails?.profilePic ? (
+                        <Image
+                          source={{
+                            uri: profileImage?.uri || customerDetails?.profilePic,
+                          }}
+                          style={styles.avatar}
+                        />
+                      ) : (
+                        <View style={{
+                          width: 90, height: 90, borderRadius: 45, backgroundColor: "#E5E7EB",
+                          alignItems: "center", justifyContent: "center"
+                        }}>
+                          <Text style={{
+                            fontSize: 20, fontWeight: "600", color: "#374151",
+                          }}>
+                            {customerDetails?.initials}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* <Image
                   source={
                     profileImage?.uri
                       ? { uri: profileImage.uri }
@@ -771,10 +807,10 @@ const headerTranslateY = scrollY.interpolate({
                   }
                   style={styles.avatar}
                 /> */}
-              </TouchableOpacity>
-            </View>
+                  </TouchableOpacity>
+                </View>
 
-            {/* {customerDetails?.customerCurrentStatus != "VACATED" && (
+                {/* {customerDetails?.customerCurrentStatus != "VACATED" && (
               <TouchableOpacity onPress={(e) => {
                 openMenu(e, customerDetails);
               }}>
@@ -788,27 +824,27 @@ const headerTranslateY = scrollY.interpolate({
             )} */}
 
 
-          </View>
+              </View>
 
 
-          {/* NAME */}
-          <View style={styles.nameRowCenter}>
-            <Text style={styles.name}>
-              {customerDetails?.fullName}
-            </Text>
+              {/* NAME */}
+              <View style={styles.nameRowCenter}>
+                <Text style={styles.name}>
+                  {customerDetails?.fullName}
+                </Text>
 
-            {
-              customerDetails?.customerCurrentStatus !== "VACATED" && (
-                <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
-              )
-            }
+                {
+                  customerDetails?.customerCurrentStatus !== "VACATED" && (
+                    <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
+                  )
+                }
 
 
-            {/* <Text style={styles.verified}>✔</Text> */}
-          </View>
+                {/* <Text style={styles.verified}>✔</Text> */}
+              </View>
 
-          {/* ROOM DETAILS */}
-        
+              {/* ROOM DETAILS */}
+
               <View style={styles.metaRowCenter}>
                 <View style={styles.floorBadge}>
                   <Text style={styles.floorText}>
@@ -828,33 +864,33 @@ const headerTranslateY = scrollY.interpolate({
               </View>
 
 
-               <View style={styles.actionRow}>
-              
-                              <TouchableOpacity
-                                style={[styles.reminderBtn, !isSubscriptionReadAllow && { opacity: 0.4 }]}
-                                disabled={!isSubscriptionReadAllow}
-                                onPress={()=>handleOpenWhatsapp(customerDetails)}
-                                >
-                                <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                                <Text style={styles.reminderText}>Chat </Text>
-                              </TouchableOpacity>
-              
-                              <TouchableOpacity
-                                style={[styles.callBtn, !isSubscriptionReadAllow && { opacity: 0.4 }]}
-                                disabled={!isSubscriptionReadAllow}
-                                onPress={() => {
-                                  handleCallPhone(customerDetails)
-                                }}
-                                >
-                                <Image source={Call} style={styles.actionIcon} />
-                                <Text style={styles.callText}>Call</Text>
-                              </TouchableOpacity>
-              
-                            </View>
+              <View style={styles.actionRow}>
 
-         
+                <TouchableOpacity
+                  style={[styles.reminderBtn, !isSubscriptionReadAllow && { opacity: 0.4 }]}
+                  disabled={!isSubscriptionReadAllow}
+                  onPress={() => handleOpenWhatsapp(customerDetails)}
+                >
+                  <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                  <Text style={styles.reminderText}>Chat </Text>
+                </TouchableOpacity>
 
-          {/* {
+                <TouchableOpacity
+                  style={[styles.callBtn, !isSubscriptionReadAllow && { opacity: 0.4 }]}
+                  disabled={!isSubscriptionReadAllow}
+                  onPress={() => {
+                    handleCallPhone(customerDetails)
+                  }}
+                >
+                  <Image source={Call} style={styles.actionIcon} />
+                  <Text style={styles.callText}>Call</Text>
+                </TouchableOpacity>
+
+              </View>
+
+
+
+              {/* {
             customerDetails?.customerCurrentStatus == "VACATED" && (
               <View style={{
                 paddingVertical: 8, paddingHorizontal: 10, backgroundColor: "#fbd5d2", borderRadius: 10,
@@ -916,141 +952,154 @@ const headerTranslateY = scrollY.interpolate({
           } */}
 
 
-        </Animated.View>
+            </Animated.View>
 
 
 
-        {/* TABS */}
-        <View>
+            {/* TABS */}
+            <View>
 
-           <View style={{
-    backgroundColor: "#fff",
-    zIndex: 5,  paddingTop: showHeader ? 70 : 0 
-  }}>
-       <View style={styles.tabRow}>
-            {["Overview", "EB Reading", "Bill", "Transactions"].map((tab) => {
-              const isActive = activeTab === tab;
-              return (
-                <TouchableOpacity
-                  key={tab}
-                  onPress={() => setActiveTab(tab)}
-                  style={styles.tabBtn}
+              <View style={{
+                backgroundColor: "#fff",
+                zIndex: 5, paddingTop: showHeader ? 70 : 0
+              }}>
+                <View style={styles.tabRow}>
+                  {["Overview", "EB Reading", "Bill", "Transactions"].map((tab) => {
+                    const isActive = activeTab === tab;
+                    return (
+                      <TouchableOpacity
+                        key={tab}
+                        onPress={() => setActiveTab(tab)}
+                        style={styles.tabBtn}
+                      >
+                        <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                          {tab}
+                        </Text>
+                        {isActive && <View style={styles.activeLine} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
+
+            {/* CONTENT */}
+            <View style={{ flex: 1, }}>
+              {renderTab()}
+            </View>
+
+          </Animated.ScrollView>
+          
+          {activeTab == "Bill" && (
+            <TouchableOpacity
+              //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
+              style={[
+                styles.addBtn,
+                (!canWriteInvoice || disableFinancialEdit) && { opacity: 0.4 }
+              ]}
+              //  disabled={!canWriteInvoice}
+              disabled={disableFinancialEdit || !canWriteInvoice}
+              onPress={handleCreateBill}>
+              <Image source={AddIcon} style={{ width: 25, height: 25 }} />
+            </TouchableOpacity>
+          )}
+
+        </View>
+
+        {menuVisible && (
+          <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+            <View style={styles.menuOverlay}>
+              <TouchableWithoutFeedback>
+                <View
+                  style={[
+                    styles.menuBox,
+                    {
+                      top: menuPosition.y,
+                      left: menuPosition.x,
+                    },
+                  ]}
                 >
-                  <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-                    {tab}
-                  </Text>
-                  {isActive && <View style={styles.activeLine} />}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          </View>
-        </View>
 
-        {/* CONTENT */}
-        <View style={{ flex: 1, }}>
-          {renderTab()}
-        </View>
-
-
-</Animated.ScrollView>
-
-      </View>
-
-      {menuVisible && (
-        <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
-          <View style={styles.menuOverlay}>
-            <TouchableWithoutFeedback>
-              <View
-                style={[
-                  styles.menuBox,
                   {
-                    top: menuPosition.y,
-                    left: menuPosition.x,
-                  },
-                ]}
-              >
-
-                {
-                  selectedItem && selectedItem.customerCurrentStatus === "CHECK_IN" &&
-                  <>
-                    <TouchableOpacity
-                      // style={styles.popupRow}
-                      style={[
-                        styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                      disabled={!canUpdateTenant}
-                      onPress={() => {
-                        setReassignCustomer(selectedItem);
-                        handleShowReAssignBed();
-                      }}
-                    >
-
-                      <Image
-                        source={ReAssignIcon}
-                        style={styles.popupIcon}
-                      />
-                      <Text style={styles.popupText}>Change_Bed</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                      disabled={!canUpdateTenant}
-
-                      onPress={() => {
-                        // setSelectedCustomer(selectedItem);
-                        // setShowMenu(false);
-                        setMenuVisible(false)
-                        setShowNotice(true);
-                      }}
-
-                    >
-                      <Image
-                        source={MoveToNoticeIcon}
-                        style={styles.popupIcon}
-                      />
-                      <Text style={styles.popupText}>Move to Notice Period</Text>
-                    </TouchableOpacity>
-                  </>
-
-                }
-                {
-                  selectedItem && selectedItem.customerCurrentStatus === "BOOKED" &&
-                  <>
-                    <TouchableOpacity
-                      // style={styles.popupRow}
-                      style={[
-                        styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                      disabled={!canUpdateTenant}
-                      onPress={handleMakeUsInActive}
-                    >
-                      <Image source={ReAssignIcon} style={styles.popupIcon} />
-                      <Text style={styles.popupText}>Make Us InActive</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      // style={styles.popupRow}
-                      style={[
-                        styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                      disabled={!canUpdateTenant}
-                      onPress={handleShowTennantCheckin}
-                    // onPress={() => {
-                    //   setShowDetailsMenu(false);
-                    //   // setShowNotice(true);
-                    // }}
-                    >
-                      <Image source={MakeCheckInIcon} style={styles.popupIcon} />
-                      <Text style={styles.popupText}>Checkin</Text>
-                    </TouchableOpacity>
-                  </>
-                }
-                {selectedItem &&
-                  !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
-
+                    selectedItem && selectedItem.customerCurrentStatus === "CHECK_IN" &&
                     <>
-                      {/* <TouchableOpacity
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                        onPress={() => {
+                          setReassignCustomer(selectedItem);
+                          handleShowReAssignBed();
+                        }}
+                      >
+
+                        <Image
+                          source={ReAssignIcon}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Change_Bed</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+
+                        onPress={() => {
+                          // setSelectedCustomer(selectedItem);
+                          // setShowMenu(false);
+                          setMenuVisible(false)
+                          setShowNotice(true);
+                        }}
+
+                      >
+                        <Image
+                          source={MoveToNoticeIcon}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Move to Notice Period</Text>
+                      </TouchableOpacity>
+                    </>
+
+                  }
+                  {
+                    selectedItem && selectedItem.customerCurrentStatus === "BOOKED" &&
+                    <>
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                        onPress={handleMakeUsInActive}
+                      >
+                        <Image source={ReAssignIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Make Us InActive</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                        onPress={handleShowTennantCheckin}
+                      // onPress={() => {
+                      //   setShowDetailsMenu(false);
+                      //   // setShowNotice(true);
+                      // }}
+                      >
+                        <Image source={MakeCheckInIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Checkin</Text>
+                      </TouchableOpacity>
+                    </>
+                  }
+                  {selectedItem &&
+                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+
+                      <>
+                        {/* <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
@@ -1064,72 +1113,72 @@ const headerTranslateY = scrollY.interpolate({
                         />
                         <Text style={styles.popupText}>Generate</Text>
                       </TouchableOpacity> */}
+                        <TouchableOpacity
+                          // style={styles.popupRow}
+                          style={[
+                            styles.popupRow,
+                            !canUpdateTenant && { opacity: 0.4 }]}
+                          disabled={!canUpdateTenant}
+                          onPress={handleShowFinalNew}
+                        >
+                          <Image source={Generate} style={styles.popupIcon} />
+                          <Text style={styles.popupText}>Generate</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          // style={styles.popupRow} 
+                          style={[
+                            styles.popupRow,
+                            !canUpdateTenant && { opacity: 0.4 }]}
+                          disabled={!canUpdateTenant}
+                          onPress={handleShowCancelNotice}
+                        >
+                          <Image
+                            source={require("../../../Assets/Images/ReAssign.png")}
+                            style={styles.popupIcon}
+                          />
+                          <Text style={styles.popupText}>Cancel Check-out</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  {selectedItem &&
+                    !["CHECK_IN", "NOTICE", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
                       <TouchableOpacity
-                        // style={styles.popupRow}
                         style={[
                           styles.popupRow,
                           !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
-                        onPress={handleShowFinalNew}
+                        onPress={() => {
+                          setShowCheckout(true);
+                          setMenuVisible(false)
+                        }}
                       >
-                        <Image source={Generate} style={styles.popupIcon} />
-                        <Text style={styles.popupText}>Generate</Text>
+                        <Image source={CheckoutIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Checkout</Text>
                       </TouchableOpacity>
 
+                    )}
+
+                  {selectedItem &&
+                    !["BOOKED"].includes(selectedItem.customerCurrentStatus) && (
                       <TouchableOpacity
-                        // style={styles.popupRow} 
                         style={[
                           styles.popupRow,
                           !canUpdateTenant && { opacity: 0.4 }]}
                         disabled={!canUpdateTenant}
-                        onPress={handleShowCancelNotice}
+                        onPress={() => {
+                          setShowStayHistory(true)
+                          setMenuVisible(false)
+                        }}
                       >
-                        <Image
-                          source={require("../../../Assets/Images/ReAssign.png")}
-                          style={styles.popupIcon}
-                        />
-                        <Text style={styles.popupText}>Cancel Check-out</Text>
+                        <Image source={StayIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Stay History</Text>
                       </TouchableOpacity>
-                    </>
-                  )}
-                {selectedItem &&
-                  !["CHECK_IN", "NOTICE", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
-                    <TouchableOpacity
-                      style={[
-                        styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                      disabled={!canUpdateTenant}
-                      onPress={() => {
-                        setShowCheckout(true);
-                        setMenuVisible(false)
-                      }}
-                    >
-                      <Image source={CheckoutIcon} style={styles.popupIcon} />
-                      <Text style={styles.popupText}>Checkout</Text>
-                    </TouchableOpacity>
-
-                  )}
-
-            {selectedItem &&
-                  !["BOOKED"].includes(selectedItem.customerCurrentStatus) && (
-                  <TouchableOpacity
-                      style={[
-                        styles.popupRow,
-                        !canUpdateTenant && { opacity: 0.4 }]}
-                      disabled={!canUpdateTenant}
-                      onPress={() => {
-                        setShowStayHistory(true)
-                        setMenuVisible(false)
-                      }}
-                    >
-                      <Image source={StayIcon} style={styles.popupIcon} />
-                      <Text style={styles.popupText}>Stay History</Text>
-                    </TouchableOpacity>
-  )}
+                    )}
 
 
 
-                {/* <TouchableOpacity
+                  {/* <TouchableOpacity
         style={styles.popupRow}
         onPress={() => {
           setShowMenu(false);
@@ -1142,130 +1191,130 @@ const headerTranslateY = scrollY.interpolate({
         />
         <Text style={styles.popupText}>Delete</Text>
       </TouchableOpacity> */}
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      )}
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        )}
 
 
 
-      {
-        showReAssignbed &&
-        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
+        {
+          showReAssignbed &&
+          <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
 
-      }
+        }
 
-      {showNotice && (
-        <MoveNoticeSheet
-          visible={showNotice}
-          onClose={() => setShowNotice(false)}
-          customer={selectedItem}
-          onSuccess={handleCheckoutSuccess}
-        />
-      )}
-      <InactiveTenantSheet
-        visible={showInactiveSheet}
-        onClose={() => setShowInactiveSheet(false)}
-        selectedItem={selectedItem}
-        onSuccess={handleCheckoutSuccess}
-      />
-
-      {
-        showCheckout &&
-        <CheckoutBottomSheet
-          visible={showCheckout}
-          onClose={() => setShowCheckout(false)}
-          reason={reason}
-          setReason={setReason}
+        {showNotice && (
+          <MoveNoticeSheet
+            visible={showNotice}
+            onClose={() => setShowNotice(false)}
+            customer={selectedItem}
+            onSuccess={handleCheckoutSuccess}
+          />
+        )}
+        <InactiveTenantSheet
+          visible={showInactiveSheet}
+          onClose={() => setShowInactiveSheet(false)}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
-
         />
-      }
+
+        {
+          showCheckout &&
+          <CheckoutBottomSheet
+            visible={showCheckout}
+            onClose={() => setShowCheckout(false)}
+            reason={reason}
+            setReason={setReason}
+            selectedItem={selectedItem}
+            onSuccess={handleCheckoutSuccess}
+
+          />
+        }
 
 
-   <ImagePickerSheet
-  visible={showProfileSheet}
-  onClose={() => setShowProfileSheet(false)}
-  title="Change Profile Picture"
-  options={[
-    {
-      label: "Take Picture",
-      icon: require("../../../Assets/Images/CameraIcon.png"),
-      showArrow: true,
-      onPress: openCamera,
-    },
-    {
-      label: "Select from Gallery",
-      icon: require("../../../Assets/Images/GalleryIcon.png"),
-      showArrow: true,
-      onPress: openGallery,
-    },
-    {
-      label: "Remove Picture",
-      icon: require("../../../Assets/Images/DeleteIcon.png"),
-      showArrow: false,
-      onPress: () => console.log("remove"),
-    },
-  ]}
-/>
+        <ImagePickerSheet
+          visible={showProfileSheet}
+          onClose={() => setShowProfileSheet(false)}
+          title="Change Profile Picture"
+          options={[
+            {
+              label: "Take Picture",
+              icon: require("../../../Assets/Images/CameraIcon.png"),
+              showArrow: true,
+              onPress: openCamera,
+            },
+            {
+              label: "Select from Gallery",
+              icon: require("../../../Assets/Images/GalleryIcon.png"),
+              showArrow: true,
+              onPress: openGallery,
+            },
+            {
+              label: "Remove Picture",
+              icon: require("../../../Assets/Images/DeleteIcon.png"),
+              showArrow: false,
+              onPress: () => console.log("remove"),
+            },
+          ]}
+        />
 
-      <EditBasicDetailsSheet
-        visible={showEdit}
-        onClose={() => setShowEdit(false)}
-        customerDetails={customerDetails}
-        onSuccess={fetchCustomerDetails}
-      />
-      <EditManualAddressSheet
-        visible={showEditSheet}
-        onClose={() => setShowEditSheet(false)}
-        customerDetails={customerDetails}
-        onSuccess={fetchCustomerDetails}
-      />
-      <EditJoiningDateSheet
-        visible={showEditJoiningDate}
-        onClose={() => setShowEditJoiningDate(false)}
-        customerDetails={customerDetails}
-        onSuccess={fetchCustomerDetails} />
-      <EditRentalAmountSheet
-        visible={showEditRent}
-        onClose={() => setShowEditRent(false)}
-        customerDetails={customerDetails}
-        onSuccess={fetchCustomerDetails}
-      />
-      <EditAdvanceAmountSheet
-        visible={showEditAdvance}
-        onClose={() => setShowEditAdvance(false)}
-        customerDetails={customerDetails}
-        onSuccess={fetchCustomerDetails}
-      />
-      <AssignAmenitiesSheet
-        visible={showAssignAmenities}
-        onClose={() => setShowAssignAmenities(false)}
-        customerDetails={customerDetails}
-        onSuccess={fetchCustomerDetails}
-      />
-      <StayHistorySheet
-        visible={showStayHistory}
-        onClose={() => setShowStayHistory(false)}
-        customerDetails={customerDetails}
-      />
+        <EditBasicDetailsSheet
+          visible={showEdit}
+          onClose={() => setShowEdit(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails}
+        />
+        <EditManualAddressSheet
+          visible={showEditSheet}
+          onClose={() => setShowEditSheet(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails}
+        />
+        <EditJoiningDateSheet
+          visible={showEditJoiningDate}
+          onClose={() => setShowEditJoiningDate(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails} />
+        <EditRentalAmountSheet
+          visible={showEditRent}
+          onClose={() => setShowEditRent(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails}
+        />
+        <EditAdvanceAmountSheet
+          visible={showEditAdvance}
+          onClose={() => setShowEditAdvance(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails}
+        />
+        <AssignAmenitiesSheet
+          visible={showAssignAmenities}
+          onClose={() => setShowAssignAmenities(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails}
+        />
+        <StayHistorySheet
+          visible={showStayHistory}
+          onClose={() => setShowStayHistory(false)}
+          customerDetails={customerDetails}
+        />
 
-      <AdditionalContactBottomSheet
-  visible={showContactSheet}
-  onClose={() => setShowContactSheet(false)}
-  // onSave={async (payload) => {
-  //   await saveAdditionalContact(activeHostelId, customerId, payload);
-  //   setShowContactSheet(false);
-  // }}
-/>
-  <BillDetailsSheet
-  visible={BillDetailshow}
-  onClose={() => setBillDetailsShow(false)}
-  // bill={selectedBill}
-/>
-</View>
+        <AdditionalContactBottomSheet
+          visible={showContactSheet}
+          onClose={() => setShowContactSheet(false)}
+        // onSave={async (payload) => {
+        //   await saveAdditionalContact(activeHostelId, customerId, payload);
+        //   setShowContactSheet(false);
+        // }}
+        />
+        <BillDetailsSheet
+          visible={BillDetailshow}
+          onClose={() => setBillDetailsShow(false)}
+        // bill={selectedBill}
+        />
+      </View>
     </>
   );
 }
@@ -1279,10 +1328,10 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
     alignItems: "center",
     marginBottom: 14,
-    
+
   },
   back: { fontSize: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "600", flex: 1 },
@@ -1458,6 +1507,20 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     opacity: 0.9,
   },
+
+  addBtn: {
+
+    position: "absolute",
+    bottom: 80,
+    right: 20,
+    backgroundColor: "#1D5DFF",
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+  },
   // ---
   menuOverlay: {
     position: "absolute",
@@ -1503,7 +1566,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
   },
-    actionRow: {
+  actionRow: {
     flexDirection: "row",
     marginTop: 14,
     gap: 10
