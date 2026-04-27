@@ -739,7 +739,7 @@ const newRentLabel = customerDetails?.newRentLabel;
 
     <View style={styles.newRentBox}>
           <Text style={styles.newRentText}>
-          Rent Update sheduled , Effective From {newRentLabel} Onwards
+           {newRentLabel} 
           </Text>
         </View>
         </>
