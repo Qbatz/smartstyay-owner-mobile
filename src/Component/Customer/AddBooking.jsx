@@ -281,9 +281,17 @@ export default function AddBookingScreen({ navigation, route }) {
               </View>
             )}
 
-            <Text style={styles.userName}>
+            <View>
+              <Text style={styles.userName}>
               {selectedItem?.fullName}
             </Text>
+
+            <Text style={{marginTop:4,fontFamily:'Gilroy-Medium',fontSize:14,color:'#4B4B4B'}}>
+              +{selectedItem?.countryCode}  {selectedItem?.mobile}
+            </Text>
+
+            </View>
+            
           </View>
 
 
@@ -721,7 +729,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-  userImg: { width: 45, height: 45, borderRadius: 25 },
+  userImg: { width: 50, height: 50, borderRadius: 25 },
   userName: { marginLeft: 12, fontSize: 16, fontFamily: "Gilroy-Semibold"  },
 
   label: { fontSize: 14,fontFamily: "Gilroy-Semibold" , marginBottom: 6, marginTop: 12 },
@@ -872,9 +880,9 @@ const styles = StyleSheet.create({
     paddingBottom: 30
   },
   initialCircle: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",

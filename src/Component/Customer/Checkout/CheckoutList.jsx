@@ -12,8 +12,8 @@ import {
 
 import Profile from "../../../Assets/Images/profile.png";
 import Dots from "../../../Assets/Images/3dots.png";
-import RoomIcon from "../../../Assets/Images/room.png";
-import BedIcon from "../../../Assets/Images/bed.png";
+import RoomIcon from "../../../Assets/Images/Room_Icon.png";
+import BedIcon from "../../../Assets/Images/Bed_Icon.png";
 import EmailIcon from "../../../Assets/Images/sms.png";
 import PhoneIcon from "../../../Assets/Images/profile.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
@@ -361,6 +361,8 @@ const handleScroll = (event) => {
 
               <Text style={styles.title}>Tenant Details</Text>
 
+              <View style={{height: 0.8,backgroundColor: "#E5E7EB",marginTop:10}}/>
+
               <View style={styles.profileRow}>
                 {selectedCustomer?.profilePic ? <Image source={{ uri: selectedCustomer.profilePic }} style={styles.profileImg} /> :
                   <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#eef1ff', justifyContent: 'center', alignItems: 'center' }}>
@@ -399,6 +401,8 @@ const handleScroll = (event) => {
 
               </View>
 
+              <View style={styles.divider}/>
+
               <Text style={styles.label}>Email</Text>
               <View style={styles.infoRow}>
                 <Image source={EmailIcon} style={styles.infoIcon} />
@@ -429,7 +433,7 @@ const handleScroll = (event) => {
                       resizeMode="contain"
                     />
                     <Text style={styles.infoValue}>
-                      {selectedCustomer?.mobileNo}
+                     +{selectedCustomer?.countryCode} {selectedCustomer?.mobileNo}
                     </Text>
                   </View>
                 </View>
@@ -629,6 +633,12 @@ const styles = StyleSheet.create({
 
   profileImg: { width: 55, height: 55, borderRadius: 30 },
   profileName: { fontSize: 17, fontFamily: "Gilroy-Bold", },
+  divider: {
+  height: 0.4,
+  backgroundColor: "#E5E7EB", 
+  marginBottom: 4,
+  marginTop:9
+},
 
   label: { fontSize: 13, color: "#6B7280", marginTop: 12, fontFamily: "Gilroy-Regular" },
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4, },

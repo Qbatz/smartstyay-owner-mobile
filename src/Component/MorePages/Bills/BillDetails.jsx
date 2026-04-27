@@ -497,7 +497,8 @@ console.log(invoiceDetail,"billa")
           style={[
             styles.transactionSheet,
             {
-              height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+              // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+              maxHeight:'95%',
               transform: [{ translateY: detailsSheetY }]
             }
           ]}
