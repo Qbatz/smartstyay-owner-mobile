@@ -609,12 +609,23 @@ useEffect(() => {
   };
 
 
+  // const updateCard = (index, key, value) => {
+  //   const updated = [...items];
+  //   updated[index][key] = value;
+  //   setItems(updated);
+  //   setItemErr("")
+  // };
+
   const updateCard = (index, key, value) => {
-    const updated = [...items];
-    updated[index][key] = value;
-    setItems(updated);
-    setItemErr("")
-  };
+  setItems((prev) =>
+    prev.map((item, i) =>
+      i === index
+        ? { ...item, [key]: value, isExisting: false } 
+        : item
+    )
+  );
+  setItemErr("");
+};
 
   const removeCard = (index) => {
     const updated = [...items];
@@ -1103,7 +1114,8 @@ useEffect(() => {
               <TextInput
                 style={styles.input}
                 value={item.description}
-                editable={!item.isExisting && item.type === "Others"}
+                editable={item.type !== "Room rent"}
+                // editable={item.type !== "Room rent" && item.type === "Others"}
                 // editable={item.type === "Others"}
                 // onChangeText={(txt) => updateCard(index, "description", txt)}
                 onChangeText={(txt) => {
@@ -1118,11 +1130,15 @@ useEffect(() => {
 
               <Text style={styles.smallLabel}>Total Amount</Text>
               <TextInput
-                style={styles.input}
+                // style={styles.input}
+                style={[
+  styles.input,
+  item.type === "Room rent" && { backgroundColor: "#F3F4F6" }
+]}
                 keyboardType="numeric"
                 value={item.amount}
                 placeholder="Enter Amount"
-                editable={!item.isExisting}
+                editable={item.type !== "Room rent"}
                 // editable={item.type !== "Room rent"} 
                 // onChangeText={(txt) => updateCard(index, "amount", txt)}
                 onChangeText={(txt) => {

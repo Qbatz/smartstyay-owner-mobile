@@ -1390,7 +1390,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  name: { fontSize: 16, fontWeight: "600", textAlign: 'center' },
+  name: { fontSize: 16, fontFamily: "Gilroy-Semibold", textAlign: 'center' },
   verified: { color: "green", marginLeft: 6 },
 
   metaRow: {
@@ -1406,10 +1406,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 8,
   },
-  floorText: { fontSize: 12, color: "#2563EB" },
+  floorText: { fontSize: 12, color: "#2563EB" ,fontFamily: "Gilroy-Semibold"},
 
   icon: { width: 17, height: 17, marginHorizontal: 4 },
-  metaText: { fontSize: 12, color: "#444" },
+  metaText: { fontSize: 12, color: "#444" ,fontFamily: "Gilroy-Semibold"},
 
   tabRow: {
     flexDirection: "row",
@@ -1427,11 +1427,13 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     color: "#9CA3AF",
+    fontFamily: "Gilroy-Semibold"
   },
 
   activeTabText: {
     color: "#2563EB",
     fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   activeLine: {
