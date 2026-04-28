@@ -804,7 +804,14 @@ const RefundPaymentSheet = ({
               placeholder="Enter transaction ID"
               // keyboardType="numeric"
               value={transactionId}
-              onChangeText={setTransactionId}
+              onChangeText={(text) => {
+                const noEmoji = text.replace(
+                  /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu,
+                  ""
+                );
+                setTransactionId(noEmoji)
+              }
+              }
             />
 
             {/* BUTTON ROW */}

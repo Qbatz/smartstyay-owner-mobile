@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderColor:'#D6D6D6'
   },
 
-  tabText: { color: "#4B4B4B", fontWeight: "500" },
+  tabText: { color: "#4B4B4B", fontWeight: "500",textAlign:'center' },
 
   previewBtn: {
     position: "absolute",

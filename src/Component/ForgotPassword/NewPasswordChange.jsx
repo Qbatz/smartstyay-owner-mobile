@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -15,13 +15,20 @@ import EyeIcon from "../../Assets/Images/EyeIcon.png";
 import Eye from "../../Assets/Images/Eye.png";
 import Rectangle from "../../Assets/Images/OtpRectangle.png";
 import { useNavigation } from "@react-navigation/native";
+import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import { LoginContexts } from "../../Context/LoginContext";
 
-export default function SetNewPassword() {
-    const navigation = useNavigation();
+export default function SetNewPassword({route}) {
+  const navigation = useNavigation();
   const [password, setPassword] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [showPasswordError, setPasswordError] = useState("");
+  const {}=useContext(LoginContexts)
+  const {email}=route?.params
+  const {userId}=route?.params
+
 
   const [deviceWidth, setDeviceWidth] = useState(
     Dimensions.get("window").width
@@ -33,6 +40,20 @@ export default function SetNewPassword() {
     });
     return () => sub?.remove();
   }, []);
+
+  const handleUpdatePassword = async () => {
+    if (password != confirmPwd) {
+      setPasswordError("Password Mismatch");
+      return;
+    }
+
+    try{
+      const res=await updatePassword()
+      console.log(res)
+    }catch(error){
+      console.log(error)
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,7 +68,7 @@ export default function SetNewPassword() {
             security
           </Text>
 
-        
+
           <Text style={styles.label}>Password</Text>
           <View style={styles.inputBox}>
             <TextInput
@@ -55,22 +76,25 @@ export default function SetNewPassword() {
               placeholderTextColor="#9CA3AF"
               secureTextEntry={!showPwd}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                const filter = text.replace(/[^\x00-\x7F]/g, "");
+                setPassword(filter)
+              }}
               style={styles.input}
             />
             <TouchableOpacity onPress={() => setShowPwd(!showPwd)}>
               <Image
-      source={
-        showPwd
-          ? Eye     
-          : EyeIcon       
-      }
-      style={styles.eyeIcon}
-    />
+                source={
+                  showPwd
+                    ? Eye
+                    : EyeIcon
+                }
+                style={styles.eyeIcon}
+              />
             </TouchableOpacity>
           </View>
 
-       
+
           <Text style={styles.label}>Confirm Password</Text>
           <View style={styles.inputBox}>
             <TextInput
@@ -78,35 +102,41 @@ export default function SetNewPassword() {
               placeholderTextColor="#9CA3AF"
               secureTextEntry={!showConfirmPwd}
               value={confirmPwd}
-              onChangeText={setConfirmPwd}
+              onChangeText={(text) => {
+                const filter = text.replace(/[^\x00-\x7F]/g, "");
+                setConfirmPwd(filter)
+                setPasswordError("")
+              }}
               style={styles.input}
             />
             <TouchableOpacity
               onPress={() => setShowConfirmPwd(!showConfirmPwd)}
             >
-             
-                       <Image
-      source={
-        showConfirmPwd
-          ? Eye     
-          : EyeIcon      
-      }
-      style={styles.eyeIcon}
-    />
+
+              <Image
+                source={
+                  showConfirmPwd
+                    ? Eye
+                    : EyeIcon
+                }
+                style={styles.eyeIcon}
+              />
             </TouchableOpacity>
           </View>
 
-          
-          <TouchableOpacity style={styles.updateBtn}  onPress={() => {
-   
-    navigation.navigate("SucessUpdatePassword");
-  }}>
+          {showPasswordError && (<ErrorMessage message={showPasswordError} type="error" />)}
+
+
+          <TouchableOpacity style={styles.updateBtn} onPress={handleUpdatePassword}>
+
+    // navigation.navigate("SucessUpdatePassword");
+
             <Text style={styles.updateText}>Update Password</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
 
-     
+
       <Image
         source={Rectangle}
         style={[styles.bottomImage, { width: deviceWidth }]}
@@ -156,7 +186,7 @@ const styles = StyleSheet.create({
     borderColor: "#C7D3E3",
     borderRadius: 10,
     paddingHorizontal: 12,
-    marginBottom: 18,
+    marginBottom: 8,
   },
 
   input: {
@@ -177,7 +207,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 25,
   },
 
   updateText: {

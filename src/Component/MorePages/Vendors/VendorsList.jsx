@@ -297,7 +297,7 @@ export default function VendorsList({ navigation }) {
           <View style={styles.infoRow}>
             <View style={styles.infoCol}>
               <Text style={styles.infoLabel}>Mail ID</Text>
-              <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', marginTop: 6}}>
                 <Image source={EmailPic} style={{ width: 16, height: 16 }} />
                 <Text style={[styles.infoValue, { marginLeft: 5 }]}>
                   {item.emailId || "N/A"}
@@ -306,7 +306,8 @@ export default function VendorsList({ navigation }) {
 
             </View>
 
-            <View style={[styles.infoCol, { alignItems: "flex-end" }]}>
+            <View style={[styles.infoCol, {alignItems:'flex-end'  }]}>
+              <View style={{alignItems:'flex-start'}}>
               <Text style={styles.infoLabel}>Contact</Text>
               <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
                 <Image source={CallIcon} style={{ width: 16, height: 16 }} />
@@ -314,6 +315,7 @@ export default function VendorsList({ navigation }) {
                   +{item.mobile || "--"}
                 </Text>
 
+              </View>
               </View>
 
             </View>
@@ -814,7 +816,7 @@ const styles = StyleSheet.create({
 
   infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 14 },
   infoCol: { flex: 1 },
-  infoLabel: { color: "#9CA3AF", fontSize: 12 },
+  infoLabel: { color: "#9CA3AF", fontSize: 12, },
   infoValue: { color: "#111", fontSize: 14, },
 
   filterFab: {
