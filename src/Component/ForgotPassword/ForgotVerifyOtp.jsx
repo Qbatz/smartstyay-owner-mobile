@@ -20,6 +20,7 @@ export default function OtpVerification({ route }) {
    const navigation = useNavigation();
   const [deviceWidth, setDeviceWidth] = useState(Dimensions.get("window").width);
    const userEmail = route?.params?.email || "user@example.com";
+   const userId=route?.params?.userId || "";
 
 useEffect(() => {
   const subscription = Dimensions.addEventListener("change", ({ window }) => {
@@ -31,6 +32,8 @@ useEffect(() => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [filled, setFilled] = useState(false);
+
+  console.log(route)
 
   let inputs = [];
 
@@ -96,7 +99,7 @@ useEffect(() => {
 
           <TouchableOpacity
             disabled={!filled}
-           onPress={() => navigation.navigate("SetNewPassword", { email: userEmail })}
+           onPress={() => navigation.navigate("SetNewPassword", { email: userEmail,userId:userId })}
             style={[
               styles.verifyBtn,
               { backgroundColor: filled ? "#1E5EFF" : "#9CC1FF" },

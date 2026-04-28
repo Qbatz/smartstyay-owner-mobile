@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
-const VerifyAccountScreen = ({ navigation }) => {
+const VerifyAccountScreen = ({ navigation}) => {
     const route = useRoute();
   const { email } = route.params || {};
  const insets = useSafeAreaInsets();
@@ -29,6 +29,8 @@ const VerifyAccountScreen = ({ navigation }) => {
     const translateY = useRef(new Animated.Value(80)).current;
 const BOTTOM_IMAGE_HEIGHT = 200;
 
+ console.log(navigation)
+ console.log(route)
     const showSuccessPopup = () => {
         setShowPopup(true);
 
@@ -91,6 +93,8 @@ const BOTTOM_IMAGE_HEIGHT = 200;
             inputsRef.current[index + 1].focus();
         }
     };
+
+   
 
     return (
      <View style={styles.container}>

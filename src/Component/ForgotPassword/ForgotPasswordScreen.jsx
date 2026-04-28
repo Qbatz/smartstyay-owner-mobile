@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -14,12 +14,21 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import { LoginContexts } from "../../Context/LoginContext";
+import SuccessModal from "../../ToastFile/ToastPage";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const navigation = useNavigation();
   const [emailError,setEmailError]=useState("")
   const [deviceWidth, setDeviceWidth] = useState(Dimensions.get("window").width);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+    // const [emailError,setEmailError]=useState("")
+
+  const {getForgotPasswordotp}=useContext(LoginContexts)
+
   useEffect(() => {
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
       setDeviceWidth(window.width);
@@ -28,14 +37,53 @@ export default function ForgotPassword() {
     return () => subscription?.remove();
   }, []);
 
+  const validate = () => {
+    let valid = true;
 
-  const handleContinue=()=>{
+    setEmailError("");
+
+    if (!email.trim()) {
+      setEmailError("Please Enter Email");
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError("Please Enter Valid Email");
+      valid = false;
+    }
+
+
+    return valid;
+  };
+
+
+  const handleContinue=async()=>{
     if(!email){
       setEmailError("Please Enter Valid Email")
       return;
     }
+    if(!validate()) return;
     if(email){
-      navigation.navigate("OtpVerification", { email })
+        console.log(email)
+      try{
+        const res = await getForgotPasswordotp(email)
+
+        console.log(res)
+        if(res?.status === 200){
+           navigation.navigate("OtpVerification", { email,userId:res?.data?.userId })
+        }
+        else{
+            setShowSuccessModal(true)
+            setModalMessage( res?.data?.message || res?.message || "Something went wrong")
+            setModalType("error")
+
+            setTimeout(()=>{
+              setShowSuccessModal(false)
+            },[1500])
+        }
+
+      }catch(error){
+        console.log(error)
+      }
+     
     }
      
 
@@ -45,6 +93,12 @@ export default function ForgotPassword() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="transparent" translucent />
+      <SuccessModal 
+      visible={showSuccessModal}
+      onClose={()=>setShowSuccessModal(false)}
+      message={modalMessage}
+      type={modalType}/>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -68,7 +122,8 @@ export default function ForgotPassword() {
               placeholderTextColor="#A1A1A1"
               value={email}
               onChangeText={(text)=>{
-                  setEmail(text);
+                const sanitized = text.toLowerCase().replace(/[^a-z0-9@._-]/g, "");
+                  setEmail(sanitized);
                 setEmailError("");
               }
                 

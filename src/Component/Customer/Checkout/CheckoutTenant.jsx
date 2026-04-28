@@ -231,7 +231,7 @@ export default function CheckoutBottomSheet({
               <View style={styles.card}>
                 <View style={styles.row}>
                   {matchedCustomer?.profilePic ?
-                    <Image source={matchedCustomer?.profilePic || Profile} style={styles.avatar} /> :
+                    <Image source={{uri:matchedCustomer?.profilePic} || Profile} style={styles.avatar} /> :
                     <View style={[styles.avatar, { alignItems: 'center', backgroundColor: '#e6e7eb', justifyContent: 'center' }]}>
                       <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold' }}>{matchedCustomer?.initials}</Text>
                     </View>
