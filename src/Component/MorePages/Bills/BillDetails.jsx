@@ -373,13 +373,53 @@ console.log(invoiceDetail,"billa")
     console.log("open receipt", pay);
   };
 
+   const getStatusStyle = (status) => {
+    switch (status) {
+      case "Paid":
+        return {
+          bg: "#038C3D",
+          text: "#fff",
+          dot: "#fff",
+        };
 
-  const BillsStatusStyle = {
-    bg: "#E5E7EB",
-    dot: "#6B7280",
-    text: "#374151",
+      case "PAID": {
+        return {
+          bg: "#038C3D",
+          text: "#fff",
+          dot: "#fff",
+        };
+      }
+
+      case "Partially Paid":
+        return {
+          bg: "#FFF7E7",
+          text: "black",
+          dot: "#F39F18",
+        };
+
+      case "Pending":
+        return {
+          bg: "#FFF2F2",
+          text: "black",
+          dot: "#FF0000",
+        };
+
+      default:
+        return {
+          bg: "#FFF2F2",
+          text: "black",
+          dot: "black",
+        };
+    }
   };
 
+  // const BillsStatusStyle = {
+  //   bg: "#E5E7EB",
+  //   dot: "#6B7280",
+  //   text: "#374151",
+  // };
+
+  const BillsStatusStyle= getStatusStyle(invoice?.paymentStatus)
   console.log("bill", bill);
 
 
@@ -1059,9 +1099,8 @@ console.log(invoiceDetail,"billa")
 
 
 
-            {(
-              invoiceDetail?.invoiceMode === "Recurring" &&
-              paymentStatus === "Pending") && (
+            {
+              invoiceDetail?.canEdit  && (
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                   disabled={!canUpdateInvoice}

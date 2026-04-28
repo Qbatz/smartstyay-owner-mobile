@@ -372,7 +372,8 @@ const newRentLabel = customerDetails?.newRentLabel;
             <View style={styles.addressHeader}>
               {/* LEFT : Tabs */}
               <View style={styles.tabRow}>
-                <TouchableOpacity style={{flex:1,justifyContent:'center',alignItems:'center'}} 
+                <TouchableOpacity 
+                // style={{flex:1,justifyContent:'center',alignItems:'center'}} 
                 onPress={() => setAddressTab("KYC")}>
                   <Text
                     style={[
@@ -384,7 +385,8 @@ const newRentLabel = customerDetails?.newRentLabel;
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{flex:1,justifyContent:'center',alignItems:'center'}} 
+                <TouchableOpacity 
+                // style={{flex:1,justifyContent:'center',alignItems:'center'}} 
                 onPress={() => setAddressTab("MANUAL")}>
                   <Text
                     style={[
@@ -841,7 +843,8 @@ const newRentLabel = customerDetails?.newRentLabel;
 
             <View style={styles.docContentWrapper}>
               <View style={styles.docTabRow}>
-                <TouchableOpacity onPress={() => setDocTab("KYC")}>
+                <TouchableOpacity onPress={() => setDocTab("KYC")}
+                  style={{flex:1,justifyContent:'center',alignItems:'center'}}>
                   <Text
                     style={[
                       styles.docTabText,
@@ -852,7 +855,8 @@ const newRentLabel = customerDetails?.newRentLabel;
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => setDocTab("MANUAL")}>
+                <TouchableOpacity onPress={() => setDocTab("MANUAL")}
+                  style={{flex:1,justifyContent:'center',alignItems:'center'}}>
                   <Text
                     style={[
                       styles.docTabText,

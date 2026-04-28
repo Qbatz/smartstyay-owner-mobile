@@ -9,6 +9,8 @@ import {
   TextInput,
   Image,
   SafeAreaView, BackHandler, Modal, Platform, KeyboardAvoidingView,
+  Keyboard,
+  findNodeHandle,
 } from "react-native";
 import Delete from "../../Assets/Images/remove.png";
 import dayjs from "dayjs";
@@ -56,7 +58,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
   );
-  const [deductionAmount,setDeductionAmount]=useState("")
+  const [deductionAmount, setDeductionAmount] = useState("")
 
   console.log("kam", selectedItem)
   const scrollRef = useRef(null);
@@ -334,6 +336,59 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   }, [settlementDetails, userEnteredDeductionsTotal, appliedDiscount]);
 
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const discountRef = useRef(null);
+  // const FOOTER_HEIGHT = 160; 
+  const EXTRA_SPACE = 20;
+  const FOOTER_HEIGHT = Platform.select({
+  ios: 160,
+  android: 140,
+});
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+//   const handleDiscountFocus = () => {
+//   setTimeout(() => {
+//     if (discountRef.current && scrollRef.current) {
+//       discountRef.current.measureLayout(
+//         findNodeHandle(scrollRef.current),
+//         (x, y) => {
+//           scrollRef.current.scrollTo({
+//             y: y - 140, // 👈 adjust for footer height
+//             animated: true,
+//           });
+//         }
+//       );
+//     }
+//   }, 200);
+// };
+// const handleDiscountFocus = () => {
+//   setTimeout(() => {
+//     scrollRef.current?.scrollToEnd({ animated: true });
+//   }, 200);
+// };
+const discountScrollY = 1200; // adjust once
+const handleDiscountFocus = () => {
+  setTimeout(() => {
+    scrollRef.current?.scrollTo({
+      y: discountScrollY,
+      animated: true,
+    });
+  }, 200);
+};
+
 
   const isNegative = Number(ReturnAmount) < 0;
 
@@ -394,7 +449,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   };
 
   const updateTitle = (id, title) => {
-    console.log("binthu",id,title)
+    console.log("binthu", id, title)
     setExtraCharges((prev) =>
       prev.map((i) => (i.id === id ? { ...i, title, titleError: "" } : i))
     );
@@ -410,8 +465,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
   };
 
   const totalDeduction = extraCharges.reduce((sum, item) => {
-  return sum + Number(item.amount || 0);
-}, 0);
+    return sum + Number(item.amount || 0);
+  }, 0);
 
   const removeCharge = (id) => {
     setExtraCharges((prev) => prev.filter((i) => i.id !== id));
@@ -646,7 +701,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? "padding" : undefined}
       >
         <SafeAreaView style={styles.safeArea}>
           {/* ✅ HEADER */}
@@ -659,8 +714,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
           <ScrollView
             ref={scrollRef}
-            contentContainerStyle={{ paddingBottom: 250 }}
+            contentContainerStyle={{ paddingBottom: FOOTER_HEIGHT  + EXTRA_SPACE }}
             keyboardShouldPersistTaps="handled"
+
           >
             {/* ✅ TOP CUSTOMER CARD */}
             <View style={styles.customerCard}>
@@ -1202,28 +1258,28 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     <Text style={styles.label}>Refundable Advance</Text>
                     <Text style={styles.value}>
                       {/* {!isRefundable ? "- " : ""}  */}
-                       ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
+                      ₹ {settlementDetails?.settlementInfo?.refundableAdvance}
                     </Text>
                   </View>
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Total Deductions</Text>
                     <Text style={styles.negativeamountlabel}>
-                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions || totalDeduction } 
+                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions || totalDeduction}
                     </Text>
                   </View>
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Electricity</Text>
                     <Text style={styles.negativeamountlabel}>
-                       ₹ {settlementDetails?.settlementInfo?.electricityAmount}
+                      ₹ {settlementDetails?.settlementInfo?.electricityAmount}
                     </Text>
                   </View>
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Unpaid Invoices</Text>
                     <Text style={styles.negativeamountlabel}>
-                        ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
+                      ₹ {settlementDetails?.settlementInfo?.unpaidInvoiceAmount}
                     </Text>
                   </View>
 
@@ -1360,26 +1416,26 @@ export default function FinalSettlementScreen({ navigation, route }) {
                           keyboardType="numeric"
                           onChangeText={(t) => {
 
-                               let cleaned = t.replace(/[^0-9.]/g, "");
+                            let cleaned = t.replace(/[^0-9.]/g, "");
 
-                      const parts = cleaned.split(".");
+                            const parts = cleaned.split(".");
 
-                      if (parts.length > 2) {
-                        cleaned = parts[0] + "." + parts[1];
-                      }
+                            if (parts.length > 2) {
+                              cleaned = parts[0] + "." + parts[1];
+                            }
 
-                      if (parts[1]?.length > 2) {
-                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                      }
-              updateAmount(item?.id, cleaned)
+                            if (parts[1]?.length > 2) {
+                              cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                            }
+                            updateAmount(item?.id, cleaned)
 
                           }
-                            
-                           }
+
+                          }
                           onFocus={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({
-                                y: 900,   
+                                y: 900,
                                 animated: true,
                               });
                             }, 200);
@@ -1494,6 +1550,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
                 }}>
                   <TextInput
+                 ref={discountRef}
                     value={discountValue}
                     onChangeText={(t) => {
                       let cleaned = t.replace(/[^0-9.]/g, "");
@@ -1516,6 +1573,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
+                  onFocus={handleDiscountFocus}
                   />
 
                   <TouchableOpacity
@@ -1545,7 +1603,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           </ScrollView>
 
 
-          <View style={styles.bottomFixed}>
+          <View style={[styles.bottomFixed]}>
 
             <View style={styles.totalContainer}>
               <Text style={styles.totalLabel}>{isRefundable ? "Total Refund Payable" : "Outstanding Amount Payable"}</Text>

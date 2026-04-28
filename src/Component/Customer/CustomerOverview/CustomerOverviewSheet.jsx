@@ -56,6 +56,10 @@ import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 import ImagePickerSheet from "./ImagePickerSheet"
 import AddIcon from "../../../Assets/Images/add-circle.png";
+import FloorIcon from"../../../Assets/Images/Room_bed.png"
+import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
+import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
+
 
 
 
@@ -775,7 +779,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               >
                 <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
                   <TouchableOpacity onPress={handleProfilePress}>
-                    <View style={{ width: 90, height: 90 }}>
+                    <View style={{ width: 95, height: 95 }}>
                       {profileImage?.uri || customerDetails?.profilePic ? (
                         <Image
                           source={{
@@ -785,7 +789,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         />
                       ) : (
                         <View style={{
-                          width: 90, height: 90, borderRadius: 45, backgroundColor: "#E5E7EB",
+                          width: 95, height: 95, borderRadius: 17.08, backgroundColor: "#E5E7EB",
                           alignItems: "center", justifyContent: "center"
                         }}>
                           <Text style={{
@@ -828,7 +832,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
               {/* NAME */}
-              <View style={styles.nameRowCenter}>
+              <View style={[styles.nameRowCenter,{marginTop:4}]}>
                 <Text style={styles.name}>
                   {customerDetails?.fullName}
                 </Text>
@@ -846,18 +850,19 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               {/* ROOM DETAILS */}
 
               <View style={styles.metaRowCenter}>
-                <View style={styles.floorBadge}>
+                {/* <View style={styles.floorBadge}> */}
+                  <Image source={FloorIcon} style={[styles.icon,{tintColor:'#1E45E1'}]}/>
                   <Text style={styles.floorText}>
                     {customerDetails?.hostelInfo?.floorName}
                   </Text>
-                </View>
+                {/* </View> */}
 
-                <Image source={Room_Icon} style={styles.icon} />
+                <Image source={Room_NewIcon} style={styles.icon} />
                 <Text style={styles.metaText}>
                   {customerDetails?.hostelInfo?.roomName}
                 </Text>
 
-                <Image source={BedIcon} style={styles.icon} />
+                <Image source={Bed_NewIcon} style={styles.icon} />
                 <Text style={styles.metaText}>
                   {customerDetails?.hostelInfo?.bedName}
                 </Text>
@@ -989,7 +994,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             </View>
 
           </Animated.ScrollView>
-          
+
           {activeTab == "Bill" && (
             <TouchableOpacity
               //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
@@ -1367,9 +1372,9 @@ const styles = StyleSheet.create({
 
 
   avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 95,
+    height: 95,
+    borderRadius: 17.08,
     marginBottom: 12,
   },
   nameRowCenter: {
@@ -1406,7 +1411,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 8,
   },
-  floorText: { fontSize: 12, color: "#2563EB" ,fontFamily: "Gilroy-Semibold"},
+  floorText: { fontSize: 12 ,fontFamily: "Gilroy-Semibold"},
 
   icon: { width: 17, height: 17, marginHorizontal: 4 },
   metaText: { fontSize: 12, color: "#444" ,fontFamily: "Gilroy-Semibold"},

@@ -22,6 +22,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import RemoveIcon from "../../../Assets/Images/remove-circle.png";
+import Loader from "../../Loader/Loader";
 
 
 
@@ -32,13 +33,14 @@ export default function CreateBill({ navigation }) {
     GetParticularCustomerDetails,
     ParticularcustomerDetails,
     resetParticularCustomer,
-    loading,
+    // loading,
     errorMsg, } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
 
-  const { CreateManualBill, GetAllBillDetails, UpdateBill, GetBillDetailsById
+  const { CreateManualBill, GetAllBillDetails, UpdateBill, GetBillDetailsById, loading,
     // loading: billLoading,
     // errorMsg: billError,
+
   } = useContext(BillContext);
 
   const scrollRef = useRef(null);
@@ -89,12 +91,15 @@ export default function CreateBill({ navigation }) {
   const [customerErr, setCustomerErr] = useState("");
   const [itemErr, setItemErr] = useState("");
 
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const removeEmojis = (text) =>
     text.replace(
       /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF])/g,
       ""
     );
 
+  console.log(ParticularcustomerDetails)
 
 
   // useEffect(() => {
@@ -235,6 +240,7 @@ export default function CreateBill({ navigation }) {
         hostelId: activeHostelId,
         invoiceId: data.invoiceId,
       });
+      console.log(res, "binthu")
 
       if (!res?.success) {
         console.log("Bill details error", res?.message);
@@ -444,6 +450,7 @@ export default function CreateBill({ navigation }) {
     return Number(ParticularcustomerDetails?.hostelInfo?.monthlyRent || 0);
   };
 
+  console.log(getRoomRentAmount)
 
   // useEffect(() => {
   //   if (!ParticularcustomerDetails) return;
@@ -500,6 +507,7 @@ export default function CreateBill({ navigation }) {
     if (mode === "edit") return;
 
     const rent = getRoomRentAmount();
+    console.log(rent, "billa")
 
     setItems((prev) =>
       prev.map((item) =>
@@ -640,134 +648,145 @@ export default function CreateBill({ navigation }) {
   };
 
   const validateAndSubmit = async () => {
-    let hasError = false;
+    if (isSubmitted) return;
+    setIsSubmitted(true)
 
-    setCustomerErr("");
-    setInvoiceDateErr("");
-    setDueDateErr("");
-    setItemErr("");
 
-    if (!selectedCustomer) {
-      setCustomerErr("Please Select Customer");
-      hasError = true;
-    }
 
-    if (!invoiceDate) {
-      setInvoiceDateErr("Please Select Invoice Date");
-      hasError = true;
-    }
+    try {
+      let hasError = false;
+      if (hasError) return;
+      setCustomerErr("");
+      setInvoiceDateErr("");
+      setDueDateErr("");
+      setItemErr("");
 
-    // if (!dueDate) {
-    //   setDueDateErr("Please Select Due Date");
-    //   hasError = true;
-    // }
+      if (!selectedCustomer) {
+        setCustomerErr("Please Select Customer");
+        hasError = true;
+      }
 
-    if (!items.length) {
-      setItemErr("Please add at least one item");
-      hasError = true;
-    } else if (
-      items.some(
-        (i) =>
-          !i.description?.trim() ||
-          !i.amount ||
-          isNaN(i.amount) ||
-          Number(i.amount) <= 0
-      )
-    ) {
-      setItemErr("Fill all item details & amount > 0");
-      hasError = true;
-    }
+      if (!invoiceDate) {
+        setInvoiceDateErr("Please Select Invoice Date");
+        hasError = true;
+      }
 
-    if (hasError) return;
+      // if (!dueDate) {
+      //   setDueDateErr("Please Select Due Date");
+      //   hasError = true;
+      // }
 
-    // 🔥 SAME AS WEBSITE
-    const payload = {
-      customerId: selectedCustomer.id,
-      invoiceDate: dayjs(invoiceDate).format("DD-MM-YYYY"),
-      // dueDate: dayjs(dueDate).format("DD-MM-YYYY"),
-      invoiceNumber: invoiceNo,
-      total_amount: totalAmount,
-      items: items.map((i) => ({
-        invoiceItem: i.description,
-        amount: Number(i.amount),
-      })),
-    };
+      if (!items.length) {
+        setItemErr("Please add at least one item");
+        hasError = true;
+      } else if (
+        items.some(
+          (i) =>
+            !i.description?.trim() ||
+            !i.amount ||
+            isNaN(i.amount) ||
+            Number(i.amount) <= 0
+        )
+      ) {
+        setItemErr("Fill all item details & amount > 0");
+        hasError = true;
+      }
 
-    console.log("FINAL PAYLOAD", payload);
-    let res;
+      if (hasError) return;
 
-    if (mode === "edit") {
-
-      //   const changedItems = items.map((i) => ({
-      //   type: i.description,
-      //   amount: Number(i.amount),
-      // }));
-
-      const changedItems = items
-        .filter((i) => !i.isExisting)
-        .map((i) => ({
-          type: i.description,
+      // 🔥 SAME AS WEBSITE
+      const payload = {
+        customerId: selectedCustomer.id,
+        invoiceDate: dayjs(invoiceDate).format("DD-MM-YYYY"),
+        // dueDate: dayjs(dueDate).format("DD-MM-YYYY"),
+        invoiceNumber: invoiceNo,
+        total_amount: totalAmount,
+        items: items.map((i) => ({
+          invoiceItem: i.description,
           amount: Number(i.amount),
-        }));
+        })),
+      };
 
-      console.log("changesitems", changedItems);
+      console.log("FINAL PAYLOAD", payload);
+      let res;
+
+      if (mode === "edit") {
+
+        //   const changedItems = items.map((i) => ({
+        //   type: i.description,
+        //   amount: Number(i.amount),
+        // }));
+
+        const changedItems = items
+          .filter((i) => !i.isExisting)
+          .map((i) => ({
+            type: i.description,
+            amount: Number(i.amount),
+          }));
+
+        console.log("changesitems", changedItems);
 
 
-      if (mode === "edit" && changedItems?.length === 0) {
+        if (mode === "edit" && changedItems?.length === 0) {
+          setModalType("warning");
+          setModalMessage("No changes detected");
+          setShowSuccessModal(true);
+
+          setTimeout(() => setShowSuccessModal(false), 1500);
+          return;
+        }
+
+        res = await UpdateBill({
+          hostelId: activeHostelId,
+          invoiceId: data?.invoiceId,
+          payload: changedItems,
+        });
+
+        console.log("edit bill", payload);
+        // res = await UpdateBill({
+        //   hostelId: activeHostelId,
+        //   invoiceId: data?.invoiceId,
+        //   payload,
+        // });
+      } else {
+        res = await CreateManualBill(payload);
+        console.log("addbill", payload);
+
+      }
+
+
+      console.log("billres", res);
+
+      if (!res?.success) {
         setModalType("warning");
-        setModalMessage("No changes detected");
+        setModalMessage(res?.message || "Something went wrong");
         setShowSuccessModal(true);
 
         setTimeout(() => setShowSuccessModal(false), 1500);
         return;
       }
 
-      res = await UpdateBill({
-        hostelId: activeHostelId,
-        invoiceId: data?.invoiceId,
-        payload: changedItems,
-      });
 
-      console.log("edit bill", payload);
-      // res = await UpdateBill({
-      //   hostelId: activeHostelId,
-      //   invoiceId: data?.invoiceId,
-      //   payload,
-      // });
-    } else {
-      res = await CreateManualBill(payload);
-      console.log("addbill", payload);
+      setModalType("success");
 
-    }
+      if (mode === "edit") {
+        setModalMessage("Bill updated successfully");
+      } else {
+        setModalMessage(res?.data || "Bill Created successfully");
+      }
 
-
-    console.log("billres", res);
-
-    if (!res?.success) {
-      setModalType("warning");
-      setModalMessage(res?.message || "Something went wrong");
       setShowSuccessModal(true);
+      await GetAllBillDetails(activeHostelId);
 
-      setTimeout(() => setShowSuccessModal(false), 1500);
-      return;
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        navigation.goBack();
+      }, 1500);
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsSubmitted(false)
     }
-
-
-    setModalType("success");
-
-    if (mode === "edit") {
-      setModalMessage("Bill updated successfully");
-    } else {
-      setModalMessage(res?.data || "Bill Created successfully");
-    }
-
-    setShowSuccessModal(true);
-    await GetAllBillDetails(activeHostelId);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-      navigation.goBack();
-    }, 1500);
 
 
     // if (res.success) {
@@ -783,6 +802,7 @@ export default function CreateBill({ navigation }) {
 
   return (
     <>
+      {loading && <Loader />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -1179,6 +1199,7 @@ export default function CreateBill({ navigation }) {
             <TouchableOpacity
               style={styles.saveBtn}
               onPress={validateAndSubmit}
+              disabled={isSubmitted}
             >
               <Text style={styles.saveText}> {mode === "edit" ? "Update Bill" : " Create Bill"}</Text>
             </TouchableOpacity>
