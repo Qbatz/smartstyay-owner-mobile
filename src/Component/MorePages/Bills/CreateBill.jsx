@@ -196,7 +196,6 @@ export default function CreateBill({ navigation }) {
   //   }
   // }, [selectedCustomer]);
   useEffect(() => {
-    if (mode === "edit") return;
     if (!selectedCustomer) return;
     if (items.length > 0) return;
     if (!filteredOptions?.length) return;
@@ -485,8 +484,26 @@ export default function CreateBill({ navigation }) {
   // }, [ParticularcustomerDetails]);
 
 
+  // useEffect(() => {
+  //   if (!selectedCustomer || !ParticularcustomerDetails) return;
+
+  //   const rent = getRoomRentAmount();
+
+  //   setItems((prev) =>
+  //     prev.map((item) =>
+  //       item.type === "Room rent"
+  //         ? { ...item, amount: String(rent) }
+  //         : item
+  //     ))
+
+
+
+  // }, [selectedCustomer?.id, ParticularcustomerDetails]);
+
+
   useEffect(() => {
     if (!selectedCustomer || !ParticularcustomerDetails) return;
+
     if (mode === "edit") return;
 
     const rent = getRoomRentAmount();
@@ -497,31 +514,9 @@ export default function CreateBill({ navigation }) {
         item.type === "Room rent"
           ? { ...item, amount: String(rent) }
           : item
-      ))
-
-    //     setItems(
-    //   (bill.invoiceItems || []).map((item) => {
-    //     let type = item.description;
-
-    //     // 🔥 FIX
-    //     if (type?.toLowerCase() === "rent") {
-    //       type = "Room rent";
-    //     }
-    //     if (type?.toLowerCase() === "electricity" || type?.toLowerCase() === "eb") {
-    //       type = "EB";
-    //     }
-
-    //     return {
-    //       type,
-    //       description: type,
-    //       amount: String(item.amount),
-    //       isExisting: true,
-    //     };
-    //   })
-    // )
-
+      )
+    );
   }, [selectedCustomer?.id, ParticularcustomerDetails]);
-
 
   useEffect(() => {
     const total = items.reduce((sum, item) => {
@@ -1155,12 +1150,15 @@ export default function CreateBill({ navigation }) {
                 // style={styles.input}
                 style={[
                   styles.input,
-                  item.type === "Room rent" && { backgroundColor: "#F3F4F6" }
+                  item.type === "Room rent" && mode === "edit" && {
+                    backgroundColor: "#F3F4F6"
+                  }
                 ]}
                 keyboardType="numeric"
                 value={item.amount}
                 placeholder="Enter Amount"
-                editable={item.type !== "Room rent"}
+                editable={mode !== "edit" || item.type !== "Room rent"}
+                // editable={item.type !== "Room rent"}
                 // editable={item.type !== "Room rent"} 
                 // onChangeText={(txt) => updateCard(index, "amount", txt)}
                 onChangeText={(txt) => {

@@ -30,6 +30,7 @@ import DownloadIcon from "../../../Assets/Images/download.png";
 import PlusIcon from "../../../Assets/Images/add.png";
 import TickIcon from "../../../Assets/Images/check.png";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
+import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
 import { PanResponder } from "react-native";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
@@ -40,6 +41,7 @@ import RecordPaymentSheet from "./RecordPayment";
 import RefundPaymentSheet from "./RefundPayment"
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { useNavigation } from "@react-navigation/native";
+import DiscountActionSheet from "./DiscountActionSheet"
 
 
 const BillDetailsSheet = ({
@@ -98,6 +100,9 @@ const BillDetailsSheet = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+    const [showDiscountSheet, setShowDiscountSheet] = useState(false)
+
+    
 
   const recordSheetY = useRef(new Animated.Value(0)).current;
 
@@ -703,6 +708,19 @@ console.log(invoiceDetail,"billa")
                   </Text>
                 </View>
 
+                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                                          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                            <Text style={styles.discountLabel}>Discount</Text>
+                                            <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
+                                              <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
+                                            </TouchableOpacity>
+                                          </View>
+                                          <Text style={styles.discountMinus}>
+                                            - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
+                                          </Text>
+                
+                                        </View>
+
                 {/* Badge */}
                 <View style={styles.discountBadge}>
                   <Text style={styles.discountBadgeText}>
@@ -1176,6 +1194,39 @@ console.log(invoiceDetail,"billa")
           onClose()
         }}
       />
+
+      {/* <DiscountActionSheet
+                    visible={showDiscountSheet}
+                    onClose={() => setShowDiscountSheet(false)}
+                    discountAmount={BillPdfdetails?.invoiceInfo?.discountAmount || 0}
+                    totalAmount={BillPdfdetails?.invoiceInfo?.totalAmount || 0}
+                    hostelId={selectedBill?.hostelId}
+                    invoiceId={selectedBill?.invoiceId}
+                    onEdit={() => {
+                      navigation.navigate("DiscountInvoice", {
+                        bill: selectedBill,
+                        isEdit: true,
+                        discountAmount: BillPdfdetails?.invoiceInfo?.discountAmount,
+                        discountPercentage: BillPdfdetails?.invoiceInfo?.discountPercentage,
+                        totalAmount: BillPdfdetails?.invoiceInfo?.subTotal,
+                        DiscountReason: BillPdfdetails?.invoiceInfo?.discountReason
+                      });
+                    }}
+      
+                    onEditSuccess={() => {
+                      setShowBillDetails(false);
+                    }}
+      
+      
+                    onSuccess={() => {
+                      setShowBillDetails(false); 
+                      setShowSuccessModal(true);
+                      setModalType("success");
+                      setModalMessage("Discount removed successfully");
+      
+                      setTimeout(() => setShowSuccessModal(false), 1500);
+                    }}
+                  /> */}
 
 
     </>
