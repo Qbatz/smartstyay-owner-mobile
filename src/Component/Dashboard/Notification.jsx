@@ -10,11 +10,14 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  TouchableWithoutFeedback, BackHandler
+  TouchableWithoutFeedback, BackHandler , Platform
 } from "react-native";
 import { NotificationContext } from "../../Context/NotificationContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+
 
 
 import newTenant from "../../Assets/Images/newTenants.png";
@@ -45,7 +48,7 @@ export default function NotificationDetails() {
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
-
+const insets = useSafeAreaInsets();
 
 
 
@@ -165,12 +168,11 @@ export default function NotificationDetails() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.container}>
 
 
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
 
-          {/* LEFT SIDE → Arrow + Title */}
           <View style={styles.leftRow}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
 
@@ -180,7 +182,6 @@ export default function NotificationDetails() {
             <Text style={styles.headerTitle}>Notifications</Text>
           </View>
 
-          {/* RIGHT SIDE → Filter Icon */}
           {/* <TouchableOpacity
   onPress={() => {
     setShowFilter(true);
@@ -312,7 +313,10 @@ export default function NotificationDetails() {
 
         <View style={{ height: 40 }} />
       </ScrollView> */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{flexGrow:1}}>
+        <ScrollView showsVerticalScrollIndicator={false}  contentContainerStyle={{
+    paddingBottom: 20,
+    flexGrow: 1
+  }}>
           {notifications
             .sort(
               (a, b) =>
@@ -414,7 +418,7 @@ export default function NotificationDetails() {
           )}
         </ScrollView>
 
-      </SafeAreaView>
+      </View>
 
       {
         showFilter &&
@@ -549,13 +553,19 @@ export default function NotificationDetails() {
 
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 50
-  },
+  container: {
+  flex: 1,
+  backgroundColor: "#fff",
+  paddingTop: Platform.OS === "ios" ? 0 : 10,
+},
+ header: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingTop: 10,  
+  paddingBottom: 10
+},
   backArrow: {
     width: 25,
     height: 25
@@ -565,7 +575,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#000",
-    marginLeft: 4
+      marginLeft: 8,
+  textAlignVertical: "center", // 🔥 Android
+  includeFontPadding: false, 
   },
   filterIcon: {
     width: 25,
@@ -575,6 +587,7 @@ const styles = StyleSheet.create({
   leftRow: {
     flexDirection: "row",
     alignItems: "center",
+    
   },
 
 
@@ -599,7 +612,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: "#C9D8FF",
-    marginTop: 6,
+    marginVertical: 6,
   },
 
   dot: {
@@ -609,7 +622,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3B82F6",
     position: "absolute",
     left: 10,
-    top: 20,
+    top: 18,
   },
 
   row: { flexDirection: "row", alignItems: "flex-start" },
@@ -629,6 +642,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: "700",
+     includeFontPadding: false,
   },
 
   desc: {
