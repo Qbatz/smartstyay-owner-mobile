@@ -59,6 +59,7 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import FloorIcon from"../../../Assets/Images/Room_bed.png"
 import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
+import Loader from "../../Loader/Loader";
 
 
 
@@ -67,7 +68,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails } = useCustomer();
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails,loading } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
@@ -669,6 +670,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   return (
     <>
+     {loading && <Loader/>}
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
 

@@ -453,7 +453,7 @@ export default function TenantCheckIn({ navigation, route }) {
 
           <View style={{ paddingHorizontal: 16, paddingTop: 12, flexDirection: 'row', alignItems: 'center' }}>
             <View>
-              {customer?.profilePic ? <Image source={customer?.profilePic} style={{ width: 50, height: 50, borderRadius: 25 }} /> :
+              {customer?.profilePic ? <Image source={{uri:customer?.profilePic}} style={{ width: 50, height: 50, borderRadius: 25 }} /> :
                 <View style={{ width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: '#e6e7eb' }}>
                   <Text style={{ fontSize: 20, fontFamily: 'Gilroy-Bold' }}>{customer?.initials}</Text>
                 </View>}

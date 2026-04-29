@@ -15,6 +15,7 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Loader from "../../Loader/Loader";
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.85;
 
@@ -33,7 +34,7 @@ export default function EditManualAddressSheet({
   onSuccess,
 }) {
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
-  const { editBasicDetails } = useCustomer();
+  const { editBasicDetails,loading } = useCustomer();
 
   const [flat, setFlat] = useState("");
   const [area, setArea] = useState("");
@@ -360,6 +361,7 @@ export default function EditManualAddressSheet({
 
   return (
     <>
+    {loading && <Loader/>}
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.overlay}>
         <TouchableOpacity style={{ flex: 1 }} onPress={closeSheet} />

@@ -69,7 +69,7 @@ export default function EditRentalAmountSheet({
   const [showCalendar, setShowCalendar] = useState(false);
   const [effectiveMonth, setEffectiveMonth] = useState(null);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
-const [selectedYear, setSelectedYear] = useState(dayjs().year());
+  const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
@@ -81,62 +81,62 @@ const [selectedYear, setSelectedYear] = useState(dayjs().year());
   const [billingData, setBillingData] = useState(null);
 
   // const billStartDate = billingData?.billStartDate;
-// const billDueDate = billingData?.billDueDate;
-const typeOfBilling = billingData?.typeOfBilling;
+  // const billDueDate = billingData?.billDueDate;
+  const typeOfBilling = billingData?.typeOfBilling;
 
-const billStartDate = Number(billingData?.billStartDate) || 1;
-const billDueDate = Number(billingData?.billDueDate) || 1;
+  const billStartDate = Number(billingData?.billStartDate) || 1;
+  const billDueDate = Number(billingData?.billDueDate) || 1;
 
-console.log("billingdata",billingData );
+  console.log("billingdata", billingData);
 
-const today = dayjs();
+  const today = dayjs();
 
-let startMonth;
-let endMonth;
+  let startMonth;
+  let endMonth;
 
-if (billingData && billStartDate && billDueDate) {
-  if (typeOfBilling === "Joining Date Based") {
-    startMonth = today.add(1, "month").startOf("month");
-    endMonth = today.add(3, "month").endOf("month");
-  } else {
-    let cycleMonth = today.month();
-    let cycleYear = today.year();
+  if (billingData && billStartDate && billDueDate) {
+    if (typeOfBilling === "Joining Date Based") {
+      startMonth = today.add(1, "month").startOf("month");
+      endMonth = today.add(3, "month").endOf("month");
+    } else {
+      let cycleMonth = today.month();
+      let cycleYear = today.year();
 
-    if (today.date() > billStartDate) {
-      const nextMonth = today.add(1, "month");
-      cycleMonth = nextMonth.month();
-      cycleYear = nextMonth.year();
+      if (today.date() > billStartDate) {
+        const nextMonth = today.add(1, "month");
+        cycleMonth = nextMonth.month();
+        cycleYear = nextMonth.year();
+      }
+
+      const start = dayjs()
+        .year(cycleYear)
+        .month(cycleMonth)
+        .date(billStartDate)
+        .startOf("day");
+
+      const end = start
+        .add(2, "month")
+        .date(billDueDate)
+        .endOf("day");
+
+      startMonth = start;
+      endMonth = end;
     }
-
-    const start = dayjs()
-      .year(cycleYear)
-      .month(cycleMonth)
-      .date(billStartDate)
-      .startOf("day");
-
-    const end = start
-      .add(2, "month")
-      .date(billDueDate)
-      .endOf("day");
-
-    startMonth = start;
-    endMonth = end;
   }
-}
 
 
-const isMonthDisabled = (year, monthIndex) => {
-  if (!startMonth || !endMonth) return true;
+  const isMonthDisabled = (year, monthIndex) => {
+    if (!startMonth || !endMonth) return true;
 
-  const current = dayjs()
-    .year(year)
-    .month(monthIndex)
-    .startOf("month");
+    const current = dayjs()
+      .year(year)
+      .month(monthIndex)
+      .startOf("month");
 
-  return current.isBefore(startMonth, "month") || current.isAfter(endMonth, "month");
-}
+    return current.isBefore(startMonth, "month") || current.isAfter(endMonth, "month");
+  }
 
-  
+
 
   /* ================= RESET ================= */
   const resetState = () => {
@@ -287,10 +287,10 @@ const isMonthDisabled = (year, monthIndex) => {
       //   type === "Rent-Revision"
       //     ? dayjs(effectiveDate).format("DD-MM-YYYY")
       //     : "",
-          effectiveDate:
-  type === "Rent-Revision"
-    ? dayjs(effectiveMonth).format("MM-YYYY")
-    : ""
+      effectiveDate:
+        type === "Rent-Revision"
+          ? dayjs(effectiveMonth).format("MM-YYYY")
+          : ""
     }
 
     const res = await editRentalAmount(
@@ -315,7 +315,7 @@ const isMonthDisabled = (year, monthIndex) => {
   };
 
   console.log("showdatepicker", showCalendar);
-  
+
 
   return (
     <>
@@ -444,16 +444,16 @@ const isMonthDisabled = (year, monthIndex) => {
                   </Text>
                 </TouchableOpacity> */}
 
-               <TouchableOpacity
-  style={styles.input}
-  onPress={() => setShowMonthPicker(true)}
->
-  <Text>
-    {effectiveMonth
-      ? dayjs(effectiveMonth).format("MM/YYYY")
-      : "MM/YYYY"}
-  </Text>
-</TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => setShowMonthPicker(true)}
+                >
+                  <Text>
+                    {effectiveMonth
+                      ? dayjs(effectiveMonth).format("MM/YYYY")
+                      : "MM/YYYY"}
+                  </Text>
+                </TouchableOpacity>
               </>
 
             )}
@@ -500,75 +500,75 @@ const isMonthDisabled = (year, monthIndex) => {
 
       </View>
 
-<View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-             {showMonthPicker && (
-  <View style={styles.calendarOverlay}>
-      <TouchableWithoutFeedback onPress={() => setShowMonthPicker(false)}>
-    <View
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-      }}
-    />
-  </TouchableWithoutFeedback>
-    <View style={styles.calendarSheet}>
+      {/* <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}> */}
+        {showMonthPicker && (
+          <View style={styles.calendarOverlay}>
+            <TouchableWithoutFeedback onPress={() => setShowMonthPicker(false)}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              />
+            </TouchableWithoutFeedback>
+            <View style={styles.calendarSheet}>
 
-      {/* YEAR HEADER */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
-        <TouchableOpacity onPress={() => setSelectedYear(selectedYear - 1)}>
-          <Text>{"<<"}</Text>
-        </TouchableOpacity>
+              {/* YEAR HEADER */}
+              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+                <TouchableOpacity onPress={() => setSelectedYear(selectedYear - 1)}>
+                  <Text>{"<<"}</Text>
+                </TouchableOpacity>
 
-        <Text style={{ fontWeight: "600" }}>{selectedYear}</Text>
+                <Text style={{ fontWeight: "600" }}>{selectedYear}</Text>
 
-        <TouchableOpacity onPress={() => setSelectedYear(selectedYear + 1)}>
-          <Text>{">>"}</Text>
-        </TouchableOpacity>
-      </View>
+                <TouchableOpacity onPress={() => setSelectedYear(selectedYear + 1)}>
+                  <Text>{">>"}</Text>
+                </TouchableOpacity>
+              </View>
 
-      {/* MONTH GRID */}
- <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-  {dayjs.monthsShort().map((m, index) => {
-    
-    const disabled = isMonthDisabled(selectedYear, index);
+              {/* MONTH GRID */}
+              <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                {dayjs.monthsShort().map((m, index) => {
 
-    return (
-      <TouchableOpacity
-        key={index}
-        disabled={disabled}
-        style={{
-          width: "33%",
-          padding: 12,
-          alignItems: "center",
-          opacity: disabled ? 0.3 : 1,
-        }}
-        onPress={() => {
-          if (disabled) return;
+                  const disabled = isMonthDisabled(selectedYear, index);
 
-          const date = dayjs()
-            .year(selectedYear)
-            .month(index)
-            .startOf("month");
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      disabled={disabled}
+                      style={{
+                        width: "33%",
+                        padding: 12,
+                        alignItems: "center",
+                        opacity: disabled ? 0.3 : 1,
+                      }}
+                      onPress={() => {
+                        if (disabled) return;
 
-          setEffectiveMonth(date.toDate());
-          setShowMonthPicker(false);
-        }}
-      >
-        <Text style={{ color: disabled ? "#aaa" : "#000" }}>
-          {m}
-        </Text>
-      </TouchableOpacity>
-    );
-  })}
-</View>
+                        const date = dayjs()
+                          .year(selectedYear)
+                          .month(index)
+                          .startOf("month");
 
-    </View>
-  </View>
-)}
-</View>
+                        setEffectiveMonth(date.toDate());
+                        setShowMonthPicker(false);
+                      }}
+                    >
+                      <Text style={{ color: disabled ? "#aaa" : "#000" }}>
+                        {m}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+            </View>
+          </View>
+        )}
+      {/* </View> */}
 
       {/* {showCalendar && (
         <View style={styles.calendarOverlay}>
@@ -703,27 +703,36 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
- calendarOverlay: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-  alignItems: "center",
-  zIndex: 9999,        
-  elevation: 10,      
-},
+  calendarOverlay: {
+    // ...StyleSheet.absoluteFillObject,
+    // backgroundColor: "rgba(0,0,0,0.4)",
+    // justifyContent: "flex-end",
+    // alignItems: "center",
+    // zIndex: 9999,
+    // elevation: 10,
+     position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "flex-end",
+        alignItems: "center",  
+        zIndex: 2000,
+  },
 
-//   calendarOverlay: {
-    
-//       position: "absolute",
-//         top: 0,
-//         left: 0,
-//         right: 0,
-//         bottom: 0,
-//         backgroundColor: "rgba(0,0,0,0.4)",
-//         justifyContent: "flex-end",
-//         alignItems: "center",   
-//         zIndex: 2000,
-//   },
+  //   calendarOverlay: {
+
+  //       position: "absolute",
+  //         top: 0,
+  //         left: 0,
+  //         right: 0,
+  //         bottom: 0,
+  //         backgroundColor: "rgba(0,0,0,0.4)",
+  //         justifyContent: "flex-end",
+  //         alignItems: "center",   
+  //         zIndex: 2000,
+  //   },
 
   calendarSheet: {
     backgroundColor: "#fff",
