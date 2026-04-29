@@ -12,7 +12,7 @@ import {
   StatusBar,
   Image,
   BackHandler,
-  TouchableWithoutFeedback, Modal
+  TouchableWithoutFeedback, Modal, Platform
 } from "react-native";
 import { useLayoutEffect } from "react";
 import { Animated, Easing } from "react-native";
@@ -131,15 +131,15 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const [showExpiryScreen, setShowExpiredScreen] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null)
 
-  const [showProfileTopBar,setShowProfileTopBar]=useState(true)
+  const [showProfileTopBar, setShowProfileTopBar] = useState(true)
 
 
   const { setShowTabBar } = route.params || {};
 
   const isTabBarVisible = useRef(true);
-  
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar,setShowProfileTopBar);
-  console.log("Hitler",showProfileTopBar)
+
+  const { handleScroll } = useHideTabbarOnScroll(setShowTabBar, setShowProfileTopBar);
+  console.log("Hitler", showProfileTopBar)
 
 
   const subTabs = [
@@ -847,7 +847,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
     hostelList?.[0] ??
     {};
-    console.log(activeHostel)
+  console.log(activeHostel)
 
 
   const navigation = useNavigation();
@@ -1337,13 +1337,13 @@ export default function DashboardNewDesign({ initialParams, route }) {
           </View>
         </View> */}
 
-        {
-          showProfileTopBar && (
+          {
+            showProfileTopBar && (
 
-         
 
-          <View style={styles.headerTop}>
-            {/* <View style={styles.hostelRow}>
+
+              <View style={styles.headerTop}>
+                {/* <View style={styles.hostelRow}>
     <Image source={PgImg} style={{ width: 38, height: 38 }} />
 
     <View style={{ marginLeft: 12, flex: 1 }}>
@@ -1357,7 +1357,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     </View>
   </View> */}
 
-            {/* <View style={styles.hostelRow}>
+                {/* <View style={styles.hostelRow}>
   {hasHostel ? (
     <>
 
@@ -1398,113 +1398,113 @@ export default function DashboardNewDesign({ initialParams, route }) {
   )}
 </View> */}
 
-            <View style={styles.hostelRow}>
-              <TouchableOpacity style={styles.hostelAvatar}>
-                {hasHostelProfile ? (
-                  <Image
-                    source={{ uri: activeHostel?.mainImage }}
-                    style={styles.hostelAvatarImg}
-                  />
-                ) : (
-                  <Text style={styles.hostelAvatarText}>
-                    {getProfileInitial()}
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              {hasHostel ? (
-                <View style={{ marginLeft: 12, flex: 1 }}>
-                  <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
-                    <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
+                <View style={styles.hostelRow}>
+                  <TouchableOpacity style={styles.hostelAvatar}>
+                    {hasHostelProfile ? (
+                      <Image
+                        source={{ uri: activeHostel?.mainImage }}
+                        style={styles.hostelAvatarImg}
+                      />
+                    ) : (
+                      <Text style={styles.hostelAvatarText}>
+                        {getProfileInitial()}
+                      </Text>
+                    )}
                   </TouchableOpacity>
 
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                    <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
-                    <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', marginLeft: 2 }}>
-                      {activeHostel?.city}</Text>
-                  </View>
-                  {/* <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+                  {hasHostel ? (
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+                        <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
+                      </TouchableOpacity>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                        <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
+                        <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', marginLeft: 2 }}>
+                          {activeHostel?.city}</Text>
+                      </View>
+                      {/* <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                     <Text style={styles.changeText}>Change Hostel →</Text>
                   </TouchableOpacity> */}
 
-                </View>
-              ) : (
-                (
-                  <Animated.View
-                    style={[
-                      styles.addPgWrapper,
-                      {
-                        transform: [{ scale: scaleAnim }],
-                      },
-                    ]}
-                  >
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      style={styles.addPgBtn}
-                      onPress={() => navigation.navigate("AddPG")}
-                    >
-                      <Animated.Text
+                    </View>
+                  ) : (
+                    (
+                      <Animated.View
                         style={[
-                          styles.addPgIcon,
+                          styles.addPgWrapper,
                           {
-                            transform: [
-                              {
-                                rotate: rotateAnim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: ["0deg", "90deg"],
-                                }),
-                              },
-                            ],
+                            transform: [{ scale: scaleAnim }],
                           },
                         ]}
                       >
-                        +
-                      </Animated.Text>
+                        <TouchableOpacity
+                          activeOpacity={0.85}
+                          style={styles.addPgBtn}
+                          onPress={() => navigation.navigate("AddPG")}
+                        >
+                          <Animated.Text
+                            style={[
+                              styles.addPgIcon,
+                              {
+                                transform: [
+                                  {
+                                    rotate: rotateAnim.interpolate({
+                                      inputRange: [0, 1],
+                                      outputRange: ["0deg", "90deg"],
+                                    }),
+                                  },
+                                ],
+                              },
+                            ]}
+                          >
+                            +
+                          </Animated.Text>
 
-                      <Text style={styles.addPgText}>Add  PG</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                )
+                          <Text style={styles.addPgText}>Add  PG</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )
 
-              )}
-            </View>
+                  )}
+                </View>
 
 
 
-            <View style={styles.rightIcons}>
-              {/* <TouchableOpacity
+                <View style={styles.rightIcons}>
+                  {/* <TouchableOpacity
       style={styles.iconCircle}
       onPress={() => navigation.navigate("NotificationDetails")}
     >
       <Image source={Bell} style={{ width: 28, height: 28 }} />
     </TouchableOpacity> */}
-              <TouchableOpacity
-                style={styles.iconCirclenoti}
-                onPress={() => navigation.navigate("NotificationDetails")}
-              >
-                <Image source={Bell} style={{ width: 28, height: 28 }} />
+                  <TouchableOpacity
+                    style={styles.iconCirclenoti}
+                    onPress={() => navigation.navigate("NotificationDetails")}
+                  >
+                    <Image source={Bell} style={{ width: 28, height: 28 }} />
 
-                {unreadCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+                    {unreadCount > 0 && (
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
 
 
-              <TouchableOpacity
-                style={[styles.iconCircle, { marginLeft: 10 }]}
-                onPress={() => setDrawerVisible(true)}
-              >
-                <Image source={Profile} style={{ width: 40, height: 40 }} />
-              </TouchableOpacity>
-            </View>
-          </View>
+                  <TouchableOpacity
+                    style={[styles.iconCircle, { marginLeft: 10 }]}
+                    onPress={() => setDrawerVisible(true)}
+                  >
+                    <Image source={Profile} style={{ width: 40, height: 40 }} />
+                  </TouchableOpacity>
+                </View>
+              </View>
 
-           )
-        }
+            )
+          }
 
 
           <ScrollView
@@ -1627,12 +1627,23 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
                           <LinearGradient
                             colors={["#10267B", "#1E45E1"]}
-                            style={styles.expiryCard}
+                            style={[
+                              styles.expiryCard,
+                              Platform.OS === "ios" && {
+                                flexDirection: "row",
+                                alignItems: "center",
+                              },
+                            ]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                           >
 
-                            <View style={{ flex: 1 }}>
+                            <View
+                              style={{
+                                flex: 1,
+                                paddingRight: Platform.OS === "ios" ? 70 : 0,
+                              }}
+                            >
                               <Text style={styles.expiryTitle}>
                                 Your Plan has Expired..!
                               </Text>
@@ -1659,10 +1670,21 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             colors={["#10267B", "#1E45E1"]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
-                            style={styles.expiryCard}
+                            style={[
+                              styles.expiryCard,
+                              Platform.OS === "ios" && {
+                                flexDirection: "row",
+                                alignItems: "center",
+                              },
+                            ]}
                           >
                             {/* <View style={styles.banner}> */}
-                            <View style={{ flex: 1 }}>
+                            <View
+                              style={{
+                                flex: 1,
+                                paddingRight: Platform.OS === "ios" ? 70 : 0,
+                              }}
+                            >
                               <Text style={styles.bannerTitle}>SmartStay </Text>
                               <Text style={styles.bannerSub}>
                                 The smartest way to manage your PG, All in one place!
@@ -2129,7 +2151,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
 
                         <View style={styles.bookingsCard}>
- 
+
 
                           <View style={styles.bookingHeader}>
                             <View style={styles.bookingHeaderLeft}>
@@ -2836,7 +2858,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           <View style={styles.chartHeader}>
                             <Text style={styles.chartTitle}>Occupancy Trend</Text>
 
-                             <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
                               setTempMonth(selectedMonth);
                               setMonthSheetOpen(true);
                             }}>
@@ -2998,7 +3020,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               Revenue Trend
                             </Text>
 
-                             <TouchableOpacity style={styles.monthBtn} onPress={() => {
+                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
                               setTempMonth(selectedMonth);
                               setMonthSheetOpen(true);
                             }}>
@@ -3498,16 +3520,20 @@ const styles = StyleSheet.create({
   safe: { backgroundColor: "#fff", flex: 1 },
 
   header: {
-    padding: 16,
-    paddingBottom: 20,
+    // padding: 16,
+    // paddingBottom: 20,
+    paddingHorizontal: Platform.OS === "ios" ? 5 : 16,
+    paddingVertical: Platform.OS === "ios" ? 7 : 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    minHeight: 130
   },
   rightIcons: {
     flexDirection: "row",
     alignItems: "center",
-    width: 90,
+    width: Platform.OS === "ios" ? 100 : 90,
     justifyContent: "flex-end",
+    marginRight: Platform.OS === "ios" ? 10 : 0,
   },
 
 
@@ -3692,11 +3718,13 @@ const styles = StyleSheet.create({
   },
 
   expiryCard: {
-    margin: 16,
-    padding: 20,
-    borderRadius: 16
+    margin: Platform.OS === "ios" ? 5 : 16,
+    paddingHorizontal: Platform.OS === "ios" ? 10 : 20,
+    paddingVertical: Platform.OS === "ios" ? 10 : 20,
+    borderRadius: 16,
+    overflow: "hidden",
+    minHeight: Platform.OS === "ios" ? 140 : 120,
   },
-
   expiryTitle: {
     color: "#fff",
     fontSize: 20,
@@ -3709,7 +3737,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Gilroy-Regular",
     lineHeight: 20,
-    width: 250
+    // width: 250
   },
 
   renewBtn: {
@@ -3729,12 +3757,12 @@ const styles = StyleSheet.create({
   },
 
   bannerIcon: {
-    width: 142,
+    width: 140,
     height: 140,
     position: "absolute",
-    right: 5,
-    top: -5,
-
+    right: -10,
+    bottom: -10,   // 🔥 IMPORTANT (not top)
+    resizeMode: "contain",
   },
 
   bannerTitle: {
@@ -3748,9 +3776,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
-    // fontStyle: "italic",
     fontFamily: "Gilroy-Regular",
-    width: 250,
+
+    flexShrink: 1,   // 🔥 IMPORTANT
+    paddingRight: 80 // 🔥 reserve space for image
   },
 
   billingCard: {
@@ -4478,14 +4507,16 @@ const styles = StyleSheet.create({
     height: 200,
     marginHorizontal: 16,
     marginTop: 10,
-    paddingTop: 5,
-    paddingRight: 15,
-    paddingBottom: 1,
-    paddingLeft: 15,
+    // paddingTop: 5,
+    paddingTop: Platform.OS === "ios" ? 0 : 5,
+    paddingRight: Platform.OS === "ios" ? 1 : 15,
+    paddingBottom: Platform.OS === "ios" ? 1 : 1,
+    paddingLeft: Platform.OS === "ios" ? 2 : 15,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+
   },
 
   revenueHeader: {

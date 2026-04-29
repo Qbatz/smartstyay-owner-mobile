@@ -953,10 +953,9 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
 
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 5, marginTop:40, marginLeft:20 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 5, marginTop: Platform.OS === "ios" ?  60 : 40, marginLeft:20 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
-
   label: {
     fontSize: 14,
     fontWeight: "500",
