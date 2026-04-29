@@ -940,7 +940,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 16,
-        paddingTop: 32,
+        // paddingTop: 32,
+        paddingTop:  Platform.OS === "ios" ?  10 : 40
     },
 
     backBtn: { padding: 6, marginRight: 8 },
