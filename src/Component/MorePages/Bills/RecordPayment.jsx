@@ -33,7 +33,7 @@ const RecordPaymentSheet = ({
   selectedBill,
 }) => {
 
-  const { RecordPayment, GetAllBillDetails } = useContext(BillContext);
+  const { RecordPayment, GetAllBillDetails  , getBillsPdfDetails} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
     const { bankList, getBankListByHostel } = useContext(BankingContext)
 
@@ -327,16 +327,22 @@ console.log("isTrigg",isTriggered)
             referenceId: transactionId,
             amount: Number(paidAmount),
           },
-        });
+        })
+        console.log("response", res);
+        
   
-        if (res.success) {
+        if (res?.success) {
           await GetAllBillDetails(activeHostelId);
-          handleClose()
+            const res = getBillsPdfDetails(activeHostelId, normalizedBill?.invoiceId,);
+          
   
-          setModalType("success");
+          setModalType("success")
           setModalMessage("Payment recorded successfully");
           setShowSuccessModal(true);
-          setTimeout(() => setShowSuccessModal(false), 1500);
+          setTimeout(() =>  {
+            handleClose()
+            setShowSuccessModal(false), 1500
+        })
         } else if (res?.payableAmount) {
           setModalType("warning");
           setModalMessage(res?.payableAmount);
