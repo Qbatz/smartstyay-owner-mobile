@@ -279,85 +279,87 @@ const RecordPaymentSheet = ({
   const handleSaveRecordPayment = async () => {
     // if(isTriggered) return;
     // setIsTriggered(true)
-    if (isTriggeredRef.current) return;
-    isTriggeredRef.current = true;
-    let isValid = true;
-
-    setAmountError("");
-    setDateError("");
-    setModeError("");
-
-    const formattedPaidDate = formatDateForPayload(paidDate);
-
-    if (!paidAmount || Number(paidAmount) <= 0) {
-      setAmountError("Please Enter Amount");
-      isValid = false;
-    }
-
-    if (!formattedPaidDate) {
-      setDateError("Please Select Date");
-      isValid = false;
-    } else {
-      const billDate = dayjs(normalizedBill?.invoiceDate, "DD/MM/YYYY");
-      const paid = dayjs(formattedPaidDate, "DD-MM-YYYY");
-
-      if (paid.isBefore(billDate, "day")) {
-        setDateError("Paid date should not be before Bill date");
+      if (isTriggeredRef.current) return; 
+  isTriggeredRef.current = true;
+      let isValid = true;
+  
+      setAmountError("");
+      setDateError("");
+      setModeError("");
+  
+      const formattedPaidDate = formatDateForPayload(paidDate);
+  
+      if (!paidAmount || Number(paidAmount) <= 0) {
+        setAmountError("Please Enter Amount");
         isValid = false;
       }
-    }
-
-    if (!selectedMode) {
-      setModeError("Please Select Transaction Type");
-      isValid = false;
-    }
-
-    if (!isValid) {
-      isTriggeredRef.current = false;
-      return;
-    };
-
-    try {
-
-      const res = await RecordPayment({
-        hostelId: activeHostelId,
-        invoiceId: normalizedBill?.invoiceId,
-        data: {
-          bankId: selectedMode,
-          paymentDate: formattedPaidDate,
-          referenceId: transactionId,
-          amount: Number(paidAmount),
-        },
-      });
-
-      if (res.success) {
-        await GetAllBillDetails(activeHostelId);
-
-        setShowSuccessModal(true);
-        setModalType("success");
-        setModalMessage("Payment recorded successfully");
-
-        setTimeout(() => {
-          setShowSuccessModal(false)
-          handleClose();
-          // onCloseBillDetails();
-        }, 1500);
-      } else if (res?.payableAmount) {
+  
+      if (!formattedPaidDate) {
+        setDateError("Please Select Date");
+        isValid = false;
+      } else {
+        const billDate = dayjs(normalizedBill?.invoiceDate, "DD/MM/YYYY");
+        const paid = dayjs(formattedPaidDate, "DD-MM-YYYY");
+  
+        if (paid.isBefore(billDate, "day")) {
+          setDateError("Paid date should not be before Bill date");
+          isValid = false;
+        }
+      }
+  
+      if (!selectedMode) {
+        setModeError("Please Select Transaction Type");
+        isValid = false;
+      }
+  
+      if (!isValid){
+       isTriggeredRef.current = false;
+        return;
+      } ;
+  
+      try {
+  
+        const res = await RecordPayment({
+          hostelId: activeHostelId,
+          invoiceId: normalizedBill?.invoiceId,
+          data: {
+            bankId: selectedMode,
+            paymentDate: formattedPaidDate,
+            referenceId: transactionId,
+            amount: Number(paidAmount),
+          },
+        })
+        console.log("response", res);
+        
+  
+        if (res?.success) {
+          await GetAllBillDetails(activeHostelId);
+            const res = getBillsPdfDetails(activeHostelId, normalizedBill?.invoiceId,);
+          
+  
+          setModalType("success")
+          setModalMessage("Payment recorded successfully");
+          setShowSuccessModal(true);
+          setTimeout(() =>  {
+            handleClose()
+            setShowSuccessModal(false), 1500
+        })
+        } else if (res?.payableAmount) {
+          setModalType("warning");
+          setModalMessage(res?.payableAmount);
+          setShowSuccessModal(true);
+          setTimeout(() => setShowSuccessModal(false), 1500);
+        } else {
+          throw new Error();
+        }
+      } catch {
         setModalType("warning");
-        setModalMessage(res?.payableAmount);
+        setModalMessage("Something went wrong");
         setShowSuccessModal(true);
         setTimeout(() => setShowSuccessModal(false), 1500);
-      } else {
-        throw new Error();
+      } finally{
+        isTriggeredRef.current=false;
       }
-    } catch {
-      setModalType("warning");
-      setModalMessage("Something went wrong");
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
-    } finally {
-      isTriggeredRef.current = false;
-    }
 
   };
 

@@ -113,6 +113,7 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
                   {item.paymentStatus}
                 </Text>
               </View>
+ 
             </View>
              {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
                                         <Text style={styles.dueLabel}>Outstanding</Text>
@@ -264,4 +265,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 5,
   },
+  outstandingLabel: {
+  fontSize: 11,
+  color: "#6B7280",
+  marginTop: 4,
+  fontFamily: "Gilroy-Regular",
+},
+
+dueAmount: {
+  fontSize: 13,
+  color: "#DC2626", // red color
+  marginTop: 4,
+  fontFamily: "Gilroy-Semibold",
+},
 });
