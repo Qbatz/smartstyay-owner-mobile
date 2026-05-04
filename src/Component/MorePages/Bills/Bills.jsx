@@ -2149,7 +2149,7 @@ export default function BillsDesign({ route }) {
 
           </View> */}
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 , }}>
 
   <TouchableOpacity onPress={() => navigation.goBack()}>
     <Image source={ArrowLeft} style={styles.backIcon} />
@@ -2219,7 +2219,7 @@ export default function BillsDesign({ route }) {
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{ paddingBottom: 150 }}
+                      contentContainerStyle={{ paddingBottom: 150 ,  }}
                     >
 
 
@@ -2309,7 +2309,6 @@ export default function BillsDesign({ route }) {
                           </View>
 
                           <View style={{ flex: 1, marginLeft: 5, marginRight: 10, }}>
-                            {/* <Text style={styles.name}>{item.fullName}</Text> */}
 
                             <Text style={styles.name}
                               numberOfLines={1}
@@ -2332,12 +2331,7 @@ export default function BillsDesign({ route }) {
                           </View>
 
                           <View style={styles.rightSection}>
-                            {/* <TouchableOpacity ref={dotsRef}  onPress={(e) => openMenu(e, item)}>
-            <Image
-              source={Dots}
-              style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-            />
-          </TouchableOpacity> */}
+                
                             <Text style={{
                               fontSize: 16,
                               fontFamily: "Gilroy-Bold",
@@ -5020,7 +5014,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
+    paddingHorizontal: 16
     // paddingTop: 60
   },
   searchContainer: {

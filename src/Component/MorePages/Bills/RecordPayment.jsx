@@ -305,44 +305,48 @@ const RecordPaymentSheet = ({
         setDateError("Paid date should not be before Bill date");
         isValid = false;
       }
-    }
-
-    if (!selectedMode) {
-      setModeError("Please Select Transaction Type");
-      isValid = false;
-    }
-
-    if (!isValid) {
-      isTriggeredRef.current = false;
-      return;
-    };
-
-    try {
-
-      const res = await RecordPayment({
-        hostelId: activeHostelId,
-        invoiceId: normalizedBill?.invoiceId,
-        data: {
-          bankId: selectedMode,
-          paymentDate: formattedPaidDate,
-          referenceId: transactionId,
-          amount: Number(paidAmount),
-        },
-      });
-
-      if (res.success) {
-        await GetAllBillDetails(activeHostelId);
-
-        setShowSuccessModal(true);
-        setModalType("success");
-        setModalMessage("Payment recorded successfully");
-
-        setTimeout(() => {
-          setShowSuccessModal(false)
-          handleClose();
-          // onCloseBillDetails();
-        }, 1500);
-      } else if (res?.payableAmount) {
+  
+      if (!isValid){
+       isTriggeredRef.current = false;
+        return;
+      } ;
+  
+      try {
+  
+        const res = await RecordPayment({
+          hostelId: activeHostelId,
+          invoiceId: normalizedBill?.invoiceId,
+          data: {
+            bankId: selectedMode,
+            paymentDate: formattedPaidDate,
+            referenceId: transactionId,
+            amount: Number(paidAmount),
+          },
+        })
+        console.log("response", res);
+        
+  
+        if (res?.success) {
+          await GetAllBillDetails(activeHostelId);
+            const res = getBillsPdfDetails(activeHostelId, normalizedBill?.invoiceId,);
+          
+  
+          setModalType("success")
+          setModalMessage("Payment recorded successfully");
+          setShowSuccessModal(true);
+          setTimeout(() =>  {
+            handleClose()
+            setShowSuccessModal(false), 1500
+        })
+        } else if (res?.payableAmount) {
+          setModalType("warning");
+          setModalMessage(res?.payableAmount);
+          setShowSuccessModal(true);
+          setTimeout(() => setShowSuccessModal(false), 1500);
+        } else {
+          throw new Error();
+        }
+      } catch {
         setModalType("warning");
         setModalMessage(res?.payableAmount);
         setShowSuccessModal(true);

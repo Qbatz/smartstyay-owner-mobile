@@ -7,6 +7,7 @@ import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import GlobalBillSettings from "./GlobalBillSettings";
 import TemplateSettings from "./Templates";
+import { StatusBar , Platform } from "react-native";
 
 export default function BillTemplateSettings({navigation}) {
   const [screen, setScreen] = useState("main");
@@ -110,7 +111,10 @@ export default function BillTemplateSettings({navigation}) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    // paddingTop: 20,
+       paddingTop: Platform.OS === "android"
+      ? StatusBar.currentHeight + 10
+      : 70 
   },
   headerRow: {
     flexDirection: "row",

@@ -12,6 +12,7 @@ import {
   Dimensions,
   PanResponder, Animated, ScrollView, Modal
 } from "react-native";
+import { StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
@@ -830,11 +831,14 @@ export default function ExpensesScreen() {
 }
 
 const styles = StyleSheet.create({
+  
   container: {
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingTop: 40,
+   paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight + 10
+  : 70 
   },
 
   topHeader: {

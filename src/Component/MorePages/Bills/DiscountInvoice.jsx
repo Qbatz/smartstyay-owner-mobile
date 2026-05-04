@@ -7,7 +7,7 @@ import {
   TextInput,
   Image,
   SafeAreaView, ScrollView,
-  KeyboardAvoidingView
+  KeyboardAvoidingView ,  Platform , StatusBar
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useEffect } from "react";
@@ -859,12 +859,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
+  // header: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   padding: 16,
+  //   paddingTop: 50
+  // },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    paddingTop: 50
-  },
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingTop: Platform.OS === "android" 
+    ? StatusBar.currentHeight + 20 
+    : 20,
+  marginBottom: 20,
+},
 
   headerTitle: {
     fontSize: 16,
