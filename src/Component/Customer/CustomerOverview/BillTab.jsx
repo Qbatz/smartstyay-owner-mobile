@@ -17,6 +17,7 @@ export default function BillTab({ customerDetails , ShowBillsDetails }) {
       downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid } = useContext(BillContext);
 
       const { activeHostelId } = useContext(CommonContexts);
+      console.log(invoiceList)
 
   const [BillDetailshow, setBillDetailsShow] = useState(false)
 const [selectedBill, setSelectedBill] = useState(null);
@@ -113,13 +114,22 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
                 </Text>
               </View>
             </View>
+             {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                                        <Text style={styles.dueLabel}>Outstanding</Text>
+                                      )}
           </View>
 
           {/* RIGHT */}
           <View style={styles.rightBox}>
             <Text style={styles.amount}>₹{item.totalAmount}</Text>
             <Text style={styles.date}>on {item.dueDate}</Text>
+            {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                                          <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
+                                        )}
           </View>
+        
+
+          
         </TouchableOpacity>
       ))}
       </ScrollView>
@@ -195,6 +205,19 @@ const styles = StyleSheet.create({
 
   overdueText: {
     color: "#D97706",
+  },
+  dueLabel: {
+    fontSize: 12,
+    color: "#4B4B4B",
+    marginRight: 6,
+    marginTop: 5,
+    fontFamily: "Gilroy-Medium"
+  },
+  dueAmount: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+    color: "#E02D2D",
+    marginTop: 5
   },
 
   paidText: {

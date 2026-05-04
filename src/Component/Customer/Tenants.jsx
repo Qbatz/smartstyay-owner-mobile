@@ -10,7 +10,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal, Animated, BackHandler, PanResponder,
-  NativeModules , Linking , Platform
+  NativeModules, Linking, Platform
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -55,6 +55,7 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import ListView from "../../Assets/Images/listview.png";
 import RoomView from "../../Assets/Images/Roomview.png";
+import RoomIcon from "../../Assets/Images/Room_Icon.png"
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
@@ -63,11 +64,11 @@ export default function TenantsScreen({ route }) {
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
-    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
-     const [showSuccessModal, setShowSuccessModal] = useState(false);
-     const [modalMessage, setModalMessage] = useState("");
-     const [modalType, setModalType] = useState("success");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -79,21 +80,21 @@ export default function TenantsScreen({ route }) {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [overviewScreen, setOverviewScreen] = useState(false)
   const [searchText, setSearchText] = useState("");
-  const {CommonModule}=NativeModules;
+  const { CommonModule } = NativeModules;
 
-const [tenantFilter, setTenantFilter] = useState("All");
-const [viewType, setViewType] = useState("Room View");
-const [tenantStatus, setTenantStatus] = useState("All");
-const [period, setPeriod] = useState("All");
-const [sharingType, setSharingType] = useState("All");
+  const [tenantFilter, setTenantFilter] = useState("All");
+  const [viewType, setViewType] = useState("Room View");
+  const [tenantStatus, setTenantStatus] = useState("All");
+  const [period, setPeriod] = useState("All");
+  const [sharingType, setSharingType] = useState("All");
 
-const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   console.log("activeHostelId", activeHostelId)
   console.log("reassignCustomer", reassignCustomer);
 
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
-  
+  const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
+
 
   const sheetTranslateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -183,60 +184,60 @@ const [activeDropdown, setActiveDropdown] = useState(null);
     }, [activeHostelId])
   );
 
-      useEffect(() => {
-        if (activeHostelId) {
-          getParticularHostelDetails(activeHostelId);
-        }
-      }, [activeHostelId])
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
 
-const handleOpenWhatsapp = (item) => {
-  console.log("mobile", item);
-  if (!item) return;
+  const handleOpenWhatsapp = (item) => {
+    console.log("mobile", item);
+    if (!item) return;
 
-  let mobile = item?.mobileNo || item?.mobile;
-  let countryCode = item?.countryCode || "91";
+    let mobile = item?.mobileNo || item?.mobile;
+    let countryCode = item?.countryCode || "91";
 
-  if (!mobile) {
-    setModalType("warning");
-    setModalMessage("Mobile number not available");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+    if (!mobile) {
+      setModalType("warning");
+      setModalMessage("Mobile number not available");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
 
-  mobile = mobile.toString().replace(/\D/g, "");
+    mobile = mobile.toString().replace(/\D/g, "");
 
-  if (mobile.startsWith(countryCode)) {
-    mobile = mobile.slice(countryCode.length);
-  }
+    if (mobile.startsWith(countryCode)) {
+      mobile = mobile.slice(countryCode.length);
+    }
 
-  const phoneNumber = `${countryCode}${mobile}`;
-  const url = `https://wa.me/${phoneNumber}`;
+    const phoneNumber = `${countryCode}${mobile}`;
+    const url = `https://wa.me/${phoneNumber}`;
 
-  console.log("url", url);
+    console.log("url", url);
 
-  Linking.openURL(url).catch(() => {
-    setModalType("warning");
-    setModalMessage("WhatsApp not installed");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-  });
-};
+    Linking.openURL(url).catch(() => {
+      setModalType("warning");
+      setModalMessage("WhatsApp not installed");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    });
+  };
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
-const isExportAllow = isValidSubscription && canReadTenant;
+  const isExportAllow = isValidSubscription && canReadTenant;
 
-  const handleCallPhone=(mobile)=>{
-    console.log("mobile",mobile)
-    if(mobile){
+  const handleCallPhone = (mobile) => {
+    console.log("mobile", mobile)
+    if (mobile) {
       CommonModule.makeCall(mobile)
     }
-    
+
   }
 
   console.log("selectedCustomer", selectedCustomer);
-  
+
 
   const fetchCustomers = async () => {
     const data = await getCustomersByHostel(activeHostelId);
@@ -271,7 +272,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
   const filterTranslateY = useRef(new Animated.Value(500)).current;
 
   const isSettlement =
-  selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED";
+    selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED";
 
 
   useEffect(() => {
@@ -307,7 +308,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
   }
 
   console.log("selectedItem", selectedItem);
-  
+
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -350,7 +351,7 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-   const isTabBarVisible = useRef(true);
+  const isTabBarVisible = useRef(true);
 
 
 
@@ -380,19 +381,19 @@ const isExportAllow = isValidSubscription && canReadTenant;
 
 
   useLayoutEffect(() => {
-  if (
-    showDetailModal ||
-    showFilter ||
-    showCheckout ||
-    showNotice ||
-    showInactiveSheet ||
-    showReAssignbed
-  ) {
-    setShowTabBar(false);
-  } else {
-    setShowTabBar(isTabBarVisible.current);
-  }
-}, [ showDetailModal,
+    if (
+      showDetailModal ||
+      showFilter ||
+      showCheckout ||
+      showNotice ||
+      showInactiveSheet ||
+      showReAssignbed
+    ) {
+      setShowTabBar(false);
+    } else {
+      setShowTabBar(isTabBarVisible.current);
+    }
+  }, [showDetailModal,
     showFilter,
     showCheckout,
     showNotice,
@@ -400,22 +401,22 @@ const isExportAllow = isValidSubscription && canReadTenant;
     showReAssignbed]);
 
   useEffect(() => {
-  const backHandler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    () => {
-      if (navigation.canGoBack()) {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (navigation.canGoBack()) {
 
-        setShowTabBar(true);
-        isTabBarVisible.current=true;
-        
-        navigation.goBack();
+          setShowTabBar(true);
+          isTabBarVisible.current = true;
+
+          navigation.goBack();
+        }
+        return true;
       }
-      return true;
-    }
-  );
+    );
 
-  return () => backHandler.remove();
-}, []);
+    return () => backHandler.remove();
+  }, []);
 
 
   useLayoutEffect(() => {
@@ -521,98 +522,98 @@ const isExportAllow = isValidSubscription && canReadTenant;
   //   }, [showDetailModal, showFilter, showCheckout, showNotice,showInactiveSheet]);
 
 
-//   const lastScrollY = useRef(0);
-// const isTabBarVisible = useRef(true);
+  //   const lastScrollY = useRef(0);
+  // const isTabBarVisible = useRef(true);
 
 
-// const handleScroll = (event) => {
-//   const currentY = event.nativeEvent.contentOffset.y;
-//   const diff = currentY - lastScrollY.current;
+  // const handleScroll = (event) => {
+  //   const currentY = event.nativeEvent.contentOffset.y;
+  //   const diff = currentY - lastScrollY.current;
 
-//   if (Math.abs(diff) < 10) return;
+  //   if (Math.abs(diff) < 10) return;
 
-//   if (diff > 0 && currentY > 50) {
-//     if (isTabBarVisible.current) {
-//       setShowTabBar(false);
-//       isTabBarVisible.current = false;
-//     }
-//   } else if (diff < 0) {
-//     if (!isTabBarVisible.current) {
-//       setShowTabBar(true);
-//       isTabBarVisible.current = true;
-//     }
-//   }
+  //   if (diff > 0 && currentY > 50) {
+  //     if (isTabBarVisible.current) {
+  //       setShowTabBar(false);
+  //       isTabBarVisible.current = false;
+  //     }
+  //   } else if (diff < 0) {
+  //     if (!isTabBarVisible.current) {
+  //       setShowTabBar(true);
+  //       isTabBarVisible.current = true;
+  //     }
+  //   }
 
-//   lastScrollY.current = currentY;
-// };
+  //   lastScrollY.current = currentY;
+  // };
 
-const handleApply = () => {
-  console.log({
-    tenantFilter,
-    viewType,
-    tenantStatus,
-    period,
-    sharingType,
-  });
+  const handleApply = () => {
+    console.log({
+      tenantFilter,
+      viewType,
+      tenantStatus,
+      period,
+      sharingType,
+    });
 
-  setShowFilter(false);
-};
+    setShowFilter(false);
+  };
 
-const viewIcons = {
-  "List View": ListView,
-  "Room View": RoomView,
-};
+  const viewIcons = {
+    "List View": ListView,
+    "Room View": RoomView,
+  };
 
-const renderDropdown = (label, value, setValue, options, keyName ) => (
-  <>
-    <Text style={styles.label}>{label}</Text>
+  const renderDropdown = (label, value, setValue, options, keyName) => (
+    <>
+      <Text style={styles.label}>{label}</Text>
 
-    <View style={{ position: "relative" }}>
-      <TouchableOpacity
-        style={styles.dropdownBox}
-        onPress={() =>
-          setActiveDropdown(activeDropdown === keyName ? null : keyName)
-        }
-      >
-        <Text style={styles.dropdownText}>{value}</Text>
-        <Text style={styles.arrow}>⌄</Text>
-      </TouchableOpacity>
+      <View style={{ position: "relative" }}>
+        <TouchableOpacity
+          style={styles.dropdownBox}
+          onPress={() =>
+            setActiveDropdown(activeDropdown === keyName ? null : keyName)
+          }
+        >
+          <Text style={styles.dropdownText}>{value}</Text>
+          <Text style={styles.arrow}>⌄</Text>
+        </TouchableOpacity>
 
-      {activeDropdown === keyName && (
-        <View style={styles.dropdownMenu}>
-          <ScrollView nestedScrollEnabled>
-           {options.map((v) => (
-  <TouchableOpacity
-    key={v}
-    style={[
-      styles.dropdownItem,
-      value === v && styles.activeItem
-    ]}
-    onPress={() => {
-      setValue(v);
-      setActiveDropdown(null);
-    }}
-  >
-    {keyName === "view" && viewIcons[v] && (
-      <Image source={viewIcons[v]} style={styles.viewIcon} />
-    )}
+        {activeDropdown === keyName && (
+          <View style={styles.dropdownMenu}>
+            <ScrollView nestedScrollEnabled>
+              {options.map((v) => (
+                <TouchableOpacity
+                  key={v}
+                  style={[
+                    styles.dropdownItem,
+                    value === v && styles.activeItem
+                  ]}
+                  onPress={() => {
+                    setValue(v);
+                    setActiveDropdown(null);
+                  }}
+                >
+                  {keyName === "view" && viewIcons[v] && (
+                    <Image source={viewIcons[v]} style={styles.viewIcon} />
+                  )}
 
-    <Text
-      style={[
-        styles.dropdownItemText,
-        value === v && { fontWeight: "600", color: "#1E45E1" }
-      ]}
-    >
-      {v}
-    </Text>
-  </TouchableOpacity>
-))}
-          </ScrollView>
-        </View>
-      )}
-    </View>
-  </>
-);
+                  <Text
+                    style={[
+                      styles.dropdownItemText,
+                      value === v && { fontWeight: "600", color: "#1E45E1" }
+                    ]}
+                  >
+                    {v}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+    </>
+  );
 
   const tabs = [
     { key: "Tenants", active: Profile, inactive: InProfile },
@@ -623,7 +624,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
 
   const openCustomerDetails = async (customer) => {
 
-      setShowDetailsMenu(false);
+    setShowDetailsMenu(false);
     const res = await GetParticularCustomerDetails(customer.customerId)
     console.log("customerfull", res)
     console.log("roman", customer)
@@ -635,7 +636,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
 
 
   console.log("selecteditem", selectedItem);
-   console.log("selectedcustomer", selectedCustomer);
+  console.log("selectedcustomer", selectedCustomer);
 
   const handleShowReAssignBed = () => {
     setShowReAssignBed(true)
@@ -684,7 +685,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
     });
 
     console.log("selectedItem", selectedItem);
-    
+
 
     setMenuVisible(false)
   }
@@ -768,54 +769,54 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
       {loading && <Loader />}
 
       <SafeAreaView style={styles.container}>
-          <View style={{ paddingHorizontal: 16 }}>
+        <View style={{ paddingHorizontal: 16 }}>
 
-        <View style={styles.searchContainer}>
-          <Image source={SearchIcon} style={styles.searchIcon} />
-         
-          <TextInput
-            // style={styles.searchInput}
-            style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
-            disabled={!canReadTenant}
-            placeholder="Search Tenants"
-            placeholderTextColor="#9CA3AF"
-            value={searchText}
-            onChangeText={(t) => {
-              // ✅ emoji remove + only normal text
-              const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
-              setSearchText(cleanText);
-            }}
-          />
-        </View>
+          <View style={styles.searchContainer}>
+            <Image source={SearchIcon} style={styles.searchIcon} />
 
-
-        <View style={styles.tabContainer}>
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[styles.tab, activeTab === tab.key && styles.activeTab]}
-              onPress={() => {
-                setActiveTab(tab.key);
-                setSearchText("");
+            <TextInput
+              // style={styles.searchInput}
+              style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
+              disabled={!canReadTenant}
+              placeholder="Search Tenants"
+              placeholderTextColor="#9CA3AF"
+              value={searchText}
+              onChangeText={(t) => {
+                // ✅ emoji remove + only normal text
+                const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+                setSearchText(cleanText);
               }}
-            >
-              <View style={styles.tabContent}>
-                {/* <Image
+            />
+          </View>
+
+
+          <View style={styles.tabContainer}>
+            {tabs.map((tab) => (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+                onPress={() => {
+                  setActiveTab(tab.key);
+                  setSearchText("");
+                }}
+              >
+                <View style={styles.tabContent}>
+                  {/* <Image
                   source={activeTab === tab.key ? tab.active : tab.inactive}
                   style={styles.tabIcon}
                 /> */}
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === tab.key && styles.activeText,
-                  ]}
-                >
-                  {tab.key}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === tab.key && styles.activeText,
+                    ]}
+                  >
+                    {tab.key}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
 
         </View>
 
@@ -845,65 +846,65 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                     </Text>
                   </View>
                 )}
-                  <View style={{ paddingHorizontal: 16 }}>
-                    <>
-                  { customers?.listCustomers?.length > 0 && (
-        <View style={styles.filterRow}>
-  <TouchableOpacity style={styles.filterChipActive}>
-    <Text style={styles.filterChipTextActive}>All</Text>
-     <Image
-      source={DirectionImage}
-      style={styles.chipArrow}
-      resizeMode="contain"
-    />
-  </TouchableOpacity>
+                <View style={{ paddingHorizontal: 16 }}>
+                  <>
+                    {customers?.listCustomers?.length > 0 && (
+                      <View style={styles.filterRow}>
+                        <TouchableOpacity style={styles.filterChipActive}>
+                          <Text style={styles.filterChipTextActive}>All</Text>
+                          <Image
+                            source={DirectionImage}
+                            style={styles.chipArrow}
+                            resizeMode="contain"
+                          />
+                        </TouchableOpacity>
 
-<TouchableOpacity style={styles.filterChip}>
-  <View style={styles.chipContent}>
-    <Text style={styles.filterChipText}>Type</Text>
-    <Image
-      source={DirectionImage}
-      style={styles.chipArrow}
-      resizeMode="contain"
-    />
-  </View>
-</TouchableOpacity>
+                        <TouchableOpacity style={styles.filterChip}>
+                          <View style={styles.chipContent}>
+                            <Text style={styles.filterChipText}>Type</Text>
+                            <Image
+                              source={DirectionImage}
+                              style={styles.chipArrow}
+                              resizeMode="contain"
+                            />
+                          </View>
+                        </TouchableOpacity>
 
-<TouchableOpacity style={styles.filterChip}>
-  <View style={styles.chipContent}>
-    <Text style={styles.filterChipText}>Status</Text>
-    <Image
-      source={DirectionImage}
-      style={styles.chipArrow}
-      resizeMode="contain"
-    />
-  </View>
-</TouchableOpacity>
+                        <TouchableOpacity style={styles.filterChip}>
+                          <View style={styles.chipContent}>
+                            <Text style={styles.filterChipText}>Status</Text>
+                            <Image
+                              source={DirectionImage}
+                              style={styles.chipArrow}
+                              resizeMode="contain"
+                            />
+                          </View>
+                        </TouchableOpacity>
 
-  <TouchableOpacity style={styles.filterIconBtn}  disabled={!canReadTenant}
-                onPress={() => setShowFilter(true)}>
-    <Image source={Filter} style={{ width: 18, height: 18 }} />
-  </TouchableOpacity>
-</View>
+                        <TouchableOpacity style={styles.filterIconBtn} disabled={!canReadTenant}
+                          onPress={() => setShowFilter(true)}>
+                          <Image source={Filter} style={{ width: 18, height: 18 }} />
+                        </TouchableOpacity>
+                      </View>
                     )
-                  } 
+                    }
                   </>
-                  </View>
-                  
-    
+                </View>
+
+
 
                 <ScrollView
                   showsVerticalScrollIndicator={false}
-                   contentContainerStyle={{
-    paddingBottom: 50,
-    paddingHorizontal: 16,  
-  }}
+                  contentContainerStyle={{
+                    paddingBottom: 50,
+                    paddingHorizontal: 16,
+                  }}
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
 
                 >
 
-      
+
                   {/* {
                     customers?.listCustomers?.length > 0 &&
                     <Text style={styles.sectionTitle}>This Month</Text>
@@ -947,7 +948,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
         </View>
           })
         } */}
-        
+
                   {filteredTenants?.map((item) => (
                     // <View key={item.customerId} style={styles.tenantRow}>
 
@@ -1053,87 +1054,87 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                     //     </Text>
                     //   </View>
                     // </TouchableOpacity>
-                     <View key={item.customerId}>
-                    <TouchableOpacity key={item.customerId} style={styles.tenantRow}   activeOpacity={0.7}
-  onPress={() => openCustomerDetails(item)}>
+                    <View key={item.customerId}>
+                      <TouchableOpacity key={item.customerId} style={styles.tenantRow} activeOpacity={0.7}
+                        onPress={() => openCustomerDetails(item)}>
 
 
 
 
 
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        // onPress={() => openCustomerDetails(item)}
-                        style={{ position: "relative" }}
-                      >
-                        {item?.profilePic ? (
-                          <Image
-                            source={{ uri: item.profilePic }}
-                            style={styles.profileImg}
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          // onPress={() => openCustomerDetails(item)}
+                          style={{ position: "relative" }}
+                        >
+                          {item?.profilePic ? (
+                            <Image
+                              source={{ uri: item.profilePic }}
+                              style={styles.profileImg}
+                            />
+                          ) : (
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {item?.initials ||
+                                  item?.fullName?.slice(0, 2)?.toUpperCase() ||
+                                  "--"}
+                              </Text>
+                            </View>
+                          )}
+
+                          {/* ✅ STATUS DOT */}
+                          <View
+                            style={[
+                              styles.statusDot,
+                              { backgroundColor: getStatusColor(item.currentStatus) },
+                            ]}
                           />
-                        ) : (
-                          <View style={styles.initialCircle}>
-                            <Text style={styles.initialText}>
-                              {item?.initials ||
-                                item?.fullName?.slice(0, 2)?.toUpperCase() ||
-                                "--"}
-                            </Text>
-                          </View>
-                        )}
+                        </TouchableOpacity>
 
-                        {/* ✅ STATUS DOT */}
+
+
+
+
+
+                        {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
                         <View
-                          style={[
-                            styles.statusDot,
-                            { backgroundColor: getStatusColor(item.currentStatus) },
-                          ]}
-                        />
-                      </TouchableOpacity>
-
-
-
-
-                         
-
-                      {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
-                      <View 
-                        style={{ flex: 1 }}
+                          style={{ flex: 1 }}
                         // activeOpacity={0.7}
                         // onPress={() => handleOverViewScrren(item)}
-                      >
-                        <Text style={styles.name}   numberOfLines={1}
-  ellipsizeMode="tail">{item.fullName}</Text>
+                        >
+                          <Text style={styles.name} numberOfLines={1}
+                            ellipsizeMode="tail">{item.fullName}</Text>
 
-                        <View style={styles.detailRow}>
-                          {item.floorName && (
-                            <View style={[styles.floorBadge, { flex: 1 }]}>
-                              <Text style={[styles.floorText]}   numberOfLines={1}
-  ellipsizeMode="tail">{item.floorName}</Text>
-                            </View>
-                          )}
+                          <View style={styles.detailRow}>
+                            {item.floorName && (
+                              <View style={[styles.floorBadge, { flex: 1 }]}>
+                                <Text style={[styles.floorText]} numberOfLines={1}
+                                  ellipsizeMode="tail">{item.floorName}</Text>
+                              </View>
+                            )}
 
-                          {item.roomName && (
-                            <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
-                              <Image source={room} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1 }]}   numberOfLines={1}
-  ellipsizeMode="tail">{item.roomName}</Text>
+                            {item.roomName && (
+                              <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
+                                <Image source={room} style={styles.iconSmall} />
+                                <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
+                                  ellipsizeMode="tail">{item.roomName}</Text>
 
-                            </View>
+                              </View>
 
-                          )}
+                            )}
 
-                          {item.bedName && (
-                            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                              <Image source={Bed} style={styles.iconSmall} />
-                              <Text style={[styles.detailText, { flexShrink: 1 }]}   numberOfLines={1}
-  ellipsizeMode="tail">{item.bedName}</Text>
-                            </View>
-                          )}
-                        </View>
-                      </View >
+                            {item.bedName && (
+                              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                                <Image source={Bed} style={styles.iconSmall} />
+                                <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
+                                  ellipsizeMode="tail">{item.bedName}</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View >
 
-                      <View style={styles.rightSection}>
-                        {/* <TouchableOpacity
+                        <View style={styles.rightSection}>
+                          {/* <TouchableOpacity
                           onPress={(e) => {
                             e.stopPropagation();   
                             openMenu(e, item);
@@ -1146,19 +1147,20 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                           />
                         </TouchableOpacity> */}
 
-                        <TouchableOpacity
-                        style={[ !isExportAllow && { opacity: 0.4 }]}
-                        disabled={!isExportAllow}
-                         onPress={()=>{
-                            handleCallPhone(item.mobile)}}>
-                          <Image
-                            source={CallIcon}
-                            style={{ width: 20, height: 20, }}
-                          />
-                        </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[!isExportAllow && { opacity: 0.4 }]}
+                            disabled={!isExportAllow}
+                            onPress={() => {
+                              handleCallPhone(item.mobile)
+                            }}>
+                            <Image
+                              source={CallIcon}
+                              style={{ width: 20, height: 20, }}
+                            />
+                          </TouchableOpacity>
 
 
-                        {/* <Text style={styles.dateText}>
+                          {/* <Text style={styles.dateText}>
                           {item?.actualJoining && item.actualJoining !== "0000-00-00"
                             ? item.actualJoining
                             : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
@@ -1170,12 +1172,12 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                         </Text> */}
 
 
-                      
-                      </View>
 
-                    </TouchableOpacity>
-                   <View style={styles.dividerLine} />
-</View>
+                        </View>
+
+                      </TouchableOpacity>
+                      <View style={styles.dividerLine} />
+                    </View>
                   ))}
 
 
@@ -1203,7 +1205,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
         )}
 
         {activeTab === "Checkout" && (
-          <CheckoutList searchText={searchText} setShowTabBar={setShowTabBar}/>
+          <CheckoutList searchText={searchText} setShowTabBar={setShowTabBar} />
         )}
         {activeTab === "Walk-In" && (
           <WalkinScreen setShowTabBar={setShowTabBar} navigation={navigation}
@@ -1221,18 +1223,19 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
             />
 
             <Animated.View
-               style={[
-    styles.bottomSheet,
-    {
-      height: isSettlement ? 440 : SHEET_HEIGHT,
-      transform: [{ translateY: sheetTranslateY }],
-    },
-  ]}
+              style={[
+                styles.bottomSheet,
+                {
+                  // height: isSettlement ? 440 : SHEET_HEIGHT,
+                  maxHeight:'90%',
+                  transform: [{ translateY: sheetTranslateY }],
+                },
+              ]}
               {...detailPanResponder.panHandlers}
             >
 
               <View style={styles.modalHandle} />
-              
+
 
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Tenant Details</Text>
@@ -1282,36 +1285,36 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                 )}
 
 
-                <View style={{ marginLeft: 12 , flex: 1}}>
+                <View style={{ marginLeft: 12, flex: 1 }}>
                   <TouchableOpacity
-  onPress={() => {
-    closeDetailSheet();
-    navigation.navigate("CustomerOverviewScreen", {
-      customer: selectedCustomer,
-    });
-  }}
->
-  <Text style={styles.modalName} numberOfLines={1}
-  ellipsizeMode="tail">
-    {selectedCustomer?.fullName}
-  </Text>
-</TouchableOpacity>
+                    onPress={() => {
+                      closeDetailSheet();
+                      navigation.navigate("CustomerOverviewScreen", {
+                        customer: selectedCustomer,
+                      });
+                    }}
+                  >
+                    <Text style={styles.modalName} numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {selectedCustomer?.fullName}
+                    </Text>
+                  </TouchableOpacity>
                   {/* <Text style={styles.modalName}>{selectedCustomer?.fullName} </Text> */}
 
                   <View style={styles.detailRow}>
                     <View style={styles.floorBadge}>
-                      <Text   style={[styles.floorText, { flexShrink: 1 }]}
-  numberOfLines={1}
-  ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.floorName}</Text>
+                      <Text style={[styles.floorText, { flexShrink: 1 }]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.floorName}</Text>
                     </View>
-                    <Image source={room} style={{ width: 18, height: 18, marginRight:4 }} />
+                    <Image source={room} style={{ width: 18, height: 18, marginRight: 4 }} />
                     <Text style={[styles.detailText, { flexShrink: 1 }]}
-  numberOfLines={1}
-  ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.roomName}</Text>
-                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8 ,marginRight:4}} />
+                      numberOfLines={1}
+                      ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.roomName}</Text>
+                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8, marginRight: 4 }} />
                     <Text style={[styles.detailText, { flexShrink: 1 }]}
-  numberOfLines={1}
-  ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.bedName}</Text>
+                      numberOfLines={1}
+                      ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.bedName}</Text>
                   </View>
                 </View>
               </View>
@@ -1329,82 +1332,82 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                 <Text style={styles.infoValue}>{selectedCustomer?.emailId ? selectedCustomer?.emailId : "N/A"}</Text>
               </View>
 
-              
-             <View
-  style={{
-    flexDirection: "row",
-    alignItems: "center",
-    // marginTop: 15,
-  }}
->
-  {/* LEFT SIDE */}
-  <View style={{ flex: 1 }}>
-    <Text style={styles.infoLabel}>Contact Number</Text>
 
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Image
-        source={MobileIcon}
-        style={{ width: 15, height: 15, marginRight: 5 }}
-        resizeMode="contain"
-      />
-      <Text style={styles.infoValue}>
-        {selectedCustomer?.mobileNo}
-      </Text>
-    </View>
-  </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  // marginTop: 15,
+                }}
+              >
+                {/* LEFT SIDE */}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoLabel}>Contact Number</Text>
 
-  {/* RIGHT SIDE ICON */}
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Image
+                      source={MobileIcon}
+                      style={{ width: 15, height: 15, marginRight: 5 }}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.infoValue}>
+                      {selectedCustomer?.mobileNo}
+                    </Text>
+                  </View>
+                </View>
 
-    <TouchableOpacity 
+                {/* RIGHT SIDE ICON */}
 
-      onPress={() =>
-    handleOpenWhatsapp(selectedCustomer)
-  }
-    // style={{
-    //   padding: 10,
-    //   justifyContent: "center",
-    //   alignItems: "center",
-    // }}
+                <TouchableOpacity
 
-      style={[
-    {
-      padding: 10,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    !isExportAllow && { opacity: 0.4 },
-  ]}
-        disabled={!isExportAllow}
-  >
-    <Image
-      source={WhatsappIcon}
-      style={{ width: 24, height: 24 }}
-      resizeMode="contain"
-    />
-  </TouchableOpacity>
-  <TouchableOpacity onPress={()=>handleCallPhone(selectedCustomer?.mobileNo)}
+                  onPress={() =>
+                    handleOpenWhatsapp(selectedCustomer)
+                  }
+                  // style={{
+                  //   padding: 10,
+                  //   justifyContent: "center",
+                  //   alignItems: "center",
+                  // }}
 
-  style={[
-    {
-      padding: 10,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    !isExportAllow && { opacity: 0.4 },
-  ]}
-        disabled={!isExportAllow}
-  >
-    <Image
-      source={CallIcon}
-      style={{ width: 24, height: 24 }}
-      resizeMode="contain"
-    />
-  </TouchableOpacity>
-</View>
+                  style={[
+                    {
+                      padding: 10,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    },
+                    !isExportAllow && { opacity: 0.4 },
+                  ]}
+                  disabled={!isExportAllow}
+                >
+                  <Image
+                    source={WhatsappIcon}
+                    style={{ width: 24, height: 24 }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleCallPhone(selectedCustomer?.mobileNo)}
+
+                  style={[
+                    {
+                      padding: 10,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    },
+                    !isExportAllow && { opacity: 0.4 },
+                  ]}
+                  disabled={!isExportAllow}
+                >
+                  <Image
+                    source={CallIcon}
+                    style={{ width: 24, height: 24 }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ marginTop: 10, }}>
                   <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
-                    {selectedCustomer?.customerCurrentStatus ==  "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
+                    {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
                   </Text>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Image
@@ -1417,27 +1420,27 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                   </View>
                 </View>
 
-               
+
               </View>
 
-               {
-                  selectedCustomer?.customerCurrentStatus == "BOOKED" && (
-                    <View style={{ marginTop: 10, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>Booking Date</Text>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <Image
-                          source={dateImg}
-                          style={{ width: 15, height: 15, marginRight: 5 }}
-                          resizeMode="contain"
-                        />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Bold"  }}>
-                          {selectedCustomer?.bookingInfo?.bookingDate}
-                        </Text>
-                      </View>
+              {
+                selectedCustomer?.customerCurrentStatus == "BOOKED" && (
+                  <View style={{ marginTop: 10, }}>
+                    <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>Booking Date</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Image
+                        source={dateImg}
+                        style={{ width: 15, height: 15, marginRight: 5 }}
+                        resizeMode="contain"
+                      />
+                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1, fontFamily: "Gilroy-Bold" }}>
+                        {selectedCustomer?.bookingInfo?.bookingDate}
+                      </Text>
                     </View>
+                  </View>
 
-                  )
-                }
+                )
+              }
 
               {
                 ["CHECK_IN", "OCCUPIED", "NOTICE"].includes(selectedCustomer?.customerCurrentStatus) && (
@@ -1459,14 +1462,14 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                     </View>
 
                     <View style={{ marginTop: 10, }}>
-                      <Text style={{ fontSize: 13, color: "#6B7280",fontFamily: "Gilroy-Semibold"  }}>Advance Amount</Text>
+                      <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>Advance Amount</Text>
                       <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <Image
                           source={dateImg}
                           style={{ width: 15, height: 15, marginRight: 5 }}
                           resizeMode="contain"
                         />
-                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Bold"  }}>
+                        <Text style={{ fontSize: 14, color: "#111", marginTop: 1, fontFamily: "Gilroy-Bold" }}>
                           ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.advanceInfo?.advanceAmount)}
                         </Text>
                       </View>
@@ -1489,7 +1492,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                         style={{ width: 15, height: 15, marginRight: 5 }}
                         resizeMode="contain"
                       />
-                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1,fontFamily: "Gilroy-Bold"  }}>
+                      <Text style={{ fontSize: 14, color: "#111", marginTop: 1, fontFamily: "Gilroy-Bold" }}>
                         ₹{new Intl.NumberFormat('en-IN').format(selectedCustomer?.bookingInfo?.bookingAmount)}</Text>
                     </View>
                   </View>
@@ -1702,7 +1705,7 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                         disabled={!canUpdateTenant}
                         onPress={() => {
                           console.log("allwin", selectedItem);
-                          
+
                           setReassignCustomer(selectedItem);
                           handleShowReAssignBed();
                         }}
@@ -1983,50 +1986,50 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
                 </View>
               </View>
 
-             {renderDropdown(
-  "Tenants",
-  tenantFilter,
-  setTenantFilter,
-  ["Arun", "Allwin", ],
-  "tenant"
-)}
+              {renderDropdown(
+                "Tenants",
+                tenantFilter,
+                setTenantFilter,
+                ["Arun", "Allwin",],
+                "tenant"
+              )}
 
-{renderDropdown(
-  "View",
-  viewType,
-  setViewType,
-  ["List View", "Room View"],
-  "view"
-)}
+              {renderDropdown(
+                "View",
+                viewType,
+                setViewType,
+                ["List View", "Room View"],
+                "view"
+              )}
 
-{renderDropdown(
-  "Tenant Status",
-  tenantStatus,
-  setTenantStatus,
-  ["All", "Checkin", "Booking", "Checked Out", "Notice"],
-  "status"
-)}
+              {renderDropdown(
+                "Tenant Status",
+                tenantStatus,
+                setTenantStatus,
+                ["All", "Checkin", "Booking", "Checked Out", "Notice"],
+                "status"
+              )}
 
-{renderDropdown(
-  "Period",
-  period,
-  setPeriod,
-  ["Today", "This Week", "This Month", "Last Month"],
-  "period"
-)}
+              {renderDropdown(
+                "Period",
+                period,
+                setPeriod,
+                ["Today", "This Week", "This Month", "Last Month"],
+                "period"
+              )}
 
-{renderDropdown(
-  "Sharing Type",
-  sharingType,
-  setSharingType,
-  ["Single", "Double", "Triple"],
-  "sharing"
-)}
-            
+              {renderDropdown(
+                "Sharing Type",
+                sharingType,
+                setSharingType,
+                ["Single", "Double", "Triple"],
+                "sharing"
+              )}
 
-             
 
-             
+
+
+
 
               {/* Buttons */}
               <View style={styles.bottomButtons}>
@@ -2151,7 +2154,9 @@ const renderDropdown = (label, value, setValue, options, keyName ) => (
         {showNotice && (
           <MoveNoticeSheet
             visible={showNotice}
-            onClose={() => setShowNotice(false)}
+            onClose={() => {
+              setShowDetailModal(false);
+              setShowNotice(false)}}
             customer={selectedItem}
             onSuccess={handleCheckoutSuccess}
 
@@ -2230,14 +2235,14 @@ const styles = StyleSheet.create({
 
   // },
   searchContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 30,
-  paddingHorizontal: 14,
-  height: 44, 
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 30,
+    paddingHorizontal: 14,
+    height: 44,
+  },
 
   searchIcon: {
     width: 18,
@@ -2250,16 +2255,16 @@ const styles = StyleSheet.create({
   //   color: "#111827",
   // },
   searchInput: {
-  flex: 1,
-  fontSize: 15,
-  color: "#111827",
+    flex: 1,
+    fontSize: 15,
+    color: "#111827",
 
-  paddingVertical: 0,
+    paddingVertical: 0,
 
-  ...(Platform.OS === "ios" && {
-    height: 40, 
-  }),
-},
+    ...(Platform.OS === "ios" && {
+      height: 40,
+    }),
+  },
   outsideTouch: {
     position: "absolute",
     top: 0,
@@ -2336,7 +2341,7 @@ const styles = StyleSheet.create({
 
 
   dropdownItem: {
-     flexDirection: "row",   
+    flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -2378,7 +2383,7 @@ const styles = StyleSheet.create({
 
   activeText: {
     color: "#2D6CDF",
-     fontSize: 18,
+    fontSize: 18,
     fontFamily: "Gilroy-Semibold",
   },
 
@@ -2400,7 +2405,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 15,
-       fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
   detailRow: {
@@ -2494,7 +2499,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 18,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -2520,14 +2525,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
   infoValue: {
     fontSize: 14,
     color: "#111",
     marginTop: 3,
-    fontFamily: "Gilroy-Bold" 
+    fontFamily: "Gilroy-Bold"
   },
 
   unassignBtn: {
@@ -2535,14 +2540,14 @@ const styles = StyleSheet.create({
     // borderColor: "#111",
     borderRadius: 15,
     marginTop: 20,
-    marginBottom:20,
+    marginBottom: 20,
     paddingVertical: 12,
     alignItems: "center",
   },
 
   unassignText: {
     fontSize: 15,
-       fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
   popupOverlay: {
     position: "absolute",
@@ -2616,7 +2621,7 @@ const styles = StyleSheet.create({
 
   filterTitle: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   label: {
@@ -2637,15 +2642,15 @@ const styles = StyleSheet.create({
   // },
 
   dropdownBox: {
-  backgroundColor: "#F9FAFB",
-  borderRadius: 12,
-  padding: 14,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-},
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
 
 
   dropdownText: {
@@ -2685,13 +2690,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  quickText: { color: "#111", fontFamily: "Gilroy-Medium"  },
+  quickText: { color: "#111", fontFamily: "Gilroy-Medium" },
 
   bottomButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
-    marginBottom:30
+    marginBottom: 30
   },
 
   resetBtn: {
@@ -2704,7 +2709,7 @@ const styles = StyleSheet.create({
 
   resetText: {
     color: "#2D6CDF",
-       fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   applyBtn: {
@@ -2717,7 +2722,7 @@ const styles = StyleSheet.create({
 
   applyText: {
     color: "#fff",
-      fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
 
@@ -2739,7 +2744,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#111",
     marginBottom: 10,
   },
@@ -2769,7 +2774,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-      fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -2783,7 +2788,7 @@ const styles = StyleSheet.create({
 
   deleteBtnText: {
     fontSize: 16,
-       fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#fff",
   },
   menuOverlay: {
@@ -2838,7 +2843,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
@@ -2857,7 +2862,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 13,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#374151",
   },
   modalInitialCircle: {
@@ -2871,7 +2876,7 @@ const styles = StyleSheet.create({
 
   modalInitialText: {
     fontSize: 16,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#374151",
   },
   statusDot: {
@@ -2885,82 +2890,82 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#fff",
   },
-filterRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginTop: 12,
-  marginBottom: 8,
-},
+  filterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 12,
+    marginBottom: 8,
+  },
 
-filterChip: {
-  backgroundColor: "#F3F4F6",
-  paddingVertical: 8,
-  paddingHorizontal: 34,
-  borderRadius: 20,
-},
+  filterChip: {
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 8,
+    paddingHorizontal: 34,
+    borderRadius: 20,
+  },
 
-filterChipActive: {
-  display:'flex',
-  flexDirection:'row',
-  backgroundColor: "#E6F0FF",
-  paddingVertical: 8,
-  paddingHorizontal: 24,
-  borderRadius: 20,
-},
+  filterChipActive: {
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: "#E6F0FF",
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+  },
 
-filterChipText: {
-  fontSize: 13,
-  color: "#374151",
-},
+  filterChipText: {
+    fontSize: 13,
+    color: "#374151",
+  },
 
-filterChipTextActive: {
-  fontSize: 13,
-  color: "#2D6CDF",
-  fontFamily: "Gilroy-Semibold",
-},
+  filterChipTextActive: {
+    fontSize: 13,
+    color: "#2D6CDF",
+    fontFamily: "Gilroy-Semibold",
+  },
 
-filterIconBtn: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  // backgroundColor: "#F3F4F6",
-  justifyContent: "center",
-  alignItems: "center",
-      borderWidth: 1,
+  filterIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    // backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
     borderColor: "#F3F4F6",
-},
-chipContent: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  },
+  chipContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-chipArrow: {
-  width: 14,
-  height: 14,
-  marginLeft: 6,
-},
-divider: {
-  height: 0.4,
-  backgroundColor: "#E5E7EB", 
-  marginBottom: 4,
-},
-dividerLine: {
-  height: 1,
-  backgroundColor: "#E5E7EB",
-   marginLeft: 55,
+  chipArrow: {
+    width: 14,
+    height: 14,
+    marginLeft: 6,
+  },
+  divider: {
+    height: 0.4,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+  },
+  dividerLine: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginLeft: 55,
 
-  // marginVertical: 8,
-},
-activeItem: {
-  backgroundColor: "#EEF2FF", // light blue
-  borderLeftWidth: 3,
-  borderLeftColor: "#1E45E1",
-},
-viewIcon: {
-  width: 18,
-  height: 18,
-  marginRight: 10,
-},
+    // marginVertical: 8,
+  },
+  activeItem: {
+    backgroundColor: "#EEF2FF", // light blue
+    borderLeftWidth: 3,
+    borderLeftColor: "#1E45E1",
+  },
+  viewIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
+  },
 });

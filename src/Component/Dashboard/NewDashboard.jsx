@@ -278,6 +278,27 @@ export default function DashboardNewDesign({ initialParams, route }) {
     fetchDashboard();
   }, [activeHostelId])
 
+   const fetchDashboard = async () => {
+      const res = await getDashboard(activeHostelId, {
+        billingFilter: "This Month",
+        complaintRequestFilter: "This Month",
+        financeFilter: "This Month",
+        occupancyFilter: "This Month"
+      });
+
+      if (res?.data) {
+        const mapped = mapDashboardData(res?.data);
+
+        setDashboardList({
+          ...mapped,
+
+          occupancyTrendSummary: res.data.occupancyTrendSummary,
+          revenueSummary: res.data.revenueSummary,
+          revenueTrend: res.data.revenueTrend,
+        });
+      }
+    };
+
 
   useEffect(() => {
     if (activeHostelId) {
@@ -3473,7 +3494,10 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
       <RecordPaymentSheet
         visible={showRecordPayment}
-        onClose={() => setShowRecordPayment(false)}
+        onClose={() =>{
+          fetchDashboard();
+          setShowRecordPayment(false)
+        } }
         selectedBill={selectedBill}
       />
 

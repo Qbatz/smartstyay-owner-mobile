@@ -1318,7 +1318,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         />
         <BillDetailsSheet
           visible={BillDetailshow}
-          onClose={() => setBillDetailsShow(false)}
+          onClose={() =>{ 
+            fetchCustomerDetails();
+            setBillDetailsShow(false)
+          }}
         // bill={selectedBill}
         />
       </View>

@@ -3,11 +3,11 @@ package com.qbatz.smartstay;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -19,13 +19,12 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import android.content.Intent;
-import android.net.Uri;
+
 import android.content.ActivityNotFoundException;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.qbatz.utils.Constants;
 import android.webkit.MimeTypeMap;
-import androidx.core.content.FileProvider;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -33,13 +32,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class CommonModule extends ReactContextBaseJavaModule {
     Context context;
@@ -263,6 +255,28 @@ public class CommonModule extends ReactContextBaseJavaModule {
 
             reactContext.startActivity(intent);
 
+        }
+    }
+
+    @ReactMethod
+    public void getVersionName(Promise promise){
+        try {
+            PackageManager pm =getReactApplicationContext().getPackageManager();
+            PackageInfo pInfo = pm.getPackageInfo(getReactApplicationContext().getPackageName(),0);
+            promise.resolve(pInfo.versionName);
+        }catch (Exception e){
+            promise.reject("ERROR", "Unable to get version name");
+        }
+    }
+
+    @ReactMethod
+    public void getBuildNumber(Promise promise){
+        try {
+            PackageManager pm =getReactApplicationContext().getPackageManager();
+            PackageInfo pInfo = pm.getPackageInfo(getReactApplicationContext().getPackageName(),0);
+            promise.resolve(String.valueOf(pInfo.versionCode));
+        } catch (Exception e) {
+            promise.reject("ERROR", "Unable to get build number");
         }
     }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef,useCallback, useContext } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler, NativeModules } from "react-native";
 import { useNavigation,useFocusEffect } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
 import { ExpensesContext } from "../../Context/ExpensesContext";
@@ -47,6 +47,7 @@ const isTabBarVisible = useRef(true);
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
 
   const loginContext=useContext(LoginContexts)
+  const {CommonModule}=NativeModules;
 
   useEffect(() => {
   if (visible) {
@@ -55,6 +56,7 @@ const isTabBarVisible = useRef(true);
     setShowTabBar?.(true);
   }
 }, [visible]);
+console.log(CommonModule.getVersionName(),"versionName")
 
   useFocusEffect(
   useCallback(() => {
@@ -77,7 +79,8 @@ const isTabBarVisible = useRef(true);
   }, [showEditPopup])
 );
 
-  
+  const versionName=CommonModule.getVersionName();
+  const versionCode=CommonModule.getBuildNumber();
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -301,7 +304,7 @@ console.log("profileDetails", profileDetails);
         </View>
 
         <Text style={{marginBottom:8,marginHorizontal:14,fontSize:14,fontFamily:'Gilroy-Medium',color: "#333"}}>
-          Smartstay version 2</Text>
+          Version {versionName} ({versionCode})</Text>
 
       </Animated.View>
 
