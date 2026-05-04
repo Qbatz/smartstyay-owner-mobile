@@ -7,6 +7,7 @@ import Arrow from "../../../Assets/Images/Arrow_left.png";
 import crown from "../../../Assets/Images/crown.png";
 import BillingIcon from "../../../Assets/Images/direct-right.png";
 import ChecksIcon from "../../../Assets/Images/checks.png";
+import { StatusBar, Platform } from "react-native";
 
 export default function PlanDetailsScreen({ route, navigation }) {
   useFocusEffect(
@@ -56,8 +57,10 @@ export default function PlanDetailsScreen({ route, navigation }) {
       };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView style={{ padding: 16 }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" ,     paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight 
+  : 40 ,}}>
+      <ScrollView style={{  paddingHorizontal:16}}>
 
       
         <View style={styles.row}>

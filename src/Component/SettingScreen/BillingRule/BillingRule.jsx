@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
  container: {
   flex: 1,
   backgroundColor: "#F4F6F8",
-  paddingHorizontal: 16,
+  paddingHorizontal: Platform.OS === "android" ?  16 : 40,
 //   paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
 },
 
@@ -207,7 +207,7 @@ LongstayIcon: {
 },
  card: {
   backgroundColor: "#fff",
-  padding: 18,
+  padding:  18,
   borderRadius: 8,
   marginBottom: 16,
 
