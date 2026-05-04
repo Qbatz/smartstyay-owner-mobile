@@ -9,6 +9,8 @@ import {
   PanResponder,
   BackHandler,
 } from "react-native";
+import { StatusBar , Platform } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -196,10 +198,12 @@ const insets = useSafeAreaInsets()
           {loading && <Loader />}
 <SafeAreaView 
   style={{ flex: 1, backgroundColor: "#fff" }}
-  edges={["left", "right", "bottom"]} // ❌ remove top safe area
+  edges={["left", "right", "bottom"]}
 >
   {/* <View style={styles.container}> */}
-         <View style={[styles.container, { paddingTop: insets.top }]}>
+         <View style={[styles.container, { paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight + 10
+  : 20 }]}>
            
 
 
@@ -569,20 +573,22 @@ monthText: {
 
   summaryCard: {
   borderRadius: 14,
-  paddingVertical: 16,
-  paddingHorizontal: 16, 
+  paddingVertical:  Platform.OS === "android"
+    ? 16 : 1,
+  paddingHorizontal:   Platform.OS === "android"
+    ? 16 : 1, 
   marginBottom: 14,
 },
 
 divider: {
   height: 1,
-  backgroundColor: "rgba(0,0,0,0.06)", // 🔥 figma subtle line
+  backgroundColor: "rgba(0,0,0,0.06)", 
   marginVertical: 2,
     marginBottom:4
 },
 
 totalValue: {
-  fontSize: 20,        // figma-la konjam perusa irukkum
+  fontSize: 20,      
   fontWeight: "700",
   color: "#111827",
 },
@@ -637,12 +643,11 @@ totalValue: {
     fontWeight: "500",
   },
 
-  /* LIST */
   listItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,   // 🔥 compact like figma
+    paddingVertical: 10,   
     borderBottomWidth: 1,
     borderColor: "#F1F5F9",
   },
