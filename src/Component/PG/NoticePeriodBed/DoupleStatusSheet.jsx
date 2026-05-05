@@ -298,10 +298,14 @@ export default function DoubleStatusSheet({
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             indicatorStyle="white"
-          >
+          > 
+           <View style={styles.divider} />
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Occupied by</Text>
+              
+              <Text style={{  color: "#000000",
+        fontSize: 14,
+          fontFamily: "Gilroy-Semibold",marginBottom:10}}>Occupied by</Text>
 
               <View style={styles.headerRow}>
                 <View style={styles.personRow}>
@@ -497,7 +501,10 @@ export default function DoubleStatusSheet({
             {/* RESERVED SECTION */}
             {selectedBed?.newTenantInfo?.length > 0 && (
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
-                <Text style={styles.sectionTitle}>Reserved by</Text>
+                
+                <Text style={{  color: "#000000",
+        fontSize: 14,
+          fontFamily: "Gilroy-Semibold",marginBottom:10}}>Reserved by</Text>
 
                 {
                   selectedBed.newTenantInfo.map((item, index) => {
@@ -783,7 +790,7 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 10,
     paddingBottom: 54,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.6,
     borderColor: "#EEE",
   },
 
@@ -967,4 +974,10 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18
   },
+  divider: {
+  height: 0.6,
+  backgroundColor: "#E5E7EB", 
+  marginBottom: 4,
+  marginTop:10
+},
 });

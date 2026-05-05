@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard , Platform
+  BackHandler, Keyboard, Platform
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -254,6 +254,7 @@ export default function BillsDesign({ route }) {
   const [appliedFilters, setAppliedFilters] = useState(null);
   const [filterError, setFilterError] = useState("");
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   const [showRecuringBillDetail, setShowRecuringBillDetail] = useState(false)
   const [selectedRecurringBill, setSelectedRecurringBill] = useState("")
@@ -262,7 +263,7 @@ export default function BillsDesign({ route }) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
 
-  const isTriggeredRef=useRef(false)
+  const isTriggeredRef = useRef(false)
 
   const { CommonModule } = NativeModules;
 
@@ -1250,8 +1251,8 @@ export default function BillsDesign({ route }) {
   };
 
   const handleSaveRecordPayment = async () => {
-     if (isTriggeredRef.current) return; 
-  isTriggeredRef.current = true;
+    if (isTriggeredRef.current) return;
+    isTriggeredRef.current = true;
     let isValid = true;
 
     setAmountError("");
@@ -1283,11 +1284,11 @@ export default function BillsDesign({ route }) {
       isValid = false;
     }
 
-    if (!isValid){
-       isTriggeredRef.current = false;
-        return;
-      } ;
-  
+    if (!isValid) {
+      isTriggeredRef.current = false;
+      return;
+    };
+
 
     try {
       setRecordLoading(true);
@@ -1327,7 +1328,7 @@ export default function BillsDesign({ route }) {
       setTimeout(() => setShowSuccessModal(false), 1500);
     } finally {
       setRecordLoading(false);
-       isTriggeredRef.current=false;
+      isTriggeredRef.current = false;
     }
   };
 
@@ -2149,31 +2150,31 @@ export default function BillsDesign({ route }) {
 
           </View> */}
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 , }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10, }}>
 
-  <TouchableOpacity onPress={() => navigation.goBack()}>
-    <Image source={ArrowLeft} style={styles.backIcon} />
-  </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={ArrowLeft} style={styles.backIcon} />
+            </TouchableOpacity>
 
-  <View style={{ flex: 1 }}>
-    <View style={styles.searchContainer}>
-      <Image source={SearchIcon} style={styles.searchIcon} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.searchContainer}>
+                <Image source={SearchIcon} style={styles.searchIcon} />
 
-      <TextInput
-         style={styles.searchInput}
-                placeholder="Search Invoices"
-                placeholderTextColor="#9CA3AF"
-                value={searchText}
-                onChangeText={(text) => {
-                  setSearchText(text);
-                  handleSearch(text);
-                }}
-                editable={canReadInvoice}
-      />
-    </View>
-  </View>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search Invoices"
+                  placeholderTextColor="#9CA3AF"
+                  value={searchText}
+                  onChangeText={(text) => {
+                    setSearchText(text);
+                    handleSearch(text);
+                  }}
+                  editable={canReadInvoice}
+                />
+              </View>
+            </View>
 
-</View>
+          </View>
 
 
 
@@ -2219,7 +2220,7 @@ export default function BillsDesign({ route }) {
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{ paddingBottom: 150 ,  }}
+                      contentContainerStyle={{ paddingBottom: 150, }}
                     >
 
 
@@ -2331,7 +2332,7 @@ export default function BillsDesign({ route }) {
                           </View>
 
                           <View style={styles.rightSection}>
-                
+
                             <Text style={{
                               fontSize: 16,
                               fontFamily: "Gilroy-Bold",
@@ -3415,19 +3416,19 @@ export default function BillsDesign({ route }) {
 
 
 
-{selectedBill?.canEdit && (
-  <TouchableOpacity
-    style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-    disabled={!canUpdateInvoice}
-    onPress={() => handleEditBill(selectedBill)}
-  >
-    <Image
-      source={EditIcon}
-      style={styles.popupIcon}
-    />
-    <Text style={styles.popupText}>Edit</Text>
-  </TouchableOpacity>
-)}
+                {selectedBill?.canEdit && (
+                  <TouchableOpacity
+                    style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                    disabled={!canUpdateInvoice}
+                    onPress={() => handleEditBill(selectedBill)}
+                  >
+                    <Image
+                      source={EditIcon}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Edit</Text>
+                  </TouchableOpacity>
+                )}
 
                 {/* {(selectedBill?.canEdit === "Recurring" && selectedBill?.paymentStatus === "Pending") && (
                   <TouchableOpacity
@@ -3923,7 +3924,7 @@ export default function BillsDesign({ route }) {
                         setShowPaymentMode(v => !v);
                       }}
                     >
-                      <Text style={{ fontSize: 15,flex:1 }}>
+                      <Text style={{ fontSize: 15, flex: 1 }}>
                         {selectedMode
                           ? transactionOptions.find(o => o.value === selectedMode)?.label
                           : "Select payment mode"}
@@ -4005,7 +4006,7 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.saveBtn, isTriggeredRef.current && {opacity:0.6}]}
+                      style={[styles.saveBtn, isTriggeredRef.current && { opacity: 0.6 }]}
                       onPress={handleSaveRecordPayment}
                       disabled={isTriggeredRef.current}
                     >
@@ -4413,14 +4414,14 @@ export default function BillsDesign({ route }) {
                     placeholder="Enter transaction ID"
                     // keyboardType="numeric"
                     value={transactionId}
-                    onChangeText={(text)=>{
-                       const noEmoji = text.replace(
-                  /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu,
-                  ""
-                );
-                setTransactionId(noEmoji)
+                    onChangeText={(text) => {
+                      const noEmoji = text.replace(
+                        /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu,
+                        ""
+                      );
+                      setTransactionId(noEmoji)
                     }
-                      }
+                    }
                   />
 
                   {/* BUTTON ROW */}
@@ -4505,9 +4506,14 @@ export default function BillsDesign({ route }) {
                   </TouchableOpacity>
                 </View>
 
+
+
                 <MultiSelectDropdown
                   label="Bill Status"
+                  dropdownKey="billStatus"
                   placeholder="Select Bill Status"
+                  activeDropdown={activeDropdown}
+                  setActiveDropdown={setActiveDropdown}
                   options={billStatusOptions}
                   selected={billStatus}
                   onChange={(values) => {
@@ -4518,7 +4524,10 @@ export default function BillsDesign({ route }) {
 
                 <MultiSelectDropdown
                   label="Type"
+                  dropdownKey="type"
                   placeholder="Select Type"
+                  activeDropdown={activeDropdown}
+                  setActiveDropdown={setActiveDropdown}
                   options={typeOptions}
                   selected={type}
                   onChange={(values) => {
@@ -4528,9 +4537,13 @@ export default function BillsDesign({ route }) {
                 />
 
 
+
                 <MultiSelectDropdown
                   label="Mode"
+                  dropdownKey="mode"
                   placeholder="Select Mode"
+                  activeDropdown={activeDropdown}
+                  setActiveDropdown={setActiveDropdown}
                   options={modeOptions}
                   selected={mode}
                   onChange={(values) => {
@@ -4540,9 +4553,14 @@ export default function BillsDesign({ route }) {
                 />
 
 
+
+
                 <MultiSelectDropdown
                   label="Created By"
+                  dropdownKey="createdBy"
                   placeholder="Select User"
+                  activeDropdown={activeDropdown}
+                  setActiveDropdown={setActiveDropdown}
                   options={createdByOptions}
                   selected={createdBy}
                   onChange={(values) => {
@@ -4552,11 +4570,8 @@ export default function BillsDesign({ route }) {
                 />
 
 
-                {/* <MultiSelectDropdown
-  label="Period"
-  placeholder="Select Period"
-  options={["This Month", "Last Month", "Last 3 Months"]}
-/> */}
+
+
 
                 {filterError && (
                   <ErrorMessage message={filterError} type="error" />
@@ -5018,14 +5033,14 @@ const styles = StyleSheet.create({
     // paddingTop: 60
   },
   searchContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 30,
-  paddingHorizontal: 14,
-  height: 44,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 30,
+    paddingHorizontal: 14,
+    height: 44,
+  },
 
   searchIcon: {
     width: 18,
@@ -5034,16 +5049,16 @@ const styles = StyleSheet.create({
   },
 
   searchInput: {
-  flex: 1,
-  fontSize: 15,
-  color: "#000",
-  fontFamily: "Gilroy-Regular",
-  paddingVertical: 0,
+    flex: 1,
+    fontSize: 15,
+    color: "#000",
+    fontFamily: "Gilroy-Regular",
+    paddingVertical: 0,
 
-  ...(Platform.OS === "ios" && {
-    height: 40,
-  }),
-},
+    ...(Platform.OS === "ios" && {
+      height: 40,
+    }),
+  },
 
   backIcon: {
     width: 22,
