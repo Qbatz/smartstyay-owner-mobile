@@ -34,7 +34,7 @@ const RecordPaymentSheet = ({
   onCloseBillDetails
 }) => {
 
-  const { RecordPayment, GetAllBillDetails, loading } = useContext(BillContext);
+  const { RecordPayment, GetAllBillDetails, loading,getBillsPdfDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
 
@@ -352,7 +352,7 @@ const RecordPaymentSheet = ({
         } else {
           throw new Error();
         }
-      } catch {
+      } catch(e) {
         setModalType("warning");
         setModalMessage("Something went wrong");
         setShowSuccessModal(true);

@@ -381,7 +381,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 //   }, 200);
 // };
 const [isDiscountFocused,setIsDiscountFocused]=useState(false)
-const discountScrollY = 1200; 
+const discountScrollY = 900; 
 const handleDiscountFocus = () => {
   setTimeout(() => {
     scrollRef.current?.scrollTo({
@@ -1402,7 +1402,7 @@ useEffect(()=>{
                           placeholder="Enter reason"
                           value={item.title}
                           onChangeText={(t) => updateTitle(item.id, t)}
-                          onFocus={() => {
+                          onPress={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({
                                 y: 900,   // 👈 adjust if needed
@@ -1451,7 +1451,7 @@ useEffect(()=>{
                           }
 
                           }
-                          onFocus={() => {
+                          onPress={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({
                                 y: 900,
@@ -1592,7 +1592,7 @@ useEffect(()=>{
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
-                  onFocus={handleDiscountFocus}
+                  onPress={handleDiscountFocus}
                   />
 
                   <TouchableOpacity

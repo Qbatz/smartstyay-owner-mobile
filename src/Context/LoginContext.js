@@ -93,13 +93,13 @@ const LoginContext = ({ children }) => {
 
 
 
-  const CreateMpin = async (pin) => {
+  const CreateMpin = async (data) => {
     console.log(userId)
     try {
       const axios = getAxios();
       const res = await axios.post(
         `/v2/mobile/pin/${userId}`,
-        { pin }
+        data
       );
       console.log(res)
       await storeData("token", res.data)
@@ -115,14 +115,14 @@ const LoginContext = ({ children }) => {
   };
 
 
-  const verifyMpin = async (pin) => {
+  const verifyMpin = async (data) => {
 
     console.log("user id", userId)
     try {
       const axios = getAxios();
       const res = await axios.post(
         `/v2/mobile/verify/${userId}`,
-        { pin }
+         data 
       );
 
       const token = res.data;

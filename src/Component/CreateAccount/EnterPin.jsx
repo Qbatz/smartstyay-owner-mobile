@@ -145,7 +145,12 @@ const EnterMPin = (props) => {
             setmPinNumber(pinNumber)
             console.log(pinNumber)
 
-            const res = await verifyMpin(Number(pinNumber));
+            const data= {
+                pin: Number(pinNumber),
+                platform: Platform.OS,
+            }
+
+            const res = await verifyMpin(data);
             console.log(res)
 
             if (res.status == 200) {

@@ -197,7 +197,6 @@ const BillDetailsSheet = ({
 
 
   const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
-  console.log(invoiceDetail, "billa")
 
   const billDetailsPan = useRef(
     PanResponder.create({

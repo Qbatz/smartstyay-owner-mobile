@@ -130,7 +130,7 @@ export default function OverviewTab({ customerDetails,
       const res = await AddManualDocument(
         activeHostelId,
         customerDetails?.customerId,
-        results , "OTHER"
+        results, "OTHER"
       );
       if (res?.success) {
         await GetParticularCustomerDetails(customerDetails?.customerId)
@@ -155,10 +155,10 @@ export default function OverviewTab({ customerDetails,
         type: ['*/*'],
         copyTo: 'cachesDirectory',
       });
-          const res = await AddManualDocument(
+      const res = await AddManualDocument(
         activeHostelId,
         customerDetails?.customerId,
-        results ,  "KYC"
+        results, "KYC"
       );
 
       if (res?.success) {
@@ -239,10 +239,10 @@ export default function OverviewTab({ customerDetails,
   ].includes(customerDetails?.hostelInfo?.currentStatus);
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
-const isNewRentApplied = customerDetails?.isNewRentApplied;
-const newRent = customerDetails?.newRentAmount;
-const oldRent = customerDetails?.hostelInfo?.monthlyRent;
-const newRentLabel = customerDetails?.newRentLabel;
+  const isNewRentApplied = customerDetails?.isNewRentApplied;
+  const newRent = customerDetails?.newRentAmount;
+  const oldRent = customerDetails?.hostelInfo?.monthlyRent;
+  const newRentLabel = customerDetails?.newRentLabel;
 
   const isBookedTenant = customerDetails?.customerCurrentStatus === "BOOKED";
   const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
@@ -261,7 +261,7 @@ const newRentLabel = customerDetails?.newRentLabel;
 
   return (
     <>
-    {/* {loading && <Loader/>} */}
+      {/* {loading && <Loader/>} */}
       <SuccessModal
         visible={showSuccess}
         message={message}
@@ -372,9 +372,9 @@ const newRentLabel = customerDetails?.newRentLabel;
             <View style={styles.addressHeader}>
               {/* LEFT : Tabs */}
               <View style={styles.tabRow}>
-                <TouchableOpacity 
-                // style={{flex:1,justifyContent:'center',alignItems:'center'}} 
-                onPress={() => setAddressTab("KYC")}>
+                <TouchableOpacity
+                  // style={{flex:1,justifyContent:'center',alignItems:'center'}} 
+                  onPress={() => setAddressTab("KYC")}>
                   <Text
                     style={[
                       styles.tabText,
@@ -385,9 +385,9 @@ const newRentLabel = customerDetails?.newRentLabel;
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                // style={{flex:1,justifyContent:'center',alignItems:'center'}} 
-                onPress={() => setAddressTab("MANUAL")}>
+                <TouchableOpacity
+                  // style={{flex:1,justifyContent:'center',alignItems:'center'}} 
+                  onPress={() => setAddressTab("MANUAL")}>
                   <Text
                     style={[
                       styles.tabText,
@@ -583,7 +583,7 @@ const newRentLabel = customerDetails?.newRentLabel;
 
             {/* ROW 1 : Floor + Room */}
             <View style={styles.twoColumnRow}>
-              <View style={styles.detailBox}>
+              <View style={{width:"46%"}}>
                 <Text style={styles.detailLabel}>Floor</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={FloorIcon} style={styles.detailIconFloor} />
@@ -593,7 +593,7 @@ const newRentLabel = customerDetails?.newRentLabel;
                 </View>
               </View>
 
-              <View style={styles.detailBox}>
+              <View style={{width:"46%"}}>
                 <Text style={styles.detailLabel}>Room</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={RoomIcon} style={styles.detailIconFloor} />
@@ -606,7 +606,7 @@ const newRentLabel = customerDetails?.newRentLabel;
 
             {/* ROW 2 : Bed + Booking Date */}
             <View style={styles.twoColumnRow}>
-              <View style={styles.detailBox}>
+              <View style={{width:'46%'}}>
                 <Text style={styles.detailLabel}>Bed</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={BedIcon} style={styles.detailIcon} />
@@ -616,7 +616,8 @@ const newRentLabel = customerDetails?.newRentLabel;
                 </View>
               </View>
 
-              <View style={styles.detailBox}>
+
+              <View style={{width:'46%'}}>
                 <Text style={styles.detailLabel}>Booking Date</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={Home} style={styles.detailIcon} />
@@ -698,7 +699,7 @@ const newRentLabel = customerDetails?.newRentLabel;
               <View style={styles.amountBox}>
                 <View style={styles.amountValueRow}>
                   <Text style={styles.amountValue}>Monthly Rent</Text>
-                 
+
                   {
                     !disableFinancialEdit && isSubscriptionAllow && (
                       <>
@@ -728,66 +729,68 @@ const newRentLabel = customerDetails?.newRentLabel;
                 </Text>
               </View>
 
- 
+
 
               {/* Advance Amount */}
-        
+
             </View>
 
-                                      {isNewRentApplied && (
-                                        <>
-  <View style={styles.amountBox}>
-    <Text style={styles.amountValue}>Monthly New Rent</Text>
-    <Text style={styles.amountLabel}>₹ {newRent || 0}</Text>
-  </View>
-
-    <View style={styles.newRentBox}>
-          <Text style={styles.newRentText}>
-           {newRentLabel} 
-          </Text>
-        </View>
-        </>
-)}
-
-      <View style={styles.amountBox}>
-                <View style={styles.amountValueRow}>
-                  <Text style={styles.amountValue}>Advance Amount</Text>
-                 
-
-                  {
-                    !disableFinancialEdit && isSubscriptionAllow && (
-                      <>
-
-                        {
-                          !["VACATED", "NOTICE"].includes(status) && (
-                            <TouchableOpacity
-                              disabled={
-                                disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable}
-                              style={
-                                (disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable) &&
-                                { opacity: 0.4 }
-                              }
-                              onPress={handleEditAdvance}
-                            >
-                              <Image
-                                source={EditIcon}
-                                style={styles.editIconSmall}
-                              />
-                            </TouchableOpacity>
-                          )
-                        }
-                      </>
-
-                    )
-                  }
-
-
-
+            {isNewRentApplied && (
+              <>
+                <View style={styles.amountBox}>
+                  <Text style={styles.amountValue}>Monthly New Rent</Text>
+                  <Text style={styles.amountLabel}>₹ {newRent || 0}</Text>
                 </View>
-                <Text style={styles.amountLabel}>
-                  ₹ {customerDetails?.advanceInfo?.advanceAmount || 0}
-                </Text>
+
+                <View style={styles.newRentBox}>
+                  <Text style={styles.newRentText}>
+                    {newRentLabel}
+                  </Text>
+                </View>
+              </>
+            )}
+
+
+            <View style={{ width: "58%",paddingVertical: 12,paddingHorizontal: 14,}}>
+              <View style={styles.amountValueRow}>
+                <Text style={styles.amountValue}>Advance Amount</Text>
+
+
+                {
+                  !disableFinancialEdit && isSubscriptionAllow && (
+                    <>
+
+                      {
+                        !["VACATED", "NOTICE"].includes(status) && (
+                          <TouchableOpacity
+                            disabled={
+                              disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable}
+                            style={
+                              (disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable) &&
+                              { opacity: 0.4 }
+                            }
+                            onPress={handleEditAdvance}
+                          >
+                            <Image
+                              source={EditIcon}
+                              style={styles.editIconSmall}
+                            />
+                          </TouchableOpacity>
+                        )
+                      }
+                    </>
+
+                  )
+                }
+
+
+
               </View>
+              <Text style={styles.amountLabel}>
+                ₹ {customerDetails?.advanceInfo?.advanceAmount || 0}
+              </Text>
+            </View>
+            
 
             {/* ROW 2 : Booking Amount + Maintenance */}
             <View style={styles.twoColumnRow}>
@@ -805,12 +808,12 @@ const newRentLabel = customerDetails?.newRentLabel;
             </View>
 
 
-              <View style={styles.amountBox}>
-                <Text style={styles.amountValue}>Maintenance</Text>
-                <Text style={styles.amountLabel}>
-                  ₹ {customerDetails.hostelInfo?.maintenance || 0}
-                </Text>
-              </View>
+            <View style={styles.amountBox}>
+              <Text style={styles.amountValue}>Maintenance</Text>
+              <Text style={styles.amountLabel}>
+                ₹ {customerDetails.hostelInfo?.maintenance || 0}
+              </Text>
+            </View>
             {/* ROW 3+ : Other Deductions (2 per row) */}
             {Array.isArray(customerDetails?.hostelInfo?.otherDeductionsBreakup) &&
               customerDetails.hostelInfo.otherDeductionsBreakup.length > 0 &&
@@ -827,11 +830,11 @@ const newRentLabel = customerDetails?.newRentLabel;
                 )
               )}
 
- 
 
 
 
-           
+
+
 
 
 
@@ -844,7 +847,7 @@ const newRentLabel = customerDetails?.newRentLabel;
             <View style={styles.docContentWrapper}>
               <View style={styles.docTabRow}>
                 <TouchableOpacity onPress={() => setDocTab("KYC")}
-                  style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <Text
                     style={[
                       styles.docTabText,
@@ -856,7 +859,7 @@ const newRentLabel = customerDetails?.newRentLabel;
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setDocTab("MANUAL")}
-                  style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <Text
                     style={[
                       styles.docTabText,
@@ -870,89 +873,89 @@ const newRentLabel = customerDetails?.newRentLabel;
 
 
               {docTab === "KYC" && (
-  <View style={{ maxHeight: 300 }}>
-    <ScrollView nestedScrollEnabled>
-      {kycDocs.length > 0 ? (
-        kycDocs.map((doc) => (
-          <View style={styles.docRow} key={doc.documentId}>
-            <View style={styles.docLeft}>
-              <Image
-                source={
-                  doc.type === "PDF"
-                    ? require("../../../Assets/Images/pdf.png")
-                    : { uri: doc?.url }
-                }
-                style={styles.pdfIcon}
-              />
+                <View style={{ maxHeight: 300 }}>
+                  <ScrollView nestedScrollEnabled>
+                    {kycDocs.length > 0 ? (
+                      kycDocs.map((doc) => (
+                        <View style={styles.docRow} key={doc.documentId}>
+                          <View style={styles.docLeft}>
+                            <Image
+                              source={
+                                doc.type === "PDF"
+                                  ? require("../../../Assets/Images/pdf.png")
+                                  : { uri: doc?.url }
+                              }
+                              style={styles.pdfIcon}
+                            />
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.docTitle} numberOfLines={1}>
-                  {doc.type}
-                </Text>
-              </View>
-            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.docTitle} numberOfLines={1}>
+                                {doc.type}
+                              </Text>
+                            </View>
+                          </View>
 
-            <View style={styles.docActions}>
-              {/* VIEW */}
-              <TouchableOpacity
-                disabled={!isSubscriptionAllow}
-                onPress={() => {
-                  if (doc.type === "PDF") {
-                    Linking.openURL(doc.url);
-                  } else {
-                    const index = kycDocs.findIndex(
-                      (item) => item.documentId === doc.documentId
-                    );
-                    setViewerIndex(index);
-                    setViewerVisible(true);
-                  }
-                }}
-              >
-                <Image
-                  source={require("../../../Assets/Images/Eye.png")}
-                  style={[
-                    styles.actionIcon,
-                    !isSubscriptionAllow && { opacity: 0.4 },
-                  ]}
-                />
-              </TouchableOpacity>
-               <TouchableOpacity
-                                disabled={!isSubscriptionAllow}
-                                onPress={() => {
-                                  setDeleteDocumentId(doc.documentId);
-                                  setDeletePopup(true);
-                                }}>
-                                <Image
-                                  source={require("../../../Assets/Images/trash.png")}
-                                  style={[
-                                    styles.actionIcon,
-                                    (!isSubscriptionAllow) && { opacity: 0.4 }
-                                  ]}
-                                />
-                              </TouchableOpacity>
-            </View>
-          </View>
-        ))
-      ) : (
-        <Text style={{ textAlign: "center", color: "#9CA3AF" ,fontFamily: "Gilroy-Semibold"}}>
-          No KYC Documents
-        </Text>
-      )}
-    </ScrollView>
+                          <View style={styles.docActions}>
+                            {/* VIEW */}
+                            <TouchableOpacity
+                              disabled={!isSubscriptionAllow}
+                              onPress={() => {
+                                if (doc.type === "PDF") {
+                                  Linking.openURL(doc.url);
+                                } else {
+                                  const index = kycDocs.findIndex(
+                                    (item) => item.documentId === doc.documentId
+                                  );
+                                  setViewerIndex(index);
+                                  setViewerVisible(true);
+                                }
+                              }}
+                            >
+                              <Image
+                                source={require("../../../Assets/Images/Eye.png")}
+                                style={[
+                                  styles.actionIcon,
+                                  !isSubscriptionAllow && { opacity: 0.4 },
+                                ]}
+                              />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              disabled={!isSubscriptionAllow}
+                              onPress={() => {
+                                setDeleteDocumentId(doc.documentId);
+                                setDeletePopup(true);
+                              }}>
+                              <Image
+                                source={require("../../../Assets/Images/trash.png")}
+                                style={[
+                                  styles.actionIcon,
+                                  (!isSubscriptionAllow) && { opacity: 0.4 }
+                                ]}
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ))
+                    ) : (
+                      <Text style={{ textAlign: "center", color: "#9CA3AF", fontFamily: "Gilroy-Semibold" }}>
+                        No KYC Documents
+                      </Text>
+                    )}
+                  </ScrollView>
 
-    {/* 👇 IMPORTANT: viewer ku kycDocs pass pannunga */}
-    <DocumentViewer
-      visible={viewerVisible}
-      documents={kycDocs}
-      initialIndex={viewerIndex}
-      onClose={() => setViewerVisible(false)}
-      customerdetails={customerDetails}
-    />
-  </View>
-)}
+                  {/* 👇 IMPORTANT: viewer ku kycDocs pass pannunga */}
+                  <DocumentViewer
+                    visible={viewerVisible}
+                    documents={kycDocs}
+                    initialIndex={viewerIndex}
+                    onClose={() => setViewerVisible(false)}
+                    customerdetails={customerDetails}
+                  />
+                </View>
+              )}
 
 
-           
+
 
               {docTab === "MANUAL" && (
                 <>
@@ -1061,7 +1064,7 @@ const newRentLabel = customerDetails?.newRentLabel;
                 />
               </TouchableOpacity>
             )}
-             {docTab === "MANUAL" && (
+            {docTab === "MANUAL" && (
               <TouchableOpacity
                 // style={styles.uploadFabInside}
                 style={[
@@ -1349,12 +1352,12 @@ const newRentLabel = customerDetails?.newRentLabel;
               customerDetails.requestedAmenities.map((item, index) => (
                 <View style={styles.amenityItem} key={item.amenityId || index}>
 
-                  <View style={{flexDirection:'row',alignItems:'center'}}>
-                    <View style={{ backgroundColor: "#fffbf2", paddingVertical: 5.93, paddingHorizontal: 5.5,borderRadius:10}}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ backgroundColor: "#fffbf2", paddingVertical: 5.93, paddingHorizontal: 5.5, borderRadius: 10 }}>
                       <Image source={RequestAmenitiesIcon} style={{ width: 22.43, height: 22.43 }} />
                     </View>
 
-                    <View style={{marginLeft:10}}>
+                    <View style={{ marginLeft: 10 }}>
                       <Text style={styles.amenityTitle}>
                         {item.amenityName}
                       </Text>
@@ -1476,17 +1479,17 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 14,
     elevation: 2,
-         shadowColor: "#000",        
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
 
   },
-  cardTitle: { fontSize: 15, fontFamily: "Gilroy-Semibold"},
+  cardTitle: { fontSize: 15, fontFamily: "Gilroy-Semibold" },
   editIcon: {
     width: 18,
     height: 18,
@@ -1505,7 +1508,7 @@ const styles = StyleSheet.create({
   assignText: { color: "#fff", fontSize: 12 },
 
   infoRow: { marginBottom: 12 },
-  label: { fontSize: 12, color: "#6B7280",fontFamily: "Gilroy-Semibold" },
+  label: { fontSize: 12, color: "#6B7280", fontFamily: "Gilroy-Semibold" },
   valueRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
   value: { fontSize: 14, fontFamily: "Gilroy-Medium" },
   icon: { width: 14, height: 14, marginRight: 6 },
@@ -1515,10 +1518,10 @@ const styles = StyleSheet.create({
   addressHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", 
+    justifyContent: "space-between",
     marginBottom: 12,
-    borderBottomWidth: 1,         
-    borderBottomColor: "#E0E0E0", 
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
     paddingBottom: 10,
   },
 
@@ -1536,7 +1539,7 @@ const styles = StyleSheet.create({
 
   activeTab: {
     color: "#2563EB",
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     borderBottomWidth: 2,
     borderColor: "#2563EB",
   },
@@ -1558,7 +1561,7 @@ const styles = StyleSheet.create({
   amenityTitle: { fontFamily: "Gilroy-Semibold" },
   amenityPrice: { fontSize: 12, color: "#666", marginTop: 2 },
 
-  subTitle: { marginTop: 14, fontFamily: "Gilroy-Semibold"},
+  subTitle: { marginTop: 14, fontFamily: "Gilroy-Semibold" },
 
   actionRow: {
     flexDirection: "row",
@@ -1579,7 +1582,7 @@ const styles = StyleSheet.create({
     width: "48%",
     alignItems: "center",
   },
-  btnText: { color: "#fff", fontFamily: "Gilroy-Semibold"},
+  btnText: { color: "#fff", fontFamily: "Gilroy-Semibold" },
   detailRow: {
     marginBottom: 14,
   },
@@ -1593,7 +1596,7 @@ const styles = StyleSheet.create({
 
   detailValue: {
     fontSize: 14,
-    fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
     color: "#111827",
   },
   phoneIcon: {
@@ -1631,12 +1634,12 @@ const styles = StyleSheet.create({
     marginTop: 14,
     elevation: 2,
 
-      shadowColor: "#000",        
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
 
-  // elevation: 2, 
+    // elevation: 2, 
   },
 
   sectionHeader: {
@@ -1664,7 +1667,7 @@ const styles = StyleSheet.create({
 
   amountLabel: {
     fontSize: 12,
-fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     marginBottom: 0,
     color: "#2563EB",
   },
@@ -1689,10 +1692,10 @@ fontFamily: "Gilroy-Bold",
     padding: 14,
     marginTop: 14,
     elevation: 2,
-         shadowColor: "#000",        
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
 
   docTabRow: {
@@ -1708,7 +1711,7 @@ fontFamily: "Gilroy-Bold",
 
   docActiveTab: {
     color: "#2563EB",
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     borderBottomWidth: 2,
     borderColor: "#2563EB",
     paddingBottom: 4,
@@ -1727,7 +1730,7 @@ fontFamily: "Gilroy-Bold",
     borderColor: "#E5E7EB",
   },
   docLeft: {
-    flexDirection: "row",             
+    flexDirection: "row",
     alignItems: "center",
     flex: 1,
   },
@@ -1741,7 +1744,7 @@ fontFamily: "Gilroy-Bold",
 
   docTitle: {
     fontSize: 14,
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   docMeta: {
@@ -1765,8 +1768,8 @@ fontFamily: "Gilroy-Bold",
     alignItems: "center",
     justifyContent: "space-between",
 
-    paddingBottom: 10,         
-    marginBottom: 12,         
+    paddingBottom: 10,
+    marginBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#E6E6E6",
   },
@@ -1829,7 +1832,7 @@ fontFamily: "Gilroy-Bold",
     fontSize: 14,
     color: "#6B7280",
     marginBottom: 16,
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   addBtn: {
@@ -1864,11 +1867,11 @@ fontFamily: "Gilroy-Bold",
     padding: 14,
     marginTop: 14,
     elevation: 2,
-    position: "relative",  
-         shadowColor: "#000",        
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 4,
+    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
 
   docContentWrapper: {
@@ -1915,7 +1918,7 @@ fontFamily: "Gilroy-Bold",
 
   deleteTitle: {
     fontSize: 18,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: '#111',
     textAlign: 'center',
   },
@@ -1964,7 +1967,7 @@ fontFamily: "Gilroy-Bold",
   deleteBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: "Gilroy-Bold" 
+    fontFamily: "Gilroy-Bold"
   },
   addSmallBtn: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
@@ -2021,7 +2024,7 @@ fontFamily: "Gilroy-Bold",
 
   value: {
     fontSize: 14,
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   phoneRow: {
@@ -2062,24 +2065,24 @@ fontFamily: "Gilroy-Bold",
     // tintColor: "#6B7280",
   },
   newRentAmount: {
-  fontSize: 16,
- fontFamily: "Gilroy-Bold",
-  marginTop: 6,
-  color: "#111827",
-},
+    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+    marginTop: 6,
+    color: "#111827",
+  },
 
-newRentBox: {
-  backgroundColor: "#FFF4E5",
-  paddingVertical: 8,
-  paddingHorizontal: 10,
-  borderRadius: 10,
-  marginTop: 8,
-},
+  newRentBox: {
+    backgroundColor: "#FFF4E5",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginTop: 8,
+  },
 
-newRentText: {
-  color: "#C26B00",
-  fontSize: 12,
-  fontFamily: "Gilroy-Semibold" 
-},
+  newRentText: {
+    color: "#C26B00",
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold"
+  },
 
 });

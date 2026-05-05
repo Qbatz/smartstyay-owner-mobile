@@ -210,7 +210,6 @@ export default function BillsTemplate({ handleBank, onChange }) {
 
     const res = await postGlobalBilPdfDetails(activeHostelId, queryPayload, formData)
 
-    console.log("billa", res)
 
     if (res.status === 200) {
       setShowSuccessModal(true)

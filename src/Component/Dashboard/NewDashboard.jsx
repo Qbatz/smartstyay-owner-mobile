@@ -139,7 +139,6 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const isTabBarVisible = useRef(true);
 
   const { handleScroll } = useHideTabbarOnScroll(setShowTabBar, setShowProfileTopBar);
-  console.log("Hitler", showProfileTopBar)
 
 
   const subTabs = [
@@ -285,7 +284,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
         financeFilter: "This Month",
         occupancyFilter: "This Month"
       });
+      console.log("getDashboard",res)
 
+      if(res?.status === 200){
       if (res?.data) {
         const mapped = mapDashboardData(res?.data);
 
@@ -296,6 +297,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
           revenueSummary: res.data.revenueSummary,
           revenueTrend: res.data.revenueTrend,
         });
+      }
       }
     };
 

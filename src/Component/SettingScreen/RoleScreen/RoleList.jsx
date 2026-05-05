@@ -61,6 +61,7 @@ const loadRoles = async () => {
     console.log("Role API error →", res.data);
   }
 };
+console.log(roleList)
 
 
     useFocusEffect(

@@ -145,7 +145,6 @@ const GetExpenseList = async (hostelId) => {
 };
 
 const AddExpense = async (payload,hostelId) => {
-  console.log("pilla",payload)
   try {
     setLoading(true);
     setError(null);
