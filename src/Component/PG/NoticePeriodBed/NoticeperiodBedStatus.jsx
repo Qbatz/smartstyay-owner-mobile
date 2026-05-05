@@ -371,8 +371,10 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
             </>
           )}
 
-
-          <Text style={styles.label}>Occupied by</Text>
+   <View style={styles.divider} />
+          <Text style={{  color: "#000000",
+        fontSize: 14,
+          fontFamily: "Gilroy-Semibold",marginBottom:10}}>Occupied by</Text>
 
           <View style={styles.profileRow}>
             {/* <Image source={Profile} style={styles.profileImg} /> */}
@@ -644,5 +646,11 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18
   },
+  divider: {
+  height: 0.6,
+  backgroundColor: "#E5E7EB", 
+  marginBottom: 4,
+  marginTop:10
+},
 
 });

@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity, Image
 } from "react-native";
-import { StatusBar , Platform } from "react-native";
+import { StatusBar, Platform } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import LinearGradient from "react-native-linear-gradient";
 import { SafeAreaView } from "react-native";
@@ -31,7 +31,7 @@ const TenantRegister = ({ navigation }) => {
 
   const { loading, Reportsdetails, GetInvoiceReports,
     invoiceReports, getTenantRegisterReport } = UseSetting();
-          const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const [tenantData, setTenantData] = useState(null);
@@ -116,50 +116,50 @@ const TenantRegister = ({ navigation }) => {
 
   const filterOptions = tenantData?.filters;
 
-const monthOptions =
-  filterOptions?.period?.map(i => ({
-    label: i.label,
-    value: i.id,
-  })) || [];
+  const monthOptions =
+    filterOptions?.period?.map(i => ({
+      label: i.label,
+      value: i.id,
+    })) || [];
 
-const statusOptions =
-  filterOptions?.tenantStatus?.map(i => ({
-    label: i.label,
-    value: i.id,
-  })) || [];
+  const statusOptions =
+    filterOptions?.tenantStatus?.map(i => ({
+      label: i.label,
+      value: i.id,
+    })) || [];
 
-const sharingOptions =
-  filterOptions?.sharingType?.map(i => ({
-    label: i.label,
-    value: i.id,
-  })) || [];
+  const sharingOptions =
+    filterOptions?.sharingType?.map(i => ({
+      label: i.label,
+      value: i.id,
+    })) || [];
 
 
-const applyTenantFilters = (
-  month = selectedMonth,
-  status = selectedStatus,
-  sharing = selectedSharing
-) => {
+  const applyTenantFilters = (
+    month = selectedMonth,
+    status = selectedStatus,
+    sharing = selectedSharing
+  ) => {
 
-  const filters = {
-    period: month || undefined,
-    status: status.length ? status : undefined,
-    sharingType: sharing.length ? sharing : undefined,
-    page: 0,
-    size: 10
+    const filters = {
+      period: month || undefined,
+      status: status.length ? status : undefined,
+      sharingType: sharing.length ? sharing : undefined,
+      page: 0,
+      size: 10
+    };
+
+    getTenantRegisterReport(activeHostelId, filters)
+      .then(res => {
+        if (res.success) {
+          setTenantData(res.data);
+        }
+      });
+
   };
 
-  getTenantRegisterReport(activeHostelId, filters)
-    .then(res => {
-      if (res.success) {
-        setTenantData(res.data);
-      }
-    });
-
-};
-
   const isValidSubscription = PGDetails?.isSubscriptionActive;
-const isExportAllow = isValidSubscription && canReadReports;
+  const isExportAllow = isValidSubscription && canReadReports;
 
 
   return (
@@ -228,54 +228,54 @@ const isExportAllow = isValidSubscription && canReadReports;
             </View>
           </LinearGradient>
 
-<View style={styles.filterRow}>
+          <View style={styles.filterRow}>
 
-{/* STATUS */}
-<TouchableOpacity
-  style={[
-    styles.filterBtn,
-    selectedStatus.length > 0 && styles.activeFilter
-  ]}
-  onPress={() => {
-    setTempStatus(selectedStatus);
-    setStatusSheetOpen(true);
-  }}
->
-<Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
-{selectedStatus.length === 0
-  ? "All"
-  : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
+            {/* STATUS */}
+            <TouchableOpacity
+              style={[
+                styles.filterBtn,
+                selectedStatus.length > 0 && styles.activeFilter
+              ]}
+              onPress={() => {
+                setTempStatus(selectedStatus);
+                setStatusSheetOpen(true);
+              }}
+            >
+              <Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
+                {selectedStatus.length === 0
+                  ? "All"
+                  : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
      ${selectedStatus.length > 1 ? `+${selectedStatus.length - 1} more` : ""}`
-}
-</Text>
+                }
+              </Text>
 
-<Image source={DownArrow} style={{width:16,height:16,marginLeft:6}}/>
-</TouchableOpacity>
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
 
 
-{/* SHARING TYPE */}
-<TouchableOpacity
-  style={[
-    styles.filterBtn,
-    selectedSharing.length > 0 && styles.activeFilter
-  ]}
-  onPress={() => {
-    setTempSharing(selectedSharing);
-    setSharingSheetOpen(true);
-  }}
->
-<Text style={selectedSharing.length ? styles.activeFilterText : styles.filterText}>
-{selectedSharing.length === 0
-  ? "Type"
-  : `${sharingOptions.find(s => s.value === selectedSharing[0])?.label}
+            {/* SHARING TYPE */}
+            <TouchableOpacity
+              style={[
+                styles.filterBtn,
+                selectedSharing.length > 0 && styles.activeFilter
+              ]}
+              onPress={() => {
+                setTempSharing(selectedSharing);
+                setSharingSheetOpen(true);
+              }}
+            >
+              <Text style={selectedSharing.length ? styles.activeFilterText : styles.filterText}>
+                {selectedSharing.length === 0
+                  ? "Type"
+                  : `${sharingOptions.find(s => s.value === selectedSharing[0])?.label}
      ${selectedSharing.length > 1 ? `+${selectedSharing.length - 1} more` : ""}`
-}
-</Text>
+                }
+              </Text>
 
-<Image source={DownArrow} style={{width:16,height:16,marginLeft:6}}/>
-</TouchableOpacity>
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
 
-</View>
+          </View>
 
 
           <ScrollView
@@ -308,78 +308,78 @@ const isExportAllow = isValidSubscription && canReadReports;
 
         <View style={styles.exportWrapper}>
           <TouchableOpacity
-          //  style={styles.exportBtn} 
+            //  style={styles.exportBtn} 
             style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
             disabled={!isExportAllow}
-           onPress={handleDownloadReport}>
+            onPress={handleDownloadReport}>
             <Text style={styles.exportText}>Export PDF</Text>
           </TouchableOpacity>
         </View>
 
       </SafeAreaView>
 
-  <FilterBottomSheet
-  visible={monthSheetOpen}
-  title="Select Period"
-  options={monthOptions}
-  selectedValues={tempMonth ? [tempMonth] : []}
-  setSelectedValues={(val) => setTempMonth(val[0])}
-  isSingleSelect={true}
-  onReset={() => {
-    setTempMonth("");
-    setSelectedMonth("");
-    setMonthSheetOpen(false);
-    applyTenantFilters("", selectedStatus, selectedSharing);
-  }}
-onApply={() => {
-  setSelectedMonth(tempMonth);
-  setMonthSheetOpen(false);
-  applyTenantFilters(tempMonth, selectedStatus, selectedSharing);
-}}
-  onClose={() => setMonthSheetOpen(false)}
-/>
+      <FilterBottomSheet
+        visible={monthSheetOpen}
+        title="Select Period"
+        options={monthOptions}
+        selectedValues={tempMonth ? [tempMonth] : []}
+        setSelectedValues={(val) => setTempMonth(val[0])}
+        isSingleSelect={true}
+        onReset={() => {
+          setTempMonth("");
+          setSelectedMonth("");
+          setMonthSheetOpen(false);
+          applyTenantFilters("", selectedStatus, selectedSharing);
+        }}
+        onApply={() => {
+          setSelectedMonth(tempMonth);
+          setMonthSheetOpen(false);
+          applyTenantFilters(tempMonth, selectedStatus, selectedSharing);
+        }}
+        onClose={() => setMonthSheetOpen(false)}
+      />
 
 
       <FilterBottomSheet
-  visible={statusSheetOpen}
-  title="Tenant Status"
-  options={statusOptions}
-  selectedValues={tempStatus}
-  setSelectedValues={setTempStatus}
-  onReset={() => {
-    setTempStatus([]);
-    setSelectedStatus([]);
-    setStatusSheetOpen(false);
-    applyTenantFilters(selectedMonth, [], selectedSharing);
-  }}
-  onApply={() => {
-    setSelectedStatus(tempStatus);
-    setStatusSheetOpen(false);
-    applyTenantFilters(selectedMonth, tempStatus, selectedSharing);
-  }}
-  onClose={() => setStatusSheetOpen(false)}
-/>
+        visible={statusSheetOpen}
+        title="Tenant Status"
+        options={statusOptions}
+        selectedValues={tempStatus}
+        setSelectedValues={setTempStatus}
+        onReset={() => {
+          setTempStatus([]);
+          setSelectedStatus([]);
+          setStatusSheetOpen(false);
+          applyTenantFilters(selectedMonth, [], selectedSharing);
+        }}
+        onApply={() => {
+          setSelectedStatus(tempStatus);
+          setStatusSheetOpen(false);
+          applyTenantFilters(selectedMonth, tempStatus, selectedSharing);
+        }}
+        onClose={() => setStatusSheetOpen(false)}
+      />
 
 
-<FilterBottomSheet
-  visible={sharingSheetOpen}
-  title="Sharing Type"
-  options={sharingOptions}
-  selectedValues={tempSharing}
-  setSelectedValues={setTempSharing}
-  onReset={() => {
-    setTempSharing([]);
-    setSelectedSharing([]);
-    setSharingSheetOpen(false);
-    applyTenantFilters(selectedMonth, selectedStatus, []);
-  }}
-  onApply={() => {
-    setSelectedSharing(tempSharing);
-    setSharingSheetOpen(false);
-    applyTenantFilters(selectedMonth, selectedStatus, tempSharing);
-  }}
-  onClose={() => setSharingSheetOpen(false)}
-/>
+      <FilterBottomSheet
+        visible={sharingSheetOpen}
+        title="Sharing Type"
+        options={sharingOptions}
+        selectedValues={tempSharing}
+        setSelectedValues={setTempSharing}
+        onReset={() => {
+          setTempSharing([]);
+          setSelectedSharing([]);
+          setSharingSheetOpen(false);
+          applyTenantFilters(selectedMonth, selectedStatus, []);
+        }}
+        onApply={() => {
+          setSelectedSharing(tempSharing);
+          setSharingSheetOpen(false);
+          applyTenantFilters(selectedMonth, selectedStatus, tempSharing);
+        }}
+        onClose={() => setSharingSheetOpen(false)}
+      />
 
 
     </>
@@ -393,9 +393,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-       paddingTop: Platform.OS === "android"
-       ? StatusBar.currentHeight + 10
-       : 20 ,
+    paddingTop: Platform.OS === "android"
+      ? StatusBar.currentHeight + 10
+      : 20,
     backgroundColor: "#fff",
   },
 
@@ -424,11 +424,9 @@ const styles = StyleSheet.create({
 
   title: { fontSize: 18, fontWeight: "700" },
 
-
-
   summaryCard: {
     borderRadius: 14,
-      padding: Platform.OS === "android" ? 16 : 1,
+    padding: Platform.OS === "android" ? 16 : 1,
     marginBottom: 14,
   },
 
@@ -444,6 +442,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
   },
+
   sub: {
     fontSize: 12,
     color: "#9CA3AF",
@@ -481,7 +480,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginRight: 10,
     backgroundColor: "#fff",
-    flexDirection: "row", justifyContent: "center", alignItems: "center" 
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
   },
 
   activeFilter: {
