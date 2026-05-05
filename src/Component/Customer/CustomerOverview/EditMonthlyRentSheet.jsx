@@ -446,7 +446,10 @@ export default function EditRentalAmountSheet({
 
                 <TouchableOpacity
                   style={styles.input}
-                  onPress={() => setShowMonthPicker(true)}
+                  onPress={() =>{
+                    setShowMonthPicker(true)
+                    Keyboard.dismiss();
+                  }}
                 >
                   <Text>
                     {effectiveMonth

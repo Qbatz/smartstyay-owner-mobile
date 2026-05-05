@@ -183,7 +183,6 @@ const [isEditable,setIsEditable]=useState(false)
 
     const res = await postGlobalBilPdfDetails(activeHostelId, queryPayload, formData)
 
-    console.log("billa", res)
 
     if (res.status === 200) {
       setShowSuccessModal(true)

@@ -238,7 +238,6 @@ export default function GlobalBillSettings({ onBack }) {
 
 
     const res = await postGlobalBilPdfDetails(activeHostelId, payload, formData)
-    console.log("pilla", res)
 
     if (res.status == 200) {
       setShowSuccessModal(true),

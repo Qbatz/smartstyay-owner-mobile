@@ -11,6 +11,7 @@ import {
   SafeAreaView, BackHandler, Modal, Platform, KeyboardAvoidingView,
   Keyboard,
   findNodeHandle,
+  Dimensions,
 } from "react-native";
 import Delete from "../../Assets/Images/remove.png";
 import dayjs from "dayjs";
@@ -345,20 +346,20 @@ export default function FinalSettlementScreen({ navigation, route }) {
   android: 140,
 });
 
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardHeight(e.endCoordinates.height);
-    });
+  // useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     setKeyboardHeight(e.endCoordinates.height);
+  //   });
 
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardHeight(0);
-    });
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     setKeyboardHeight(0);
+  //   });
 
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, []);
 //   const handleDiscountFocus = () => {
 //   setTimeout(() => {
 //     if (discountRef.current && scrollRef.current) {
@@ -379,7 +380,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
 //     scrollRef.current?.scrollToEnd({ animated: true });
 //   }, 200);
 // };
-const discountScrollY = 1200; // adjust once
+const [isDiscountFocused,setIsDiscountFocused]=useState(false)
+const discountScrollY = 900; 
 const handleDiscountFocus = () => {
   setTimeout(() => {
     scrollRef.current?.scrollTo({
@@ -388,6 +390,20 @@ const handleDiscountFocus = () => {
     });
   }, 200);
 };
+useEffect(()=>{
+ 
+    if (isDiscountFocused) {
+      scrollRef.current?.scrollTo({
+        y: 1200, // or dynamic later
+        animated: true,
+      });
+    }
+  
+},[isDiscountFocused])
+
+
+
+
 
 
   const isNegative = Number(ReturnAmount) < 0;
@@ -692,7 +708,8 @@ const handleDiscountFocus = () => {
   const isRefundable = settlementDetails?.settlementInfo?.isRefundable;
   const discountApplied = settlementDetails?.currentMonthRentInfo?.isDiscountApplied;
   const label = settlementDetails?.settlementInfo?.label;
-  console.log("settlement", settlementDetails?.settlementInfo);
+  console.log("settlement", settlementDetails);
+
 
 
   return (
@@ -714,7 +731,7 @@ const handleDiscountFocus = () => {
 
           <ScrollView
             ref={scrollRef}
-            contentContainerStyle={{ paddingBottom: FOOTER_HEIGHT  + EXTRA_SPACE }}
+            contentContainerStyle={{ paddingBottom: 200 }}
             keyboardShouldPersistTaps="handled"
 
           >
@@ -819,7 +836,9 @@ const handleDiscountFocus = () => {
 
                   <View style={styles.checkoutRow}>
                     <Text style={styles.gridValue}>
-                      {actualCheckoutDate || "DD-MM-YYYY"}
+                      {/* {actualCheckoutDate || "DD-MM-YYYY"} */}
+
+                      {settlementDetails?.stayInfo?.actualCheckoutDate ? settlementDetails?.stayInfo?.actualCheckoutDate : actualCheckoutDate || "DD-MM-YYYY" }
                     </Text>
 
                     <TouchableOpacity
@@ -1383,7 +1402,7 @@ const handleDiscountFocus = () => {
                           placeholder="Enter reason"
                           value={item.title}
                           onChangeText={(t) => updateTitle(item.id, t)}
-                          onFocus={() => {
+                          onPress={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({
                                 y: 900,   // 👈 adjust if needed
@@ -1432,7 +1451,7 @@ const handleDiscountFocus = () => {
                           }
 
                           }
-                          onFocus={() => {
+                          onPress={() => {
                             setTimeout(() => {
                               scrollRef.current?.scrollTo({
                                 y: 900,
@@ -1573,7 +1592,7 @@ const handleDiscountFocus = () => {
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
-                  onFocus={handleDiscountFocus}
+                  onPress={handleDiscountFocus}
                   />
 
                   <TouchableOpacity

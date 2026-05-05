@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState } from "react";
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Platform } from "react-native";
 import Sm_logo from "../../Assets/Images/Sm_Icon.png";
 import { useNavigation } from "@react-navigation/native";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -11,11 +11,11 @@ import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 const ConfirmMPin = ({ route }) => {
   const navigation = useNavigation();
   const { CreateMpin, } = useContext(LoginContexts);
-  const loginContext=useContext(LoginContexts)
+  const loginContext = useContext(LoginContexts)
 
   const [pinArr, setPinArr] = useState(["", "", "", ""]);
   const [pin, setPin] = useState("");
-   const [mPinNo,setmPinNo]=useState(null);
+  const [mPinNo, setmPinNo] = useState(null);
   const inputs = useRef([]);
 
   const [showModal, setShowModal] = useState(false);
@@ -35,44 +35,49 @@ const ConfirmMPin = ({ route }) => {
     }
   };
 
-  const handleKeyPress=(e,index)=>{
-    if(e.nativeEvent.key === "Backspace" && pinArr[index] === "" && index > 0){
+  const handleKeyPress = (e, index) => {
+    if (e.nativeEvent.key === "Backspace" && pinArr[index] === "" && index > 0) {
       inputs.current[index - 1].focus();
     }
   }
 
-    console.log("mpin", route.params.mPinNumber , pin);
+  console.log("mpin", route.params.mPinNumber, pin);
 
-    const validateForm=()=>{
-        let valid=true;
+  const validateForm = () => {
+    let valid = true;
 
-        setEnterPinError("")
+    setEnterPinError("")
 
-        const isValid = pinArr.every(digit => digit !== "");
+    const isValid = pinArr.every(digit => digit !== "");
 
-        if (!isValid) {
-            setEnterPinError("Please enter a valid 4-digit MPIN");
-            return false;
-        }
-        return valid;        
+    if (!isValid) {
+      setEnterPinError("Please enter a valid 4-digit MPIN");
+      return false;
     }
+    return valid;
+  }
 
   const savePinClick = async () => {
-     if(!validateForm()) return;
+    if (!validateForm()) return;
     if (route.params.mPinNumber !== pin) {
       setType("error");
       setMessage("MPIN mismatch");
       setShowModal(true);
-        setTimeout(() => {
+      setTimeout(() => {
         setShowModal(false);
       }, 1500);
       return;
     }
+    const data = {
+      pin: Number(pin),
+      platform: Platform.OS,
+    }
 
-    const res = await CreateMpin(Number(pin));
+
+    const res = await CreateMpin(data);
 
     console.log("response", res);
-    
+
 
     if (res.status == 200) {
       //  loginContext.updatePinSetupStatus(false)
@@ -85,18 +90,18 @@ const ConfirmMPin = ({ route }) => {
 
       setTimeout(() => {
         setShowModal(false);
-       
+
         // navigation.replace("EnterMPin");
       }, 1500);
     } else {
       // loginContext.updatePinSetupStatus(true)
-        setType("error");
-        setMessage("MPIN creation failed");
-        setShowModal(true);
+      setType("error");
+      setMessage("MPIN creation failed");
+      setShowModal(true);
       setTimeout(() => {
-        setShowModal(false)     
+        setShowModal(false)
       }, 1500);
-      
+
     }
   };
 
@@ -115,15 +120,15 @@ const ConfirmMPin = ({ route }) => {
             style={styles.pinBox}
             keyboardType="number-pad"
             maxLength={1}
-            onChangeText={(t) =>{
+            onChangeText={(t) => {
               handleChange(t, i)
               setEnterPinError("")
-            } }
-            onKeyPress={(e)=>handleKeyPress(e,i)}
+            }}
+            onKeyPress={(e) => handleKeyPress(e, i)}
           />
         ))}
       </View>
-      {enterPinError && <ErrorMessage message={enterPinError} type="error"/>}
+      {enterPinError && <ErrorMessage message={enterPinError} type="error" />}
 
       <TouchableOpacity onPress={savePinClick} style={styles.nextButton}>
         <Text style={styles.nextText}>Save mPIN</Text>
@@ -132,21 +137,21 @@ const ConfirmMPin = ({ route }) => {
   );
 };
 const styles = StyleSheet.create({
-    logo: { width: 151, height: 28.22, marginTop: 70, },
-    createText: { fontSize: 27, fontWeight: 600, color: '#222222', marginTop: 20 },
-    subtitle: { fontSize: 14, fontWeight: 400, color: '#4B4B4B', marginTop: 15 },
-pinContainer: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  paddingTop: 20,
-  paddingHorizontal: 20, 
-},
-    pinBox: {
-        width: 50, height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
-        fontSize: 20, color: "#000"
-    },
-    nextButton: { backgroundColor: '#00A32E', borderRadius: 8, paddingVertical: 20, alignItems: 'center', marginTop: 250 },
-    nextText: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
+  logo: { width: 151, height: 28.22, marginTop: 70, },
+  createText: { fontSize: 27, fontWeight: 600, color: '#222222', marginTop: 20 },
+  subtitle: { fontSize: 14, fontWeight: 400, color: '#4B4B4B', marginTop: 15 },
+  pinContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  pinBox: {
+    width: 50, height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
+    fontSize: 20, color: "#000"
+  },
+  nextButton: { backgroundColor: '#00A32E', borderRadius: 8, paddingVertical: 20, alignItems: 'center', marginTop: 250 },
+  nextText: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
 
 })
 

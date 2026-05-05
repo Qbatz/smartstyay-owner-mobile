@@ -102,13 +102,13 @@ const BillDetailsSheet = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
-    const [showDiscountSheet, setShowDiscountSheet] = useState(false)
-    const [showUnpaidModal, setShowUnpaidModal] = useState(false)
+  const [showDiscountSheet, setShowDiscountSheet] = useState(false)
+  const [showUnpaidModal, setShowUnpaidModal] = useState(false)
 
-    
+
 
   const recordSheetY = useRef(new Animated.Value(0)).current;
-  console.log(selectedBill,"bills")
+  console.log(selectedBill, "bills")
 
   // useEffect(() => {
   //   if (visible) {
@@ -150,10 +150,10 @@ const BillDetailsSheet = ({
   }, [activeHostelId]);
 
   useEffect(() => {
-      if (activeHostelId && canReadInvoice) {
-        GetAllBillDetails(activeHostelId);
-      }
-    }, [activeHostelId, canReadInvoice]);
+    if (activeHostelId && canReadInvoice) {
+      GetAllBillDetails(activeHostelId);
+    }
+  }, [activeHostelId, canReadInvoice]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -196,8 +196,7 @@ const BillDetailsSheet = ({
 
 
 
-const invoiceDetail= BillDetails?.listInvoices?.find((item)=> item?.invoiceId === BillPdfdetails?.invoiceId)
-console.log(invoiceDetail,"billa")
+  const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
 
   const billDetailsPan = useRef(
     PanResponder.create({
@@ -377,7 +376,7 @@ console.log(invoiceDetail,"billa")
     console.log("open receipt", pay);
   };
 
-   const getStatusStyle = (status) => {
+  const getStatusStyle = (status) => {
     switch (status) {
       case "Paid":
         return {
@@ -423,7 +422,7 @@ console.log(invoiceDetail,"billa")
   //   text: "#374151",
   // };
 
-  const BillsStatusStyle= getStatusStyle(invoice?.paymentStatus)
+  const BillsStatusStyle = getStatusStyle(invoice?.paymentStatus)
   console.log("bill", bill);
 
 
@@ -575,7 +574,7 @@ console.log(invoiceDetail,"billa")
             styles.transactionSheet,
             {
               // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
-              maxHeight:'95%',
+              maxHeight: '95%',
               transform: [{ translateY: detailsSheetY }]
             }
           ]}
@@ -741,17 +740,17 @@ console.log(invoiceDetail,"billa")
                 </View> */}
 
                 <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
-                                          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                            <Text style={styles.discountLabel}>Discount</Text>
-                                            <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
-                                              <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
-                                            </TouchableOpacity>
-                                          </View>
-                                          <Text style={styles.discountMinus}>
-                                            - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
-                                          </Text>
-                
-                                        </View>
+                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={styles.discountLabel}>Discount</Text>
+                    <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
+                      <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.discountMinus}>
+                    - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
+                  </Text>
+
+                </View>
 
                 {/* Badge */}
                 <View style={styles.discountBadge}>
@@ -1132,11 +1131,11 @@ console.log(invoiceDetail,"billa")
 
 
             {
-              invoiceDetail?.canEdit  && (
+              invoiceDetail?.canEdit && (
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                   disabled={!canUpdateInvoice}
-                onPress={()=>handleEditBill(invoiceDetail)} 
+                  onPress={() => handleEditBill(invoiceDetail)}
                 >
                   <Image
                     source={require("../../../Assets/Images/ReAssign.png")}
@@ -1213,7 +1212,10 @@ console.log(invoiceDetail,"billa")
 
       <RecordPaymentSheet
         visible={showRecordPayment}
-        onClose={() => setShowRecordPayment(false)}
+        onClose={() => {
+          setShowRecordPayment(false)
+          onClose();
+        }}
         selectedBill={mappedBillForRecord}
       />
 
@@ -1228,84 +1230,84 @@ console.log(invoiceDetail,"billa")
       />
 
       <DiscountActionSheet
-                    visible={showDiscountSheet}
-                    onClose={() => setShowDiscountSheet(false)}
-                    discountAmount={BillPdfdetails?.invoiceInfo?.discountAmount || 0}
-                    totalAmount={BillPdfdetails?.invoiceInfo?.totalAmount || 0}
-                    hostelId={invoiceDetail?.hostelId}
-                    invoiceId={invoiceDetail?.invoiceId}
-                    onEdit={() => {
-                      navigation.navigate("DiscountInvoice", {
-                        bill: invoiceDetail,
-                        isEdit: true,
-                        discountAmount: BillPdfdetails?.invoiceInfo?.discountAmount,
-                        discountPercentage: BillPdfdetails?.invoiceInfo?.discountPercentage,
-                        totalAmount: BillPdfdetails?.invoiceInfo?.subTotal,
-                        DiscountReason: BillPdfdetails?.invoiceInfo?.discountReason
-                      });
-                    }}
-      
-                    onEditSuccess={() => {
-                      onClose();
-                      // setShowBillDetails(false);
-                    }}
-      
-      
-                    onSuccess={() => {
-                      // setShowBillDetails(false); 
-                      onClose();
-                      setShowSuccessModal(true);
-                      setModalType("success");
-                      setModalMessage("Discount removed successfully");
-      
-                      setTimeout(() => setShowSuccessModal(false), 1500);
-                    }}
-                  />
+        visible={showDiscountSheet}
+        onClose={() => setShowDiscountSheet(false)}
+        discountAmount={BillPdfdetails?.invoiceInfo?.discountAmount || 0}
+        totalAmount={BillPdfdetails?.invoiceInfo?.totalAmount || 0}
+        hostelId={invoiceDetail?.hostelId}
+        invoiceId={invoiceDetail?.invoiceId}
+        onEdit={() => {
+          navigation.navigate("DiscountInvoice", {
+            bill: invoiceDetail,
+            isEdit: true,
+            discountAmount: BillPdfdetails?.invoiceInfo?.discountAmount,
+            discountPercentage: BillPdfdetails?.invoiceInfo?.discountPercentage,
+            totalAmount: BillPdfdetails?.invoiceInfo?.subTotal,
+            DiscountReason: BillPdfdetails?.invoiceInfo?.discountReason
+          });
+        }}
 
-          <Modal
-                      visible={showUnpaidModal}
-                      transparent
-                      animationType="fade"
-                      onRequestClose={() => setShowUnpaidModal(false)}
-                    >
-                      <View style={styles.confirmOverlay}>
-                        <View style={styles.confirmBox}>
-          
-          
-                          <View style={styles.confirmTitleRow}>
-                            <View style={{ width: "70%" }}>
-                              <Text style={styles.confirmTitle}>Mark Invoice {invoiceDetail?.invoiceNumber} as Unpaid?</Text>
-                            </View>
-                            <View style={{ width: "30%", flexDirection: 'row', justifyContent: 'flex-end' }}>
-                              <Image source={QuestionIcon} style={styles.confirmIcon} />
-                            </View>
-                          </View>
-          
-          
-                          <Text style={styles.confirmMessage}>
-                            Are you sure  to mark this invoice as unpaid?
-                          </Text>
-          
-          
-                          <View style={styles.confirmButtons}>
-                            <TouchableOpacity
-                              style={styles.cancelConfirmBtn}
-                              onPress={() => setShowUnpaidModal(false)}
-                            >
-                              <Text style={styles.cancelConfirmText}>Cancel</Text>
-                            </TouchableOpacity>
-          
-                            <TouchableOpacity
-                              style={styles.okConfirmBtn}
-                              onPress={handleBillUnpaid}
-                            >
-                              <Text style={styles.okConfirmText}>Confirm</Text>
-                            </TouchableOpacity>
-                          </View>
-          
-                        </View>
-                      </View>
-                    </Modal>
+        onEditSuccess={() => {
+          onClose();
+          // setShowBillDetails(false);
+        }}
+
+
+        onSuccess={() => {
+          // setShowBillDetails(false); 
+          onClose();
+          setShowSuccessModal(true);
+          setModalType("success");
+          setModalMessage("Discount removed successfully");
+
+          setTimeout(() => setShowSuccessModal(false), 1500);
+        }}
+      />
+
+      <Modal
+        visible={showUnpaidModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowUnpaidModal(false)}
+      >
+        <View style={styles.confirmOverlay}>
+          <View style={styles.confirmBox}>
+
+
+            <View style={styles.confirmTitleRow}>
+              <View style={{ width: "70%" }}>
+                <Text style={styles.confirmTitle}>Mark Invoice {invoiceDetail?.invoiceNumber} as Unpaid?</Text>
+              </View>
+              <View style={{ width: "30%", flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <Image source={QuestionIcon} style={styles.confirmIcon} />
+              </View>
+            </View>
+
+
+            <Text style={styles.confirmMessage}>
+              Are you sure  to mark this invoice as unpaid?
+            </Text>
+
+
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity
+                style={styles.cancelConfirmBtn}
+                onPress={() => setShowUnpaidModal(false)}
+              >
+                <Text style={styles.cancelConfirmText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.okConfirmBtn}
+                onPress={handleBillUnpaid}
+              >
+                <Text style={styles.okConfirmText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
 
 
     </>

@@ -275,7 +275,7 @@ export default function DoubleStatusSheet({
             styles.sheet,
             {
               transform: [{ translateY }],
-              maxHeight: "80%",
+              maxHeight: "95%",
             },
           ]}
           {...panResponder.panHandlers}

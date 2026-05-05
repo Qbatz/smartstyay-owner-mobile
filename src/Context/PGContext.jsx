@@ -164,6 +164,7 @@ export default function PGProvider({ children }) {
   };
 
   const getDashboard = async (hostelId, filters = {}) => {
+    console.log(hostelId,filters,"listDetails")
     try {
       setPgLoading(true);
       setPgError(null);
