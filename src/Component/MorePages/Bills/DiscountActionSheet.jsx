@@ -29,6 +29,7 @@ export default function DiscountActionSheet({
   const [loading, setLoading] = useState(false);
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+   console.log(hostelId,invoiceId)
 
   useEffect(() => {
     if (visible) {
@@ -49,6 +50,8 @@ export default function DiscountActionSheet({
 
   const handleRefuse = async () => {
     if (!hostelId || !invoiceId) return;
+
+    console.log(hostelId,invoiceId)
 
     setLoading(true);
 

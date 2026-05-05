@@ -56,9 +56,10 @@ import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 import ImagePickerSheet from "./ImagePickerSheet"
 import AddIcon from "../../../Assets/Images/add-circle.png";
-import FloorIcon from"../../../Assets/Images/Room_bed.png"
+import FloorIcon from "../../../Assets/Images/Room_bed.png"
 import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
+import Loader from "../../Loader/Loader";
 
 
 
@@ -67,7 +68,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails } = useCustomer();
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
@@ -669,6 +670,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   return (
     <>
+      {loading && <Loader />}
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
       <View style={styles.container}>
 
@@ -832,7 +834,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
               {/* NAME */}
-              <View style={[styles.nameRowCenter,{marginTop:4}]}>
+              <View style={[styles.nameRowCenter, { marginTop: 4 }]}>
                 <Text style={styles.name}>
                   {customerDetails?.fullName}
                 </Text>
@@ -851,10 +853,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
               <View style={styles.metaRowCenter}>
                 {/* <View style={styles.floorBadge}> */}
-                  <Image source={FloorIcon} style={[styles.icon,{tintColor:'#1E45E1'}]}/>
-                  <Text style={styles.floorText}>
-                    {customerDetails?.hostelInfo?.floorName}
-                  </Text>
+                <Image source={FloorIcon} style={[styles.icon, { tintColor: '#1E45E1' }]} />
+                <Text style={styles.floorText}>
+                  {customerDetails?.hostelInfo?.floorName}
+                </Text>
                 {/* </View> */}
 
                 <Image source={Room_NewIcon} style={styles.icon} />
@@ -1044,7 +1046,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                           source={ReAssignIcon}
                           style={styles.popupIcon}
                         />
-                        <Text style={styles.popupText}>Change_Bed</Text>
+                        <Text style={styles.popupText}>Change Bed</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[
@@ -1316,7 +1318,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         />
         <BillDetailsSheet
           visible={BillDetailshow}
-          onClose={() => setBillDetailsShow(false)}
+          onClose={() => {
+            fetchCustomerDetails();
+            setBillDetailsShow(false)
+          }}
         // bill={selectedBill}
         />
       </View>
@@ -1411,10 +1416,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 8,
   },
-  floorText: { fontSize: 12 ,fontFamily: "Gilroy-Semibold"},
+  floorText: { fontSize: 12, fontFamily: "Gilroy-Semibold" },
 
   icon: { width: 17, height: 17, marginHorizontal: 4 },
-  metaText: { fontSize: 12, color: "#444" ,fontFamily: "Gilroy-Semibold"},
+  metaText: { fontSize: 12, color: "#444", fontFamily: "Gilroy-Semibold" },
 
   tabRow: {
     flexDirection: "row",

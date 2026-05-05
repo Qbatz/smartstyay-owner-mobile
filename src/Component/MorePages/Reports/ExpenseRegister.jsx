@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,Image
 } from "react-native";
+import { StatusBar , Platform } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import { NativeModules } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
@@ -403,7 +404,9 @@ const styles = StyleSheet.create({
  container: {
   flex: 1,
   paddingHorizontal: 16,
-  paddingTop: 60,
+    paddingTop: Platform.OS === "android"
+    ? StatusBar.currentHeight + 10
+    : 20 ,
   backgroundColor: "#fff",
 },
 
@@ -445,7 +448,8 @@ monthText: {
 
   summaryCard: {
   borderRadius: 14,
-  padding: 16,
+  // padding: 16,
+  padding: Platform.OS === "android" ? 16 : 1,
   marginBottom: 14,
 //   shadowColor: "#000",
 //   shadowOpacity: 0.04,

@@ -299,7 +299,10 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
     )}
   </View>
 </View> */}
+
+   <View style={styles.divider} />
 <View style={styles.reservedRow}>
+  
   <Text style={styles.sub}>Reserved by</Text>
 
   <TouchableOpacity
@@ -575,9 +578,10 @@ const styles = StyleSheet.create({
     },
 
     sub: {
-        marginTop: 20,
+        // marginTop: 20,
         color: "#000000",
         fontSize: 14,
+          fontFamily: "Gilroy-Semibold",
     },
 
     userRow: {
@@ -661,7 +665,7 @@ const styles = StyleSheet.create({
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
-  marginTop: 20,
+  marginTop: 10,
 },
 dotMenu: {
   position: "absolute",
@@ -762,6 +766,12 @@ initialsText: {
     height: 18
   },
 
+divider: {
+  height: 0.6,
+  backgroundColor: "#E5E7EB", 
+  marginBottom: 4,
+  marginTop:10
+},
 
 
 

@@ -12,7 +12,7 @@ import {
   PanResponder,
   Modal,
 } from "react-native";
-
+import { StatusBar, Platform } from "react-native";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { PGContext } from "../../../Context/PGContext";
 import { LoginContexts } from "../../../Context/LoginContext";
@@ -982,7 +982,9 @@ export default function SettingsPG({ navigation }) {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight + 10
+  : 70 ,
     paddingBottom: 12,
     flexDirection: "row",
     alignItems: "center",

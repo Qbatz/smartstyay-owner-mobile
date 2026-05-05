@@ -228,12 +228,14 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
               <Text style={styles.tagText}>{selectedBed.roomName} - {selectedBed.bedName}</Text>
             </View>
           </View>
+      
 
           <ScrollView
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             indicatorStyle="white"
           >
+                  <View style={styles.divider} />
             <Text style={styles.sub}>Occupied by</Text>
 
             {/* <View style={styles.userRow}>
@@ -434,10 +436,10 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
                                                         <View style={styles.actionRow}>
             
-                                  {/* <TouchableOpacity style={styles.chatBtn} >
+                                  <TouchableOpacity style={styles.chatBtn} >
                                     <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
                                     <Text style={styles.chatText}>Chat</Text>
-                                  </TouchableOpacity> */}
+                                  </TouchableOpacity>
             
                                   <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
                                     <Image source={Call} style={styles.actionIcon} />
@@ -644,7 +646,7 @@ const styles = StyleSheet.create({
 
   tagText: { fontSize: 12, color: "#333", fontFamily: "Gilroy-Medium" },
 
-  sub: { marginTop: 20, color: "#000", fontSize: 14, fontFamily: "Gilroy-Bold", marginBottom: 5 },
+  sub: { marginTop: 10, color: "#000", fontSize: 14, fontFamily: "Gilroy-Bold", marginBottom: 5 },
 
   userRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 10 },
 
@@ -809,6 +811,11 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18
   },
-
+divider: {
+  height: 0.6,
+  backgroundColor: "#E5E7EB", 
+  marginBottom: 4,
+  marginTop:10
+},
 
 });

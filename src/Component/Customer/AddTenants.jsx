@@ -31,16 +31,16 @@ export default function AddTenant() {
     const [stateSearch, setStateSearch] = useState("");
     const stateInputRef = useRef(null);
     const [countryOpen, setCountryOpen] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India",});
+    const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
 
     const countryList = [
-  { label: "India", code: "+91" },
-  { label: "United States", code: "+1" },
-  { label: "United Kingdom", code: "+44" },
-  { label: "Australia", code: "+61" },
-  { label: "Canada", code: "+1" },
-  { label: "Singapore", code: "+65" },
-];
+        { label: "India", code: "+91" },
+        { label: "United States", code: "+1" },
+        { label: "United Kingdom", code: "+44" },
+        { label: "Australia", code: "+61" },
+        { label: "Canada", code: "+1" },
+        { label: "Singapore", code: "+65" },
+    ];
 
 
     const [showProfileSheet, setShowProfileSheet] = useState(false);
@@ -67,39 +67,39 @@ export default function AddTenant() {
     };
 
 
-     const openCamera = () => {
+    const openCamera = () => {
         launchCamera(
-          {
-            mediaType: "photo",
-            quality: 0.7,
-          },
-          (response) => {
-            if (response.didCancel) return;
-            if (response.assets && response.assets.length > 0) {
-            //   setProfileImage(response.assets[0]);
-            const source = { uri: response.assets[0].uri };
-                setSelectedImage(source);
+            {
+                mediaType: "photo",
+                quality: 0.7,
+            },
+            (response) => {
+                if (response.didCancel) return;
+                if (response.assets && response.assets.length > 0) {
+                    //   setProfileImage(response.assets[0]);
+                    const source = { uri: response.assets[0].uri };
+                    setSelectedImage(source);
+                }
             }
-          }
         );
-      };
-      const openGallery = () => {
+    };
+    const openGallery = () => {
         launchImageLibrary(
-          { mediaType: "photo", quality: 0.7 },
-          async (response) => {
-            if (response.didCancel) return;
-    
-            if (response.assets?.length > 0) {
-            //   const image = response.assets[0];
-            //   setProfileImage(image); // UI update
-    const source = { uri: response.assets[0].uri };
-                setSelectedImage(source);
-                     
+            { mediaType: "photo", quality: 0.7 },
+            async (response) => {
+                if (response.didCancel) return;
+
+                if (response.assets?.length > 0) {
+                    //   const image = response.assets[0];
+                    //   setProfileImage(image); // UI update
+                    const source = { uri: response.assets[0].uri };
+                    setSelectedImage(source);
+
+                }
             }
-          }
         );
-      };
-    
+    };
+
 
     useFocusEffect(
         useCallback(() => {
@@ -362,7 +362,7 @@ export default function AddTenant() {
                         <Text
                             style={[
                                 styles.stepLabel,
-                                step === 1 && { color: "#2D6CDF",fontFamily: "Gilroy-Semibold" },
+                                step === 1 && { color: "#2D6CDF", fontFamily: "Gilroy-Semibold" },
                             ]}
                         >
                             Basic Details
@@ -407,6 +407,10 @@ export default function AddTenant() {
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{
+                            paddingHorizontal: 16,
+                            paddingBottom: 40,
+                        }}
                     >
 
 
@@ -431,7 +435,7 @@ export default function AddTenant() {
                                         style={styles.editIcon}
                                     />
                                 </TouchableOpacity> */}
-                                        <TouchableOpacity style={styles.editIconWrapper} onPress={()=>setShowProfileSheet(true)}>
+                                        <TouchableOpacity style={styles.editIconWrapper} onPress={() => setShowProfileSheet(true)}>
                                             <Image
                                                 source={require("../../Assets/Images/edit.png")}
                                                 style={styles.editIcon}
@@ -484,19 +488,19 @@ export default function AddTenant() {
 
                                     <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
                                     <View style={styles.mobileWrapper}>
-                                       <View style={{ position: "relative" }}>
-  <TouchableOpacity
-    style={styles.countryDropdown}
-    onPress={() => setCountryOpen(!countryOpen)}
-    activeOpacity={0.7}
-  >
-    <Text style={styles.countryCodeText}>
-      {selectedCountry.code}
-    </Text>
-    <Image source={DownArrow} style={styles.countryArrow} />
-  </TouchableOpacity>
+                                        <View style={{ position: "relative" }}>
+                                            <TouchableOpacity
+                                                style={styles.countryDropdown}
+                                                onPress={() => setCountryOpen(!countryOpen)}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text style={styles.countryCodeText}>
+                                                    {selectedCountry.code}
+                                                </Text>
+                                                <Image source={DownArrow} style={styles.countryArrow} />
+                                            </TouchableOpacity>
 
-  {/* {countryOpen && (
+                                            {/* {countryOpen && (
     <>
       <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
         <View style={styles.dropdownOverlay} />
@@ -522,7 +526,7 @@ export default function AddTenant() {
       </View>
     </>
   )} */}
-</View>
+                                        </View>
 
                                         <TextInput
                                             style={styles.mobileInput}
@@ -640,9 +644,9 @@ export default function AddTenant() {
                                                 placeholder="Enter Area"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.area}
-                                                onChangeText={(t) =>{
-                                                     const sanitized = t.replace(/[^a-zA-Z0-9\s\-/]/g, "");
-                                                     setAddressDetails({ ...addressDetails, area: sanitized })
+                                                onChangeText={(t) => {
+                                                    const sanitized = t.replace(/[^a-zA-Z0-9\s\-/]/g, "");
+                                                    setAddressDetails({ ...addressDetails, area: sanitized })
                                                 }}
                                             />
 
@@ -653,7 +657,7 @@ export default function AddTenant() {
                                                 placeholder="Ex : Near SBI Bank"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.landmark}
-                                                onChangeText={(t) =>{
+                                                onChangeText={(t) => {
                                                     const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
                                                     setAddressDetails({ ...addressDetails, landmark: sanitized })
                                                 }}
@@ -696,8 +700,8 @@ export default function AddTenant() {
                                                 placeholder="Enter Your City Name"
                                                 placeholderTextColor="#9CA3AF"
                                                 value={addressDetails.city}
-                                                onChangeText={(t) =>{
-                                                     const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
+                                                onChangeText={(t) => {
+                                                    const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
                                                     setAddressDetails({ ...addressDetails, city: sanitized })
                                                 }}
                                             />
@@ -759,8 +763,8 @@ export default function AddTenant() {
                                                                     filteredStateList.map((v, index) => (
                                                                         <TouchableOpacity
                                                                             key={index}
-                                                                            style={[styles.option,selectedState === v.label
-                                                                                 &&{ backgroundColor: "#E6F0FF" }]}
+                                                                            style={[styles.option, selectedState === v.label
+                                                                                && { backgroundColor: "#E6F0FF" }]}
                                                                             onPress={() => {
                                                                                 setSelectedState(v.label);
                                                                                 setStateQuery("");
@@ -839,29 +843,29 @@ export default function AddTenant() {
                 </KeyboardAvoidingView>
 
                 <ImagePickerSheet
-                  visible={showProfileSheet}
-                  onClose={() => setShowProfileSheet(false)}
-                  title="Change Profile Picture"
-                  options={[
-                    {
-                      label: "Take Picture",
-                      icon: require("../../Assets/Images/CameraIcon.png"),
-                      showArrow: true,
-                      onPress: openCamera,
-                    },
-                    {
-                      label: "Select from Gallery",
-                      icon: require("../../Assets/Images/GalleryIcon.png"),
-                      showArrow: true,
-                      onPress: openGallery,
-                    },
-                    {
-                      label: "Remove Picture",
-                      icon: require("../../Assets/Images/DeleteIcon.png"),
-                      showArrow: false,
-                      onPress: () => console.log("remove"),
-                    },
-                  ]}
+                    visible={showProfileSheet}
+                    onClose={() => setShowProfileSheet(false)}
+                    title="Change Profile Picture"
+                    options={[
+                        {
+                            label: "Take Picture",
+                            icon: require("../../Assets/Images/CameraIcon.png"),
+                            showArrow: true,
+                            onPress: openCamera,
+                        },
+                        {
+                            label: "Select from Gallery",
+                            icon: require("../../Assets/Images/GalleryIcon.png"),
+                            showArrow: true,
+                            onPress: openGallery,
+                        },
+                        {
+                            label: "Remove Picture",
+                            icon: require("../../Assets/Images/DeleteIcon.png"),
+                            showArrow: false,
+                            onPress: () => console.log("remove"),
+                        },
+                    ]}
                 />
             </SafeAreaView>
         </>
@@ -872,24 +876,30 @@ export default function AddTenant() {
 
 
 const styles = StyleSheet.create({
+    // container: {
+    //     flex: 1,
+    //     backgroundColor: "#fff",
+    //     paddingHorizontal: 16,
+    //     paddingTop: 50,
+    //     paddingBottom: 10
+    // },
     container: {
         flex: 1,
         backgroundColor: "#fff",
-        paddingHorizontal: 16,
         paddingTop: 50,
-        paddingBottom: 10
+        
     },
     container1: {
-        flex: 1,
+      flex: 1,
         backgroundColor: "#fff",
-        paddingHorizontal: 16,
-        paddingVertical: 10
+        paddingTop: 50,
     },
     header: {
         flexDirection: "row",
         alignItems: "center",
         marginTop: 10,
         marginBottom: 15,
+         paddingHorizontal: 16,
     },
     backIcon: {
         width: 20,
@@ -906,7 +916,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         marginVertical: 15,
-        paddingHorizontal: 10,
+        paddingHorizontal: 16,
         backgroundColor: "#F4F8FF",
         padding: 13,
         borderRadius: 15
@@ -948,12 +958,12 @@ const styles = StyleSheet.create({
     stepNumber: {
         fontSize: 13,
         color: "#2D6CDF",
-       fontFamily: "Gilroy-Semibold"
+        fontFamily: "Gilroy-Semibold"
     },
     stepLabel: {
         fontSize: 13,
         color: "#6B7280",
-        
+
     },
     profileSection: {
         flexDirection: "row",
@@ -1002,7 +1012,7 @@ const styles = StyleSheet.create({
 
     profileTitle: {
         fontSize: 16,
-       fontFamily: "Gilroy-Semibold",
+        fontFamily: "Gilroy-Semibold",
         color: "#111827",
     },
     profileSub: {
@@ -1011,7 +1021,7 @@ const styles = StyleSheet.create({
         lineHeight: 16,
         width: 220,
         marginTop: 4,
-        fontFamily: "Gilroy-Regular" 
+        fontFamily: "Gilroy-Regular"
     },
     form: {
         marginBottom: 10,
@@ -1021,7 +1031,7 @@ const styles = StyleSheet.create({
         color: "#111827",
         marginBottom: 6,
         marginTop: 4,
-        fontFamily: "Gilroy-Medium" 
+        fontFamily: "Gilroy-Medium"
     },
 
     input: {
@@ -1033,71 +1043,71 @@ const styles = StyleSheet.create({
         fontSize: 14,
         backgroundColor: "#fff",
         marginBottom: 12,
-        fontFamily: "Gilroy-Regular" 
+        fontFamily: "Gilroy-Regular"
     },
 
-mobileWrapper: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 8,
-  height: 50,
-  marginBottom: 2,
-},
+    mobileWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 8,
+        height: 50,
+        marginBottom: 2,
+    },
 
-countryDropdown: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 10,
-  borderRightWidth: 1,
-  borderRightColor: "#E5E7EB",
-  height: "100%",
-},
+    countryDropdown: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 10,
+        borderRightWidth: 1,
+        borderRightColor: "#E5E7EB",
+        height: "100%",
+    },
 
-countryCodeText: {
-  fontSize: 14,
- fontFamily: "Gilroy-Medium" ,
-  color: "#111",
-  marginRight: 4,
-},
+    countryCodeText: {
+        fontSize: 14,
+        fontFamily: "Gilroy-Medium",
+        color: "#111",
+        marginRight: 4,
+    },
 
-countryArrow: {
-  width: 14,
-  height: 14,
-  tintColor: "#6B7280",
-},
+    countryArrow: {
+        width: 14,
+        height: 14,
+        tintColor: "#6B7280",
+    },
 
-countryDropdownMenu: {
-  position: "absolute",
-  top: 52,
-  left: 0,
-  width: 180,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 10,
-  elevation: 10,
-  zIndex: 9999,
-  maxHeight: 200,
-},
+    countryDropdownMenu: {
+        position: "absolute",
+        top: 52,
+        left: 0,
+        width: 180,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 10,
+        elevation: 10,
+        zIndex: 9999,
+        maxHeight: 200,
+    },
 
-countryOption: {
-  paddingVertical: 12,
-  paddingHorizontal: 12,
-},
+    countryOption: {
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+    },
 
-countryOptionText: {
-  fontSize: 14,
-  color: "#111",
-},
+    countryOptionText: {
+        fontSize: 14,
+        color: "#111",
+    },
 
 
     countryCode: {
         fontSize: 14,
         color: "#111",
         marginRight: 10,
-       fontFamily: "Gilroy-Medium" ,
+        fontFamily: "Gilroy-Medium",
     },
 
     mobileInput: {
@@ -1127,7 +1137,7 @@ countryOptionText: {
     primaryText: {
         color: "#2D6CDF",
         fontSize: 15,
-       fontFamily: "Gilroy-Semibold"
+        fontFamily: "Gilroy-Semibold"
     },
 
     secondaryBtn: {

@@ -507,7 +507,6 @@ export default function CreateBill({ navigation }) {
     if (mode === "edit") return;
 
     const rent = getRoomRentAmount();
-    console.log(rent, "billa")
 
     setItems((prev) =>
       prev.map((item) =>

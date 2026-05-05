@@ -9,6 +9,7 @@ import {
   ScrollView, Modal,
   PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard
 } from "react-native";
+import { StatusBar, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import DatePicker from "react-native-ui-datepicker";
@@ -1320,7 +1321,9 @@ onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: 40 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 15, paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight + 10
+  : 70 },
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
   backIcon: { width: 22, height: 22, marginRight: 10 },

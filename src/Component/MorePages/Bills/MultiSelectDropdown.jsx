@@ -17,8 +17,23 @@ export default function MultiSelectDropdown({
   selected = [],
   onChange,
   placeholder = "Select",
+  activeDropdown,
+  setActiveDropdown,
+  dropdownKey,  
 }) {
-  const [open, setOpen] = useState(false);
+
+
+  // const [open, setOpen] = useState(false);
+
+  const isOpen = activeDropdown === dropdownKey;
+
+const toggleDropdown = () => {
+  if (isOpen) {
+    setActiveDropdown(null);
+  } else {
+    setActiveDropdown(dropdownKey);
+  }
+};
 
  const toggleItem = (item) => {
   if (selected.includes(item.value)) {
@@ -42,7 +57,8 @@ const removeChip = (value) => {
     styles.selectBox,
     selected.length > 0 && styles.selectBoxActive
   ]}
-  onPress={() => setOpen(!open)}
+  // onPress={() => setOpen(!open)}
+  onPress={toggleDropdown}
 >
       <View style={styles.chipWrap}>
   {selected.length === 0 ? (
@@ -78,7 +94,7 @@ const removeChip = (value) => {
       </TouchableOpacity>
 
       {/* DROPDOWN */}
-      {open && (
+      {isOpen && (
         <View style={styles.dropdown}>
           <ScrollView>
    {options.map((item) => {
@@ -87,7 +103,10 @@ const removeChip = (value) => {
     <TouchableOpacity
       key={item.value}
       style={styles.optionRow}
-      onPress={() => toggleItem(item)}
+     onPress={() => {
+  toggleItem(item);
+  setActiveDropdown(null)
+}}
     >
       <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
         {checked && <Text style={styles.tick}>✓</Text>}

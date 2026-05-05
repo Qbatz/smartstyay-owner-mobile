@@ -1964,16 +1964,32 @@ const styles = StyleSheet.create({
     color: "#1E45E1",
    fontFamily: "Gilroy-Bold" ,
   },
-
   roomCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 14,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#F2F4F8",
-  },
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 14,
+  marginBottom: 14,
+
+  elevation: 2,
+
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 3 },
+
+  borderWidth: Platform.OS === "ios" ? 3 : 1,
+  borderColor: "#E5E7EB",
+},
+
+  // roomCard: {
+  //   backgroundColor: "#fff",
+  //   borderRadius: 12,
+  //   padding: 14,
+  //   marginBottom: 14,
+  //   elevation: 2,
+  //   borderWidth: 1,
+  //   borderColor: "#F2F4F8",
+  // },
 
   // roomHeader: {
   //   flexDirection: "row",
