@@ -145,4 +145,26 @@ class CommonModule: NSObject {
            }
        }
    }
+  
+  @objc
+   func getVersionName(_ resolve: RCTPromiseResolveBlock,
+                       rejecter reject: RCTPromiseRejectBlock) {
+
+     let info = Bundle.main.infoDictionary
+
+     let version = info?["CFBundleShortVersionString"] as? String ?? ""
+     
+     resolve(version)
+   }
+  
+  @objc
+   func getBuildNumber(_ resolve: RCTPromiseResolveBlock,
+                       rejecter reject: RCTPromiseRejectBlock) {
+
+     let info = Bundle.main.infoDictionary
+
+     let version = info?["CFBundleShortVersionString"] as? String ?? ""
+     
+     resolve(version)
+   }
 }

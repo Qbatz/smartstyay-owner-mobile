@@ -92,7 +92,7 @@ import { Dimensions } from "react-native";
 import BillBookings from "./Bill_Bookings";
 import { s, vs } from "../../../Utils/rnScale";
 import DiscountActionSheet from "./DiscountActionSheet"
-
+import BillBookingDetails from "./Bill_BookingDetails"
 
 
 
@@ -1020,6 +1020,13 @@ export default function BillsDesign({ route }) {
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
 
+   const [billbookingDetailsShow , setBillBookingDetailsShow] = useState(false)
+   const [billbookingDetails, setBillBookingDetails] = useState(null)
+
+  const handleBillsBookingDetails = (item) => {
+     setBillBookingDetailsShow(true)
+     setBillBookingDetails(item)
+  }
 
   const openCustomerDetails = (customer) => {
     setSelectedCustomer(customer);
@@ -2405,7 +2412,7 @@ export default function BillsDesign({ route }) {
             </View>
           )}
           {activeTab === "Bookings" && (
-            <BillBookings />
+            <BillBookings onBookingDetailsShow={handleBillsBookingDetails} />
           )}
 
           {activeTab === "RecurringBills" && (
@@ -4997,6 +5004,11 @@ export default function BillsDesign({ route }) {
             </View>
           </Modal>
 
+
+    {billbookingDetailsShow && (
+      <BillBookingDetails  visible = {billbookingDetailsShow}  onClose ={() => setBillBookingDetailsShow(false)} 
+      selectedBill={billbookingDetails}  />
+    )}
 
 
 

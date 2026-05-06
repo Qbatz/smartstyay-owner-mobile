@@ -42,7 +42,7 @@ import TickIcon from "../../../Assets/Images/tick-circle.png"
 import CommingSoon from "../../../Assets/Images/Coming_soon.png"
 
 
-const BillBookings = ({ onSelectReceipt }) => {
+const BillBookings = ({ onBookingDetailsShow}) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails } = useContext(BillContext);
@@ -98,6 +98,56 @@ const BillBookings = ({ onSelectReceipt }) => {
       ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
       : "--";
 
+      const dummyData = [
+  {
+    transactionId: "1",
+    fullName: "Ajmal Muhammed",
+    initials: "AM",
+    invoiceNumber: "BK-001",
+    paidAt: "01/12/2025",
+    amount: 1500,
+  },
+  {
+    transactionId: "2",
+    fullName: "Mahadevan",
+    initials: "M",
+    invoiceNumber: "BK-426",
+    paidAt: "01/12/2025",
+    amount: 500,
+  },
+  {
+    transactionId: "3",
+    fullName: "Jobin",
+    initials: "J",
+    invoiceNumber: "BK-002",
+    paidAt: "01/12/2025",
+    amount: 1000,
+  },
+  {
+    transactionId: "4",
+    fullName: "Daniel Balaji M",
+    initials: "DB",
+    invoiceNumber: "BK-426",
+    paidAt: "01/12/2025",
+    amount: 500,
+  },
+  {
+    transactionId: "5",
+    fullName: "Muthuraja M",
+    initials: "M",
+    invoiceNumber: "BK-008",
+    paidAt: "01/12/2025",
+    amount: 500,
+  },
+  {
+    transactionId: "6",
+    fullName: "Albert",
+    initials: "A",
+    invoiceNumber: "BK-005",
+    paidAt: "01/06/2025",
+    amount: 2250,
+  },
+];
 
 
 
@@ -258,9 +308,9 @@ const BillBookings = ({ onSelectReceipt }) => {
   //       setShowBillDetails(true);
   //     }
 
-  const handleViewReceiptDetails = (item) => {
-    onSelectReceipt(item);
-  };
+  const handleViewBookingDetails = (item) => {
+    onBookingDetailsShow(item)
+  }
 
 
   const handleEditBill = () => {
@@ -272,7 +322,6 @@ const BillBookings = ({ onSelectReceipt }) => {
     setShowMenu(false);
   }
 
-  console.log("selectedReceipt", selectedReceipt);
 
   const handleDeleteReceipt = async () => {
 
@@ -327,20 +376,13 @@ const BillBookings = ({ onSelectReceipt }) => {
 
   const renderItem = ({ item }) => {
     return (
-      <View style={styles.row}>
-        {/* <TouchableOpacity
-        onPress={() => {handleViewReceiptDetails(item)}}
-      >
-        <Image
-          source={
-            item.profilePic
-              ? { uri: item.profilePic }
-              : ProfileImage
-          }
-          style={styles.avatar}
-        />
-      </TouchableOpacity> */}
-        <TouchableOpacity >
+       <TouchableOpacity
+      style={styles.row}
+      activeOpacity={0.7}
+      onPress={() => handleViewBookingDetails(item)}
+    >
+      
+        <View>
           <View style={styles.avatarWrapper}>
             {item?.profilePic ? (
               <Image source={{ uri: item.profilePic }} style={styles.avatar} />
@@ -352,32 +394,21 @@ const BillBookings = ({ onSelectReceipt }) => {
               </View>
             )}
 
-            {/* ✅ TICK ICON */}
             <View style={styles.tickWrapper}>
               <Image source={TickIcon} style={styles.tickIcon} />
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
 
 
         <View style={{ flex: 1 }}>
-          {/* <Text style={styles.name}>{item.fullName}</Text> */}
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("CustomerOverviewScreen", {
-                customerId: item.customerId,
-                customer: item,
-              })
-            }
-          >
+          {/* <TouchableOpacity  > */}
             <Text style={styles.name}>{item.fullName}</Text>
-          </TouchableOpacity>
+          {/* </TouchableOpacity> */}
 
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-            {/* <View style={styles.tagBox}>
-            <Text style={styles.tag}>{item.invoiceType}</Text>
-          </View> */}
+          
 
             <Image
               source={Bills_Black_Icon}
@@ -389,23 +420,17 @@ const BillBookings = ({ onSelectReceipt }) => {
         </View>
 
         <View style={styles.rightSection}>
-          {/* <TouchableOpacity
-          ref={(r) => (dotsRefs.current[item.transactionId] = r)}
-          onPress={() => openMenu(item, item.transactionId)}
-        >
-          <Image
-            source={Dots}
-            style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-          />
-        </TouchableOpacity> */}
+         
 
-          <Text>₹ 1500</Text>
+          <Text style={{ fontWeight: "700" }}>
+  ₹ {item?.amount || item?.paidAmount}
+</Text>
 
           <Text style={styles.dateText}>
-            {formatApiDate(item.paidAt)}
+            {formatApiDate(item?.paidAt)}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -424,43 +449,28 @@ const BillBookings = ({ onSelectReceipt }) => {
       />
 
       <View style={styles.container}>
-        <View style={styles.headerRow}>
-          {/* <Text style={styles.monthText}>This Month</Text> */}
+      
 
-
-        </View>
-
-        {/* <FlatList
-          data={[]}
+        <FlatList
+          // data={[]}
+          data={dummyData}
           renderItem={renderItem}
           keyExtractor={(item) => item.transactionId}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
+             paddingTop: 0, 
             flexGrow: 1,
             paddingBottom: 120,
           }}
           ListEmptyComponent={
             !loading && <EmptyReceiptState />
           }
-        /> */}
-        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, }}>
-          <Image source={CommingSoon} style={{ width: 315, height: 220, resizeMode: 'contain' }} />
-          <Text style={{ fontSize: 16, fontFamily:"Gilroy-Bold"}}>Comming Soon</Text>
-          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',marginTop:10}}>
-            Our team is building something helpful for you.</Text>
-          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',marginTop:5}}>Check back again shortly.</Text>
-          </View>
+        />
+     
 
 
 
 
-        {/* <TouchableOpacity style={styles.filterButton} >
-          <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.addBtn} >
-          <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-        </TouchableOpacity> */}
 
 
         {showMenu && (
@@ -791,7 +801,7 @@ export default BillBookings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
+    paddingHorizontal: 15,
     backgroundColor: "#fff",
     position: "relative",
     zIndex: 1,
@@ -801,7 +811,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    // marginTop: 10,
     marginBottom: 10,
     zIndex: 1000,
   },
@@ -921,7 +931,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     elevation: 5,
   },
-
 
   sheetOverlay: {
     position: "absolute",
