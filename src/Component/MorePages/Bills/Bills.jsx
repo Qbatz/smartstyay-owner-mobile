@@ -1779,9 +1779,11 @@ export default function BillsDesign({ route }) {
 
 
     if (res?.success && res?.url) {
+      console.log("beforeUrl")
       await CommonModule.downloadAndShareFile(res?.url);
       setShowMenu(false)
       setShowBillDetails(false)
+        console.log("AfterUrl")
     } else {
       console.log(res?.message);
       setShowMenu(false)
@@ -3443,7 +3445,7 @@ export default function BillsDesign({ route }) {
                   </TouchableOpacity>
                 )} */}
 
-                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
+                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
                     <TouchableOpacity
                       style={styles.popupRow}

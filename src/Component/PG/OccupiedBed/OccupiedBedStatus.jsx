@@ -467,6 +467,8 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
                          
                         </View>
 
+
+                      {item.lastInvoiceNumber &&(
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Last Invoice</Text>
                           <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
@@ -475,6 +477,8 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
                           </View>
                          
                         </View>
+                        )}
+                        
                         {showReservedMenu === index && (
                           <>
                             <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>

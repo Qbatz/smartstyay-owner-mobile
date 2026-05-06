@@ -160,7 +160,7 @@ export default function SubscriptionPlans({ navigation }) {
     }else {
     console.log("API Error:", res?.data);
 
-    alert(res?.data?.message || "Something went wrong. Please try again.");
+    alert(res?.data?.message || res?.message || "Something went wrong. Please try again.");
   }
 
 

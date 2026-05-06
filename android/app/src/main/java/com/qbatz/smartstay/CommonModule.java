@@ -204,7 +204,9 @@ public class CommonModule extends ReactContextBaseJavaModule {
 
     private void shareDownloadedFile(File file, Promise promise) {
         try {
-            Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
+//            Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
+            Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".imagepickerprovider", file);
+
 
             if (contentUri != null) {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);

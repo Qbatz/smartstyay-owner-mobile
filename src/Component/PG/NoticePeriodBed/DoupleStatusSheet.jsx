@@ -613,6 +613,7 @@ export default function DoubleStatusSheet({
                           </View>                    
                         </View>
 
+                        {item.lastInvoiceNumber && (
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Last Invoice</Text>
 
@@ -623,6 +624,8 @@ export default function DoubleStatusSheet({
                           </View>
                          
                         </View>
+                        )}
+                        
                         {showReservedMenu === index && (
 
                           <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>

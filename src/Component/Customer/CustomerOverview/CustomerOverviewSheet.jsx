@@ -1231,7 +1231,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           showCheckout &&
           <CheckoutBottomSheet
             visible={showCheckout}
-            onClose={() => setShowCheckout(false)}
+            onClose={() => {
+              fetchCustomerDetails()
+              setShowCheckout(false)}}
             reason={reason}
             setReason={setReason}
             selectedItem={selectedItem}
