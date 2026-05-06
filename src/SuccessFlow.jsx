@@ -78,6 +78,9 @@ import ReceiptRegister from "../src/Component/MorePages/Reports/ReceiptRegister"
 import HistoryAndComments from "../src/Component/Dashboard/HistoryAndComments"
 import ComplaintUpdates from "../src/Component/Complaints/ComplaintCommentUpdates"
 import BillsDiscount from "../src/Component/MorePages/Bills/DiscountInvoice"
+import BookingtoDiscount from  "../src/Component/MorePages/Bills/BookingtoInvoice"
+
+
 
 const SuccessFlow = (props) => {
 
@@ -177,6 +180,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="HistoryAndComments" component={HistoryAndComments} />
                     <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
                     <Navigation.Screen name="DiscountInvoice" component={BillsDiscount} />
+                    <Navigation.Screen name="BookingtoDiscount" component={BookingtoDiscount} />
                 </Navigation.Navigator>
             </NavigationContainer>
 
