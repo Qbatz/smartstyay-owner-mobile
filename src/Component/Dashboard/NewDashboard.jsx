@@ -284,7 +284,6 @@ export default function DashboardNewDesign({ initialParams, route }) {
         financeFilter: "This Month",
         occupancyFilter: "This Month"
       });
-      console.log("getDashboard",res)
 
       if(res?.status === 200){
       if (res?.data) {
