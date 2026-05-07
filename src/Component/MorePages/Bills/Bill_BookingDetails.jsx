@@ -44,20 +44,13 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import { useNavigation } from "@react-navigation/native";
 import DiscountActionSheet from "./DiscountActionSheet"
 import QuestionIcon from "../../../Assets/Images/help.png";
+import LinkIcon from "../../../Assets/Images/link.png";
 
 
 const BillBookingDetailsSheet = ({
   visible,
   onClose,
   selectedBill,
-  // BillPdfdetails,
-  // isExportAllow,
-  // canWriteInvoice,
-  // handleDownloadBillsPdf,
-  // handleshareBill,
-  // handleWhatsappShareBill,
-  // handleCallPhone,
-  // handleShowRecordPayment,
 }) => {
 
 
@@ -67,9 +60,8 @@ const BillBookingDetailsSheet = ({
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid } = useContext(BillContext);
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid , GetInitializeAdvanceRedeem  , InitializebookingBills} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
-  const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   
 
@@ -113,18 +105,7 @@ const BillBookingDetailsSheet = ({
   const recordSheetY = useRef(new Animated.Value(0)).current;
   console.log(selectedBill, "bills")
 
-  // useEffect(() => {
-  //   if (visible) {
-  //     setPaidAmount("");
-  //     setBalanceAmount(0);
-  //     setPaidDate(null);
-  //     setSelectedMode("");
-  //     setTransactionId("");
-  //     setAmountError("");
-  //     setDateError("");
-  //     setModeError("");
-  //   }
-  // }, [visible]);
+
 
 
   const bill = selectedBill
@@ -132,38 +113,38 @@ const BillBookingDetailsSheet = ({
   const customer = selectedBill;
   const stay = BillPdfdetails?.stayInfo
 
-
-  // const normalizedBill = {
-  //   invoiceId: selectedBill?.invoiceId,
-  //   dueAmount: selectedBill?.dueAmount || selectedBill?.totalAmount || 0,
-  //   invoiceDate: selectedBill?.invoiceDate,
-  //   fullName: selectedBill?.fullName || selectedBill?.customerName || "",
-  //   invoiceType: selectedBill?.invoiceType || selectedBill?.status || "",
-  //   invoiceNumber: selectedBill?.invoiceNumber,
-  //   profilePic: selectedBill?.profilePic,
-  //   initials: selectedBill?.initials,
-  // };
-
-  // console.log("normalize", normalizedBill);
+  const bookingData = InitializebookingBills;
+  console.log("bookingdata", bookingData);
+  
+const invoicesList = InitializebookingBills?.listInvoices || [];
 
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getBankListByHostel(activeHostelId);
+ 
+
+
+ 
+
+
+
+ useEffect(() => {
+  const fetchData = async () => {
+    if (activeHostelId && selectedBill?.invoiceId) {
+      const res = await GetInitializeAdvanceRedeem({
+        hostelId: activeHostelId,
+        advanceInvoiceId: selectedBill?.invoiceId,
+      });
+
+      console.log("API RESPONSE:", res);
     }
-  }, [activeHostelId]);
+  };
 
-//   useEffect(() => {
-//     if (activeHostelId && canReadInvoice) {
-//       GetAllBillDetails(activeHostelId);
-//     }
-//   }, [activeHostelId, canReadInvoice]);
+  fetchData();
+}, [activeHostelId, selectedBill]);
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  console.log("InitializebookingBills", InitializebookingBills);
+  
+
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -196,7 +177,8 @@ const BillBookingDetailsSheet = ({
     }, [visible, showRecordPayment, showRefundPayement])
   );
 
-
+console.log("InitializebookingBills", InitializebookingBills);
+console.log("invoicesList", invoicesList);
 
 
 
@@ -606,22 +588,21 @@ const BillBookingDetailsSheet = ({
                 <View
                   style={[
                     styles.statusBadge,
-                    { backgroundColor: BillsStatusStyle.bg },
+                    { backgroundColor: "#038C3D" },
                   ]}
                 >
                   <View
                     style={[
                       styles.statusDot,
-                      { backgroundColor: BillsStatusStyle.dot },
+                      { backgroundColor: "#fff" },
                     ]}
                   />
                   <Text
                     style={[
                       styles.statusText,
-                      { color: BillsStatusStyle.text },
+                      { color: "#fff" },
                     ]}
                   >
-                    {/* {invoice?.paymentStatus} */}
                     Paid
                   </Text>
                 </View>
@@ -661,7 +642,11 @@ const BillBookingDetailsSheet = ({
       {customer?.fullName || "--"}
     </Text>
 
-    <View style={{ flexDirection: "row", marginTop: 4 }}>
+    <View style={{ flexDirection: "row", marginTop: 4 , alignItems:'center'}}>
+
+          <View style={styles.invTypeBadge}>
+                                    <Text style={styles.invTypeText}>Booking</Text>
+                                  </View>
       <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginRight: 5 }} />
       <Text style={styles.billNumber}>
         {customer?.invoiceNumber || "--"}
@@ -670,65 +655,8 @@ const BillBookingDetailsSheet = ({
   </View>
 </View>
 
-            {/* <View style={styles.userRow}>
-              {customer?.profilePic ? (
-                <Image
-                  source={{ uri: customer.profilePic }}
-                  style={styles.userImg}
-                />
-              ) : (
-                <View style={styles.initialCircle}>
-                  <Text style={styles.initialText}>
-                    {customer?.initials || customer?.fullName?.slice(0, 2)?.toUpperCase()}
-                  </Text>
-                </View>
-              )}
+  
 
-
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <TouchableOpacity
-               
-                >
-                  <Text style={styles.userName}>{customer?.fullName || "--"}</Text>
-                </TouchableOpacity>
-
-                <View style={{ flexDirection: "row", marginTop: 4 }}>
-                  <View style={styles.invTypeBadge}>
-                    <Text style={styles.invTypeText}>{bill?.configurations?.invoiceType}</Text>
-                  </View>
-
-                  <Image source={Bills_Black_Icon} style={{
-                    width: 12,
-                    height: 12, marginTop: 5, marginRight: 5
-                  }} />
-                  <Text style={styles.billNumber}>{bill?.invoiceNumber || "--"}</Text>
-                </View>
-              </View>
-            </View> */}
-
-            {/* {(isPending || isPartial || partiallyRefund || pendingRefund) && (
-              <View style={styles.actionRow}>
-
-                <TouchableOpacity
-                  style={[styles.reminderBtn, !isExportAllow && { opacity: 0.4 }]}
-                  disabled={!isExportAllow}
-                  onPress={handleWhatsappShareBill}>
-                  <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                  <Text style={styles.reminderText}>Reminder </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.callBtn, !isExportAllow && { opacity: 0.4 }]}
-                  disabled={!isExportAllow}
-                  onPress={() => {
-                    handleCallPhone(BillPdfdetails?.customerInfo?.customerMobileNo)
-                  }}>
-                  <Image source={Call} style={styles.actionIcon} />
-                  <Text style={styles.callText}>Call</Text>
-                </TouchableOpacity>
-
-              </View>
-            )} */}
 
             <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
@@ -738,7 +666,7 @@ const BillBookingDetailsSheet = ({
                 <View style={{ display: 'flex', flexDirection: 'column' }}>
                   <Text style={styles.amountValue}>
                     {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
-                    ₹ {selectedBill?.amount ? Number(selectedBill?.amount).toFixed(2) : "0.00"}
+                    ₹ {selectedBill?.invoiceAmount ? Number(selectedBill?.invoiceAmount).toFixed(2) : "0.00"}
                   </Text>
                     <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
@@ -752,44 +680,31 @@ const BillBookingDetailsSheet = ({
             </View>
 
           
-            {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
-              <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View>
-                  <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>{pay?.description ?? "N/A"}</Text>
-                </View>
-                <View>
-                  <Text style={styles.amountValue}>
-                    ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
-                  </Text>
-                </View>
-              </View>
-            ))}
 
 
 
-            {(isPartial || partiallyRefund) && (
+          
               <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View>
-                  <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                  <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Booking</Text>
                 </View>
                 <View>
                   <Text
                     style={[
                       styles.amountValue,
-                      { color: "#FF0000" },
+                     
                     ]}
                   >
-                    ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0}
+                    ₹ {selectedBill?.invoiceAmount}
                   </Text>
                 </View>
               </View>
 
-            )}
+         
 
 
 
-
-            {(isPaid || isPartial) && BillPdfdetails?.paymentHistory?.length > 0 && (
+            {invoicesList?.length > 0 && (
               <View style={{ marginTop: 25 }}>
                 <TouchableOpacity
                   onPress={() => setShowPayments(!showPayments)}
@@ -812,31 +727,37 @@ const BillBookingDetailsSheet = ({
                 </TouchableOpacity>
                 {showPayments && (
                   <View style={{ marginTop: 10 }}>
-                    {BillPdfdetails?.paymentHistory?.map((pay, index) => (
+                    {invoicesList?.map((pay, index) => (
                       <View key={index} style={styles.paymentCard}>
 
                         <View style={styles.paymentTopRow}>
-                          <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)} style={{ display: 'flex', flexDirection: 'row' }}>
+                          <TouchableOpacity 
+                        //   onPress={() => handleOpenReceiptFromBill(pay)} 
+                        style={{ display: 'flex', flexDirection: 'row' , alignItems:'center'}}
+                          >
+                             <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 , marginRight:5 }} />
                             <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
-                              #{pay?.referenceNumber}
+                              #{pay?.invoiceNumber}
                             </Text>
-                            <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 }} />
+                           
                           </TouchableOpacity>
 
                           <Text style={styles.paymentAmount}>
-                            ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+                          ₹ {pay?.invoiceAmount ? Number(pay?.invoiceAmount).toFixed(2) : "0.00"}
                           </Text>
                         </View>
 
                         <View style={styles.divider} />
 
-                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flex: 1, }}>
-                          <View style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> Date</Text>
+                       
+
+                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                          <View>
+                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Date</Text>
                           </View>
                           <View>
                             <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              {pay?.date ?? "N/A"}
+                               {pay?.invoiceDate || "--"}
                             </Text>
                           </View>
                         </View>
@@ -853,16 +774,7 @@ const BillBookingDetailsSheet = ({
                             </Text>
                           </View>
                         </View>
-                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View>
-                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
-                          </View>
-                          <View>
-                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              {pay?.referenceNumber ?? "N/A"}
-                            </Text>
-                          </View>
-                        </View>
+                      
                       </View>
                     ))}
                   </View>
@@ -873,79 +785,7 @@ const BillBookingDetailsSheet = ({
 
 
            
-                <View style={{ marginTop: 25 }}>
-
-                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={styles.paymentHeaderText}>
-                      Payments Made
-                    </Text>
-
-                    <TouchableOpacity
-                      style={styles.paymentHeader}
-                      onPress={() => setShowPayments(!showPayments)}
-                    >
-                      <Image
-                        source={DownArrow}
-                        style={{ width: 18, height: 18, transform: showPayments ? "rotate(180deg)" : "rotate(0deg)" }}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {showPayments && (
-                    <View style={{ marginTop: 10 }}>
-                      {BillPdfdetails?.refundHistory?.map((pay, index) => (
-                        <View key={index} style={styles.paymentCard}>
-
-                          <TouchableOpacity style={styles.paymentTopRow}>
-                            <Text >
-                              #{BillPdfdetails?.invoiceNumber}
-                              <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
-                            </Text>
-
-                            <Text style={styles.paymentAmount}>
-                              ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
-                            </Text>
-                          </TouchableOpacity>
-
-                          <View style={styles.divider} />
-
-                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <View>
-                              <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}> date</Text>
-                            </View>
-                            <View>
-                              <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                {pay?.date ?? "N/A"}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <View>
-                              <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
-                            </View>
-                            <View>
-                              <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                {pay?.paymentMode ?? "N/A"}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <View>
-                              <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Transaction ID</Text>
-                            </View>
-                            <View>
-                              <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                {pay?.referenceNumber ?? "N/A"}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-
-                </View>
-             
+               
 
           </ScrollView>
 
@@ -955,6 +795,7 @@ const BillBookingDetailsSheet = ({
       
               <>
                  <TouchableOpacity style={styles.applyBtn} onPress={handleShowBookingtoInvoice}>
+                    <Image  source={LinkIcon}  style={{height:20 , width:20 , marginRight:5}} />
     <Text style={styles.applyText}>Apply to Invoices</Text>
   </TouchableOpacity>
 
@@ -1830,15 +1671,23 @@ const styles = StyleSheet.create({
   applyBtn: {
   backgroundColor: "#fff",
   borderWidth: 1,
-  borderColor: "#000",
+  borderColor: "#9C9C9C",
   paddingVertical: 14,
   borderRadius: 12,
+  flexDirection:'row',
+  justifyContent:'center', 
   alignItems: "center",
 },
 
 applyText: {
   fontFamily: "Gilroy-Semibold",
   fontSize: 16,
-}
+},
+ billNumber: {
+    color: "#555",
+    fontSize: 13,
+    alignSelf: "center",
+    fontFamily: "Gilroy-Semibold", 
+  },
 
 })
