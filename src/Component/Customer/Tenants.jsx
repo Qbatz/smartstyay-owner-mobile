@@ -696,6 +696,8 @@ export default function TenantsScreen({ route }) {
 
   const handleShowCancelNotice = () => {
     setMenuVisible(false)
+    setShowDetailsMenu(false);
+    setShowDetailModal(false);
     navigation.navigate("CancelNotice", {
       selectedItem: selectedItem,
     });
@@ -846,7 +848,7 @@ export default function TenantsScreen({ route }) {
                     </Text>
                   </View>
                 )}
-                <View style={{ paddingHorizontal: 16 }}>
+                <ScrollView horizontal contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
                       <View style={styles.filterRow}>
@@ -881,7 +883,8 @@ export default function TenantsScreen({ route }) {
                           </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.filterIconBtn} disabled={!canReadTenant}
+
+                        <TouchableOpacity style={[styles.filterIconBtn,{marginLeft:5}]} disabled={!canReadTenant}
                           onPress={() => setShowFilter(true)}>
                           <Image source={Filter} style={{ width: 18, height: 18 }} />
                         </TouchableOpacity>
@@ -889,7 +892,7 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </View>
+                </ScrollView>
 
 
 
@@ -1351,7 +1354,7 @@ export default function TenantsScreen({ route }) {
                       resizeMode="contain"
                     />
                     <Text style={styles.infoValue}>
-                      {selectedCustomer?.mobileNo}
+                      +{selectedCustomer?.countryCode} {selectedCustomer?.mobileNo}
                     </Text>
                   </View>
                 </View>
@@ -1666,7 +1669,7 @@ export default function TenantsScreen({ route }) {
                     onPress={handleShowCancelNotice}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Cancel Check-out</Text>
+                    <Text style={styles.popupText}>Cancel Check-outff</Text>
                   </TouchableOpacity>
                 </>
               }
@@ -2903,6 +2906,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 34,
     borderRadius: 20,
+    marginLeft:4
   },
 
   filterChipActive: {

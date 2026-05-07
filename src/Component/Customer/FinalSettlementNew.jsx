@@ -1697,7 +1697,10 @@ useEffect(()=>{
 
           <AddRoomReadingSheet
             visible={showRoomReadingSheet}
-            onClose={() => setShowRoomReadingSheet(false)}
+            onClose={() =>{
+              fetchSettlement();
+              setShowRoomReadingSheet(false)
+            } }
             roomInfo={{
               roomId: "F002_ID",
               floorId: "FIRST_FLOOR_ID",
