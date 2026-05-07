@@ -42,13 +42,13 @@ import TickIcon from "../../../Assets/Images/tick-circle.png"
 import CommingSoon from "../../../Assets/Images/Coming_soon.png"
 
 
-const BillBookings = ({ onBookingDetailsShow}) => {
+const BillBookings = ({ onBookingDetailsShow }) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
-    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails } = useContext(BillContext);
+    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
-  console.log("receiptsList", receiptsList);
+  console.log("advanceBills", bookingBills);
 
   const dotsRefs = useRef({});
   const navigation = useNavigation();
@@ -89,7 +89,9 @@ const BillBookings = ({ onBookingDetailsShow}) => {
   ];
 
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
-  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
+
+  const Advancebookingbills = bookingBills?.advanceInvoiceList
 
   dayjs.extend(customParseFormat);
 
@@ -98,62 +100,64 @@ const BillBookings = ({ onBookingDetailsShow}) => {
       ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
       : "--";
 
-      const dummyData = [
-  {
-    transactionId: "1",
-    fullName: "Ajmal Muhammed",
-    initials: "AM",
-    invoiceNumber: "BK-001",
-    paidAt: "01/12/2025",
-    amount: 1500,
-  },
-  {
-    transactionId: "2",
-    fullName: "Mahadevan",
-    initials: "M",
-    invoiceNumber: "BK-426",
-    paidAt: "01/12/2025",
-    amount: 500,
-  },
-  {
-    transactionId: "3",
-    fullName: "Jobin",
-    initials: "J",
-    invoiceNumber: "BK-002",
-    paidAt: "01/12/2025",
-    amount: 1000,
-  },
-  {
-    transactionId: "4",
-    fullName: "Daniel Balaji M",
-    initials: "DB",
-    invoiceNumber: "BK-426",
-    paidAt: "01/12/2025",
-    amount: 500,
-  },
-  {
-    transactionId: "5",
-    fullName: "Muthuraja M",
-    initials: "M",
-    invoiceNumber: "BK-008",
-    paidAt: "01/12/2025",
-    amount: 500,
-  },
-  {
-    transactionId: "6",
-    fullName: "Albert",
-    initials: "A",
-    invoiceNumber: "BK-005",
-    paidAt: "01/06/2025",
-    amount: 2250,
-  },
-];
+  const dummyData = [
+    {
+      transactionId: "1",
+      fullName: "Ajmal Muhammed",
+      initials: "AM",
+      invoiceNumber: "BK-001",
+      paidAt: "01/12/2025",
+      amount: 1500,
+    },
+    {
+      transactionId: "2",
+      fullName: "Mahadevan",
+      initials: "M",
+      invoiceNumber: "BK-426",
+      paidAt: "01/12/2025",
+      amount: 500,
+    },
+    {
+      transactionId: "3",
+      fullName: "Jobin",
+      initials: "J",
+      invoiceNumber: "BK-002",
+      paidAt: "01/12/2025",
+      amount: 1000,
+    },
+    {
+      transactionId: "4",
+      fullName: "Daniel Balaji M",
+      initials: "DB",
+      invoiceNumber: "BK-426",
+      paidAt: "01/12/2025",
+      amount: 500,
+    },
+    {
+      transactionId: "5",
+      fullName: "Muthuraja M",
+      initials: "M",
+      invoiceNumber: "BK-008",
+      paidAt: "01/12/2025",
+      amount: 500,
+    },
+    {
+      transactionId: "6",
+      fullName: "Albert",
+      initials: "A",
+      invoiceNumber: "BK-005",
+      paidAt: "01/06/2025",
+      amount: 2250,
+    },
+  ];
+
+
 
 
 
   useEffect(() => {
     if (activeHostelId) {
-      GetReceiptsList(activeHostelId);
+      GetAdvanceBookingBills(activeHostelId);
     }
   }, [activeHostelId]);
 
@@ -376,16 +380,16 @@ const BillBookings = ({ onBookingDetailsShow}) => {
 
   const renderItem = ({ item }) => {
     return (
-       <TouchableOpacity
-      style={styles.row}
-      activeOpacity={0.7}
-      onPress={() => handleViewBookingDetails(item)}
-    >
-      
+      <TouchableOpacity
+        style={styles.row}
+        activeOpacity={0.7}
+        onPress={() => handleViewBookingDetails(item)}
+      >
+
         <View>
           <View style={styles.avatarWrapper}>
             {item?.profilePic ? (
-              <Image source={{ uri: item.profilePic }} style={styles.avatar} />
+              <Image source={{ uri: item?.profilePic }} style={styles.avatar} />
             ) : (
               <View style={styles.initialCircle}>
                 <Text style={styles.initialText}>
@@ -404,30 +408,31 @@ const BillBookings = ({ onBookingDetailsShow}) => {
 
         <View style={{ flex: 1 }}>
           {/* <TouchableOpacity  > */}
-            <Text style={styles.name}>{item.fullName}</Text>
+          <Text style={styles.name}>{item.fullName}</Text>
           {/* </TouchableOpacity> */}
 
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-          
+
 
             <Image
               source={Bills_Black_Icon}
               style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
             />
 
-            <Text style={styles.bill}>{item.invoiceNumber}</Text>
+            <Text style={styles.bill}>{item?.invoiceNumber}</Text>
           </View>
         </View>
 
         <View style={styles.rightSection}>
-         
+
 
           <Text style={{ fontWeight: "700" }}>
-  ₹ {item?.amount || item?.paidAmount}
-</Text>
+            ₹ {item?.invoiceAmount}
+          </Text>
 
           <Text style={styles.dateText}>
-            {formatApiDate(item?.paidAt)}
+            {item?.invoiceDate}
+            {/* {formatApiDate(item?.invoiceDate)} */}
           </Text>
         </View>
       </TouchableOpacity>
@@ -449,16 +454,21 @@ const BillBookings = ({ onBookingDetailsShow}) => {
       />
 
       <View style={styles.container}>
-      
+
 
         <FlatList
           // data={[]}
-          data={dummyData}
+          data={Advancebookingbills}
           renderItem={renderItem}
-          keyExtractor={(item) => item.transactionId}
+          // keyExtractor={(item) => item.transactionId}
+          keyExtractor={(item, index) =>
+            item?.invoiceId
+              ? item.invoiceId.toString()
+              : index.toString()
+          }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-             paddingTop: 0, 
+            paddingTop: 0,
             flexGrow: 1,
             paddingBottom: 120,
           }}
@@ -466,7 +476,7 @@ const BillBookings = ({ onBookingDetailsShow}) => {
             !loading && <EmptyReceiptState />
           }
         />
-     
+
 
 
 
