@@ -433,6 +433,78 @@ export default function AddPG({ navigation, route }) {
 
   };
 
+  const [picModal,setPicModal]=useState(false);
+
+  const renderImageBox=(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+  setModalMessage,
+  setModalType)=> {
+  { console.log(image) }
+  const imageUri = image?.uri?.image || image?.uri;
+  console.log("binthu", imageUri)
+
+  const deleteAdditionalPic = async (image) => {
+    setImage(null);
+
+    if (image?.uri?.id) {
+      const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
+
+      console.log(res)
+      if (res?.status == 200) {
+        console.log("Deleted Successfully")
+        // setShowSuccessModal(true)
+        // setModalMessage(res.data || "updated")
+        // setModalType("success")
+        // setTimeout(() => {
+        //   setShowSuccessModal(false)
+        // }, 1500);
+      } else {
+        setShowSuccessModal(true)
+        setModalMessage(res.message || "Something Went Wrong")
+        setModalType("error")
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1000);
+      }
+    } else {
+      setImage(null)
+    }
+
+  };
+  return (
+    <View style={{ position: "relative" }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator>
+        <TouchableOpacity
+        onPress={()=>setPicModal(true)}
+          // onPress={() =>
+          //   launchImageLibrary({ mediaType: "photo" }).then((r) =>
+          //     r?.assets?.length && setImage(r.assets[0])
+          //   )
+          // }
+          style={styles.imgBox}
+        >
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.thumb} />
+          ) : (
+            <>
+              <Image source={AddImageIcon} style={styles.imgPlus} />
+              <Text style={styles.imgSmall}>Add Image</Text>
+              <Text style={styles.imgSize}>Max size 10 MB</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {image?.uri && (
+          <TouchableOpacity onPress={() => {
+            deleteAdditionalPic(image)
+          }} style={styles.deleteIcon}>
+            <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
 
 
 
@@ -546,8 +618,8 @@ export default function AddPG({ navigation, route }) {
               </Modal> */}
 
               <ImagePickerSheet
-                visible={photoModal}
-                onClose={() => setPhotoModal(false)}
+                visible={photoModal || picModal}
+                onClose={() => setPhotoModal(false) || setPicModal(false)}
                 title="Change Profile Picture"
                 options={[
                   {
@@ -940,74 +1012,7 @@ function renderSelect(
 
 
 
-function renderImageBox(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
-  setModalMessage,
-  setModalType) {
-  { console.log(image) }
-  const imageUri = image?.uri?.image || image?.uri;
-  console.log("binthu", imageUri)
 
-  const deleteAdditionalPic = async (image) => {
-    setImage(null);
-
-    if (image?.uri?.id) {
-      const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
-
-      console.log(res)
-      if (res?.status == 200) {
-        console.log("Deleted Successfully")
-        // setShowSuccessModal(true)
-        // setModalMessage(res.data || "updated")
-        // setModalType("success")
-        // setTimeout(() => {
-        //   setShowSuccessModal(false)
-        // }, 1500);
-      } else {
-        setShowSuccessModal(true)
-        setModalMessage(res.message || "Something Went Wrong")
-        setModalType("error")
-        setTimeout(() => {
-          setShowSuccessModal(false)
-        }, 1000);
-      }
-    } else {
-      setImage(null)
-    }
-
-  };
-  return (
-    <View style={{ position: "relative" }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator>
-        <TouchableOpacity
-          onPress={() =>
-            launchImageLibrary({ mediaType: "photo" }).then((r) =>
-              r?.assets?.length && setImage(r.assets[0])
-            )
-          }
-          style={styles.imgBox}
-        >
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.thumb} />
-          ) : (
-            <>
-              <Image source={AddImageIcon} style={styles.imgPlus} />
-              <Text style={styles.imgSmall}>Add Image</Text>
-              <Text style={styles.imgSize}>Max size 10 MB</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {image?.uri && (
-          <TouchableOpacity onPress={() => {
-            deleteAdditionalPic(image)
-          }} style={styles.deleteIcon}>
-            <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </View>
-  );
-}
 
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType }) {
