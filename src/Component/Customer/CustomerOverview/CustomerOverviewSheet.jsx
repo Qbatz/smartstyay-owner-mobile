@@ -434,6 +434,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
 
   const handleCheckoutSuccess = async () => {
+     await fetchCustomerDetails()
     await fetchCustomers();
     setShowCheckout(false);
   };
@@ -1208,7 +1209,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
         {
           showReAssignbed &&
-          <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
+          <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomerDetails} />
 
         }
 
