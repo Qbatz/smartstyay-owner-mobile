@@ -465,7 +465,6 @@ useEffect(()=>{
   };
 
   const updateTitle = (id, title) => {
-    console.log("binthu", id, title)
     setExtraCharges((prev) =>
       prev.map((i) => (i.id === id ? { ...i, title, titleError: "" } : i))
     );
