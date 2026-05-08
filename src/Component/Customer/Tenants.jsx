@@ -248,6 +248,8 @@ export default function TenantsScreen({ route }) {
     setShowCheckout(false);
   };
 
+   
+
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
 
@@ -273,6 +275,8 @@ export default function TenantsScreen({ route }) {
 
   const isSettlement =
     selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED";
+
+ 
 
 
   useEffect(() => {
@@ -643,9 +647,14 @@ export default function TenantsScreen({ route }) {
     setMenuVisible(false)
   }
 
-  const handlecloseReAssignbed = () => {
-    setShowReAssignBed(false)
-  }
+  // const handlecloseReAssignbed = () => {
+  //   setShowReAssignBed(false)
+  // }
+
+      const handlecloseReAssignbed = async () => {
+    await fetchCustomers();
+     setShowReAssignBed(false);
+  };
 
   const handleShowFinalSettlement = () => {
     setShowDetailModal(false)
@@ -1669,7 +1678,7 @@ export default function TenantsScreen({ route }) {
                     onPress={handleShowCancelNotice}
                   >
                     <Image source={require("../../Assets/Images/ReAssign.png")} style={styles.popupIcon} />
-                    <Text style={styles.popupText}>Cancel Check-outff</Text>
+                    <Text style={styles.popupText}>Cancel Check-out</Text>
                   </TouchableOpacity>
                 </>
               }
@@ -2177,7 +2186,7 @@ export default function TenantsScreen({ route }) {
       </SafeAreaView>
       {
         showReAssignbed &&
-        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
+        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={closeDetailSheet} />
 
       }
       <InactiveTenantSheet
@@ -2561,15 +2570,36 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
+  // popupBox: {
+  //   position: "absolute",
+  //   width: 200,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 12,
+  //   elevation: 20,
+  //   paddingVertical: 10,
+  //   zIndex: 10000,
+  // },
   popupBox: {
-    position: "absolute",
-    width: 200,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    elevation: 20,
-    paddingVertical: 10,
-    zIndex: 10000,
+  position: "absolute",
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  paddingVertical: 8,
+  width: 200,
+  zIndex: 10000,
+
+  elevation: 8,
+
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
   },
+  shadowOpacity: 0.12,
+  shadowRadius: 10,
+
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
   popupRow: {
     flexDirection: "row",
     alignItems: "center",

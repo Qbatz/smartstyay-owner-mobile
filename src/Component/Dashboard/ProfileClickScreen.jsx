@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useRef,useCallback, useContext } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions,BackHandler, NativeModules } from "react-native";
-import { useNavigation,useFocusEffect } from "@react-navigation/native";
+import React, { useEffect, useState, useRef, useCallback, useContext } from "react";
+import {
+  View, Text, StyleSheet, TouchableOpacity, Image, Animated, Dimensions, BackHandler, NativeModules, Platform, SafeAreaView,
+  StatusBar,
+} from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { LoginContexts } from "../../Context/LoginContext";
 import { ExpensesContext } from "../../Context/ExpensesContext";
 import { CommonContexts } from "../../Context/CommonContext";
@@ -18,13 +21,13 @@ import SmartstayLogo from "../../Assets/Images/smarstay_icon.png"
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width
 
-export default function ProfileDrawer({ visible, onClose,setShowTabBar }) {
+export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
 
 
   const { logout } = useContext(LoginContexts)
-    const { expensesList, GetExpenseList, rolePermission ,
-  GetRoleBasedPermission ,profileDetails , GetProfileDetails ,loading } = useContext(ExpensesContext);
- const { updateHostelList, hostelList  , activeHostelId  , setActiveHostelId} = useContext(CommonContexts);
+  const { expensesList, GetExpenseList, rolePermission,
+    GetRoleBasedPermission, profileDetails, GetProfileDetails, loading } = useContext(ExpensesContext);
+  const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const navigation = useNavigation();
   const slideX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
 
@@ -32,10 +35,10 @@ export default function ProfileDrawer({ visible, onClose,setShowTabBar }) {
   const [tabHeight, setTabHeight] = useState(BOTTOM_TAB_HEIGHT);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-const [modalMessage, setModalMessage] = useState("");
-const [modalType, setModalType] = useState("success");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
-const isTabBarVisible = useRef(true);
+  const isTabBarVisible = useRef(true);
 
   // const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
 
@@ -46,42 +49,45 @@ const isTabBarVisible = useRef(true);
   const arrowRef = useRef(null);
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
 
-  const loginContext=useContext(LoginContexts)
-  const {CommonModule}=NativeModules;
+  const loginContext = useContext(LoginContexts)
+  const { CommonModule } = NativeModules;
 
   useEffect(() => {
-  if (visible) {
-    setShowTabBar?.(false);
-  } else {
-    setShowTabBar?.(true);
-  }
-}, [visible]);
-console.log(CommonModule.getVersionName(),"versionName")
+    if (visible) {
+      setShowTabBar?.(false);
+    } else {
+      setShowTabBar?.(true);
+    }
+  }, [visible]);
+  console.log(CommonModule.getVersionName(), "versionName")
 
   useFocusEffect(
-  useCallback(() => {
-    const onBackPress = () => {
-      if (showEditPopup) {
-        setShowEditPopup(false); 
-        return true; // IMPORTANT: prevent app exit
-      }
-      return false;
-    };
+    useCallback(() => {
+      const onBackPress = () => {
+        if (showEditPopup) {
+          setShowEditPopup(false);
+          return true; // IMPORTANT: prevent app exit
+        }
+        return false;
+      };
 
-    
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      onBackPress
-    );
 
-    return () => subscription.remove();
-  }, [showEditPopup])
-);
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
 
-  const versionName=CommonModule.getVersionName();
-  const versionCode=CommonModule.getBuildNumber();
-  
+      return () => subscription.remove();
+    }, [showEditPopup])
+  );
+
+  const versionName = CommonModule.getVersionName();
+  const versionCode = CommonModule.getBuildNumber();
+
+  console.log("versionName", versionName);
+  console.log("versionCode", versionCode);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (global.BOTTOM_TAB_HEIGHT && global.BOTTOM_TAB_HEIGHT !== tabHeight) {
@@ -95,7 +101,7 @@ console.log(CommonModule.getVersionName(),"versionName")
   // SLIDE ANIMATION
   useEffect(() => {
     Animated.timing(slideX, {
-      toValue: visible ? SCREEN_WIDTH * 0.30: SCREEN_WIDTH,
+      toValue: visible ? SCREEN_WIDTH * 0.30 : SCREEN_WIDTH,
       duration: 250,
       useNativeDriver: true,
     }).start();
@@ -107,159 +113,159 @@ console.log(CommonModule.getVersionName(),"versionName")
   //     storeData(LOGGEDIN, "false")
   // }
 
-const handleLogout = async () => {
-  const res = await logout();
-  console.log(res)
+  const handleLogout = async () => {
+    const res = await logout();
+    console.log(res)
 
-  if (res?.status == 200) {
-    await Promise.all([
+    if (res?.status == 200) {
+      await Promise.all([
         removeData(ACCESS_TOKEN),
-    storeData(LOGGEDIN, "false"),
-     removeData(USER_ID)
-    ])
+        storeData(LOGGEDIN, "false"),
+        removeData(USER_ID)
+      ])
 
-   
-    loginContext.logoutf("false")
-   
-    loginContext.updateUserId("")
 
-    setModalType("success");
-    setModalMessage("Logout successfully");
-    setShowSuccessModal(true);
+      loginContext.logoutf("false")
 
-   
-    setTimeout(() => {
-      setShowSuccessModal(false);
+      loginContext.updateUserId("")
 
-      // navigation.reset({
-      //   index: 0,
-      //   routes: [{ name: "LoginDesign" }],
-      // });
-    }, 1500);
+      setModalType("success");
+      setModalMessage("Logout successfully");
+      setShowSuccessModal(true);
 
-  } else {
-    setModalType("error");
-    setModalMessage(res?.message || "Logout failed");
-    setShowSuccessModal(true);
 
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 2000);
-  }
-};
+      setTimeout(() => {
+        setShowSuccessModal(false);
 
-const activeHostel =
-  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
-  hostelList?.[0] ??
-  {};
+        // navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: "LoginDesign" }],
+        // });
+      }, 1500);
+
+    } else {
+      setModalType("error");
+      setModalMessage(res?.message || "Logout failed");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
+    }
+  };
+
+  const activeHostel =
+    hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+    hostelList?.[0] ??
+    {};
 
   console.log("activehostel", activeHostel);
-  
-
-const getFullName = (profile) => {
-  if (!profile) return "";
-
-  const first = profile.firstName?.trim() || "";
-  const last = profile.lastName?.trim() || "";
-
-  return `${first} ${last}`.trim(); // "Emima"
-};
-
-const getInitials = (profile) => {
-  if (profile?.initial) return profile.initial;
-
-  const first = profile?.firstName?.[0] || "";
-  const last = profile?.lastName?.[0] || "";
-
-  return (first + last).toUpperCase();
-};
 
 
-console.log("profileDetails", profileDetails);
+  const getFullName = (profile) => {
+    if (!profile) return "";
+
+    const first = profile.firstName?.trim() || "";
+    const last = profile.lastName?.trim() || "";
+
+    return `${first} ${last}`.trim(); // "Emima"
+  };
+
+  const getInitials = (profile) => {
+    if (profile?.initial) return profile.initial;
+
+    const first = profile?.firstName?.[0] || "";
+    const last = profile?.lastName?.[0] || "";
+
+    return (first + last).toUpperCase();
+  };
+
+
+  console.log("profileDetails", profileDetails);
 
   if (!visible) return null;
 
   return (
 
- <>
- 
- <SuccessModal
-  visible={showSuccessModal}
-  message={modalMessage}
-  type={modalType}
-  onClose={() => setShowSuccessModal(false)}
-/>
+    <>
+
+      <SuccessModal
+        visible={showSuccessModal}
+        message={modalMessage}
+        type={modalType}
+        onClose={() => setShowSuccessModal(false)}
+      />
 
 
-    <View style={styles.overlay}>
+      <View style={styles.overlay}>
 
 
-      <TouchableOpacity style={styles.background} onPress={onClose} />
+        <TouchableOpacity style={styles.background} onPress={onClose} />
 
-      <Animated.View
-        style={[
-          styles.panel,
-          {
-            width: SCREEN_WIDTH * 0.70,
-            // height: SCREEN_HEIGHT - tabHeight,
-           height: visible ? SCREEN_HEIGHT : SCREEN_HEIGHT - tabHeight,
-            transform: [{ translateX: slideX }],
-          },
-        ]}
-      >
+        <Animated.View
+          style={[
+            styles.panel,
+            {
+              width: SCREEN_WIDTH * 0.70,
+              height: SCREEN_HEIGHT,
+              transform: [{ translateX: slideX }],
+            },
+          ]}
+        >
+          <SafeAreaView style={styles.safeArea}>
 
-        {/* HEADER */}
-        <View style={styles.header}>
-  <View style={styles.headerTitleWrapper}>
-    <Image source={SmartstayLogo} style={{width:32.67,height:27.4}}/>
-    <Text style={[styles.title,{marginLeft:5}]}>Smartstay
-      {/* {activeHostel?.name || "Smartstay"} */}
-    </Text>
-  </View>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <View style={styles.headerTitleWrapper}>
+                <Image source={SmartstayLogo} style={{ width: 32.67, height: 27.4 }} />
+                <Text style={[styles.title, { marginLeft: 5 }]}>Smartstay
+                  {/* {activeHostel?.name || "Smartstay"} */}
+                </Text>
+              </View>
 
-  <TouchableOpacity onPress={onClose}>
-    <Image source={Remove} style={styles.close} />
-  </TouchableOpacity>
-</View>
+              <TouchableOpacity onPress={onClose}>
+                <Image source={Remove} style={styles.close} />
+              </TouchableOpacity>
+            </View>
 
 
-        <TouchableOpacity style={styles.profileRow}    onPress={() => {
+            <TouchableOpacity style={styles.profileRow} onPress={() => {
               onClose();
               setTimeout(() => navigation.navigate("GeneralDetailsScreen"), 150);
-            }}> 
-          <View
-            style={{ flexDirection: "row", flex: 1 }}
-         
-          >
-           <View style={styles.avatar}>
-  {profileDetails?.profileImage ? (
-    <Image
-      source={{ uri: profileDetails.profileImage }}
-      style={styles.profileImg}
-    />
-  ) : (
-    <Text style={styles.avatarText}>
-      {getInitials(profileDetails)}
-    </Text>
-  )}
-</View>
+            }}>
+              <View
+                style={{ flexDirection: "row", flex: 1 }}
+
+              >
+                <View style={styles.avatar}>
+                  {profileDetails?.profileImage ? (
+                    <Image
+                      source={{ uri: profileDetails.profileImage }}
+                      style={styles.profileImg}
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>
+                      {getInitials(profileDetails)}
+                    </Text>
+                  )}
+                </View>
 
 
-            <View style={{ flex: 1, marginLeft: 2 }}>
-              <Text style={styles.profileName}>  {getFullName(profileDetails)}</Text>
+                <View style={{ flex: 1, marginLeft: 2 }}>
+                  <Text style={styles.profileName}>  {getFullName(profileDetails)}</Text>
 
-              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 , marginLeft: 8  }}>
-                <Image
-                  source={require("../../Assets/Images/Eye.png")}
-                  style={styles.eyeIcon}
-                />
-                <Text style={styles.changePassword}>Change Password</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, marginLeft: 8 }}>
+                    <Image
+                      source={require("../../Assets/Images/Eye.png")}
+                      style={styles.eyeIcon}
+                    />
+                    <Text style={styles.changePassword}>Change Password</Text>
+                  </View>
+                </View>
               </View>
-            </View>
-          </View>
 
-        
-          {/* <TouchableOpacity
+
+              {/* <TouchableOpacity
             ref={arrowRef}
             onPress={() => {
               arrowRef.current.measureInWindow((x, y, width, height) => {
@@ -271,53 +277,58 @@ console.log("profileDetails", profileDetails);
               setShowEditPopup(true);
             }}
           > */}
-            <Image
-              source={require("../../Assets/Images/right_direction.png")}
-              style={styles.arrowIcon}
-            />
-          {/* </TouchableOpacity> */}
+              <Image
+                source={require("../../Assets/Images/right_direction.png")}
+                style={styles.arrowIcon}
+              />
+              {/* </TouchableOpacity> */}
 
-        </TouchableOpacity>
+            </TouchableOpacity>
 
-        {/* BOTTOM MENU */}
-        <View style={styles.bottomSection}>
+            {/* BOTTOM MENU */}
+            <View style={styles.bottomSection}>
+              <TouchableOpacity
+                style={styles.menuRow}
+                onPress={() => navigation.navigate("SettingsScreen")}
+              >
+                <Image source={Setting} style={styles.menuIcon} />
+                <Text style={styles.menuText}>Settings</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.menuRow}>
+                <Image source={Setting} style={styles.menuIcon} />
+                <Text style={styles.menuText}>Help & Information</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                //  onPress={()=>handleLogout('remot')} 
+                onPress={handleLogout}
+                style={styles.logoutRow}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+
+            </View>
+
+            <Text
+              style={styles.versionText}
+            // style={{marginBottom:8,marginHorizontal:14,fontSize:14,fontFamily:'Gilroy-Medium',color: "#333"}}
+            >
+              Version {versionName} ({versionCode})</Text>
+
+          </SafeAreaView>
+
+        </Animated.View>
+
+        {showEditPopup && (
           <TouchableOpacity
-            style={styles.menuRow}
-            onPress={() => navigation.navigate("SettingsScreen")}
-          >
-            <Image source={Setting} style={styles.menuIcon} />
-            <Text style={styles.menuText}>Settings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuRow}>
-            <Image source={Setting} style={styles.menuIcon} />
-            <Text style={styles.menuText}>Help & Information</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-          //  onPress={()=>handleLogout('remot')} 
-           onPress={handleLogout}
-           style={styles.logoutRow}>
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-          
-        </View>
-
-        <Text style={{marginBottom:8,marginHorizontal:14,fontSize:14,fontFamily:'Gilroy-Medium',color: "#333"}}>
-          Version {versionName} ({versionCode})</Text>
-
-      </Animated.View>
-
-      {showEditPopup && (
-  <TouchableOpacity
-    style={styles.popupOverlay}
-    activeOpacity={1}
-    onPress={() => setShowEditPopup(false)}
-  />
-)}
+            style={styles.popupOverlay}
+            activeOpacity={1}
+            onPress={() => setShowEditPopup(false)}
+          />
+        )}
 
 
-{/* {showEditPopup && (
+        {/* {showEditPopup && (
   <View style={[styles.popup, { top: popupPos.top, right: popupPos.right }]}>
     <TouchableOpacity style={styles.popupRow}>
       <Image source={require("../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
@@ -332,63 +343,77 @@ console.log("profileDetails", profileDetails);
 )} */}
 
 
-    </View>
+      </View>
     </>
   );
 }
 
 
 const styles = StyleSheet.create({
-overlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.3)",
-  flexDirection: "row",
-  zIndex: 9999,
-  elevation: 9999,    
-  pointerEvents: "box-none",
-},
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    flexDirection: "row",
+    zIndex: 9999,
+    elevation: 9999,
+    pointerEvents: "box-none",
+  },
 
 
   background: { flex: 1 },
 
-panel: {
-  position: "absolute",
-  top: 0,
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 0,
-  borderBottomLeftRadius: 0,
-  overflow: "hidden",
-  paddingTop: 40,
-},
+  // panel: {
+  //   position: "absolute",
+  //   top: 0,
+  //   backgroundColor: "#fff",
+  //   borderTopLeftRadius: 0,
+  //   borderBottomLeftRadius: 0,
+  //   overflow: "hidden",
+  //   paddingTop: 40,
+  // },
+
+  panel: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+  },
+
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 10 : 10,
+    paddingBottom: Platform.OS === "android" ? 20 : 10,
+  },
 
 
+  header: {
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
+  headerTitleWrapper: {
+    flex: 1,
+    paddingRight: 12,
+    flexDirection: 'row'
+  },
 
-header: {
-  paddingHorizontal: 20,
-  flexDirection: "row",
-  alignItems: "center",
-},
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#000",
+    flexShrink: 1,
+    flexWrap: "wrap",
+  },
 
-headerTitleWrapper: {
-  flex: 1,         
-  paddingRight: 12, 
-  flexDirection:'row'
-},
-
-title: {
-  fontSize: 20,
-  fontWeight: "700",
-  color: "#000",
-  flexShrink: 1,    
-  flexWrap: "wrap", 
-},
-
-  close: {width:15,height:15,tintColor:'#222222'},
+  close: { width: 15, height: 15, tintColor: '#222222' },
 
   profileRow: {
     flexDirection: "row",
@@ -417,11 +442,11 @@ title: {
     padding: 18,
     borderRadius: 10,
     elevation: 5,
-    marginTop:50
-    
+    marginTop: 50
+
   },
 
-  popupRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8,paddingHorizontal:10 },
+  popupRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingHorizontal: 10 },
   popupIcon: { width: 18, height: 18, marginRight: 10 },
   popupText: { fontSize: 16, color: "#333" },
 
@@ -430,33 +455,40 @@ title: {
     top: 0, left: 0, right: 0, bottom: 0,
   },
 
-avatar: {
-  width: 40,
-  height: 40,
-  borderRadius: 25,
-  backgroundColor: "#E5E7EB",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-avatarText: {
-  fontSize: 14,
-  fontWeight: "700",
-  color: "#374151",
-},
+  avatarText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#374151",
+  },
 
-profileImg: {
-  width: 40,
-  height: 40,
-  borderRadius: 25,
-},
+  profileImg: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+  },
 
-profileName: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#000",
-  flexShrink: 1,          
-  flexWrap: "wrap",
-},
+  profileName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+    flexShrink: 1,
+    flexWrap: "wrap",
+  },
+  versionText: {
+    marginBottom: 8,
+    marginHorizontal: 14,
+    fontSize: 14,
+    fontFamily: "Gilroy-Medium",
+    color: "#333",
+  },
 
 });
