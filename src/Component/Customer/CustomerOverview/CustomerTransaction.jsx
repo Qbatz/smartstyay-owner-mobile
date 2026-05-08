@@ -54,7 +54,7 @@ export default function CustomerTransactions({ customerDetails }) {
                       <Text style={styles.billType}>{item.paidTo}</Text>
 
                       <Text style={styles.statusText}>
-                        {item.referenceNumber}
+                        {item.transactionReferenceNumber}
                       </Text>
                     </View>
                   </View>

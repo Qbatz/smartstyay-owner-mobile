@@ -433,14 +433,60 @@ export default function AddPG({ navigation, route }) {
 
   };
 
-  const [picModal,setPicModal]=useState(false);
+const [picModal, setPicModal] = useState(false);
+
+const [selectedImageSetter, setSelectedImageSetter] = useState(null);
+
+const openCameraPic = () => {
+  launchCamera(
+    {
+      mediaType: "photo",
+      quality: 0.7,
+    },
+    (response) => {
+      if (response.didCancel) return;
+
+      if (response.assets?.length > 0) {
+        const image = response.assets[0];
+
+        if (selectedImageSetter) {
+          selectedImageSetter(image);
+        }
+
+        setPicModal(false);
+      }
+    }
+  );
+};
+
+const openGalleryPic = () => {
+  launchImageLibrary(
+    {
+      mediaType: "photo",
+      quality: 0.7,
+    },
+    (response) => {
+      if (response.didCancel) return;
+
+      if (response.assets?.length > 0) {
+        const image = response.assets[0];
+
+        if (selectedImageSetter) {
+          selectedImageSetter(image);
+        }
+
+        setPicModal(false);
+      }
+    }
+  );
+};
+
 
   const renderImageBox=(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
   setModalMessage,
   setModalType)=> {
   { console.log(image) }
   const imageUri = image?.uri?.image || image?.uri;
-  console.log("binthu", imageUri)
 
   const deleteAdditionalPic = async (image) => {
     setImage(null);
@@ -474,7 +520,10 @@ export default function AddPG({ navigation, route }) {
     <View style={{ position: "relative" }}>
       <ScrollView horizontal showsHorizontalScrollIndicator>
         <TouchableOpacity
-        onPress={()=>setPicModal(true)}
+        onPress={() => {
+    setSelectedImageSetter(() => setImage);
+    setPicModal(true);
+  }}
           // onPress={() =>
           //   launchImageLibrary({ mediaType: "photo" }).then((r) =>
           //     r?.assets?.length && setImage(r.assets[0])
@@ -500,7 +549,34 @@ export default function AddPG({ navigation, route }) {
             <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
         )}
+         <ImagePickerSheet
+                visible={picModal}
+                onClose={() => setPicModal(false)}
+                title="Change Profile Picture"
+                options={[
+                  {
+                    label: "Take Picture",
+                    icon: require("../../../Assets/Images/CameraIcon.png"),
+                    showArrow: true,
+                    onPress: openCameraPic,
+                  },
+                  {
+                    label: "Select from Gallery",
+                    icon: require("../../../Assets/Images/GalleryIcon.png"),
+                    showArrow: true,
+                    onPress: openGalleryPic,
+                  },
+                  {
+                    label: "Remove Picture",
+                    icon: require("../../../Assets/Images/DeleteIcon.png"),
+                    showArrow: false,
+                    onPress: () => console.log("remove"),
+                  },
+                ]}
+              />
       </ScrollView>
+
+
     </View>
   );
 }
@@ -618,8 +694,8 @@ export default function AddPG({ navigation, route }) {
               </Modal> */}
 
               <ImagePickerSheet
-                visible={photoModal || picModal}
-                onClose={() => setPhotoModal(false) || setPicModal(false)}
+                visible={photoModal}
+                onClose={() => setPhotoModal(false)}
                 title="Change Profile Picture"
                 options={[
                   {

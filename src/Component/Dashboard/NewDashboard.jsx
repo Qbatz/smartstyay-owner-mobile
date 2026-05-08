@@ -18,7 +18,7 @@ import { useLayoutEffect } from "react";
 import { Animated, Easing } from "react-native";
 import SubscriptionBanner from "./SubscriptionBannerAlert"
 import LinearGradient from "react-native-linear-gradient";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useNavigation, useFocusEffect, useIsFocused } from "@react-navigation/native";
 import RecordPaymentSheet from "../MorePages/Bills/RecordPayment";
 import PgImg from '../../Assets/Images/PgImg.png'
 import Bell from '../../Assets/Images/bell.png'
@@ -251,7 +251,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
     profitTrend: dashboardList?.profitTrend || 0,
   };
 
-
+    
+  
   useEffect(() => {
     const fetchDashboard = async () => {
       const res = await getDashboard(activeHostelId, {
@@ -275,7 +276,15 @@ export default function DashboardNewDesign({ initialParams, route }) {
     };
 
     fetchDashboard();
-  }, [activeHostelId])
+  }, [activeHostelId,showProfileTopBar])
+
+  const isFocused = useIsFocused();
+  useEffect(() => {
+  if (route.name === "Home" && isFocused) {
+    fetchDashboard();
+  }
+}, [isFocused]);
+
 
    const fetchDashboard = async () => {
       const res = await getDashboard(activeHostelId, {
@@ -299,6 +308,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
       }
       }
     };
+  
 
 
   useEffect(() => {

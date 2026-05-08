@@ -240,7 +240,6 @@ export default function CreateBill({ navigation }) {
         hostelId: activeHostelId,
         invoiceId: data.invoiceId,
       });
-      console.log(res, "binthu")
 
       if (!res?.success) {
         console.log("Bill details error", res?.message);
