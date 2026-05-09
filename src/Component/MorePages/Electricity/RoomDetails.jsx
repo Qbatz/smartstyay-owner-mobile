@@ -645,6 +645,7 @@ export default function RoomDetails({ route, navigation }) {
   //     Alert.alert("Error", res.message || "Something went wrong");
   //   }
   // };
+  console.log("binthu",occupants,readings)
 
 
   return (
@@ -1002,7 +1003,13 @@ export default function RoomDetails({ route, navigation }) {
                 (
 
                   <View key={index} style={styles.listRow}>
-                    <Image source={ProfileIcon} style={styles.avatar} />
+                    {/* <Image source={ProfileIcon} style={styles.avatar} /> */}
+                    <View>
+                    {item?.profilePic ? <Image source={{uri:item?.profilePic}} style={styles.avatar} /> : 
+                      <View style={[styles.avatar,{alignItems:'center',justifyContent:'center',backgroundColor:'#e6e7eb'}]}>
+                        <Text style={{fontSize:16,fontFamily:'Gilroy-Bold'}}>{item?.initials}</Text>
+                      </View>}
+                      </View>
 
                     <View style={{ flex: 1, paddingLeft: 10 }}>
                       <Text style={styles.monthText}>{item?.fullName}</Text>
