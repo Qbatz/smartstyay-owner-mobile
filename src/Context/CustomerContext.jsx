@@ -43,6 +43,8 @@ export const CustomerProvider = ({ children }) => {
       );
 
       setLoading(false);
+      console.log("res", response?.data);
+      
 
       return response.data;
 

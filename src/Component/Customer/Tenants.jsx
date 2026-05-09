@@ -687,6 +687,9 @@ export default function TenantsScreen({ route }) {
     });
   }
   const handleShowTennantCheckin = () => {
+    setShowDetailsMenu(false);
+    setShowDetailModal(false);
+    setMenuVisible(false)
     // navigation.navigate("TenantCheckin")
     navigation.navigate("BookingCheckIn", {
       customerId: selectedItem.customerId,
@@ -696,7 +699,7 @@ export default function TenantsScreen({ route }) {
     console.log("selectedItem", selectedItem);
 
 
-    setMenuVisible(false)
+    
   }
 
   const handleShowAddBooking = () => {
@@ -857,7 +860,7 @@ export default function TenantsScreen({ route }) {
                     </Text>
                   </View>
                 )}
-                <ScrollView horizontal contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
+                <View horizontal contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
                       <View style={styles.filterRow}>
@@ -901,7 +904,7 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </ScrollView>
+                </View>
 
 
 
@@ -1998,13 +2001,7 @@ export default function TenantsScreen({ route }) {
                 </View>
               </View>
 
-              {renderDropdown(
-                "Tenants",
-                tenantFilter,
-                setTenantFilter,
-                ["Arun", "Allwin",],
-                "tenant"
-              )}
+              
 
               {renderDropdown(
                 "View",

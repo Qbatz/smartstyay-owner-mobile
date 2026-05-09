@@ -973,7 +973,9 @@ const GetAdvanceBookingBills = async (hostelId, page = 1, size = 10) => {
     );
 
     if (res.status === 200) {
-        setBookingBills(res.data || []);
+        setBookingBills(res?.data || []);
+        console.log("res", res);
+        
       return {
         success: true,
         data: res.data,

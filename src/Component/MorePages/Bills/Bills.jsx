@@ -13,6 +13,8 @@ import {
   PanResponder,
   BackHandler, Keyboard, Platform
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -138,7 +140,8 @@ export default function BillsDesign({ route }) {
 
 
 
-
+   console.log("BillDetails", BillDetails?.listInvoices);
+   
 
   const filterOptions = BillDetails?.filterOptions;
 
@@ -275,14 +278,34 @@ export default function BillsDesign({ route }) {
   //   GetAllBillDetails(activeHostelId);
   // }, [activeHostelId])
 
-  useEffect(() => {
-    if (activeHostelId && canReadInvoice) {
-      GetAllBillDetails(activeHostelId);
-    }
-  }, [activeHostelId, canReadInvoice]);
+  // useEffect(() => {
+  //   if (activeHostelId && canReadInvoice) {
+  //     GetAllBillDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId, canReadInvoice]);
+
+//  useFocusEffect(
+//   useCallback(() => {
+//     if (
+//       activeHostelId &&
+//       canReadInvoice &&
+//       activeTab === "Invoices"
+//     ) {
+//       GetAllBillDetails(activeHostelId);
+//     }
+//   }, [activeHostelId, canReadInvoice, activeTab])
+// );
 
 
-
+useEffect(() => {
+  if (
+    activeTab === "Invoices" &&
+    activeHostelId &&
+    canReadInvoice
+  ) {
+    GetAllBillDetails(activeHostelId);
+  }
+}, [activeTab]);
 
   useEffect(() => {
     if (activeHostelId) {

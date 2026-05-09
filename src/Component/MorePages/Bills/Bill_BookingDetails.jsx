@@ -345,6 +345,7 @@ console.log("invoicesList", invoicesList);
 
   const handleShowBookingtoInvoice = () => {
      navigation.navigate("BookingtoDiscount")
+      onClose()
        
   }
 
@@ -531,7 +532,7 @@ console.log("invoicesList", invoicesList);
   // }
 
 
-
+const canRedeem = selectedBill?.canRedeem;
 
 
   if (!visible) return null;
@@ -794,10 +795,31 @@ console.log("invoicesList", invoicesList);
 
       
               <>
-                 <TouchableOpacity style={styles.applyBtn} onPress={handleShowBookingtoInvoice}>
+                 {/* <TouchableOpacity style={styles.applyBtn} onPress={handleShowBookingtoInvoice}>
                     <Image  source={LinkIcon}  style={{height:20 , width:20 , marginRight:5}} />
     <Text style={styles.applyText}>Apply to Invoices</Text>
-  </TouchableOpacity>
+  </TouchableOpacity> */}
+
+  <TouchableOpacity
+  style={[
+  styles.applyBtn,
+  !canRedeem && {
+    backgroundColor: "#D1D5DB",
+    opacity: 0.7,
+  },
+]}
+  onPress={handleShowBookingtoInvoice}
+  disabled={!canRedeem}
+>
+  <Image
+    source={LinkIcon}
+    style={{ height: 20, width: 20, marginRight: 5 }}
+  />
+
+  <Text style={styles.applyText}>
+    Apply to Invoices
+  </Text>
+</TouchableOpacity>
 
 
               

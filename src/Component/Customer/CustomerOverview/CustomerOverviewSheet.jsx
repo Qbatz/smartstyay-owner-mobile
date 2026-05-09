@@ -8,6 +8,8 @@ import {
   Image, BackHandler,
   NativeModules, Animated, Linking
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -59,7 +61,8 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import FloorIcon from "../../../Assets/Images/Room_bed.png"
 import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
-import Loader from "../../Loader/Loader";
+import Loader from "../../Loader/Loader"
+
 
 
 
@@ -185,6 +188,14 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       setCustomerDetails(res.data)
     }
   }
+
+  useFocusEffect(
+  useCallback(() => {
+    if (customer?.customerId || customerId) {
+      fetchCustomerDetails();
+    }
+  }, [customer?.customerId, customerId])
+);
 
 
   const [showProfileSheet, setShowProfileSheet] = useState(false);
@@ -447,15 +458,41 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   }
 
-  const handleShowTennantCheckin = () => {
-    // navigation.navigate("TenantCheckin")
-    navigation.navigate("BookingCheckIn", {
-      customerId: selectedItem.customerId,
-      customer: selectedItem,
-    });
+  // const handleShowTennantCheckin = () => {
+  //   navigation.navigate("BookingCheckIn", {
+  //     customerId: selectedItem.customerId,
+  //     customer: selectedItem,
+  //   });
 
-    setMenuVisible(false)
-  }
+  //       onSuccess: async () => {
+  //     closeDetailSheet(); 
+
+  //     await fetchCustomers(); 
+
+  //     setShowDetailsMenu(false);
+  //     setMenuVisible(false);
+  //   },
+
+  //   setMenuVisible(false)
+  // }
+
+  const handleShowTennantCheckin = () => {
+  navigation.navigate("BookingCheckIn", {
+    customerId: selectedItem.customerId,
+    customer: selectedItem,
+
+    onSuccess: async () => {
+      closeDetailSheet(); // bottom sheet close
+
+      await fetchCustomers(); // tenant list refresh
+
+      setShowDetailsMenu(false);
+      setMenuVisible(false);
+    },
+  });
+
+  console.log("selectedItem", selectedItem);
+};
   const handleShowFinalSettlement = () => {
 
     setMenuVisible(false)
@@ -626,7 +663,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   const disableFinancialEdit =
     status === "BOOKED" ||
-    status === "VACATED" ||
+    status === "VACATED" || 
+    status === "SETTLEMENT_GENERATED" ||
     (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {

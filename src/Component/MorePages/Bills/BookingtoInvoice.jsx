@@ -31,7 +31,7 @@ export default function BookingToInvoice() {
 
     const onSuccess = route?.params?.onSuccess;
 
-    const { BillDetails, loading, GetAllBillDetails,
+    const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills , 
         RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
         , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
         downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
@@ -354,6 +354,8 @@ if (totalApplied > bookingAmount) {
         
 
        if (res?.success) {
+      await  GetAllBillDetails(activeHostelId);
+       await   GetAdvanceBookingBills(activeHostelId);
     setModalType("success");
     setModalMessage("Applied successfully");
     setShowSuccessModal(true);
