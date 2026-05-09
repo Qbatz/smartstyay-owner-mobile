@@ -1069,7 +1069,70 @@ const handleFloorScroll = (event) => {
     </TouchableOpacity>
   </View>
 )} */}
-        <View style={styles.header}>
+
+<View style={styles.header}>
+
+  {!!activeHostelId && (
+    <>
+      <View style={styles.leftSection}>
+        <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+          {activeHostelName?.mainImage ? (
+            <Image
+              source={{ uri: activeHostelName?.mainImage }}
+              style={styles.HostelImg}
+            />
+          ) : (
+            <View
+              style={[
+                styles.HostelImg,
+                {
+                  backgroundColor: "#EEF2FF",
+                  alignItems: "center",
+                  justifyContent: "center",
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: "Gilroy-Semibold",
+                }}
+              >
+                {activeHostelName?.initials}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+     <View style={styles.centerTitleWrapper}>
+  <Text
+    style={styles.centerTitle}
+  >
+    {activeHostelName?.name}
+  </Text>
+</View>
+    </>
+  )}
+
+  {!!activeHostelId && floors?.length > 0 && (
+    <TouchableOpacity
+      disabled={!canWritePayingGuests}
+      style={[
+        styles.floorButton,
+        !canWritePayingGuests && { opacity: 0.4 },
+      ]}
+      onPress={() => {
+        setOpenMenuRoomId(null);
+        setShowAddFloor(true);
+      }}
+    >
+      <Text style={styles.floorButtonText}>+ Floor</Text>
+    </TouchableOpacity>
+  )}
+</View>
+
+        {/* <View style={styles.header}>
 
           {!!activeHostelId && (
             <View style={styles.headerLeft}>
@@ -1080,21 +1143,21 @@ const handleFloorScroll = (event) => {
                   </View>}
 
               </TouchableOpacity>
+              <View style={{flexDirection:'row', alignItems:'center', justifyContent:'center'}}>
 
               <Text style={styles.title}>{activeHostelName?.name}</Text>
+              </View>
             </View>
           )}
 
 
           {!!activeHostelId && floors?.length > 0 && (
             <TouchableOpacity
-              // style={styles.floorButton}
               disabled={!canWritePayingGuests}
               style={[styles.floorButton, !canWritePayingGuests && { opacity: 0.4 }]}
               onPress={() =>
               {
                    setOpenMenuRoomId(null);
-                  // setShowAddRoom(false);
                   setShowAddFloor(true)
               }
                 }
@@ -1102,18 +1165,17 @@ const handleFloorScroll = (event) => {
               <Text style={styles.floorButtonText}>+ Floor</Text>
             </TouchableOpacity>
           )}
-        </View>
+        </View> */}
 
 
         {activeHostelId && canReadPayingGuests && floors?.length > 0 && (
           <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 13 }}>
 
-            {/* ✅ Filters only when rooms exist */}
             {rooms?.length > 0 && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}  // ✅ keep same alignment
+                contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}  
               >
                 <View style={styles.filterItem}>
                   <View style={styles.availableDot} />
@@ -1142,9 +1204,8 @@ const handleFloorScroll = (event) => {
               </ScrollView>
             )}
 
-            {/* ✅ Dots RIGHT END (no layout change) */}
             <TouchableOpacity
-              style={[styles.addRoomBtn, { marginLeft: "auto" }]}  // ✅ magic line
+              style={[styles.addRoomBtn, { marginLeft: "auto" }]}  
               onPress={() => {
                 setOpenMenuRoomId(null);
                 setShowFloorMenu(prev => !prev);
@@ -1244,12 +1305,14 @@ const handleFloorScroll = (event) => {
                   }}
                 >
                   <View
-                    style={{
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
+  style={{
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    width: "100%",
+  }}
+>
                     <View
                       style={[
                         styles.floorCircle,
@@ -1257,10 +1320,20 @@ const handleFloorScroll = (event) => {
                       ]}
                     >
                       <Text
-                        style={[
-                          styles.circleText,
-                          activeFloorIndex === i && styles.circleTextActive,
-                        ]}
+                        // style={[
+                        //   styles.circleText,
+                        //   activeFloorIndex === i && styles.circleTextActive,
+                        // ]}
+                         style={[
+    styles.circleText,
+    activeFloorIndex === i && styles.circleTextActive,
+  ]}
+  //                        numberOfLines={2}
+  // ellipsizeMode="tail"
+  // style={[
+  //   styles.floorLabel,
+  //   activeFloorIndex === i && styles.floorLabelActive,
+  // ]}
                       >
                         {getFloorLabel(f.name)}
                       </Text>
@@ -1867,18 +1940,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: Platform.OS === "ios" ? 50 : 64,
+    paddingTop: Platform.OS === "ios" ? 60 : 64,
   },
 
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-start",   // 🔥 IMPORTANT
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
+  // header: {
+  //   flexDirection: "row",
+  //   alignItems: "flex-start",   
+  //   paddingHorizontal: 16,
+  //   marginBottom: 8,
+  // },
 
+header: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 16,
+  marginBottom: 8,
+  position: "relative",
+},
 
+leftSection: {
+  width: 40,
+  zIndex: 2,
+},
 
+centerTitleWrapper: {
+  position: "absolute",
+  left: 65,
+  right: 80,
+  // alignItems: "center",
+  // justifyContent: "center",
+},
+
+centerTitle: {
+  fontSize: 18,
+  fontFamily: "Gilroy-Bold",
+  color: "#000",
+  // textAlign: "center",
+  lineHeight: 24,
+},
   headerLeft: {
     flexDirection: "row",
     alignItems: "flex-start",   // 🔥 allow multi-line
@@ -1914,16 +2014,44 @@ const styles = StyleSheet.create({
 
   floorButtonText: { color: "#fff", fontFamily: "Gilroy-Semibold" },
 
-  floorTab: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    marginRight: 10,
-    alignItems: "center",
-    width: 80,
-  },
+  // floorTab: {
+  //   paddingVertical: 8,
+  //   paddingHorizontal: 10,
+  //   borderRadius: 12,
+  //   borderWidth: 1,
+  //   borderColor: "#eee",
+  //   marginRight: 10,
+  //   alignItems: "center",
+  //   width: 80,
+  // },
+
+floorTab: {
+  paddingVertical: 12,
+  paddingHorizontal: 8,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#eee",
+  marginRight: 10,
+  alignItems: "center",
+  justifyContent: "center",
+  width: 110,
+},
+
+floorLabel: {
+  fontSize: 12,
+  color: "#777",
+  fontFamily: "Gilroy-Semibold",
+  textAlign: "center",
+  width: "100%",
+  flexShrink: 1,
+  lineHeight: 17,
+},
+
+floorLabelActive: {
+  color: "#1E45E1",
+  fontFamily: "Gilroy-Bold",
+  textAlign: "center",
+},
 
   floorTabActive: {
     borderColor: "#1E45E1",
@@ -1944,26 +2072,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E45E1",
   },
 
-  circleText: {
-    color: "#333",
-    fontSize: 14,
-    fontFamily: "Gilroy-Semibold",
-  },
+ circleText: {
+  color: "#333",
+  fontSize: 15,
+  fontFamily: "Gilroy-Bold",
+  textAlign: "center",
+},
 
-  circleTextActive: {
-    color: "#fff",
-  },
+circleTextActive: {
+  color: "#fff",
+},
 
-  floorLabel: {
-    fontSize: 12,
-    color: "#777",
-    fontFamily: "Gilroy-Semibold"
-  },
+  // floorLabel: {
+  //   fontSize: 12,
+  //   color: "#777",
+  //   fontFamily: "Gilroy-Semibold"
+  // },
 
-  floorLabelActive: {
-    color: "#1E45E1",
-   fontFamily: "Gilroy-Bold" ,
-  },
+  // floorLabelActive: {
+  //   color: "#1E45E1",
+  //  fontFamily: "Gilroy-Bold" ,
+  // },
   roomCard: {
   backgroundColor: "#fff",
   borderRadius: 12,

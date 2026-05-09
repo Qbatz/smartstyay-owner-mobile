@@ -30,7 +30,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import CommingSoon from "../../Assets/Images/Coming_soon.png"
 
 export default function BookingCheckIn({ navigation, route }) {
-    const { customerId, customer } = route.params || {};
+    const { customerId, customer , onSuccess} = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
 
@@ -419,11 +419,14 @@ export default function BookingCheckIn({ navigation, route }) {
             setMessage(res.data);
             setShowSuccess(true);
 
+             if (onSuccess) {
+               await onSuccess();
+              }
+
             await getAllBedsByRoom(selectedRoom.id);
             navigation.goBack();
             setTimeout(() => {
                 setShowSuccess(false);
-
             }, 800);
 
         } else {
