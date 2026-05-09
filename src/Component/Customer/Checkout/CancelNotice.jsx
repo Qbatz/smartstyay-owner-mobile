@@ -153,6 +153,8 @@ export default function CancelNotice({ navigation, route }) {
 
     console.log("CANCEL NOTICE PAYLOAD", payload);
 
+  
+
     const res = await cancelCheckout(
       activeHostelId,
       tenantId,
@@ -166,13 +168,17 @@ export default function CancelNotice({ navigation, route }) {
       setShowSuccess(true);
       setcheckInDateError("")
 
+        const data = await getCustomerDetails(tenantId)
+       console.log("data", data);
+       
 
       setTimeout(() => {
-        navigation.goBack();
-        setShowSuccess(false);
+        navigation.goBack()
+        setShowSuccess(false)
       }, 800);
 
-    } else {
+    } 
+    else {
       setModalType("warning");
       setMessage(res?.message || "Cancel notice failed");
       setShowSuccess(true);
