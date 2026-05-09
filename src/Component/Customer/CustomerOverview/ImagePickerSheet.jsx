@@ -88,7 +88,7 @@ useEffect(() => {
 ).current;
 
   return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={handleClose} >
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={handleClose} statusBarTranslucent>
       <View style={styles.overlay}>
   <TouchableWithoutFeedback onPress={handleClose}>
     <View style={{ flex: 1 }} />
@@ -149,6 +149,7 @@ useEffect(() => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
+    // ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
