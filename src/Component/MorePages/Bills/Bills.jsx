@@ -27,7 +27,6 @@ import { PGContext } from "../../../Context/PGContext";
 import { Calendar } from "react-native-calendars";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
-import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
 import SmLoader from "../../../Component/Loader/SmartStayLoader"
 // import CatLoader from "../../../Component/Loader/CatLoader"

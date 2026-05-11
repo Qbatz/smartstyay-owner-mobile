@@ -24,7 +24,6 @@ import { Calendar } from "react-native-calendars";
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 
