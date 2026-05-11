@@ -11,8 +11,6 @@ import {
     KeyboardAvoidingView,
     Image, TouchableWithoutFeedback
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import AddCircle from "../../Assets/Images/add-circle.png";

@@ -9,7 +9,6 @@ import {
   TextInput,
   ScrollView, Image, TouchableWithoutFeedback, Keyboard, PanResponder
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";

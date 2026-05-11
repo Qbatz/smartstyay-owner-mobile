@@ -11,7 +11,6 @@ import {
   Platform,
   Modal
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import CalendarIcon from "../../Assets/Images/calendar.png";
