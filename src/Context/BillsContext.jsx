@@ -485,14 +485,16 @@ export default function BillsProvider({ children }) {
     setErrorMsg("");
 
     try {
-      const axios = getAxios();
+      const axios = getAxios()
       const res = await axios.get(
         `/v2/bills/${hostelId}/${invoiceId}`
-      );
+      )
 
       if (res.status === 200) {
-        setBillsPdfDetails(res.data);
-        return { success: true, data: res.data };
+        setBillsPdfDetails(res.data)
+        console.log("res", res)
+        
+        return { success: true, data: res.data }
       }
     } catch (error) {
       const msg = getErrorMessage(error);
