@@ -534,6 +534,9 @@ console.log("invoicesList", invoicesList);
 
 const canRedeem = selectedBill?.canRedeem;
 
+console.log("canRedeem", canRedeem);
+
+
 
   if (!visible) return null;
 
@@ -696,7 +699,7 @@ const canRedeem = selectedBill?.canRedeem;
                      
                     ]}
                   >
-                    ₹ {selectedBill?.invoiceAmount}
+                    ₹ {selectedBill?.availableAmount}
                   </Text>
                 </View>
               </View>
@@ -795,10 +798,9 @@ const canRedeem = selectedBill?.canRedeem;
 
       
               <>
-                 {/* <TouchableOpacity style={styles.applyBtn} onPress={handleShowBookingtoInvoice}>
-                    <Image  source={LinkIcon}  style={{height:20 , width:20 , marginRight:5}} />
-    <Text style={styles.applyText}>Apply to Invoices</Text>
-  </TouchableOpacity> */}
+     
+
+  
 
   <TouchableOpacity
   style={[
@@ -820,6 +822,8 @@ const canRedeem = selectedBill?.canRedeem;
     Apply to Invoices
   </Text>
 </TouchableOpacity>
+  
+
 
 
               

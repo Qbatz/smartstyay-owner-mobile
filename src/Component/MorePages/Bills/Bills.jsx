@@ -56,6 +56,7 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
+import BillIcon from "../../../Assets/Images/bill.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -140,8 +141,8 @@ export default function BillsDesign({ route }) {
 
 
 
-   console.log("BillDetails", BillDetails?.listInvoices);
-   
+  console.log("BillDetails", BillDetails?.listInvoices);
+
 
   const filterOptions = BillDetails?.filterOptions;
 
@@ -284,28 +285,28 @@ export default function BillsDesign({ route }) {
   //   }
   // }, [activeHostelId, canReadInvoice]);
 
-//  useFocusEffect(
-//   useCallback(() => {
-//     if (
-//       activeHostelId &&
-//       canReadInvoice &&
-//       activeTab === "Invoices"
-//     ) {
-//       GetAllBillDetails(activeHostelId);
-//     }
-//   }, [activeHostelId, canReadInvoice, activeTab])
-// );
+  //  useFocusEffect(
+  //   useCallback(() => {
+  //     if (
+  //       activeHostelId &&
+  //       canReadInvoice &&
+  //       activeTab === "Invoices"
+  //     ) {
+  //       GetAllBillDetails(activeHostelId);
+  //     }
+  //   }, [activeHostelId, canReadInvoice, activeTab])
+  // );
 
 
-useEffect(() => {
-  if (
-    activeTab === "Invoices" &&
-    activeHostelId &&
-    canReadInvoice
-  ) {
-    GetAllBillDetails(activeHostelId);
-  }
-}, [activeTab]);
+  useEffect(() => {
+    if (
+      activeTab === "Invoices" &&
+      activeHostelId &&
+      canReadInvoice
+    ) {
+      GetAllBillDetails(activeHostelId);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1043,12 +1044,12 @@ useEffect(() => {
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
 
-   const [billbookingDetailsShow , setBillBookingDetailsShow] = useState(false)
-   const [billbookingDetails, setBillBookingDetails] = useState(null)
+  const [billbookingDetailsShow, setBillBookingDetailsShow] = useState(false)
+  const [billbookingDetails, setBillBookingDetails] = useState(null)
 
   const handleBillsBookingDetails = (item) => {
-     setBillBookingDetailsShow(true)
-     setBillBookingDetails(item)
+    setBillBookingDetailsShow(true)
+    setBillBookingDetails(item)
   }
 
   const openCustomerDetails = (customer) => {
@@ -1231,6 +1232,16 @@ useEffect(() => {
     );
     console.log("res", res);
   }
+
+  const BookingInvoiceApplied = selectedBill?.isInvoicesApplied
+
+  const isRentRedeemable = 
+    BillPdfdetails?.invoiceInfo?.canRedeem === true &&
+    BillPdfdetails?.configurations?.invoiceType === "Rent" && !BookingInvoiceApplied 
+
+  const isAdvanceBill = BillPdfdetails?.invoiceInfo?.canRedeem === true &&
+    BillPdfdetails?.configurations?.invoiceType === "Advance" && !BookingInvoiceApplied 
+
 
   // const handlePaidAmountChange = (value) => {
   //   setAmountError("");
@@ -1813,7 +1824,7 @@ useEffect(() => {
       await CommonModule.downloadAndShareFile(res?.url);
       setShowMenu(false)
       setShowBillDetails(false)
-        console.log("AfterUrl")
+      console.log("AfterUrl")
     } else {
       console.log(res?.message);
       setShowMenu(false)
@@ -1995,7 +2006,8 @@ useEffect(() => {
       setRefundDate(null);
       setRefundFrom("");
       setTransactionId("");
-    } else if (res?.refundableError) {
+    }
+    else if (res?.refundableError) {
       setModalType("warning");
       setModalMessage(res?.refundableError);
       setShowSuccessModal(true);
@@ -2901,6 +2913,34 @@ useEffect(() => {
                       </View>
                     )}
 
+                    {/* <View style={styles.creditCard}>
+                      <View style={styles.creditTopRow}>
+                        <View style={styles.creditTitleRow}>
+                          <View style={styles.greenTick}>
+                            <Text style={styles.tickText}>✓</Text>
+                          </View>
+
+                          <Text style={styles.creditTitle}>
+                            Credits Available
+                          </Text>
+                        </View>
+
+                        <Text style={styles.creditAmount}>
+                          ₹ 1000.00
+                        </Text>
+                      </View>
+
+                      <Text style={styles.creditDesc}>
+                        The booking amount isn't applied with any bills yet.
+                      </Text>
+
+                      <TouchableOpacity style={styles.applyBtn}>
+                        <Text style={styles.applyBtnText}>
+                          Apply Now
+                        </Text>
+                      </TouchableOpacity>
+                    </View> */}
+
 
 
 
@@ -3470,7 +3510,7 @@ useEffect(() => {
                     <Image
                       source={EditIcon}
                       style={styles.popupIcon}
-                    />
+                    /> 
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
                 )} */}
@@ -3494,6 +3534,48 @@ useEffect(() => {
                       <Text style={styles.popupText}>Make as discount</Text>
                     </TouchableOpacity>
                   )}
+
+                {isRentRedeemable &&   (
+
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowMenu(false);
+                      setShowBillDetails(false)
+                      navigation.navigate("BookingtoDiscount", {
+                        bill: selectedBill,
+                      });
+                    }}
+                  >
+                    <Image
+                      source={BillIcon}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Adjust with Advance</Text>
+                  </TouchableOpacity>
+
+                )}
+
+                {isAdvanceBill && ( 
+
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowMenu(false);
+                      setShowBillDetails(false)
+                      navigation.navigate("BookingtoDiscount", {
+                        bill: selectedBill,
+                      });
+                    }}
+                  >
+                    <Image
+                      source={BillIcon}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Apply Invoices</Text>
+                  </TouchableOpacity>
+
+                )}
 
 
 
@@ -3548,30 +3630,6 @@ useEffect(() => {
                     </TouchableOpacity>
                   )
                 }
-
-
-                {/* <TouchableOpacity
-                  style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
-                  disabled={!canReadInvoice}
-                >
-                  <Image source={WhatsappIcon} style={styles.popupIcon} />
-                  <Text style={styles.popupText}>share</Text>
-                </TouchableOpacity> */}
-
-
-                {/* <TouchableOpacity
-  style={styles.popupRow}
-  onPress={() => {
-    setShowMenu(false);
-    setDeleteTenants(true);
-  }}
->
-  <Image
-    source={require("../../../Assets/Images/trash.png")}
-    style={styles.popupIcon}
-  />
-  <Text style={styles.popupText}>Delete</Text>
-</TouchableOpacity> */}
               </View>
             </TouchableOpacity>
           )}
@@ -5028,10 +5086,10 @@ useEffect(() => {
           </Modal>
 
 
-    {billbookingDetailsShow && (
-      <BillBookingDetails  visible = {billbookingDetailsShow}  onClose ={() => setBillBookingDetailsShow(false)} 
-      selectedBill={billbookingDetails}  />
-    )}
+          {billbookingDetailsShow && (
+            <BillBookingDetails visible={billbookingDetailsShow} onClose={() => setBillBookingDetailsShow(false)}
+              selectedBill={billbookingDetails} />
+          )}
 
 
 
@@ -6564,5 +6622,76 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontFamily: "Gilroy-Semibold",
+  },
+
+  creditCard: {
+    marginTop: 24,
+    borderWidth: 1,
+    borderColor: "#EAEAEA",
+    borderRadius: 18,
+    padding: 10,
+    backgroundColor: "#FFFFFF",
+  },
+
+  creditTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  creditTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  greenTick: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#08B32A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  tickText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  creditTitle: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  creditAmount: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+
+  creditDesc: {
+    marginTop: 16,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  applyBtn: {
+    marginTop: 22,
+    height: 44,
+    borderRadius: 5,
+    backgroundColor: "#2446F5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  applyBtnText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Gilroy-SemiBold",
   },
 });

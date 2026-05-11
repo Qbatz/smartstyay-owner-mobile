@@ -427,7 +427,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
 
           <Text style={{ fontWeight: "700" }}>
-            ₹ {item?.invoiceAmount}
+            ₹ {item?.availableAmount}
           </Text>
 
           <Text style={styles.dateText}>
