@@ -946,7 +946,7 @@ if (pinError) newErrors.pincode = pinError;
               />
 
             <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode}
+            <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode} keyboardType="number-pad"
               onChangeText={(t) => {
 
                 const cleaned = t.replace(/[^0-9]/g, "").slice(0, 6);

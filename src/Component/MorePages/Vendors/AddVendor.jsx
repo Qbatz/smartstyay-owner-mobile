@@ -93,6 +93,10 @@ export default function AddVendorSheet({ onClose, vendorData }) {
   const [noChangeError, setNoChangeError] = useState("");
 
   const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState({
+    code: "+91",
+    label: "India",
+  });
 
   const scrollRef = useRef(null);
   const mobileRef = useRef(null);
@@ -140,6 +144,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
       stateName: vendorData.state || "",
       country: vendorData.countryId || "",
       pinCode: vendorData.pinCode ? String(vendorData.pinCode) : "",
+      countryCode: vendorData.countryCode,
     };
     if (vendorData.countryId === 1) {
       setCountryLabel("India");   // UI
@@ -159,6 +164,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
     setStateName(snapshot.stateName);
     setCountry(snapshot.country);
     setPinCode(snapshot.pinCode);
+    setSelectedCountry(snapshot.countryCode)
 
 
     if (vendorData.profilePic) {
@@ -402,6 +408,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
       }
     );
   };
+  console.log("countrycode",selectedCountry)
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -412,10 +419,11 @@ export default function AddVendorSheet({ onClose, vendorData }) {
       hostelId: activeHostelId,
       firstName,
       lastName,
-      mobile: `91${mobile}`,
+      mobile: `${mobile}`,
       mailId: email,
       businessName,
       // country: Number(country), 
+      countryCode:selectedCountry?.code,
       country: Number(countryValue),
       houseNo,
       pinCode,
@@ -720,6 +728,14 @@ export default function AddVendorSheet({ onClose, vendorData }) {
   //     hideSub.remove();
   //   };
   // }, []);
+  const countryList = [
+  { label: "India", code: "+91" },
+  { label: "United States", code: "+1" },
+  { label: "United Kingdom", code: "+44" },
+  { label: "Australia", code: "+61" },
+  { label: "Singapore", code: "+65" },
+];
+
 
 
 
@@ -860,10 +876,10 @@ export default function AddVendorSheet({ onClose, vendorData }) {
                 style={styles.countryCodeBox}
                 onPress={() => setCountryCodeOpen(!countryCodeOpen)}
               >
-                <Text style={styles.countryCodeText}>{countryCode}</Text>
+                <Text style={styles.countryCodeText}>{selectedCountry.code || selectedCountry}</Text>
                 <Image source={DownArrow} style={styles.countryArrow} />
               </TouchableOpacity>
-
+            
               <View ref={mobileRef}>
                 <TextInput
                   style={styles.mobileInput}
@@ -881,7 +897,35 @@ export default function AddVendorSheet({ onClose, vendorData }) {
               </View>
 
             </View>
+             
+
             <ErrorMessage message={errors.mobile} type="error" />
+             {countryCodeOpen && (
+                    <>
+                      <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
+                        <View style={styles.dropdownOverlay} />
+                      </TouchableWithoutFeedback>
+              
+                      <View style={styles.countryDropdownMenu}>
+                        <ScrollView>
+                          {countryList.map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={styles.countryOption}
+                              onPress={() => {
+                                setSelectedCountry(item);
+                                setCountryCodeOpen(false);
+                              }}
+                            >
+                              <Text style={styles.countryOptionText}>
+                                {item.label} ({item.code})
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    </>
+                  )}
 
             <Text style={styles.label}>Email ID</Text>
             <View ref={emailRef}>
@@ -1573,4 +1617,34 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
 
+  dropdownOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+
+countryDropdownMenu: {
+  position: "absolute",
+  top: 355,
+  left: 0,
+  width: 180,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 10,
+  elevation: 10,
+  zIndex: 9999,
+  maxHeight: 250,
+},
+countryOption: {
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+},
+
+countryOptionText: {
+  fontSize: 14,
+  color: "#111",
+},
 });
