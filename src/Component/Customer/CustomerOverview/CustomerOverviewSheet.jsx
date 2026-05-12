@@ -664,7 +664,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" || 
-    status === "SETTLEMENT_GENERATED" ||
+    // status === "SETTLEMENT_GENERATED" ||
     (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {

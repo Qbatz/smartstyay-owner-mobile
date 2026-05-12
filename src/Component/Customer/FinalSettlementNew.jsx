@@ -1229,6 +1229,8 @@ useEffect(()=>{
                 </View>
               )}
             </View>
+
+
             <View style={styles.accordionCard}>
               <TouchableOpacity
                 style={styles.accordionHeader}
@@ -2149,6 +2151,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  
   ebRowWeb: {
     flexDirection: "row",
     alignItems: "center",

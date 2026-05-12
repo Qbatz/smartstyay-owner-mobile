@@ -82,6 +82,11 @@ const BillBookingDetailsSheet = ({
     canDeleteModule: canDeleteReceipt,
   } = useHasPermission("Receipt")
 
+      const {
+      canReadModule: canReadBooking,
+    } = useHasPermission("Booking");
+  
+
   const dotsRefs = useRef({});
 
 
@@ -805,13 +810,13 @@ console.log("canRedeem", canRedeem);
   <TouchableOpacity
   style={[
   styles.applyBtn,
-  !canRedeem && {
+  (!canRedeem || !canUpdateInvoice) && {
     backgroundColor: "#D1D5DB",
     opacity: 0.7,
   },
 ]}
   onPress={handleShowBookingtoInvoice}
-  disabled={!canRedeem}
+  disabled={!canRedeem || !canUpdateInvoice}  
 >
   <Image
     source={LinkIcon}
