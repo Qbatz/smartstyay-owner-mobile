@@ -1503,6 +1503,16 @@ const handleFloorScroll = (event) => {
                         if (b.onNotice) statusArray.push("noticeperiod");
                         if (b.overDue) statusArray.push("overdue");
                       }
+                      else if (b.overDue && b.onNotice) {
+                        statusCount = (b.overDue) ? 2 : 3;
+
+                        if (b.onNotice) statusArray.push("noticeperiod");
+                        if (b.overDue) statusArray.push("overdue");
+                      }
+                       else if (b.overDue && b.isBooked) {
+                        statusArray = ["overdue"];
+                        statusCount = 2;
+                      }
                       else if (b.overDue && !b.isBooked && !b.onNotice) {
                         statusArray = ["overdue"];
                         statusCount = 1;

@@ -289,7 +289,9 @@ const maxDate = today;
 
                         <TouchableOpacity
                             style={styles.inputBox}
-                            onPress={() => setShowCalendar(true)}
+                            onPress={() =>{ setShowCalendar(true)
+                                Keyboard.dismiss();
+                            }}
                         >
                             <Text style={styles.placeholder}>
                                 {selectedDate
