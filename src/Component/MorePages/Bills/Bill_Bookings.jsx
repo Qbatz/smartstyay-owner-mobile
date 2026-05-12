@@ -18,6 +18,7 @@ import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
@@ -47,6 +48,12 @@ const BillBookings = ({ onBookingDetailsShow }) => {
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
+
+    const {
+    canReadModule: canReadBooking,
+  } = useHasPermission("Booking");
+
+  const { canUpdateModule: canUpdateInvoice } = useHasPermission("Bills");
 
   console.log("advanceBills", bookingBills);
 
@@ -155,11 +162,19 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
 
 
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     GetAdvanceBookingBills(activeHostelId);
+  //   }
+  // }, [activeHostelId])
+
   useEffect(() => {
-    if (activeHostelId) {
-      GetAdvanceBookingBills(activeHostelId);
-    }
-  }, [activeHostelId]);
+  if (activeHostelId && canReadBooking) {
+    GetAdvanceBookingBills(activeHostelId);
+  }
+}, [activeHostelId, canReadBooking]);
+
+
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -456,11 +471,9 @@ const BillBookings = ({ onBookingDetailsShow }) => {
       <View style={styles.container}>
 
 
-        <FlatList
-          // data={[]}
+        {/* <FlatList
           data={Advancebookingbills}
           renderItem={renderItem}
-          // keyExtractor={(item) => item.transactionId}
           keyExtractor={(item, index) =>
             item?.invoiceId
               ? item.invoiceId.toString()
@@ -475,7 +488,39 @@ const BillBookings = ({ onBookingDetailsShow }) => {
           ListEmptyComponent={
             !loading && <EmptyReceiptState />
           }
-        />
+        /> */}
+
+        {!canReadBooking && !loading ? (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={EmptyFloor}
+      style={styles.emptyImage}
+      resizeMode="contain"
+    />
+    <Text style={styles.emptyText}>
+      You don’t have permission to view bookings
+    </Text>
+  </View>
+) : (
+  <FlatList
+    data={Advancebookingbills}
+    renderItem={renderItem}
+    keyExtractor={(item, index) =>
+      item?.invoiceId
+        ? item.invoiceId.toString()
+        : index.toString()
+    }
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      paddingTop: 0,
+      flexGrow: 1,
+      paddingBottom: 120,
+    }}
+    ListEmptyComponent={
+      !loading && <EmptyReceiptState />
+    }
+  />
+)}
 
 
 
@@ -757,7 +802,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
                   <Text style={styles.resetBtnText}>Reset All</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                <TouchableOpacity  style={styles.applyBtn} onPress={() => setShowFilter(false)}>
                   <Text style={styles.applyBtnText}>Apply</Text>
                 </TouchableOpacity>
               </View>
