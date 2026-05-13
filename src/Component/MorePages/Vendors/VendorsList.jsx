@@ -312,7 +312,7 @@ export default function VendorsList({ navigation }) {
               <View style={{ flexDirection: 'row', marginTop: 6, alignItems: 'center' }}>
                 <Image source={CallIcon} style={{ width: 16, height: 16 }} />
                 <Text style={[styles.infoValue, { marginLeft: 5 }]}>
-                  +{item.mobile || "--"}
+                  +{item.countryCode} {item.mobile || "--"}
                 </Text>
 
               </View>

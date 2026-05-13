@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState } from "react";
 import {getAxios} from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
+import {AutoLogout} from "../Component/AutoLogout"
+import { LoginContexts } from "./LoginContext";
+
 
 export const CustomerContext = createContext();
 
@@ -9,6 +12,7 @@ export const CustomerProvider = ({ children }) => {
   const [errorMsg, setErrorMsg] = useState("")
   const [vendorList, setVendorList] = useState([]);
   const [ReAssignStatusCode , setReAssignStatusCode] = useState(0)
+  const loginContext=useContext(LoginContexts)
   
 
   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
@@ -43,11 +47,16 @@ export const CustomerProvider = ({ children }) => {
       );
 
       setLoading(false);
+      console.log("res", response?.data);
+      
 
       return response.data;
 
     } catch (error) {
       setLoading(false);
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       const msg =
         error.response?.data?.message || "Customer fetch failed";
       console.log("CUSTOMER API ERROR:", msg);
@@ -86,6 +95,9 @@ export const CustomerProvider = ({ children }) => {
     } catch (error) {
       const msg = getErrorMessage(error);
       console.log("CUSTOMER DETAILS ERROR:", msg);
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       setErrorMsg(msg);
       return { success: false, message: msg };
     } finally {
@@ -133,6 +145,9 @@ export const CustomerProvider = ({ children }) => {
       return { success: true, data: res.data };
 
     } catch (error) {
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       return {
         success: false,
         message:
@@ -169,6 +184,9 @@ export const CustomerProvider = ({ children }) => {
       return { success: false };
     } catch (error) {
       console.log("BED INIT ERROR:", error?.response?.data);
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       return { success: false };
     }
   };
@@ -191,6 +209,9 @@ export const CustomerProvider = ({ children }) => {
       return { success: true, data: res.data };
     } catch (error) {
       console.log("CHECK-IN ERROR:", error.response?.data);
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       return {
         success: false,
         message: error.response?.data?.message || "Check-in failed",
@@ -216,6 +237,9 @@ export const CustomerProvider = ({ children }) => {
       return { success: true, data: res.data };
     } catch (error) {
       console.log("DELETE CUSTOMER ERROR:", error?.response?.data);
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       return {
         success: false,
         message:
@@ -248,6 +272,9 @@ export const CustomerProvider = ({ children }) => {
 
       return { success: false };
     } catch (error) {
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       console.log("CHANGE BED ERROR:", error?.response?.data);
       return {
         success: false,
@@ -280,6 +307,9 @@ export const CustomerProvider = ({ children }) => {
       return { success: false, message: "Failed to fetch customer details" };
     } catch (error) {
       console.log("CUSTOMER DETAILS ERROR:", error?.response?.data);
+       if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       return {
         success: false,
         message:
@@ -312,6 +342,9 @@ const moveToNoticePeriod = async (hostelId, payload) => {
   }
   catch (error) {
   console.log("NOTICE ERROR FULL 👉", error.response?.data);
+   if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
   return {
     success: false,
     message:
@@ -344,6 +377,9 @@ const moveToNoticePeriod = async (hostelId, payload) => {
     return { success: false, message: "Booking failed" };
   } catch (error) {
     console.log("error", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -376,6 +412,9 @@ const cancelCheckout = async (hostelId, customerId, payload) => {
     return { success: false, message: "Cancel checkout failed" };
   } catch (error) {
     console.log("error", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -408,6 +447,9 @@ const getSettlementByCustomerId = async (customerId, leavingDate) => {
 
   } catch (error) {
     console.log("SETTLEMENT ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -477,6 +519,9 @@ const submitSettlement = async (customerId, payload) => {
     return { success: false, message: "Settlement failed" };
   } catch (error) {
     console.log("error", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -503,6 +548,9 @@ const initializeCheckout = async (hostelId, customerId) => {
     return { success: true, data: res.data };
   } catch (error) {
     console.log("error", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -533,6 +581,9 @@ const confirmCheckout = async (customerId) => {
     return { success: false, message: "Checkout failed" };
   } catch (error) {
     console.log("CONFIRM CHECKOUT ERROR 👉", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -558,6 +609,9 @@ const initializeCheckIn = async (hostelId, customerId) => {
    
   } catch (error) {
     console.log("INIT CHECK-IN ERROR 👉", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -588,6 +642,9 @@ const bookedCheckInCustomer = async (customerId, payload) => {
     return { success: false, message: "Booked check-in failed" };
   } catch (error) {
     console.log("BOOKED CHECK-IN ERROR 👉", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -617,6 +674,9 @@ const initializeCancelBooking = async (customerId) => {
     return { success: false, message: "Initialize cancel failed" };
   } catch (error) {
     console.log("INIT CANCEL ERROR 👉", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -648,6 +708,9 @@ const cancelBooking = async (customerId, payload) => {
     return { success: false, message: "Cancel booking failed" };
   } catch (error) {
     console.log("CANCEL BOOKING ERROR 👉", error.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -680,6 +743,9 @@ const getCheckoutCustomersByHostel = async (hostelId, name = "") => {
     return res.data;
   } catch (error) {
     console.log("CHECKOUT CUSTOMERS ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     setErrorMsg(
       error?.response?.data?.message || "Checkout customers fetch failed"
     );
@@ -730,6 +796,9 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
     return { success: false, message: "Update failed" };
   } catch (error) {
     console.log("EDIT BASIC DETAILS ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -762,6 +831,9 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
       return { success: false };
     } catch (err) {
       console.log("Vendor list error:", err?.response?.data || err);
+       if (err?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
       return { success: false, message: getErrorMessage(err) };
     } finally {
       setLoading(false);
@@ -782,6 +854,9 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
   
         return { success: false, message: "Failed to delete vendor" };
       } catch (err) {
+         if (err?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
         return { success: false, message: getErrorMessage(err) };
       } finally {
         setLoading(false);
@@ -830,6 +905,9 @@ const addVendor = async (payloads, profilePic = null) => {
     return { success: false, message: "Vendor creation failed" };
   } catch (error) {
     console.log("ADD VENDOR ERROR 👉", error?.response?.data || error);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -881,6 +959,9 @@ const updateVendor = async (vendorId, payloads, profilePic = null) => {
     return { success: false, message: "Vendor update failed" };
   } catch (error) {
     console.log("UPDATE VENDOR ERROR 👉", error?.response?.data || error);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -924,6 +1005,9 @@ const editJoiningDate = async (hostelId, bookingId, payload) => {
 
   } catch (error) {
     console.log("EDIT JOINING DATE ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -965,6 +1049,9 @@ const editRentalAmount = async (hostelId, bookingId, payload) => {
     return { success: false, message: "Update failed" };
   } catch (error) {
     console.log("EDIT RENT ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -999,6 +1086,9 @@ const editRentalAmount = async (hostelId, bookingId, payload) => {
     return { success: false, message: "Update failed" };
   } catch (error) {
     console.log("EDIT ADVANCE ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -1029,6 +1119,9 @@ const assignAmenitiesForTenant = async (hostelId, payload) => {
     return { success: true, data: res.data };
   } catch (error) {
     console.log("ASSIGN AMENITY ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message: error?.response?.data?.message || "Assign failed",
@@ -1065,6 +1158,9 @@ const initializeCancelCheckout = async (hostelId, customerId) => {
     return { success: false, message: "Initialize cancel checkout failed" };
   } catch (error) {
     console.log("INIT CANCEL CHECKOUT ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -1105,6 +1201,9 @@ const getDashboardByHostel = async (hostelId) => {
 
   } catch (error) {
     console.log("DASHBOARD ERROR 👉", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -1167,6 +1266,9 @@ const AddManualDocument = async (hostelId, customerId, pickedFiles , type) => {
 
   } catch (error) {
     console.log("Upload Error", error?.response?.data || error);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -1208,6 +1310,9 @@ const deleteManualDocument = async (hostelId, customerId, documentId) => {
 
   } catch (error) {
     console.log("DELETE DOCUMENT ERROR", error?.response?.data || error);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
     return {
       success: false,
       message:
@@ -1254,6 +1359,9 @@ const AddAdditionalContacts = async (hostelId, customerId, payload) => {
 
   } catch (error) {
     console.log("SAVE ADDITIONAL CONTACT ERROR ", error?.response?.data);
+     if (error?.response?.status === 401) {
+            await AutoLogout(loginContext)
+          }
 
     return {
       success: false,

@@ -329,7 +329,6 @@ const RecordPaymentSheet = ({
             amount: Number(paidAmount),
           },
         })
-        console.log("response", res);
         
   
         if (res?.success) {

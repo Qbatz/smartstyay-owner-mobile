@@ -50,7 +50,7 @@ export default function SettingsScreen({ navigation }) {
   { icon: Expense, title: "Expenses", screen: "ExpensesCategory" },
   { icon: Complaints, title: "Complaints", screen: "ComplaintType" },
   { icon: Amenity, title: "Amenities", screen: "SettingsAmenity" },
-  { icon: UserIcon, title: "User", screen: "UsersScreen" },
+  { icon: UserIcon, title: "Staff", screen: "UsersScreen" },
   { icon: RoleIcon, title: "Role", screen:"RolesScreen" },
   { icon: AgreementIcon, title: "Agreement & Policy",screen:"Agreement"  },
 ];

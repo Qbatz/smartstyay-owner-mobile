@@ -1,16 +1,17 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import base64 from "react-native-base64";
 import { getAxios } from "../Config/AxiosConfig";
 import axios from "axios";
 import { retriveData } from "../Utils/Storage";
-
-
+import { LoginContexts } from "./LoginContext";
+import {AutoLogout} from "../Component/AutoLogout"
 export const PGContext = createContext();
 
 export default function PGProvider({ children }) {
   const [pgLoading, setPgLoading] = useState(false);
   const [pgError, setPgError] = useState(null);
   const [PGDetails, setPgDetails] = useState(null);
+  const loginContext=useContext(LoginContexts)
 
 
   const convertToBase64File = (json) => {
@@ -55,6 +56,9 @@ export default function PGProvider({ children }) {
       return response;
     } catch (error) {
       console.log("ADD PG ERROR:", error);
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext)
+      }
       setPgError(error);
       return error;
     } finally {
@@ -118,6 +122,9 @@ export default function PGProvider({ children }) {
     } catch (error) {
       console.log("UPDATE PG ERROR:", error);
       console.log("error", error.message)
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext)
+      }
       setPgError(error);
       return error;
     } finally {
@@ -135,6 +142,9 @@ export default function PGProvider({ children }) {
 
     } catch (error) {
       console.log("DELETE PG ERROR:", error?.response || error);
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext)
+      }
 
       setPgError(error);
       return error?.response || error;
@@ -156,6 +166,9 @@ export default function PGProvider({ children }) {
       return response;
     } catch (error) {
       console.log("GET PG DETAILS ERROR:", error?.response || error);
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext)
+      }
       setPgError(error);
       return error?.response || error;
     } finally {
@@ -164,7 +177,7 @@ export default function PGProvider({ children }) {
   };
 
   const getDashboard = async (hostelId, filters = {}) => {
-    console.log(hostelId,filters,"listDetails")
+    console.log(hostelId, filters, "listDetails")
     try {
       setPgLoading(true);
       setPgError(null);
@@ -183,11 +196,13 @@ export default function PGProvider({ children }) {
           return qs.stringify(params, { arrayFormat: "repeat" });
         },
       });
-
       return response;
 
     } catch (error) {
       console.log("GET DASHBOARD ERROR:", error?.response || error);
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext)
+      }
       setPgError(error);
       return error?.response || error;
 
@@ -201,8 +216,8 @@ export default function PGProvider({ children }) {
 
 
     try {
-      const axios=getAxios();
-       const token = await retriveData("token");
+      const axios = getAxios();
+      const token = await retriveData("token");
 
       const res = await axios.delete(`/v2/hostel/${hostelId}/additional-images/${imageId}`, {
         headers: {
@@ -210,14 +225,14 @@ export default function PGProvider({ children }) {
         },
       })
       return res;
-    } catch(error){
-      return {status: error.response.status, message: error.response.data}
+    } catch (error) {
+      return { status: error.response.status, message: error.response.data }
     }
   }
 
 
   return (
-    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, getDashboard, PGDetails, pgLoading, pgError,deleteAdditionalImages }}>
+    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, getDashboard, PGDetails, pgLoading, pgError, deleteAdditionalImages }}>
       {children}
     </PGContext.Provider>
   );

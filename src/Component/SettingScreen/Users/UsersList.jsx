@@ -143,7 +143,7 @@ export default function UsersScreen({ navigation }) {
 
             <Image source={BackArrow} style={styles.backArrow} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Users</Text>
+          <Text style={styles.headerTitle}>Staff</Text>
         </View>
 
         {!canReadUser && !loading && (
@@ -221,7 +221,7 @@ export default function UsersScreen({ navigation }) {
 
                 <View>
                   <Text style={styles.label}>Contact Number</Text>
-                  <Text style={styles.value}>{u.mobileNo}</Text>
+                  <Text style={styles.value}>+{u.countryCode} {u.mobileNo}</Text>
                 </View>
               </View>
 

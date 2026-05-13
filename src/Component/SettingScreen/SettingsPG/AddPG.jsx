@@ -433,6 +433,154 @@ export default function AddPG({ navigation, route }) {
 
   };
 
+const [picModal, setPicModal] = useState(false);
+
+const [selectedImageSetter, setSelectedImageSetter] = useState(null);
+
+const openCameraPic = () => {
+  launchCamera(
+    {
+      mediaType: "photo",
+      quality: 0.7,
+    },
+    (response) => {
+      if (response.didCancel) return;
+
+      if (response.assets?.length > 0) {
+        const image = response.assets[0];
+
+        if (selectedImageSetter) {
+          selectedImageSetter(image);
+        }
+
+        setPicModal(false);
+      }
+    }
+  );
+};
+
+const openGalleryPic = () => {
+  launchImageLibrary(
+    {
+      mediaType: "photo",
+      quality: 0.7,
+    },
+    (response) => {
+      if (response.didCancel) return;
+
+      if (response.assets?.length > 0) {
+        const image = response.assets[0];
+
+        if (selectedImageSetter) {
+          selectedImageSetter(image);
+        }
+
+        setPicModal(false);
+      }
+    }
+  );
+};
+
+
+  const renderImageBox=(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+  setModalMessage,
+  setModalType)=> {
+  { console.log(image) }
+  const imageUri = image?.uri?.image || image?.uri;
+
+  const deleteAdditionalPic = async (image) => {
+    setImage(null);
+
+    if (image?.uri?.id) {
+      const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
+
+      console.log(res)
+      if (res?.status == 200) {
+        console.log("Deleted Successfully")
+        // setShowSuccessModal(true)
+        // setModalMessage(res.data || "updated")
+        // setModalType("success")
+        // setTimeout(() => {
+        //   setShowSuccessModal(false)
+        // }, 1500);
+      } else {
+        setShowSuccessModal(true)
+        setModalMessage(res.message || "Something Went Wrong")
+        setModalType("error")
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1000);
+      }
+    } else {
+      setImage(null)
+    }
+
+  };
+  return (
+    <View style={{ position: "relative" }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator>
+        <TouchableOpacity
+        onPress={() => {
+    setSelectedImageSetter(() => setImage);
+    setPicModal(true);
+  }}
+          // onPress={() =>
+          //   launchImageLibrary({ mediaType: "photo" }).then((r) =>
+          //     r?.assets?.length && setImage(r.assets[0])
+          //   )
+          // }
+          style={styles.imgBox}
+        >
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.thumb} />
+          ) : (
+            <>
+              <Image source={AddImageIcon} style={styles.imgPlus} />
+              <Text style={styles.imgSmall}>Add Image</Text>
+              <Text style={styles.imgSize}>Max size 10 MB</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {image?.uri && (
+          <TouchableOpacity onPress={() => {
+            deleteAdditionalPic(image)
+          }} style={styles.deleteIcon}>
+            <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
+          </TouchableOpacity>
+        )}
+         <ImagePickerSheet
+                visible={picModal}
+                onClose={() => setPicModal(false)}
+                title="Change Profile Picture"
+                options={[
+                  {
+                    label: "Take Picture",
+                    icon: require("../../../Assets/Images/CameraIcon.png"),
+                    showArrow: true,
+                    onPress: openCameraPic,
+                  },
+                  {
+                    label: "Select from Gallery",
+                    icon: require("../../../Assets/Images/GalleryIcon.png"),
+                    showArrow: true,
+                    onPress: openGalleryPic,
+                  },
+                  {
+                    label: "Remove Picture",
+                    icon: require("../../../Assets/Images/DeleteIcon.png"),
+                    showArrow: false,
+                    onPress: () => console.log("remove"),
+                  },
+                ]}
+              />
+      </ScrollView>
+
+
+    </View>
+  );
+}
+
 
 
 
@@ -940,74 +1088,7 @@ function renderSelect(
 
 
 
-function renderImageBox(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
-  setModalMessage,
-  setModalType) {
-  { console.log(image) }
-  const imageUri = image?.uri?.image || image?.uri;
-  console.log("binthu", imageUri)
 
-  const deleteAdditionalPic = async (image) => {
-    setImage(null);
-
-    if (image?.uri?.id) {
-      const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
-
-      console.log(res)
-      if (res?.status == 200) {
-        console.log("Deleted Successfully")
-        // setShowSuccessModal(true)
-        // setModalMessage(res.data || "updated")
-        // setModalType("success")
-        // setTimeout(() => {
-        //   setShowSuccessModal(false)
-        // }, 1500);
-      } else {
-        setShowSuccessModal(true)
-        setModalMessage(res.message || "Something Went Wrong")
-        setModalType("error")
-        setTimeout(() => {
-          setShowSuccessModal(false)
-        }, 1000);
-      }
-    } else {
-      setImage(null)
-    }
-
-  };
-  return (
-    <View style={{ position: "relative" }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator>
-        <TouchableOpacity
-          onPress={() =>
-            launchImageLibrary({ mediaType: "photo" }).then((r) =>
-              r?.assets?.length && setImage(r.assets[0])
-            )
-          }
-          style={styles.imgBox}
-        >
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.thumb} />
-          ) : (
-            <>
-              <Image source={AddImageIcon} style={styles.imgPlus} />
-              <Text style={styles.imgSmall}>Add Image</Text>
-              <Text style={styles.imgSize}>Max size 10 MB</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {image?.uri && (
-          <TouchableOpacity onPress={() => {
-            deleteAdditionalPic(image)
-          }} style={styles.deleteIcon}>
-            <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </View>
-  );
-}
 
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType }) {

@@ -486,7 +486,7 @@ const selectType = (id, type) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Final Settlement</Text>
+          <Text style={styles.headerTitle}>Final Settlementd</Text>
         </View>
         <ScrollView contentContainerStyle={{ paddingBottom: 40, marginTop: 20 }}>
 

@@ -18,6 +18,7 @@ import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
@@ -42,13 +43,19 @@ import TickIcon from "../../../Assets/Images/tick-circle.png"
 import CommingSoon from "../../../Assets/Images/Coming_soon.png"
 
 
-const BillBookings = ({ onSelectReceipt }) => {
+const BillBookings = ({ onBookingDetailsShow }) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
-    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails } = useContext(BillContext);
+    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
-  console.log("receiptsList", receiptsList);
+    const {
+    canReadModule: canReadBooking,
+  } = useHasPermission("Booking");
+
+  const { canUpdateModule: canUpdateInvoice } = useHasPermission("Bills");
+
+  console.log("advanceBills", bookingBills);
 
   const dotsRefs = useRef({});
   const navigation = useNavigation();
@@ -89,7 +96,9 @@ const BillBookings = ({ onSelectReceipt }) => {
   ];
 
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
-  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
+  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
+
+  const Advancebookingbills = bookingBills?.advanceInvoiceList
 
   dayjs.extend(customParseFormat);
 
@@ -98,14 +107,74 @@ const BillBookings = ({ onSelectReceipt }) => {
       ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
       : "--";
 
+  const dummyData = [
+    {
+      transactionId: "1",
+      fullName: "Ajmal Muhammed",
+      initials: "AM",
+      invoiceNumber: "BK-001",
+      paidAt: "01/12/2025",
+      amount: 1500,
+    },
+    {
+      transactionId: "2",
+      fullName: "Mahadevan",
+      initials: "M",
+      invoiceNumber: "BK-426",
+      paidAt: "01/12/2025",
+      amount: 500,
+    },
+    {
+      transactionId: "3",
+      fullName: "Jobin",
+      initials: "J",
+      invoiceNumber: "BK-002",
+      paidAt: "01/12/2025",
+      amount: 1000,
+    },
+    {
+      transactionId: "4",
+      fullName: "Daniel Balaji M",
+      initials: "DB",
+      invoiceNumber: "BK-426",
+      paidAt: "01/12/2025",
+      amount: 500,
+    },
+    {
+      transactionId: "5",
+      fullName: "Muthuraja M",
+      initials: "M",
+      invoiceNumber: "BK-008",
+      paidAt: "01/12/2025",
+      amount: 500,
+    },
+    {
+      transactionId: "6",
+      fullName: "Albert",
+      initials: "A",
+      invoiceNumber: "BK-005",
+      paidAt: "01/06/2025",
+      amount: 2250,
+    },
+  ];
 
 
+
+
+
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     GetAdvanceBookingBills(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
   useEffect(() => {
-    if (activeHostelId) {
-      GetReceiptsList(activeHostelId);
-    }
-  }, [activeHostelId]);
+  if (activeHostelId && canReadBooking) {
+    GetAdvanceBookingBills(activeHostelId);
+  }
+}, [activeHostelId, canReadBooking]);
+
+
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -258,9 +327,9 @@ const BillBookings = ({ onSelectReceipt }) => {
   //       setShowBillDetails(true);
   //     }
 
-  const handleViewReceiptDetails = (item) => {
-    onSelectReceipt(item);
-  };
+  const handleViewBookingDetails = (item) => {
+    onBookingDetailsShow(item)
+  }
 
 
   const handleEditBill = () => {
@@ -272,7 +341,6 @@ const BillBookings = ({ onSelectReceipt }) => {
     setShowMenu(false);
   }
 
-  console.log("selectedReceipt", selectedReceipt);
 
   const handleDeleteReceipt = async () => {
 
@@ -327,23 +395,16 @@ const BillBookings = ({ onSelectReceipt }) => {
 
   const renderItem = ({ item }) => {
     return (
-      <View style={styles.row}>
-        {/* <TouchableOpacity
-        onPress={() => {handleViewReceiptDetails(item)}}
+      <TouchableOpacity
+        style={styles.row}
+        activeOpacity={0.7}
+        onPress={() => handleViewBookingDetails(item)}
       >
-        <Image
-          source={
-            item.profilePic
-              ? { uri: item.profilePic }
-              : ProfileImage
-          }
-          style={styles.avatar}
-        />
-      </TouchableOpacity> */}
-        <TouchableOpacity >
+
+        <View>
           <View style={styles.avatarWrapper}>
             {item?.profilePic ? (
-              <Image source={{ uri: item.profilePic }} style={styles.avatar} />
+              <Image source={{ uri: item?.profilePic }} style={styles.avatar} />
             ) : (
               <View style={styles.initialCircle}>
                 <Text style={styles.initialText}>
@@ -352,60 +413,44 @@ const BillBookings = ({ onSelectReceipt }) => {
               </View>
             )}
 
-            {/* ✅ TICK ICON */}
             <View style={styles.tickWrapper}>
               <Image source={TickIcon} style={styles.tickIcon} />
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
 
 
         <View style={{ flex: 1 }}>
-          {/* <Text style={styles.name}>{item.fullName}</Text> */}
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("CustomerOverviewScreen", {
-                customerId: item.customerId,
-                customer: item,
-              })
-            }
-          >
-            <Text style={styles.name}>{item.fullName}</Text>
-          </TouchableOpacity>
+          {/* <TouchableOpacity  > */}
+          <Text style={styles.name}>{item.fullName}</Text>
+          {/* </TouchableOpacity> */}
 
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-            {/* <View style={styles.tagBox}>
-            <Text style={styles.tag}>{item.invoiceType}</Text>
-          </View> */}
+
 
             <Image
               source={Bills_Black_Icon}
               style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
             />
 
-            <Text style={styles.bill}>{item.invoiceNumber}</Text>
+            <Text style={styles.bill}>{item?.invoiceNumber}</Text>
           </View>
         </View>
 
         <View style={styles.rightSection}>
-          {/* <TouchableOpacity
-          ref={(r) => (dotsRefs.current[item.transactionId] = r)}
-          onPress={() => openMenu(item, item.transactionId)}
-        >
-          <Image
-            source={Dots}
-            style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-          />
-        </TouchableOpacity> */}
 
-          <Text>₹ 1500</Text>
+
+          <Text style={{ fontWeight: "700" }}>
+            ₹ {item?.availableAmount}
+          </Text>
 
           <Text style={styles.dateText}>
-            {formatApiDate(item.paidAt)}
+            {item?.invoiceDate}
+            {/* {formatApiDate(item?.invoiceDate)} */}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -424,18 +469,19 @@ const BillBookings = ({ onSelectReceipt }) => {
       />
 
       <View style={styles.container}>
-        <View style={styles.headerRow}>
-          {/* <Text style={styles.monthText}>This Month</Text> */}
 
-
-        </View>
 
         {/* <FlatList
-          data={[]}
+          data={Advancebookingbills}
           renderItem={renderItem}
-          keyExtractor={(item) => item.transactionId}
+          keyExtractor={(item, index) =>
+            item?.invoiceId
+              ? item.invoiceId.toString()
+              : index.toString()
+          }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
+            paddingTop: 0,
             flexGrow: 1,
             paddingBottom: 120,
           }}
@@ -443,24 +489,43 @@ const BillBookings = ({ onSelectReceipt }) => {
             !loading && <EmptyReceiptState />
           }
         /> */}
-        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, }}>
-          <Image source={CommingSoon} style={{ width: 315, height: 220, resizeMode: 'contain' }} />
-          <Text style={{ fontSize: 16, fontFamily:"Gilroy-Bold"}}>Comming Soon</Text>
-          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',marginTop:10}}>
-            Our team is building something helpful for you.</Text>
-          <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',marginTop:5}}>Check back again shortly.</Text>
-          </View>
+
+        {!canReadBooking && !loading ? (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={EmptyFloor}
+      style={styles.emptyImage}
+      resizeMode="contain"
+    />
+    <Text style={styles.emptyText}>
+      You don’t have permission to view bookings
+    </Text>
+  </View>
+) : (
+  <FlatList
+    data={Advancebookingbills}
+    renderItem={renderItem}
+    keyExtractor={(item, index) =>
+      item?.invoiceId
+        ? item.invoiceId.toString()
+        : index.toString()
+    }
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      paddingTop: 0,
+      flexGrow: 1,
+      paddingBottom: 120,
+    }}
+    ListEmptyComponent={
+      !loading && <EmptyReceiptState />
+    }
+  />
+)}
 
 
 
 
-        {/* <TouchableOpacity style={styles.filterButton} >
-          <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
-        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addBtn} >
-          <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-        </TouchableOpacity> */}
 
 
         {showMenu && (
@@ -737,7 +802,7 @@ const BillBookings = ({ onSelectReceipt }) => {
                   <Text style={styles.resetBtnText}>Reset All</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                <TouchableOpacity  style={styles.applyBtn} onPress={() => setShowFilter(false)}>
                   <Text style={styles.applyBtnText}>Apply</Text>
                 </TouchableOpacity>
               </View>
@@ -791,7 +856,7 @@ export default BillBookings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
+    paddingHorizontal: 15,
     backgroundColor: "#fff",
     position: "relative",
     zIndex: 1,
@@ -801,7 +866,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    // marginTop: 10,
     marginBottom: 10,
     zIndex: 1000,
   },
@@ -921,7 +986,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     elevation: 5,
   },
-
 
   sheetOverlay: {
     position: "absolute",

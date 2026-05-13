@@ -411,7 +411,7 @@ export default function DoubleStatusSheet({
                     style={{ width: 20, height: 20, marginRight: 6 }} />
 
                   <Text style={styles.link}>
-                    {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? selectedBed.currentTenantInfo[0]?.noticeDate || "N/A" :
+                    {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? selectedBed.currentTenantInfo[0]?.requestedLeavingDate || "N/A" :
                       `${selectedBed.currentTenantInfo[0]?.lastInvoiceNumber & selectedBed.currentTenantInfo[0]?.totalInvoices} "more" `}</Text>
                 </View>
               </View>
@@ -613,6 +613,7 @@ export default function DoubleStatusSheet({
                           </View>                    
                         </View>
 
+                        {item.lastInvoiceNumber && (
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Last Invoice</Text>
 
@@ -623,6 +624,8 @@ export default function DoubleStatusSheet({
                           </View>
                          
                         </View>
+                        )}
+                        
                         {showReservedMenu === index && (
 
                           <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>

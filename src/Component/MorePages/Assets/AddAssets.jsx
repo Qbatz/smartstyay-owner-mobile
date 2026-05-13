@@ -791,9 +791,9 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
               <ErrorMessage message={errors.api} type="error" />
             )}
 
-            {errorMsg && (
+            {/* {errorMsg && (
               <ErrorMessage message={errorMsg} type="error" />
-            )}
+            )} */}
 
 
             {/* {modeError && (

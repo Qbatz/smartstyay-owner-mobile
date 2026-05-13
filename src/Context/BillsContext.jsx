@@ -9,6 +9,8 @@ export default function BillsProvider({ children }) {
   const [receiptsList, setReceiptsList] = useState([]);
   const [BillPdfdetails, setBillsPdfDetails] = useState(null);
   const [ReceiptPdfdetails, setReceiptPdfDetails] = useState(null);
+  const [bookingBills, setBookingBills] = useState([]);
+  const [InitializebookingBills, setInitailizeBookingBills] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -483,14 +485,16 @@ export default function BillsProvider({ children }) {
     setErrorMsg("");
 
     try {
-      const axios = getAxios();
+      const axios = getAxios()
       const res = await axios.get(
         `/v2/bills/${hostelId}/${invoiceId}`
-      );
+      )
 
       if (res.status === 200) {
-        setBillsPdfDetails(res.data);
-        return { success: true, data: res.data };
+        setBillsPdfDetails(res.data)
+        console.log("res", res)
+        
+        return { success: true, data: res.data }
       }
     } catch (error) {
       const msg = getErrorMessage(error);
@@ -947,6 +951,137 @@ const GetBillDetailsById = async ({ hostelId, invoiceId }) => {
   } finally {
     setLoading(false);
   }
+}
+
+const GetAdvanceBookingBills = async (hostelId, page = 1, size = 10) => {
+  if (!hostelId) {
+    return { success: false, message: "Invalid hostelId" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/advances/${hostelId}`,
+      {
+        params: {
+          page,
+          size,
+        },
+      }
+    );
+
+    if (res.status === 200) {
+        setBookingBills(res?.data || []);
+        console.log("res", res);
+        
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return { success: false, message: "Failed to fetch advance bills" };
+
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
+  if (!hostelId || !advanceInvoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/redeem/initialize/${hostelId}/${advanceInvoiceId}`
+    );
+
+    if (res.status === 200) {
+      setInitailizeBookingBills(res?.data || [])
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch redeem details",
+    };
+
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const ApplyAdvanceToInvoices = async ({
+  hostelId,
+  invoiceId,
+  listItems,
+}) => {
+
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/bills/redeem/${hostelId}/${invoiceId}`,
+      {
+        listItems,
+      }
+    );
+
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  } catch (error) {
+
+    console.log("ERROR", error?.response?.data);
+
+    const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Something went wrong";
+
+    return {
+        success: false,
+        message,
+    };
+}
+  finally {
+    setLoading(false);
+  }
 };
 
 
@@ -958,6 +1093,8 @@ const GetBillDetailsById = async ({ hostelId, invoiceId }) => {
         receiptsList,
         BillPdfdetails,
         ReceiptPdfdetails,
+        bookingBills,
+        InitializebookingBills,
         loading,
         errorMsg,
         refundError,
@@ -986,6 +1123,9 @@ const GetBillDetailsById = async ({ hostelId, invoiceId }) => {
          UpdateBillDiscount,
          DeleteBillDiscount,
          GetBillDetailsById,
+         GetAdvanceBookingBills,
+         GetInitializeAdvanceRedeem,
+         ApplyAdvanceToInvoices
       }}
     >
       {children}

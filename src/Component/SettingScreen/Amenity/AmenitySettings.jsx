@@ -633,7 +633,9 @@ export default function AmenitySettings({ navigation }) {
       <View style={styles.userRow}>
         <View style={styles.userLeft}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user.name?.[0] ?? "U"}</Text>
+            {/* <Text style={styles.avatarText}>{user.name?.[0] ?? "U"}</Text> */}
+            {user?.profilePic ? <Image source={{uri:user?.profilePic}} style={{width:36,height:36,borderRadius:18}}/> :
+            <Text style={styles.avatarText}>{user?.initials}</Text>}
           </View>
 
           <View style={{ marginLeft: 10, flex: 1, marginRight: 12 }}>
@@ -726,7 +728,9 @@ export default function AmenitySettings({ navigation }) {
       <View style={styles.userRow}>
         <View style={styles.userLeft}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user.name?.[0] ?? "U"}</Text>
+            {/* <Text style={styles.avatarText}>{user.name?.[0] ?? "U"}</Text> */}
+            {user?.profilePic ? <Image source={{uri:user?.profilePic}} style={{width:36,height:36,borderRadius:18}}/> :
+            <Text style={styles.avatarText}>{user?.initials}</Text>}
           </View>
 
           <View style={{ marginLeft: 10, flex: 1, marginRight: 12 }}>

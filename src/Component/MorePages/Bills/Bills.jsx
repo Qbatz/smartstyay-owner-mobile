@@ -13,6 +13,8 @@ import {
   PanResponder,
   BackHandler, Keyboard, Platform
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -25,7 +27,6 @@ import { PGContext } from "../../../Context/PGContext";
 import { Calendar } from "react-native-calendars";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ReactNativeBlobUtil from "react-native-blob-util";
-import Share from "react-native-share";
 import Loader from "../../../Component/Loader/Loader"
 import SmLoader from "../../../Component/Loader/SmartStayLoader"
 // import CatLoader from "../../../Component/Loader/CatLoader"
@@ -54,6 +55,7 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
+import BillIcon from "../../../Assets/Images/bill.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -92,7 +94,7 @@ import { Dimensions } from "react-native";
 import BillBookings from "./Bill_Bookings";
 import { s, vs } from "../../../Utils/rnScale";
 import DiscountActionSheet from "./DiscountActionSheet"
-
+import BillBookingDetails from "./Bill_BookingDetails"
 
 
 
@@ -138,6 +140,7 @@ export default function BillsDesign({ route }) {
 
 
 
+  console.log("BillDetails", BillDetails?.listInvoices);
 
 
   const filterOptions = BillDetails?.filterOptions;
@@ -205,6 +208,7 @@ export default function BillsDesign({ route }) {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [selectedReceiptFullDetail, setSelectedReceiptFull] = useState(null)
 
+  const [showAdjustments, setShowAdjustments] = useState(false);
 
 
 
@@ -259,13 +263,79 @@ export default function BillsDesign({ route }) {
   const [showRecuringBillDetail, setShowRecuringBillDetail] = useState(false)
   const [selectedRecurringBill, setSelectedRecurringBill] = useState("")
 
-
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
 
   const isTriggeredRef = useRef(false)
 
   const { CommonModule } = NativeModules;
+
+
+    const [openUnpaid, setOpenUnpaid] = useState(false);
+    const [openRefundRent, setOpenRefundRent] = useState(false);
+    const [openEBill, setOpenEBill] = useState(false);
+     const [extraCharges, setExtraCharges] = useState([]);  const [ReturnAmount, setReturnAmount] = useState('')
+       const [showDetails, setShowDetails] = useState(false);
+       const [showOtherDetails, setShowOtherDetails] = useState(false);
+        const [showLastRentDetails, setShowLastRentDetails] = useState(false);
+       const [showRefundpay, setShowRefundpay] = useState(false)
+       const [actualCheckoutDate, setActualCheckoutDate] = useState(
+         dayjs().format("DD-MM-YYYY")
+       );
+
+
+ 
+
+    const unpaidRotate = useRef(new Animated.Value(openUnpaid ? 1 : 0)).current;
+    const rentRotate = useRef(new Animated.Value(openRefundRent ? 1 : 0)).current;
+    const ebRotate = useRef(new Animated.Value(openEBill ? 1 : 0)).current;
+  
+    useEffect(() => {
+      Animated.timing(unpaidRotate, {
+        toValue: openUnpaid ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, [openUnpaid]);
+  
+    useEffect(() => {
+      Animated.timing(rentRotate, {
+        toValue: openRefundRent ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, [openRefundRent]);
+  
+    useEffect(() => {
+      Animated.timing(ebRotate, {
+        toValue: openEBill ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, [openEBill]);
+  
+    const unpaidArrow = unpaidRotate.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0deg", "180deg"],
+    });
+  
+    const rentArrow = rentRotate.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0deg", "180deg"],
+    });
+  
+    const ebArrow = ebRotate.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0deg", "180deg"],
+    });
+  
+  
+    // const userEnteredDeductionsTotal = extraCharges
+    //   .filter(item => !item?.isDefault)
+    //   .reduce((sum, item) => {
+    //     const amt = Number(item?.amount);
+    //     return sum + (isNaN(amt) ? 0 : amt);
+    //   }, 0);
 
 
 
@@ -275,14 +345,34 @@ export default function BillsDesign({ route }) {
   //   GetAllBillDetails(activeHostelId);
   // }, [activeHostelId])
 
+  // useEffect(() => {
+  //   if (activeHostelId && canReadInvoice) {
+  //     GetAllBillDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId, canReadInvoice]);
+
+  //  useFocusEffect(
+  //   useCallback(() => {
+  //     if (
+  //       activeHostelId &&
+  //       canReadInvoice &&
+  //       activeTab === "Invoices"
+  //     ) {
+  //       GetAllBillDetails(activeHostelId);
+  //     }
+  //   }, [activeHostelId, canReadInvoice, activeTab])
+  // );
+
+
   useEffect(() => {
-    if (activeHostelId && canReadInvoice) {
+    if (
+      activeTab === "Invoices" &&
+      activeHostelId &&
+      canReadInvoice
+    ) {
       GetAllBillDetails(activeHostelId);
     }
-  }, [activeHostelId, canReadInvoice]);
-
-
-
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1020,6 +1110,13 @@ export default function BillsDesign({ route }) {
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
 
+  const [billbookingDetailsShow, setBillBookingDetailsShow] = useState(false)
+  const [billbookingDetails, setBillBookingDetails] = useState(null)
+
+  const handleBillsBookingDetails = (item) => {
+    setBillBookingDetailsShow(true)
+    setBillBookingDetails(item)
+  }
 
   const openCustomerDetails = (customer) => {
     setSelectedCustomer(customer);
@@ -1201,6 +1298,20 @@ export default function BillsDesign({ route }) {
     );
     console.log("res", res);
   }
+
+  const showAdjustmentsAccordion = BillPdfdetails?.invoiceInfo?.canRedeem === true &&
+  BillPdfdetails?.invoiceInfo?.redemptionInfo?.redeemdList?.length > 0;
+
+const redeemedList = BillPdfdetails?.invoiceInfo?.redemptionInfo?.redeemdList || [];
+
+  const BookingInvoiceApplied = selectedBill?.isInvoicesApplied
+
+  const isRentRedeemable =  BillPdfdetails?.invoiceInfo?.canRedeem === true &&
+    BillPdfdetails?.configurations?.invoiceType === "Rent" && !BookingInvoiceApplied 
+
+  const isAdvanceBill = BillPdfdetails?.invoiceInfo?.canRedeem === true &&
+    BillPdfdetails?.configurations?.invoiceType === "Advance" && !BookingInvoiceApplied 
+
 
   // const handlePaidAmountChange = (value) => {
   //   setAmountError("");
@@ -1779,9 +1890,11 @@ export default function BillsDesign({ route }) {
 
 
     if (res?.success && res?.url) {
+      console.log("beforeUrl")
       await CommonModule.downloadAndShareFile(res?.url);
       setShowMenu(false)
       setShowBillDetails(false)
+      console.log("AfterUrl")
     } else {
       console.log(res?.message);
       setShowMenu(false)
@@ -1963,7 +2076,8 @@ export default function BillsDesign({ route }) {
       setRefundDate(null);
       setRefundFrom("");
       setTransactionId("");
-    } else if (res?.refundableError) {
+    }
+    else if (res?.refundableError) {
       setModalType("warning");
       setModalMessage(res?.refundableError);
       setShowSuccessModal(true);
@@ -2403,7 +2517,7 @@ export default function BillsDesign({ route }) {
             </View>
           )}
           {activeTab === "Bookings" && (
-            <BillBookings />
+            <BillBookings onBookingDetailsShow={handleBillsBookingDetails} />
           )}
 
           {activeTab === "RecurringBills" && (
@@ -2601,25 +2715,7 @@ export default function BillsDesign({ route }) {
 
                         </View>
 
-                        {/* <TouchableOpacity
-    onPress={() => { 
-        setShowMenu(false);
-        setShowBillDetails(false)
-        navigation.navigate("DiscountInvoice", {
-  bill: selectedBill,
-  isEdit: true, 
-});
-      }}>
-    <Text>Edit</Text>
-    </TouchableOpacity>
-
-    <TouchableOpacity
-   
-      >
-    <Text>Delete</Text>
-    </TouchableOpacity> */}
-
-                        {/* Badge */}
+    
                         <View style={styles.discountBadge}>
                           <Text style={styles.discountBadgeText}>
                             ✔ Discount Applied
@@ -2628,6 +2724,114 @@ export default function BillsDesign({ route }) {
 
                       </View>
                     )}
+
+
+
+   { selectedBill?.invoiceType === "Settlement" && (
+
+
+<>
+
+                      <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Advance</Text>
+                        </View>
+                        <View>
+                          <Text style={styles.amountValue}>
+                            ₹ 5000
+                            {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                          </Text>
+                        </View>
+                      </View>
+
+                       <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Rent</Text>
+                        </View>
+                        <View>
+                          <Text style={styles.amountValue}>
+                            ₹ 5000
+                            {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                          </Text>
+                        </View>
+                      </View>
+
+                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Deductions</Text>
+                        </View>
+                        <View>
+                          <Text  style={[
+                              styles.amountValue,
+                              { color: "#FF0000" },
+                            ]}>
+                           - ₹ 5000
+                            {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                          </Text>
+                        </View>
+                      </View>
+
+                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Electricity Bill</Text>
+                        </View>
+                        <View>
+                          <Text  style={[
+                              styles.amountValue,
+                              { color: "#FF0000" },
+                            ]}>
+                           - ₹ 100
+                            {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                          </Text>
+                        </View>
+                      </View>
+
+                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Unpaid Invoices </Text>
+                        </View>
+                        <View>
+                          <Text  style={[
+                              styles.amountValue,
+                              { color: "#FF0000" },
+                            ]} >
+                           - ₹ 5000
+                            {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                          </Text>
+                        </View>
+                      </View>
+
+  <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Type</Text>
+                      </View>
+                      <View>
+                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                        Manual
+                        </Text>
+                      </View>
+                    </View>
+
+</>
+   )}
+
+{selectedBill?.paymentStatus === "Cancelled" && (
+  <View style={styles.cancelInfoCard}>
+
+    <View style={styles.cancelIconWrapper}>
+      <Text style={styles.cancelIconText}>i</Text>
+    </View>
+
+    <Text style={styles.cancelInfoText}>
+      Invoice cancelled due to Final Settlement
+    </Text>
+
+  </View>
+)}
+
+                      
+
+
                     {BillPdfdetails?.invoiceInfo?.invoiceItems?.map((pay, index) => (
                       <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                         <View>
@@ -2837,6 +3041,345 @@ export default function BillsDesign({ route }) {
                       </View>
                     </View>
 
+
+ { selectedBill?.invoiceType === "Settlement" && (
+
+
+<>
+ <View style={styles.accordionCard}>
+                                  <TouchableOpacity
+                                    style={styles.accordionHeader}
+                                    onPress={() => setOpenUnpaid(!openUnpaid)}
+                                    activeOpacity={0.8}
+                                  >
+                                    <Animated.Image
+                                      source={DownArrow}
+                                      style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                                    />
+                                    <Text style={styles.cardTitle}>Unpaid Invoices</Text>
+                                    <Text style={styles.amountText}>  
+
+                                      ₹ 0
+                                      {/* {
+                                      settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
+                                        (sum, inv) => sum + Number(inv.payableAmount || 0),
+                                        0
+                                      ) || 0
+                                    } */}
+                                    </Text>
+                                  </TouchableOpacity>
+                    
+                                  {openUnpaid && (
+                    
+                                    <View style={styles.accordionBody}>
+                    
+                                      <View style={styles.tableHeader}>
+                                        <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+                                        <Text style={[styles.th, { flex: 1 }]}>Type</Text>
+                                        <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                                          Invoice Amount
+                                        </Text>
+                                      </View>
+                    
+                    
+                                      {/* {Array.isArray(settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices) &&
+                                        settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.length > 0 ? (
+                                        <>
+                                          {settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.map((item, index) => (
+                                            <View key={index} style={styles.invoiceRow}>
+                                              <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+                                                {item.invoiceNumber}
+                                              </Text>
+                                              <Text style={[styles.invText, { flex: 1 }]}>
+                                                {item.type}
+                                              </Text>
+                                              <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
+                                                ₹ {item.payableAmount}
+                                              </Text>
+                                            </View>
+                                          ))}
+                                        </>
+                                      ) : ( */}
+                                        <View style={styles.emptyState}>
+                                          <Text style={styles.emptyText}>No pending invoices</Text>
+                                        </View>
+                                      {/* )} */}
+                    
+                                      <View style={styles.totalInvoiceRow}>
+                                        <Text style={styles.totalText}>Total</Text>
+                                        <Text style={styles.totalAmount}>
+                                          0
+                                          {/* ₹{" "}
+                                          {Array.isArray(settlementDetails?.unpaidInvoices)
+                                            ? settlementDetails.unpaidInvoices.reduce(
+                                              (sum, i) => sum + Number(i.payableAmount || 0),
+                                              0
+                                            )
+                                            : 0} */}
+                                        </Text>
+                                      </View>
+                                    </View>
+                    
+                                  )}
+                                </View>
+                    
+                                <View style={styles.refundCard}>
+                    
+                                  <TouchableOpacity
+                                    style={styles.refundHeader}
+                                    onPress={() => setOpenRefundRent(!openRefundRent)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                      <Image
+                                        source={DownArrow}
+                                        style={[
+                                          styles.arrow,
+                                          openRefundRent && { transform: [{ rotate: "180deg" }] },
+                                        ]}
+                                      />
+                                      <Text style={styles.refundTitle}>Refundable Rent</Text>
+                                    </View>
+                    
+                                    <Text style={styles.refundAmount}>
+                                      0
+                                      {/* ₹{" "}
+                                      {Number(
+                                        settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+                                      ).toLocaleString("en-IN")} */}
+                                    </Text>
+                                  </TouchableOpacity>
+                    
+                                  {openRefundRent && (
+                                    <View style={styles.refundBody}>
+                    
+                                     
+                                      <TouchableOpacity
+                                        style={styles.rowBetween}
+                                        onPress={() => setShowLastRentDetails(!showLastRentDetails)}
+                                        activeOpacity={0.7}
+                                      >
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                          <Text style={styles.descText}>
+                                         0 days
+                                            {/* Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days) */}
+                                          </Text>
+                    
+                                          <Image
+                                            source={DownArrow}
+                                            style={[
+                                              styles.arrowSmall,
+                                              showLastRentDetails && { transform: [{ rotate: "180deg" }] },
+                                            ]}
+                                          />
+                                        </View>
+                    
+                                        <Text style={styles.amountText}>
+                                          0
+                                          {/* ₹ {Number(
+                                            settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
+                                          ).toLocaleString("en-IN")} */}
+                                        </Text>
+                                      </TouchableOpacity>
+                    
+                                      {showLastRentDetails && (
+                                        <View style={styles.detailCard}>
+                                          <Text style={styles.sectionLabel}>Actual Rent</Text>
+                                          <Text style={styles.amountText}>
+                                            0
+                                            {/* ₹ {settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0} */}
+                                          </Text>
+                                        </View>
+                                      )}
+                    
+                                      {/* {showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
+                                        <View style={styles.detailCard}>
+                                          <Text style={styles.sectionLabel}>Discount</Text>
+                                          <Text style={styles.rightMuted}>
+                                            ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount}
+                                          </Text>
+                                        </View>
+                                      )} */}
+                    
+                                      <TouchableOpacity
+                                        style={styles.rowBetween}
+                                        onPress={() => setShowDetails(!showDetails)}
+                                        activeOpacity={0.7}
+                                      >
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                          <Text style={styles.descText}>
+                                            {/* Actual Stay Days (Rent) ({settlementDetails?.currentMonthRentInfo?.stayDays} days) */}
+                                          </Text>
+                    
+                                          <Image
+                                            source={DownArrow}
+                                            style={[
+                                              styles.arrowSmall,
+                                              showDetails && { transform: [{ rotate: "180deg" }] },
+                                            ]}
+                                          />
+                                        </View>
+                    
+                                        <Text style={styles.amountText}>
+                                          {/* ₹{" "}
+                                          {Number(
+                                            settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
+                                          ).toLocaleString("en-IN")} */}
+                                        </Text>
+                                      </TouchableOpacity>
+                    
+                                      {/* {showDetails &&
+                                        settlementDetails?.currentMonthRentInfo?.rentLists?.map(
+                                          (item, index) => (
+                                          
+                                            <View key={index} style={styles.detailCard}>
+                                              <Text style={styles.linkText}>
+                                                {item.floorName} | {item.roomName} - {item.bedName}
+                                              </Text>
+                    
+                                              <Text
+                                                style={styles.rightMuted}
+                                                numberOfLines={0}
+                                              >
+                                                ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
+                                              </Text>
+                                            </View>
+                    
+                                          )
+                                        )} */}
+                                      <TouchableOpacity
+                                        style={styles.rowBetween}
+                                        onPress={() => setShowOtherDetails(!showOtherDetails)}
+                                        activeOpacity={0.7}
+                                      >
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                          <Text style={styles.descText}>
+                                            Other Charges
+                                          </Text>
+                    
+                                          <Image
+                                            source={DownArrow}
+                                            style={[
+                                              styles.arrowSmall,
+                                              showOtherDetails && { transform: [{ rotate: "180deg" }] },
+                                            ]}
+                                          />
+                                        </View>
+                    
+                                        <Text style={styles.amountText}>
+                                          0
+                                          {/* ₹{" "}
+                                          {Number(
+                                            settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+                                          ).toLocaleString("en-IN")} */}
+                    
+                    
+                                        </Text>
+                                      </TouchableOpacity>
+                    
+                                      {/* {showOtherDetails &&
+                                        settlementDetails?.currentMonthRentInfo?.currentMonthOtherItems?.map(
+                                          (i, index) => (
+                                            <View key={index} style={styles.detailCard}>
+                                              <Text style={styles.linkText}>
+                                                {i?.item}
+                                              </Text>
+                    
+                                              <Text style={styles.rightMuted}>
+                                                ₹ {i?.amount}
+                                              </Text>
+                                            </View>
+                                          )
+                                        )} */}
+                                    </View>
+                                  )}
+                                </View>
+                    
+                                <View style={styles.accordionCard}>
+                                  <TouchableOpacity
+                                    style={styles.accordionHeader}
+                                    onPress={() => setOpenEBill(!openEBill)}
+                                    activeOpacity={0.8}
+                                  >
+                                    <Animated.Image
+                                      source={DownArrow}
+                                      style={[styles.arrowImg, { transform: [{ rotate: ebArrow }] }]}
+                                    />
+                                    <Text style={styles.cardTitle}>Electricity Bill</Text>
+                                    <Text style={styles.amountText}>
+                                      0
+                                      {/* ₹ {settlementDetails?.ebInfo?.pendingEbAmount} */}
+                                      </Text>
+                                  </TouchableOpacity>
+                    
+                                  {openEBill && (
+                                    <View style={styles.accordionBody}>
+                                   
+                                      {/* {settlementDetails?.ebInfo?.missedEb?.length > 0 && (
+                                        <Text style={styles.sectionLabel}>Missed Electricity</Text>
+                                      )} */}
+                    
+                    
+                                      {/* {settlementDetails?.ebInfo?.missedEb?.map((item, index) => (
+                                        <View key={index} style={styles.ebRowWeb}>
+                    
+                                          <View style={{ flex: 1 }}>
+                                            <Text style={styles.ebText}>
+                                              {item.floorName} | {item.roomName} - {item.bedName}
+                                            </Text>
+                    
+                                            <View style={styles.dateChip}>
+                                              <Text style={styles.dateChipText}>
+                                                {item.fromDate} - {item.toDate}
+                                              </Text>
+                                            </View>
+                                          </View>
+                    
+                                        
+                                        </View>
+                                      ))} */}
+                    
+                    
+                                      <Text style={styles.sectionLabel}>Pending Invoices</Text>
+{/*                     
+                                      {settlementDetails?.ebInfo?.pendingEb?.map((item, index) => (
+                                        <View key={index} style={styles.ebRowWeb}>
+                    
+                                          <View style={{ flex: 1 }}>
+                                            <Text style={styles.ebText}>
+                                              {item.floorName} | {item.roomName} - {item.bedName}
+                                            </Text>
+                    
+                                            <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
+                                              <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
+                                                {item.fromDate} - {item.toDate}
+                                              </Text>
+                                            </View>
+                                          </View>
+                    
+                                          <View style={styles.ebRightBox}>
+                                            <Text style={styles.unitText}>
+                                              ({item.units} Units)
+                                            </Text>
+                                            <Text style={styles.amountText}>
+                                              ₹ {item.amount}
+                                              </Text>
+                                          </View>
+                    
+                                        </View>
+                                      ))} */}
+                    
+                    
+                    
+                                    </View>
+                                  )}
+                                </View>
+
+</>
+ )}
+
+                    
+
                     {!isPaid && (
                       <View
                         style={{
@@ -2868,6 +3411,150 @@ export default function BillsDesign({ route }) {
                         </View>
                       </View>
                     )}
+
+
+                    {showAdjustmentsAccordion && (
+  <View style={styles.paymentWrapper}>
+
+    {/* HEADER */}
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={styles.paymentHeader}
+      onPress={() => setShowAdjustments(!showAdjustments)}
+    >
+      <Text style={styles.paymentHeaderText}>
+        Adjustments Applied
+      </Text>
+
+      <Image
+      
+         source={DownArrow}
+        style={{ width: 22, height: 22, transform: showAdjustments ? "rotate(180deg)" : "rotate(0deg)" }}
+      />
+    </TouchableOpacity>
+
+    {/* BODY */}
+    {showAdjustments && (
+      <View style={{ marginTop: 14 }}>
+
+        {redeemedList.map((item, index) => (
+          <View
+            key={`${item?.invoiceId}-${index}`}
+            style={styles.adjustmentCard}
+          >
+
+            {/* TOP */}
+            <View style={styles.adjustmentTopRow}>
+
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.adjustmentInvoice}>
+                  {item?.invoiceNo}
+                </Text>
+
+                <Image
+                  source={InvoiceLinkIcon}
+                  style={styles.linkIcon}
+                />
+              </View>
+
+              <Text style={styles.adjustmentAmount}>
+                ₹ {item?.amount}
+              </Text>
+            </View>
+
+            {/* DIVIDER */}
+            <View style={styles.adjustmentDivider} />
+
+            {/* BOTTOM */}
+            <View style={styles.adjustmentBottomRow}>
+
+              <View>
+                <Text style={styles.adjustmentLabel}>
+                  Date
+                </Text>
+
+                {/* <Text style={styles.adjustmentValue}>
+                  {item?.redeemedOn || "--"}
+                </Text> */}
+              </View>
+
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={styles.adjustadjustmentValuementLabel}>
+                 {item?.redeemedOn || "--"}
+                </Text>
+
+                {/* <Text style={styles.adjustmentType}>
+                  Advance
+                </Text> */}
+              </View>
+
+            </View>
+          </View>
+        ))}
+
+        {/* SUMMARY CARD */}
+
+        <View style={styles.adjustmentSummaryCard}>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>
+              Total Adjusted
+            </Text>
+
+            <Text style={styles.summaryValue}>
+              ₹ {
+                BillPdfdetails?.invoiceInfo?.redemptionInfo
+                  ?.totalAmountSettled || 0
+              }
+            </Text>
+          </View>
+
+          <View style={[styles.summaryRow, { marginTop: 10 }]}>
+            <Text style={styles.summaryLabel}>
+              Balance Amount
+            </Text>
+
+            <Text style={styles.summaryValue}>
+              ₹ {
+                BillPdfdetails?.invoiceInfo?.balanceAmount || 0
+              }
+            </Text>
+          </View>
+
+        </View>
+
+      </View>
+    )}
+  </View>
+)}
+
+                    {/* <View style={styles.creditCard}>
+                      <View style={styles.creditTopRow}>
+                        <View style={styles.creditTitleRow}>
+                          <View style={styles.greenTick}>
+                            <Text style={styles.tickText}>✓</Text>
+                          </View>
+
+                          <Text style={styles.creditTitle}>
+                            Credits Available
+                          </Text>
+                        </View>
+
+                        <Text style={styles.creditAmount}>
+                          ₹ 1000.00
+                        </Text>
+                      </View>
+
+                      <Text style={styles.creditDesc}>
+                        The booking amount isn't applied with any bills yet.
+                      </Text>
+
+                      <TouchableOpacity style={styles.applyBtn}>
+                        <Text style={styles.applyBtnText}>
+                          Apply Now
+                        </Text>
+                      </TouchableOpacity>
+                    </View> */}
 
 
 
@@ -3438,12 +4125,12 @@ export default function BillsDesign({ route }) {
                     <Image
                       source={EditIcon}
                       style={styles.popupIcon}
-                    />
+                    /> 
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
                 )} */}
 
-                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement") &&
+                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
                     <TouchableOpacity
                       style={styles.popupRow}
@@ -3462,6 +4149,48 @@ export default function BillsDesign({ route }) {
                       <Text style={styles.popupText}>Make as discount</Text>
                     </TouchableOpacity>
                   )}
+
+                {isRentRedeemable &&   (
+
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowMenu(false);
+                      setShowBillDetails(false)
+                      navigation.navigate("BookingtoDiscount", {
+                        bill: selectedBill,
+                      });
+                    }}
+                  >
+                    <Image
+                      source={BillIcon}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Adjust with Advance</Text>
+                  </TouchableOpacity>
+
+                )}
+
+                {isAdvanceBill && ( 
+
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowMenu(false);
+                      setShowBillDetails(false)
+                      navigation.navigate("BookingtoDiscount", {
+                        bill: selectedBill,
+                      });
+                    }}
+                  >
+                    <Image
+                      source={BillIcon}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Apply Invoices</Text>
+                  </TouchableOpacity>
+
+                )}
 
 
 
@@ -3516,30 +4245,6 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
                   )
                 }
-
-
-                {/* <TouchableOpacity
-                  style={[styles.popupRow, !canReadInvoice && { opacity: 0.4 }]}
-                  disabled={!canReadInvoice}
-                >
-                  <Image source={WhatsappIcon} style={styles.popupIcon} />
-                  <Text style={styles.popupText}>share</Text>
-                </TouchableOpacity> */}
-
-
-                {/* <TouchableOpacity
-  style={styles.popupRow}
-  onPress={() => {
-    setShowMenu(false);
-    setDeleteTenants(true);
-  }}
->
-  <Image
-    source={require("../../../Assets/Images/trash.png")}
-    style={styles.popupIcon}
-  />
-  <Text style={styles.popupText}>Delete</Text>
-</TouchableOpacity> */}
               </View>
             </TouchableOpacity>
           )}
@@ -4995,6 +5700,11 @@ export default function BillsDesign({ route }) {
             </View>
           </Modal>
 
+
+          {billbookingDetailsShow && (
+            <BillBookingDetails visible={billbookingDetailsShow} onClose={() => setBillBookingDetailsShow(false)}
+              selectedBill={billbookingDetails} />
+          )}
 
 
 
@@ -6528,4 +7238,464 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Gilroy-Semibold",
   },
+
+  creditCard: {
+    marginTop: 24,
+    borderWidth: 1,
+    borderColor: "#EAEAEA",
+    borderRadius: 18,
+    padding: 10,
+    backgroundColor: "#FFFFFF",
+  },
+
+  creditTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  creditTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  greenTick: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#08B32A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  tickText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  creditTitle: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  creditAmount: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+
+  creditDesc: {
+    marginTop: 16,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  applyBtn: {
+    marginTop: 22,
+    height: 44,
+    borderRadius: 5,
+    backgroundColor: "#2446F5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  applyBtnText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  paymentWrapper: {
+  marginTop: 24,
+},
+
+paymentHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom:10
+},
+
+paymentTitle: {
+  fontSize: 28,
+  fontFamily: "Gilroy-SemiBold",
+  color: "#111827",
+},
+
+arrowIcon: {
+  width: 22,
+  height: 22,
+  resizeMode: "contain",
+},
+
+adjustmentCard: {
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 18,
+  padding: 16,
+  marginBottom: 14,
+},
+
+adjustmentTopRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+adjustmentInvoice: {
+  fontSize: 15,
+  fontFamily: "Gilroy-SemiBold",
+  color: "#111827",
+},
+
+linkIcon: {
+  width: 18,
+  height: 18,
+  marginLeft: 6,
+  tintColor: "#1E45E1",
+},
+
+adjustmentAmount: {
+  fontSize: 17,
+  fontFamily: "Gilroy-Bold",
+  color: "#111827",
+},
+
+adjustmentDivider: {
+  height: 1,
+  backgroundColor: "#F1F5F9",
+  marginVertical: 14,
+},
+
+adjustmentBottomRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+adjustmentLabel: {
+  fontSize: 13,
+  fontFamily: "Gilroy-Regular",
+  color: "#9CA3AF",
+  marginBottom: 6,
+},
+
+adjustmentValue: {
+  fontSize: 15,
+  fontFamily: "Gilroy-Medium",
+  color: "#111827",
+},
+
+adjustmentType: {
+  fontSize: 15,
+  fontFamily: "Gilroy-SemiBold",
+  color: "#1E45E1",
+},
+
+adjustmentSummaryCard: {
+  backgroundColor: "#F9FAFB",
+  borderRadius: 18,
+  padding: 16,
+  marginTop: 4,
+},
+
+summaryRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+summaryLabel: {
+  fontSize: 15,
+  fontFamily: "Gilroy-Medium",
+  color: "#6B7280",
+},
+
+summaryValue: {
+  fontSize: 18,
+  fontFamily: "Gilroy-Bold",
+  color: "#111827",
+},
+
+  accordionCard: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 14,
+    marginBottom: 14,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    // marginHorizontal: 16,
+  },
+
+  accordionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    justifyContent: "space-between",
+  },
+
+  arrowImg: { width: 18, height: 18, tintColor: "#111", marginRight: 10 },
+
+  cardTitle: { flex: 1, fontSize: 14, fontFamily: "Gilroy-Bold" },
+  amountText: { fontSize: 14, fontFamily: "Gilroy-Bold" },
+
+  accordionBody: {
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    padding: 14,
+  },
+
+
+  th: { fontSize: 12, fontFamily: "Gilroy-Bold", color: "#6B7280" },
+  invoiceRow: { flexDirection: "row", paddingVertical: 10 },
+  invText: { fontSize: 13, color: "#111" },
+
+  sectionLabel: { fontSize: 13, fontFamily: "Gilroy-Bold", marginBottom: 8 },
+  descText: { fontSize: 13, color: "#6B7280" },
+
+  ebRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  ebLeft: { flex: 1, fontSize: 13 },
+  ebRight: { fontSize: 13, fontFamily: "Gilroy-Bold" },
+
+  pendingRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  addText: { color: "#1D4ED8", fontFamily: "Gilroy-Bold" },
+
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 6,
+    marginHorizontal: 16,
+  },
+
+
+  totalValue: { fontSize: 18, fontWeight: "800" },
+
+  bottomBar: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 16,
+    flexDirection: "row",
+    gap: 12,
+  },
+  bottomFixed: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === "ios" ? 28 : 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
+
+  totalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  totalLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Medium"
+  },
+
+  totalAmount: {
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  refundCard: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 14,
+    backgroundColor: "#fff",
+    // marginHorizontal: 16,
+    marginBottom: 14,
+  },
+
+  refundHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 14,
+  },
+
+  refundTitle: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+    marginLeft: 6,
+  },
+
+  refundAmount: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  refundBody: {
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    padding: 14,
+  },
+
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 9,
+    marginTop: 5
+  },
+
+  negativeamountlabel: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Bold",
+    color: "red"
+  }
+  ,
+
+
+
+  arrowSmall: {
+    width: 16,
+    height: 16,
+    tintColor: "#2563EB",
+    marginLeft: 6,
+  },
+  totalInvoiceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
+
+  totalText: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  totalAmount: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+  },
+  linkText: {
+    color: "#2563EB",
+    fontSize: 13,
+    flex: 1,
+  },
+
+  rightMuted: {
+    fontSize: 12,
+    color: "#6B7280",
+    flex: 1,
+    textAlign: "right",
+  },
+
+  tableRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, justifyContent: "space-between" },
+  tableHeader: {
+    flexDirection: "row",        // ✅ IMPORTANT
+    paddingVertical: 10,
+    backgroundColor: "#FBFDFF",
+  },
+
+  arrow: { width: 18, height: 18, tintColor: "#444" },
+
+  tableCellLeft: { width: "33%", color: "#1E5BFF", fontSize: 11 },
+  tableCellCenter: { width: "33%", textAlign: "center", fontSize: 11 },
+  tableCellRight: { width: "33%", textAlign: "right", fontSize: 11 },
+  tabledescription: { width: "55%", color: "#1E5BFF", fontSize: 11 },
+  tableStrip: { backgroundColor: "#FCFCFD" },
+  // detailRow: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   paddingVertical: 8,
+  //   paddingLeft: 16,
+  // },
+  
+  ebRowWeb: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+
+  ebText: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+  },
+
+  dateChip: {
+    alignSelf: "flex-start",
+    backgroundColor: "#FFF7ED",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+
+  dateChipText: {
+    fontSize: 12,
+    color: "#EA580C",
+    fontFamily: "Gilroy-Semibold"
+  },
+
+  ebRightBox: {
+    alignItems: "flex-end",
+  },
+
+  unitText: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 2,
+  },
+
+  cancelInfoCard: {
+  marginTop: 22,
+  borderWidth: 1,
+  borderColor: "#EAEAEA",
+  borderRadius: 16,
+  paddingVertical: 10,
+  // paddingHorizontal: 10,
+  paddingLeft:10,
+  backgroundColor: "#FFFFFF",
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+cancelIconWrapper: {
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  backgroundColor: "#E57A1F",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+},
+
+cancelIconText: {
+  color: "#FFFFFF",
+  fontSize: 10,
+ fontFamily: "Gilroy-Semibold",
+  marginTop: Platform.OS === "ios" ? 1 : -1,
+},
+
+cancelInfoText: {
+  flex: 1,
+  fontSize: 14,
+  lineHeight: 24,
+  color: "#222222",
+  fontFamily: "Gilroy-Medium",
+},
+
 });

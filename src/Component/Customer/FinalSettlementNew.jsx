@@ -465,7 +465,6 @@ useEffect(()=>{
   };
 
   const updateTitle = (id, title) => {
-    console.log("binthu", id, title)
     setExtraCharges((prev) =>
       prev.map((i) => (i.id === id ? { ...i, title, titleError: "" } : i))
     );
@@ -1230,6 +1229,8 @@ useEffect(()=>{
                 </View>
               )}
             </View>
+
+
             <View style={styles.accordionCard}>
               <TouchableOpacity
                 style={styles.accordionHeader}
@@ -1697,7 +1698,10 @@ useEffect(()=>{
 
           <AddRoomReadingSheet
             visible={showRoomReadingSheet}
-            onClose={() => setShowRoomReadingSheet(false)}
+            onClose={() =>{
+              fetchSettlement();
+              setShowRoomReadingSheet(false)
+            } }
             roomInfo={{
               roomId: "F002_ID",
               floorId: "FIRST_FLOOR_ID",
@@ -2147,6 +2151,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  
   ebRowWeb: {
     flexDirection: "row",
     alignItems: "center",

@@ -248,6 +248,8 @@ export default function TenantsScreen({ route }) {
     setShowCheckout(false);
   };
 
+   
+
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
 
@@ -273,6 +275,8 @@ export default function TenantsScreen({ route }) {
 
   const isSettlement =
     selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED";
+
+ 
 
 
   useEffect(() => {
@@ -643,9 +647,14 @@ export default function TenantsScreen({ route }) {
     setMenuVisible(false)
   }
 
-  const handlecloseReAssignbed = () => {
-    setShowReAssignBed(false)
-  }
+  // const handlecloseReAssignbed = () => {
+  //   setShowReAssignBed(false)
+  // }
+
+      const handlecloseReAssignbed = async () => {
+    await fetchCustomers();
+     setShowReAssignBed(false);
+  };
 
   const handleShowFinalSettlement = () => {
     setShowDetailModal(false)
@@ -678,6 +687,9 @@ export default function TenantsScreen({ route }) {
     });
   }
   const handleShowTennantCheckin = () => {
+    setShowDetailsMenu(false);
+    setShowDetailModal(false);
+    setMenuVisible(false)
     // navigation.navigate("TenantCheckin")
     navigation.navigate("BookingCheckIn", {
       customerId: selectedItem.customerId,
@@ -687,7 +699,7 @@ export default function TenantsScreen({ route }) {
     console.log("selectedItem", selectedItem);
 
 
-    setMenuVisible(false)
+    
   }
 
   const handleShowAddBooking = () => {
@@ -696,6 +708,8 @@ export default function TenantsScreen({ route }) {
 
   const handleShowCancelNotice = () => {
     setMenuVisible(false)
+    setShowDetailsMenu(false);
+    setShowDetailModal(false);
     navigation.navigate("CancelNotice", {
       selectedItem: selectedItem,
     });
@@ -846,7 +860,7 @@ export default function TenantsScreen({ route }) {
                     </Text>
                   </View>
                 )}
-                <View style={{ paddingHorizontal: 16 }}>
+                <View horizontal contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
                       <View style={styles.filterRow}>
@@ -881,7 +895,8 @@ export default function TenantsScreen({ route }) {
                           </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.filterIconBtn} disabled={!canReadTenant}
+
+                        <TouchableOpacity style={[styles.filterIconBtn,{marginLeft:5}]} disabled={!canReadTenant}
                           onPress={() => setShowFilter(true)}>
                           <Image source={Filter} style={{ width: 18, height: 18 }} />
                         </TouchableOpacity>
@@ -1351,7 +1366,7 @@ export default function TenantsScreen({ route }) {
                       resizeMode="contain"
                     />
                     <Text style={styles.infoValue}>
-                      {selectedCustomer?.mobileNo}
+                      +{selectedCustomer?.countryCode} {selectedCustomer?.mobileNo}
                     </Text>
                   </View>
                 </View>
@@ -1986,13 +2001,7 @@ export default function TenantsScreen({ route }) {
                 </View>
               </View>
 
-              {renderDropdown(
-                "Tenants",
-                tenantFilter,
-                setTenantFilter,
-                ["Arun", "Allwin",],
-                "tenant"
-              )}
+              
 
               {renderDropdown(
                 "View",
@@ -2174,7 +2183,7 @@ export default function TenantsScreen({ route }) {
       </SafeAreaView>
       {
         showReAssignbed &&
-        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={fetchCustomers} />
+        <ReassignBedSheet visible={showReAssignbed} onClose={handlecloseReAssignbed} customer={reassignCustomer} onSuccess={closeDetailSheet} />
 
       }
       <InactiveTenantSheet
@@ -2558,15 +2567,36 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
+  // popupBox: {
+  //   position: "absolute",
+  //   width: 200,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 12,
+  //   elevation: 20,
+  //   paddingVertical: 10,
+  //   zIndex: 10000,
+  // },
   popupBox: {
-    position: "absolute",
-    width: 200,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    elevation: 20,
-    paddingVertical: 10,
-    zIndex: 10000,
+  position: "absolute",
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  paddingVertical: 8,
+  width: 200,
+  zIndex: 10000,
+
+  elevation: 8,
+
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
   },
+  shadowOpacity: 0.12,
+  shadowRadius: 10,
+
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
   popupRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -2903,6 +2933,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 34,
     borderRadius: 20,
+    marginLeft:4
   },
 
   filterChipActive: {

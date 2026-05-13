@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  ScrollView, BackHandler
+  ScrollView, BackHandler, Modal, Pressable,
 } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
@@ -21,6 +21,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 export default function CancelNotice({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
@@ -36,6 +37,7 @@ export default function CancelNotice({ navigation, route }) {
   const bedData = selectedBed || selectedItem;
   const data = selectedItem || selectedBed;
   const [customerDetails, setCustomerDetails] = useState("")
+  const [checkInDateError, setcheckInDateError] = useState("")
 
   const bedId =
     data?.bedId;
@@ -77,6 +79,7 @@ export default function CancelNotice({ navigation, route }) {
     if (res?.success) {
       console.log("INIT CANCEL CHECKOUT DATA ✅", res.data);
       setReCheckinSameBed(res.data)
+      setcheckInDateError("")
       // Example: set default date
       // setCheckInDate(dayjs(res.data?.reCheckInDate, "DD-MM-YYYY").toDate());
       // setReason(res.data?.reason || "");
@@ -117,17 +120,28 @@ export default function CancelNotice({ navigation, route }) {
     }, [navigation])
   );
 
+
+
   const handleCancelNotice = async () => {
+    setcheckInDateError("")
     const data = selectedItem || selectedBed;
 
-    const bedId = data?.bedId;
+    const bedId = data?.bedId || data?.hostelInfo?.bedId
     const tenantId =
       data?.customerId ||
       data?.currentTenantInfo?.[0]?.tenetId;
 
+
+      console.log("bedid", bedId)
+       console.log("tenantId", tenantId);
+      
+
     if (!activeHostelId || !bedId || !tenantId) {
-      console.log("DEBUG 👉", { activeHostelId, bedId, tenantId });
-      alert("Invalid tenant or bed info");
+      return;
+    }
+
+    if (!checkInDate) {
+      setcheckInDateError("Please Select Re Check-in Date");
       return;
     }
 
@@ -137,7 +151,9 @@ export default function CancelNotice({ navigation, route }) {
       reason: reason || "Cancelled from app",
     };
 
-    console.log("CANCEL NOTICE PAYLOAD 👉", payload);
+    console.log("CANCEL NOTICE PAYLOAD", payload);
+
+  
 
     const res = await cancelCheckout(
       activeHostelId,
@@ -150,14 +166,26 @@ export default function CancelNotice({ navigation, route }) {
       setModalType("success");
       setMessage(res.data);
       setShowSuccess(true);
-      navigation.goBack();
+      setcheckInDateError("")
+
+        const data = await getCustomerDetails(tenantId)
+       console.log("data", data);
+       
+
+      setTimeout(() => {
+        navigation.goBack()
+        setShowSuccess(false)
+      }, 800);
+
+    } 
+    else {
+      setModalType("warning");
+      setMessage(res?.message || "Cancel notice failed");
+      setShowSuccess(true);
 
       setTimeout(() => {
         setShowSuccess(false);
-      }, 800);
-
-    } else {
-      alert(res?.message || "Cancel notice failed");
+      }, 1200);
     }
   };
 
@@ -238,6 +266,7 @@ export default function CancelNotice({ navigation, route }) {
             <Image source={CalendarIcon} style={styles.calendarIcon} />
           </TouchableOpacity>
 
+          {checkInDateError && <ErrorMessage message={checkInDateError} type="error" />}
 
 
           {/* Reason */}
@@ -262,7 +291,9 @@ export default function CancelNotice({ navigation, route }) {
           />
         </View>
       )} */}
-        {openDate && (
+
+
+        {/* {openDate && (
           <View style={styles.dropdownBox}>
             <Calendar
               current={dayjs(checkInDate).format("YYYY-MM-DD")}
@@ -284,10 +315,51 @@ export default function CancelNotice({ navigation, route }) {
               }}
             />
           </View>
-        )}
+        )} */}
+
+        <Modal
+          visible={openDate}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setOpenDate(false)}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setOpenDate(false)}
+          >
+            <Pressable
+              style={styles.dropdownBox}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <Calendar
+                current={
+                  checkInDate
+                    ? dayjs(checkInDate).format("YYYY-MM-DD")
+                    : dayjs().format("YYYY-MM-DD")
+                }
+                minDate={minSelectableDate}
+                maxDate={maxSelectableDate}
+                onDayPress={(day) => {
+                  setCheckInDate(new Date(day.dateString));
+                  setOpenDate(false);
+                  setcheckInDateError("")
+                }}
+                markedDates={{
+                  [dayjs(checkInDate).format("YYYY-MM-DD")]: {
+                    selected: true,
+                    selectedColor: "#2B6CF6",
+                  },
+                }}
+                theme={{
+                  todayTextColor: "#2B6CF6",
+                  arrowColor: "#2B6CF6",
+                }}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
 
 
-        {/* Bottom Buttons */}
         <View style={styles.btnRow}>
           <TouchableOpacity
             style={styles.cancelBtn}
@@ -296,9 +368,7 @@ export default function CancelNotice({ navigation, route }) {
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          {/* <TouchableOpacity style={styles.addBtn2} onPress={handleCancelNotice}>
-          <Text style={styles.addBtnText}>Check-In</Text>
-        </TouchableOpacity> */}
+
           <TouchableOpacity
             style={[styles.addBtn2, !canCheckin && styles.disabledBtn]}
             onPress={handleCancelNotice}
@@ -468,7 +538,7 @@ const styles = StyleSheet.create({
   dropIcon: {
     width: 16,
     height: 16,
-    tintColor: "#555",   // arrow light black
+    tintColor: "#555", 
   },
   disabledBtn: {
     backgroundColor: "#CBD5E1", // grey
@@ -476,5 +546,29 @@ const styles = StyleSheet.create({
   disabledText: {
     color: "#6B7280",
   },
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.2)",
+  justifyContent: "center",
+  paddingHorizontal: 20,
+},
+
+dropdownBox: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 10,
+  elevation: 6,
+
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.15,
+  shadowRadius: 6,
+
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+},
 
 });

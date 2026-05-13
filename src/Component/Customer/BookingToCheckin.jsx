@@ -11,8 +11,6 @@ import {
     KeyboardAvoidingView,
     Image, TouchableWithoutFeedback
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import AddCircle from "../../Assets/Images/add-circle.png";
@@ -30,7 +28,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import CommingSoon from "../../Assets/Images/Coming_soon.png"
 
 export default function BookingCheckIn({ navigation, route }) {
-    const { customerId, customer } = route.params || {};
+    const { customerId, customer , onSuccess} = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
 
@@ -419,11 +417,14 @@ export default function BookingCheckIn({ navigation, route }) {
             setMessage(res.data);
             setShowSuccess(true);
 
+             if (onSuccess) {
+               await onSuccess();
+              }
+
             await getAllBedsByRoom(selectedRoom.id);
             navigation.goBack();
             setTimeout(() => {
                 setShowSuccess(false);
-
             }, 800);
 
         } else {

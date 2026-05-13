@@ -456,7 +456,7 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
               source={require("../../../Assets/Images/calendar_blue.png")}
               style={styles.icon}
             />
-            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.noticeDate || "N/A" }</Text>
+            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.requestedLeavingDate || "N/A" }</Text>
           </View>
 
           <TouchableOpacity style={styles.noticeBtn}>

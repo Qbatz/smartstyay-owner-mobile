@@ -86,7 +86,9 @@ navigation.navigate("CreateBills" , {mode: "add",customerDetails})
       <ScrollView     showsVerticalScrollIndicator={false}
     contentContainerStyle={{ paddingBottom: 120 }} >
       {invoiceList.map((item, index) => (
-        <TouchableOpacity key={index} style={styles.row} onPress={()=>handleOpenBillDetails(item)}>
+        <TouchableOpacity key={index} style={styles.row} 
+        onPress={()=>handleOpenBillDetails(item)}
+        >
           {/* LEFT */}
           <View>
             <Text style={styles.billId}>{item.invoiceNumber}</Text>

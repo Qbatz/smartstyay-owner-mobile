@@ -41,7 +41,6 @@ import EditIcon from "../../../Assets/Images/editIcon.png"
 import TickIcon from "../../../Assets/Images/tick-circle.png"
 
 import ReactNativeBlobUtil from "react-native-blob-util";
-import Share from "react-native-share";
 
 
 
