@@ -79,7 +79,7 @@ import HistoryAndComments from "../src/Component/Dashboard/HistoryAndComments"
 import ComplaintUpdates from "../src/Component/Complaints/ComplaintCommentUpdates"
 import BillsDiscount from "../src/Component/MorePages/Bills/DiscountInvoice"
 import BookingtoDiscount from  "../src/Component/MorePages/Bills/BookingtoInvoice"
-
+import BillsApplyInvoices from  "../src/Component/MorePages/Bills/BillsApplyInvoice"
 
 
 const SuccessFlow = (props) => {
@@ -181,6 +181,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
                     <Navigation.Screen name="DiscountInvoice" component={BillsDiscount} />
                     <Navigation.Screen name="BookingtoDiscount" component={BookingtoDiscount} />
+                     <Navigation.Screen name="BillsApplyInvoices" component={BillsApplyInvoices} />
                 </Navigation.Navigator>
             </NavigationContainer>
 
