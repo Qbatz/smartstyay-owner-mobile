@@ -236,6 +236,7 @@ export default function OverviewTab({ customerDetails,
     "VACATED",
     "SETTLEMENT_GENERATED",
     "NOTICE",
+    "CANCELLED",
   ].includes(customerDetails?.hostelInfo?.currentStatus);
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
@@ -252,7 +253,8 @@ export default function OverviewTab({ customerDetails,
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
-    status === "NOTICE";
+    status === "NOTICE" ||
+    status ===  "CANCELLED_BOOKING"
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription
@@ -282,7 +284,7 @@ export default function OverviewTab({ customerDetails,
               {/* <Image source={EditIcon} style={styles.editIcon} /> */}
 
               {
-                customerDetails?.customerCurrentStatus != "VACATED" && (
+                (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                   <TouchableOpacity
                     disabled={!canUpdateTenant}
                     style={!canUpdateTenant && { opacity: 0.4 }}

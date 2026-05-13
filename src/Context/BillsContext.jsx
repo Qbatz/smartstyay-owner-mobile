@@ -10,7 +10,8 @@ export default function BillsProvider({ children }) {
   const [BillPdfdetails, setBillsPdfDetails] = useState(null);
   const [ReceiptPdfdetails, setReceiptPdfDetails] = useState(null);
   const [bookingBills, setBookingBills] = useState([]);
-  const [InitializebookingBills, setInitailizeBookingBills] = useState([]);
+  const [InitializebookingBills, setInitailizeBookingBills] = useState([])
+  const [advanceCreditDetails, setAdvanceCreditDetails] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -1082,6 +1083,56 @@ const ApplyAdvanceToInvoices = async ({
   finally {
     setLoading(false);
   }
+}
+
+
+const GetAdvanceCreditDetails = async ({
+  hostelId,
+  invoiceId,
+}) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/advances/${hostelId}/${invoiceId}`
+    );
+
+    if (res.status === 200) {
+
+      setAdvanceCreditDetails(res?.data || null);
+
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch advance credit details",
+    };
+
+  } catch (error) {
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+
+  } finally {
+    setLoading(false);
+  }
 };
 
 
@@ -1095,6 +1146,7 @@ const ApplyAdvanceToInvoices = async ({
         ReceiptPdfdetails,
         bookingBills,
         InitializebookingBills,
+        advanceCreditDetails,
         loading,
         errorMsg,
         refundError,
@@ -1125,7 +1177,8 @@ const ApplyAdvanceToInvoices = async ({
          GetBillDetailsById,
          GetAdvanceBookingBills,
          GetInitializeAdvanceRedeem,
-         ApplyAdvanceToInvoices
+         ApplyAdvanceToInvoices,
+         GetAdvanceCreditDetails,
       }}
     >
       {children}
