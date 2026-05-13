@@ -257,6 +257,20 @@ export default function TenantCheckIn({ navigation, route }) {
   };
   const advanceRef = useRef(null);
   const rentalRef = useRef(null);
+  const scrollToField = (ref) => {
+    if (!ref?.current || !scrollRef.current) return;
+
+    ref.current.measureLayout(
+      scrollRef.current,
+      (x, y) => {
+        scrollRef.current.scrollTo({
+          y: y - 100,
+          animated: true,
+        });
+      },
+      () => { }
+    );
+  };
 
 
   const onFloorChange = (v) => {
@@ -437,7 +451,9 @@ export default function TenantCheckIn({ navigation, route }) {
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          // behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
         >
           <View style={styles.header}>
             <TouchableOpacity
@@ -446,21 +462,21 @@ export default function TenantCheckIn({ navigation, route }) {
             >
               <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Tenant Check-In</Text>
+            <Text style={styles.headerTitle}>Tenant Check-Ing</Text>
           </View>
 
           <View style={{ paddingHorizontal: 16, paddingTop: 12, flexDirection: 'row', alignItems: 'center' }}>
             <View>
-              {customer?.profilePic ? <Image source={{uri:customer?.profilePic}} style={{ width: 50, height: 50, borderRadius: 25 }} /> :
+              {customer?.profilePic ? <Image source={{ uri: customer?.profilePic }} style={{ width: 50, height: 50, borderRadius: 25 }} /> :
                 <View style={{ width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: '#e6e7eb' }}>
                   <Text style={{ fontSize: 20, fontFamily: 'Gilroy-Bold' }}>{customer?.initials}</Text>
                 </View>}
             </View>
 
-            <View style={{marginLeft:8}}>
-              <Text style={{fontSize:18,fontFamily:'Gilroy-Semibold'}}>{customer?.fullName}</Text>
-              <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',color:'#4B4B4B',marginTop:8}}>
-                +{customer?.countryCode} {customer?.mobile || N/A}</Text>
+            <View style={{ marginLeft: 8 }}>
+              <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>{customer?.fullName}</Text>
+              <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#4B4B4B', marginTop: 8 }}>
+                +{customer?.countryCode} {customer?.mobile || N / A}</Text>
             </View>
 
           </View>
@@ -497,13 +513,16 @@ export default function TenantCheckIn({ navigation, route }) {
 
           <ScrollView
             ref={scrollRef}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="none"
-            nestedScrollEnabled={true}
+            style={{ paddingHorizontal: 16 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            // nestedScrollEnabled={true}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 150,
-              padding: 15,
+              // paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 150,
+              // padding: 15,
+              flexGrow: 1,
+              paddingBottom: 80,
             }}
           >
 
@@ -713,10 +732,10 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
 
-                <View style={{ marginBottom: 1, marginTop: 8 }}>
+                <View ref={advanceRef} style={{ marginBottom: 1, marginTop: 8 }}>
                   <Text style={styles.label}>Advance Amount  <Text style={{ color: "red" }}>*</Text></Text>
                   <TextInput
-                    ref={advanceRef}
+                    // ref={advanceRef}
                     style={styles.input}
                     keyboardType="numeric"
                     value={advanceAmount}
@@ -726,6 +745,11 @@ export default function TenantCheckIn({ navigation, route }) {
                       setAdvanceAmount(onlyNumbers);
                       setAdvanceError("");
                     }}
+                    onFocus={() => {
+                      setTimeout(() => {
+                        scrollToField(advanceRef);
+                      }, 200);
+                    }}
                   />
 
                 </View>
@@ -733,10 +757,10 @@ export default function TenantCheckIn({ navigation, route }) {
                   <ErrorMessage message={advanceError} type="error" />
                 )}
 
-                <View style={{ marginBottom: 2, marginTop: 12 }}>
+                <View ref={rentalRef} style={{ marginBottom: 2, marginTop: 12 }}>
                   <Text style={styles.label}>Rental Amount  <Text style={{ color: "red" }}>*</Text></Text>
                   <TextInput
-                    ref={rentalRef}
+                    // ref={rentalRef}
                     style={styles.input}
                     keyboardType="numeric"
                     value={rentalAmount}
@@ -749,6 +773,11 @@ export default function TenantCheckIn({ navigation, route }) {
                       const onlyNumbers = text.replace(/[^0-9]/g, "");
                       setRentalAmount(onlyNumbers);
                       setRentError("");
+                    }}
+                    onFocus={() => {
+                      setTimeout(() => {
+                        scrollToField(rentalRef);
+                      }, 200);
                     }}
                   />
 
