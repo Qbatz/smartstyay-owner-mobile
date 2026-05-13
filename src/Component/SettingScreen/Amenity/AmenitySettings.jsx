@@ -574,6 +574,8 @@ export default function AmenitySettings({ navigation }) {
 
       setTimeout(() => {
         setShowSuccessModal(false)
+        // onClose();
+          setShowAssign(false)
       }, 1500);
     }else{
       setModalType("warning");
@@ -582,12 +584,13 @@ export default function AmenitySettings({ navigation }) {
 
       setTimeout(() => {
         setShowSuccessModal(false)
+      
       }, 1500);
     }
 
     console.log("amenityyy",res)
 
-    openAssign(currentAmenityId);
+    // openAssign(currentAmenityId);
   };
 
 
@@ -611,6 +614,7 @@ export default function AmenitySettings({ navigation }) {
 
       setTimeout(() => {
         setShowSuccessModal(false)
+        setShowAssign(false)
       }, 1500);
     }else{
       setModalType("warning");
@@ -622,7 +626,7 @@ export default function AmenitySettings({ navigation }) {
       }, 1500);
     }
 
-    openAssign(currentAmenityId)
+    // openAssign(currentAmenityId)
   };
 
 

@@ -89,6 +89,9 @@ const [initialEditState, setInitialEditState] = useState(null);
   const scrollRef = useRef(null);
   const descriptionRef = useRef(null);
 
+  const isSubmittingRef = useRef(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
   const scrollToField = (ref) => {
   if (!ref?.current || !scrollRef.current) return;
 
@@ -381,6 +384,10 @@ for (let i = -365; i <= 365; i++) {
 
 const handleSubmitComplaint = async () => {
 
+  if(isSubmittingRef.current) return;
+  isSubmittingRef.current = true;
+  setIsSubmitting(true)
+
   setUserErrmsg("");
   setComplaintTypeErrmsg("");
   setDateErrmsg("");
@@ -408,6 +415,7 @@ const handleSubmitComplaint = async () => {
       hostelId: activeHostelId,
     };
 
+    try{
     const res = await EditComplaint(updatePayload);
 
     if (res.success) {
@@ -421,6 +429,12 @@ const handleSubmitComplaint = async () => {
       }, 800);
     } else {
       setTotalErrmsg(res.message || "Something went wrong");
+    }
+    }catch(error){
+      console.log(error)
+    }finally{
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
 
     return;
@@ -457,6 +471,7 @@ const handleSubmitComplaint = async () => {
     hostelId: activeHostelId,
   };
 
+  try{
   const res = await AddComplaint(payload);
 
   if (res.success) {
@@ -470,6 +485,12 @@ const handleSubmitComplaint = async () => {
     }, 800);
   } else {
     setTotalErrmsg(res.message);
+  }
+  }catch(error){
+    console.log(error)
+  }finally{
+    isSubmittingRef.current = false;
+      setIsSubmitting(false);
   }
 };
 
@@ -534,6 +555,7 @@ const handleSubmitComplaint = async () => {
   return (
 
     <>
+    {loading && <Loader/>}
         <SuccessModal
   visible={showSuccessModal}
   onClose={() => setShowSuccessModal(false)}
@@ -842,6 +864,7 @@ const handleSubmitComplaint = async () => {
     <TouchableOpacity
       style={styles.submitBtn}
       onPress={handleSubmitComplaint}
+      disabled={isSubmitting}
     >
       <Text style={styles.submitText}>
         {mode === "edit" ? "Update Complaint" : "Add Complaint"}

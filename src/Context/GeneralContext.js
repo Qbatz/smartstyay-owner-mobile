@@ -59,11 +59,12 @@ export const GeneralProvider = ({ children }) => {
       );
       console.log("responseupdate", response)
 
-      return response.data;
+      return response;
 
     } catch (error) {
       console.log("UPDATE ERROR:", error.response?.data || error.message);
-      return null;
+      const errorData = error.response?.data || { message: error.message }
+      return errorData;
     }
   };
 
