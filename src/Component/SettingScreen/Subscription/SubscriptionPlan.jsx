@@ -27,7 +27,7 @@ export default function SubscriptionPlans({ navigation }) {
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
 
-  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription } = UseSetting();
+  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription,verfiyPayment } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
   const insets = useSafeAreaInsets();
@@ -44,7 +44,7 @@ export default function SubscriptionPlans({ navigation }) {
         id: item.planId,
         name: item.planName,
         planCode: item.planCode,
-        priceMonthly: `₹${item.price}`,
+        priceMonthly: `₹${item.finalPrice}`,
 
         priceYearly: `₹${Math.floor(item.price * 0.8)}`,
 
@@ -109,6 +109,8 @@ export default function SubscriptionPlans({ navigation }) {
     }, [navigation])
   );
 
+  console.log("slectPlan",selectedPlan)
+
   const handleExpand = (id) => {
     setExpandedPlan(expandedPlan === id ? null : id);
   };
@@ -147,10 +149,25 @@ export default function SubscriptionPlans({ navigation }) {
           // phone: '+919876543215',
           paymentMethod: 'upi',
         });
+        console.log(result)
         console.log('Payment ID:', result.paymentId);
         console.log('Signature:', result.signature);
+        const paymentId=result.paymentId;
+
         if (result.mandateId) {
           console.log('Mandate ID:', result.mandateId);
+        }
+        if(result.status == "success"){
+          const response= await verfiyPayment(activeHostelId,paymentId)
+          console.log("verifypayment",response)
+
+          if(response.status === 200){
+            console.log(response?.message)
+            fetchPlans();
+          }
+          else{
+            console.log(response?.message)
+          }
         }
 
       } catch (e) {
@@ -445,11 +462,11 @@ export default function SubscriptionPlans({ navigation }) {
 
                   <TouchableOpacity
                     style={styles.seeMoreBtn}
-                    onPress={() => {
-                      selectplan(item?.planCode)
-                    }}
+                    // onPress={() => {
+                    //   selectplan(item?.planCode)
+                    // }}
 
-                  // onPress={() => handleExpand(item.id)}
+                  onPress={() => handleExpand(item.id)}
                   >
                     <Text style={styles.seeMoreText}>{expanded ? "See less →" : "See more →"}</Text>
                   </TouchableOpacity>
@@ -461,18 +478,19 @@ export default function SubscriptionPlans({ navigation }) {
 
         {canReadSubscription && (
           <TouchableOpacity
-            disabled={!selectedPlan}
+            disabled={!selectedPlan.code}
             // style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
             style={[
               styles.continueBtn,
               { bottom: insets.bottom + 10 },
-              !selectedPlan && styles.disabledBtn
+              !selectedPlan.code && styles.disabledBtn
             ]}
-            onPress={() => {
-              navigation.navigate("PlanDetailsScreen", {
-                planId: selectedPlan
-              });
-            }}
+            // onPress={() => {
+            //   navigation.navigate("PlanDetailsScreen", {
+            //     planId: selectedPlan?.code
+            //   });
+            // }}
+            onPress={()=>selectplan(selectedPlan?.code)}
           >
             <Text style={styles.continueText}>Continue →</Text>
           </TouchableOpacity>
