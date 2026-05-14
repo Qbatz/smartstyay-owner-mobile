@@ -270,6 +270,7 @@ const countryList = [
       setMobileError("");
       setPasswordError("");
       setRoleError("");
+      setRoleOpen(false);
       return true;
     };
 
@@ -280,6 +281,17 @@ const countryList = [
 
     return () => handler.remove();
   }, [visible]);
+
+  useEffect(()=>{
+    if(!visible){
+      setNameError("");
+      setEmailError("");
+      setMobileError("");
+      setPasswordError("");
+      setRoleError("");
+      setRoleOpen(false)
+    }
+  },[visible])
 
   useEffect(() => {
     Animated.timing(translateY, {
@@ -304,6 +316,7 @@ const countryList = [
         setMobileError("");
         setPasswordError("");
         setRoleError("");
+        setRoleOpen(false);
       } else {
         Animated.spring(translateY, {
           toValue: 0,
@@ -360,7 +373,7 @@ const countryList = [
             showsVerticalScrollIndicator={false}
           >
 
-            <Text style={styles.title}>{editData ? "Edit User" : "Add User"}</Text>
+            <Text style={styles.title}>{editData ? "Edit Staff" : "Add Staff"}</Text>
 
 
             <Text style={styles.label}>Name <Text style={{ color: 'red' }}>*</Text></Text>

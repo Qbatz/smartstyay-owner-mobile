@@ -80,6 +80,7 @@ import ComplaintUpdates from "../src/Component/Complaints/ComplaintCommentUpdate
 import BillsDiscount from "../src/Component/MorePages/Bills/DiscountInvoice"
 import BookingtoDiscount from  "../src/Component/MorePages/Bills/BookingtoInvoice"
 import BillsApplyInvoices from  "../src/Component/MorePages/Bills/BillsApplyInvoice"
+import EditProfileSheet from "./Component/SettingScreen/GeneralPages/EditProfileSheet";
 
 
 const SuccessFlow = (props) => {
@@ -132,6 +133,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="CancelNotice" component={CancelNotice} />
                     <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
                     <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
+                    <Navigation.Screen name="EditProfileSheet" component={EditProfileSheet}/>
                     <Navigation.Screen name="Bills" component={BillsDesign} />
                     <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />

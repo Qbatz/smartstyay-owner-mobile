@@ -995,7 +995,8 @@ export default function GeneralDetailsScreen({ navigation }) {
                 onPress={() => {
                   console.log(activeMenu + " EDIT");
                   setActiveMenuProfile(null);
-                  setEditProfileSheet(true)
+                  // setEditProfileSheet(true)
+                  navigation.navigate("EditProfileSheet",{profileDetails:profileDetails})
                 }}
               >
                 <Image source={Edit} style={styles.menuIcon} />
@@ -1251,11 +1252,11 @@ export default function GeneralDetailsScreen({ navigation }) {
         onSuccess={loadUsers}
       />
 
-      <EditProfileSheet
+      {/* <EditProfileSheet
         visible={editProfileBottomSheet}
         onClose={() => setEditProfileSheet(false)}
         profileData={profileDetails}
-      />
+      /> */}
 
       <Modal
         transparent
