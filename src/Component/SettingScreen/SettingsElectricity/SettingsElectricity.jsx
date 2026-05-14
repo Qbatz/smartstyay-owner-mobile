@@ -408,10 +408,10 @@ export default function SettingsElecticity({ navigation }) {
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={{
-    paddingHorizontal: 16,
-    paddingBottom: 40,
-  }}
+                contentContainerStyle={{
+                  paddingHorizontal: 16,
+                  paddingBottom: 40,
+                }}
               >
 
                 <View style={styles.card}>
@@ -423,9 +423,25 @@ export default function SettingsElecticity({ navigation }) {
 
                   {/* Monthly Recurring */}
                   <TouchableOpacity
-                    style={styles.radioRow}
+                    style={[
+                      styles.radioRow,
+                      billingType === "hostel" && styles.radioRowSelected
+                    ]}
                     onPress={() => setBillingType("hostel")}
                   >
+
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        billingType === "hostel"
+                          ? styles.radioOuterActive
+                          : styles.radioOuterInactive
+                      ]}
+                    >
+                      {billingType === "hostel" && (
+                        <View style={styles.radioInner} />
+                      )}
+                    </View>
                     <View style={styles.radioTextContainer}>
                       <Text style={styles.radioTitle}>Hostel Based</Text>
                       <Text style={styles.radioSub}>
@@ -433,18 +449,30 @@ export default function SettingsElecticity({ navigation }) {
                       </Text>
                     </View>
 
-                    <View style={styles.radioOuter}>
-                      {billingType === "hostel" && <View style={styles.radioInner} />}
-                    </View>
+
                   </TouchableOpacity>
 
                   {/* Tenant Joining */}
 
                   <TouchableOpacity
-                    style={styles.radioRow}
+                    style={[
+                      styles.radioRow,
+                      billingType === "room" && styles.radioRowSelected
+                    ]}
                     onPress={() => setBillingType("room")}
-                  // onPress={() => setBillingMethod("joining")}
                   >
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        billingType === "room"
+                          ? styles.radioOuterActive
+                          : styles.radioOuterInactive
+                      ]}
+                    >
+                      {billingType === "room" && (
+                        <View style={styles.radioInner} />
+                      )}
+                    </View>
                     <View style={styles.radioTextContainer}>
                       <Text style={styles.radioTitle}>Room Based</Text>
                       <Text style={styles.radioSub}>
@@ -452,16 +480,28 @@ export default function SettingsElecticity({ navigation }) {
                       </Text>
                     </View>
 
-                    <View style={styles.radioOuter}>
-                      {billingType === "room" && <View style={styles.radioInner} />}
-                    </View>
+
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.radioRow}
+                    style={[
+                      styles.radioRow,
+                      billingType === "flat" && styles.radioRowSelected
+                    ]}
                     onPress={() => setBillingType("flat")}
-                  // onPress={() => setBillingMethod("joining")}
                   >
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        billingType === "flat"
+                          ? styles.radioOuterActive
+                          : styles.radioOuterInactive
+                      ]}
+                    >
+                      {billingType === "flat" && (
+                        <View style={styles.radioInner} />
+                      )}
+                    </View>
                     <View style={styles.radioTextContainer}>
                       <Text style={styles.radioTitle}>Flat Rate (Included in Rent)</Text>
                       <Text style={styles.radioSub}>
@@ -469,9 +509,7 @@ export default function SettingsElecticity({ navigation }) {
                       </Text>
                     </View>
 
-                    <View style={styles.radioOuter}>
-                      {billingType === "flat" && <View style={styles.radioInner} />}
-                    </View>
+
                   </TouchableOpacity>
 
 
@@ -481,9 +519,11 @@ export default function SettingsElecticity({ navigation }) {
                 <View style={styles.card}>
 
                   <Text style={styles.sectionTitle}>Configuration</Text>
+   {(billingType === "hostel" || billingType === "room") && (
+
                   <Text style={styles.sectionSub}>Defines the monthly rent period.</Text>
 
-
+   )}
 
                   {(billingType === "hostel" || billingType === "room") && (
                     <>
@@ -526,6 +566,7 @@ export default function SettingsElecticity({ navigation }) {
 
                         }}
                       />
+                      <Text style={styles.sectionSub}>Rate charged per electricity unit</Text>
 
                       {unitErr && (
                         <ErrorMessage message={unitErr} type="error" />
@@ -535,30 +576,66 @@ export default function SettingsElecticity({ navigation }) {
 
 
                   {billingType === "flat" && (
-                    <>
+                     <View style={styles.flatConfigWrapper}>
                       <Text style={styles.sectionSub}>Set up flat rate electricity charges</Text>
 
                       {/* Included in Rent */}
                       <TouchableOpacity
-                        style={styles.radioRow}
-                        onPress={() => setFlatType("included")}
+                            style={[
+                      styles.radioRow,
+                      flatType === "included" && styles.radioRowSelected
+                    ]}
+                    onPress={() => setFlatType("included")}
                       >
+                        <View
+                          style={[
+                            styles.radioOuter,
+                            flatType === "included"
+                              ? styles.radioOuterActive
+                              : styles.radioOuterInactive
+                          ]}
+                        >
+                          {flatType === "included" && (
+                            <View style={styles.radioInner} />
+                          )}
+                        </View>
+
                         <View style={styles.radioTextContainer}>
                           <Text style={styles.radioTitle}>Included in Rent</Text>
                           <Text style={styles.radioSub}>
                             No separate electricity charge applied
                           </Text>
                         </View>
-                        <View style={styles.radioOuter}>
+                        {/* <View style={styles.radioOuter}>
                           {flatType === "included" && <View style={styles.radioInner} />}
-                        </View>
+                        </View> */}
+
+
                       </TouchableOpacity>
 
                       {/* Fixed Monthly */}
                       <TouchableOpacity
-                        style={styles.radioRow}
-                        onPress={() => setFlatType("fixed")}
+                        // style={styles.radioRow}
+                        // onPress={() => setFlatType("fixed")}
+                                style={[
+                      styles.radioRow,
+                      flatType === "fixed" && styles.radioRowSelected
+                    ]}
+                    onPress={() => setFlatType("fixed")}
                       >
+                        <View
+                          style={[
+                            styles.radioOuter,
+                            flatType === "fixed"
+                              ? styles.radioOuterActive
+                              : styles.radioOuterInactive
+                          ]}
+                        >
+                          {flatType === "fixed" && (
+                            <View style={styles.radioInner} />
+                          )}
+                        </View>
+
                         <View style={styles.radioTextContainer}>
                           <Text style={styles.radioTitle}>Fixed Monthly Charge</Text>
                           <Text style={styles.radioSub}>
@@ -566,11 +643,16 @@ export default function SettingsElecticity({ navigation }) {
                           </Text>
                         </View>
 
-                        <View style={styles.radioOuter}>
+                        {/* <View style={styles.radioOuter}>
                           {flatType === "fixed" && <View style={styles.radioInner} />}
-                        </View>
+                        </View> */}
+
+
                       </TouchableOpacity>
-                    </>)}
+                   
+                    </View>
+                    )
+                    }
 
 
 
@@ -619,15 +701,25 @@ export default function SettingsElecticity({ navigation }) {
                       {monthlyChargeErr && (
                         <ErrorMessage message={monthlyChargeErr} type="error" />
                       )}
-
+                   <View style={{display:'flex', flexDirection:'row', alignItems:'center',marginTop: 8, }}>
+                   <Image source={GracePeriodIcon} style={{height:12, width:12 , alignItems:'center', marginRight:8}}/>
                       <Text style={styles.helper}>
+                  
                         Fixed amount charged monthly regardless of usage
                       </Text>
+                      </View>
                     </>
                   )}
 
                   {flatType === "included" && billingType === "flat" && (
-                    <Text style={styles.helper}>Electricity charges will not depend on usage. No separate charge will be applied</Text>
+                     <View style={{display:'flex', flexDirection:'row', alignItems:'center',marginTop: 8, }}>
+                   <Image source={GracePeriodIcon} style={{height:12, width:12 , alignItems:'center', marginRight:8}}/>
+                      <Text style={styles.helper}>
+                  
+                    Electricity charges will not depend on usage. No separate charge will be applied
+                      </Text>
+                      </View>
+                    // <Text style={styles.helper}>Electricity charges will not depend on usage. No separate charge will be applied</Text>
 
                   )}
 
@@ -641,7 +733,176 @@ export default function SettingsElecticity({ navigation }) {
 
 
 
+<View style={styles.previewCard}>
 
+  <Image
+    source={GracePeriodIcon}
+    style={styles.previewIcon}
+  />
+
+  <Text style={styles.previewTitle}>
+    Billing preview
+  </Text>
+
+  <Text style={styles.previewSub}>
+    This is a sample invoice preview
+  </Text>
+
+  {/* HOSTEL */}
+  {billingType === "hostel" && (
+    <>
+      <View style={styles.previewRow}>
+        <Text style={styles.previewLabel}>
+          Electricity Bill <Text style={styles.previewTag}>(Hostel)</Text>
+        </Text>
+
+        <Text style={styles.previewAmount}>
+          ₹6,000
+        </Text>
+      </View>
+
+      <View style={styles.previewDivider} />
+
+      <View style={styles.previewRow}>
+        <Text style={styles.previewLabel}>
+          Tenants x 30
+        </Text>
+
+        <Text style={styles.previewAmount}>
+          ₹200
+        </Text>
+      </View>
+    </>
+  )}
+
+  {/* ROOM */}
+  {billingType === "room" && (
+    <>
+      <View style={styles.previewRow}>
+        <Text style={styles.previewLabel}>
+          Electricity Bill <Text style={styles.previewTag}>(Room wise)</Text>
+        </Text>
+
+        <Text style={styles.previewAmount}>
+          ₹900
+        </Text>
+      </View>
+
+      <View style={styles.previewDivider} />
+
+      <View style={styles.previewRow}>
+        <Text style={styles.previewLabel}>
+          Tenants x 3
+        </Text>
+
+        <Text style={styles.previewAmount}>
+          ₹300
+        </Text>
+      </View>
+    </>
+  )}
+
+  {/* FLAT INCLUDED */}
+  {billingType === "flat" && flatType === "included" && (
+    <>
+      <View style={styles.previewRow}>
+        <Text style={styles.previewLabel}>
+          Room Rent
+        </Text>
+
+        <Text style={styles.previewAmount}>
+          ₹5,000
+        </Text>
+      </View>
+
+      <View style={styles.previewDivider} />
+
+      <View style={styles.previewRow}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={styles.previewLabel}>
+            Electricity
+          </Text>
+
+          <View style={styles.previewBadge}>
+            <Text style={styles.previewBadgeText}>
+              No Charge
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.previewAmount}>
+          ₹0
+        </Text>
+      </View>
+
+      <View style={styles.previewDivider} />
+
+      <View style={styles.previewRow}>
+        <Text style={styles.totalLabel}>
+          Total
+        </Text>
+
+        <Text style={styles.totalAmount}>
+          ₹5,000
+        </Text>
+      </View>
+    </>
+  )}
+
+  {/* FLAT FIXED */}
+  {billingType === "flat" && flatType === "fixed" && (
+    <>
+      <View style={styles.previewRow}>
+        <Text style={styles.previewLabel}>
+          Room Rent
+        </Text>
+
+        <Text style={styles.previewAmount}>
+          ₹5,000
+        </Text>
+      </View>
+
+      <View style={styles.previewDivider} />
+
+      <View style={styles.previewRow}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={styles.previewLabel}>
+            Electricity
+          </Text>
+
+          <View style={styles.previewBadge}>
+            <Text style={styles.previewBadgeText}>
+              Fixed Charge
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.previewAmount}>
+          ₹{monthlyCharge || 350}
+        </Text>
+      </View>
+
+      <View style={styles.previewDivider} />
+
+      <View style={styles.previewRow}>
+        <Text style={styles.totalLabel}>
+          Total
+        </Text>
+
+        <Text style={styles.totalAmount}>
+          ₹{5000 + Number(monthlyCharge || 350)}
+        </Text>
+      </View>
+    </>
+  )}
+
+  <View style={styles.previewFooter}>
+    <Text style={styles.previewFooterText}>
+      Preview calculation based on current settings
+    </Text>
+  </View>
+
+</View>
 
 
 
@@ -675,7 +936,7 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: "#F4F6F8",
+    backgroundColor: "#fff",
     // paddingHorizontal: 16
   },
 
@@ -684,7 +945,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 20 : 20,
     marginBottom: 20,
-      paddingHorizontal: 16,
+    paddingHorizontal: 16,
   },
 
   backIcon: {
@@ -699,59 +960,79 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 10,
+    // backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
     marginBottom: 18,
-    elevation: 2,
-    shadowColor: "#0000000D",
+    // borderWidth: 1,
+    // borderColor: "#F1F5F9",
   },
 
 
 
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Gilroy-Medium"
+    color: "#111827",
+    fontFamily: "Gilroy-Semibold",
   },
-
   sectionSub: {
-    fontSize: 14,
-    color: "#4B4B4B",
-    marginTop: 4,
-    marginBottom: 12,
-    fontFamily: "Gilroy-Regular"
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 6,
+    lineHeight: 26,
+    marginBottom: 5,
+    fontFamily: "Gilroy-Regular",
   },
 
+  // radioRow: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   alignItems: "center",
+  //   marginTop: 10
+  // },
   radioRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 10
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 16,
+    marginTop: 14,
+    backgroundColor: "#FFFFFF",
   },
 
-  radioRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    marginTop: 16
+  // radioRow: {
+  //   flexDirection: "row",
+  //   alignItems: "flex-start",
+  //   justifyContent: "space-between",
+  //   marginTop: 16
+  // },
+
+  radioRowSelected: {
+    borderColor: "#4F46E5",
+    backgroundColor: "#EEF2FF",
   },
 
   radioTextContainer: {
     flex: 1,
-    paddingRight: 12
+    // paddingRight: 12
   },
 
   radioTitle: {
-    fontSize: 16,
+    fontSize: 18,
+    color: "#111827",
     fontFamily: "Gilroy-Semibold",
-    marginBottom: 4
+    marginBottom: 8,
   },
 
   radioSub: {
     fontSize: 13,
-    color: "#777",
-    lineHeight: 23,
-    fontFamily: "Gilroy-Regular"
+    color: "#6B7280",
+    lineHeight: 20,
+    fontFamily: "Gilroy-Regular",
   },
 
   radioActive: {
@@ -762,20 +1043,28 @@ const styles = StyleSheet.create({
   },
 
   radioOuter: {
-    width: 22,
-    height: 22,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#2F5BFF",
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2.5,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginRight: 14,
+  },
+
+  radioOuterActive: {
+    borderColor: "#2563EB",
+  },
+
+  radioOuterInactive: {
+    borderColor: "#D1D5DB",
   },
 
   radioInner: {
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: "#2F5BFF"
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#2563EB",
   },
 
   label: {
@@ -785,12 +1074,15 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    marginTop: 8,
+    marginTop: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    display: 'flex', flexDirection: 'row', justifyContent: 'space-between'
+    borderColor: "#D1D5DB",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 58,
+    fontSize: 18,
+    color: "#111827",
+    backgroundColor: "#FFFFFF",
   },
 
   dropdownDisabled: {
@@ -810,7 +1102,7 @@ const styles = StyleSheet.create({
   helper: {
     fontSize: 12,
     color: "#616161",
-    marginTop: 8,
+    // marginTop: 8,
     fontFamily: "Gilroy-Medium"
   },
 
@@ -1011,5 +1303,112 @@ const styles = StyleSheet.create({
   emptyImg: { width: 200, height: 160, marginBottom: 10 },
   emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 },
 
+flatConfigWrapper: {
+  borderLeftWidth: 4,
+  borderLeftColor: "#2563EB",
+  paddingLeft: 18,
+  marginTop: 12,
+  marginLeft: 2,
+  paddingVertical: 4,
+},
 
+previewCard: {
+  marginTop: 24,
+  marginBottom: 28,
+  borderRadius: 28,
+  padding: 24,
+  overflow: "hidden",
+  backgroundColor: "#0F0B8F",
+},
+
+previewIcon: {
+  width: 28,
+  height: 28,
+  tintColor: "#C7D2FE",
+  marginBottom: 20,
+},
+
+previewTitle: {
+  fontSize: 22,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Bold",
+},
+
+previewSub: {
+  fontSize: 16,
+  color: "#A5B4FC",
+  marginTop: 10,
+  marginBottom: 28,
+  fontFamily: "Gilroy-Regular",
+},
+
+previewRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginVertical: 10,
+},
+
+previewLabel: {
+  fontSize: 18,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Medium",
+},
+
+previewTag: {
+  color: "#C7D2FE",
+  fontStyle: "italic",
+},
+
+previewAmount: {
+  fontSize: 18,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Bold",
+},
+
+previewDivider: {
+  height: 1,
+  backgroundColor: "rgba(255,255,255,0.12)",
+  marginVertical: 10,
+},
+
+previewBadge: {
+  backgroundColor: "#FFFFFF",
+  paddingHorizontal: 14,
+  paddingVertical: 6,
+  borderRadius: 10,
+  marginLeft: 10,
+},
+
+previewBadgeText: {
+  color: "#374151",
+  fontSize: 14,
+  fontFamily: "Gilroy-Medium",
+},
+
+totalLabel: {
+  fontSize: 22,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Semibold",
+},
+
+totalAmount: {
+  fontSize: 24,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Bold",
+},
+
+previewFooter: {
+  marginTop: 28,
+  backgroundColor: "rgba(255,255,255,0.22)",
+  borderRadius: 14,
+  paddingVertical: 16,
+  paddingHorizontal: 18,
+},
+
+previewFooterText: {
+  color: "#FFFFFF",
+  fontSize: 15,
+  fontFamily: "Gilroy-Regular",
+},
 });
