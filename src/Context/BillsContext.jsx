@@ -1089,6 +1089,7 @@ const ApplyAdvanceToInvoices = async ({
 const GetAdvanceCreditDetails = async ({
   hostelId,
   invoiceId,
+  type = "",
 }) => {
   if (!hostelId || !invoiceId) {
     return { success: false, message: "Invalid data" };
@@ -1101,11 +1102,15 @@ const GetAdvanceCreditDetails = async ({
     const axios = getAxios();
 
     const res = await axios.get(
-      `/v2/bills/advances/${hostelId}/${invoiceId}`
+      `/v2/bills/advances/${hostelId}/${invoiceId}`,
+      {
+        params: {
+          type,
+        },
+      }
     );
 
     if (res.status === 200) {
-
       setAdvanceCreditDetails(res?.data || null);
 
       return {
