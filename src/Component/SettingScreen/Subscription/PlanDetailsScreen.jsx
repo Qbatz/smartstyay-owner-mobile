@@ -1,4 +1,4 @@
-import React,{useCallback} from "react";
+import React,{useCallback, useContext, useEffect, useState} from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView,BackHandler} from "react-native";
 import Calendar from "../../../Assets/Images/calendar.png";
 import { useFocusEffect } from '@react-navigation/native';
@@ -8,8 +8,16 @@ import crown from "../../../Assets/Images/crown.png";
 import BillingIcon from "../../../Assets/Images/direct-right.png";
 import ChecksIcon from "../../../Assets/Images/checks.png";
 import { StatusBar, Platform } from "react-native";
+import { UseSetting } from "../../../Context/SettingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 export default function PlanDetailsScreen({ route, navigation }) {
+
+  const {getCurrentHostelPlan}=UseSetting();
+  const{activeHostelId}=useContext(CommonContexts);
+
+   const [currentPlan, setCurrentPlan] = useState(null);
+
   useFocusEffect(
          useCallback(() => {
            const onBackPress = () => {
@@ -31,10 +39,26 @@ export default function PlanDetailsScreen({ route, navigation }) {
            return () => subscription.remove();
          }, [ navigation])
        );
-  
-  const { planId } = route.params;
 
-  const isPremium = planId === 1;
+       useEffect(() => {
+           if (activeHostelId) {
+             fetchCurrentPlan();
+           }
+         }, [activeHostelId]);
+       
+         const fetchCurrentPlan = async () => {
+           const res = await getCurrentHostelPlan(activeHostelId);
+       
+           if (res.success) {
+             console.log("Current Plan →", res.data);
+             setCurrentPlan(res.data);
+           }
+         };
+  
+  // const { planId } = route.params;
+
+  // const isPremium = planId === 1;
+  const isPremium = currentPlan?.planId ===1;
 
   const planData = isPremium
     ? {
@@ -56,6 +80,9 @@ export default function PlanDetailsScreen({ route, navigation }) {
         billingTag: "Basic",
       };
 
+      
+      console.log(currentPlan?.billingHistory)
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" ,     paddingTop: Platform.OS === "android"
   ? StatusBar.currentHeight 
@@ -74,17 +101,18 @@ export default function PlanDetailsScreen({ route, navigation }) {
       
         <View style={styles.card}>
           <View style={styles.rowBetween}>
-            <Text style={styles.planTitle}>{planData.title}</Text>
+            <Text style={styles.planTitle}>{currentPlan?.planName} Plan</Text>
 
             <View style={styles.activeBadge}>
               <View style={styles.greenDot} />
-              <Text style={styles.activeText}>Active</Text>
+              <Text style={styles.activeText}>{currentPlan?.status}</Text>
             </View>
           </View>
 
-          <Text style={styles.price}>{planData.price}</Text>
+          <Text style={styles.price}>{currentPlan?.planAmount}</Text>
 
-          <TouchableOpacity style={styles.changeBtn}>
+          <TouchableOpacity style={styles.changeBtn} 
+          onPress={()=>navigation.navigate("SubscriptionPlans")}>
             <Text style={styles.changeBtnText}>Change Plan</Text>
           </TouchableOpacity>
 
@@ -93,7 +121,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
             <Image source={Calendar} style={styles.icon} />
             <View>
               <Text style={styles.infoLabel}>Renewal Date</Text>
-              <Text style={styles.infoValue}>{planData.renewal}</Text>
+              <Text style={styles.infoValue}>{currentPlan?.renewalDate}</Text>
             </View>
           </View>
 
@@ -102,7 +130,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
             <Image source={Calendar} style={styles.icon} />
             <View>
               <Text style={styles.infoLabel}>Payment Method</Text>
-              <Text style={styles.infoValue}>{planData.method}</Text>
+              <Text style={styles.infoValue}>{currentPlan?.paymentMethod}</Text>
             </View>
           </View>
 
@@ -111,13 +139,13 @@ export default function PlanDetailsScreen({ route, navigation }) {
             <Image source={StatusIcon} style={styles.icon} />
             <View>
               <Text style={styles.infoLabel}>Status</Text>
-              <Text style={styles.statusBlue}>{planData.status}</Text>
+              <Text style={styles.statusBlue}>{currentPlan?.status}</Text>
             </View>
           </View>
         </View>
 
       
-        {!isPremium && (
+        {currentPlan?.planName !=="Advance" && (
           <View style={styles.upgradeCard}>
 
             <View style={styles.rowBetween}>
@@ -168,25 +196,27 @@ export default function PlanDetailsScreen({ route, navigation }) {
        
         <Text style={styles.billingHeader}>Billing History</Text>
 
-        {["0876", "1312", "0342"].map((item, idx) => (
+        {currentPlan?.billingHistory.map((item, idx) => (
           <View key={idx} style={styles.billCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{backgroundColor:'#1E45E10F',borderRadius:24,justifyContent:'center',alignItems:'center',width:48,height:48,marginRight:10}}>
               <Image
                 source={BillingIcon}
                 style={styles.billIcon}
               />
+              </View>
               <View>
-                <Text style={styles.billTitle}>Invoice {item}</Text>
+                <Text style={styles.billTitle}>Invoice {item?.invoiceNumber || "-"}</Text>
 
                 <View style={styles.premiumChip}>
-                  <Text style={styles.premiumChipText}>{planData.billingTag}</Text>
+                  <Text style={styles.premiumChipText}>{item.planName}</Text>
                 </View>
               </View>
             </View>
 
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.billAmount}>₹ {isPremium ? "999" : "599"}</Text>
-              <Text style={styles.billDate}>12 Nov 2025</Text>
+              <Text style={styles.billAmount}>₹ {item?.totalAmount}</Text>
+              <Text style={styles.billDate}>{item?.createdAt}</Text>
             </View>
           </View>
         ))}
@@ -284,7 +314,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  billIcon: { width: 34, height: 34, marginRight: 10 },
+  billIcon: { width: 34, height: 34,},
   billTitle: { fontSize: 14, fontWeight: "700" },
 
   premiumChip: {
