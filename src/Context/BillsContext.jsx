@@ -1071,6 +1071,7 @@ const ApplyAdvanceToInvoices = async ({
     console.log("ERROR", error?.response?.data);
 
     const message =
+        error?.response?.data ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Something went wrong";

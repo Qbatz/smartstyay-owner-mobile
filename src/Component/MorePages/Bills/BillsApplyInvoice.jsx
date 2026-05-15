@@ -31,12 +31,12 @@ export default function BillsApplyInvoices() {
 
     const onSuccess = route?.params?.onSuccess;
 
-    const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills , 
+    const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills,
         RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
         , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
         downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
         UpdateBillDiscount,
-        ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices  , advanceCreditDetails} = useContext(BillContext);
+        ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices, advanceCreditDetails } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -58,21 +58,19 @@ export default function BillsApplyInvoices() {
 
 
     const customer =
-  advanceCreditDetails?.customerInfo || {};
+        advanceCreditDetails?.customerInfo || {};
 
-const invoicesList =
-  advanceCreditDetails?.currentInvoiceInfo
-    ? [advanceCreditDetails.currentInvoiceInfo]
-    : [];
+    const invoicesList =
+        advanceCreditDetails?.currentInvoiceInfo
+            ? [advanceCreditDetails.currentInvoiceInfo]
+            : [];
 
-const advanceInfo =
-  advanceCreditDetails?.advanceInfo || {};
+    const advanceInfo =
+        advanceCreditDetails?.advanceInfo || {};
 
-  const bookingAmount =
-  advanceInfo?.availableBalance || 0;
 
-  const remainingBalance =
-  bookingAmount - totalApplied;
+
+
 
 
     const [discountType, setDiscountType] = useState("Amount");
@@ -103,7 +101,11 @@ const advanceInfo =
         0
     );
 
-   
+    const bookingAmount = advanceInfo?.availableBalance || 0;
+
+    const remainingBalance = bookingAmount - totalApplied;
+
+
 
 
 
@@ -132,7 +134,7 @@ const advanceInfo =
 
     const today = new Date();
 
-    const dueDateStr = BillPdfdetails?.dueDate; 
+    const dueDateStr = BillPdfdetails?.dueDate;
 
     const parseDate = (dateStr) => {
         if (!dateStr) return null;
@@ -145,7 +147,7 @@ const advanceInfo =
     const isOverdue = dueDate && today > dueDate;
 
 
- 
+
 
 
     useEffect(() => {
@@ -223,7 +225,7 @@ const advanceInfo =
         return true;
     };
 
-  
+
 
     console.log({
         discountType,
@@ -251,43 +253,74 @@ const advanceInfo =
     const isEdit = route?.params?.isEdit;
 
     console.log("advancedtails", advanceInfo);
-    
 
 
-console.log("ADVANCEid", advanceInfo?.advanceInvoiceId);
 
+    console.log("ADVANCEid", advanceInfo?.advanceInvoiceId);
+
+    // const handleApply = async () => {
+    //     const bookingAmount = advanceInfo?.availableBalance || 0;
+
+    //     const totalApplied = Object.values(appliedAmounts).reduce(
+    //         (sum, val) => sum + Number(val || 0),
+    //         0
+    //     );
+
+    //     if (totalApplied <= 0) {
+    //         setModalType("warning");
+    //         setModalMessage("Please enter at least one amount");
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccessModal(false);
+    //         }, 2000);
+
+    //         return;
+    //     }
+
+    //     if (totalApplied > bookingAmount) {
+    //         setModalType("warning");
+    //         setModalMessage("Applied amount exceeds booking amount");
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccessModal(false);
+    //         }, 2000);
+
+    //         return;
+    //     }
 
     const handleApply = async () => {
-        const bookingAmount = advanceInfo?.advanceBalanceAmount || 0;
+        const bookingAmount = advanceInfo?.availableBalance || 0;
 
         const totalApplied = Object.values(appliedAmounts).reduce(
             (sum, val) => sum + Number(val || 0),
             0
         );
 
-       if (totalApplied <= 0) {
-    setModalType("warning");
-    setModalMessage("Please enter at least one amount");
-    setShowSuccessModal(true);
+        if (totalApplied <= 0) {
+            setModalType("warning");
+            setModalMessage("Please enter at least one amount");
+            setShowSuccessModal(true);
 
-    setTimeout(() => {
-        setShowSuccessModal(false);
-    }, 2000);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 2000);
 
-    return;
-}
+            return;
+        }
 
-if (totalApplied > bookingAmount) {
-    setModalType("warning");
-    setModalMessage("Applied amount exceeds booking amount");
-    setShowSuccessModal(true);
+        if (totalApplied > bookingAmount) {
+            setModalType("warning");
+            setModalMessage("Applied amount exceeds booking amount");
+            setShowSuccessModal(true);
 
-    setTimeout(() => {
-        setShowSuccessModal(false);
-    }, 2000);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 2000);
 
-    return;
-}
+            return;
+        }
 
         const listItems = Object.entries(appliedAmounts).map(
             ([invoiceId, amount]) => ({
@@ -297,7 +330,7 @@ if (totalApplied > bookingAmount) {
         )
 
         console.log("listitems", listItems);
-        
+
 
         const payload = {
             // reason: "Advance Applied",
@@ -306,48 +339,47 @@ if (totalApplied > bookingAmount) {
         }
 
         console.log("payload", payload);
-        console.log("ID", activeHostelId , advanceInfo?.advanceInvoiceId,);
-        
-        
 
-      const res = await ApplyAdvanceToInvoices({
-   hostelId: activeHostelId,
-   invoiceId: advanceInfo?.advanceInvoiceId,
-   listItems,
-});
+
+
+        const res = await ApplyAdvanceToInvoices({
+            hostelId: activeHostelId,
+            invoiceId: advanceInfo?.invoiceId,
+            listItems,
+        });
 
         console.log("res", res);
-        
 
-       if (res?.success) {
-      await  GetAllBillDetails(activeHostelId);
-       await   GetAdvanceBookingBills(activeHostelId);
-    setModalType("success");
-    setModalMessage("Applied successfully");
-    setShowSuccessModal(true);
 
-    setTimeout(() => {
-        navigation.goBack();
-        setShowSuccessModal(false);
-    }, 1500);
+        if (res?.success) {
+            await GetAllBillDetails(activeHostelId);
+            await GetAdvanceBookingBills(activeHostelId);
+            setModalType("success");
+            setModalMessage("Applied successfully");
+            setShowSuccessModal(true);
 
-} else {
+            setTimeout(() => {
+                navigation.goBack();
+                setShowSuccessModal(false);
+            }, 1500);
 
-    setModalType("warning");
-    setModalMessage(res?.message || "Something went wrong");
-    setShowSuccessModal(true);
+        } else {
 
-    setTimeout(() => {
-        setShowSuccessModal(false);
-    }, 2500);
-}
+            setModalType("warning");
+            setModalMessage(res?.message || "Something went wrong");
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 2500);
+        }
     };
 
 
 
 
 
-   
+
 
 
 
@@ -439,22 +471,22 @@ if (totalApplied > bookingAmount) {
                                 <View key={item?.invoiceId || index} style={styles.innerCard}>
 
                                     <View style={styles.rowBetween}>
-                                      
+
                                         <Text style={styles.amount}>
                                             {item?.invoiceType}
                                         </Text>
-                                       
+
 
                                         <Text style={styles.amount}>
                                             ₹ {item?.pendingAmount || 0}
                                         </Text>
                                     </View>
-                           <View style={{display:'flex', flexDirection:'row',}}>
-                                           <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14,  marginRight:5 }} />
-                                    <Text style={styles.smallText}>
-                                        {item?.invoiceNumber}
-                                    </Text>
-                                      </View>
+                                    <View style={{ display: 'flex', flexDirection: 'row', }}>
+                                        <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginRight: 5 }} />
+                                        <Text style={styles.smallText}>
+                                            {item?.invoiceNumber}
+                                        </Text>
+                                    </View>
 
                                     <View style={styles.rowBetween}>
                                         <Text style={styles.label}>Date</Text>
@@ -491,14 +523,14 @@ if (totalApplied > bookingAmount) {
                                         <TouchableOpacity
                                             style={styles.setBtn}
                                             onPress={() =>
-                                              handleSetAmount(
-  item.invoiceId,
-  tempValue?.[item.invoiceId],
-  Math.min(
-    item.pendingAmount,
-    remainingBalance + (appliedAmounts[item.invoiceId] || 0)
-  )
-)
+                                                handleSetAmount(
+                                                    item.invoiceId,
+                                                    tempValue?.[item.invoiceId],
+                                                    Math.min(
+                                                        item.pendingAmount,
+                                                        remainingBalance + (appliedAmounts[item.invoiceId] || 0)
+                                                    )
+                                                )
                                             }
                                         >
                                             <Text style={{ color: "#1E45E1" }}>Set</Text>
@@ -526,9 +558,9 @@ if (totalApplied > bookingAmount) {
                                 <Text style={{ fontFamily: "Gilroy-Medium" }}>
                                     Available Balance
                                 </Text>
-                               <Text style={{ fontFamily: "Gilroy-Bold" }}>
-  ₹ {remainingBalance.toFixed(2)}
-</Text>
+                                <Text style={{ fontFamily: "Gilroy-Bold" }}>
+                                    ₹ {remainingBalance.toFixed(2)}
+                                </Text>
                             </View>
 
 
