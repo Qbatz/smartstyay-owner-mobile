@@ -1,7 +1,10 @@
 import React, { useRef, useState, useEffect, useContext } from "react";
 import {
     Animated, BackHandler, Keyboard, PanResponder, StyleSheet, Text, View,
-    TouchableWithoutFeedback, ScrollView, TouchableOpacity, Image, TextInput
+    TouchableWithoutFeedback, ScrollView, TouchableOpacity, Image, TextInput,
+    ImageBackground,
+    KeyboardAvoidingView,
+    Platform
 } from "react-native";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import EyeOpen from "../../../Assets/Images/Eye.png";
@@ -11,17 +14,24 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { useGeneral } from "../../../Context/GeneralContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
+import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import RectangleBackground from "../../../Assets/Images/RectangleBackground.png"
+import CameraIcon from "../../../Assets/Images/edit.png"
+import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
+import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { useNavigation } from "@react-navigation/native";
+import Loader from "../../Loader/Loader";
 
 
-export default function EditProfileSheet({ visible, onClose, profileData,onSuccess }) {
+export default function EditProfileSheet({ route, navigation }) {
 
 
     const translateY = useRef(new Animated.Value(500)).current;
     const [keyboardHeight, setKeyboardHeight] = useState(0)
 
     const { activeHostelId } = useContext(CommonContexts);
-    const { updateProfile } = useGeneral();
-    const {GetProfileDetails}=useContext(ExpensesContext)
+    const { updateProfile, loading } = useGeneral();
+    const { GetProfileDetails } = useContext(ExpensesContext)
     const { getRoleByHostel, addUser, updateUser } = UseSetting();
     const [name, setName] = useState("");
     const [lastName, setLastName] = useState("")
@@ -37,66 +47,87 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
+    const [profilePic, setProfilePic] = useState(null)
+    const [showCameraIcon, setShowCameraIcon] = useState(false);
+    const [showProfileSheet, setShowProfileSheet] = useState(false);
+
+
+    //   const navigation=useNavigation();
 
     const [countryOpen, setCountryOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState({
         code: "+91",
         label: "India",
     });
+    const profileData = route?.params?.profileDetails
+
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const mobileRegex = /^[1-9]\d{9}$/;
 
+    const scrollRef = React.useRef(null);
+    const mobileRef = useRef(null);
+    const emailRef = useRef(null);
 
-    useEffect(() => {
-        if (!visible) return;
-
-        const backAction = () => {
-            onClose();
-
-            return true;
-        };
-
-        const handler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            backAction
-        );
-
-        return () => handler.remove();
-    }, [visible]);
-
-    useEffect(() => {
-        Animated.timing(translateY, {
-            toValue: visible ? 0 : 500,
-            duration: 260,
-            useNativeDriver: true,
-        }).start();
-    }, [visible]);
+    const countryList = [
+        { label: "India", code: "+91" },
+        { label: "United States", code: "+1" },
+        { label: "United Kingdom", code: "+44" },
+        { label: "Australia", code: "+61" },
+        { label: "Singapore", code: "+65" },
+    ];
 
 
-    const panResponder = PanResponder.create({
-        onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
-        onPanResponderMove: (_, g) => {
-            if (g.dy > 0) translateY.setValue(g.dy);
-        },
+    // useEffect(() => {
+    //     if (!visible) return;
 
-        onPanResponderRelease: (_, g) => {
-            if (g.dy > 120) {
-                onClose();
-                setNameError("");
-                setEmailError("");
-                setMobileError("");
-                setPasswordError("");
-                setRoleError("");
-            } else {
-                Animated.spring(translateY, {
-                    toValue: 0,
-                    useNativeDriver: true,
-                }).start();
-            }
-        },
+    //     const backAction = () => {
+    //         onClose();
 
-    });
+    //         return true;
+    //     };
+
+    //     const handler = BackHandler.addEventListener(
+    //         "hardwareBackPress",
+    //         backAction
+    //     );
+
+    //     return () => handler.remove();
+    // }, [visible]);
+
+    // useEffect(() => {
+    //     Animated.timing(translateY, {
+    //         toValue: visible ? 0 : 500,
+    //         duration: 260,
+    //         useNativeDriver: true,
+    //     }).start();
+    // }, [visible]);
+
+
+    // const panResponder = PanResponder.create({
+    //     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
+    //     onPanResponderMove: (_, g) => {
+    //         if (g.dy > 0) translateY.setValue(g.dy);
+    //     },
+
+    //     onPanResponderRelease: (_, g) => {
+    //         if (g.dy > 120) {
+    //             onClose();
+    //             setNameError("");
+    //             setEmailError("");
+    //             setMobileError("");
+    //             setPasswordError("");
+    //             setRoleError("");
+    //         } else {
+    //             Animated.spring(translateY, {
+    //                 toValue: 0,
+    //                 useNativeDriver: true,
+    //             }).start();
+    //         }
+    //     },
+
+    // });
     useEffect(() => {
         const show = Keyboard.addListener("keyboardDidShow", (e) => {
             setKeyboardHeight(e.endCoordinates.height - 40);
@@ -112,9 +143,24 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
         };
     }, []);
 
+    const scrollToField = (ref) => {
+        if (!ref?.current || !scrollRef.current) return;
+
+        ref.current.measureLayout(
+            scrollRef.current,
+            (x, y) => {
+                scrollRef.current.scrollTo({
+                    y: y - 100,
+                    animated: true,
+                });
+            },
+            () => { }
+        );
+    };
+
     { console.log("profiledat", profileData) }
     useEffect(() => {
-        if (!visible) return;
+        // if (!visible) return;
 
         if (profileData) {
             const init = {
@@ -122,6 +168,7 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
                 lastName: profileData?.lastName || "",
                 email: profileData?.mailId || "",
                 mobile: profileData?.mobileNo || "",
+                profileImage: profileData?.profilePic || "",
             };
 
             setInitialData(init);
@@ -130,15 +177,16 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
             setLastName(init.lastName)
             setEmail(init.email);
             setMobile(init.mobile);
+            setProfileImage(init?.profileImage)
         } else {
             setInitialData(null);
             setName("");
             setLastName("")
             setEmail("");
             setMobile("");
-
+            setProfileImage("")
         }
-    }, [profileData, visible]);
+    }, [profileData]);
 
     const isNoChangeDetected = () => {
         if (!initialData) return false;
@@ -147,7 +195,8 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
             name.trim() === initialData.name.trim() &&
             lastName.trim() === initialData.lastName.trim() &&
             email.trim() === initialData.email.trim() &&
-            mobile.trim() === initialData.mobile.trim()
+            mobile.trim() === initialData.mobile.trim() &&
+            (profileImage?.uri || profileImage) === (initialData.profileImage || "")
         );
     };
 
@@ -160,7 +209,47 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
         initialEmail: initialData?.email,
         mobile,
         initialMobile: initialData?.mobile,
+        initialProfileImage: initialData?.profileImage,
+        profileImage
     });
+    const imageSource = profileImage ? profileImage.uri || profileImage : profilePic ? profilePic : null;
+    console.log(imageSource)
+    console.log(profileImage)
+    console.log(profilePic)
+
+    const openCamera = () => {
+        launchCamera(
+            {
+                mediaType: "photo",
+                quality: 0.7,
+            },
+            (response) => {
+                if (response.didCancel) return;
+                if (response.assets && response.assets.length > 0) {
+                    //   setProfileImage(response.assets[0]);
+                    const source = { uri: response.assets[0].uri };
+                    setProfileImage(source);
+                }
+            }
+        );
+    };
+    const openGallery = () => {
+        launchImageLibrary(
+            { mediaType: "photo", quality: 0.7 },
+            async (response) => {
+                if (response.didCancel) return;
+
+                if (response.assets?.length > 0) {
+                    //   const image = response.assets[0];
+                    //   setProfileImage(image); // UI update
+                    const source = { uri: response.assets[0].uri };
+                    setProfileImage(source);
+                    console.log(source)
+
+                }
+            }
+        );
+    };
 
 
     const handleUpdateProfile = async () => {
@@ -225,21 +314,31 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
             name: "payload.json",
         })
 
+        if (profileImage || profileImage?.uri) {
+            formData.append("profilePic", {
+                uri: profileImage.uri || profileImage,
+                name: profileImage.fileName || `photo_${Date.now()}.jpg`,
+                type: profileImage.type || "image/jpeg",
+            });
+        }
+        console.log(formData)
+
         const res = await updateProfile(formData);
 
         if (res.success) {
             setModalType("success");
-            setMessage(res.data);
+            setMessage(res.data.message || res.data);
             setShowSuccess(true);
             setTimeout(() => {
                 setShowSuccess(false)
-                onClose();
+                // onClose();
+                navigation.goBack();
 
-                 GetProfileDetails();
+                GetProfileDetails();
             }, 1500);
         } else {
             setModalType("warning");
-            setMessage(res.data);
+            setMessage(res.data.message || res.data);
             setShowSuccess(true);
             setTimeout(() => {
                 setShowSuccess(false)
@@ -256,35 +355,78 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
 
 
 
-    if (!visible) return null;
+    // if (!visible) return null;
 
 
     return (
         <>
-
-            <View style={styles.overlay}>
-                <TouchableWithoutFeedback onPress={onClose}>
-                    <View style={{ flex: 1 }} />
-                </TouchableWithoutFeedback>
-
-
-                <Animated.View
-                    style={[
-                        styles.sheet,
-                        { transform: [{ translateY }], paddingBottom: keyboardHeight }
-                    ]}
-                    {...panResponder.panHandlers}
+            {loading && <Loader />}
+            <View style={{ backgroundColor: "#ffffff", flex: 1 }}>
+                <SuccessModal
+                    visible={showSuccess}
+                    message={message}
+                    type={modalType}
+                    onClose={() => setShowSuccess(false)}
+                />
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    // behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
                 >
+                    <ImageBackground source={RectangleBackground} style={{ height: 238, width: '100%' }}>
 
-                    <View style={styles.handle} />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginTop: 20 }}>
+                            <TouchableOpacity onPress={() => navigation.goBack()}>
+                                <Image source={ArrowLeft} style={styles.backIcon} />
+                            </TouchableOpacity>
+                            <Text style={styles.title}>Edit Profile</Text>
+                        </View>
+
+                        <View style={styles.profileContainer}>
+                            <TouchableOpacity
+                                activeOpacity={0.9}
+                                // onPress={handleImagePick}
+                                onPress={() => setShowProfileSheet(true)}
+                                onPressIn={() => setShowCameraIcon(true)}
+                                onPressOut={() => setShowCameraIcon(false)}
+                            >
+                                <View style={styles.imageWrapper}>
+                                    {
+                                        imageSource ? <Image source={{ uri: imageSource }} style={styles.profileImage} /> :
+                                            <View style={[styles.profileImage, { alignItems: 'center', justifyContent: 'center', backgroundColor: '#eef1ff', }]}>
+                                                <Text style={{ fontSize: 20, fontFamily: 'Gilroy-Bold' }}>{profileData?.initial}</Text>
+
+
+
+                                            </View>
+
+
+
+                                    }
+
+                                    {showCameraIcon && (
+                                        <View style={styles.cameraOverlay}>
+                                            <Image
+                                                source={CameraIcon}
+                                                style={{ width: 28, height: 28, tintColor: "#fff" }}
+                                            />
+                                        </View>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </ImageBackground>
                     <ScrollView
-                        style={{ paddingHorizontal: 20 }}
-                        contentContainerStyle={{ paddingBottom: 50 }}
+                        ref={scrollRef}
+                        // style={{ paddingHorizontal: 20 }}
+                        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120 }}
                         showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    // keyboardDismissMode="on-drag"
                     >
 
-                        <Text style={styles.title}>Edit Profile</Text>
-
+                        <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>Basic Info</Text>
 
                         <Text style={styles.label}>First Name <Text style={{ color: 'red' }}>*</Text></Text>
                         <TextInput style={styles.input} placeholder="Enter First Name" value={name}
@@ -306,12 +448,18 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
                             }} />
 
                         <Text style={styles.label}>Email ID <Text style={{ color: 'red' }}>*</Text></Text>
-                        <TextInput style={styles.input} placeholder="Enter Email" value={email}
+                        <TextInput ref={emailRef} style={styles.input} placeholder="Enter Email" value={email}
                             onChangeText={(text) => {
                                 const filtered = text.toLowerCase().replace(/[^A-Za-z0-9@#./]/g, "");
                                 setEmail(filtered);
                                 setEmailError("");
-                            }} />
+                            }}
+                            onPress={() => {
+                                setTimeout(() => {
+                                    scrollToField(emailRef)
+                                }, 250);
+                            }}
+                        />
                         {emailError && (
                             <ErrorMessage message={emailError} type="error" />
                         )}
@@ -326,7 +474,7 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
                 setMobileError("");
               }}
             /> */}
-                        <View style={styles.mobileWrapper}>
+                        <View ref={mobileRef} style={styles.mobileWrapper}>
 
                             {/* COUNTRY DROPDOWN */}
                             <View style={{ position: "relative" }}>
@@ -384,6 +532,11 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
                                     setMobile(filtered);
                                     setMobileError("");
                                 }}
+                                onPress={() => {
+                                    setTimeout(() => {
+                                        scrollToField(mobileRef);
+                                    }, 200);
+                                }}
                             />
                         </View>
 
@@ -406,17 +559,62 @@ export default function EditProfileSheet({ visible, onClose, profileData,onSucce
 
                         {/* Buttons */}
                         <View style={styles.btnRow}>
-                            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                            {/* <TouchableOpacity style={styles.cancelBtn} >
                                 <Text style={styles.cancelText}>Cancel</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
                             <TouchableOpacity style={styles.addBtn} onPress={handleUpdateProfile}>
-                                <Text style={styles.addText}>Save</Text>
+                                <Text style={styles.addText}>Save Changes</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
-                </Animated.View>
+                </KeyboardAvoidingView>
+
+                <ImagePickerSheet
+                    visible={showProfileSheet}
+                    onClose={() => setShowProfileSheet(false)}
+                    title="Change Profile Picture"
+                    options={[
+                        {
+                            label: "Take Picture",
+                            icon: require("../../../Assets/Images/CameraIcon.png"),
+                            showArrow: true,
+                            onPress: openCamera,
+                        },
+                        {
+                            label: "Select from Gallery",
+                            icon: require("../../../Assets/Images/GalleryIcon.png"),
+                            showArrow: true,
+                            onPress: openGallery,
+                        },
+                        {
+                            label: "Remove Picture",
+                            icon: require("../../../Assets/Images/DeleteIcon.png"),
+                            showArrow: false,
+                            onPress: () => console.log("remove"),
+                        },
+                    ]}
+                />
             </View>
+
+            {/* <View style={styles.overlay}>
+                <TouchableWithoutFeedback onPress={onClose}>
+                    <View style={{ flex: 1 }} />
+                </TouchableWithoutFeedback>
+
+
+                <Animated.View
+                    style={[
+                        styles.sheet,
+                        { transform: [{ translateY }], paddingBottom: keyboardHeight }
+                    ]}
+                    {...panResponder.panHandlers}
+                >
+
+                    <View style={styles.handle} />
+               
+                </Animated.View>
+            </View> */}
         </>
     )
 
@@ -447,8 +645,35 @@ const styles = StyleSheet.create({
 
     title: {
         fontSize: 22,
-        fontWeight: "700",
-        marginBottom: 18,
+        fontFamily: 'Gilroy-Semibold',
+        marginLeft: 5
+        // marginBottom: 18,
+    },
+    backIcon: { width: 20, height: 20, tintColor: "#000" },
+    profileContainer: {
+        alignItems: "center",
+        marginVertical: 20,
+    },
+    imageWrapper: {
+        position: "relative",
+        // backgroundColor:'red',
+        marginTop: 12,
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+    },
+    cameraOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        borderRadius: 50,
+        alignItems: "center",
+        justifyContent: "center",
     },
 
     label: {
@@ -585,7 +810,7 @@ const styles = StyleSheet.create({
     btnRow: {
         flexDirection: "row",
         justifyContent: "flex-end",
-        marginTop: 28,
+        marginTop: 30,
         marginBottom: 30,
     },
 
@@ -604,6 +829,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 40,
         borderRadius: 10,
+        flex:1,marginHorizontal:10,alignItems:'center'
     },
 
     addText: {

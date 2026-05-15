@@ -148,6 +148,7 @@ export const GeneralProvider = ({ children }) => {
 
  const updateProfile =async(formData)=>{
   console.log("for",formData)
+  setLoading(true)
     try{
       const token = await retriveData("token");
       const axios = getAxios();
@@ -161,8 +162,11 @@ export const GeneralProvider = ({ children }) => {
       console.log(res)
       return { success: true, data: res.data }
     }catch (error) {
+      console.log(error)
       const errorData = error.response?.data || { message: error.message }
       return {success: false, data: errorData };
+    }finally{
+      setLoading(false)
     }
  }
 
