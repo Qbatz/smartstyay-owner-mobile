@@ -113,7 +113,7 @@ export default function BillsDesign({ route }) {
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
-    GetAdvanceCreditDetails, advanceCreditDetails, } = useContext(BillContext);
+    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -1318,13 +1318,28 @@ export default function BillsDesign({ route }) {
 
   const BookingInvoiceApplied = selectedBill?.isAvanceAvailableForRedeem
 
+  // const showApplyToInvoices = selectedBill?.canRedeem === true;
+
   const isRentRedeemable =
     // BillPdfdetails?.invoiceInfo?.canRedeem === true &&
-    BillPdfdetails?.configurations?.invoiceType === "Rent" && !BookingInvoiceApplied
+    BillPdfdetails?.configurations?.invoiceType === "Rent" && showApplyToInvoices
 
   const isAdvanceBill =
     //  BillPdfdetails?.invoiceInfo?.canRedeem === true &&
-    BillPdfdetails?.configurations?.invoiceType === "Advance" && !BookingInvoiceApplied
+    BillPdfdetails?.configurations?.invoiceType === "Advance" && !showApplyToInvoices
+
+  // const disableAdjust = !selectedBill?.canApplyFromAdvance;
+
+ 
+
+  const showApplyToInvoices =
+  selectedBill?.canRedeem === true;
+
+const showAdjustWithAdvance =
+  !selectedBill?.canRedeem;
+
+const disableAdjust =
+  !selectedBill?.canApplyFromAdvance;
 
 
   // const handleApplyInvoices = () => {
@@ -1348,12 +1363,27 @@ export default function BillsDesign({ route }) {
       type: "Credit", // booking invoice
     });
 
-  };
+  }
+
+
+  const handleApplyInvoice = async () => {
+    navigation.navigate("BookingtoDiscount", {
+  source: "bill",
+  invoiceType: "advance",
+})
+            const res = await GetInitializeAdvanceRedeem({
+        hostelId: activeHostelId,
+        advanceInvoiceId: selectedBill?.invoiceId,
+      });
+  }
+
+
+
 
   const handleAdvanceApplyInvoices = async () => {
 
     navigation.navigate("BillsApplyInvoices", {
-        bill: selectedBill,
+      bill: selectedBill,
     });
 
     const AdvanceCredits = await GetAdvanceCreditDetails({
@@ -1362,8 +1392,8 @@ export default function BillsDesign({ route }) {
       type: "", // Advance invoice
     });
 
-      setShowMenu(false);
-      setShowBillDetails(false)                
+    setShowMenu(false);
+    setShowBillDetails(false)
 
   };
 
@@ -4385,52 +4415,62 @@ export default function BillsDesign({ route }) {
                       <Text style={styles.popupText}>Make as discount</Text>
                     </TouchableOpacity>
                   )}
+{showApplyToInvoices && (
+  <TouchableOpacity
+    style={styles.popupRow}
+    onPress={handleApplyInvoice}
+  >
+    <Image
+      source={BillIcon}
+      style={{
+        width: 18,
+        height: 18,
+        tintColor: "#000",
+        marginRight: 10,
+      }}
+    />
 
-                {isRentRedeemable && (
-
-                  <TouchableOpacity
-                    style={styles.popupRow}
-                    onPress={
-                    handleAdvanceApplyInvoices
-                    }
-                  >
-                    <Image
-                      source={BillIcon}
-                         style={{
-                        width: 18,
-                        height: 18,
-                        tintColor: "#000",
-                        marginRight: 10
-                      }}
-                    />
-                    <Text style={styles.popupText}>Adjust with Advance</Text>
-                  </TouchableOpacity>
-
-                )}
-
-                {isAdvanceBill && (
-
-                  <TouchableOpacity
-                    style={styles.popupRow}
-                    onPress={
-                    handleAdvanceApplyInvoices
-                    }
-                  >
-                    <Image
-                      source={BillIcon}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        tintColor: "#000",
-                        marginRight: 10
-                      }}
-                    />
-                    <Text style={styles.popupText}>Apply Invoices</Text>
-                  </TouchableOpacity>
-
-                )}
+    <Text style={styles.popupText}>
+      Apply to Invoices
+    </Text>
+  </TouchableOpacity>
+)}
 
 
+{showAdjustWithAdvance && (
+  <TouchableOpacity
+    style={[
+      styles.popupRow,
+      disableAdjust && {
+        opacity: 0.4,
+        backgroundColor: "#F3F4F6",
+      },
+    ]}
+    onPress={handleAdvanceApplyInvoices}
+    disabled={disableAdjust}
+  >
+    <Image
+      source={BillIcon}
+      style={{
+        width: 18,
+        height: 18,
+        tintColor: disableAdjust ? "#9CA3AF" : "#000",
+        marginRight: 10,
+      }}
+    />
+
+    <Text
+      style={[
+        styles.popupText,
+        disableAdjust && {
+          color: "#9CA3AF",
+        },
+      ]}
+    >
+      Adjust with Advance
+    </Text>
+  </TouchableOpacity>
+)}
 
                 {/* <TouchableOpacity
   style={[
