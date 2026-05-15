@@ -250,7 +250,7 @@ export default function UsersScreen({ navigation }) {
         disabled={!canWriteUser}
         onPress={handleShowAddUser} 
       >
-        <Text style={styles.addUserText}>+ Add User</Text>
+        <Text style={styles.addUserText}>+ Add Staff</Text>
       </TouchableOpacity>
     </View>
   )
