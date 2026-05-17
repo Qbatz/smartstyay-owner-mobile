@@ -13,7 +13,7 @@ import Loader from "../../../Component/Loader/Loader";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import ChecksIcon from "../../../Assets/Images/checks.png";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { initialize, showCheckout } from "zoho-payments-react-native-sdk"
+import { initialize, showCheckout, canGoBack, goBack } from "zoho-payments-react-native-sdk"
 
 
 
@@ -130,6 +130,7 @@ export default function SubscriptionPlans({ navigation }) {
     const res = await postSubscription(activeHostelId, payload);
 
     console.log(res)
+    console.log("can go back", canGoBack)
 
     if (res?.status == 200) {
       const apiKey = res?.data?.apiKey;
@@ -139,14 +140,10 @@ export default function SubscriptionPlans({ navigation }) {
 
       initialize( apiKey, accountId, "india", environment)
 
-
+console.log("sessionId", res?.data?.sessionId)
       try {
         const result = await showCheckout({
-          paymentSessionId: sessionId,
-          description: 'Order #43435',
-          // name: 'John Doe',
-          // email: 'john@example.com',
-          // phone: '+919876543215',
+          paymentSessionId:  res?.data?.sessionId,
           paymentMethod: 'upi',
         });
         console.log(result)

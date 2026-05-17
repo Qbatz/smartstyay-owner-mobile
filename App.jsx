@@ -236,13 +236,18 @@ function AppContent(props) {
 
    useEffect(() => {
     if(Platform.OS ==="android"){
+      if(emitter !== null){
+
+      
       const subscription = emitter.addListener("networkStatus", (status) => {
       // setIsConnected(status);
       loginContext.internet(status)
       console.log(status)
+      
     });
-
-    return () => subscription.remove();
+      return () => subscription.remove();
+}
+  
 
     }
     
