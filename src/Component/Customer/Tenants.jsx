@@ -860,7 +860,8 @@ export default function TenantsScreen({ route }) {
                     </Text>
                   </View>
                 )}
-                <View horizontal contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
+                <ScrollView horizontal
+                style={{flexGrow: 0}} contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
                       <View style={styles.filterRow}>
@@ -904,7 +905,7 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </View>
+                </ScrollView>
 
 
 
@@ -2931,7 +2932,7 @@ const styles = StyleSheet.create({
   filterChip: {
     backgroundColor: "#F3F4F6",
     paddingVertical: 8,
-    paddingHorizontal: 34,
+    paddingHorizontal: 30,
     borderRadius: 20,
     marginLeft:4
   },

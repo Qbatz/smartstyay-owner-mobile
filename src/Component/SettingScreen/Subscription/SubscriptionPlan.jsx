@@ -13,7 +13,7 @@ import Loader from "../../../Component/Loader/Loader";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import ChecksIcon from "../../../Assets/Images/checks.png";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { initialize, showCheckout } from "zoho-payments-react-native-sdk"
+import { initialize, showCheckout, canGoBack, goBack } from "zoho-payments-react-native-sdk"
 
 
 
@@ -27,7 +27,7 @@ export default function SubscriptionPlans({ navigation }) {
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
 
-  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription } = UseSetting();
+  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription,verfiyPayment } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
   const insets = useSafeAreaInsets();
@@ -44,7 +44,7 @@ export default function SubscriptionPlans({ navigation }) {
         id: item.planId,
         name: item.planName,
         planCode: item.planCode,
-        priceMonthly: `₹${item.price}`,
+        priceMonthly: `₹${item.finalPrice}`,
 
         priceYearly: `₹${Math.floor(item.price * 0.8)}`,
 
@@ -109,6 +109,8 @@ export default function SubscriptionPlans({ navigation }) {
     }, [navigation])
   );
 
+  console.log("slectPlan",selectedPlan)
+
   const handleExpand = (id) => {
     setExpandedPlan(expandedPlan === id ? null : id);
   };
@@ -128,6 +130,7 @@ export default function SubscriptionPlans({ navigation }) {
     const res = await postSubscription(activeHostelId, payload);
 
     console.log(res)
+    console.log("can go back", canGoBack)
 
     if (res?.status == 200) {
       const apiKey = res?.data?.apiKey;
@@ -137,20 +140,31 @@ export default function SubscriptionPlans({ navigation }) {
 
       initialize( apiKey, accountId, "india", environment)
 
-
+console.log("sessionId", res?.data?.sessionId)
       try {
         const result = await showCheckout({
-          paymentSessionId: sessionId,
-          description: 'Order #43435',
-          // name: 'John Doe',
-          // email: 'john@example.com',
-          // phone: '+919876543215',
+          paymentSessionId:  res?.data?.sessionId,
           paymentMethod: 'upi',
         });
+        console.log(result)
         console.log('Payment ID:', result.paymentId);
         console.log('Signature:', result.signature);
+        const paymentId=result.paymentId;
+
         if (result.mandateId) {
           console.log('Mandate ID:', result.mandateId);
+        }
+        if(result.status == "success"){
+          const response= await verfiyPayment(activeHostelId,paymentId)
+          console.log("verifypayment",response)
+
+          if(response.status === 200){
+            console.log(response?.message)
+            fetchPlans();
+          }
+          else{
+            console.log(response?.message)
+          }
         }
 
       } catch (e) {
@@ -445,11 +459,11 @@ export default function SubscriptionPlans({ navigation }) {
 
                   <TouchableOpacity
                     style={styles.seeMoreBtn}
-                    onPress={() => {
-                      selectplan(item?.planCode)
-                    }}
+                    // onPress={() => {
+                    //   selectplan(item?.planCode)
+                    // }}
 
-                  // onPress={() => handleExpand(item.id)}
+                  onPress={() => handleExpand(item.id)}
                   >
                     <Text style={styles.seeMoreText}>{expanded ? "See less →" : "See more →"}</Text>
                   </TouchableOpacity>
@@ -461,18 +475,19 @@ export default function SubscriptionPlans({ navigation }) {
 
         {canReadSubscription && (
           <TouchableOpacity
-            disabled={!selectedPlan}
+            disabled={!selectedPlan.code}
             // style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
             style={[
               styles.continueBtn,
               { bottom: insets.bottom + 10 },
-              !selectedPlan && styles.disabledBtn
+              !selectedPlan.code && styles.disabledBtn
             ]}
-            onPress={() => {
-              navigation.navigate("PlanDetailsScreen", {
-                planId: selectedPlan
-              });
-            }}
+            // onPress={() => {
+            //   navigation.navigate("PlanDetailsScreen", {
+            //     planId: selectedPlan?.code
+            //   });
+            // }}
+            onPress={()=>selectplan(selectedPlan?.code)}
           >
             <Text style={styles.continueText}>Continue →</Text>
           </TouchableOpacity>

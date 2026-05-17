@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from "react-native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
@@ -39,7 +39,9 @@ export default function AddGeneralScreen({ navigation, route }) {
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
-   const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
 
@@ -159,26 +161,31 @@ export default function AddGeneralScreen({ navigation, route }) {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const validatePincode = (pin) => {
-  if (!pin.trim()) return "Please Enter Pincode";
-  if (!/^[1-9][0-9]{5}$/.test(pin.trim()))
-    return "Please Enter Valid 6-digit Pincode";
-  return "";
-};
+    if (!pin.trim()) return "Please Enter Pincode";
+    if (!/^[1-9][0-9]{5}$/.test(pin.trim()))
+      return "Please Enter Valid 6-digit Pincode";
+    return "";
+  };
 
   const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     let newErrors = {};
+
+
 
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
     // if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
     if (!mobile.trim()) {
-  newErrors.mobile = "Please Enter Mobile Number";
-} 
-else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
-  newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
-}
-else if (/^(\d)\1+$/.test(mobile.trim())) {
-  newErrors.mobile = "Invalid Mobile Number";
-}
+      newErrors.mobile = "Please Enter Mobile Number";
+    }
+    else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+      newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
+    }
+    else if (/^(\d)\1+$/.test(mobile.trim())) {
+      newErrors.mobile = "Invalid Mobile Number";
+    }
 
     if (!email.trim()) {
       newErrors.email = "Please Enter Email ID";
@@ -195,17 +202,18 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
 
     // if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
     const pinError = validatePincode(pincode);
-if (pinError) newErrors.pincode = pinError;
+    if (pinError) newErrors.pincode = pinError;
 
     if (!city.trim()) newErrors.city = "Please Enter City";
     // if (selectedState === "Select State") newErrors.selectedState = "Please Select State";
     if (!selectedState || selectedState === "Select State") {
-  newErrors.selectedState = "Please Select State";
-}
+      newErrors.selectedState = "Please Select State";
+    }
 
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      isSubmittingRef.current = false;
       return;
     }
 
@@ -242,6 +250,7 @@ if (pinError) newErrors.pincode = pinError;
       });
     }
 
+    try { 
     const res = await addGeneral(formData);
     console.log("ADD RESPONSE:", res);
 
@@ -267,6 +276,12 @@ if (pinError) newErrors.pincode = pinError;
       setShowSuccessModal(false);
       navigation.goBack();
     }, 1500);
+    }catch(error){
+      console.log(error)
+    }finally{
+       isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   // const handleSubmit = async () => {
@@ -355,27 +370,27 @@ if (pinError) newErrors.pincode = pinError;
   //   );
   // };
   const hasChanges = () => {
-  if (!editData) return true;
+    if (!editData) return true;
 
-  const imageChanged =
-    selectedImage &&
-    selectedImage.uri &&
-    selectedImage.uri !== editData.profilePic;
+    const imageChanged =
+      selectedImage &&
+      selectedImage.uri &&
+      selectedImage.uri !== editData.profilePic;
 
-  return !(
-    editData.firstName === firstName &&
-    editData.lastName === lastName &&
-    String(editData.mobileNo) === String(mobile) &&
-    editData.mailId === email &&
-    editData.houseNo === flat &&
-    editData.street === street &&
-    editData.landmark === landmark &&
-    editData.city === city &&
-    String(editData.pincode) === String(pincode) &&
-    editData.state === selectedState &&
-    !imageChanged
-  );
-};
+    return !(
+      editData.firstName === firstName &&
+      editData.lastName === lastName &&
+      String(editData.mobileNo) === String(mobile) &&
+      editData.mailId === email &&
+      editData.houseNo === flat &&
+      editData.street === street &&
+      editData.landmark === landmark &&
+      editData.city === city &&
+      String(editData.pincode) === String(pincode) &&
+      editData.state === selectedState &&
+      !imageChanged
+    );
+  };
 
   const [topWarning, setTopWarning] = useState("");
 
@@ -387,15 +402,15 @@ if (pinError) newErrors.pincode = pinError;
     if (!firstName.trim()) newErrors.firstName = "Please Enter First Name";
     // if (!mobile.trim()) newErrors.mobile = "Please Enter Mobile Number";
     // if (!email.trim()) newErrors.email = "Please Enter Email ID";
-      if (!mobile.trim()) {
-  newErrors.mobile = "Please Enter Mobile Number";
-} 
-else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
-  newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
-}
-else if (/^(\d)\1+$/.test(mobile.trim())) {
-  newErrors.mobile = "Invalid Mobile Number";
-}
+    if (!mobile.trim()) {
+      newErrors.mobile = "Please Enter Mobile Number";
+    }
+    else if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+      newErrors.mobile = "Please Enter Valid 10-digit Mobile Number";
+    }
+    else if (/^(\d)\1+$/.test(mobile.trim())) {
+      newErrors.mobile = "Invalid Mobile Number";
+    }
 
     if (!email.trim()) {
       newErrors.email = "Please Enter Email ID";
@@ -403,8 +418,8 @@ else if (/^(\d)\1+$/.test(mobile.trim())) {
       newErrors.email = "Please Enter Valid Email ID";
     }
     // if (!pincode.trim()) newErrors.pincode = "Please Enter Pincode";
- const pinError = validatePincode(pincode);
-if (pinError) newErrors.pincode = pinError;
+    const pinError = validatePincode(pincode);
+    if (pinError) newErrors.pincode = pinError;
 
 
 
@@ -420,7 +435,7 @@ if (pinError) newErrors.pincode = pinError;
     if (!hasChanges()) {
       setModalMessage("No Changes Detected");
       setModalType("warning");
-//  setModalMessage("General Updated Successfully");
+      //  setModalMessage("General Updated Successfully");
       // setModalType("success");
       setShowSuccessModal(true);
 
@@ -466,8 +481,9 @@ if (pinError) newErrors.pincode = pinError;
 
 
     const res = await updateGeneral(editData.userId, formData);
+    console.log("updateGeneral", res)
 
-    if (res) {
+    if (res.status === 200) {
       setModalMessage("General Updated Successfully");
       setModalType("success");
       setShowSuccessModal(true);
@@ -477,6 +493,17 @@ if (pinError) newErrors.pincode = pinError;
       setTimeout(() => {
         setShowSuccessModal(false);
         navigation.goBack();
+      }, 1500);
+    } else {
+      setModalMessage(res?.emailStatus || res?.message || res?.mobileStatus);
+      setModalType("error");
+      setShowSuccessModal(true);
+
+      await getAdminList();
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        // navigation.goBack();
       }, 1500);
     }
   };
@@ -552,8 +579,8 @@ if (pinError) newErrors.pincode = pinError;
   // };
 
   const cleanPassword = (text) => {
-  return text.replace(/[^A-Za-z0-9@$!%*?&^#]/g, "");
-};
+    return text.replace(/[^A-Za-z0-9@$!%*?&^#]/g, "");
+  };
 
 
   useEffect(() => {
@@ -585,33 +612,33 @@ if (pinError) newErrors.pincode = pinError;
   };
 
   const openCamera = () => {
-      launchCamera(
-        {
-          mediaType: "photo",
-          quality: 0.7,
-        },
-        (response) => {
-          if (response.didCancel) return;
-          if (response.assets && response.assets.length > 0) {
-            setSelectedImage(response.assets[0]);
-          }
+    launchCamera(
+      {
+        mediaType: "photo",
+        quality: 0.7,
+      },
+      (response) => {
+        if (response.didCancel) return;
+        if (response.assets && response.assets.length > 0) {
+          setSelectedImage(response.assets[0]);
         }
-      );
-    };
-    const openGallery = () => {
-      launchImageLibrary(
-        { mediaType: "photo", quality: 0.7 },
-        async (response) => {
-          if (response.didCancel) return;
-  
-          if (response.assets?.length > 0) {
-            const image = response.assets[0];
-            setSelectedImage(image); // UI update
-            
-          }
+      }
+    );
+  };
+  const openGallery = () => {
+    launchImageLibrary(
+      { mediaType: "photo", quality: 0.7 },
+      async (response) => {
+        if (response.didCancel) return;
+
+        if (response.assets?.length > 0) {
+          const image = response.assets[0];
+          setSelectedImage(image); // UI update
+
         }
-      );
-    };
+      }
+    );
+  };
 
   const StateName = [
     { label: "Andhra Pradesh", value: "Andhra Pradesh" },
@@ -725,7 +752,7 @@ if (pinError) newErrors.pincode = pinError;
         {/* ✅ FIXED PROFILE SECTION */}
         <TouchableOpacity
           style={styles.profileSection}
-          onPress={()=>setShowProfileSheet(true)}
+          onPress={() => setShowProfileSheet(true)}
           activeOpacity={0.8}
         >
           <View style={styles.profileCircle}>
@@ -820,27 +847,27 @@ if (pinError) newErrors.pincode = pinError;
                 setErrors({ ...errors, mobile: "" });
                 setPhoneError("")
               }} /> */}
-              <Text style={styles.label}>
-  Mobile Number <Text style={{ color: "red", fontWeight: "700" }}>*</Text>
-</Text>
+            <Text style={styles.label}>
+              Mobile Number <Text style={{ color: "red", fontWeight: "700" }}>*</Text>
+            </Text>
 
-<View style={styles.phoneContainer}>
-  <Text style={styles.countryCode}>+91</Text>
+            <View style={styles.phoneContainer}>
+              <Text style={styles.countryCode}>+91</Text>
 
-  <TextInput
-    style={styles.phoneInput}
-    placeholder="Enter mobile number"
-    keyboardType="number-pad"
-    value={mobile}
-    maxLength={10}
-    onChangeText={(t) => {
-      const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
-      setMobile(cleaned);
-      setErrors({ ...errors, mobile: "" });
-      setPhoneError("");
-    }}
-  />
-</View>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="Enter mobile number"
+                keyboardType="number-pad"
+                value={mobile}
+                maxLength={10}
+                onChangeText={(t) => {
+                  const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10);
+                  setMobile(cleaned);
+                  setErrors({ ...errors, mobile: "" });
+                  setPhoneError("");
+                }}
+              />
+            </View>
 
             {/* {errors.mobile && (
             <Text style={styles.errText}>{errors.mobile}</Text>
@@ -893,7 +920,7 @@ if (pinError) newErrors.pincode = pinError;
                   <TextInput
                     style={styles.passwordInput}
                     placeholder="Enter Password"
-                    secureTextEntry={!showPassword} 
+                    secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={(t) => {
                       setPassword(cleanPassword(t));
@@ -922,28 +949,28 @@ if (pinError) newErrors.pincode = pinError;
             <TextInput style={styles.input} placeholder="Enter House No" value={flat}
               // onChangeText={setFlat} 
               onChangeText={(t) => {
-    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
-    setFlat(cleaned);
-  }}
-              />
+                const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+                setFlat(cleaned);
+              }}
+            />
 
             <Text style={styles.label}>Area, Street, Sector...</Text>
             <TextInput style={styles.input} placeholder="Enter Street" value={street}
               // onChangeText={setStreet} 
               onChangeText={(t) => {
-    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
-    setStreet(cleaned);
-  }}
-              />
+                const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+                setStreet(cleaned);
+              }}
+            />
 
             <Text style={styles.label}>Landmark</Text>
             <TextInput style={styles.input} placeholder="Eg: Near SBI" value={landmark}
               // onChangeText={setLandmark} 
               onChangeText={(t) => {
-    const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
-    setLandmark(cleaned);
-  }}
-              />
+                const cleaned = t.replace(/[^a-zA-Z0-9\s/#,-]/g, "");
+                setLandmark(cleaned);
+              }}
+            />
 
             <Text style={styles.label}>Pincode  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter Pincode" value={pincode} keyboardType="number-pad"
@@ -962,14 +989,14 @@ if (pinError) newErrors.pincode = pinError;
 
             <Text style={styles.label}>Town/City  <Text style={{ color: "red", fontWeight: "700" }}>*</Text></Text>
             <TextInput style={styles.input} placeholder="Enter City" value={city}
-            
+
               onChangeText={(t) => {
-  const cleaned = t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
-  setCity(cleaned);
-  setErrors({ ...errors, city: "" });
-}}
-              />
-           
+                const cleaned = t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
+                setCity(cleaned);
+                setErrors({ ...errors, city: "" });
+              }}
+            />
+
             {errors.city && (
               <ErrorMessage message={errors.city} type="error" />
             )}
@@ -1018,93 +1045,93 @@ if (pinError) newErrors.pincode = pinError;
 
             <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
 
-              <View style={{ position: "relative", marginBottom: 6 }}>
-            
-                            <TextInput
-                              style={styles.select}
-                              placeholder="Select State"
-                              placeholderTextColor="#9CA3AF"
-                              value={stateOpen ? stateQuery : selectedState}
-                              editable={true}
-                              showSoftInputOnFocus={true}
-                           
-                              onFocus={() => {
-                                setStateOpen(true);
-                                setStateQuery("");
-                              }}
-                              onPressIn={() => {
-                                setStateOpen(true);
-                              }}
-                             
+            <View style={{ position: "relative", marginBottom: 6 }}>
 
-                               onChangeText={(t) => {
-                  setStateQuery(t);   
+              <TextInput
+                style={styles.select}
+                placeholder="Select State"
+                placeholderTextColor="#9CA3AF"
+                value={stateOpen ? stateQuery : selectedState}
+                editable={true}
+                showSoftInputOnFocus={true}
+
+                onFocus={() => {
                   setStateOpen(true);
-                     setErrors({ ...errors, selectedState: "" });
+                  setStateQuery("");
+                }}
+                onPressIn={() => {
+                  setStateOpen(true);
                 }}
 
-                
-                            />
-            
-                            <Image source={DownArrow} style={styles.arrowIcon} />
-            
-                            {stateOpen && (
-            
-                              <>
-                                <TouchableOpacity
-                               
-                                  style={{
-                                    position: "absolute",
-                                    top: -1000,
-                                    bottom: -1000,
-                                    left: -1000,
-                                    right: -1000,
-                                  }}
-                                  activeOpacity={1}
-                                  onPress={() => setStateOpen(false)}
-                                />
-                                <View style={styles.dropdownMenu}>
-                                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
-                                    style={{ flex: 1 }}
-                                  >
-                                    {filteredStateList.length > 0 ? (
-                                      filteredStateList.map((v, index) => (
-                                        <TouchableOpacity key={index}
-                                          style={[
-                                            styles.option,
-                                            selectedState === v.label && styles.selectedOption
-                                          ]}
-                                          onPress={() => {
-                                              setSelectedState(v.label);
+
+                onChangeText={(t) => {
+                  setStateQuery(t);
+                  setStateOpen(true);
+                  setErrors({ ...errors, selectedState: "" });
+                }}
+
+
+              />
+
+              <Image source={DownArrow} style={styles.arrowIcon} />
+
+              {stateOpen && (
+
+                <>
+                  <TouchableOpacity
+
+                    style={{
+                      position: "absolute",
+                      top: -1000,
+                      bottom: -1000,
+                      left: -1000,
+                      right: -1000,
+                    }}
+                    activeOpacity={1}
+                    onPress={() => setStateOpen(false)}
+                  />
+                  <View style={styles.dropdownMenu}>
+                    <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}
+                      style={{ flex: 1 }}
+                    >
+                      {filteredStateList.length > 0 ? (
+                        filteredStateList.map((v, index) => (
+                          <TouchableOpacity key={index}
+                            style={[
+                              styles.option,
+                              selectedState === v.label && styles.selectedOption
+                            ]}
+                            onPress={() => {
+                              setSelectedState(v.label);
                               setStateQuery("");
                               setStateOpen(false);
                               setErrors({ ...errors, selectedState: "" });
-                                          }}
-                                        >
-                                          <Text
-                                            style={[
-                                              styles.optionText,
-                                              selectedState === v.label && styles.selectedOptionText
-                                            ]}
-                                          >
-                                            {v.label}
-                                          </Text>
-                                        </TouchableOpacity>
-            
-                                      ))
-                                    ) : (
-                                      <Text style={styles.noResult}>No state found</Text>
-                                    )}
-                                  </ScrollView>
-                                </View>
-            
-                                <TouchableOpacity />
-                              </>
-                            )}
-                          </View>
-            
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.optionText,
+                                selectedState === v.label && styles.selectedOptionText
+                              ]}
+                            >
+                              {v.label}
+                            </Text>
+                          </TouchableOpacity>
 
-            
+                        ))
+                      ) : (
+                        <Text style={styles.noResult}>No state found</Text>
+                      )}
+                    </ScrollView>
+                  </View>
+
+                  <TouchableOpacity />
+                </>
+              )}
+            </View>
+
+
+
             {errors.selectedState && (
               <ErrorMessage message={errors.selectedState} type="error" />
             )}
@@ -1135,6 +1162,7 @@ if (pinError) newErrors.pincode = pinError;
               <TouchableOpacity
                 style={styles.submitBtn}
                 onPress={editData ? handleUpdate : handleSubmit}
+                disabled={isSubmitting}
               >
                 <Text style={styles.submitText}>
                   {loading ? "Saving..." : editData ? "Save Changes" : "Add General"}
@@ -1397,14 +1425,14 @@ const styles = StyleSheet.create({
     width: "100%",
     display: "flex"
   },
- arrowIcon: {
-   position: "absolute",
+  arrowIcon: {
+    position: "absolute",
     right: 12,
     top: 14,
     width: 18,
     height: 18,
     tintColor: "#777",
-},
+  },
   fixedBtnWrapper: {
     paddingHorizontal: 0,
     paddingBottom: 15,
@@ -1418,26 +1446,26 @@ const styles = StyleSheet.create({
     zIndex: 2000,
   },
   phoneContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 12,
-  paddingHorizontal: 12,
-  height: 50,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 50,
+  },
 
-countryCode: {
-  fontSize: 15,
-  color: "#000",
-  marginRight: 8,
-},
+  countryCode: {
+    fontSize: 15,
+    color: "#000",
+    marginRight: 8,
+  },
 
-phoneInput: {
-  flex: 1,
-  fontSize: 15,
-  color: "#000",
-},
+  phoneInput: {
+    flex: 1,
+    fontSize: 15,
+    color: "#000",
+  },
 
 
 

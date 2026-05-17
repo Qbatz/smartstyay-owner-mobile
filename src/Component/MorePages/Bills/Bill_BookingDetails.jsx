@@ -349,7 +349,9 @@ console.log("invoicesList", invoicesList);
 
 
   const handleShowBookingtoInvoice = () => {
-     navigation.navigate("BookingtoDiscount")
+    navigation.navigate("BookingtoDiscount", {
+  source: "booking",
+})
       onClose()
        
   }

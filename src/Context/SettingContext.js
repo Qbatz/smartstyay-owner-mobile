@@ -861,11 +861,29 @@ const postSubscription = async(hostelId,payload)=>{
 
 }
 
+const verfiyPayment=async(hostelId,paymentId)=>{
+  try{
+    const token =await retriveData("token");
+    console.log(token)
+    const axios=await getAxios();
+
+    const response=await axios.get(`/v2/subscription/payment/verify/${hostelId}/${paymentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+    console.log(response)
+    return response;
+  }catch(error){
+    return {status: error.response.status, message: error.response.data}
+  }
+}
+
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
     getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
-     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription }}>
+     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription,verfiyPayment }}>
       {children}
     </ElectricityContext.Provider>
   );

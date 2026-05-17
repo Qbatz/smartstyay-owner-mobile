@@ -72,7 +72,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [appliedDiscount, setAppliedDiscount] = useState(0);   // final applied
 
-  console.log("actualcheckoutdate", actualCheckoutDate);
+
+    const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);  
+    const [showBookings, setShowBookings] = useState(false);
+    console.log("actualcheckoutdate", actualCheckoutDate);
 
 
 
@@ -1351,6 +1354,157 @@ useEffect(()=>{
 
             </View>
 
+             <View style={styles.accordionCard}>
+  <TouchableOpacity
+    style={styles.accordionHeader}
+    onPress={() => setShowBookings(!showBookings)}
+    activeOpacity={0.8}
+  >
+    <Animated.Image
+      source={DownArrow}
+      style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+    />
+
+    <Text style={styles.cardTitle}>Bookings</Text>
+
+    <Text style={styles.amountText}>
+      ₹ {settlementDetails?.bookingItems?.paidAmount || 0}
+    </Text>
+  </TouchableOpacity>
+
+  {showBookings && (
+    <View style={styles.accordionBody}>
+
+      <View style={styles.tableHeader}>
+        <Text style={[styles.th, { flex: 1 }]}>
+          Adjusted With
+        </Text>
+
+        <Text
+          style={[
+            styles.th,
+            { flex: 1, textAlign: "right" },
+          ]}
+        >
+          Applied Amount
+        </Text>
+      </View>
+
+   
+        <>
+         
+              <View style={styles.invoiceRow}>
+                <Text
+                  style={[
+                    styles.invText,
+                    { flex: 1, color: "#2563EB" },
+                  ]}
+                >
+                  {settlementDetails?.bookingItems?.invoiceNo || settlementDetails?.bookingItems?.invoiceNumber}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.invText,
+                    { flex: 1, textAlign: "right" },
+                  ]}
+                >
+                  ₹ {settlementDetails?.bookingItems?.appliedAmount || settlementDetails?.bookingItems?.amount || 0}
+                </Text>
+              </View>
+          
+        </>
+    
+        {/* <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>
+            No booking transactions available
+          </Text>
+        </View> */}
+    
+
+      <View style={styles.totalInvoiceRow}>
+        <Text style={styles.totalText}>Total</Text>
+
+        <Text style={styles.totalAmount}>
+          ₹ {settlementDetails?.bookingItems?.appliedAmount || 0}
+        </Text>
+      </View>
+    </View>
+  )}
+</View>
+
+                                     <View style={styles.accordionCard}>
+  <TouchableOpacity
+    style={styles.accordionHeader}
+    onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
+    activeOpacity={0.8}
+  >
+    <Animated.Image
+      source={DownArrow}
+      style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+    />
+
+    <Text style={styles.cardTitle}>Refundable Advance</Text>
+
+    <Text style={styles.amountText}>
+      ₹ {settlementDetails?.advanceItems?.paidAmount || 0}
+    </Text>
+  </TouchableOpacity>
+
+  {showRefundableAdvance && (
+    <View style={styles.accordionBody}>
+
+      <View style={styles.tableHeader}>
+        <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+
+        <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+          Applied Amount
+        </Text>
+      </View>
+
+     
+        <>
+      
+            <View  style={styles.invoiceRow}>
+              <Text
+                style={[
+                  styles.invText,
+                  { flex: 1, color: "#2563EB" },
+                ]}
+              >
+                {settlementDetails?.advanceItems?.invoiceNo || settlementDetails?.advanceItems?.invoiceNumber}
+              </Text>
+
+              <Text
+                style={[
+                  styles.invText,
+                  { flex: 1, textAlign: "right" },
+                ]}
+              >
+                ₹ {settlementDetails?.advanceItems?.appliedAmount || settlementDetails?.advanceItems?.amount || 0}
+              </Text>
+            </View>
+        
+        </>
+    
+        {/* <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>
+            No refundable advance transaction available
+          </Text>
+        </View> */}
+     
+
+      <View style={styles.totalInvoiceRow}>
+        <Text style={styles.totalText}>Total</Text>
+
+        <Text style={styles.totalAmount}>
+          ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
+        </Text>
+      </View>
+    </View>
+  )}
+</View>
+
             <View style={styles.nonRefund}>
               <View style={styles.extraHeader}>
                 <Text style={styles.label}>Deductions</Text>
@@ -2387,6 +2541,7 @@ const styles = StyleSheet.create({
     color: "#338BFF",
     fontFamily: "Gilroy-Medium",
   },
+
 
 
   // rightMuted: {

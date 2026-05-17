@@ -448,7 +448,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
      await fetchCustomerDetails()
     await fetchCustomers();
     setShowCheckout(false);
-  };
+  }
+
+//   const handleRedirectTenant = () => {
+//   navigation.getParent()?.navigate("Tenant");
+// };
 
   const handleMakeUsInActive = () => {
     // setShowDetailsMenu(false);
@@ -477,19 +481,21 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   // }
 
   const handleShowTennantCheckin = () => {
+    
   navigation.navigate("BookingCheckIn", {
     customerId: selectedItem.customerId,
     customer: selectedItem,
 
+    
+
     onSuccess: async () => {
-      closeDetailSheet(); // bottom sheet close
-
-      await fetchCustomers(); // tenant list refresh
-
+      await fetchCustomers()
       setShowDetailsMenu(false);
       setMenuVisible(false);
     },
-  });
+  })
+
+setMenuVisible(false)
 
   console.log("selectedItem", selectedItem);
 };
@@ -664,6 +670,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" || 
+    status === "CANCELLED_BOOKING" || 
     // status === "SETTLEMENT_GENERATED" ||
     (status === "NOTICE" && isAfterLeavingDate);
 
@@ -743,7 +750,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               </Text>
               {/* </View> */}
 
-              {customerDetails?.customerCurrentStatus != "VACATED" && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>
@@ -787,7 +794,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
 
-              {customerDetails?.customerCurrentStatus != "VACATED" && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING")  && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>
@@ -879,7 +886,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 </Text>
 
                 {
-                  customerDetails?.customerCurrentStatus !== "VACATED" && (
+                  (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING")  && (
                     <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
                   )
                 }
@@ -1264,6 +1271,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           onClose={() => setShowInactiveSheet(false)}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
+          // RedirectionSuccess = {handleRedirectTenant}
         />
 
         {

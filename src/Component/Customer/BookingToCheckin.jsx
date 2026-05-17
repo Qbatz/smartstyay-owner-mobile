@@ -11,6 +11,7 @@ import {
     KeyboardAvoidingView,
     Image, TouchableWithoutFeedback
 } from 'react-native';
+
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import AddCircle from "../../Assets/Images/add-circle.png";
@@ -185,19 +186,19 @@ export default function BookingCheckIn({ navigation, route }) {
 
         setSelectedFloor({
             id: customer.floorId,
-            name: customer.floorName,
+            name: customer.floorName || customer?.bookingInfo?.bookedFloor,
         });
 
 
         setSelectedRoom({
             id: customer.roomId,
-            name: customer.roomName,
+            name: customer.roomName || customer?.bookingInfo?.bookedRoom,
         });
 
 
         setSelectedBed({
             bedId: customer.bedId,
-            bedName: customer.bedName,
+            bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
         });
 
 
@@ -416,13 +417,15 @@ export default function BookingCheckIn({ navigation, route }) {
             setModalType("success");
             setMessage(res.data);
             setShowSuccess(true);
+              navigation.goBack();
 
              if (onSuccess) {
                await onSuccess();
               }
 
+
             await getAllBedsByRoom(selectedRoom.id);
-            navigation.goBack();
+          
             setTimeout(() => {
                 setShowSuccess(false);
             }, 800);

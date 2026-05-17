@@ -242,7 +242,7 @@ export default function MoveNoticeSheet({
 
 
   const joiningDateRaw =
-    customer?.actualJoining ||
+    customer?.actualJoining || customer?.hostelInfo?.joiningDate ||
     selectedBed?.currentTenantInfo[0]?.joiningDate;
 
   const joiningDate = joiningDateRaw

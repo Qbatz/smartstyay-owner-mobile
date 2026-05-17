@@ -79,7 +79,8 @@ import HistoryAndComments from "../src/Component/Dashboard/HistoryAndComments"
 import ComplaintUpdates from "../src/Component/Complaints/ComplaintCommentUpdates"
 import BillsDiscount from "../src/Component/MorePages/Bills/DiscountInvoice"
 import BookingtoDiscount from  "../src/Component/MorePages/Bills/BookingtoInvoice"
-
+import BillsApplyInvoices from  "../src/Component/MorePages/Bills/BillsApplyInvoice"
+import EditProfileSheet from "./Component/SettingScreen/GeneralPages/EditProfileSheet";
 
 
 const SuccessFlow = (props) => {
@@ -132,6 +133,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="CancelNotice" component={CancelNotice} />
                     <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
                     <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
+                    <Navigation.Screen name="EditProfileSheet" component={EditProfileSheet}/>
                     <Navigation.Screen name="Bills" component={BillsDesign} />
                     <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
@@ -181,6 +183,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
                     <Navigation.Screen name="DiscountInvoice" component={BillsDiscount} />
                     <Navigation.Screen name="BookingtoDiscount" component={BookingtoDiscount} />
+                     <Navigation.Screen name="BillsApplyInvoices" component={BillsApplyInvoices} />
                 </Navigation.Navigator>
             </NavigationContainer>
 
