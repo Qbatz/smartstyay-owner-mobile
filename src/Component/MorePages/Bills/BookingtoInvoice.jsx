@@ -604,7 +604,7 @@ export default function BookingToInvoice() {
                                     </Text>
 
                                     <View style={styles.inputWrapper}>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.inputField}
                                             placeholder="₹ 0.00"
                                             keyboardType="numeric"
@@ -614,6 +614,44 @@ export default function BookingToInvoice() {
                                                     [item.invoiceId]: text,
                                                 }))
                                             }
+                                        /> */}
+                                        <TextInput
+                                            style={styles.inputField}
+                                            placeholder="₹ 0.00"
+                                            keyboardType="numeric"
+                                            value={tempValue?.[item.invoiceId] || ""}
+                                           onChangeText={(text) => {
+
+    const numericValue = text.replace(/[^0-9]/g, "");
+
+    if (numericValue === "") {
+        setTempValue((prev) => ({
+            ...prev,
+            [item.invoiceId]: "",
+        }));
+        return;
+    }
+
+    const currentBookingAmount =
+        Number(advanceInfo?.advanceBalanceAmount) || 0;
+
+    const maxAllowedAmount = Math.min(
+        currentBookingAmount,
+        Number(item?.pendingAmount || 0)
+    );
+
+    let amount = Number(numericValue);
+
+  setTempValue((prev) => ({
+    ...prev,
+    [item.invoiceId]: numericValue,
+}));
+
+    // setTempValue((prev) => ({
+    //     ...prev,
+    //     [item.invoiceId]: amount.toString(),
+    // }));
+}}
                                         />
 
                                         <TouchableOpacity

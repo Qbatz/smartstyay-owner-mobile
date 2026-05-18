@@ -199,21 +199,50 @@ export default function BillsApplyInvoices() {
     }, [])
 
 
+    // const handleSetAmount = (invoiceId, value, maxAmount) => {
+    //     let amount = Number(value);
+
+    //     if (isNaN(amount) || amount <= 0) return;
+
+    //     if (amount > maxAmount) {
+    //         amount = maxAmount;
+    //     }
+
+    //     setAppliedAmounts((prev) => ({
+    //         ...prev,
+    //         [invoiceId]: amount,
+    //     }));
+    // };
+
     const handleSetAmount = (invoiceId, value, maxAmount) => {
-        let amount = Number(value);
 
-        if (isNaN(amount) || amount <= 0) return;
+    // remove spaces
+    const trimmedValue = value?.trim();
 
-        if (amount > maxAmount) {
-            amount = maxAmount;
-        }
+    // validation for 0,00,0000
+    if (!trimmedValue || Number(trimmedValue) <= 0) {
+        setModalType("warning");
+        setModalMessage("Please Enter  valid Amount");
+        setShowSuccessModal(true);
 
-        setAppliedAmounts((prev) => ({
-            ...prev,
-            [invoiceId]: amount,
-        }));
-    };
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 2000);
 
+        return;
+    }
+
+    let amount = Number(trimmedValue);
+
+    if (amount > maxAmount) {
+        amount = maxAmount;
+    }
+
+    setAppliedAmounts((prev) => ({
+        ...prev,
+        [invoiceId]: amount,
+    }));
+};
 
     const isValidNumber = (val) => {
         if (!val) return false;
@@ -300,7 +329,7 @@ export default function BillsApplyInvoices() {
 
         if (totalApplied <= 0) {
             setModalType("warning");
-            setModalMessage("Please enter at least one amount");
+            setModalMessage("Please Enter at least one Amount");
             setShowSuccessModal(true);
 
             setTimeout(() => {

@@ -416,6 +416,19 @@ export default function DoubleStatusSheet({
                 </View>
               </View>
 
+                <View style={styles.infoRow}>
+                <Text style={styles.label}> Last Invoice</Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Image source={Invoice}
+                    style={{ width: 20, height: 20, marginRight: 6 }} />
+
+                  <Text style={styles.link}>
+                    {selectedBed.currentTenantInfo[0]?.lastInvoiceNumber}
+                      & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
+                </View>
+              </View>
+
 
               {showOccupiedMenu && (
                 <>
