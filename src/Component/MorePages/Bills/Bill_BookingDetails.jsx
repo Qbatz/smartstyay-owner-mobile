@@ -144,12 +144,10 @@ const invoicesList = InitializebookingBills?.listInvoices || [];
   };
 
   fetchData();
-}, [activeHostelId, selectedBill]);
+}, [activeHostelId , selectedBill]);
 
   console.log("InitializebookingBills", InitializebookingBills);
   
-
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -349,9 +347,7 @@ console.log("invoicesList", invoicesList);
 
 
   const handleShowBookingtoInvoice = () => {
-    navigation.navigate("BookingtoDiscount", {
-  source: "booking",
-})
+     navigation.navigate("BookingtoDiscount")
       onClose()
        
   }
@@ -561,7 +557,7 @@ console.log("canRedeem", canRedeem);
 
 
       <View style={styles.sheetOverlay}>
-        {loading && <Loader />}
+        {/* {loading && <Loader />} */}
 
         <TouchableWithoutFeedback onPress={() => {
           onClose()
