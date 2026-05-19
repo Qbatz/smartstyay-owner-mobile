@@ -899,7 +899,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginTop: 8
   },
-  title: { fontSize: 20, fontWeight: "700", marginBottom: 18 },
+  title: { fontSize: 20, fontFamily: "Gilroy-Bold", marginBottom: 18 },
 
   label: { fontSize: 14, color: "#444", marginBottom: 6, marginTop: 12 },
 
@@ -961,7 +961,7 @@ const styles = StyleSheet.create({
   addBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
   },
   dropdownMenu: {
     position: "absolute",
@@ -1086,7 +1086,7 @@ const styles = StyleSheet.create({
   dropdownTextSelected: {
     fontSize: 15,
     color: "#fff",
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
   },
 
 
@@ -1104,7 +1104,7 @@ const styles = StyleSheet.create({
 
   sheetLabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold",
     color: "#000",
     marginBottom: 8,
   },

@@ -67,7 +67,7 @@ const BillDetailsSheet = ({
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid } = useContext(BillContext);
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid , GetAdvanceCreditDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -493,6 +493,23 @@ const BillDetailsSheet = ({
     });
   }
 
+   
+  const handleBookingApplyInvoices = async () => {
+
+    navigation.navigate("BillsApplyInvoices");
+
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "Credit", // booking invoice
+    })
+
+    console.log("AdvanceCredits", AdvanceCredits);
+    
+
+  }
+
+
   const handleBillUnpaid = async () => {
     const res = await MarkBillAsUnpaid({
       hostelId: activeHostelId,
@@ -852,6 +869,7 @@ const BillDetailsSheet = ({
 
 
 
+
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
                             <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Mode</Text>
@@ -1003,6 +1021,43 @@ const BillDetailsSheet = ({
                 </View>
               </View>
             )}
+
+
+             {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
+                                  <View style={styles.creditCard}>
+                                    <View style={styles.creditTopRow}>
+                                      <View style={styles.creditTitleRow}>
+                                        <View style={styles.greenTick}>
+                                          <Text style={styles.tickText}>✓</Text>
+                                        </View>
+            
+                                        <Text style={styles.creditTitle}>
+                                          Credits Available
+                                        </Text>
+                                      </View>
+            
+                                      <Text style={styles.creditAmount}>
+                                        ₹ {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem}
+                                      </Text>
+                                    </View>
+            
+                                    <Text style={styles.creditDesc}>
+                                      The booking amount isn't applied with any bills yet.
+                                    </Text>
+            
+                                    <TouchableOpacity style={styles.applyBtn} 
+                                    onPress={handleBookingApplyInvoices}
+                                    >
+                                      <Text style={{
+                                        color: "#fff",
+                                        fontSize: 16,
+                                        fontFamily: "Gilroy-Bold",
+                                      }}>
+                                        Apply Now
+                                      </Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                )}
 
 
 
@@ -1901,6 +1956,76 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 15,
     fontFamily: "Gilroy-Bold"
+  },
+    creditCard: {
+    marginTop: 24,
+    borderWidth: 1,
+    borderColor: "#EAEAEA",
+    borderRadius: 18,
+    padding: 10,
+    backgroundColor: "#FFFFFF",
+  },
+
+  creditTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  creditTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  greenTick: {
+    width: 25,
+    height: 25,
+    borderRadius: 12,
+    backgroundColor: "#08B32A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  tickText: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  creditTitle: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  creditAmount: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+
+  creditDesc: {
+    marginTop: 16,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  applyBtn: {
+    marginTop: 22,
+    height: 44,
+    borderRadius: 5,
+    backgroundColor: "#2446F5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  applyBtnText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Gilroy-SemiBold",
   },
 
 })
