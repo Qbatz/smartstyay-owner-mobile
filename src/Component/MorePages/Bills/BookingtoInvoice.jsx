@@ -86,7 +86,12 @@ export default function BookingToInvoice() {
         0
     );
 
-    const bookingAmount = advanceInfo?.advanceBalanceAmount || 0;
+    const bookingAmount =
+        Number(
+            advanceInfo?.availableBalance ||
+            advanceInfo?.advanceBalanceAmount ||
+            0
+        );
 
     const remainingBalance = bookingAmount - totalApplied;
 
@@ -128,9 +133,6 @@ export default function BookingToInvoice() {
     const dueDate = parseDate(dueDateStr);
 
     const isOverdue = dueDate && today > dueDate;
-
-
-
 
 
     useEffect(() => {
@@ -182,21 +184,67 @@ export default function BookingToInvoice() {
     }, [])
 
 
+    // const handleSetAmount = (invoiceId, value, maxAmount) => {
+    //     let amount = Number(value);
+
+    //     if (isNaN(amount) || amount <= 0) return;
+
+    //     if (amount > maxAmount) {
+    //         amount = maxAmount;
+    //     }
+
+    //     setAppliedAmounts((prev) => ({
+    //         ...prev,
+    //         [invoiceId]: amount,
+    //     }));
+    // };
+
+
     const handleSetAmount = (invoiceId, value, maxAmount) => {
+
         let amount = Number(value);
 
         if (isNaN(amount) || amount <= 0) return;
 
-        if (amount > maxAmount) {
-            amount = maxAmount;
+        // current invoice exclude pannitu calculate
+        const currentAppliedWithoutThis =
+            Object.entries(appliedAmounts)
+                .filter(([id]) => id !== invoiceId)
+                .reduce((sum, [, val]) => sum + Number(val || 0), 0);
+
+        // available booking balance
+        const bookingAmount = Number(
+            advanceInfo?.availableBalance ||
+            advanceInfo?.advanceBalanceAmount ||
+            0
+        );
+
+        // remaining balance
+        const remainingBalance =
+            bookingAmount - currentAppliedWithoutThis;
+
+        // final allowed amount
+        const maxAllowed = Math.min(
+            remainingBalance,
+            Number(maxAmount || 0)
+        );
+
+        // if entered more than allowed
+        if (amount > maxAllowed) {
+            amount = maxAllowed;
         }
 
         setAppliedAmounts((prev) => ({
             ...prev,
             [invoiceId]: amount,
         }));
-    };
 
+        // input value update
+        setTempValue((prev) => ({
+            ...prev,
+            [invoiceId]: String(amount),
+        }));
+    };
 
     const isValidNumber = (val) => {
         if (!val) return false;
@@ -208,80 +256,11 @@ export default function BookingToInvoice() {
         return true;
     };
 
-    //    const handleDiscountApply = async () => {
-    //   if (!reason) {
-    //     setReasonErr("Please select reason");
-    //     return;
-    //   }
-
-    //  if (!isValidNumber(discount)) {
-    //   setDiscountErr("Enter valid discount");
-    //   return;
-    // }
-
-    //   if (discountValue > invoiceAmount) {
-    //     setDiscountErr("Discount cannot exceed amount");
-    //     return;
-    //   }
-
-    //  if (discountType === "Percentage" && Number(discount) > 100) {
-    //   setDiscountErr("Percentage cannot exceed 100%");
-    //   return;
-    // }
-
-    //   const res = await ApplyBillDiscount({
-    //     hostelId: bill?.hostelId,
-    //     invoiceId: bill?.invoiceId,
-    //     discountAmount:
-    //       discountType === "Amount" ? discountValue : 0,
-    //     discountPercentage:
-    //       discountType === "Percentage" ? Number(discount) : 0,
-    //     reason,
-    //   });
-
-    //   if (res?.success) {
-    //       setModalType("success");
-    //       setModalMessage("Discount Added Successfully");
-    //       setShowSuccessModal(true);
 
 
-    //        setTimeout(() => {
-    //           navigation.goBack();
-    //          setShowSuccessModal(false)
-    //        }, 1500);
 
 
-    //   } else {
-    //       setModalType("warning");
-    //       setModalMessage(res?.message ||"Something went wrong");
-    //       setShowSuccessModal(true);
 
-    //       setTimeout(() => setShowSuccessModal(false), 3000);
-    //   }
-    //    }
-
-    console.log({
-        discountType,
-        discountAmount:
-            discountType === "Amount" ? Number(discount) : 0,
-        discountPercentage:
-            discountType === "Percentage" ? Number(discount) : 0,
-    });
-
-
-    const sendpayload = {
-        hostelId: bill?.hostelId,
-        invoiceId: bill?.invoiceId,
-        reason: reason || "",
-        ...(discountType === "Amount" && {
-            discountAmount: Number(discount),
-        }),
-        ...(discountType === "Percentage" && {
-            discountPercentage: Number(discount),
-        }),
-    };
-
-    console.log("sendpayload", sendpayload);
 
     const isEdit = route?.params?.isEdit;
 
@@ -291,9 +270,22 @@ export default function BookingToInvoice() {
 
     console.log("ADVANCEid", advanceInfo?.advanceInvoiceId);
 
+     const totalApplieds = Object.values(appliedAmounts).reduce(
+            (sum, val) => sum + Number(val || 0),
+            0
+        );
+
+        console.log("totalApplieds", totalApplieds);
+        
+
 
     const handleApply = async () => {
-        const bookingAmount = advanceInfo?.advanceBalanceAmount || 0;
+        const bookingAmount =
+            Number(
+                advanceInfo?.availableBalance ||
+                advanceInfo?.advanceBalanceAmount ||
+                0
+            );
 
         const totalApplied = Object.values(appliedAmounts).reduce(
             (sum, val) => sum + Number(val || 0),
@@ -382,92 +374,7 @@ export default function BookingToInvoice() {
 
 
 
-    const handleDiscountApply = async () => {
-        let hasError = false;
 
-        setReasonErr("");
-        setDiscountErr("");
-
-        if (!reason) {
-            setReasonErr("Please select reason");
-            hasError = true;
-        }
-
-        if (!isValidNumber(discount)) {
-            setDiscountErr("Enter valid discount");
-            hasError = true;
-        }
-
-        if (discountType === "Percentage" && Number(discount) > 100) {
-            setDiscountErr("Percentage cannot exceed 100%");
-            hasError = true;
-        }
-
-        if (discountType === "Amount" && Number(discount) > invoiceAmount) {
-            setDiscountErr("Discount cannot exceed amount");
-            hasError = true;
-        }
-
-        if (hasError) return;
-
-        const payload = {
-            hostelId: activeHostelId,
-            invoiceId: BillPdfdetails?.invoiceId,
-            reason: reason || "",
-            ...(discountType === "Amount" && {
-                discountAmount: Number(discount),
-            }),
-            ...(discountType === "Percentage" && {
-                discountPercentage: Number(discount),
-            }),
-        };
-
-        // ✅ NO CHANGE CHECK
-        if (isEdit) {
-            const currentDiscount = String(Number(discount || 0).toFixed(2));
-            const initial = String(Number(initialDiscount || 0).toFixed(2));
-
-            const isSameDiscount = currentDiscount === initial;
-            const isSameReason = (reason || "") === (initialReason || "");
-            const isSameType = discountType === initialType;
-
-            if (isSameDiscount && isSameReason && isSameType) {
-                setModalType("warning");
-                setModalMessage("No changes detected");
-                setShowSuccessModal(true);
-
-                setTimeout(() => setShowSuccessModal(false), 1500);
-
-                return;
-            }
-        }
-
-        const apiFunction = isEdit ? UpdateBillDiscount : ApplyBillDiscount;
-
-        console.log("apifunction", apiFunction);
-        console.log("payload", payload);
-
-
-        const res = await apiFunction(payload);
-
-        if (res?.success) {
-            setModalType("success");
-            setModalMessage(
-                isEdit ? "Discount Updated Successfully" : "Discount Added Successfully"
-            );
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                navigation.goBack();
-                if (onSuccess) onSuccess();
-                setShowSuccessModal(false);
-            }, 1500);
-        } else {
-            setModalType("warning");
-            setModalMessage(res?.message || "Something went wrong");
-            setShowSuccessModal(true);
-        }
-    };
 
 
 
@@ -551,7 +458,12 @@ export default function BookingToInvoice() {
                                         : "Booking Amount"}
                                 </Text>
                                 <Text style={styles.bookingAmount}>
-                                    ₹ {advanceInfo?.advanceBalanceAmount || 0}
+                                    {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
+                                    ₹ {
+                                        advanceInfo?.availableBalance ||
+                                        advanceInfo?.advanceBalanceAmount ||
+                                        0
+                                    }
                                 </Text>
                             </View>
 
@@ -620,38 +532,72 @@ export default function BookingToInvoice() {
                                             placeholder="₹ 0.00"
                                             keyboardType="numeric"
                                             value={tempValue?.[item.invoiceId] || ""}
-                                           onChangeText={(text) => {
+                                            onChangeText={(text) => {
 
-    const numericValue = text.replace(/[^0-9]/g, "");
+                                                const numericValue = text.replace(/[^0-9]/g, "");
 
-    if (numericValue === "") {
-        setTempValue((prev) => ({
-            ...prev,
-            [item.invoiceId]: "",
-        }));
-        return;
-    }
+                                                if (numericValue === "") {
+                                                    setTempValue((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: "",
+                                                    }));
+                                                    return;
+                                                }
 
-    const currentBookingAmount =
-        Number(advanceInfo?.advanceBalanceAmount) || 0;
+                                                let amount = Number(numericValue);
 
-    const maxAllowedAmount = Math.min(
-        currentBookingAmount,
-        Number(item?.pendingAmount || 0)
-    );
+                                                const bookingAmount =
+                                                    Number(
+                                                        advanceInfo?.availableBalance ||
+                                                        advanceInfo?.advanceBalanceAmount ||
+                                                        0
+                                                    );
 
-    let amount = Number(numericValue);
+                                                // ✅ current invoice except total
+                                                const currentAppliedWithoutThis =
+                                                    Object.entries(appliedAmounts)
+                                                        .filter(([id]) => id !== item.invoiceId)
+                                                        .reduce(
+                                                            (sum, [, val]) => sum + Number(val || 0),
+                                                            0
+                                                        );
 
-  setTempValue((prev) => ({
-    ...prev,
-    [item.invoiceId]: numericValue,
-}));
+                                                // ✅ remaining balance
+                                                const remainingBalance =
+                                                    bookingAmount - currentAppliedWithoutThis;
 
-    // setTempValue((prev) => ({
-    //     ...prev,
-    //     [item.invoiceId]: amount.toString(),
-    // }));
-}}
+                                                // ✅ invoice pending amount
+                                                const pendingAmount =
+                                                    Number(item?.pendingAmount || 0);
+
+                                                // ✅ final max allowed
+                                                const maxAllowed = Math.min(
+                                                    remainingBalance,
+                                                    pendingAmount
+                                                );
+
+                                                // ❌ prevent typing above limit
+                                                if (amount > maxAllowed) {
+
+                                                    setModalType("warning");
+                                                    setModalMessage(
+                                                        `Maximum allowed amount is ₹ ${maxAllowed}`
+                                                    );
+                                                    setShowSuccessModal(true);
+
+                                                    setTimeout(() => {
+                                                        setShowSuccessModal(false);
+                                                    }, 1500);
+
+                                                    return;
+                                                }
+
+                                                // ✅ allow typing
+                                                setTempValue((prev) => ({
+                                                    ...prev,
+                                                    [item.invoiceId]: numericValue,
+                                                }));
+                                            }}
                                         />
 
                                         <TouchableOpacity

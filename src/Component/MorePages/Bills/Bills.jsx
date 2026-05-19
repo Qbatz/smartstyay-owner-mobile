@@ -4548,7 +4548,7 @@ const disableAdjust =
                 <ScrollView showsVerticalScrollIndicator={false}>
 
                   {/* WRITE OFF TITLE */}
-                  <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 8 }}>
+                  <Text style={{ fontSize: 20, ffontFamily: "Gilroy-Bold", marginBottom: 8 }}>
                     Write off
                   </Text>
 
@@ -4561,7 +4561,7 @@ const disableAdjust =
                     <Image source={ProfileImage} style={{ width: 55, height: 55, borderRadius: 28 }} />
 
                     <View style={{ marginLeft: 12, flex: 1 }}>
-                      <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
+                      <Text style={{ fontSize: 17, fontFamily: "Gilroy-Bold", color: "#000" }}>
                         Daniel Balaji R
                       </Text>
 
@@ -4592,11 +4592,11 @@ const disableAdjust =
                     <View style={{ alignItems: "flex-end" }}>
                       <View style={{ display: 'flex', flexDirection: 'row' }}>
                         <Image source={WriteOffDueIcon} style={{ height: 12, width: 12, marginTop: 4, marginRight: 4 }} />
-                        <Text style={{ color: "#1E45E1", fontWeight: "700", marginBottom: 4 }}>
+                        <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Bold", marginBottom: 4 }}>
                           Due Pending
                         </Text>
                       </View>
-                      <Text style={{ fontSize: 15, fontWeight: "700", color: "#000" }}>
+                      <Text style={{ fontSize: 15, fontFamily: "Gilroy-Bold", color: "#000" }}>
                         ₹ 2,200.00
                       </Text>
                     </View>
@@ -4665,7 +4665,7 @@ const disableAdjust =
                 >
 
                   {/* Header */}
-                  <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
+                  <Text style={{ fontSize: 20, fontFamily: "Gilroy-Bold", marginBottom: 20 }}>
                     Record Payment
                   </Text>
 
@@ -4685,7 +4685,7 @@ const disableAdjust =
                     )}
 
                     <View style={{ marginLeft: 12, flex: 1 }}>
-                      <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
+                      <Text style={{ fontSize: 17, fontFamily: "Gilroy-Bold", color: "#000" }}>
                         {selectedBill?.fullName || "-"}
                       </Text>
 
@@ -5022,7 +5022,7 @@ const disableAdjust =
                 <ScrollView showsVerticalScrollIndicator={false}>
 
                   {/* TITLE */}
-                  <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 20 }}>
+                  <Text style={{ fontSize: 20, fontFamily: "Gilroy-Bold", marginBottom: 20 }}>
                     Refund Payment
                   </Text>
 
@@ -5042,7 +5042,7 @@ const disableAdjust =
                     )}
 
                     <View style={{ marginLeft: 12, flex: 1 }}>
-                      <Text style={{ fontSize: 17, fontWeight: "700", color: "#000" }}>
+                      <Text style={{ fontSize: 17, fontFamily: "Gilroy-Bold", color: "#000" }}>
                         {selectedBill?.fullName || "-"}
                       </Text>
 
@@ -5072,7 +5072,7 @@ const disableAdjust =
                     {/* RIGHT SIDE REFUND AMOUNT */}
                     <View style={{ alignItems: "flex-end" }}>
                       <Text style={{ color: "#444", fontSize: 13 }}>Refund Amount</Text>
-                      <Text style={{ fontSize: 16, fontWeight: "700", color: "#000" }}>
+                      <Text style={{ fontSize: 16, fontFamily: "Gilroy-Bold", color: "#000" }}>
                         ₹ {refundInitDetails?.pendingRefund || 0}
                       </Text>
                     </View>
@@ -6357,7 +6357,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -6503,7 +6503,7 @@ const styles = StyleSheet.create({
 
   filterTitle: {
     fontSize: 18,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold",
   },
 
   // label: {
@@ -6661,7 +6661,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
     marginBottom: 10,
   },
@@ -6799,7 +6799,7 @@ const styles = StyleSheet.create({
 
   sheetTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
@@ -6827,7 +6827,7 @@ const styles = StyleSheet.create({
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
-  filterTitle: { fontSize: 20, fontWeight: "700" },
+  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold",},
   resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold", marginLeft: 10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },

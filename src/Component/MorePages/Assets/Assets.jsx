@@ -1093,7 +1093,7 @@ const handleAssignAsset = async () => {
                         },
                         text: {
                           color: "#FFFFFF",
-                          fontWeight: "700",
+                          fontFamily: "Gilroy-Bold",
                         },
                       },
                     },
@@ -1196,14 +1196,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 40 },
   header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 22, height: 22 },
-  pageTitle: { fontSize: 20, fontWeight: "700", color: "#000", marginLeft: 15 },
+  pageTitle: { fontSize: 20, fontFamily: "Gilroy-Bold", color: "#000", marginLeft: 15 },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#F8F8F8", borderRadius: 14, padding: 12, marginBottom: 20 },
   searchIcon: { width: 20, height: 20, tintColor: "#9E9E9E" },
   searchInput: { flex: 1, marginLeft: 10 },
   card: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", padding: 15, borderRadius: 14, marginBottom: 12,borderWidth:1,borderColor:'#9A9A9A1A' },
   iconCircle: { width: 46, height: 46, backgroundColor: "#EEF4FF", borderRadius: 12, justifyContent: "center", alignItems: "center", marginRight: 14 },
   assetIcon: { width: 26, height: 26, tintColor: "#3F6AFF" },
-  assetTitle: { fontSize: 16, fontWeight: "700" },
+  assetTitle: { fontSize: 16, fontFamily: "Gilroy-Bold", },
   assetSub: { fontSize: 13, color: "#696969", marginTop: 2 },
   dotsIcon: { width: 18, height: 18, tintColor: "#999" },
 
@@ -1237,7 +1237,7 @@ const styles = StyleSheet.create({
 
   sheetHandle: { width: 60, height: 4, backgroundColor: "#D1D5DB", alignSelf: "center", borderRadius: 20, marginBottom: 15 },
 
-  sheetTitle: { fontSize: 20, fontWeight: "700", color: "#000" },
+  sheetTitle: { fontSize: 20, fontFamily: "Gilroy-Bold", color: "#000" },
 
   topActions: { flexDirection: "row", alignItems: "center" },
   headerIcon: { width: 20, height: 20, marginLeft: 12 },
@@ -1254,7 +1254,7 @@ const styles = StyleSheet.create({
 
   assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20, marginBottom: 30 },
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
-  assignText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  assignText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold",},
   star: {
     color: "red",
   },
@@ -1267,7 +1267,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     height: "55%",             // ⭐ increase height here
   }, filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  filterTitle: { fontSize: 20, fontWeight: "700" },
+  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold",},
   resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
@@ -1321,9 +1321,9 @@ const styles = StyleSheet.create({
 
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 42 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" },
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold", },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontWeight: "700" },
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold", },
 
   datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
   assignSheet: {
@@ -1337,7 +1337,7 @@ const styles = StyleSheet.create({
 
   assignTitle: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
 
@@ -1371,7 +1371,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  assignSubmitText: { color: "#fff", fontWeight: "700" },
+  assignSubmitText: { color: "#fff", fontFamily: "Gilroy-Bold",},
   assignButtonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1432,7 +1432,7 @@ const styles = StyleSheet.create({
 
   popupTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
     textAlign: "center",
     marginBottom: 8
   },
@@ -1501,7 +1501,7 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700"
+    fontFamily: "Gilroy-Bold",
   },
 
   emptystateBtn: {
