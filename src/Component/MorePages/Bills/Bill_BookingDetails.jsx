@@ -1184,11 +1184,8 @@ const styles = StyleSheet.create({
 
   dropdownTextSelected: {
     color: "#fff",
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
   },
-
-
-
 
   btnRow: {
     flexDirection: "row",

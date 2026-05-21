@@ -44,6 +44,7 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 import { useNavigation } from "@react-navigation/native";
 import DiscountActionSheet from "./DiscountActionSheet"
 import QuestionIcon from "../../../Assets/Images/help.png";
+import BillIcon from "../../../Assets/Images/bill.png";
 
 
 const BillDetailsSheet = ({
@@ -67,7 +68,7 @@ const BillDetailsSheet = ({
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid , GetAdvanceCreditDetails } = useContext(BillContext);
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -197,6 +198,9 @@ const BillDetailsSheet = ({
 
 
   const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
+
+  console.log("invoiceDetail", invoiceDetail);
+  
 
   const billDetailsPan = useRef(
     PanResponder.create({
@@ -445,8 +449,49 @@ const BillDetailsSheet = ({
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadInvoice;
 
+
+
+  const showApplyToInvoices =
+    invoiceDetail?.canRedeem === true;
+
+  const showAdjustWithAdvance =
+    !invoiceDetail?.canRedeem;
+
+  const disableAdjust =
+    !invoiceDetail?.canApplyFromAdvance;
+
+
   // const isDiscounted = BillPdfdetails?.invoiceInfo?.discountAmount > 0;
 
+
+  const handleApplyInvoice = async () => {
+    navigation.navigate("BookingtoDiscount", {
+      source: "bill",
+      invoiceType: "advance",
+    })
+    const res = await GetInitializeAdvanceRedeem({
+      hostelId: activeHostelId,
+      advanceInvoiceId: selectedBill?.invoiceId,
+    });
+  }
+
+
+  const handleAdvanceApplyInvoices = async () => {
+
+    navigation.navigate("BillsApplyInvoices", {
+      bill: selectedBill,
+    });
+
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "", // Advance invoice
+    });
+
+    // setShowMenu(false);
+    // setShowBillDetails(false)
+
+  };
 
   const getOverdueDays = (dueDate) => {
     if (!dueDate) return 0;
@@ -493,7 +538,7 @@ const BillDetailsSheet = ({
     });
   }
 
-   
+
   const handleBookingApplyInvoices = async () => {
 
     navigation.navigate("BillsApplyInvoices");
@@ -505,7 +550,7 @@ const BillDetailsSheet = ({
     })
 
     console.log("AdvanceCredits", AdvanceCredits);
-    
+
 
   }
 
@@ -1023,41 +1068,41 @@ const BillDetailsSheet = ({
             )}
 
 
-             {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
-                                  <View style={styles.creditCard}>
-                                    <View style={styles.creditTopRow}>
-                                      <View style={styles.creditTitleRow}>
-                                        <View style={styles.greenTick}>
-                                          <Text style={styles.tickText}>✓</Text>
-                                        </View>
-            
-                                        <Text style={styles.creditTitle}>
-                                          Credits Available
-                                        </Text>
-                                      </View>
-            
-                                      <Text style={styles.creditAmount}>
-                                        ₹ {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem}
-                                      </Text>
-                                    </View>
-            
-                                    <Text style={styles.creditDesc}>
-                                      The booking amount isn't applied with any bills yet.
-                                    </Text>
-            
-                                    <TouchableOpacity style={styles.applyBtn} 
-                                    onPress={handleBookingApplyInvoices}
-                                    >
-                                      <Text style={{
-                                        color: "#fff",
-                                        fontSize: 16,
-                                        fontFamily: "Gilroy-Bold",
-                                      }}>
-                                        Apply Now
-                                      </Text>
-                                    </TouchableOpacity>
-                                  </View>
-                                )}
+            {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
+              <View style={styles.creditCard}>
+                <View style={styles.creditTopRow}>
+                  <View style={styles.creditTitleRow}>
+                    <View style={styles.greenTick}>
+                      <Text style={styles.tickText}>✓</Text>
+                    </View>
+
+                    <Text style={styles.creditTitle}>
+                      Credits Available
+                    </Text>
+                  </View>
+
+                  <Text style={styles.creditAmount}>
+                    ₹ {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem}
+                  </Text>
+                </View>
+
+                <Text style={styles.creditDesc}>
+                  The booking amount isn't applied with any bills yet.
+                </Text>
+
+                <TouchableOpacity style={styles.applyBtn}
+                  onPress={handleBookingApplyInvoices}
+                >
+                  <Text style={{
+                    color: "#fff",
+                    fontSize: 16,
+                    fontFamily: "Gilroy-Bold",
+                  }}>
+                    Apply Now
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
 
 
@@ -1226,7 +1271,62 @@ const BillDetailsSheet = ({
               )}
 
 
+            {showApplyToInvoices && (
+              <TouchableOpacity
+                style={styles.popupRow}
+                onPress={handleApplyInvoice}
+              >
+                <Image
+                  source={BillIcon}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    tintColor: "#000",
+                    marginRight: 10,
+                  }}
+                />
 
+                <Text style={styles.popupText}>
+                  Apply to Invoices
+                </Text>
+              </TouchableOpacity>
+            )}
+
+
+            {showAdjustWithAdvance && (
+              <TouchableOpacity
+                style={[
+                  styles.popupRow,
+                  disableAdjust && {
+                    opacity: 0.4,
+                    backgroundColor: "#F3F4F6",
+                  },
+                ]}
+                onPress={handleAdvanceApplyInvoices}
+                disabled={disableAdjust}
+              >
+                <Image
+                  source={BillIcon}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    tintColor: disableAdjust ? "#9CA3AF" : "#000",
+                    marginRight: 10,
+                  }}
+                />
+
+                <Text
+                  style={[
+                    styles.popupText,
+                    disableAdjust && {
+                      color: "#9CA3AF",
+                    },
+                  ]}
+                >
+                  Adjust with Advance
+                </Text>
+              </TouchableOpacity>
+            )}
 
 
 
@@ -1957,7 +2057,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Gilroy-Bold"
   },
-    creditCard: {
+  creditCard: {
     marginTop: 24,
     borderWidth: 1,
     borderColor: "#EAEAEA",
