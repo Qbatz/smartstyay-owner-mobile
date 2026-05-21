@@ -362,7 +362,10 @@ export default function EditManualAddressSheet({
     <>
     {loading && <Loader/>}
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-      <View style={styles.overlay}>
+      <View style={styles.root} pointerEvents="box-none">
+          <TouchableWithoutFeedback onPress={closeSheet}>
+                            <View style={styles.overlay} />
+                        </TouchableWithoutFeedback>
         <TouchableOpacity style={{ flex: 1 }} onPress={closeSheet} />
 
         <Animated.View
@@ -557,6 +560,11 @@ export default function EditManualAddressSheet({
   );
 }
 const styles = StyleSheet.create({
+  root: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 9999,          // 🔥 VERY IMPORTANT
+        elevation: 9999,      // 🔥 Android
+    },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",

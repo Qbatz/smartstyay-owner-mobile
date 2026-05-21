@@ -90,6 +90,17 @@ export default function ReassignBedScreen({ route, navigation }) {
       }
     });
   }, [rooms]);
+  const getFloorLabel = (name = "") => {
+    const trimmed = name.trim();
+
+    // if name starts with number → return full number part
+    if (/^\d+/.test(trimmed)) {
+      return trimmed.match(/^\d+/)[0]; // "11" → "11"
+    }
+
+    // else return first letter
+    return trimmed.charAt(0).toUpperCase();
+  };
 
   const getSharingByRoom = (roomId) => {
     return bedsByRoom?.[roomId]?.length || 0;
@@ -211,7 +222,8 @@ export default function ReassignBedScreen({ route, navigation }) {
                       selectedFloor === i && styles.floorCircleTextActive
                     ]}
                   >
-                    F
+                    {/* F */}
+                    {getFloorLabel(f.name)}
                   </Text>
                 </View>
                 <Text
@@ -436,6 +448,7 @@ const styles = StyleSheet.create({
     fontSize: 11,           // ↓ smaller
     marginTop: 2,
     color: "#777",
+    textAlign:'center'
   },
 
   floorLabelActive: {

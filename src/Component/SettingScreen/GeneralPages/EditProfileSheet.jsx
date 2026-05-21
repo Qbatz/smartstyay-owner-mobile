@@ -21,6 +21,7 @@ import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { useNavigation } from "@react-navigation/native";
 import Loader from "../../Loader/Loader";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function EditProfileSheet({ route, navigation }) {
@@ -374,9 +375,10 @@ export default function EditProfileSheet({ route, navigation }) {
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
                 >
+                    <SafeAreaView>
                     <ImageBackground source={RectangleBackground} style={{ height: 238, width: '100%' }}>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginTop: 20 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginTop: 16 }}>
                             <TouchableOpacity onPress={() => navigation.goBack()}>
                                 <Image source={ArrowLeft} style={styles.backIcon} />
                             </TouchableOpacity>
@@ -568,6 +570,7 @@ export default function EditProfileSheet({ route, navigation }) {
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
+                    </SafeAreaView>
                 </KeyboardAvoidingView>
 
                 <ImagePickerSheet

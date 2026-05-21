@@ -1530,7 +1530,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                     style={[styles.iconCircle, { marginLeft: 10 }]}
                     onPress={() => setDrawerVisible(true)}
                   >
-                    <Image source={Profile} style={{ width: 40, height: 40 }} />
+                    {/* <Image source={Profile} style={{ width: 40, height: 40 }} /> */}
+                    {profileDetails?.profilePic ?  <Image source={{uri:profileDetails?.profilePic}} style={{ width: 40, height: 40,borderRadius:20 }} /> : 
+                    <View style={{width:40,height:40,borderRadius:20,backgroundColor: "#EEF2FF",justifyContent:'center',alignItems:'center'}}>
+                      <Text style={{fontSize:16,fontFamily:"Gilroy-Bold",color:'black'}}>
+                        {profileDetails?.initial}</Text>
+                    </View>}
                   </TouchableOpacity>
                 </View>
               </View>

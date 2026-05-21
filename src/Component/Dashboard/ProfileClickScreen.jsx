@@ -238,9 +238,9 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
 
               >
                 <View style={styles.avatar}>
-                  {profileDetails?.profileImage ? (
+                  {profileDetails?.profilePic ? (
                     <Image
-                      source={{ uri: profileDetails.profileImage }}
+                      source={{ uri: profileDetails.profilePic }}
                       style={styles.profileImg}
                     />
                   ) : (

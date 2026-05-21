@@ -26,6 +26,7 @@ import ChangePasswordIcon from "../../../Assets/Images/password-check.png";
 import Delete from "../../../Assets/Images/trash.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ChangePasswordSheet from './ChangePasswordSheet';
+import MastersDetails from './MastersDetails'
 import { useFocusEffect } from '@react-navigation/native';
 import { useGeneral } from "../../../Context/GeneralContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -60,6 +61,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [activeMenu, setActiveMenu] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showPasswordSheet, setShowPasswordSheet] = useState(false);
+  const [showMasterDetails,setMasterDetails]=useState(false);
   const { deleteGeneral, getAdminList } = useGeneral();
   const { profileDetails, GetProfileDetails } = useContext(ExpensesContext);
   const [getData, setGetData] = useState([])
@@ -87,6 +89,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [editProfileBottomSheet, setEditProfileSheet] = useState(false)
   const [showResetSheet,setShowResetSheet] = useState(false);
+  const [selectedMasterDetail,setSelectedMasterDetail]=useState("")
 
   const loginContext = useContext(LoginContexts)
 
@@ -243,7 +246,7 @@ export default function GeneralDetailsScreen({ navigation }) {
     setShowDeletePopup(true);
 
     setActiveMenu(null);
-    setDeleteId(userId);
+    setDeleteId(userId || selectedUserId);
   };
   const handleDeleteAdmin = async () => {
     const res = await deleteGeneral(deleteId);
@@ -257,13 +260,15 @@ export default function GeneralDetailsScreen({ navigation }) {
     setModalMessage("Deleted Successfully");
     setModalType("success");
     setShowSuccessModal(true);
-    setShowDeletePopup(false)
+    setShowDeletePopup(false);
+    
 
     await loadAdmins();
 
     setTimeout(() => {
       setShowSuccessModal(false);
       setShowDeletePopup(false);
+      setMasterDetails(false)
     }, 1500);
   };
 
@@ -323,7 +328,10 @@ export default function GeneralDetailsScreen({ navigation }) {
 
   const renderUserCard = (u, index) => (
 
-    <View key={u.userId} style={styles.card}>
+    <TouchableOpacity key={u.userId} style={styles.card} onPress={()=>{
+      setMasterDetails(true)
+      setSelectedMasterDetail(u)
+      setSelectedUserId(u?.userId)}}>
       <View style={styles.cardHeader}>
         {u.profilePic ? <Image
           source={{ uri: u.profilePic }}
@@ -340,12 +348,12 @@ export default function GeneralDetailsScreen({ navigation }) {
           <TouchableOpacity onPress={() => {
             setSelectedUserId(u.userId);
             setShowPasswordSheet(true);
-          }}>
+          }} >
             <Text style={styles.changePassword}>{u.roleName}</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={(event) => {
             const { pageX, pageY } = event.nativeEvent;
             const screenWidth = Dimensions.get("window").width;
@@ -360,7 +368,7 @@ export default function GeneralDetailsScreen({ navigation }) {
           }}
         >
           <Image source={Dots} style={styles.dotsIcon} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
       </View>
 
@@ -424,7 +432,7 @@ export default function GeneralDetailsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       )} */}
-    </View>
+    </TouchableOpacity>
   );
 
   const getFullName = (profile) => {
@@ -1145,6 +1153,13 @@ export default function GeneralDetailsScreen({ navigation }) {
         adminId={selectedUserId}
       />
 
+      <MastersDetails
+      visible={showMasterDetails}
+      onClose={()=>setMasterDetails(false)}
+      masterDetail={selectedMasterDetail}
+      passwordSheetOpen={()=>setShowPasswordSheet(true)}
+      deletemaster={handleDelete}/>
+
       {managedUserBottomShet && (
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={onClose}>
@@ -1432,7 +1447,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 25
+    paddingHorizontal: 25,zIndex:9999
   },
 
   popupBox: {
