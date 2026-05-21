@@ -1136,6 +1136,7 @@ export default function BillsDesign({ route }) {
     setSelectedBill(item);
     setShowBillDetails(true);
     const res = getBillsPdfDetails(item?.hostelId, item?.invoiceId);
+    console.log("res",res)
 
   }
 
@@ -3809,7 +3810,9 @@ const disableAdjust =
                           The booking amount isn't applied with any bills yet.
                         </Text>
 
-                        <TouchableOpacity style={styles.applyBtn} onPress={handleBookingApplyInvoices}>
+                        <TouchableOpacity style={[styles.applyBtn,!BillPdfdetails?.invoiceInfo?.canRedeem && {opacity:0.4}]} onPress={handleBookingApplyInvoices}
+                        disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}
+                        >
                           <Text style={{
                             color: "#fff",
                             fontSize: 16,
@@ -5576,7 +5579,7 @@ const disableAdjust =
                     <Text style={styles.resetBtnText}>Reset All</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.applyBtn} onPress={handleApplyFilter}>
+                  <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilter}>
                     <Text style={styles.applyBtnText}>Apply</Text>
                   </TouchableOpacity>
                 </View>
@@ -6621,6 +6624,14 @@ const styles = StyleSheet.create({
     width: "48%",
     alignItems: "center",
   },
+   applyButton: {
+    backgroundColor: "#2D6CDF",
+    paddingVertical: 12,
+    borderRadius: 10,
+    width: "48%",
+    alignItems: "center",
+  },
+
 
   resetText: {
     color: "#2D6CDF",

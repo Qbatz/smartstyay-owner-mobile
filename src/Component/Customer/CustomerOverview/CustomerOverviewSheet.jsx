@@ -671,8 +671,8 @@ setMenuVisible(false)
     status === "BOOKED" ||
     status === "VACATED" || 
     status === "CANCELLED_BOOKING" || 
-    // status === "SETTLEMENT_GENERATED" ||
-    (status === "NOTICE" && isAfterLeavingDate);
+    status === "SETTLEMENT_GENERATED" || status === "INACTIVE"
+    // (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {
     if (!canReadTenant) {

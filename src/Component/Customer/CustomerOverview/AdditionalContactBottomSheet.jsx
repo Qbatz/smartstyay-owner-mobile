@@ -8,7 +8,8 @@ import {
   Dimensions,
   TextInput,
   ScrollView,
-  BackHandler, Keyboard, Image
+  BackHandler, Keyboard, Image,
+  StyleSheet
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -323,6 +324,7 @@ export default function AdditionalContactBottomSheet({
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <View style={styles.root}>
       <TouchableOpacity style={styles.overlay} onPress={closeSheet} />
 
       <Animated.View
@@ -538,11 +540,17 @@ export default function AdditionalContactBottomSheet({
           </TouchableOpacity>
         </View>
       </Animated.View>
+      </View>
     </>
   );
 }
 
 const styles = {
+  root: {
+          ...StyleSheet.absoluteFillObject,
+          zIndex: 9999,          // 🔥 VERY IMPORTANT
+          elevation: 9999,      // 🔥 Android
+      },
   overlay: {
     position: "absolute",
     top: 0,

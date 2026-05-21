@@ -70,6 +70,7 @@ export const GeneralProvider = ({ children }) => {
 
 
   const deleteGeneral = async (userId) => {
+    console.log(userId)
     try {
       const token = await retriveData("token");
       const axios = getAxios();

@@ -235,7 +235,7 @@ export default function OverviewTab({ customerDetails,
     "INACTIVE",
     "VACATED",
     "SETTLEMENT_GENERATED",
-    "NOTICE",
+    // "NOTICE",
     "CANCELLED",
   ].includes(customerDetails?.hostelInfo?.currentStatus);
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
@@ -254,6 +254,11 @@ export default function OverviewTab({ customerDetails,
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "NOTICE" ||
+    status ===  "CANCELLED_BOOKING"
+
+  const disabledocEdit =
+    status === "BOOKED" ||
+    status === "VACATED" ||
     status ===  "CANCELLED_BOOKING"
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
@@ -1054,7 +1059,7 @@ export default function OverviewTab({ customerDetails,
                 // style={styles.uploadFabInside}
                 style={[
                   styles.uploadFabInside,
-                  (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                  (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
                 ]}
                 disabled={disableAssignBtn}
                 onPress={HandleAddKycDocument}
@@ -1071,7 +1076,7 @@ export default function OverviewTab({ customerDetails,
                 // style={styles.uploadFabInside}
                 style={[
                   styles.uploadFabInside,
-                  (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                  (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
                 ]}
                 disabled={disableAssignBtn}
                 onPress={pickFiles}
@@ -1138,7 +1143,7 @@ export default function OverviewTab({ customerDetails,
                 <TouchableOpacity
                   style={[
                     styles.addSmallBtn,
-                    (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                    (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
                   ]}
                   disabled={disableAssignBtn}
                   // style={styles.addSmallBtn}
@@ -1159,7 +1164,7 @@ export default function OverviewTab({ customerDetails,
                 <TouchableOpacity
                   style={[
                     styles.addSmallBtn,
-                    (!isSubscriptionAllow || disableFinancialEdit) && { opacity: 0.4 }
+                    (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
                   ]}
                   disabled={disableAssignBtn}
                   //  style={styles.addSmallBtn} 
