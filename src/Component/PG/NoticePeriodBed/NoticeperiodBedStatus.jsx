@@ -7,13 +7,14 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder, BackHandler , NativeModules , Linking
+  PanResponder, BackHandler, NativeModules, Linking
 } from "react-native";
 import Profile from "../../../Assets/Images/Avatar.png";
 import CheckoutIcon from "../../../Assets/Images/checkout_red.png";
 import ReserveIcon from "../../../Assets/Images/user-square.png";
 import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
 import Call from "../../../Assets/Images/call.png";
+import Invoice from "../../../Assets/Images/invoice.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -29,17 +30,17 @@ export default function NoticePeriodBedSheet({
   tenant, onClick, onFinalSheet, cancelNoticePeriod, handleEditBed, selectedBed, handleNoticeToCheckout
 }) {
   const translateY = useRef(new Animated.Value(500)).current;
-   const {CommonModule}=NativeModules;
+  const { CommonModule } = NativeModules;
   const { activeHostelId } = useContext(CommonContexts);
-       const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { getCustomersByHostel, loading } = useCustomer();
   const [menuVisible, setMenuVisible] = useState(false);
   const [customers, setCustomers] = useState([]);
-   const navigation = useNavigation();
+  const navigation = useNavigation();
 
-      const [showSuccessModal, setShowSuccessModal] = useState(false);
-      const [modalMessage, setModalMessage] = useState("");
-      const [modalType, setModalType] = useState("success");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
 
   console.log("selectedBed", selectedBed)
@@ -61,7 +62,7 @@ export default function NoticePeriodBedSheet({
     }, [activeHostelId])
   );
 
-  
+
 
 
   const fetchCustomers = async () => {
@@ -69,18 +70,18 @@ export default function NoticePeriodBedSheet({
     setCustomers(data?.listCustomers || []);
   };
 
-     useEffect(() => {
-                 if (activeHostelId) {
-                   getParticularHostelDetails(activeHostelId);
-                 }
-               }, [activeHostelId])
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
   console.log("customers123", customers)
   const matchedCustomer = customers.find(
     c => c.customerId === selectedBed?.currentTenantInfo[0]?.tenetId
   );
   console.log("matchedCustomer", matchedCustomer)
-  
+
 
 
   // console.log("filteredTenants", filteredTenants);
@@ -125,12 +126,12 @@ export default function NoticePeriodBedSheet({
     onClose();
   };
 
-      const handleCallPhone=(mobile)=>{
-    console.log("mobile",mobile)
-    if(mobile){
+  const handleCallPhone = (mobile) => {
+    console.log("mobile", mobile)
+    if (mobile) {
       CommonModule.makeCall(mobile)
     }
-    
+
   }
 
   const {
@@ -141,56 +142,56 @@ export default function NoticePeriodBedSheet({
   } = useHasPermission("Customers");
 
 
-     const {
-           canReadModule: canReadPayingGuests,
-          canUpdateModule: canUpdatePayingGuests,
-          // canDeleteModule: canDeletePayingGuests,
-  
-      } = useHasPermission("Paying Guests");
+  const {
+    canReadModule: canReadPayingGuests,
+    canUpdateModule: canUpdatePayingGuests,
+    // canDeleteModule: canDeletePayingGuests,
+
+  } = useHasPermission("Paying Guests");
 
 
-        const handleOpenWhatsapp = (item) => {
-          console.log("mobile", item);
-          if (!item) return;
-        
-          let mobile = item?.mobileNo || item?.mobile;
-          let countryCode = item?.countryCode || "91";
-        
-          if (!mobile) {
-            setModalType("warning");
-            setModalMessage("Mobile number not available");
-            setShowSuccessModal(true);
-            setTimeout(() => setShowSuccessModal(false), 1500);
-            return;
-          }
-        
-          mobile = mobile.toString().replace(/\D/g, "");
-        
-          if (mobile.startsWith(countryCode)) {
-            mobile = mobile.slice(countryCode.length);
-          }
-        
-          const phoneNumber = `${countryCode}${mobile}`;
-          const url = `https://wa.me/${phoneNumber}`;
-        
-          console.log("url", url);
-        
-          Linking.openURL(url).catch(() => {
-            setModalType("warning");
-            setModalMessage("WhatsApp not installed");
-            setShowSuccessModal(true);
-            setTimeout(() => setShowSuccessModal(false), 1500);
-          });
-        };
+  const handleOpenWhatsapp = (item) => {
+    console.log("mobile", item);
+    if (!item) return;
 
-     const isValidSubscription = PGDetails?.isSubscriptionActive;
-const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
+    let mobile = item?.mobileNo || item?.mobile;
+    let countryCode = item?.countryCode || "91";
+
+    if (!mobile) {
+      setModalType("warning");
+      setModalMessage("Mobile number not available");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+
+    mobile = mobile.toString().replace(/\D/g, "");
+
+    if (mobile.startsWith(countryCode)) {
+      mobile = mobile.slice(countryCode.length);
+    }
+
+    const phoneNumber = `${countryCode}${mobile}`;
+    const url = `https://wa.me/${phoneNumber}`;
+
+    console.log("url", url);
+
+    Linking.openURL(url).catch(() => {
+      setModalType("warning");
+      setModalMessage("WhatsApp not installed");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+    });
+  };
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   if (!visible) return null;
 
   return (
     <>
-     <SuccessModal
+      <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         message={modalMessage}
@@ -372,10 +373,12 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
             </>
           )}
 
-   <View style={styles.divider} />
-          <Text style={{  color: "#000000",
-        fontSize: 14,
-          fontFamily: "Gilroy-Semibold",marginBottom:10}}>Occupied by</Text>
+          <View style={styles.divider} />
+          <Text style={{
+            color: "#000000",
+            fontSize: 14,
+            fontFamily: "Gilroy-Semibold", marginBottom: 10
+          }}>Occupied by</Text>
 
           <View style={styles.profileRow}>
             {/* <Image source={Profile} style={styles.profileImg} /> */}
@@ -398,66 +401,86 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
             )}
 
             <View>
-              {console.log("haha",selectedBed)}
-              <TouchableOpacity   onPress={() =>
-                        navigation.navigate("CustomerOverviewScreen", {
-                          customerId: selectedBed.currentTenantInfo[0]?.tenetId,
-                          customer: selectedBed.currentTenantInfo[0],
-                        })
-                      }>
-                    <Text style={styles.tenantName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
+              {console.log("haha", selectedBed)}
+              <TouchableOpacity onPress={() =>
+                navigation.navigate("CustomerOverviewScreen", {
+                  customerId: selectedBed.currentTenantInfo[0]?.tenetId,
+                  customer: selectedBed.currentTenantInfo[0],
+                })
+              }>
+                <Text style={styles.tenantName}>{selectedBed.currentTenantInfo[0]?.tenantFullName}</Text>
               </TouchableOpacity>
-              
+
               <Text style={styles.tenantPhone}>+91{selectedBed.currentTenantInfo[0]?.mobile}</Text>
             </View>
           </View>
 
-            <View style={styles.actionRow}>
-                      
-                                            <TouchableOpacity  
-                                             style={[styles.chatBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
-                                             disabled={!isSubscriptionAllow}
-                                            onPress={() =>handleOpenWhatsapp(selectedBed?.currentTenantInfo[0])}>
-                                              <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                                              <Text style={styles.chatText}>Chat</Text>
-                                            </TouchableOpacity>
-                      
-                                            <TouchableOpacity
-                                              style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
-                                    disabled={!isSubscriptionAllow}
-                                        onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
-                                              <Image source={Call} style={styles.actionIcon} />
-                                              <Text style={styles.callText}>Call</Text>
-                                            </TouchableOpacity>
-                      
-                                          </View>
+          <View style={styles.actionRow}>
 
+            <TouchableOpacity
+              style={[styles.chatBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+              disabled={!isSubscriptionAllow}
+              onPress={() => handleOpenWhatsapp(selectedBed?.currentTenantInfo[0])}>
+              <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+              <Text style={styles.chatText}>Chat</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+              disabled={!isSubscriptionAllow}
+              onPress={() => handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
+              <Image source={Call} style={styles.actionIcon} />
+              <Text style={styles.callText}>Call</Text>
+            </TouchableOpacity>
+
+          </View>
+
+<View style={styles.infoRow}>
           <Text style={styles.label}>Rental Amount</Text>
 
-          <View style={styles.dateRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={require("../../../Assets/Images/money.png")}
               style={styles.icon}
             />
             <Text style={styles.dateText}> ₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
           </View>
+          </View>
 
+
+<View style={styles.infoRow}>
           <Text style={styles.label}>Checkout Date</Text>
-          <View style={styles.dateRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={require("../../../Assets/Images/calendar_blue.png")}
               style={styles.icon}
             />
             <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
           </View>
+          </View>
 
+<View style={styles.infoRow}>
           <Text style={styles.label}>Request Date</Text>
-          <View style={styles.dateRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={require("../../../Assets/Images/calendar_blue.png")}
               style={styles.icon}
             />
-            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.requestedLeavingDate || "N/A" }</Text>
+            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.requestedLeavingDate || "N/A"}</Text>
+          </View>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}> Last Invoice</Text>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image source={Invoice}
+                style={{ width: 20, height: 20, marginRight: 6 }} />
+
+              <Text style={styles.link}>
+                {selectedBed.currentTenantInfo[0]?.lastInvoiceNumber}
+                & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
+            </View>
           </View>
 
           <TouchableOpacity style={styles.noticeBtn}>
@@ -555,9 +578,9 @@ const styles = StyleSheet.create({
 
   menuIcon: { width: 18, height: 18, marginRight: 10 },
 
-  menuText: { fontSize: 14, color: "#333" , fontFamily: "Gilroy-Medium" },
+  menuText: { fontSize: 14, color: "#333", fontFamily: "Gilroy-Medium" },
 
-  label: { fontSize: 14, color: "#666", marginTop: 12,fontFamily: "Gilroy-Regular" },
+  label: { fontSize: 14, color: "#666", marginTop: 12, fontFamily: "Gilroy-Regular" },
 
   profileRow: { flexDirection: "row", marginTop: 6, alignItems: "center" },
 
@@ -571,9 +594,9 @@ const styles = StyleSheet.create({
 
   tenantName: { fontSize: 16, fontFamily: "Gilroy-Bold" },
 
-  tenantPhone: { fontSize: 13, color: "#666" , fontFamily: "Gilroy-Semibold"},
+  tenantPhone: { fontSize: 13, color: "#666", fontFamily: "Gilroy-Semibold" },
 
-  amount: { fontSize: 17, fontFamily: "Gilroy-Bold" , marginTop: 4 },
+  amount: { fontSize: 17, fontFamily: "Gilroy-Bold", marginTop: 4 },
 
   dateRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
 
@@ -589,7 +612,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
 
-  noticeText: { color: "#D9534F", fontSize: 15, fontFamily: "Gilroy-Bold"  },
+  noticeText: { color: "#D9534F", fontSize: 15, fontFamily: "Gilroy-Bold" },
   initialCircle: {
     backgroundColor: "#E5E7EB",
     alignItems: "center",
@@ -599,7 +622,7 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#374151",
   },
 
@@ -643,15 +666,17 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold",
     marginLeft: 6
   },
- actionIcon: {
+  actionIcon: {
     width: 18,
     height: 18
   },
   divider: {
-  height: 0.6,
-  backgroundColor: "#E5E7EB", 
-  marginBottom: 4,
-  marginTop:10
-},
+    height: 0.6,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+    marginTop: 10
+  },
 
+  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7,alignItems:'center' },
+  link: { fontSize: 13, fontFamily: "Gilroy-Semibold", color: "#3562FF" },
 });
