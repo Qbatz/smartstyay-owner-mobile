@@ -626,18 +626,18 @@ export default function DoubleStatusSheet({
                           </View>                    
                         </View>
 
-                        {item.lastInvoiceNumber && (
+                        {/* {item.lastInvoiceNumber && ( */}
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Last Invoice</Text>
 
                           <View style={{flexDirection:'row',alignItems:'center'}}>
                             <Image source={Invoice} style={{ width: 20, height: 20, marginRight: 6}} />
-                             <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}
+                             <Text style={styles.link}>{item?.lastInvoiceNumber || "N/A"}
                           </Text>
                           </View>
                          
                         </View>
-                        )}
+                        {/* )} */}
                         
                         {showReservedMenu === index && (
 
