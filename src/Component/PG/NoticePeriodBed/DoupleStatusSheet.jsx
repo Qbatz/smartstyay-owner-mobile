@@ -156,8 +156,10 @@ export default function DoubleStatusSheet({
 
 
   const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data?.listCustomers || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(activeHostelId);
+      setCustomers(data?.listCustomers || []);
+    }
   };
 
   useEffect(() => {
@@ -298,14 +300,16 @@ export default function DoubleStatusSheet({
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             indicatorStyle="white"
-          > 
-           <View style={styles.divider} />
+          >
+            <View style={styles.divider} />
 
             <View style={styles.section}>
-              
-              <Text style={{  color: "#000000",
-        fontSize: 14,
-          fontFamily: "Gilroy-Semibold",marginBottom:10}}>Occupied by</Text>
+
+              <Text style={{
+                color: "#000000",
+                fontSize: 14,
+                fontFamily: "Gilroy-Semibold", marginBottom: 10
+              }}>Occupied by</Text>
 
               <View style={styles.headerRow}>
                 <View style={styles.personRow}>
@@ -382,7 +386,7 @@ export default function DoubleStatusSheet({
                 <Text style={styles.label}>Rental Amount</Text>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image source={Money} style={{ width: 20, height: 20, marginRight:6}} />
+                  <Image source={Money} style={{ width: 20, height: 20, marginRight: 6 }} />
                   <Text style={styles.value}>₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
                 </View>
               </View>
@@ -392,7 +396,7 @@ export default function DoubleStatusSheet({
                   {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? "Checkout Date" : "Check-In Date"}</Text>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image source={Calendar} style={{ width: 20, height: 20, marginRight:6}} />
+                  <Image source={Calendar} style={{ width: 20, height: 20, marginRight: 6 }} />
                   <Text style={styles.value}>
                     {selectedBed.currentTenantInfo[0]?.currentStatus === "NOTICE" ? selectedBed.currentTenantInfo[0]?.leavingDate :
                       selectedBed.currentTenantInfo[0]?.joiningDate
@@ -413,7 +417,7 @@ export default function DoubleStatusSheet({
                 </View>
               </View>
 
-                <View style={styles.infoRow}>
+              <View style={styles.infoRow}>
                 <Text style={styles.label}> Last Invoice</Text>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -422,7 +426,7 @@ export default function DoubleStatusSheet({
 
                   <Text style={styles.link}>
                     {selectedBed.currentTenantInfo[0]?.lastInvoiceNumber}
-                      & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
+                    & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
                 </View>
               </View>
 
@@ -496,10 +500,12 @@ export default function DoubleStatusSheet({
 
             {selectedBed?.newTenantInfo?.length > 0 && (
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
-                
-                <Text style={{  color: "#000000",
-        fontSize: 14,
-          fontFamily: "Gilroy-Semibold",marginBottom:10}}>Reserved by</Text>
+
+                <Text style={{
+                  color: "#000000",
+                  fontSize: 14,
+                  fontFamily: "Gilroy-Semibold", marginBottom: 10
+                }}>Reserved by</Text>
 
                 {
                   selectedBed.newTenantInfo.map((item, index) => {
@@ -580,20 +586,20 @@ export default function DoubleStatusSheet({
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Booking Amount</Text>
 
-                          <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <Image source={Money} style={{ width: 20, height: 20, marginRight:6}} />
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Image source={Money} style={{ width: 20, height: 20, marginRight: 6 }} />
                             <Text style={styles.value}>₹  {item.bookingAmount}</Text>
                           </View>
-                          
+
                         </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Check-In Date</Text>
 
-                          <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <Image source={Calendar} style={{ width: 20, height: 20, marginRight:6}} />
-                             <Text style={styles.value}> {item.joiningDate}</Text>
-                          </View>                    
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Image source={Calendar} style={{ width: 20, height: 20, marginRight: 6 }} />
+                            <Text style={styles.value}> {item.joiningDate}</Text>
+                          </View>
                         </View>
 
                       
@@ -772,7 +778,7 @@ const styles = StyleSheet.create({
   dotsButton: { paddingHorizontal: 8 },
   dots: { fontSize: 20, color: "#777" },
 
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7,alignItems:'center' },
+  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7, alignItems: 'center' },
 
   label: { fontSize: 12, color: "#555", fontFamily: "Gilroy-Regular" },
   value: { fontSize: 13, fontFamily: "Gilroy-Semibold" },
@@ -938,9 +944,9 @@ const styles = StyleSheet.create({
     height: 18
   },
   divider: {
-  height: 0.6,
-  backgroundColor: "#E5E7EB", 
-  marginBottom: 4,
-  marginTop:10
-},
+    height: 0.6,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+    marginTop: 10
+  },
 });

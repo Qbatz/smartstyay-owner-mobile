@@ -166,12 +166,14 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   );
 
   const fetchWalkinCustomers = async () => {
-    const data = await getCustomersByHostel(
-      activeHostelId,
-      "",
-      "Inactive"
-    );
-    setWalkinCustomers(data?.listCustomers || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(
+        activeHostelId,
+        "",
+        "Inactive"
+      );
+      setWalkinCustomers(data?.listCustomers || []);
+    }
   };
 
   console.log("setWalkinCustomers", walkinCustomers)

@@ -120,8 +120,10 @@ export default function DoubleStatusSheet({
 
 
   const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data?.listCustomers || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(activeHostelId);
+      setCustomers(data?.listCustomers || []);
+    }
   };
   console.log("customers123", customers)
   const matchedCustomer = customers.find(
@@ -586,12 +588,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111",
     marginLeft: 8,
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
   menuTextDisabled: {
     color: "#9CA3AF",
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
 

@@ -68,8 +68,10 @@ export default function NoticePeriodBedSheet({
 
 
   const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data?.listCustomers || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(activeHostelId);
+      setCustomers(data?.listCustomers || []);
+    }
   };
 
   useEffect(() => {
@@ -547,39 +549,39 @@ export default function NoticePeriodBedSheet({
 
           </View>
 
-<View style={styles.infoRow}>
-          <Text style={styles.label}>Rental Amount</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Rental Amount</Text>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-              source={require("../../../Assets/Images/money.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.dateText}> ₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
-          </View>
-          </View>
-
-
-<View style={styles.infoRow}>
-          <Text style={styles.label}>Checkout Date</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-              source={require("../../../Assets/Images/calendar_blue.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
-          </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require("../../../Assets/Images/money.png")}
+                style={styles.icon}
+              />
+              <Text style={styles.dateText}> ₹ {selectedBed.currentTenantInfo[0]?.rentAmount}</Text>
+            </View>
           </View>
 
-<View style={styles.infoRow}>
-          <Text style={styles.label}>Request Date</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-              source={require("../../../Assets/Images/calendar_blue.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.requestedLeavingDate || "N/A"}</Text>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Checkout Date</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require("../../../Assets/Images/calendar_blue.png")}
+                style={styles.icon}
+              />
+              <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.leavingDate}</Text>
+            </View>
           </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Request Date</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require("../../../Assets/Images/calendar_blue.png")}
+                style={styles.icon}
+              />
+              <Text style={styles.dateText}>{selectedBed.currentTenantInfo[0]?.requestedLeavingDate || "N/A"}</Text>
+            </View>
           </View>
 
           <View style={styles.infoRow}>
@@ -789,6 +791,6 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
 
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7,alignItems:'center' },
+  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7, alignItems: 'center' },
   link: { fontSize: 13, fontFamily: "Gilroy-Semibold", color: "#3562FF" },
 });
