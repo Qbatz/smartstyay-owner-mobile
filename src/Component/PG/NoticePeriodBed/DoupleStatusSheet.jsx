@@ -309,10 +309,7 @@ export default function DoubleStatusSheet({
 
               <View style={styles.headerRow}>
                 <View style={styles.personRow}>
-                  {/* <Image
-                source={require("../../../Assets/Images/Avatar.png")}
-                style={styles.avatar}
-              /> */}
+              
                   {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
                     <Image
                       source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
@@ -432,16 +429,11 @@ export default function DoubleStatusSheet({
 
               {showOccupiedMenu && (
                 <>
-                  {/* {showOccupiedMenu && (
-  <TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
-    <View style={styles.menuOverlay} />
-  </TouchableWithoutFeedback>
-)}    */}
+  
                   <TouchableWithoutFeedback onPress={() => setShowOccupiedMenu(false)}>
                     <View style={styles.fullMenuOverlay}>
                       <View style={styles.menuCard}>
                         <TouchableOpacity
-                          // style={styles.menuItem}
                           disabled={!canUpdatePayingGuests}
                           style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                           onPress={handleEdit}
@@ -457,7 +449,6 @@ export default function DoubleStatusSheet({
                             <TouchableOpacity
                               disabled={!canWriteCustomers}
                               style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                              // style={styles.menuItem} 
                               onPress={handleCheckoutSheet}>
                               <Image
                                 source={require("../../../Assets/Images/checkout_red.png")}
@@ -470,7 +461,6 @@ export default function DoubleStatusSheet({
                         ) : (
                           <>
                             <TouchableOpacity
-                              // style={styles.menuItem}
                               disabled={!canWriteCustomers}
                               style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                               onPress={handleNewReserve}>
@@ -481,14 +471,12 @@ export default function DoubleStatusSheet({
                             <TouchableOpacity
                               disabled={!canWriteCustomers}
                               style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                              // style={styles.menuItem}
                               onPress={handleCancelNotice}>
                               <Image style={styles.menuIcon} source={require("../../../Assets/Images/calendarremove.png")} />
                               <Text style={styles.menuText}>Cancel Check-out</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                              //  style={styles.menuItem} 
                               disabled={!canWriteCustomers}
                               style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                               onPress={handleFinalSettled}>
@@ -497,12 +485,7 @@ export default function DoubleStatusSheet({
                             </TouchableOpacity>
                           </>
                         )}
-                        {/* {matchedCustomer?.currentStatus === "Settlement Generated" &&
-  <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettled}>
-                <Image style={styles.menuIcon} source={require("../../../Assets/Images/receipttext.png")} />
-                <Text style={styles.menuText}>Checkout</Text>
-              </TouchableOpacity>
-} */}
+
 
                       </View>
                     </View>
@@ -511,7 +494,6 @@ export default function DoubleStatusSheet({
               )}
             </View>
 
-            {/* RESERVED SECTION */}
             {selectedBed?.newTenantInfo?.length > 0 && (
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
                 
@@ -527,10 +509,7 @@ export default function DoubleStatusSheet({
                       <View style={{ position: "relative" }} key={index}>
                         <View style={styles.headerRow}>
                           <View style={styles.personRow}>
-                            {/* <Image
-                source={require("../../../Assets/Images/profile.png")}
-                style={styles.avatar}
-              /> */}
+               
                             {item?.profilePic ? (
                               <Image
                                 source={{ uri: item.profilePic }}
@@ -563,15 +542,6 @@ export default function DoubleStatusSheet({
                             </View>
                           </View>
 
-                          {/* <TouchableOpacity
-              style={styles.dotsButton}
-              onPress={() => {
-                setShowReservedMenu(!showReservedMenu);
-                setShowOccupiedMenu(false);
-              }}
-            >
-              <Text style={styles.dots}>⋯</Text>
-            </TouchableOpacity> */}
                           <TouchableOpacity
                             style={styles.dotsButton}
                             onPress={() => {
@@ -626,18 +596,7 @@ export default function DoubleStatusSheet({
                           </View>                    
                         </View>
 
-                        {/* {item.lastInvoiceNumber && ( */}
-                        <View style={styles.infoRow}>
-                          <Text style={styles.label}>Last Invoice</Text>
-
-                          <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <Image source={Invoice} style={{ width: 20, height: 20, marginRight: 6}} />
-                             <Text style={styles.link}>{item?.lastInvoiceNumber || "N/A"}
-                          </Text>
-                          </View>
-                         
-                        </View>
-                        {/* )} */}
+                      
                         
                         {showReservedMenu === index && (
 
@@ -647,10 +606,8 @@ export default function DoubleStatusSheet({
 
 
                                 <TouchableOpacity
-                                  // style={styles.menuItem}
                                   disabled={!canWriteCustomers}
                                   style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                                  // onPress={handleMakeUsIn}
                                   onPress={() => handleMakeUsIn(item)}
                                 >
                                   <Image
@@ -661,7 +618,6 @@ export default function DoubleStatusSheet({
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                  // style={styles.menuItem}
                                   disabled={!canUpdatePayingGuests}
                                   style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                                   onPress={handleEdit}
@@ -674,21 +630,15 @@ export default function DoubleStatusSheet({
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                  // style={styles.menuItem}
-                                  // disabled={!canWriteCustomers}
-                                  disabled={isDisabled}   // boolean
+                                  disabled={isDisabled}  
                                   style={[
                                     styles.menuItem,
                                     isDisabled && styles.menuItemDisabled
                                   ]}
 
-                                // style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                                // onPress={handleEdit}
-                                // disabled
                                 >
                                   <Image
                                     source={ReAssign}
-                                    // style={styles.menuIcon}
                                     style={[
                                       styles.menuIcon,
                                       isDisabled && { opacity: 0.5 }
@@ -699,14 +649,12 @@ export default function DoubleStatusSheet({
                                 <TouchableOpacity
 
                                   onPress={handleBookToCheckin}
-                                  disabled={isDisabled}   // boolean
+                                  disabled={isDisabled} 
                                   style={[
                                     styles.menuItem,
                                     isDisabled && styles.menuItemDisabled
                                   ]}
 
-                                // disabled={!canWriteCustomers}
-                                // style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                                 >
                                   <Image
                                     style={[
@@ -738,7 +686,6 @@ export default function DoubleStatusSheet({
 
           </ScrollView>
 
-          {/* FOOTER */}
           <View style={styles.footer}>
             <TouchableOpacity style={styles.noticeBtn}>
               <Text style={styles.noticeText}>Notice Period</Text>

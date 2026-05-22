@@ -22,6 +22,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../Loader/Loader";
+import ValidatedInput from "../ValidatedInput"
 
 export default function BookingToInvoice() {
 
@@ -294,7 +295,7 @@ export default function BookingToInvoice() {
 
         if (totalApplied <= 0) {
             setModalType("warning");
-            setModalMessage("Please enter at least one amount");
+            setModalMessage("Please Enter valid Amount");
             setShowSuccessModal(true);
 
             setTimeout(() => {
@@ -527,78 +528,84 @@ export default function BookingToInvoice() {
                                                 }))
                                             }
                                         /> */}
-                                        <TextInput
-                                            style={styles.inputField}
-                                            placeholder="₹ 0.00"
-                                            keyboardType="numeric"
-                                            value={tempValue?.[item.invoiceId] || ""}
-                                            onChangeText={(text) => {
+                                  <ValidatedInput
+    type="numberOnly"
+    inputType="numeric"
+    style={styles.inputField}
+    placeholder="₹ 0.00"
+    value={tempValue?.[item.invoiceId] || ""}
+    maxLength={7}
+    onChangeText={(text) => {
 
-                                                const numericValue = text.replace(/[^0-9]/g, "");
+        if (text === "") {
+            setTempValue((prev) => ({
+                ...prev,
+                [item.invoiceId]: "",
+            }));
 
-                                                if (numericValue === "") {
-                                                    setTempValue((prev) => ({
-                                                        ...prev,
-                                                        [item.invoiceId]: "",
-                                                    }));
-                                                    return;
-                                                }
+            setAppliedAmounts((prev) => ({
+                ...prev,
+                [item.invoiceId]: 0,
+            }));
 
-                                                let amount = Number(numericValue);
+            return;
+        }
 
-                                                const bookingAmount =
-                                                    Number(
-                                                        advanceInfo?.availableBalance ||
-                                                        advanceInfo?.advanceBalanceAmount ||
-                                                        0
-                                                    );
+        let amount = Number(text);
 
-                                                // ✅ current invoice except total
-                                                const currentAppliedWithoutThis =
-                                                    Object.entries(appliedAmounts)
-                                                        .filter(([id]) => id !== item.invoiceId)
-                                                        .reduce(
-                                                            (sum, [, val]) => sum + Number(val || 0),
-                                                            0
-                                                        );
+        const bookingAmount =
+            Number(
+                advanceInfo?.availableBalance ||
+                advanceInfo?.advanceBalanceAmount ||
+                0
+            );
 
-                                                // ✅ remaining balance
-                                                const remainingBalance =
-                                                    bookingAmount - currentAppliedWithoutThis;
+        const currentAppliedWithoutThis =
+            Object.entries(appliedAmounts)
+                .filter(([id]) => id !== item.invoiceId)
+                .reduce(
+                    (sum, [, val]) => sum + Number(val || 0),
+                    0
+                );
 
-                                                // ✅ invoice pending amount
-                                                const pendingAmount =
-                                                    Number(item?.pendingAmount || 0);
+        const remainingBalance =
+            bookingAmount - currentAppliedWithoutThis;
 
-                                                // ✅ final max allowed
-                                                const maxAllowed = Math.min(
-                                                    remainingBalance,
-                                                    pendingAmount
-                                                );
+        const pendingAmount =
+            Number(item?.pendingAmount || 0);
 
-                                                // ❌ prevent typing above limit
-                                                if (amount > maxAllowed) {
+        const maxAllowed = Math.min(
+            remainingBalance,
+            pendingAmount
+        );
 
-                                                    setModalType("warning");
-                                                    setModalMessage(
-                                                        `Maximum allowed amount is ₹ ${maxAllowed}`
-                                                    );
-                                                    setShowSuccessModal(true);
+        if (amount > maxAllowed) {
 
-                                                    setTimeout(() => {
-                                                        setShowSuccessModal(false);
-                                                    }, 1500);
+            setModalType("warning");
+            setModalMessage(
+                `Maximum allowed amount is ₹ ${maxAllowed}`
+            );
+            setShowSuccessModal(true);
 
-                                                    return;
-                                                }
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1500);
 
-                                                // ✅ allow typing
-                                                setTempValue((prev) => ({
-                                                    ...prev,
-                                                    [item.invoiceId]: numericValue,
-                                                }));
-                                            }}
-                                        />
+            text = String(maxAllowed);
+            amount = maxAllowed;
+        }
+
+        setTempValue((prev) => ({
+            ...prev,
+            [item.invoiceId]: text,
+        }));
+
+        setAppliedAmounts((prev) => ({
+            ...prev,
+            [item.invoiceId]: amount,
+        }));
+    }}
+/>
 
                                         <TouchableOpacity
                                             style={styles.setBtn}
