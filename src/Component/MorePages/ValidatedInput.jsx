@@ -25,6 +25,10 @@ const validationRules = {
     return cleaned;
   },
 
+    numberOnly: (text) => {
+    return text.replace(/[^0-9]/g, "");
+  },
+
   name: (text) => {
     return text.replace(/[^a-zA-Z\s]/g, "");
   },
@@ -38,6 +42,7 @@ const keyboardTypes = {
   mobile: "numeric",
   pincode: "numeric",
   email: "email-address",
+  numberOnly: "numeric",
   name: "default",
   description: "default",
 };
@@ -45,6 +50,7 @@ const keyboardTypes = {
 const maxLengths = {
   mobile: 10,
   pincode: 6,
+  numberOnly: 10,
 };
 
 const ValidatedInput = ({
