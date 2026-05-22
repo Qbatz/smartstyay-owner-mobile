@@ -113,7 +113,7 @@ export default function BillsDesign({ route }) {
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
-    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem} = useContext(BillContext);
+    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -1136,7 +1136,7 @@ export default function BillsDesign({ route }) {
     setSelectedBill(item);
     setShowBillDetails(true);
     const res = getBillsPdfDetails(item?.hostelId, item?.invoiceId);
-    console.log("res",res)
+    console.log("res", res)
 
   }
 
@@ -1331,16 +1331,13 @@ export default function BillsDesign({ route }) {
 
   // const disableAdjust = !selectedBill?.canApplyFromAdvance;
 
- 
 
-  const showApplyToInvoices =
-  selectedBill?.canRedeem === true;
 
-const showAdjustWithAdvance =
-  !selectedBill?.canRedeem;
+  const showApplyToInvoices = BillPdfdetails?.invoiceInfo?.canApplyToOtherInvoice
 
-const disableAdjust =
-  !selectedBill?.canApplyFromAdvance;
+  const showAdjustWithAdvance = BillPdfdetails?.invoiceInfo?.isAvanceAvailableForRedeem
+
+
 
 
   // const handleApplyInvoices = () => {
@@ -1369,13 +1366,13 @@ const disableAdjust =
 
   const handleApplyInvoice = async () => {
     navigation.navigate("BookingtoDiscount", {
-  source: "bill",
-  invoiceType: "advance",
-})
-            const res = await GetInitializeAdvanceRedeem({
-        hostelId: activeHostelId,
-        advanceInvoiceId: selectedBill?.invoiceId,
-      });
+      source: "bill",
+      invoiceType: "advance",
+    })
+    const res = await GetInitializeAdvanceRedeem({
+      hostelId: activeHostelId,
+      advanceInvoiceId: selectedBill?.invoiceId,
+    });
   }
 
 
@@ -3810,8 +3807,8 @@ const disableAdjust =
                           The booking amount isn't applied with any bills yet.
                         </Text>
 
-                        <TouchableOpacity style={[styles.applyBtn,!BillPdfdetails?.invoiceInfo?.canRedeem && {opacity:0.4}]} onPress={handleBookingApplyInvoices}
-                        disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}
+                        <TouchableOpacity style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem && { opacity: 0.4 }]} onPress={handleBookingApplyInvoices}
+                          disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}
                         >
                           <Text style={{
                             color: "#fff",
@@ -4418,62 +4415,56 @@ const disableAdjust =
                       <Text style={styles.popupText}>Make as discount</Text>
                     </TouchableOpacity>
                   )}
-{showApplyToInvoices && (
-  <TouchableOpacity
-    style={styles.popupRow}
-    onPress={handleApplyInvoice}
-  >
-    <Image
-      source={BillIcon}
-      style={{
-        width: 18,
-        height: 18,
-        tintColor: "#000",
-        marginRight: 10,
-      }}
-    />
+                {showApplyToInvoices && (
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={handleApplyInvoice}
+                  >
+                    <Image
+                      source={BillIcon}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        tintColor: "#000",
+                        marginRight: 10,
+                      }}
+                    />
 
-    <Text style={styles.popupText}>
-      Apply to Invoices
-    </Text>
-  </TouchableOpacity>
-)}
+                    <Text style={styles.popupText}>
+                      Apply to Invoices
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
 
-{showAdjustWithAdvance && (
-  <TouchableOpacity
-    style={[
-      styles.popupRow,
-      disableAdjust && {
-        opacity: 0.4,
-        backgroundColor: "#F3F4F6",
-      },
-    ]}
-    onPress={handleAdvanceApplyInvoices}
-    disabled={disableAdjust}
-  >
-    <Image
-      source={BillIcon}
-      style={{
-        width: 18,
-        height: 18,
-        tintColor: disableAdjust ? "#9CA3AF" : "#000",
-        marginRight: 10,
-      }}
-    />
+                {showAdjustWithAdvance && (
+                  <TouchableOpacity
+                    style={[
+                      styles.popupRow,
+                       
+                    ]}
+                    onPress={handleAdvanceApplyInvoices}
+                  >
+                    <Image
+                      source={BillIcon}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        tintColor:  "#000",
+                        marginRight: 10,
+                      }}
+                    />
 
-    <Text
-      style={[
-        styles.popupText,
-        disableAdjust && {
-          color: "#9CA3AF",
-        },
-      ]}
-    >
-      Adjust with Advance
-    </Text>
-  </TouchableOpacity>
-)}
+                    <Text
+                      style={[
+                        styles.popupText,
+                       
+                      ]}
+                    >
+                      Adjust with Advance
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
                 {/* <TouchableOpacity
   style={[
@@ -6506,7 +6497,7 @@ const styles = StyleSheet.create({
 
   filterTitle: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
   },
 
   // label: {
@@ -6624,7 +6615,7 @@ const styles = StyleSheet.create({
     width: "48%",
     alignItems: "center",
   },
-   applyButton: {
+  applyButton: {
     backgroundColor: "#2D6CDF",
     paddingVertical: 12,
     borderRadius: 10,
@@ -6838,7 +6829,7 @@ const styles = StyleSheet.create({
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
-  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold",},
+  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold", },
   resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold", marginLeft: 10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },

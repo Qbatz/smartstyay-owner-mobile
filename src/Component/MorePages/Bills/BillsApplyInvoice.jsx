@@ -22,6 +22,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../Loader/Loader";
+import ValidatedInput from "../ValidatedInput"
 
 export default function BillsApplyInvoices() {
 
@@ -329,7 +330,7 @@ export default function BillsApplyInvoices() {
 
         if (totalApplied <= 0) {
             setModalType("warning");
-            setModalMessage("Please Enter at least one Amount");
+            setModalMessage("Please Enter valid Amount");
             setShowSuccessModal(true);
 
             setTimeout(() => {
@@ -537,7 +538,7 @@ export default function BillsApplyInvoices() {
                                     </Text>
 
                                     <View style={styles.inputWrapper}>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.inputField}
                                             placeholder="₹ 0.00"
                                             keyboardType="numeric"
@@ -547,7 +548,64 @@ export default function BillsApplyInvoices() {
                                                     [item.invoiceId]: text,
                                                 }))
                                             }
-                                        />
+                                        /> */}
+                                        <ValidatedInput
+    type="numberOnly"
+    inputType="numeric"
+    style={styles.inputField}
+    placeholder="₹ 0.00"
+    value={tempValue?.[item.invoiceId] || ""}
+    maxLength={7}
+    onChangeText={(text) => {
+
+        if (text === "") {
+            setTempValue((prev) => ({
+                ...prev,
+                [item.invoiceId]: "",
+            }));
+
+            setAppliedAmounts((prev) => ({
+                ...prev,
+                [item.invoiceId]: 0,
+            }));
+
+            return;
+        }
+
+        let amount = Number(text);
+
+        const maxAllowed = Math.min(
+            item.pendingAmount,
+            remainingBalance + (appliedAmounts[item.invoiceId] || 0)
+        );
+
+        if (amount > maxAllowed) {
+
+            setModalType("warning");
+            setModalMessage(
+                `Maximum allowed amount is ₹ ${maxAllowed}`
+            );
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1500);
+
+            text = String(maxAllowed);
+            amount = maxAllowed;
+        }
+
+        setTempValue((prev) => ({
+            ...prev,
+            [item.invoiceId]: text,
+        }));
+
+        setAppliedAmounts((prev) => ({
+            ...prev,
+            [item.invoiceId]: amount,
+        }));
+    }}
+/>
 
                                         <TouchableOpacity
                                             style={styles.setBtn}

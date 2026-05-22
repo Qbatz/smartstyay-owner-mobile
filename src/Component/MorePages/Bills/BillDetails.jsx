@@ -200,7 +200,7 @@ const BillDetailsSheet = ({
   const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
 
   console.log("invoiceDetail", invoiceDetail);
-  
+
 
   const billDetailsPan = useRef(
     PanResponder.create({
@@ -451,15 +451,9 @@ const BillDetailsSheet = ({
 
 
 
-  const showApplyToInvoices =
-    invoiceDetail?.canRedeem === true;
+  const showApplyToInvoices = BillPdfdetails?.invoiceInfo?.canApplyToOtherInvoice
 
-  const showAdjustWithAdvance =
-    !invoiceDetail?.canRedeem;
-
-  const disableAdjust =
-    !invoiceDetail?.canApplyFromAdvance;
-
+  const showAdjustWithAdvance = BillPdfdetails?.invoiceInfo?.isAvanceAvailableForRedeem
 
   // const isDiscounted = BillPdfdetails?.invoiceInfo?.discountAmount > 0;
 
@@ -1297,20 +1291,19 @@ const BillDetailsSheet = ({
               <TouchableOpacity
                 style={[
                   styles.popupRow,
-                  disableAdjust && {
+                  {
                     opacity: 0.4,
                     backgroundColor: "#F3F4F6",
                   },
                 ]}
                 onPress={handleAdvanceApplyInvoices}
-                disabled={disableAdjust}
               >
                 <Image
                   source={BillIcon}
                   style={{
                     width: 18,
                     height: 18,
-                    tintColor: disableAdjust ? "#9CA3AF" : "#000",
+                    tintColor: "#000",
                     marginRight: 10,
                   }}
                 />
@@ -1318,7 +1311,7 @@ const BillDetailsSheet = ({
                 <Text
                   style={[
                     styles.popupText,
-                    disableAdjust && {
+                    {
                       color: "#9CA3AF",
                     },
                   ]}

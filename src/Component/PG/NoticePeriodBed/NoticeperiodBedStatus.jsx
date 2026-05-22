@@ -21,6 +21,8 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import Money from "../../../Assets/Images/money.png";
+import Calendar from "../../../Assets/Images/calendar_blue.png";
 
 export default function NoticePeriodBedSheet({
   visible,
@@ -210,7 +212,6 @@ export default function NoticePeriodBedSheet({
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
-        {/* Bottom Sheet */}
         <Animated.View
           style={[styles.sheet, { transform: [{ translateY }] }]}
           {...panResponder.panHandlers}
@@ -219,7 +220,6 @@ export default function NoticePeriodBedSheet({
 
           <Text style={styles.title}>Bed Status</Text>
 
-          {/* Tags Row */}
           <View style={styles.tagRow}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>
@@ -233,7 +233,6 @@ export default function NoticePeriodBedSheet({
               </Text>
             </View>
 
-            {/* 3-Dot Menu */}
             <TouchableOpacity
               style={styles.menuButton}
               onPress={() => setMenuVisible(!menuVisible)}
@@ -243,56 +242,9 @@ export default function NoticePeriodBedSheet({
           </View>
 
 
-          {/* {menuVisible && (
-            <View style={styles.dropdown}>
-                
-              <TouchableOpacity style={styles.menuItem}  onPress={handleNoticeToBooking}>
-                <Image
-                  source={require("../../../Assets/Images/NewBook.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>New Booking</Text>
-              </TouchableOpacity>
-               <TouchableOpacity style={styles.menuItem}  >
-                <Image
-                  source={require("../../../Assets/Images/NewBook.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>Checkout</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem} onPress={handleCancelNoticePeriod}>
-                <Image
-                  source={require("../../../Assets/Images/calendarremove.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>Cancel Notice period</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem} onPress={handleFinalSettledment}>
-                <Image
-                  source={require("../../../Assets/Images/receipttext.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>Generate FS</Text>
-              </TouchableOpacity>
-               <TouchableOpacity style={styles.menuItem} 
-             onPress={handleEdit}>
-                <Image
-                  source={require("../../../Assets/Images/editIcon.png")}
-                  style={styles.menuIcon}
-                />
-                <Text style={styles.menuText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          )} */}
           {menuVisible && (
             <>
-              {/* {menuVisible && (
-  <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
-    <View style={styles.menuOverlay} />
-  </TouchableWithoutFeedback>
-)} */}
+  
               <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
                 <View style={StyleSheet.absoluteFillObject} />
               </TouchableWithoutFeedback>
@@ -300,7 +252,6 @@ export default function NoticePeriodBedSheet({
               <View style={styles.dropdown}>
 
                 <TouchableOpacity
-                  // style={styles.menuItem}
                   disabled={!canUpdatePayingGuests}
                   style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
                   onPress={handleEdit}
@@ -313,7 +264,6 @@ export default function NoticePeriodBedSheet({
                 </TouchableOpacity>
                 {matchedCustomer?.currentStatus === "Settlement Generated" ? (
                   <TouchableOpacity
-                    //  style={styles.menuItem}
                     disabled={!canWriteCustomers}
                     style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                     onPress={handleCheckoutSheet}>
@@ -325,9 +275,7 @@ export default function NoticePeriodBedSheet({
                   </TouchableOpacity>
                 ) : (
                   <>
-                    {/* Normal menu items */}
                     <TouchableOpacity
-                      // style={styles.menuItem}
                       disabled={!canWriteCustomers}
                       style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                       onPress={handleNoticeToBooking}
@@ -340,7 +288,6 @@ export default function NoticePeriodBedSheet({
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      // style={styles.menuItem}
                       disabled={!canWriteCustomers}
                       style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                       onPress={handleCancelNoticePeriod}
@@ -353,7 +300,6 @@ export default function NoticePeriodBedSheet({
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      // style={styles.menuItem}
                       disabled={!canWriteCustomers}
                       style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
                       onPress={handleFinalSettledment}
@@ -382,8 +328,174 @@ export default function NoticePeriodBedSheet({
             fontFamily: "Gilroy-Semibold", marginBottom: 10
           }}>Occupied by</Text>
 
-          <View style={styles.profileRow}>
-            {/* <Image source={Profile} style={styles.profileImg} /> */}
+          {selectedBed?.currentTenantInfo?.map((tenant, index) => {
+
+  const isNotice = tenant?.currentStatus === "NOTICE";
+
+  return (
+    <View
+      key={`${tenant?.tenetId}-${index}`}
+      style={{
+        paddingBottom: 20,
+        marginBottom: 20,
+        borderBottomWidth:
+          index !== selectedBed.currentTenantInfo.length - 1 ? 0.6 : 0,
+        borderColor: "#E5E7EB",
+      }}
+    >
+
+      {/* TITLE */}
+      {/* <Text
+        style={{
+          color: "#000",
+          fontSize: 14,
+          fontFamily: "Gilroy-Semibold",
+          marginBottom: 12,
+        }}
+      >
+        {isNotice ? "Notice Period" : "Occupied by"}
+        Occupied by
+      </Text> */}
+
+    
+
+      <View style={styles.profileRow}>
+            {tenant?.profilePic ? (
+              <Image
+                source={{ uri: tenant?.profilePic }}
+                style={styles.profileImg}
+              />
+            ) : (
+              <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
+                <Text style={styles.initialText}>
+                  {tenant?.tenantFullName
+                    ?.split(" ")
+                    ?.map(w => w[0])
+                    ?.join("")
+                    ?.slice(0, 2)
+                    ?.toUpperCase() || "--"}
+                </Text>
+              </View>
+            )}
+
+            <View>
+              {console.log("haha", selectedBed)}
+              <TouchableOpacity onPress={() =>
+                navigation.navigate("CustomerOverviewScreen", {
+                  customerId: tenant.tenetId,
+                  customer: tenant,
+                })
+              }>
+                <Text style={styles.tenantName}>{tenant?.tenantFullName}</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.tenantPhone}>+91{tenant?.mobile}</Text>
+            </View>
+          </View>
+
+      {/* ACTIONS */}
+      <View style={styles.actionRow}>
+        <TouchableOpacity
+          style={styles.chatBtn}
+          onPress={() => handleOpenWhatsapp(tenant)}
+        >
+          <Image
+            source={WhatsappGreenIcon}
+            style={styles.actionIcon}
+          />
+          <Text style={styles.chatText}>Chat</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.callBtn}
+          onPress={() => handleCallPhone(tenant?.mobile)}
+        >
+          <Image
+            source={Call}
+            style={styles.actionIcon}
+          />
+          <Text style={styles.callText}>Call</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* RENT */}
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Rental Amount</Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={Money}
+            style={{ width: 20, height: 20, marginRight: 6 }}
+          />
+          <Text style={styles.value}>
+            ₹ {tenant?.rentAmount}
+          </Text>
+        </View>
+      </View>
+
+      {/* DATE */}
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>
+          {isNotice ? "Checkout Date" : "Check-In Date"}
+        </Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={Calendar}
+            style={{ width: 20, height: 20, marginRight: 6 }}
+          />
+
+          <Text style={styles.value}>
+            {isNotice
+              ? tenant?.leavingDate || "N/A"
+              : tenant?.joiningDate || "N/A"}
+          </Text>
+        </View>
+      </View>
+
+      {/* REQUEST DATE */}
+      {isNotice && (
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>Request Date</Text>
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={Calendar}
+              style={{ width: 20, height: 20, marginRight: 6 }}
+            />
+
+            <Text style={styles.value}>
+              {tenant?.requestedLeavingDate || "N/A"}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* LAST INVOICE */}
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Last Invoice</Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={Invoice}
+            style={{ width: 20, height: 20, marginRight: 6 }}
+          />
+
+          <Text style={styles.link}>
+            {tenant?.lastInvoiceNumber || "N/A"}
+
+            {tenant?.totalInvoices > 0
+              ? ` & ${tenant?.totalInvoices-1} more`
+              : ""}
+          </Text>
+        </View>
+      </View>
+
+    </View>
+  );
+})}
+
+          {/* <View style={styles.profileRow}>
             {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
               <Image
                 source={{ uri: selectedBed.currentTenantInfo[0].profilePic }}
@@ -483,7 +595,7 @@ export default function NoticePeriodBedSheet({
                 {selectedBed.currentTenantInfo[0]?.lastInvoiceNumber}
                 & {selectedBed.currentTenantInfo[0]?.totalInvoices} more</Text>
             </View>
-          </View>
+          </View> */}
 
           <TouchableOpacity style={styles.noticeBtn}>
             <Text style={styles.noticeText}>Notice Period</Text>

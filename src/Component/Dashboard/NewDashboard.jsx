@@ -2092,7 +2092,15 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                              <Text style={styles.bookingTitle}>Upcoming Check-ins</Text>
+                          <View style={{ flex: 1, marginRight: 10 }}>
+  <Text
+    style={styles.bookingTitle}
+    numberOfLines={1}
+    ellipsizeMode="tail"
+  >
+    Upcoming Check-ins ({dashboardList?.checkins?.length || 0})
+  </Text>
+</View>
                             </View>
 
 
@@ -2195,7 +2203,15 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                              <Text style={styles.bookingTitle}>Overdue Invoices</Text>
+                             <View style={{ flex: 1, marginRight: 10 }}>
+  <Text
+    style={styles.bookingTitle}
+    numberOfLines={1}
+    ellipsizeMode="tail"
+  >
+    Overdue Invoices ({dashboardList?.overdueInvoices?.length || 0})
+  </Text>
+</View>
                             </View>
 
 
@@ -4388,10 +4404,11 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
 
-  bookingHeaderLeft: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
+ bookingHeaderLeft: {
+  flexDirection: "row",
+  alignItems: "center",
+  flex: 1,
+},
 
   bookingIconBox: {
     width: 30,
@@ -4406,7 +4423,9 @@ const styles = StyleSheet.create({
   bookingTitle: {
     fontSize: 16,
     fontFamily: "Gilroy-Bold",
-    color: "#1E293B"
+    color: "#1E293B",
+    flexShrink: 1,
+
   },
 
   bookingItem: {
