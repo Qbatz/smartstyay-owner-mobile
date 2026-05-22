@@ -560,7 +560,7 @@ export default function AddTenant() {
                                         onChangeText={(text) => {
                                             const sanitized = text
                                                 .toLowerCase()
-                                                .replace(/[^a-z0-9@._+-]/g, "");
+                                                .replace(/[^a-z0-9@._+-]/g, "").replace(/\.{2,}/g,".");
 
                                             setBasicDetails(prev => ({ ...prev, email: sanitized }));
 

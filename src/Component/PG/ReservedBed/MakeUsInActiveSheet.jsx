@@ -38,8 +38,8 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [refundFromError, setRefundFromError] = useState("");
-    const [refundFrom, setRefundFrom] = useState("");
-    const [showRefundFrom, setShowRefundFrom] = useState(false);
+  const [refundFrom, setRefundFrom] = useState("");
+  const [showRefundFrom, setShowRefundFrom] = useState(false);
 
 
   console.log("bookingDetails", bookingDetails)
@@ -52,9 +52,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   //   ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
   //   : today;
 
-    const minDate = bookingDetails?.bookedDate
-  ? dayjs(bookingDetails.bookedDate, "DD/MM/YYYY").format("YYYY-MM-DD")
-  : today;
+  const minDate = bookingDetails?.bookedDate
+    ? dayjs(bookingDetails.bookedDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+    : today;
 
   const customerId =
     selectedItem?.customerId || bookedItems?.tenetId;
@@ -107,8 +107,10 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
 
   const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data.listCustomers || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(activeHostelId);
+      setCustomers(data.listCustomers || []);
+    }
   };
   console.log("setBookingDetails", bookingDetails)
   const matchedCustomer = customers?.find(
@@ -161,7 +163,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
 
   console.log("dateopen", openJoinDatePic);
-  
+
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: visible ? 0 : 400,
@@ -182,10 +184,10 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   });
 
 
-   const refundBankOptions = (bankdetails?.listBanks || []).map((b) => ({
-  label: `${b?.holderName || ""} - ${b?.bankName || ""}`,
-  value: b?.bankId,
-}));
+  const refundBankOptions = (bankdetails?.listBanks || []).map((b) => ({
+    label: `${b?.holderName || ""} - ${b?.bankName || ""}`,
+    value: b?.bankId,
+  }));
 
 
 
@@ -206,7 +208,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
       setJoiningDateError("Please select joining date");
       valid = false;
     }
-      if (!refundFrom) {
+    if (!refundFrom) {
       setRefundFromError("Please Select Refund Account");
       valid = false;
     }
@@ -309,7 +311,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             <View style={styles.profileRow}>
               {(selectedItem?.profilePic || matchedCustomer?.profilePic) ? <Image source={{ uri: selectedItem?.profilePic || matchedCustomer?.profilePic }} style={styles.profileImg} /> :
                 <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
-                  <Text style={{ fontSize: 16,fontFamily: "Gilroy-Semibold"}}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{selectedItem?.initials || matchedCustomer?.initials}</Text>
                 </View>}
 
 
@@ -324,7 +326,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
                   <View style={styles.badgeRed}>
                     <Text style={styles.badgeText}>
-                      {selectedItem?.roomName || matchedCustomer?.roomName || selectedItem?.hostelInfo?.roomName} - 
+                      {selectedItem?.roomName || matchedCustomer?.roomName || selectedItem?.hostelInfo?.roomName} -
                       {selectedItem?.bedName || matchedCustomer?.bedName || selectedItem?.hostelInfo?.bedName}
                     </Text>
                   </View>
@@ -358,74 +360,74 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             )}
 
             <View style={{ position: "relative" }}>
-            
-                                <Text style={styles.label}>
-                                  Refund From <Text style={{ color: "red" }}>*</Text>
-                                </Text>
-                                {/* INPUT */}
-                                <TouchableOpacity
-                                  style={styles.inputBox}
-                                  onPress={() => {
-                                    setRefundFromError("");
-                                    setShowRefundFrom(v => !v);
-                                  }}
-                                >
-                                  <Text style={{ fontSize: 15 }}>
-                                    {refundFrom
-                                      ? refundBankOptions.find(o => o.value === refundFrom)?.label
-                                      : "Select bank"}
-                                  </Text>
-            
-                                  <Image
-                                    source={DownArrow}
-                                    style={{ width: 18, height: 18, tintColor: "#555" }}
-                                  />
-                                </TouchableOpacity>
-            
-                                {/* DROPDOWN */}
-                                {showRefundFrom && (
-                                  <View style={styles.transactiondropdown}>
-                                    <ScrollView
-                                      nestedScrollEnabled
-                                      scrollEnabled={refundBankOptions.length > 3}
-                                      showsVerticalScrollIndicator={false}
-                                    >
-                                      {refundBankOptions.map(opt => {
-                                        const isSelected = refundFrom === opt.value;
-            
-                                        return (
-                                          <TouchableOpacity
-                                            key={opt.value}
-                                            style={[
-                                              styles.dropdownRow,
-                                              isSelected && styles.dropdownRowSelected,
-                                            ]}
-                                            onPress={() => {
-                                              setRefundFrom(opt.value);
-                                              setShowRefundFrom(false);
-                                              setRefundFromError("");
-                                            }}
-                                          >
-                                            <Text
-                                              style={
-                                                isSelected
-                                                  ? styles.dropdownTextSelected
-                                                  : styles.dropdownText
-                                              }
-                                            >
-                                              {opt.label}
-                                            </Text>
-                                          </TouchableOpacity>
-                                        );
-                                      })}
-                                    </ScrollView>
-                                  </View>
-                                )}
-                              </View>
-            
-                              {refundFromError && (
-                                <ErrorMessage message={refundFromError} type="error" />
-                              )}
+
+              <Text style={styles.label}>
+                Refund From <Text style={{ color: "red" }}>*</Text>
+              </Text>
+              {/* INPUT */}
+              <TouchableOpacity
+                style={styles.inputBox}
+                onPress={() => {
+                  setRefundFromError("");
+                  setShowRefundFrom(v => !v);
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>
+                  {refundFrom
+                    ? refundBankOptions.find(o => o.value === refundFrom)?.label
+                    : "Select bank"}
+                </Text>
+
+                <Image
+                  source={DownArrow}
+                  style={{ width: 18, height: 18, tintColor: "#555" }}
+                />
+              </TouchableOpacity>
+
+              {/* DROPDOWN */}
+              {showRefundFrom && (
+                <View style={styles.transactiondropdown}>
+                  <ScrollView
+                    nestedScrollEnabled
+                    scrollEnabled={refundBankOptions.length > 3}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    {refundBankOptions.map(opt => {
+                      const isSelected = refundFrom === opt.value;
+
+                      return (
+                        <TouchableOpacity
+                          key={opt.value}
+                          style={[
+                            styles.dropdownRow,
+                            isSelected && styles.dropdownRowSelected,
+                          ]}
+                          onPress={() => {
+                            setRefundFrom(opt.value);
+                            setShowRefundFrom(false);
+                            setRefundFromError("");
+                          }}
+                        >
+                          <Text
+                            style={
+                              isSelected
+                                ? styles.dropdownTextSelected
+                                : styles.dropdownText
+                            }
+                          >
+                            {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            {refundFromError && (
+              <ErrorMessage message={refundFromError} type="error" />
+            )}
 
             {/* Reason */}
             <Text style={[styles.label, { marginTop: 12 }]}>
@@ -475,7 +477,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
         >
           <View style={[StyleSheet.absoluteFillObject, styles.calendarOverlay]}>
 
-            <TouchableWithoutFeedback onPress={() => {  setOpenJoinDatePic(false);}}>
+            <TouchableWithoutFeedback onPress={() => { setOpenJoinDatePic(false); }}>
               <View style={styles.datePickerBox}>
                 <Calendar
                   minDate={minDate}
@@ -510,15 +512,15 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
 const styles = StyleSheet.create({
   overlay: {
-     position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "flex-end",
-  zIndex: 9999,     
-  elevation: 9999,   
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+    zIndex: 9999,
+    elevation: 9999,
     // position: "absolute",
     // left: 0, right: 0, top: 0, bottom: 0,
     // backgroundColor: "rgba(0,0,0,0.4)",
@@ -549,20 +551,20 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 20,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   subTitle: {
     fontSize: 14,
     color: "#666",
     marginTop: 7,
-    marginBottom:5,
+    marginBottom: 5,
     fontFamily: "Gilroy-Semibold"
   },
 
   label: {
     marginTop: 15,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#333",
   },
 
@@ -575,7 +577,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   textArea: {
@@ -586,14 +588,14 @@ const styles = StyleSheet.create({
     height: 100,
     marginTop: 6,
     textAlignVertical: "top",
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
 
   btnRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
-    marginBottom:30
+    marginBottom: 30
   },
 
   cancelBtn: {
@@ -608,7 +610,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 15,
     color: "#555",
-     fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   confirmBtn: {
@@ -622,17 +624,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     fontSize: 15,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
 
-calendarOverlay: {
-  backgroundColor: "rgba(0,0,0,0.4)",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 99999,
-  elevation: 99999,
-},
+  calendarOverlay: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 99999,
+    elevation: 99999,
+  },
 
 
   datePickerBox: {
@@ -645,11 +647,11 @@ calendarOverlay: {
     marginBottom: 120,
     borderWidth: 1,
     borderColor: "#5555",
-    
+
   },
   profileRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   profileImg: { width: 50, height: 50, borderRadius: 25 },
-  name: { fontSize: 16, fontFamily: "Gilroy-Semibold"},
+  name: { fontSize: 16, fontFamily: "Gilroy-Semibold" },
 
   badgeRow: { flexDirection: "row", marginTop: 5 },
   badgeYellow: {
@@ -665,7 +667,7 @@ calendarOverlay: {
     paddingVertical: 4,
     borderRadius: 8,
   },
-  badgeText: { fontSize: 12 , fontFamily: "Gilroy-Regular"},
+  badgeText: { fontSize: 12, fontFamily: "Gilroy-Regular" },
   inputBox: {
     height: 50,
     borderRadius: 12,
@@ -680,7 +682,7 @@ calendarOverlay: {
     justifyContent: "space-between",
     fontFamily: "Gilroy-Regular"
   },
-    transactiondropdown: {
+  transactiondropdown: {
     position: "absolute",
     top: 77,          // 👈 input height
     left: 0,

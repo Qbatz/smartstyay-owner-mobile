@@ -153,12 +153,14 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   );
 
   const fetchWalkinCustomers = async () => {
-    const data = await getCustomersByHostel(
-      activeHostelId,
-      "",
-      "Inactive"
-    );
-    setBookingTenants(data?.listCustomers || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(
+        activeHostelId,
+        "",
+        "Inactive"
+      );
+      setBookingTenants(data?.listCustomers || []);
+    }
   };
 
 
@@ -412,7 +414,8 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
               <TouchableOpacity
                 onPress={() => {
                   Keyboard.dismiss()
-                  setShowDatePicker(true)}}
+                  setShowDatePicker(true)
+                }}
                 style={styles.inputBox}
               >
                 <Text style={{ color: bookingDate ? "#000" : "#999" }}>
@@ -439,7 +442,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   }, 150);
                 }}
                 onChangeText={(t) => {
-                    const onlyNumbers = t.replace(/[^0-9]/g, "");
+                  const onlyNumbers = t.replace(/[^0-9]/g, "");
                   setBookingAmount(onlyNumbers);
                   setBookingAmountError("");
                 }}
@@ -457,7 +460,8 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
               <TouchableOpacity
                 onPress={() => {
                   Keyboard.dismiss();
-                  setShowJoinDatePicker(true)}}
+                  setShowJoinDatePicker(true)
+                }}
                 style={styles.inputBox}
               >
                 <Text style={{ color: joiningDate ? "#000" : "#999" }}>
@@ -529,11 +533,11 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                     scrollRef.current?.scrollToEnd({ animated: true });
                   }, 150);
                 }}
-                onChangeText={(text)=>{
-                   const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"" );
-                   setReferenceNumber(noEmojis)
+                onChangeText={(text) => {
+                  const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                  setReferenceNumber(noEmojis)
                 }
-                  }
+                }
                 style={styles.inputBox}
               />
 

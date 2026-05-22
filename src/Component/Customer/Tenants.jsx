@@ -240,15 +240,17 @@ export default function TenantsScreen({ route }) {
 
 
   const fetchCustomers = async () => {
-    const data = await getCustomersByHostel(activeHostelId);
-    setCustomers(data || []);
+    if (activeHostelId) {
+      const data = await getCustomersByHostel(activeHostelId);
+      setCustomers(data || []);
+    }
   };
   const handleCheckoutSuccess = async () => {
     await fetchCustomers();
     setShowCheckout(false);
   };
 
-   
+
 
   const [activeTab, setActiveTab] = useState("Tenants");
   const navigation = useNavigation();
@@ -276,7 +278,7 @@ export default function TenantsScreen({ route }) {
   const isSettlement =
     selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED";
 
- 
+
 
 
   useEffect(() => {
@@ -651,9 +653,9 @@ export default function TenantsScreen({ route }) {
   //   setShowReAssignBed(false)
   // }
 
-      const handlecloseReAssignbed = async () => {
+  const handlecloseReAssignbed = async () => {
     await fetchCustomers();
-     setShowReAssignBed(false);
+    setShowReAssignBed(false);
   };
 
   const handleShowFinalSettlement = () => {
@@ -699,7 +701,7 @@ export default function TenantsScreen({ route }) {
     console.log("selectedItem", selectedItem);
 
 
-    
+
   }
 
   const handleShowAddBooking = () => {
@@ -861,7 +863,7 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )}
                 <ScrollView horizontal
-                style={{flexGrow: 0}} contentContainerStyle={{ paddingLeft:16,paddingRight:12}}>
+                  style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
                       <View style={styles.filterRow}>
@@ -897,7 +899,7 @@ export default function TenantsScreen({ route }) {
                         </TouchableOpacity>
 
 
-                        <TouchableOpacity style={[styles.filterIconBtn,{marginLeft:5}]} disabled={!canReadTenant}
+                        <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadTenant}
                           onPress={() => setShowFilter(true)}>
                           <Image source={Filter} style={{ width: 18, height: 18 }} />
                         </TouchableOpacity>
@@ -1243,7 +1245,7 @@ export default function TenantsScreen({ route }) {
                 styles.bottomSheet,
                 {
                   // height: isSettlement ? 440 : SHEET_HEIGHT,
-                  maxHeight:'90%',
+                  maxHeight: '90%',
                   transform: [{ translateY: sheetTranslateY }],
                 },
               ]}
@@ -2002,7 +2004,7 @@ export default function TenantsScreen({ route }) {
                 </View>
               </View>
 
-              
+
 
               {renderDropdown(
                 "View",
@@ -2166,7 +2168,8 @@ export default function TenantsScreen({ route }) {
             visible={showNotice}
             onClose={() => {
               setShowDetailModal(false);
-              setShowNotice(false)}}
+              setShowNotice(false)
+            }}
             customer={selectedItem}
             onSuccess={handleCheckoutSuccess}
 
@@ -2578,26 +2581,26 @@ const styles = StyleSheet.create({
   //   zIndex: 10000,
   // },
   popupBox: {
-  position: "absolute",
-  backgroundColor: "#fff",
-  borderRadius: 18,
-  paddingVertical: 8,
-  width: 200,
-  zIndex: 10000,
+    position: "absolute",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    paddingVertical: 8,
+    width: 200,
+    zIndex: 10000,
 
-  elevation: 8,
+    elevation: 8,
 
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
-  shadowOpacity: 0.12,
-  shadowRadius: 10,
-
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-},
   popupRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -2934,7 +2937,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 30,
     borderRadius: 20,
-    marginLeft:4
+    marginLeft: 4
   },
 
   filterChipActive: {
