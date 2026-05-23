@@ -384,6 +384,7 @@ export default function BillsApplyInvoices() {
         if (res?.success) {
             await GetAllBillDetails(activeHostelId);
             await GetAdvanceBookingBills(activeHostelId);
+            await getBillsPdfDetails( activeHostelId, advanceInfo?.invoiceId)
             setModalType("success");
             setModalMessage("Applied successfully");
             setShowSuccessModal(true);
@@ -519,9 +520,9 @@ export default function BillsApplyInvoices() {
                                     </View>
 
                                     <View style={styles.rowBetween}>
-                                        <Text style={styles.label}>Date</Text>
+                                        <Text style={styles.label}>Due Date</Text>
                                         <Text style={styles.valueText}>
-                                            {item?.invoiceDate || "--"}
+                                            {item?.dueDate || "--"}
                                         </Text>
                                     </View>
 

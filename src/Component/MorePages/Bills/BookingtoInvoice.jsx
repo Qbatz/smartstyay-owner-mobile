@@ -271,13 +271,13 @@ export default function BookingToInvoice() {
 
     console.log("ADVANCEid", advanceInfo?.advanceInvoiceId);
 
-     const totalApplieds = Object.values(appliedAmounts).reduce(
-            (sum, val) => sum + Number(val || 0),
-            0
-        );
+    const totalApplieds = Object.values(appliedAmounts).reduce(
+        (sum, val) => sum + Number(val || 0),
+        0
+    );
 
-        console.log("totalApplieds", totalApplieds);
-        
+    console.log("totalApplieds", totalApplieds);
+
 
 
     const handleApply = async () => {
@@ -350,6 +350,7 @@ export default function BookingToInvoice() {
         if (res?.success) {
             await GetAllBillDetails(activeHostelId);
             await GetAdvanceBookingBills(activeHostelId);
+            await getBillsPdfDetails(activeHostelId, advanceInfo?.advanceInvoiceId)
             setModalType("success");
             setModalMessage("Applied successfully");
             setShowSuccessModal(true);
@@ -458,25 +459,192 @@ export default function BookingToInvoice() {
                                         ? "Balance advance Amount"
                                         : "Booking Amount"}
                                 </Text>
-                                <Text style={styles.bookingAmount}>
-                                    {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
-                                    ₹ {
-                                        advanceInfo?.availableBalance ||
-                                        advanceInfo?.advanceBalanceAmount ||
-                                        0
-                                    }
-                                </Text>
+                                <View style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Text style={styles.bookingAmount}>
+                                        {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
+                                        ₹ {
+                                            advanceInfo?.availableBalance ||
+                                            advanceInfo?.advanceBalanceAmount ||
+                                            0
+                                        }
+                                    </Text>
+                                    {source === "bill" &&
+                                        (
+                                            <View style={{ display: 'flex', flexDirection: 'row' , marginTop:3}}>
+                                              
+                                                <Text style={styles.smallText}>
+                                                    {advanceInfo?.advanceInvoiceNumber}
+                                                </Text>
+                                                  <Image
+                                                    source={InvoiceLinkIcon}
+                                                    style={{ height: 14, width: 14, marginLeft: 3 }}
+                                                />
+                                            </View>
+                                        )}
+                                </View>
                             </View>
 
                         </View>
 
 
 
-                        {/* Invoice Card */}
                         <View style={styles.card}>
                             <Text style={styles.sectionTitle}>Unpaid Invoices</Text>
 
-                            {invoicesList.map((item, index) => (
+                            {invoicesList?.length > 0 ? (
+                                invoicesList.map((item, index) => (
+                                    <View key={item?.invoiceId || index} style={styles.innerCard}>
+
+                                        <View style={styles.rowBetween}>
+                                            <Text style={styles.amount}>
+                                                {item?.invoiceType}
+                                            </Text>
+
+                                            <Text style={styles.amount}>
+                                                ₹ {item?.pendingAmount || 0}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                           
+                                            <Text style={styles.smallText}>
+                                                {item?.invoiceNumber}
+                                            </Text>
+                                             <Image
+                                                source={InvoiceLinkIcon}
+                                                style={{ height: 14, width: 14, marginLeft: 5 }}
+                                            />
+                                        </View>
+
+                                        {source === "bill" && (
+                                            <View style={styles.rowBetween}>
+                                                <Text style={styles.label}>Invoice Date</Text>
+                                                <Text style={styles.valueText}>
+                                                    {item?.invoiceDate || "N/A"}
+                                                </Text>
+                                            </View>
+                                        )}
+
+                                        <View style={styles.rowBetween}>
+                                            <Text style={styles.label}>Due Date</Text>
+                                            <Text style={styles.valueText}>
+                                                {item?.dueDate || "N/A"}
+                                            </Text>
+                                        </View>
+
+                                        <View style={styles.rowBetween}>
+                                            <Text style={styles.label}>Mode</Text>
+                                            <Text style={styles.valueText}>--</Text>
+                                        </View>
+
+                                        <Text style={styles.inputLabel}>
+                                            Amount to apply
+                                        </Text>
+
+                                        <View style={styles.inputWrapper}>
+                                            <ValidatedInput
+                                                type="numberOnly"
+                                                inputType="numeric"
+                                                style={styles.inputField}
+                                                placeholder="₹ 0.00"
+                                                value={tempValue?.[item.invoiceId] || ""}
+                                                maxLength={7}
+                                                onChangeText={(text) => {
+
+                                                    if (text === "") {
+                                                        setTempValue((prev) => ({
+                                                            ...prev,
+                                                            [item.invoiceId]: "",
+                                                        }));
+
+                                                        setAppliedAmounts((prev) => ({
+                                                            ...prev,
+                                                            [item.invoiceId]: 0,
+                                                        }));
+
+                                                        return;
+                                                    }
+
+                                                    let amount = Number(text);
+
+                                                    const bookingAmount =
+                                                        Number(
+                                                            advanceInfo?.availableBalance ||
+                                                            advanceInfo?.advanceBalanceAmount ||
+                                                            0
+                                                        );
+
+                                                    const currentAppliedWithoutThis =
+                                                        Object.entries(appliedAmounts)
+                                                            .filter(([id]) => id !== item.invoiceId)
+                                                            .reduce(
+                                                                (sum, [, val]) => sum + Number(val || 0),
+                                                                0
+                                                            );
+
+                                                    const remainingBalance =
+                                                        bookingAmount - currentAppliedWithoutThis;
+
+                                                    const pendingAmount =
+                                                        Number(item?.pendingAmount || 0);
+
+                                                    const maxAllowed = Math.min(
+                                                        remainingBalance,
+                                                        pendingAmount
+                                                    );
+
+                                                    if (amount > maxAllowed) {
+
+                                                        setModalType("warning");
+                                                        setModalMessage(
+                                                            `Maximum allowed amount is ₹ ${maxAllowed}`
+                                                        );
+                                                        setShowSuccessModal(true);
+
+                                                        setTimeout(() => {
+                                                            setShowSuccessModal(false);
+                                                        }, 1500);
+
+                                                        text = String(maxAllowed);
+                                                        amount = maxAllowed;
+                                                    }
+
+                                                    setTempValue((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: text,
+                                                    }));
+
+                                                    setAppliedAmounts((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: amount,
+                                                    }));
+                                                }}
+                                            />
+
+                                            <TouchableOpacity
+                                                style={styles.setBtn}
+                                                onPress={() =>
+                                                    handleSetAmount(
+                                                        item.invoiceId,
+                                                        tempValue?.[item.invoiceId],
+                                                        item.pendingAmount
+                                                    )
+                                                }
+                                            >
+                                                <Text style={{ color: "#1E45E1" }}>Set</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                ))
+                            ) : (
+                                <View style={styles.emptyCard}>
+                                    <Text style={styles.emptyText}>
+                                        No pending invoices found
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* {invoicesList.map((item, index) => (
                                 <View key={item?.invoiceId || index} style={styles.innerCard}>
 
                                     <View style={styles.rowBetween}>
@@ -497,10 +665,20 @@ export default function BookingToInvoice() {
                                         </Text>
                                     </View>
 
+                                    {source === "bill" && (
                                     <View style={styles.rowBetween}>
-                                        <Text style={styles.label}>Date</Text>
+                                        <Text style={styles.label}>Invoice Date</Text>
                                         <Text style={styles.valueText}>
-                                            {item?.invoiceDate || "--"}
+                                            {item?.invoiceDate || "N/A"}
+                                        </Text>
+                                    </View>
+
+                                    )}
+
+                                    <View style={styles.rowBetween}>
+                                        <Text style={styles.label}>Due Date</Text>
+                                        <Text style={styles.valueText}>
+                                            {item?.dueDate || "N/A"}
                                         </Text>
                                     </View>
 
@@ -511,23 +689,12 @@ export default function BookingToInvoice() {
                                         </Text>
                                     </View>
 
-                                    {/* Input */}
                                     <Text style={styles.inputLabel}>
                                         Amount to apply
                                     </Text>
 
                                     <View style={styles.inputWrapper}>
-                                        {/* <TextInput
-                                            style={styles.inputField}
-                                            placeholder="₹ 0.00"
-                                            keyboardType="numeric"
-                                            onChangeText={(text) =>
-                                                setTempValue((prev) => ({
-                                                    ...prev,
-                                                    [item.invoiceId]: text,
-                                                }))
-                                            }
-                                        /> */}
+                                      
                                   <ValidatedInput
     type="numberOnly"
     inputType="numeric"
@@ -622,7 +789,7 @@ export default function BookingToInvoice() {
                                     </View>
 
                                 </View>
-                            ))}
+                            ))} */}
 
 
 
@@ -1034,6 +1201,21 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Semibold",
     },
 
+    emptyCard: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 10,
+        paddingVertical: 40,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 15,
+        backgroundColor: "#fff",
+    },
 
+    emptyText: {
+        fontSize: 15,
+        color: "red",
+        fontFamily: "Gilroy-Medium",
+    },
 
 });

@@ -791,6 +791,6 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
 
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 7, alignItems: 'center' },
+  infoRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 2, alignItems: 'center' },
   link: { fontSize: 13, fontFamily: "Gilroy-Semibold", color: "#3562FF" },
 });
