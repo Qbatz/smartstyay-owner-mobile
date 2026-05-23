@@ -458,34 +458,30 @@ const BillDetailsSheet = ({
   // const isDiscounted = BillPdfdetails?.invoiceInfo?.discountAmount > 0;
 
 
-  const handleApplyInvoice = async () => {
-    navigation.navigate("BookingtoDiscount", {
-      source: "bill",
-      invoiceType: "advance",
-    })
-    const res = await GetInitializeAdvanceRedeem({
-      hostelId: activeHostelId,
-      advanceInvoiceId: selectedBill?.invoiceId,
-    });
-  }
+  // const handleApplyInvoice = async () => {
+  //   navigation.navigate("BookingtoDiscount", {
+  //     source: "bill",
+  //     invoiceType: "advance",
+  //   })
+  //   const res = await GetInitializeAdvanceRedeem({
+  //     hostelId: activeHostelId,
+  //     advanceInvoiceId: selectedBill?.invoiceId,
+  //   });
+  // }
 
+// Advance invoice
+  // const handleAdvanceApplyInvoices = async () => {
 
-  const handleAdvanceApplyInvoices = async () => {
+  //   navigation.navigate("BillsApplyInvoices", {
+  //     bill: selectedBill,
+  //   });
 
-    navigation.navigate("BillsApplyInvoices", {
-      bill: selectedBill,
-    });
-
-    const AdvanceCredits = await GetAdvanceCreditDetails({
-      hostelId: activeHostelId,
-      invoiceId: selectedBill?.invoiceId,
-      type: "", // Advance invoice
-    });
-
-    // setShowMenu(false);
-    // setShowBillDetails(false)
-
-  };
+  //   const AdvanceCredits = await GetAdvanceCreditDetails({
+  //     hostelId: activeHostelId,
+  //     invoiceId: selectedBill?.invoiceId,
+  //     type: "", 
+  //   })
+  // }
 
   const getOverdueDays = (dueDate) => {
     if (!dueDate) return 0;
@@ -533,20 +529,19 @@ const BillDetailsSheet = ({
   }
 
 
-  const handleBookingApplyInvoices = async () => {
+  // booking invoice
+  // const handleBookingApplyInvoices = async () => {
 
-    navigation.navigate("BillsApplyInvoices");
+  //   navigation.navigate("BillsApplyInvoices");
 
-    const AdvanceCredits = await GetAdvanceCreditDetails({
-      hostelId: activeHostelId,
-      invoiceId: selectedBill?.invoiceId,
-      type: "Credit", // booking invoice
-    })
+  //   const AdvanceCredits = await GetAdvanceCreditDetails({
+  //     hostelId: activeHostelId,
+  //     invoiceId: selectedBill?.invoiceId,
+  //     type: "Credit", 
+  //   })
 
-    console.log("AdvanceCredits", AdvanceCredits);
-
-
-  }
+  //   console.log("AdvanceCredits", AdvanceCredits);
+  // }
 
 
   const handleBillUnpaid = async () => {
@@ -1062,7 +1057,7 @@ const BillDetailsSheet = ({
             )}
 
 
-            {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
+            {/* {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
               <View style={styles.creditCard}>
                 <View style={styles.creditTopRow}>
                   <View style={styles.creditTitleRow}>
@@ -1096,7 +1091,7 @@ const BillDetailsSheet = ({
                   </Text>
                 </TouchableOpacity>
               </View>
-            )}
+            )} */}
 
 
 
@@ -1265,7 +1260,7 @@ const BillDetailsSheet = ({
               )}
 
 
-            {showApplyToInvoices && (
+            {/* {showApplyToInvoices && (
               <TouchableOpacity
                 style={styles.popupRow}
                 onPress={handleApplyInvoice}
@@ -1284,10 +1279,10 @@ const BillDetailsSheet = ({
                   Apply to Invoices
                 </Text>
               </TouchableOpacity>
-            )}
+            )} */}
 
 
-            {showAdjustWithAdvance && (
+            {/* {showAdjustWithAdvance && (
               <TouchableOpacity
                 style={[
                   styles.popupRow,
@@ -1319,7 +1314,7 @@ const BillDetailsSheet = ({
                   Adjust with Advance
                 </Text>
               </TouchableOpacity>
-            )}
+            )} */}
 
 
 

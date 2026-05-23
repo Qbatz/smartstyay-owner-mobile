@@ -1359,7 +1359,9 @@ export default function BillsDesign({ route }) {
       hostelId: activeHostelId,
       invoiceId: selectedBill?.invoiceId,
       type: "Credit", // booking invoice
-    });
+    })
+        setShowMenu(false);
+    setShowBillDetails(false)
 
   }
 
@@ -1377,6 +1379,8 @@ export default function BillsDesign({ route }) {
 
 
 
+  console.log("selectedBill", selectedBill);
+  
 
   const handleAdvanceApplyInvoices = async () => {
 
