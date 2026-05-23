@@ -144,7 +144,7 @@ console.log("sessionId", res?.data?.sessionId)
       try {
         const result = await showCheckout({
           paymentSessionId:  res?.data?.sessionId,
-          paymentMethod: 'upi',
+          // paymentMethod: 'upi',
         });
         console.log(result)
         console.log('Payment ID:', result.paymentId);
