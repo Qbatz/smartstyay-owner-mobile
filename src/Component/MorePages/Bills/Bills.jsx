@@ -2937,6 +2937,20 @@ export default function BillsDesign({ route }) {
                           </View>
                         ))}
 
+                         {BillPdfdetails?.invoiceInfo?.listDeductions?.map((pay, index) => (
+                          <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View>
+                              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>{pay?.type ?? "N/A"}</Text>
+                            </View>
+                            <View>
+                              <Text style={styles.amountValue}>
+                                ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
+                        
+
 
 
                         {(isPartial || partiallyRefund) && (
