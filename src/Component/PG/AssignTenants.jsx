@@ -73,6 +73,7 @@ export default function AssignTenant({ navigation, route }) {
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
   const scrollRef = useRef(null);
   const transactionRef = useRef(null);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -291,11 +292,15 @@ export default function AssignTenant({ navigation, route }) {
   };
   const handleBookingSubmit = async () => {
     if (!validateBooking()) return;
+    if(isCheckingIn) return;
 
     if (!selectedBed) {
       alert("Bed data missing");
       return;
     }
+
+    try{
+      setIsCheckingIn(true)
 
     const payload = {
       customerId: CheckinTenantSelected?.customerId,
@@ -324,6 +329,10 @@ export default function AssignTenant({ navigation, route }) {
       }, 800);
     } else {
       alert(res.message || "Booking failed");
+    }
+    }catch(error){
+      console.log(error)
+      setIsCheckingIn(false)
     }
   };
   const validateExtraCharges = () => {
@@ -395,6 +404,8 @@ export default function AssignTenant({ navigation, route }) {
   };
 
   const handleCheckIn = async () => {
+
+      if (isCheckingIn) return;
     const chargeValid = validateExtraCharges();
     if (!chargeValid) return;
     const customerId = CheckinTenantSelected?.customerId;
@@ -443,6 +454,8 @@ export default function AssignTenant({ navigation, route }) {
       return;
     }
 
+    try{
+      setIsCheckingIn(true)
     const payload = {
       floorId: selectedBed.floorId,
       roomId: selectedBed.roomId,
@@ -465,10 +478,13 @@ export default function AssignTenant({ navigation, route }) {
       })),
     };
 
+    
     const res = await checkInCustomer(
       customerId,
       payload
     );
+
+    console.log("checkined",res)
 
     if (res.success) {
       setModalType("success");
@@ -484,6 +500,13 @@ export default function AssignTenant({ navigation, route }) {
     } else {
       alert(res.message);
     }
+    }catch(error){
+      console.log(error)
+       setIsCheckingIn(false)
+    }
+    // finally{
+    //   setIsCheckingIn(false)
+    // }
   };
   const today = dayjs();
 
@@ -1287,8 +1310,9 @@ export default function AssignTenant({ navigation, route }) {
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.submitBtn}
+              <TouchableOpacity style={[styles.submitBtn,isCheckingIn &&{opacity:0.4}]}
                 //  onPress={handleCheckIn}
+                disabled={isCheckingIn}
                 onPress={activeTab === "Booking" ? handleBookingSubmit : handleCheckIn}
 
               >

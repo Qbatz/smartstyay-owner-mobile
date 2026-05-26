@@ -285,10 +285,13 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
       permissionList,
     };
 
+    console.log(payload)
+
     let res;
 
     if (editData?.id) {
       res = await updateRole(editData.id, payload); // PUT
+      console.log("rest",res)
     } else {
       res = await addRole(payload);
     }

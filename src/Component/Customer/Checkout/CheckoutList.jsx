@@ -253,7 +253,7 @@ const handleScroll = (event) => {
             <View style={[styles.info,{flex:1}]}>
               <View style={{ flexShrink: 1}}>
 
-                <Text style={styles.name} numberOfLines={1} ellipsizeMode="clip">{item.firstName} {item.lastName}</Text>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="clip">{item.firstName} {item.lastName}fdfsdfsdfsdfsdsdfsfsd</Text>
 
                 <View style={styles.row}>
                   <View style={styles.floorBadge}>
@@ -561,15 +561,15 @@ const styles = StyleSheet.create({
 
   row: { flexDirection: "row", marginTop: 4, alignItems: "center" },
 
-  floorBadge: { backgroundColor: "#F1F5FF", padding: 5, borderRadius: 6 },
-  floorText: { color: "#2D6CDF", fontSize: 11, fontFamily: "Gilroy-Regular" },
+  floorBadge: { backgroundColor: "#FFEFCF", padding: 5, borderRadius: 6 },
+  floorText: { color: "#222222", fontSize: 11, fontFamily: "Gilroy-Medium" },
 
   iconRow: { flexDirection: "row", marginLeft: 6, alignItems: "center" },
   icon: { width: 16, height: 16, marginRight: 3 },
   detailText: { fontSize: 12, fontFamily: "Gilroy-Regular" },
 
   rightCol: { alignItems: "flex-end", paddingRight: 10,justifyContent:'space-between' },
-  date: { color: "#999", fontSize: 11, marginTop: 5, fontFamily: "Gilroy-Regular" },
+  date: { color: "#999", fontSize: 11, marginTop: 4, fontFamily: "Gilroy-Regular" },
 
   popup: {
     position: "absolute",
