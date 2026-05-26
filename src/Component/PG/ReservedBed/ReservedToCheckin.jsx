@@ -279,6 +279,7 @@ export default function ReserveToCheckin({ route, navigation }) {
     console.log("payload", payload)
 
     const res = await bookedCheckInCustomer(tenantId, payload);
+    console.log("checkine",res)
 
     if (res.success) {
 

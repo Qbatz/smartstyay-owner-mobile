@@ -611,7 +611,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginTop:15}}>
               <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold'}}>Rental Amount</Text>
               <Text style={{fontSize:15,fontFamily:'Gilroy-Semibold',color:'grey'}}>
-                {customerDetails?.bedHistory[0]?.rentAmount ? `₹ ${customerDetails?.bedHistory[0]?.rentAmount}` : "N/A"}</Text>
+                {customerDetails?.hostelInfo?.monthlyRent ? `₹ ${customerDetails?.hostelInfo?.monthlyRent}` : "N/A"}</Text>
             </View>
 
             {/* <Text style={styles.label}>Current Floor</Text>
