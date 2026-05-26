@@ -73,9 +73,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [appliedDiscount, setAppliedDiscount] = useState(0);   // final applied
 
 
-    const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);  
-    const [showBookings, setShowBookings] = useState(false);
-    console.log("actualcheckoutdate", actualCheckoutDate);
+  const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);
+  const [showBookings, setShowBookings] = useState(false);
+  console.log("actualcheckoutdate", actualCheckoutDate);
 
 
 
@@ -345,9 +345,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
   // const FOOTER_HEIGHT = 160; 
   const EXTRA_SPACE = 20;
   const FOOTER_HEIGHT = Platform.select({
-  ios: 160,
-  android: 140,
-});
+    ios: 160,
+    android: 140,
+  });
 
   // useEffect(() => {
   //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -363,46 +363,46 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //     hideSub.remove();
   //   };
   // }, []);
-//   const handleDiscountFocus = () => {
-//   setTimeout(() => {
-//     if (discountRef.current && scrollRef.current) {
-//       discountRef.current.measureLayout(
-//         findNodeHandle(scrollRef.current),
-//         (x, y) => {
-//           scrollRef.current.scrollTo({
-//             y: y - 140, // 👈 adjust for footer height
-//             animated: true,
-//           });
-//         }
-//       );
-//     }
-//   }, 200);
-// };
-// const handleDiscountFocus = () => {
-//   setTimeout(() => {
-//     scrollRef.current?.scrollToEnd({ animated: true });
-//   }, 200);
-// };
-const [isDiscountFocused,setIsDiscountFocused]=useState(false)
-const discountScrollY = 900; 
-const handleDiscountFocus = () => {
-  setTimeout(() => {
-    scrollRef.current?.scrollTo({
-      y: discountScrollY,
-      animated: true,
-    });
-  }, 200);
-};
-useEffect(()=>{
- 
+  //   const handleDiscountFocus = () => {
+  //   setTimeout(() => {
+  //     if (discountRef.current && scrollRef.current) {
+  //       discountRef.current.measureLayout(
+  //         findNodeHandle(scrollRef.current),
+  //         (x, y) => {
+  //           scrollRef.current.scrollTo({
+  //             y: y - 140, // 👈 adjust for footer height
+  //             animated: true,
+  //           });
+  //         }
+  //       );
+  //     }
+  //   }, 200);
+  // };
+  // const handleDiscountFocus = () => {
+  //   setTimeout(() => {
+  //     scrollRef.current?.scrollToEnd({ animated: true });
+  //   }, 200);
+  // };
+  const [isDiscountFocused, setIsDiscountFocused] = useState(false)
+  const discountScrollY = 900;
+  const handleDiscountFocus = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: discountScrollY,
+        animated: true,
+      });
+    }, 200);
+  };
+  useEffect(() => {
+
     if (isDiscountFocused) {
       scrollRef.current?.scrollTo({
         y: 1200, // or dynamic later
         animated: true,
       });
     }
-  
-},[isDiscountFocused])
+
+  }, [isDiscountFocused])
 
 
 
@@ -686,6 +686,7 @@ useEffect(()=>{
       setMessage(res.data);
       setShowSuccess(true);
       navigation.goBack();
+
       setTimeout(() => {
         setShowSuccess(false);
       }, 1000);
@@ -694,7 +695,10 @@ useEffect(()=>{
 
       setModalType("warning");
       setMessage(res.message);
-      setShowSuccess(true);
+      setShowSuccess(true)
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1000);
     }
   };
 
@@ -840,7 +844,7 @@ useEffect(()=>{
                     <Text style={styles.gridValue}>
                       {/* {actualCheckoutDate || "DD-MM-YYYY"} */}
 
-                      {settlementDetails?.stayInfo?.actualCheckoutDate ? settlementDetails?.stayInfo?.actualCheckoutDate : actualCheckoutDate || "DD-MM-YYYY" }
+                      {settlementDetails?.stayInfo?.actualCheckoutDate ? settlementDetails?.stayInfo?.actualCheckoutDate : actualCheckoutDate || "DD-MM-YYYY"}
                     </Text>
 
                     <TouchableOpacity
@@ -883,12 +887,21 @@ useEffect(()=>{
                   style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
                 />
                 <Text style={styles.cardTitle}>Unpaid Invoices</Text>
-                <Text style={styles.amountText}>  ₹{
+                {/* <Text style={styles.amountText}>  ₹{
                   settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
                     (sum, inv) => sum + Number(inv.payableAmount || 0),
                     0
                   ) || 0
-                }</Text>
+                }</Text> */}
+                <Text style={styles.amountText}>
+                  ₹
+                  {(
+                    settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
+                      (sum, inv) => sum + Number(inv.payableAmount || 0),
+                      0
+                    ) || 0
+                  ).toFixed(2)}
+                </Text>
               </TouchableOpacity>
 
               {openUnpaid && (
@@ -1354,156 +1367,156 @@ useEffect(()=>{
 
             </View>
 
-             <View style={styles.accordionCard}>
-  <TouchableOpacity
-    style={styles.accordionHeader}
-    onPress={() => setShowBookings(!showBookings)}
-    activeOpacity={0.8}
-  >
-    <Animated.Image
-      source={DownArrow}
-      style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
-    />
+            <View style={styles.accordionCard}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setShowBookings(!showBookings)}
+                activeOpacity={0.8}
+              >
+                <Animated.Image
+                  source={DownArrow}
+                  style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                />
 
-    <Text style={styles.cardTitle}>Bookings</Text>
+                <Text style={styles.cardTitle}>Bookings</Text>
 
-    <Text style={styles.amountText}>
-      ₹ {settlementDetails?.bookingItems?.paidAmount || 0}
-    </Text>
-  </TouchableOpacity>
-
-  {showBookings && (
-    <View style={styles.accordionBody}>
-
-      <View style={styles.tableHeader}>
-        <Text style={[styles.th, { flex: 1 }]}>
-          Adjusted With
-        </Text>
-
-        <Text
-          style={[
-            styles.th,
-            { flex: 1, textAlign: "right" },
-          ]}
-        >
-          Applied Amount
-        </Text>
-      </View>
-
-   
-        <>
-         
-              <View style={styles.invoiceRow}>
-                <Text
-                  style={[
-                    styles.invText,
-                    { flex: 1, color: "#2563EB" },
-                  ]}
-                >
-                  {settlementDetails?.bookingItems?.invoiceNo || settlementDetails?.bookingItems?.invoiceNumber}
+                <Text style={styles.amountText}>
+                  ₹ {settlementDetails?.bookingItems?.paidAmount || 0}
                 </Text>
+              </TouchableOpacity>
 
-                <Text
-                  style={[
-                    styles.invText,
-                    { flex: 1, textAlign: "right" },
-                  ]}
-                >
-                  ₹ {settlementDetails?.bookingItems?.appliedAmount || settlementDetails?.bookingItems?.amount || 0}
-                </Text>
-              </View>
-          
-        </>
-    
-        {/* <View style={styles.emptyState}>
+              {showBookings && (
+                <View style={styles.accordionBody}>
+
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.th, { flex: 1 }]}>
+                      Adjusted With
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.th,
+                        { flex: 1, textAlign: "right" },
+                      ]}
+                    >
+                      Applied Amount
+                    </Text>
+                  </View>
+
+
+                  <>
+
+                    <View style={styles.invoiceRow}>
+                      <Text
+                        style={[
+                          styles.invText,
+                          { flex: 1, color: "#2563EB" },
+                        ]}
+                      >
+                        {settlementDetails?.bookingItems?.invoiceNo || settlementDetails?.bookingItems?.invoiceNumber}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.invText,
+                          { flex: 1, textAlign: "right" },
+                        ]}
+                      >
+                        ₹ {settlementDetails?.bookingItems?.appliedAmount || settlementDetails?.bookingItems?.amount || 0}
+                      </Text>
+                    </View>
+
+                  </>
+
+                  {/* <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
             No booking transactions available
           </Text>
         </View> */}
-    
 
-      <View style={styles.totalInvoiceRow}>
-        <Text style={styles.totalText}>Total</Text>
 
-        <Text style={styles.totalAmount}>
-          ₹ {settlementDetails?.bookingItems?.appliedAmount || 0}
-        </Text>
-      </View>
-    </View>
-  )}
-</View>
+                  <View style={styles.totalInvoiceRow}>
+                    <Text style={styles.totalText}>Total</Text>
 
-                                     <View style={styles.accordionCard}>
-  <TouchableOpacity
-    style={styles.accordionHeader}
-    onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
-    activeOpacity={0.8}
-  >
-    <Animated.Image
-      source={DownArrow}
-      style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
-    />
-
-    <Text style={styles.cardTitle}>Refundable Advance</Text>
-
-    <Text style={styles.amountText}>
-      ₹ {settlementDetails?.advanceItems?.paidAmount || 0}
-    </Text>
-  </TouchableOpacity>
-
-  {showRefundableAdvance && (
-    <View style={styles.accordionBody}>
-
-      <View style={styles.tableHeader}>
-        <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
-
-        <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-          Applied Amount
-        </Text>
-      </View>
-
-     
-        <>
-      
-            <View  style={styles.invoiceRow}>
-              <Text
-                style={[
-                  styles.invText,
-                  { flex: 1, color: "#2563EB" },
-                ]}
-              >
-                {settlementDetails?.advanceItems?.invoiceNo || settlementDetails?.advanceItems?.invoiceNumber}
-              </Text>
-
-              <Text
-                style={[
-                  styles.invText,
-                  { flex: 1, textAlign: "right" },
-                ]}
-              >
-                ₹ {settlementDetails?.advanceItems?.appliedAmount || settlementDetails?.advanceItems?.amount || 0}
-              </Text>
+                    <Text style={styles.totalAmount}>
+                      ₹ {settlementDetails?.bookingItems?.appliedAmount || 0}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
-        
-        </>
-    
-        {/* <View style={styles.emptyState}>
+
+            <View style={styles.accordionCard}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
+                activeOpacity={0.8}
+              >
+                <Animated.Image
+                  source={DownArrow}
+                  style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                />
+
+                <Text style={styles.cardTitle}>Refundable Advance</Text>
+
+                <Text style={styles.amountText}>
+                  ₹ {settlementDetails?.advanceItems?.paidAmount || 0}
+                </Text>
+              </TouchableOpacity>
+
+              {showRefundableAdvance && (
+                <View style={styles.accordionBody}>
+
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+
+                    <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                      Applied Amount
+                    </Text>
+                  </View>
+
+
+                  <>
+
+                    <View style={styles.invoiceRow}>
+                      <Text
+                        style={[
+                          styles.invText,
+                          { flex: 1, color: "#2563EB" },
+                        ]}
+                      >
+                        {settlementDetails?.advanceItems?.invoiceNo || settlementDetails?.advanceItems?.invoiceNumber}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.invText,
+                          { flex: 1, textAlign: "right" },
+                        ]}
+                      >
+                        ₹ {settlementDetails?.advanceItems?.appliedAmount || settlementDetails?.advanceItems?.amount || 0}
+                      </Text>
+                    </View>
+
+                  </>
+
+                  {/* <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
             No refundable advance transaction available
           </Text>
         </View> */}
-     
 
-      <View style={styles.totalInvoiceRow}>
-        <Text style={styles.totalText}>Total</Text>
 
-        <Text style={styles.totalAmount}>
-          ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
-        </Text>
-      </View>
-    </View>
-  )}
-</View>
+                  <View style={styles.totalInvoiceRow}>
+                    <Text style={styles.totalText}>Total</Text>
+
+                    <Text style={styles.totalAmount}>
+                      ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
 
             <View style={styles.nonRefund}>
               <View style={styles.extraHeader}>
@@ -1724,7 +1737,7 @@ useEffect(()=>{
 
                 }}>
                   <TextInput
-                 ref={discountRef}
+                    ref={discountRef}
                     value={discountValue}
                     onChangeText={(t) => {
                       let cleaned = t.replace(/[^0-9.]/g, "");
@@ -1747,7 +1760,7 @@ useEffect(()=>{
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
-                  onPress={handleDiscountFocus}
+                    onPress={handleDiscountFocus}
                   />
 
                   <TouchableOpacity
@@ -1852,10 +1865,10 @@ useEffect(()=>{
 
           <AddRoomReadingSheet
             visible={showRoomReadingSheet}
-            onClose={() =>{
+            onClose={() => {
               fetchSettlement();
               setShowRoomReadingSheet(false)
-            } }
+            }}
             roomInfo={{
               roomId: "F002_ID",
               floorId: "FIRST_FLOOR_ID",
@@ -2305,7 +2318,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  
+
   ebRowWeb: {
     flexDirection: "row",
     alignItems: "center",

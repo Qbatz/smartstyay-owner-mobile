@@ -190,12 +190,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   }
 
   useFocusEffect(
-  useCallback(() => {
-    if (customer?.customerId || customerId) {
-      fetchCustomerDetails();
-    }
-  }, [customer?.customerId, customerId])
-);
+    useCallback(() => {
+      if (customer?.customerId || customerId) {
+        fetchCustomerDetails();
+      }
+    }, [customer?.customerId, customerId])
+  );
 
 
   const [showProfileSheet, setShowProfileSheet] = useState(false);
@@ -275,7 +275,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             }, 900);
             fetchCustomerDetails();
           } else {
-            alert(res.message);
+            setModalType("error");
+            setMessage(res?.message);
+            setShowSuccess(true);
+            setTimeout(() => {
+              setShowSuccess(false);
+            }, 1500);
+            // alert(res.message);
           }
 
         }
@@ -316,7 +322,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             }, 800);
             fetchCustomerDetails();
           } else {
-            alert(res.message);
+            setModalType("error");
+            setMessage(res?.message);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 1500);
+            // alert(res.message);
           }
         }
       }
@@ -445,14 +455,14 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
 
   const handleCheckoutSuccess = async () => {
-     await fetchCustomerDetails()
+    await fetchCustomerDetails()
     await fetchCustomers();
     setShowCheckout(false);
   }
 
-//   const handleRedirectTenant = () => {
-//   navigation.getParent()?.navigate("Tenant");
-// };
+  //   const handleRedirectTenant = () => {
+  //   navigation.getParent()?.navigate("Tenant");
+  // };
 
   const handleMakeUsInActive = () => {
     // setShowDetailsMenu(false);
@@ -481,24 +491,24 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   // }
 
   const handleShowTennantCheckin = () => {
-    
-  navigation.navigate("BookingCheckIn", {
-    customerId: selectedItem.customerId,
-    customer: selectedItem,
 
-    
+    navigation.navigate("BookingCheckIn", {
+      customerId: selectedItem.customerId,
+      customer: selectedItem,
 
-    onSuccess: async () => {
-      await fetchCustomers()
-      setShowDetailsMenu(false);
-      setMenuVisible(false);
-    },
-  })
 
-setMenuVisible(false)
 
-  console.log("selectedItem", selectedItem);
-};
+      onSuccess: async () => {
+        await fetchCustomers()
+        setShowDetailsMenu(false);
+        setMenuVisible(false);
+      },
+    })
+
+    setMenuVisible(false)
+
+    console.log("selectedItem", selectedItem);
+  };
   const handleShowFinalSettlement = () => {
 
     setMenuVisible(false)
@@ -669,10 +679,10 @@ setMenuVisible(false)
 
   const disableFinancialEdit =
     status === "BOOKED" ||
-    status === "VACATED" || 
-    status === "CANCELLED_BOOKING" || 
+    status === "VACATED" ||
+    status === "CANCELLED_BOOKING" ||
     status === "SETTLEMENT_GENERATED" || status === "INACTIVE"
-    // (status === "NOTICE" && isAfterLeavingDate);
+  // (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {
     if (!canReadTenant) {
@@ -794,7 +804,7 @@ setMenuVisible(false)
 
 
 
-              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING")  && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>
@@ -886,7 +896,7 @@ setMenuVisible(false)
                 </Text>
 
                 {
-                  (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING")  && (
+                  (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                     <Image source={VerifiedIcon} style={{ width: 20, height: 20 }} />
                   )
                 }
@@ -1271,7 +1281,7 @@ setMenuVisible(false)
           onClose={() => setShowInactiveSheet(false)}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
-          // RedirectionSuccess = {handleRedirectTenant}
+        // RedirectionSuccess = {handleRedirectTenant}
         />
 
         {
@@ -1280,7 +1290,8 @@ setMenuVisible(false)
             visible={showCheckout}
             onClose={() => {
               fetchCustomerDetails()
-              setShowCheckout(false)}}
+              setShowCheckout(false)
+            }}
             reason={reason}
             setReason={setReason}
             selectedItem={selectedItem}

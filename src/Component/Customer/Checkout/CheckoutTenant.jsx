@@ -157,7 +157,14 @@ export default function CheckoutBottomSheet({
       selectedItem?.customerId;
 
     if (!customerId) {
-      alert("Customer missing");
+      setModalType("error");
+      setMessage("Customer missing");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+
+      }, 800);
+      // alert("Customer missing");
       return;
     }
 
