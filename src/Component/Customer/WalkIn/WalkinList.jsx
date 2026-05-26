@@ -90,7 +90,12 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
 
       fetchWalkinCustomers(); // refresh
     } else {
-      alert(res.message);
+      setModalType("error");
+      setMessage(res?.message);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
     }
   };
 

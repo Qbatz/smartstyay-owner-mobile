@@ -295,7 +295,13 @@ export default function ReserveToCheckin({ route, navigation }) {
       }, 800);
     }
     else {
-      alert(res.message || "Check-in failed ❌");
+      setModalType("error");
+      setMessage(res?.message || "Check-in failed ❌")
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+      // alert(res.message || "Check-in failed ❌");
     }
   };
 

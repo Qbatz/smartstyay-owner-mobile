@@ -231,17 +231,22 @@ export default function AddBookingScreen({ navigation, route }) {
 
     const res = await bookCustomer(activeHostelId, payload);
 
-    if (res.success) {
+    if (res?.success) {
 
       setModalType("success");
-      setMessage(res.data);
+      setMessage(res?.data);
       setShowSuccess(true);
       navigation.goBack();
       setTimeout(() => {
         setShowSuccess(false);
       }, 800);
     } else {
-      alert(res.message || "Booking failed");
+      setModalType("error");
+      setMessage(res?.message || "Booking failed");
+      setShowSuccess(true);
+       setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
     }
   };
 

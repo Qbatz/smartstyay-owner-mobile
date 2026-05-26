@@ -321,8 +321,13 @@ export default function SettingsPG({ navigation }) {
 
       console.log("PG Deleted Successfully!");
     } catch (err) {
-      console.log("DELETE ERROR:", err);
-      alert("Something went wrong while deleting PG.");
+      setModalMessage("Something went wrong while deleting PG.");
+      setModalType("error")
+      setShowSuccessModal(true)
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+      // alert("Something went wrong while deleting PG.");
     } finally {
       setDeletePG(false);
       setVisiblePopup(null);
@@ -983,7 +988,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: Platform.OS === "android"
-  ? StatusBar.currentHeight + 10
+  ? StatusBar.currentHeight + 20
   : 70 ,
     paddingBottom: 12,
     flexDirection: "row",

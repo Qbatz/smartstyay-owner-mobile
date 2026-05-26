@@ -84,7 +84,14 @@ export default function CancelNotice({ navigation, route }) {
       // setCheckInDate(dayjs(res.data?.reCheckInDate, "DD-MM-YYYY").toDate());
       // setReason(res.data?.reason || "");
     } else {
-      alert(res?.message);
+      setModalType("warning");
+      setMessage(res?.message)
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1200);
+      // alert(res?.message);
     }
   };
   const canCheckin = reCheckinSameBed?.canRecheckinSameBed === true;

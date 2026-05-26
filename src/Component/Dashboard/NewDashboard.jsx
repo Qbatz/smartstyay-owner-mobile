@@ -138,7 +138,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const isTabBarVisible = useRef(true);
 
-  const { handleScroll } = useHideTabbarOnScroll(setShowTabBar, setShowProfileTopBar);
+  const { handleScroll , headerTranslate} = useHideTabbarOnScroll(setShowTabBar, setShowProfileTopBar);
 
 
   const subTabs = [
@@ -1369,9 +1369,24 @@ export default function DashboardNewDesign({ initialParams, route }) {
           </View>
         </View> */}
 
-          {
-            showProfileTopBar && (
+       {/* <View
+  style={{
+    height: showProfileTopBar ? 70 : 0,
+    overflow: "hidden",
+    opacity: showProfileTopBar ? 1 : 0,
+  }}
+> */}
 
+<Animated.View
+  style={{
+    transform: [
+      {
+        translateY: headerTranslate,
+      },
+    ],
+    zIndex: 999,
+  }}
+>
 
 
               <View style={styles.headerTop}>
@@ -1539,15 +1554,16 @@ export default function DashboardNewDesign({ initialParams, route }) {
                   </TouchableOpacity>
                 </View>
               </View>
-
-            )
-          }
+              </Animated.View>
+ {/* </View> */}
+            
 
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabsRow}
+             bounces={false}
           >
             {tabs.map((item) => (
               <TouchableOpacity
@@ -1628,6 +1644,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                       horizontal
                       showsHorizontalScrollIndicator={false}
                       contentContainerStyle={styles.subTabContainer}
+                       bounces={false}
                     >
                       {subTabs.map((tab) => (
                         <TouchableOpacity
@@ -1653,13 +1670,18 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
                   <ScrollView showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
-                    onScroll={handleScroll} >
+                    onScroll={handleScroll}
+                     bounces={false}
+
+  scrollEventThrottle={16}
+  automaticallyAdjustContentInsets={false}
+  contentInsetAdjustmentBehavior="never"
+                      >
 
 
 
                     {activeSubTab === "Activities" && (
                       <>
-
                         {isExpired ? (
 
                           <LinearGradient
@@ -2134,6 +2156,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
+                             bounces={false}
                           >
                             {dashboardList?.checkins?.length > 0 ? (
                               dashboardList.checkins.map((item, index) => (
@@ -2244,6 +2267,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
+                             bounces={false}
                           >
 
                             {/* {dashboardList?.overdueInvoices?.map((item, index) => (
@@ -2876,6 +2900,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           <ScrollView
                             nestedScrollEnabled={true}
                             keyboardShouldPersistTaps="handled"
+                             bounces={false}
                           >
                             <RequestComplaintCard
                               title="Tenant Requests"
@@ -3475,7 +3500,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
             {/* 1 Sharing */}
             <ScrollView style={{ maxHeight: 430 }}
               showsVerticalScrollIndicator={false}
-              nestedScrollEnabled>
+              nestedScrollEnabled 
+               bounces={false}>
               {sharingData.map((item, index) => (
                 <View style={styles.shareCard} key={index}>
 

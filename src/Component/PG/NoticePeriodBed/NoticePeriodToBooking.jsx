@@ -74,7 +74,13 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
       setCustomerDetails(res.data)
 
     } else {
-      alert(res.message);
+      setModalType("error");
+      setMessage(res?.message);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+      // alert(res.message);
     }
   };
   console.log("customerDetails", customerDetails)

@@ -391,7 +391,13 @@ export default function AddPG({ navigation, route }) {
             , 1500);
 
         } else {
-          alert("Update Failed");
+          setModalType("error");
+          setModalMessage("Update Failed");
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false)
+            navigation.goBack();
+          }, 1500);
         }
         return;
       }

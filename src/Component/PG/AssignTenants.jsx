@@ -293,7 +293,13 @@ export default function AssignTenant({ navigation, route }) {
     if (!validateBooking()) return;
 
     if (!selectedBed) {
-      alert("Bed data missing");
+      setModalType("error");
+      setMessage("Bed data missing");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
+      // alert("Bed data missing");
       return;
     }
 
@@ -323,7 +329,13 @@ export default function AssignTenant({ navigation, route }) {
         navigation.goBack();
       }, 800);
     } else {
-      alert(res.message || "Booking failed");
+       setModalType("error");
+      setMessage(res?.message || "Booking failed");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+      // alert(res.message || "Booking failed");
     }
   };
   const validateExtraCharges = () => {
@@ -439,7 +451,13 @@ export default function AssignTenant({ navigation, route }) {
     if (hasError) return;
 
     if (!selectedBed) {
-      alert("Bed data missing");
+      setModalType("error");
+      setMessage("Bed data missing");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+      // alert("Bed data missing");
       return;
     }
 
@@ -482,7 +500,13 @@ export default function AssignTenant({ navigation, route }) {
 
 
     } else {
-      alert(res.message);
+      setModalType("error");
+      setMessage(res?.message);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+      // alert(res.message);
     }
   };
   const today = dayjs();

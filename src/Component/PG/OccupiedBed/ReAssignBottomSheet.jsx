@@ -387,7 +387,7 @@ useEffect(() => {
     } else {
       // alert(res.message || "Change bed failed");
        setModalType("error");
-      setMessage(res.message);
+      setMessage(res?.message || "Change bed failed");
       setShowSuccess(true);
 
       setTimeout(() => {
