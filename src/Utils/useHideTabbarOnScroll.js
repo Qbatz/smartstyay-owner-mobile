@@ -43,43 +43,114 @@
 
 //   return { handleScroll };
 // }
-import { useRef } from "react";
+
+
+// import { useRef } from "react";
+
+// export const useHideTabbarOnScroll = (
+//   setShowTabBar,
+//   setShowProfileTopBar
+// ) => {
+//   const lastScrollY = useRef(0);
+//   const isHidden = useRef(false);
+
+//   const scrollAccumulator = useRef(0); 
+
+//   const handleScroll = (event) => {
+//     const currentY = event.nativeEvent.contentOffset.y;
+//     const diff = currentY - lastScrollY.current;
+
+//     scrollAccumulator.current += diff
+
+
+//     if (scrollAccumulator.current > 40 && currentY > 50) {
+//       if (!isHidden.current) {
+//         setShowTabBar?.(false);
+//         setShowProfileTopBar?.(false);
+//         isHidden.current = true;
+//       }
+//       scrollAccumulator.current = 0; 
+//     }
+
+//     else if (scrollAccumulator.current < -40) {
+//       if (isHidden.current) {
+//         setShowTabBar?.(true);
+//         setShowProfileTopBar?.(true);
+//         isHidden.current = false;
+//       }
+//       scrollAccumulator.current = 0; 
+//     }
+
+//     lastScrollY.current = Math.max(currentY, 0);
+//   };
+
+//   return { handleScroll };
+// };
+
+import { useRef, useCallback } from "react";
+import { Animated } from "react-native";
+import { Platform } from "react-native";
 
 export const useHideTabbarOnScroll = (
-  setShowTabBar,
-  setShowProfileTopBar
+  setShowTabBar
 ) => {
   const lastScrollY = useRef(0);
   const isHidden = useRef(false);
 
-  const scrollAccumulator = useRef(0); 
+  const HEADER_HEIGHT =
+  Platform.OS === "ios" ? 80 : 120;
 
-  const handleScroll = (event) => {
+  const headerTranslate = useRef(new Animated.Value(0)).current;
+
+  const handleScroll = useCallback((event) => {
+    if (!event?.nativeEvent?.contentOffset) return;
+
     const currentY = event.nativeEvent.contentOffset.y;
+
+    if (currentY < 0) return;
+
     const diff = currentY - lastScrollY.current;
 
-    scrollAccumulator.current += diff;
+    if (Math.abs(diff) < 15) return;
 
-    if (scrollAccumulator.current > 40 && currentY > 50) {
-      if (!isHidden.current) {
-        setShowTabBar?.(false);
-        setShowProfileTopBar?.(false);
-        isHidden.current = true;
-      }
-      scrollAccumulator.current = 0; 
+    // HIDE
+    if (
+      diff > 0 &&
+      currentY > 80 &&
+      !isHidden.current
+    ) {
+      isHidden.current = true;
+
+      Animated.timing(headerTranslate, {
+        toValue: -HEADER_HEIGHT,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+
+      setShowTabBar?.(false);
     }
 
-    else if (scrollAccumulator.current < -40) {
-      if (isHidden.current) {
-        setShowTabBar?.(true);
-        setShowProfileTopBar?.(true);
-        isHidden.current = false;
-      }
-      scrollAccumulator.current = 0; 
+    // SHOW
+    else if (
+      diff < 0 &&
+      isHidden.current
+    ) {
+      isHidden.current = false;
+
+      Animated.timing(headerTranslate, {
+        toValue: 0,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+
+      setShowTabBar?.(true);
     }
 
-    lastScrollY.current = Math.max(currentY, 0);
+    lastScrollY.current = currentY;
+  }, []);
+
+  return {
+    handleScroll,
+    headerTranslate,
   };
-
-  return { handleScroll };
 };

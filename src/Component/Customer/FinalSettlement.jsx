@@ -73,7 +73,12 @@ console.log("selectedBed",selectedBed)
     if (res.success) {
       setSettlementDetails(res.data);
     } else {
-      alert(res.message || "Failed to load settlement");
+       setModalType("error");
+      setMessage(res?.message || "Failed to load settlement");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
     }
   };
 
@@ -469,9 +474,12 @@ const selectType = (id, type) => {
 
     } else {
 
-      setModalType("warning");
-      setMessage(res.message);
+      setModalType("error");
+      setMessage(res?.message);
       setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800);
     }
   };
 

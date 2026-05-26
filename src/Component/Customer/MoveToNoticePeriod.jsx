@@ -165,7 +165,14 @@ export default function MoveNoticeSheet({
       selectedBed?.currentTenantInfo[0]?.tenetId;
 
     if (!tenantId) {
-      alert("Customer not found");
+      setModalType("error");
+      setMessage("Customer not found");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+      // alert("Customer not found");
       return;
     }
 
@@ -233,7 +240,14 @@ export default function MoveNoticeSheet({
     }
 
     else {
-      alert(res.message || "Move to notice failed");
+      setModalType("error");
+      setMessage(res?.message || "Move to notice failed");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+      // alert(res.message || "Move to notice failed");
     }
 
 
