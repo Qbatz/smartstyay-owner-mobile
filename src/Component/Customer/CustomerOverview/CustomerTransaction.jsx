@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 
-export default function CustomerTransactions({ customerDetails }) {
+export default function CustomerTransactions({ customerDetails,showTransactionDetails,selectedTransaction }) {
 
   const transactionList = customerDetails?.transactionList || []
 
@@ -23,7 +23,10 @@ export default function CustomerTransactions({ customerDetails }) {
               </View>
             ) : (
               transactionList.map((item, index) => (
-                <View key={item.id || index} style={styles.row}>
+                <TouchableOpacity key={item.id || index} style={styles.row}
+                onPress={()=>{showTransactionDetails()
+                  selectedTransaction(item)}
+                } >
                   {/* LEFT */}
                   <View>
                     <View style={{ flexDirection: 'row' }}>
@@ -64,7 +67,7 @@ export default function CustomerTransactions({ customerDetails }) {
                     <Text style={styles.amount}>₹{item.amountPaid}</Text>
                     <Text style={styles.date}>on {item.transactionDate}</Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))
             )
           }

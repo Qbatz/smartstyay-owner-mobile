@@ -63,6 +63,7 @@ export default function TenantCheckIn({ navigation, route }) {
   const [extraCharges, setExtraCharges] = useState([]);
   const [openCalendar, setOpenCalendar] = useState(false);
   const scrollRef = React.useRef(null);
+  const [isCheckinClick,setIsCheckInClick]=useState(false)
   const scrollToInput = (y = 200) => {
     setTimeout(() => {
       scrollRef.current?.scrollTo({
@@ -397,8 +398,12 @@ export default function TenantCheckIn({ navigation, route }) {
     const isValid = validateLongStay();
 
     if (!isValid) return;
+    if(isCheckinClick) return;
     const chargeValid = validateExtraCharges();
     if (!chargeValid) return;
+
+    try{
+      setIsCheckInClick(true)
     const payload = {
       floorId: selectedFloor.id,
       roomId: selectedRoom.id,
@@ -438,6 +443,10 @@ export default function TenantCheckIn({ navigation, route }) {
       setTimeout(() => {
         setShowSuccess(false)
       }, 1000);
+    }
+    }catch(error){
+      console.log(error)
+      setIsCheckInClick(false)
     }
   };
 
@@ -959,7 +968,9 @@ export default function TenantCheckIn({ navigation, route }) {
                     </Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.submitBtn} onPress={submitLongStay}>
+                  <TouchableOpacity style={[styles.submitBtn,isCheckinClick && {opacity:0.4}]} 
+                  onPress={submitLongStay}
+                  disabled={isCheckinClick}>
                     <Text style={styles.submitText}>Check-In</Text>
                   </TouchableOpacity>
                 </View>
