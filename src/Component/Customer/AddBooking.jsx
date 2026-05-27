@@ -236,17 +236,18 @@ export default function AddBookingScreen({ navigation, route }) {
       setModalType("success");
       setMessage(res?.data);
       setShowSuccess(true);
-      navigation.goBack();
+   
       setTimeout(() => {
+        navigation.goBack();
         setShowSuccess(false);
-      }, 800);
+      }, 1500);
     } else {
       setModalType("error");
       setMessage(res?.message || "Booking failed");
       setShowSuccess(true);
        setTimeout(() => {
         setShowSuccess(false);
-      }, 800);
+      }, 1500);
     }
   };
 

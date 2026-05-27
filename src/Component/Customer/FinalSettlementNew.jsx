@@ -903,6 +903,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   ).toFixed(2)}
                 </Text>
               </TouchableOpacity>
+              
 
               {openUnpaid && (
 

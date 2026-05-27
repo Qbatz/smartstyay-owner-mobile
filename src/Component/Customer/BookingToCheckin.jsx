@@ -29,7 +29,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import CommingSoon from "../../Assets/Images/Coming_soon.png"
 
 export default function BookingCheckIn({ navigation, route }) {
-    const { customerId, customer , onSuccess} = route.params || {};
+    const { customerId, customer, onSuccess } = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
 
@@ -417,15 +417,15 @@ export default function BookingCheckIn({ navigation, route }) {
             setModalType("success");
             setMessage(res.data);
             setShowSuccess(true);
-              navigation.goBack();
+            navigation.goBack();
 
-             if (onSuccess) {
-               await onSuccess();
-              }
+            if (onSuccess) {
+                await onSuccess();
+            }
 
 
             await getAllBedsByRoom(selectedRoom.id);
-          
+
             setTimeout(() => {
                 setShowSuccess(false);
             }, 800);
@@ -660,14 +660,22 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <TouchableOpacity
                                     // style={styles.dateBox}
+                                    // style={[
+                                    //     styles.dateBox,
+                                    //     bookingDetails?.bookedDate && { backgroundColor: "#F3F4F6" }
+                                    // ]}
+                                    // disabled={!!bookingDetails?.bookedDate}
                                     style={[
                                         styles.dateBox,
-                                        bookingDetails?.bookedDate && { backgroundColor: "#F3F4F6" }
+                                        (bookingDetails?.bookedDate || customer?.bookedAt) && {
+                                            backgroundColor: "#F3F4F6",
+                                        },
                                     ]}
-                                    disabled={!!bookingDetails?.bookedDate}
+                                    disabled={!!(bookingDetails?.bookedDate || customer?.bookedAt)}
                                 >
                                     <Text style={styles.placeholder}>
-                                        {bookingDetails?.bookedDate}
+                                        {/* {bookingDetails?.bookedDate} */}
+                                        {bookingDetails?.bookedDate || customer?.bookedAt || "DD-MM-YYYY"}
                                     </Text>
                                     <Image source={CalendarImg} style={styles.calendarIcon} />
                                 </TouchableOpacity>
@@ -945,7 +953,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 16,
         // paddingTop: 32,
-        paddingTop:  Platform.OS === "ios" ?  10 : 40
+        paddingTop: Platform.OS === "ios" ? 10 : 40
     },
 
     backBtn: { padding: 6, marginRight: 8 },
