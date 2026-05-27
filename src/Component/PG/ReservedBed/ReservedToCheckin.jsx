@@ -283,15 +283,14 @@ export default function ReserveToCheckin({ route, navigation }) {
 
     if (res.success) {
 
-
-      setModalType("success");
-      setMessage(res.data);
       setShowSuccess(true);
+      setModalType("success");
+      setMessage(res.data);    
       onBedAdded && onBedAdded(selectedBed.roomId)
-      navigation.goBack();
-
+    
       setTimeout(() => {
         setShowSuccess(false);
+         navigation.goBack();
 
       }, 800);
     }

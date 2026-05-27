@@ -62,6 +62,7 @@ import FloorIcon from "../../../Assets/Images/Room_bed.png"
 import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
 import Loader from "../../Loader/Loader"
+import TransactionDetailSheet from "../../../Component/Customer/CustomerOverview/TransactionDetailSheet"
 
 
 
@@ -103,6 +104,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
   const [BillDetailshow, setBillDetailsShow] = useState(false)
+  const[transactionDetailShow,setTransactionDetailsShow]=useState(false);
+  const[transactionDetail,setTransactionDetail]=useState("")
+
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const [showHeader, setShowHeader] = useState(false);
@@ -700,7 +704,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       //   return <ComplaintsTab customerDetails={customerDetails} />;
 
       case "Transactions":
-        return <CustomerTransaction customerDetails={customerDetails} />;
+        return <CustomerTransaction customerDetails={customerDetails} 
+        showTransactionDetails={()=>setTransactionDetailsShow(true)} selectedTransaction={setTransactionDetail}/>;
 
       default:
         return (
@@ -1384,6 +1389,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           }}
         // bill={selectedBill}
         />
+
+        <TransactionDetailSheet
+        visible={transactionDetailShow}
+        onClose={()=>{setTransactionDetailsShow(false)}}
+        selectedTransaction={transactionDetail}/>
       </View>
     </>
   );
