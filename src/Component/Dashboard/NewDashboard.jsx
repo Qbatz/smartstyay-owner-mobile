@@ -2114,11 +2114,24 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                          <View style={{ flex: 1, marginRight: 10 }}>
+                          {/* <View style={{ flex: 1, marginRight: 10 }}>
   <Text
     style={styles.bookingTitle}
     numberOfLines={1}
     ellipsizeMode="tail"
+  >
+    Upcoming Check-ins ({dashboardList?.checkins?.length || 0})
+  </Text>
+</View> */}
+<View
+  style={{
+    flex: 1,
+    marginRight: 10,
+    flexShrink: 1,
+  }}
+>
+  <Text
+    style={styles.bookingTitle}
   >
     Upcoming Check-ins ({dashboardList?.checkins?.length || 0})
   </Text>
@@ -2226,12 +2239,23 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                             <View style={{ flex: 1, marginRight: 10 }}>
+                             {/* <View style={{ flex: 1, marginRight: 10 }}>
   <Text
     style={styles.bookingTitle}
     numberOfLines={1}
     ellipsizeMode="tail"
   >
+    Overdue Invoices ({dashboardList?.overdueInvoices?.length || 0})
+  </Text>
+</View> */}
+<View
+  style={{
+    flex: 1,
+    marginRight: 10,
+    flexShrink: 1,
+  }}
+>
+  <Text style={styles.bookingTitle}>
     Overdue Invoices ({dashboardList?.overdueInvoices?.length || 0})
   </Text>
 </View>
