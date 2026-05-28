@@ -116,7 +116,7 @@ export default function SubscriptionPlans({ navigation }) {
   };
 
   const selectplan = async (planId) => {
-    console.log("ppapapap")
+   
     console.log(planId)
 
     const apiKey = "1003.b2a3acfd49c278e09485f9d3a07e6728.07ecfeb8627ef8e907173b524a161bee"

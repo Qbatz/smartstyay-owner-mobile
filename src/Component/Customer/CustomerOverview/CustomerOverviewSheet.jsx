@@ -795,6 +795,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             scrollEventThrottle={16}
             stickyHeaderIndices={[2]}
             contentContainerStyle={{ paddingBottom: 100 }}
+            stickyHeaderHiddenOnScroll={false}
             showsVerticalScrollIndicator={false}
           >
             {/* HEADER */}

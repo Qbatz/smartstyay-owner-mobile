@@ -53,6 +53,7 @@ import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
 import YellowCrownIcon from "../../../Assets/Images/YellowCrownAdmin.png"
 import CrownIcon from "../../../Assets/Images/crown.png"
 import AdminResetPasswordSheet from "./AdminResetPasswordSheet"
+import { PGContext } from "../../../Context/PGContext";
 
 
 
@@ -75,7 +76,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const SCREEN_WIDTH = Dimensions.get("window").width;
   const [selectedUser, setSelectedUser] = useState(null);
   const [activeMenuProfile, setActiveMenuProfile] = useState(null)
-  const { activeHostelId } = useContext(CommonContexts);
+  const { activeHostelId,setActiveHostelId } = useContext(CommonContexts);
   const { getUsersByHostel, deleteUser } = UseSetting();
   const [users, setUsers] = useState([])
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -92,6 +93,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [selectedMasterDetail,setSelectedMasterDetail]=useState("")
 
   const loginContext = useContext(LoginContexts)
+  const {setPgDetails}=useContext(PGContext)
 
   const { logout } = useContext(LoginContexts)
 
@@ -115,6 +117,7 @@ export default function GeneralDetailsScreen({ navigation }) {
     canUpdateModule: canUpdateProfile,
     canDeleteModule: canDeleteProfile,
   } = useHasPermission("Profile");
+  console.log(canWriteProfile,canReadProfile,canUpdateProfile,)
 
   console.log(profileDetails)
 
@@ -675,8 +678,11 @@ export default function GeneralDetailsScreen({ navigation }) {
         removeData(USER_ID)
       ])
 
+      
 
       loginContext.logoutf("false")
+      setActiveHostelId(null)
+      setPgDetails(null)
 
       loginContext.updateUserId("")
 
@@ -744,9 +750,9 @@ export default function GeneralDetailsScreen({ navigation }) {
               <TouchableOpacity
                 style={[
                   styles.masterButton,
-                  !canWriteProfile && { opacity: 0.4 },
+                  !canUpdateProfile && { opacity: 0.4 },
                 ]}
-                disabled={!canWriteProfile}
+                disabled={!canUpdateProfile}
                 onPress={() =>
                   navigation.navigate("AddGeneralScreen")
                 }

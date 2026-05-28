@@ -39,8 +39,10 @@ import { checkPermission } from "./permissionUtils";
 export const useHasPermission = (moduleName) => {
   const { rolePermission } = useContext(ExpensesContext);
   const { PGDetails } = useContext(PGContext);
+  console.log(PGDetails)
 
   const isValidSubscription = PGDetails?.isSubscriptionActive === true;
+  console.log("isSubcription",isValidSubscription)
 
   return useMemo(() => {
     return {
