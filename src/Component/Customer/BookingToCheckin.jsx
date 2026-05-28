@@ -744,7 +744,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                         <Text style={styles.label}>Non Refundable Amount</Text>
 
                                         <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                                            <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+                                            <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
                                         </TouchableOpacity>
                                     </View>
 
@@ -876,13 +876,13 @@ export default function BookingCheckIn({ navigation, route }) {
 
                             <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                                 <Image source={CommingSoon} style={{ width: 315, height: 220, resizeMode: 'contain' }} />
-                                <Text style={{ fontSize: 16, fontWeight: 600 }}>Comming Soon</Text></View>
+                                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Comming Soon</Text></View>
                         )}
                     </ScrollView>
                     {tab === "long" && (
                         <View style={styles.BtnRow}>
                             <TouchableOpacity style={styles.CancelBtn} onPress={() => navigation.goBack()}>
-                                <Text style={{ color: "grey", fontWeight: "600" }}>
+                                <Text style={{ color: "grey", fontFamily: "Gilroy-Semibold" }}>
                                     Cancel
                                 </Text>
                             </TouchableOpacity>
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
 
     backBtn: { padding: 6, marginRight: 8 },
 
-    headerTitle: { fontSize: 18, fontWeight: "600" },
+    headerTitle: { fontSize: 18, fontFamily: "Gilroy-Semibold" },
 
     segmentRow: {
         flexDirection: "row",
@@ -980,7 +980,7 @@ const styles = StyleSheet.create({
 
     segmentText: { color: "#4B5563" },
 
-    segmentTextActive: { color: "#fff", fontWeight: "600" },
+    segmentTextActive: { color: "#fff", fontFamily: "Gilroy-Semibold" },
 
     container: { paddingHorizontal: 16, },
 
@@ -1039,7 +1039,7 @@ const styles = StyleSheet.create({
     fixedLabel: {
         fontSize: 14,
         color: "#000",
-        fontWeight: "600",
+        fontFamily: "Gilroy-Semibold"
     },
 
     closeInside: {
@@ -1071,7 +1071,7 @@ const styles = StyleSheet.create({
         marginRight: 6
     },
 
-    addText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+    addText: { color: "#fff", fontSize: 12, fontFamily: "Gilroy-Semibold"},
 
     BtnRow: {
         flexDirection: "row",
@@ -1100,7 +1100,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
 
-    submitText: { color: "#fff", fontWeight: "600" },
+    submitText: { color: "#fff", fontFamily: "Gilroy-Semibold"},
 
 
 

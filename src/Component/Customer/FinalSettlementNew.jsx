@@ -411,26 +411,48 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const isNegative = Number(ReturnAmount) < 0;
 
-  // ✅ Map default deductions
-  useEffect(() => {
-    if (!settlementDetails?.customerInfo?.listDeductions?.length) return;
+  // useEffect(() => {
+  //   if (!settlementDetails?.deductionsInfo?.listDeductions?.length) return;
 
-    const mappedCharges = settlementDetails.customerInfo.listDeductions.map(
-      (item) => {
-        const isMaintenance = item.type?.toLowerCase() === "maintenance";
+  //   const mappedCharges = settlementDetails?.deductionsInfo?.listDeductions.map(
+  //     (item) => {
+  //       const isMaintenance = item.type?.toLowerCase() === "maintenance";
+
+  //       return {
+  //         id: Date.now() + Math.random(),
+  //         type: isMaintenance ? "Maintenance" : "Others",
+  //         title: isMaintenance ? "" : item.type,
+  //         amount: String(item.amount),
+  //         isDefault: true,
+  //       };
+  //     }
+  //   );
+
+  //   setExtraCharges(mappedCharges);
+  // }, [settlementDetails])
+
+  // ✅ Map default deductions
+
+  useEffect(() => {
+    if (!settlementDetails?.deductionsInfo?.listDeductions?.length) return;
+
+    const mappedCharges =
+      settlementDetails?.deductionsInfo?.listDeductions.map((item) => {
+        const isMaintenance =
+          item?.item?.toLowerCase() === "maintenance";
 
         return {
           id: Date.now() + Math.random(),
           type: isMaintenance ? "Maintenance" : "Others",
-          title: isMaintenance ? "" : item.type,
-          amount: String(item.amount),
+          title: isMaintenance ? "" : item?.item,
+          amount: String(item?.pendingAmount || item?.amount || 0),
           isDefault: true,
         };
-      }
-    );
+      });
 
     setExtraCharges(mappedCharges);
   }, [settlementDetails]);
+
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -903,7 +925,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   ).toFixed(2)}
                 </Text>
               </TouchableOpacity>
-              
+
 
               {openUnpaid && (
 
@@ -948,12 +970,18 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     <Text style={styles.totalText}>Total</Text>
                     <Text style={styles.totalAmount}>
                       ₹{" "}
-                      {Array.isArray(settlementDetails?.unpaidInvoices)
+                      {(
+                    settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
+                      (sum, inv) => sum + Number(inv.payableAmount || 0),
+                      0
+                    ) || 0
+                  ).toFixed(2)}
+                      {/* {Array.isArray(settlementDetails?.unpaidInvoices)
                         ? settlementDetails.unpaidInvoices.reduce(
                           (sum, i) => sum + Number(i.payableAmount || 0),
                           0
                         )
-                        : 0}
+                        : 0} */}
                     </Text>
                   </View>
                 </View>
@@ -1302,7 +1330,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Total Deductions</Text>
                     <Text style={styles.negativeamountlabel}>
-                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.settlementInfo?.totalDeductions || totalDeduction}
+                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.deductionsInfo?.totalDeductionsAmount|| totalDeduction}
                     </Text>
                   </View>
 

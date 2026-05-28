@@ -404,7 +404,7 @@ export default function MoveNoticeSheet({
             {customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ? 
             <Image source={{ uri: customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic}} style={styles.profileImg} /> :
               <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
-                <Text style={{ fontSize: 16, fontWeight: 600 }}>
+                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
                   {customer?.initials || selectedBed?.currentTenantInfo[0]?.tenantInitials}</Text>
               </View>}
 
@@ -672,12 +672,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  title: { fontSize: 18, fontWeight: "700", color: "#111" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold", color: "#111" },
+
   noticeDays: { fontSize: 14, color: "#6B7280", marginVertical: 10 },
 
   profileRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   profileImg: { width: 50, height: 50, borderRadius: 25 },
-  name: { fontSize: 16, fontWeight: "600" },
+  name: { fontSize: 16, fontFamily: "Gilroy-Semibold" },
 
   badgeRow: { flexDirection: "row", marginTop: 5 },
   badgeYellow: {
@@ -736,7 +737,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  moveText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  moveText: { color: "#fff", fontSize: 18, fontFamily: "Gilroy-Semibold"},
   calendarOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -781,7 +782,7 @@ const styles = StyleSheet.create({
 
   confirmTitle: {
     fontSize: 18,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
@@ -809,7 +810,7 @@ const styles = StyleSheet.create({
   cancelConfirmText: {
     fontSize: 15,
     color: "#555",
-    fontWeight: "600",
+    fontFamily: "Gilroy-Semibold"
   },
 
   okConfirmBtn: {
@@ -822,6 +823,6 @@ const styles = StyleSheet.create({
   okConfirmText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "Gilroy-Bold",
   },
 });
