@@ -10,6 +10,7 @@ import ChecksIcon from "../../../Assets/Images/checks.png";
 import { StatusBar, Platform } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 export default function PlanDetailsScreen({ route, navigation }) {
 
@@ -61,6 +62,13 @@ export default function PlanDetailsScreen({ route, navigation }) {
   const isExpired = currentPlan?.numberOfDaysRemaining <= 0;
   const isPremium = currentPlan?.planId === 1;
 
+  const {
+    canWriteModule: canWriteProfile,
+    canReadModule: canReadProfile,
+    canUpdateModule: canUpdateProfile,
+    canDeleteModule: canDeleteProfile,
+  } = useHasPermission("Subscription")
+
   const planData = isPremium
     ? {
       title: "Premium Plan",
@@ -90,7 +98,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
         ? StatusBar.currentHeight
         : 40,
     }}>
-      <ScrollView style={{ paddingHorizontal: 16 }}>
+      <ScrollView style={{ paddingHorizontal: 16 }} contentContainerStyle={{flexGrow:1}}>
 
 
         <View style={styles.row}>
@@ -102,131 +110,143 @@ export default function PlanDetailsScreen({ route, navigation }) {
         </View>
 
 
-        <View style={styles.card}>
-          <View style={styles.rowBetween}>
-            <Text style={styles.planTitle}>{currentPlan?.planName} Plan</Text>
+        {canWriteProfile ? (<>
 
-            <View style={styles.activeBadge}>
-              <View style={styles.greenDot} />
-              <Text style={styles.activeText}>{isExpired ? "Plan Expired" : currentPlan?.status}</Text>
-            </View>
-          </View>
-
-          <Text style={styles.price}>{currentPlan?.planAmount}</Text>
-
-          <TouchableOpacity style={styles.changeBtn}
-            onPress={() => navigation.navigate("SubscriptionPlans")}>
-            <Text style={styles.changeBtnText}>Change Plan</Text>
-          </TouchableOpacity>
-
-
-          <View style={styles.infoRow}>
-            <Image source={Calendar} style={styles.icon} />
-            <View>
-              <Text style={styles.infoLabel}>Renewal Date</Text>
-              <Text style={styles.infoValue}>{currentPlan?.renewalDate}</Text>
-            </View>
-          </View>
-
-
-          <View style={styles.infoRow}>
-            <Image source={Calendar} style={styles.icon} />
-            <View>
-              <Text style={styles.infoLabel}>Payment Method</Text>
-              <Text style={styles.infoValue}>{currentPlan?.paymentMethod}</Text>
-            </View>
-          </View>
-
-
-          <View style={styles.infoRow}>
-            <Image source={StatusIcon} style={styles.icon} />
-            <View>
-              <Text style={styles.infoLabel}>Status</Text>
-              <Text style={styles.statusBlue}>{isExpired ? "Plan Expired" : currentPlan?.status}</Text>
-            </View>
-          </View>
-        </View>
-
-
-        {currentPlan?.planName !== "Advance" && (
-          <View style={styles.upgradeCard}>
-
+          <View style={styles.card}>
             <View style={styles.rowBetween}>
-              <Text style={styles.planUpgradeTitle}>Upgrade to Premium Plan</Text>
-              <Image
-                source={crown}
-                style={{ width: 20, height: 20 }}
-              />
+              <Text style={styles.planTitle}>{currentPlan?.planName} Plan</Text>
+
+              <View style={styles.activeBadge}>
+                <View style={styles.greenDot} />
+                <Text style={styles.activeText}>{isExpired ? "Plan Expired" : currentPlan?.status}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.price}>{currentPlan?.planAmount}</Text>
+
+            <TouchableOpacity style={styles.changeBtn}
+              onPress={() => navigation.navigate("SubscriptionPlans")}>
+              <Text style={styles.changeBtnText}>Change Plan</Text>
+            </TouchableOpacity>
+
+
+            <View style={styles.infoRow}>
+              <Image source={Calendar} style={styles.icon} />
+              <View>
+                <Text style={styles.infoLabel}>Renewal Date</Text>
+                <Text style={styles.infoValue}>{currentPlan?.renewalDate}</Text>
+              </View>
             </View>
 
 
-            <View style={styles.featureRow}>
-              <Image
-                source={ChecksIcon}
-                style={styles.tick}
-              />
-              <Text style={styles.featureText}>WhatsApp Integration</Text>
+            <View style={styles.infoRow}>
+              <Image source={Calendar} style={styles.icon} />
+              <View>
+                <Text style={styles.infoLabel}>Payment Method</Text>
+                <Text style={styles.infoValue}>{currentPlan?.paymentMethod}</Text>
+              </View>
             </View>
 
-            <View style={styles.featureRow}>
-              <Image
-                source={ChecksIcon}
-                style={styles.tick}
-              />
-              <Text style={styles.featureText}>Digital KYC</Text>
+
+            <View style={styles.infoRow}>
+              <Image source={StatusIcon} style={styles.icon} />
+              <View>
+                <Text style={styles.infoLabel}>Status</Text>
+                <Text style={styles.statusBlue}>{isExpired ? "Plan Expired" : currentPlan?.status}</Text>
+              </View>
             </View>
-
-            <View style={styles.featureRow}>
-              <Image
-                source={ChecksIcon}
-                style={styles.tick}
-              />
-
-              <Text style={styles.featureText}>Legal E-Sign</Text>
-            </View>
-
-            <View style={styles.rowBetween}>
-              <Text style={styles.upgradePrice}>₹999 /month</Text>
-
-              <TouchableOpacity style={styles.upgradeNowBtn}>
-                <Text style={styles.upgradeNowText}>Upgrade Now</Text>
-              </TouchableOpacity>
-            </View>
-
           </View>
-        )}
 
 
-        <Text style={styles.billingHeader}>Billing History</Text>
+          {currentPlan?.planName !== "Advance" && (
+            <View style={styles.upgradeCard}>
 
-        {currentPlan?.billingHistory.length > 0 ?
-          currentPlan?.billingHistory.map((item, idx) => (
-            <View key={idx} style={styles.billCard}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ backgroundColor: '#1E45E10F', borderRadius: 24, justifyContent: 'center', alignItems: 'center', width: 48, height: 48, marginRight: 10 }}>
-                  <Image
-                    source={BillingIcon}
-                    style={styles.billIcon}
-                  />
-                </View>
-                <View>
-                  <Text style={styles.billTitle}>Invoice {item?.invoiceNumber || "-"}</Text>
+              <View style={styles.rowBetween}>
+                <Text style={styles.planUpgradeTitle}>Upgrade to Premium Plan</Text>
+                <Image
+                  source={crown}
+                  style={{ width: 20, height: 20 }}
+                />
+              </View>
 
-                  <View style={styles.premiumChip}>
-                    <Text style={styles.premiumChipText}>{item.planName}</Text>
+
+              <View style={styles.featureRow}>
+                <Image
+                  source={ChecksIcon}
+                  style={styles.tick}
+                />
+                <Text style={styles.featureText}>WhatsApp Integration</Text>
+              </View>
+
+              <View style={styles.featureRow}>
+                <Image
+                  source={ChecksIcon}
+                  style={styles.tick}
+                />
+                <Text style={styles.featureText}>Digital KYC</Text>
+              </View>
+
+              <View style={styles.featureRow}>
+                <Image
+                  source={ChecksIcon}
+                  style={styles.tick}
+                />
+
+                <Text style={styles.featureText}>Legal E-Sign</Text>
+              </View>
+
+              <View style={styles.rowBetween}>
+                <Text style={styles.upgradePrice}>₹999 /month</Text>
+
+                <TouchableOpacity style={styles.upgradeNowBtn}>
+                  <Text style={styles.upgradeNowText}>Upgrade Now</Text>
+                </TouchableOpacity>
+              </View>
+
+            </View>
+          )}
+
+
+          <Text style={styles.billingHeader}>Billing History</Text>
+
+          {currentPlan?.billingHistory.length > 0 ?
+            currentPlan?.billingHistory.map((item, idx) => (
+              <View key={idx} style={styles.billCard}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ backgroundColor: '#1E45E10F', borderRadius: 24, justifyContent: 'center', alignItems: 'center', width: 48, height: 48, marginRight: 10 }}>
+                    <Image
+                      source={BillingIcon}
+                      style={styles.billIcon}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.billTitle}>Invoice {item?.invoiceNumber || "-"}</Text>
+
+                    <View style={styles.premiumChip}>
+                      <Text style={styles.premiumChipText}>{item.planName}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.billAmount}>₹ {item?.totalAmount}</Text>
-                <Text style={styles.billDate}>{item?.createdAt}</Text>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={styles.billAmount}>₹ {item?.totalAmount}</Text>
+                  <Text style={styles.billDate}>{item?.createdAt}</Text>
+                </View>
               </View>
+            ))
+            : <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 15 }}>
+              <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#b3b6bb' }}>No Billing History</Text>
             </View>
-          ))
-          : <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 15 }}>
-            <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#b3b6bb' }}>No Billing History</Text>
-          </View>
+          }
+          </>
+        ) : (
+        <>
+         <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+            <Text style={{fontSize:20,fontFamily:'Gilroy-Semibold',color:'black'}}>No Data Found</Text>
+             <Text style={{fontSize:18,fontFamily:'Gilroy-Medium',color:'#4B4B4B',marginTop:10}}>
+              No Subscription Found Yet</Text>
+         </View>
+        </>)
         }
 
       </ScrollView>

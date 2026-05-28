@@ -91,7 +91,7 @@ import PlanDetailsScreen from './src/Component/SettingScreen/Subscription/PlanDe
 import Agreement from './src/Component/SettingScreen/SettingsAgreement/AgreementPolicy';
 import PGPageFull from './src/Component/PG/PGList';
 import LoginContext from './src/Context/LoginContext';
-import CommonContext from './src/Context/CommonContext'
+import CommonContext, { CommonContexts } from './src/Context/CommonContext'
 import PGContext from './src/Context/PGContext';
 import ComplaintProvider from "./src/Context/ComplaintContext";
 import { SettingProvider } from "./src/Context/SettingContext";
@@ -202,6 +202,7 @@ TextInput.defaultProps.allowFontScaling = false;
 
 function AppContent(props) {
   const loginContext = useContext(LoginContexts);
+  const commonContext=useContext(CommonContexts);
 
   const Navigation = createStackNavigator();
   const [isLoggedIn,setIsLoggedIn]=useState()
@@ -285,6 +286,7 @@ function AppContent(props) {
 
 
   console.log(loginContext)
+  console.log(commonContext)
 
   useEffect(() => {
       CommonModule.checkInternet().then(r => {

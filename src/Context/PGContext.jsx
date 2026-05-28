@@ -232,7 +232,7 @@ export default function PGProvider({ children }) {
 
 
   return (
-    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, getDashboard, PGDetails, pgLoading, pgError, deleteAdditionalImages }}>
+    <PGContext.Provider value={{ addPG, editPG, deletePG, getParticularHostelDetails, getDashboard, PGDetails,setPgDetails, pgLoading, pgError, deleteAdditionalImages }}>
       {children}
     </PGContext.Provider>
   );

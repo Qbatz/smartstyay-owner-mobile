@@ -14,6 +14,7 @@ import Setting from '../../Assets/Images/setting.png';
 import Remove from '../../Assets/Images/remove.png';
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import SmartstayLogo from "../../Assets/Images/smarstay_icon.png"
+import { PGContext } from "../../Context/PGContext";
 
 
 
@@ -28,6 +29,7 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
   const { expensesList, GetExpenseList, rolePermission,
     GetRoleBasedPermission, profileDetails, GetProfileDetails, loading } = useContext(ExpensesContext);
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
+  const{setPgDetails}=useContext(PGContext)
   const navigation = useNavigation();
   const slideX = useRef(new Animated.Value(SCREEN_WIDTH)).current;
 
@@ -126,6 +128,8 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
 
 
       loginContext.logoutf("false")
+       setActiveHostelId(null)
+      setPgDetails(null)
 
       loginContext.updateUserId("")
 
