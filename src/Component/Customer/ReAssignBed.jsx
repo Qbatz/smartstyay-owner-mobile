@@ -396,27 +396,27 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     setRentError("");
 
     if (!date) {
-      setDateError("Date is required");
+      setDateError("Please Select Date");
       valid = false;
     }
 
     if (!floorSelected) {
-      setFloorError("Please select a floor");
+      setFloorError("Please Select Floor");
       valid = false;
     }
 
     if (!roomSelected) {
-      setRoomError("Please select a room");
+      setRoomError("Please Select Room");
       valid = false;
     }
 
     if (!bedSelected) {
-      setBedError("Please select a bed");
+      setBedError("Please Select Bed");
       valid = false;
     }
 
     if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      setRentError("Enter valid rent amount");
+      setRentError("Please Enter valid Rent Amount");
       valid = false;
     }
 
@@ -932,11 +932,11 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
-                <Text>Cancel</Text>
+                <Text style={{fontFamily: "Gilroy-Semibold"}}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.reassignBtn} onPress={handleSubmit}>
-                <Text style={{ color: "#fff" }}>Change Bed</Text>
+                <Text style={{ color: "#fff" ,fontFamily: "Gilroy-Semibold"}}>Change Bed</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -981,8 +981,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 10,
   },
-  title: { fontSize: 18, fontWeight: "700" },
-  label: { marginTop: 14, fontWeight: "600" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold"  },
+  label: { marginTop: 14,fontFamily: "Gilroy-Semibold" },
   star: { color: "red" },
   inputBox: {
     backgroundColor: "#F6F8FF",
@@ -1019,7 +1019,7 @@ const styles = StyleSheet.create({
     padding: 12,
     height: 100,
   },
-  textAreaInput: { height: 100, textAlignVertical: "top" },
+  textAreaInput: { height: 100, textAlignVertical: "top" ,fontFamily: "Gilroy-Semibold"},
   buttonRow: {
     flexDirection: "row",
     marginVertical: 20,
@@ -1032,6 +1032,7 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: "center",
     marginRight: 10,
+    fontFamily: "Gilroy-Semibold"
   },
   reassignBtn: {
     flex: 1,
@@ -1040,6 +1041,7 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: "center",
     marginLeft: 10,
+    fontFamily: "Gilroy-Semibold"
   },
   datePickerOverlay: {
     position: "absolute",
@@ -1079,7 +1081,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  selectText: { color: "#555" },
+  selectText: { color: "#555" ,fontFamily: "Gilroy-Semibold"},
   arrow: { width: 18, height: 18, tintColor: "#777" },
   dropdownMenu: {
     position: "absolute",
@@ -1132,6 +1134,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#2563EB",
     marginLeft: 6,
+    fontFamily: "Gilroy-Semibold"
   },
 
   checkbox: {
