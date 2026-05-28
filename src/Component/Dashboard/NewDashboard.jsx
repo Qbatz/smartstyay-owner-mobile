@@ -1377,7 +1377,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   }}
 > */}
 
-<Animated.View
+{/* <Animated.View
   style={{
     transform: [
       {
@@ -1386,7 +1386,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     ],
     zIndex: 999,
   }}
->
+> */}
 
 
               <View style={styles.headerTop}>
@@ -1554,7 +1554,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                   </TouchableOpacity>
                 </View>
               </View>
-              </Animated.View>
+              {/* </Animated.View> */}
  {/* </View> */}
             
 

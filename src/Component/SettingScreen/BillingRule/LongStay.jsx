@@ -1188,9 +1188,9 @@ export default function LongStay({ navigation }) {
 
 
                     <View style={styles.bottomRow}>
-                        {/* <TouchableOpacity style={styles.discardBtn}>
-                            <Text style={styles.discardText}>Discard</Text>
-                        </TouchableOpacity> */}
+                        <TouchableOpacity style={styles.discardBtn} onPress={() => navigation.goBack()}>
+                            <Text style={styles.discardText}>Cancel</Text>
+                        </TouchableOpacity>
 
                         <TouchableOpacity
                             //  style={styles.saveChangesBtn}
