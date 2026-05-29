@@ -214,7 +214,7 @@ export const CustomerProvider = ({ children }) => {
           }
       return {
         success: false,
-        message: error.response?.data?.message || "Check-in failed",
+        message: error.response?.data?.message || error.response?.data || "Check-in failed",
       };
     }
   };

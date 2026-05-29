@@ -111,6 +111,7 @@ export default function Assets({ navigation }) {
   const [showAddAsset, setShowAddAsset] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const assignmentStatus=selectedAsset?.assignmentStatus !=="Unassigned"
 
   const handleAddAsset = () => {
     if (!activeHostelId) {
@@ -524,6 +525,8 @@ const handleAssignAsset = async () => {
   }
 
 
+
+
   if (!canReadAssets && !loading) {
     return (
       <View style={styles.container}>
@@ -709,10 +712,11 @@ const handleAssignAsset = async () => {
                     <Image source={EditIcon} style={styles.headerIcon} />
                   </TouchableOpacity>
 
+{console.log(assignmentStatus)}
+{console.log(selectedAsset)}
 
-
-                  <TouchableOpacity disabled={!canDeleteAssets}
-                    style={!canDeleteAssets && { opacity: 0.4 }}
+                  <TouchableOpacity disabled={!canDeleteAssets || assignmentStatus}
+                    style={!canDeleteAssets || assignmentStatus && { opacity: 0.4 }}
                     onPress={() => {
                       if (!canDeleteAssets) return;
                       setShowDeletePopup(true);
