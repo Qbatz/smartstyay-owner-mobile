@@ -71,7 +71,8 @@ export default function TenantCheckIn({ navigation, route }) {
         animated: true,
       });
     }, 150); // keyboard animation wait
-  };
+  }
+
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -169,23 +170,39 @@ export default function TenantCheckIn({ navigation, route }) {
       activeHostelId,
       formattedDate
     );
+    console.log("beds", res);
+    
 
     if (res.success) {
-      setBeds(res.data.listBeds);
+      setBeds(res?.data?.listBeds);
     } else {
       setBeds([]);
     }
   };
 
-  const filteredBeds = beds.filter(bed => {
-    if (!selectedFloor || !selectedRoom) return false;
+  // const filteredBeds = beds.filter(bed => {
+  //   if (!selectedFloor || !selectedRoom) return false;
 
-    return (
-      bed.floorId === selectedFloor.id &&
-      bed.roomId === selectedRoom.id &&
-      bed.currentStatus === "VACANT"
-    );
-  });
+  //   return (
+  //     bed.floorId === selectedFloor.id &&
+  //     bed.roomId === selectedRoom.id &&
+  //     bed.currentStatus === "VACANT"
+  //   );
+  // });
+
+  const filteredBeds = beds.filter((bed) => {
+  if (!selectedFloor || !selectedRoom) return false;
+
+  return (
+    bed.floorId === selectedFloor.id &&
+    bed.roomId === selectedRoom.id &&
+    (bed.currentStatus === "VACANT" ||
+      bed.currentStatus === "NOTICE")
+  );
+});
+
+  console.log("filteredBeds", filteredBeds);
+  
 
   const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
@@ -471,7 +488,7 @@ export default function TenantCheckIn({ navigation, route }) {
             >
               <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Tenant Check-Ing</Text>
+            <Text style={styles.headerTitle}>Tenant Check-In</Text>
           </View>
 
           <View style={{ paddingHorizontal: 16, paddingTop: 12, flexDirection: 'row', alignItems: 'center' }}>
@@ -658,6 +675,7 @@ export default function TenantCheckIn({ navigation, route }) {
                                 setSelectedRoom(r);
                                 setRoomOpen(false);
                                 setRoomError("")
+                                 setSelectedBed(null);
                               }}
 
                             >
@@ -738,6 +756,12 @@ export default function TenantCheckIn({ navigation, route }) {
                 {bedError && (
                   <ErrorMessage message={bedError} type="error" />
                 )}
+                {selectedBed?.shouldShowError && (
+  <ErrorMessage
+    message={selectedBed.errorMessage}
+    type="error"
+  />
+)}
 
 
 

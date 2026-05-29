@@ -135,7 +135,7 @@ export default function AddBookingScreen({ navigation, route }) {
     );
 
     if (res.success) {
-      setBeds(res.data.listBeds);
+      setBeds(res?.data?.listBeds);
       console.log("Beds.......?????", beds)
     } else {
       setBeds([]);
@@ -148,7 +148,9 @@ export default function AddBookingScreen({ navigation, route }) {
     return (
       bed.floorId === selectedFloor.id &&
       bed.roomId === selectedRoom.id &&
-      bed.currentStatus === "VACANT"
+      // bed.currentStatus === "VACANT"
+        (bed?.currentStatus === "VACANT" ||
+      bed?.currentStatus === "NOTICE")
     );
   });
   console.log("filteredBeds", filteredBeds)
@@ -423,7 +425,8 @@ export default function AddBookingScreen({ navigation, route }) {
 
               {floorOpen && (
                 <View style={styles.dropdownMenu}>
-                  <ScrollView style={{ maxHeight: 160 }}>
+                  <ScrollView style={{ maxHeight: 160 }}   nestedScrollEnabled={true}
+  showsVerticalScrollIndicator={true}>
 
 {floors?.length === 0 ? (
   <View style={{ padding: 12 }}>
@@ -478,13 +481,15 @@ export default function AddBookingScreen({ navigation, route }) {
               </TouchableOpacity>
 {roomOpen && (
   <View style={styles.dropdownMenu}>
-    <ScrollView style={{ maxHeight: 160 }}>
+    <ScrollView style={{ maxHeight: 160 }}   nestedScrollEnabled={true}
+  showsVerticalScrollIndicator={true}>
       {rooms.length === 0 ? (
         <View style={{ padding: 12 }}>
           <Text style={{ color: "#999", textAlign: "center" }}>
             No Rooms Available
           </Text>
         </View>
+
       ) : (
         rooms.map((r) => (
           <TouchableOpacity
@@ -499,7 +504,31 @@ export default function AddBookingScreen({ navigation, route }) {
               setRoomError("");
             }}
           >
-            <Text style={styles.optionText}>{r.name}</Text>
+            {/* <Text style={styles.optionText}>{r.name}</Text> */}
+            <View
+  style={{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  }}
+>
+  <Text style={styles.optionText}>
+    {r.name}
+  </Text>
+
+  <View
+    style={{
+      backgroundColor: "#dee3f2",
+      borderRadius: 10,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    }}
+  >
+    <Text style={styles.optionText}>
+      {r?.sharingType}
+    </Text>
+  </View>
+</View>
           </TouchableOpacity>
         ))
       )}
@@ -538,7 +567,8 @@ export default function AddBookingScreen({ navigation, route }) {
 
             {bedOpen && (
   <View style={styles.dropdownMenu}>
-    <ScrollView style={{ maxHeight: 100 }}>
+    <ScrollView style={{ maxHeight: 160 }}   nestedScrollEnabled={true}
+  showsVerticalScrollIndicator={true}>
       {filteredBeds.length === 0 ? (
         <View style={{ padding: 12 }}>
           <Text style={{ color: "#999", textAlign: "center" }}>
@@ -567,6 +597,12 @@ export default function AddBookingScreen({ navigation, route }) {
               )}
             </View>
             {bedError && <ErrorMessage message={bedError} type="error" />}
+                            {selectedBed?.shouldShowError && (
+  <ErrorMessage
+    message={selectedBed.errorMessage}
+    type="error"
+  />
+)}
             <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
             <View style={{ position: "relative" }}>
               <TouchableOpacity
