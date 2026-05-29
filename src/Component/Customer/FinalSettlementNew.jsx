@@ -75,6 +75,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
+
+  const [collectFullRent, setCollectFullRent] = useState(false);
   console.log("actualcheckoutdate", actualCheckoutDate);
 
 
@@ -1017,6 +1019,32 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
               {openRefundRent && (
                 <View style={styles.refundBody}>
+     <TouchableOpacity
+  activeOpacity={0.8}
+  style={styles.fullRentRow}
+  onPress={() => setCollectFullRent(!collectFullRent)}
+>
+  <View
+    style={[
+      styles.checkbox,
+      collectFullRent && styles.checkedBox,
+    ]}
+  >
+    {collectFullRent && (
+      <Text style={styles.checkMark}>✓</Text>
+    )}
+  </View>
+
+  <Text style={styles.fullRentText}>
+    Do you want to collect Full Rent for current month?
+  </Text>
+
+  <TouchableOpacity style={styles.infoCircle}>
+    <Text style={styles.infoText}>i</Text>
+  </TouchableOpacity>
+</TouchableOpacity>
+
+    <View style={styles.divider} />
 
                   {/* <View style={styles.rowBetween}>
                     <Text style={styles.descText}>
@@ -2583,8 +2611,64 @@ const styles = StyleSheet.create({
     color: "#338BFF",
     fontFamily: "Gilroy-Medium",
   },
+fullRentRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 14,
+},
+
+checkbox: {
+  width: 20,
+  height: 20,
+  borderWidth: 1.5,
+  borderColor: "#D1D5DB",
+  borderRadius: 6,
+  marginRight: 10,
+  backgroundColor: "#fff",
+},
+
+fullRentText: {
+  flex: 1,
+  fontSize: 12,
+  color: "#4B5563",
+  fontFamily: "Gilroy-Medium",
+},
+
+infoCircle: {
+  width: 20,
+  height: 20,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#CBD5E1",
+  alignItems: "center",
+  justifyContent: "center",
+  marginLeft: 8,
+},
+
+infoText: {
+  fontSize: 12,
+  color: "#64748B",
+  fontFamily: "Gilroy-Bold",
+},
+
+divider: {
+  height: 1,
+  backgroundColor: "#E5E7EB",
+  marginBottom: 16,
+},
+checkedBox: {
+  backgroundColor: "#2563EB",
+  borderColor: "#2563EB",
+  alignItems: "center",
+  justifyContent: "center",
+},
 
 
+checkMark: {
+  color: "#fff",
+  fontSize: 12,
+  fontFamily: "Gilroy-Bold",
+},
 
   // rightMuted: {
   //   fontSize: 12,
