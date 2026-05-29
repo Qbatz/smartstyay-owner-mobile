@@ -182,8 +182,8 @@ export default function TenantCheckIn({ navigation, route }) {
 
     return (
       bed.floorId === selectedFloor.id &&
-      bed.roomId === selectedRoom.id &&
-      bed.currentStatus === "VACANT"
+      bed.roomId === selectedRoom.id 
+      // bed.currentStatus === "VACANT"
     );
   });
 
@@ -395,10 +395,12 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
   const submitLongStay = async () => {
+
+     if(isCheckinClick) return;
     const isValid = validateLongStay();
 
     if (!isValid) return;
-    if(isCheckinClick) return;
+   
     const chargeValid = validateExtraCharges();
     if (!chargeValid) return;
 
@@ -423,6 +425,8 @@ export default function TenantCheckIn({ navigation, route }) {
     };
 
     const res = await checkInCustomer(customerId, payload);
+    console.log("checking",res)
+    console.log(res?.message)
 
     if (res.success) {
       setModalType("success");
@@ -442,6 +446,7 @@ export default function TenantCheckIn({ navigation, route }) {
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false)
+         setIsCheckInClick(false);
       }, 1000);
     }
     }catch(error){
