@@ -123,9 +123,9 @@ const renderItem = (item) => (
   </View>
 
   {/* RIGHT SIDE */}
-  <TouchableOpacity>
+  {/* <TouchableOpacity>
     <Image source={FilterIcon} style={styles.settingsIcon} />
-  </TouchableOpacity>
+  </TouchableOpacity> */}
 </View>
 
 
