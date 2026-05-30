@@ -319,28 +319,123 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //   setReturnAmount(finalAmount);
   // }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
 
-  useEffect(() => {
-    if (!settlementDetails?.settlementInfo) return;
+//   useEffect(() => {
+//     if (!settlementDetails?.settlementInfo) return;
 
-    const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+//     const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
 
-    let finalAmount = 0;
+//     const unpaidInvoice =
+//   Number(settlementDetails?.settlementInfo?.unpaidInvoiceAmount || 0);
 
-    if (amountTobePaid < 0) {
-      finalAmount = isRefundable
-        ? amountTobePaid + userEnteredDeductionsTotal
-        : amountTobePaid - userEnteredDeductionsTotal;
-    } else {
-      finalAmount = isRefundable
-        ? amountTobePaid - userEnteredDeductionsTotal
-        : amountTobePaid + userEnteredDeductionsTotal;
-    }
+// const electricity =
+//   Number(settlementDetails?.settlementInfo?.electricityAmount || 0);
 
-    finalAmount -= Number(appliedDiscount || 0);
+// const refundableAdvance =
+//   Number(settlementDetails?.settlementInfo?.refundableAdvance || 0);
 
-    setReturnAmount(finalAmount);
+// const rentAmount = collectFullRent
+//   ? Number(
+//       settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+//     )
+//   : Number(
+//       settlementDetails?.currentMonthRentInfo
+//         ?.currentMonthPayableAmount || 0
+//     );
 
-  }, [settlementDetails, userEnteredDeductionsTotal, appliedDiscount]);
+// let finalAmount =
+//   rentAmount +
+//   unpaidInvoice +
+//   electricity -
+//   refundableAdvance +
+//   userEnteredDeductionsTotal;
+
+// finalAmount -= Number(appliedDiscount || 0);
+
+// setReturnAmount(finalAmount);
+
+
+//     if (amountTobePaid < 0) {
+//       finalAmount = isRefundable
+//         ? amountTobePaid + userEnteredDeductionsTotal
+//         : amountTobePaid - userEnteredDeductionsTotal;
+//     } else {
+//       finalAmount = isRefundable
+//         ? amountTobePaid - userEnteredDeductionsTotal
+//         : amountTobePaid + userEnteredDeductionsTotal;
+//     }
+
+//     finalAmount -= Number(appliedDiscount || 0);
+
+//     setReturnAmount(finalAmount);
+
+//   }, [settlementDetails, userEnteredDeductionsTotal, appliedDiscount , collectFullRent])
+
+useEffect(() => {
+  if (!settlementDetails?.settlementInfo) return;
+
+  const { isRefundable, amountTobePaid } =
+    settlementDetails.settlementInfo;
+
+  let payableAmount = Number(amountTobePaid || 0);
+
+  // ✅ Checkbox checked => full rent calculate
+  if (collectFullRent) {
+    const currentMonthRent = Number(
+      settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+    );
+
+    const currentMonthPayableAmount = Number(
+      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+    );
+
+    const rentDifference =
+      currentMonthRent - currentMonthPayableAmount;
+
+    payableAmount = payableAmount + rentDifference;
+  }
+
+  let finalAmount = 0;
+
+if (payableAmount < 0) {
+  finalAmount = isRefundable
+    ? payableAmount + userEnteredDeductionsTotal
+    : payableAmount - userEnteredDeductionsTotal;
+} else {
+  finalAmount = isRefundable
+    ? payableAmount - userEnteredDeductionsTotal
+    : payableAmount + userEnteredDeductionsTotal;
+}
+
+const appliedDiscountAmount =
+  Number(discountValue || appliedDiscount || 0);
+
+finalAmount -= appliedDiscountAmount;
+
+const normalizedAmount =
+  finalAmount > -1 && finalAmount < 0 ? 0 : finalAmount;
+
+setReturnAmount(normalizedAmount);
+
+
+console.log(
+  settlementDetails?.currentMonthRentInfo?.discountAmount
+);
+
+console.log(
+  settlementDetails?.settlementInfo?.amountTobePaid
+);
+  console.log("collectFullRent", collectFullRent);
+  console.log("amountTobePaid", amountTobePaid);
+  console.log("payableAmount", payableAmount);
+  console.log("finalAmount", finalAmount);
+
+}, [
+  settlementDetails,
+  userEnteredDeductionsTotal,
+  appliedDiscount,
+  collectFullRent,discountValue
+
+]);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const discountRef = useRef(null);
@@ -447,7 +542,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           id: Date.now() + Math.random(),
           type: isMaintenance ? "Maintenance" : "Others",
           title: isMaintenance ? "" : item?.item,
-          amount: String(item?.pendingAmount || item?.amount || 0),
+          amount: String(item?.pendingAmount || 0),
           isDefault: true,
         };
       });
@@ -476,6 +571,16 @@ export default function FinalSettlementScreen({ navigation, route }) {
       return () => subscription.remove();
     }, [navigation])
   );
+
+
+
+  const selectedRentAmount = collectFullRent
+  ? Number(
+      settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+    )
+  : Number(
+      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+    );
 
   // ✅ Add Non Refund charge
   const addCharge = () => {
@@ -1010,10 +1115,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 </View>
 
                 <Text style={styles.refundAmount}>
-                  ₹{" "}
-                  {Number(
+                  {/* ₹{" "} */}
+                  {/* {Number(
                     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-                  ).toLocaleString("en-IN")}
+                  ).toLocaleString("en-IN")} */}
+                  ₹ {selectedRentAmount.toLocaleString("en-IN")}
                 </Text>
               </TouchableOpacity>
 
@@ -1438,7 +1544,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 <Text style={styles.cardTitle}>Bookings</Text>
 
                 <Text style={styles.amountText}>
-                  ₹ {settlementDetails?.bookingItems?.paidAmount || 0}
+                  ₹ {settlementDetails?.bookingItems?.availableAdvanceBalance || 0}
                 </Text>
               </TouchableOpacity>
 
@@ -1463,25 +1569,35 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
                   <>
 
-                    <View style={styles.invoiceRow}>
-                      <Text
-                        style={[
-                          styles.invText,
-                          { flex: 1, color: "#2563EB" },
-                        ]}
-                      >
-                        {settlementDetails?.bookingItems?.invoiceNo || settlementDetails?.bookingItems?.invoiceNumber}
-                      </Text>
+                  {settlementDetails?.bookingItems?.redeemedList?.length > 0 ? (
+  settlementDetails.bookingItems.redeemedList.map((item, index) => (
+    <View key={index} style={styles.invoiceRow}>
+      <Text
+        style={[
+          styles.invText,
+          { flex: 1, color: "#2563EB" },
+        ]}
+      >
+        {item.invoiceNumber}
+      </Text>
 
-                      <Text
-                        style={[
-                          styles.invText,
-                          { flex: 1, textAlign: "right" },
-                        ]}
-                      >
-                        ₹ {settlementDetails?.bookingItems?.appliedAmount || settlementDetails?.bookingItems?.amount || 0}
-                      </Text>
-                    </View>
+      <Text
+        style={[
+          styles.invText,
+          { flex: 1, textAlign: "right" },
+        ]}
+      >
+        ₹ {item.redeemedAmount}
+      </Text>
+    </View>
+  ))
+) : (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyText}>
+      No booking transactions available
+    </Text>
+  </View>
+)}
 
                   </>
 
@@ -1491,7 +1607,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           </Text>
         </View> */}
 
-
+{settlementDetails?.bookingItems?.redeemedList?.length > 0 && (
                   <View style={styles.totalInvoiceRow}>
                     <Text style={styles.totalText}>Total</Text>
 
@@ -1499,6 +1615,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       ₹ {settlementDetails?.bookingItems?.appliedAmount || 0}
                     </Text>
                   </View>
+)}
                 </View>
               )}
             </View>
@@ -1517,7 +1634,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 <Text style={styles.cardTitle}>Refundable Advance</Text>
 
                 <Text style={styles.amountText}>
-                  ₹ {settlementDetails?.advanceItems?.paidAmount || 0}
+                  ₹ {settlementDetails?.advanceItems?.availableAdvanceBalance || 0}
                 </Text>
               </TouchableOpacity>
 
@@ -1535,25 +1652,35 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
                   <>
 
-                    <View style={styles.invoiceRow}>
-                      <Text
-                        style={[
-                          styles.invText,
-                          { flex: 1, color: "#2563EB" },
-                        ]}
-                      >
-                        {settlementDetails?.advanceItems?.invoiceNo || settlementDetails?.advanceItems?.invoiceNumber}
-                      </Text>
+                  {settlementDetails?.advanceItems?.redeemedList?.length > 0 ? (
+  settlementDetails.advanceItems.redeemedList.map((item, index) => (
+    <View key={index} style={styles.invoiceRow}>
+      <Text
+        style={[
+          styles.invText,
+          { flex: 1, color: "#2563EB" },
+        ]}
+      >
+        {item.invoiceNumber}
+      </Text>
 
-                      <Text
-                        style={[
-                          styles.invText,
-                          { flex: 1, textAlign: "right" },
-                        ]}
-                      >
-                        ₹ {settlementDetails?.advanceItems?.appliedAmount || settlementDetails?.advanceItems?.amount || 0}
-                      </Text>
-                    </View>
+      <Text
+        style={[
+          styles.invText,
+          { flex: 1, textAlign: "right" },
+        ]}
+      >
+        ₹ {item.redeemedAmount}
+      </Text>
+    </View>
+  ))
+) : (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyText}>
+      No refundable advance transactions available
+    </Text>
+  </View>
+)}
 
                   </>
 
@@ -1563,7 +1690,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           </Text>
         </View> */}
 
-
+{settlementDetails?.advanceItems?.redeemedList?.length > 0 && (
                   <View style={styles.totalInvoiceRow}>
                     <Text style={styles.totalText}>Total</Text>
 
@@ -1571,6 +1698,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
                     </Text>
                   </View>
+                )}
+
                 </View>
               )}
             </View>
