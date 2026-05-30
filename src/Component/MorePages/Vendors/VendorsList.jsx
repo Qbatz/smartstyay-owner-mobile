@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   backArrow: { width: 22, height: 22 },
-  headerTitle: { fontSize: 18, fontWeight: "700", color: "#111" },
+  headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold", color: "#111" },
 
   searchWrapper: {
     margin: 16,
@@ -795,12 +795,12 @@ const styles = StyleSheet.create({
 
   initialText: {
     fontSize: 16,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold",
     color: "#4B5563",
   },
 
 
-  vendorName: { fontSize: 16, fontWeight: "700", color: "#111" },
+  vendorName: { fontSize: 16, fontFamily: "Gilroy-Bold", color: "#111" },
   companyBadge: {
     marginTop: 6,
     backgroundColor: "#FFF6E6",
@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 8,
   },
-  companyText: { color: "#A47E00", fontSize: 12, fontWeight: "600" },
+  companyText: { color: "#A47E00", fontSize: 12, fontFamily: "Gilroy-Semibold"},
 
   dotsTouchable: { padding: 6, marginLeft: 8 },
   dotsIcon: { width: 25, height: 25, },
@@ -884,7 +884,7 @@ const styles = StyleSheet.create({
 
   menuText: {
     fontSize: 14,
-    fontWeight: "600",
+  fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
   deleteOverlay: {
@@ -904,7 +904,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: "Gilroy-Bold",
     color: '#111',
     textAlign: 'center',
   },
@@ -937,7 +937,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#444',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "Gilroy-Semibold",
   },
 
   deleteBtn: {
@@ -953,7 +953,7 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+   fontFamily: "Gilroy-Bold"
   },
 
 
@@ -987,21 +987,22 @@ const styles = StyleSheet.create({
 
   filterTitle: {
     fontSize: 20,
-    fontWeight: "700",
+   fontFamily: "Gilroy-Bold",
     marginLeft: 10
   },
 
-  resetTextSmall: { color: "#2D6CDF", fontWeight: "600" },
+  resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold" },
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111", fontWeight: "600" },
+  quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 52, marginBottom: 20 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontWeight: "700" }, applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontWeight: "700" },
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" }, applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
+  applyBtnText: { color: "#fff",fontFamily: "Gilroy-Bold"},
+
   dropdownMenu: {
     position: "absolute",
     left: 0,
@@ -1089,7 +1090,7 @@ const styles = StyleSheet.create({
   addVendorText: {
     color: "#fff",
     fontSize: 15,
-    fontWeight: "600",
+  fontFamily: "Gilroy-Semibold"
   },
 
 
