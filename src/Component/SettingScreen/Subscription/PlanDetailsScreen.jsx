@@ -110,7 +110,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
         </View>
 
 
-        {canWriteProfile ? (<>
+        {currentPlan ? (<>
 
           <View style={styles.card}>
             <View style={styles.rowBetween}>
