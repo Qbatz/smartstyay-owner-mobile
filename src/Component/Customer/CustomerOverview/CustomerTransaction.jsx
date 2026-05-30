@@ -6,7 +6,7 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 export default function CustomerTransactions({ customerDetails,showTransactionDetails,selectedTransaction }) {
 
   const transactionList = customerDetails?.transactionList || []
-
+ 
 
   return (
     <>
