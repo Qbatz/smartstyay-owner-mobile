@@ -138,7 +138,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const isTabBarVisible = useRef(true);
 
-  const { handleScroll , headerTranslate} = useHideTabbarOnScroll(setShowTabBar, setShowProfileTopBar);
+  const { handleScroll, headerTranslate } = useHideTabbarOnScroll(setShowTabBar, setShowProfileTopBar);
 
 
   const subTabs = [
@@ -251,42 +251,45 @@ export default function DashboardNewDesign({ initialParams, route }) {
     profitTrend: dashboardList?.profitTrend || 0,
   };
 
-    
-  
+
+
   useEffect(() => {
     const fetchDashboard = async () => {
-      const res = await getDashboard(activeHostelId, {
-        billingFilter: "This Month",
-        complaintRequestFilter: "This Month",
-        financeFilter: "This Month",
-        occupancyFilter: "This Month"
-      });
-
-      if (res?.data) {
-        const mapped = mapDashboardData(res?.data);
-
-        setDashboardList({
-          ...mapped,
-
-          occupancyTrendSummary: res.data.occupancyTrendSummary,
-          revenueSummary: res.data.revenueSummary,
-          revenueTrend: res.data.revenueTrend,
+      if (activeHostelId) {
+        const res = await getDashboard(activeHostelId, {
+          billingFilter: "This Month",
+          complaintRequestFilter: "This Month",
+          financeFilter: "This Month",
+          occupancyFilter: "This Month"
         });
+
+        if (res?.data) {
+          const mapped = mapDashboardData(res?.data);
+
+          setDashboardList({
+            ...mapped,
+
+            occupancyTrendSummary: res.data.occupancyTrendSummary,
+            revenueSummary: res.data.revenueSummary,
+            revenueTrend: res.data.revenueTrend,
+          });
+        }
       }
     };
 
     fetchDashboard();
-  }, [activeHostelId,showProfileTopBar])
+  }, [activeHostelId, showProfileTopBar])
 
   const isFocused = useIsFocused();
   useEffect(() => {
-  if (route.name === "Home" && isFocused) {
-    fetchDashboard();
-  }
-}, [isFocused]);
+    if (route.name === "Home" && isFocused) {
+      fetchDashboard();
+    }
+  }, [isFocused]);
 
 
-   const fetchDashboard = async () => {
+  const fetchDashboard = async () => {
+    if (activeHostelId) {
       const res = await getDashboard(activeHostelId, {
         billingFilter: "This Month",
         complaintRequestFilter: "This Month",
@@ -294,21 +297,22 @@ export default function DashboardNewDesign({ initialParams, route }) {
         occupancyFilter: "This Month"
       });
 
-      if(res?.status === 200){
-      if (res?.data) {
-        const mapped = mapDashboardData(res?.data);
+      if (res?.status === 200) {
+        if (res?.data) {
+          const mapped = mapDashboardData(res?.data);
 
-        setDashboardList({
-          ...mapped,
+          setDashboardList({
+            ...mapped,
 
-          occupancyTrendSummary: res.data.occupancyTrendSummary,
-          revenueSummary: res.data.revenueSummary,
-          revenueTrend: res.data.revenueTrend,
-        });
+            occupancyTrendSummary: res.data.occupancyTrendSummary,
+            revenueSummary: res.data.revenueSummary,
+            revenueTrend: res.data.revenueTrend,
+          });
+        }
       }
-      }
-    };
-  
+    }
+  };
+
 
 
   useEffect(() => {
@@ -879,6 +883,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
     hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
     hostelList?.[0] ??
     {};
+  if (!activeHostel) {
+    return null;
+  }
   console.log(activeHostel)
 
 
@@ -907,7 +914,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   useEffect(() => {
     if (activeHostel) {
-      setActiveHostelId(activeHostel.hostelId)
+      setActiveHostelId(activeHostel?.hostelId)
     }
   }, [activeHostel])
 
@@ -1369,7 +1376,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
           </View>
         </View> */}
 
-       {/* <View
+          {/* <View
   style={{
     height: showProfileTopBar ? 70 : 0,
     overflow: "hidden",
@@ -1377,7 +1384,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   }}
 > */}
 
-{/* <Animated.View
+          {/* <Animated.View
   style={{
     transform: [
       {
@@ -1389,8 +1396,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
 > */}
 
 
-              <View style={styles.headerTop}>
-                {/* <View style={styles.hostelRow}>
+          <View style={styles.headerTop}>
+            {/* <View style={styles.hostelRow}>
     <Image source={PgImg} style={{ width: 38, height: 38 }} />
 
     <View style={{ marginLeft: 12, flex: 1 }}>
@@ -1404,7 +1411,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     </View>
   </View> */}
 
-                {/* <View style={styles.hostelRow}>
+            {/* <View style={styles.hostelRow}>
   {hasHostel ? (
     <>
 
@@ -1445,125 +1452,125 @@ export default function DashboardNewDesign({ initialParams, route }) {
   )}
 </View> */}
 
-                <View style={styles.hostelRow}>
-                  <TouchableOpacity style={styles.hostelAvatar}>
-                    {hasHostelProfile ? (
-                      <Image
-                        source={{ uri: activeHostel?.mainImage }}
-                        style={styles.hostelAvatarImg}
-                      />
-                    ) : (
-                      <Text style={styles.hostelAvatarText}>
-                        {getProfileInitial()}
-                      </Text>
-                    )}
+            <View style={styles.hostelRow}>
+              <TouchableOpacity style={styles.hostelAvatar}>
+                {hasHostelProfile ? (
+                  <Image
+                    source={{ uri: activeHostel?.mainImage }}
+                    style={styles.hostelAvatarImg}
+                  />
+                ) : (
+                  <Text style={styles.hostelAvatarText}>
+                    {getProfileInitial()}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              {hasHostel ? (
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+                    <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
                   </TouchableOpacity>
 
-                  {hasHostel ? (
-                    <View style={{ marginLeft: 12, flex: 1 }}>
-                      <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
-                        <Text style={styles.hostelTitle}>{activeHostel?.name}</Text>
-                      </TouchableOpacity>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                        <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
-                        <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', marginLeft: 2 }}>
-                          {activeHostel?.city}</Text>
-                      </View>
-                      {/* <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                    <Image source={OrangeLocationIcon} style={{ width: 15, height: 15 }} />
+                    <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', marginLeft: 2 }}>
+                      {activeHostel?.city}</Text>
+                  </View>
+                  {/* <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
                     <Text style={styles.changeText}>Change Hostel →</Text>
                   </TouchableOpacity> */}
 
-                    </View>
-                  ) : (
-                    (
-                      <Animated.View
+                </View>
+              ) : (
+                (
+                  <Animated.View
+                    style={[
+                      styles.addPgWrapper,
+                      {
+                        transform: [{ scale: scaleAnim }],
+                      },
+                    ]}
+                  >
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      style={styles.addPgBtn}
+                      onPress={() => navigation.navigate("AddPG")}
+                    >
+                      <Animated.Text
                         style={[
-                          styles.addPgWrapper,
+                          styles.addPgIcon,
                           {
-                            transform: [{ scale: scaleAnim }],
+                            transform: [
+                              {
+                                rotate: rotateAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: ["0deg", "90deg"],
+                                }),
+                              },
+                            ],
                           },
                         ]}
                       >
-                        <TouchableOpacity
-                          activeOpacity={0.85}
-                          style={styles.addPgBtn}
-                          onPress={() => navigation.navigate("AddPG")}
-                        >
-                          <Animated.Text
-                            style={[
-                              styles.addPgIcon,
-                              {
-                                transform: [
-                                  {
-                                    rotate: rotateAnim.interpolate({
-                                      inputRange: [0, 1],
-                                      outputRange: ["0deg", "90deg"],
-                                    }),
-                                  },
-                                ],
-                              },
-                            ]}
-                          >
-                            +
-                          </Animated.Text>
+                        +
+                      </Animated.Text>
 
-                          <Text style={styles.addPgText}>Add  PG</Text>
-                        </TouchableOpacity>
-                      </Animated.View>
-                    )
+                      <Text style={styles.addPgText}>Add  PG</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                )
 
-                  )}
-                </View>
+              )}
+            </View>
 
 
 
-                <View style={styles.rightIcons}>
-                  {/* <TouchableOpacity
+            <View style={styles.rightIcons}>
+              {/* <TouchableOpacity
       style={styles.iconCircle}
       onPress={() => navigation.navigate("NotificationDetails")}
     >
       <Image source={Bell} style={{ width: 28, height: 28 }} />
     </TouchableOpacity> */}
-                  <TouchableOpacity
-                    style={styles.iconCirclenoti}
-                    onPress={() => navigation.navigate("NotificationDetails")}
-                  >
-                    <Image source={Bell} style={{ width: 28, height: 28 }} />
+              <TouchableOpacity
+                style={styles.iconCirclenoti}
+                onPress={() => navigation.navigate("NotificationDetails")}
+              >
+                <Image source={Bell} style={{ width: 28, height: 28 }} />
 
-                    {unreadCount > 0 && (
-                      <View style={styles.badge}>
-                        <Text style={styles.badgeText}>
-                          {unreadCount > 99 ? "99+" : unreadCount}
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
+                {unreadCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
 
 
-                  <TouchableOpacity
-                    style={[styles.iconCircle, { marginLeft: 10 }]}
-                    onPress={() => setDrawerVisible(true)}
-                  >
-                    {/* <Image source={Profile} style={{ width: 40, height: 40 }} /> */}
-                    {profileDetails?.profilePic ?  <Image source={{uri:profileDetails?.profilePic}} style={{ width: 40, height: 40,borderRadius:20 }} /> : 
-                    <View style={{width:40,height:40,borderRadius:20,backgroundColor: "#EEF2FF",justifyContent:'center',alignItems:'center'}}>
-                      <Text style={{fontSize:16,fontFamily:"Gilroy-Bold",color:'black'}}>
-                        {profileDetails?.initial}</Text>
-                    </View>}
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {/* </Animated.View> */}
- {/* </View> */}
-            
+              <TouchableOpacity
+                style={[styles.iconCircle, { marginLeft: 10 }]}
+                onPress={() => setDrawerVisible(true)}
+              >
+                {/* <Image source={Profile} style={{ width: 40, height: 40 }} /> */}
+                {profileDetails?.profilePic ? <Image source={{ uri: profileDetails?.profilePic }} style={{ width: 40, height: 40, borderRadius: 20 }} /> :
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#EEF2FF", justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Bold", color: 'black' }}>
+                      {profileDetails?.initial}</Text>
+                  </View>}
+              </TouchableOpacity>
+            </View>
+          </View>
+          {/* </Animated.View> */}
+          {/* </View> */}
+
 
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabsRow}
-             bounces={false}
+            bounces={false}
           >
             {tabs.map((item) => (
               <TouchableOpacity
@@ -1644,7 +1651,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                       horizontal
                       showsHorizontalScrollIndicator={false}
                       contentContainerStyle={styles.subTabContainer}
-                       bounces={false}
+                      bounces={false}
                     >
                       {subTabs.map((tab) => (
                         <TouchableOpacity
@@ -1671,12 +1678,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                   <ScrollView showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     onScroll={handleScroll}
-                     bounces={false}
+                    bounces={false}
 
-  scrollEventThrottle={16}
-  automaticallyAdjustContentInsets={false}
-  contentInsetAdjustmentBehavior="never"
-                      >
+                    scrollEventThrottle={16}
+                    automaticallyAdjustContentInsets={false}
+                    contentInsetAdjustmentBehavior="never"
+                  >
 
 
 
@@ -2114,7 +2121,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                          {/* <View style={{ flex: 1, marginRight: 10 }}>
+                              {/* <View style={{ flex: 1, marginRight: 10 }}>
   <Text
     style={styles.bookingTitle}
     numberOfLines={1}
@@ -2123,19 +2130,19 @@ export default function DashboardNewDesign({ initialParams, route }) {
     Upcoming Check-ins ({dashboardList?.checkins?.length || 0})
   </Text>
 </View> */}
-<View
-  style={{
-    flex: 1,
-    marginRight: 10,
-    flexShrink: 1,
-  }}
->
-  <Text
-    style={styles.bookingTitle}
-  >
-    Upcoming Check-ins ({dashboardList?.checkins?.length || 0})
-  </Text>
-</View>
+                              <View
+                                style={{
+                                  flex: 1,
+                                  marginRight: 10,
+                                  flexShrink: 1,
+                                }}
+                              >
+                                <Text
+                                  style={styles.bookingTitle}
+                                >
+                                  Upcoming Check-ins ({dashboardList?.checkins?.length || 0})
+                                </Text>
+                              </View>
                             </View>
 
 
@@ -2169,7 +2176,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
-                             bounces={false}
+                            bounces={false}
                           >
                             {dashboardList?.checkins?.length > 0 ? (
                               dashboardList.checkins.map((item, index) => (
@@ -2239,7 +2246,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <View style={styles.bookingIconBox}>
                                 <Image source={CheckinImg} style={{ width: 18, height: 18 }} />
                               </View>
-                             {/* <View style={{ flex: 1, marginRight: 10 }}>
+                              {/* <View style={{ flex: 1, marginRight: 10 }}>
   <Text
     style={styles.bookingTitle}
     numberOfLines={1}
@@ -2248,17 +2255,17 @@ export default function DashboardNewDesign({ initialParams, route }) {
     Overdue Invoices ({dashboardList?.overdueInvoices?.length || 0})
   </Text>
 </View> */}
-<View
-  style={{
-    flex: 1,
-    marginRight: 10,
-    flexShrink: 1,
-  }}
->
-  <Text style={styles.bookingTitle}>
-    Overdue Invoices ({dashboardList?.overdueInvoices?.length || 0})
-  </Text>
-</View>
+                              <View
+                                style={{
+                                  flex: 1,
+                                  marginRight: 10,
+                                  flexShrink: 1,
+                                }}
+                              >
+                                <Text style={styles.bookingTitle}>
+                                  Overdue Invoices ({dashboardList?.overdueInvoices?.length || 0})
+                                </Text>
+                              </View>
                             </View>
 
 
@@ -2291,7 +2298,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             style={{ maxHeight: 260 }}
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled={true}
-                             bounces={false}
+                            bounces={false}
                           >
 
                             {/* {dashboardList?.overdueInvoices?.map((item, index) => (
@@ -2924,7 +2931,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           <ScrollView
                             nestedScrollEnabled={true}
                             keyboardShouldPersistTaps="handled"
-                             bounces={false}
+                            bounces={false}
                           >
                             <RequestComplaintCard
                               title="Tenant Requests"
@@ -3524,8 +3531,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
             {/* 1 Sharing */}
             <ScrollView style={{ maxHeight: 430 }}
               showsVerticalScrollIndicator={false}
-              nestedScrollEnabled 
-               bounces={false}>
+              nestedScrollEnabled
+              bounces={false}>
               {sharingData.map((item, index) => (
                 <View style={styles.shareCard} key={index}>
 
@@ -3576,10 +3583,10 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
       <RecordPaymentSheet
         visible={showRecordPayment}
-        onClose={() =>{
+        onClose={() => {
           fetchDashboard();
           setShowRecordPayment(false)
-        } }
+        }}
         selectedBill={selectedBill}
       />
 
@@ -4454,11 +4461,11 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
 
- bookingHeaderLeft: {
-  flexDirection: "row",
-  alignItems: "center",
-  flex: 1,
-},
+  bookingHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
 
   bookingIconBox: {
     width: 30,
