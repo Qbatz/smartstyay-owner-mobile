@@ -66,6 +66,7 @@ export default function SettingsPG({ navigation }) {
   const [showHeader, setShowHeader] = useState(false);
 
   const [deletePGShow, setDeletePG] = useState(false);
+  const cardDotRef = useRef(null);
 
   const clean = (text) => (text ? text.toString().trim() : "");
 
@@ -275,6 +276,7 @@ export default function SettingsPG({ navigation }) {
 
     try {
       const res = await deletePG(deletedId)
+      console.log("DeletedSus",res)
 
       if (res?.status === 400) {
         setModalMessage("This hostel cannot be deleted because rooms or beds already exist.");
@@ -301,6 +303,7 @@ export default function SettingsPG({ navigation }) {
       const updated = hostelList.filter(
         (h) => h.hostelId !== deletedId
       );
+      console.log(updated)
 
       updateHostelList(updated)
 
@@ -481,7 +484,7 @@ export default function SettingsPG({ navigation }) {
 });
 
 
-  const cardDotRef = useRef(null);
+  
   const openPopup = (id, ref) => {
     if (!ref) return;
 

@@ -279,9 +279,7 @@ export default function AddPG({ navigation, route }) {
 
 
   const handleSubmit = async () => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
+    
     let errors = {};
 
     if (!hostelName.trim())
@@ -362,6 +360,9 @@ export default function AddPG({ navigation, route }) {
     };
 
     console.log("FINAL PG PAYLOAD ===>", finalPayload);
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
     try {
       if (isEdit) {
