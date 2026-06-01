@@ -331,6 +331,8 @@ const BillBookings = ({ onBookingDetailsShow }) => {
   //     }
 
   const handleViewBookingDetails = (item) => {
+    console.log("item", item);
+    
     onBookingDetailsShow(item)
   }
 
