@@ -1584,7 +1584,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 10,
     paddingVertical: 4,
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+
+ borderWidth: 1,
+  borderColor: "#E5E7EB",
+
+  
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.12,
+  shadowRadius: 12,
+
+  elevation: 8, 
 
   },
 

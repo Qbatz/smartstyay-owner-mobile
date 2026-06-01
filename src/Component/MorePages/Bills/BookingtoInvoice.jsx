@@ -534,7 +534,7 @@ export default function BookingToInvoice() {
 
                                         <View style={styles.rowBetween}>
                                             <Text style={styles.label}>Mode</Text>
-                                            <Text style={styles.valueText}>--</Text>
+                                            <Text style={styles.valueText}>N/A</Text>
                                         </View>
 
                                         <Text style={styles.inputLabel}>
