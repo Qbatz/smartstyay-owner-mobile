@@ -1140,6 +1140,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     elevation: 20,
     zIndex: 1000,
+
+     borderWidth: 1,
+  borderColor: "#E5E7EB",
+
+  
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.12,
+  shadowRadius: 12,
+
+  elevation: 8, 
   },
 
   popupItem: {

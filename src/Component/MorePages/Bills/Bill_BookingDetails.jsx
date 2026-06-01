@@ -26,6 +26,7 @@ import Dots from "../../../Assets/Images/3dots.png";
 import PaymentIcon from "../../../Assets/Images/RecordPayIcon.png";
 import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
 import Call from "../../../Assets/Images/call.png";
+import EditIcon from "../../../Assets/Images/editIcon.png"
 import ShareIcon from "../../../Assets/Images/share.png";
 import DownloadIcon from "../../../Assets/Images/download.png";
 import PlusIcon from "../../../Assets/Images/add.png";
@@ -120,6 +121,9 @@ const BillBookingDetailsSheet = ({
 
   const bookingData = InitializebookingBills;
   console.log("bookingdata", bookingData);
+
+  console.log("selectedBill", selectedBill);
+  
   
 const invoicesList = InitializebookingBills?.listInvoices || [];
 
@@ -610,12 +614,12 @@ console.log("canRedeem", canRedeem);
                       { color: "#fff" },
                     ]}
                   >
-                    Paid
+                    {InitializebookingBills?.advanceInfo?.paymentStatus}
                   </Text>
                 </View>
 
 
-                {
+                {/* {
                   ((!isPaid) ||
                     (isPaid && invoiceDetail?.invoiceMode === "Manual" && bill?.configurations?.invoiceType !== "Settlement")) && (
 
@@ -629,7 +633,7 @@ console.log("canRedeem", canRedeem);
                       />
                     </TouchableOpacity>
                   )
-                }
+                } */}
               </View>
             </View>
 
@@ -750,7 +754,7 @@ console.log("canRedeem", canRedeem);
                           </TouchableOpacity>
 
                           <Text style={styles.paymentAmount}>
-                          ₹ {pay?.invoiceAmount ? Number(pay?.invoiceAmount).toFixed(2) : "0.00"}
+                          ₹ {pay?.pendingAmount ? Number(pay?.pendingAmount).toFixed(2) : "0.00"}
                           </Text>
                         </View>
 
@@ -929,17 +933,20 @@ console.log("canRedeem", canRedeem);
 
             {
               invoiceDetail?.canEdit && (
+                <>
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                   disabled={!canUpdateInvoice}
                   onPress={() => handleEditBill(invoiceDetail)}
                 >
                   <Image
-                    source={require("../../../Assets/Images/ReAssign.png")}
+                   source={EditIcon}
                     style={styles.popupIcon}
                   />
                   <Text style={styles.popupText}>Edit</Text>
                 </TouchableOpacity>
+                <View style={styles.menuDivider} />
+                </>
               )}
 
             {paymentStatus === "Pending" &&
@@ -1345,6 +1352,20 @@ const styles = StyleSheet.create({
     elevation: 50,
     zIndex: 20001,
     paddingVertical: 10,
+        // Add these
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+
+  // Shadow
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.12,
+  shadowRadius: 12,
+
+  elevation: 8, // Android
   },
   popupRow: {
     flexDirection: "row",
@@ -1715,5 +1736,9 @@ applyText: {
     alignSelf: "center",
     fontFamily: "Gilroy-Semibold", 
   },
+  menuDivider: {
+  height: 1,
+  backgroundColor: "#E8F0FF",
+},
 
 })

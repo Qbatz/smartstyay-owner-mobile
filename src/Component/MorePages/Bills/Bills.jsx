@@ -4147,6 +4147,7 @@ export default function BillsDesign({ route }) {
                         <Image source={EditIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Edit</Text>
                       </TouchableOpacity>
+                        <View style={styles.menuDivider} />
 
 
                       <TouchableOpacity
@@ -4324,6 +4325,7 @@ export default function BillsDesign({ route }) {
                 </TouchableOpacity> */}
 
                 {selectedBill?.invoiceAmount < 0 && selectedBill?.paymentStatus !== "Refunded" && selectedBill?.paymentStatus !== "Cancelled" && (
+                  <>
                   <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
                     onPress={handleShowRefundPayment} disabled={!canWriteInvoice}>
                     <Image
@@ -4332,7 +4334,11 @@ export default function BillsDesign({ route }) {
                     />
                     <Text style={styles.popupText}>Refund Amount</Text>
                   </TouchableOpacity>
+                  <View style={styles.menuDivider} />
+                  </>
                 )}
+
+                
 
 
                 {/* {(selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") && (
@@ -4372,6 +4378,8 @@ export default function BillsDesign({ route }) {
 
 
                 {isPaid && (selectedBill?.invoiceMode === "Manual" && selectedBill?.paymentStatus === "Paid" && selectedBill?.invoiceType === "Rent") && (
+                  <>
+                 
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                     disabled={!canUpdateInvoice}
@@ -4383,11 +4391,14 @@ export default function BillsDesign({ route }) {
                     />
                     <Text style={styles.popupText}>UnPaid</Text>
                   </TouchableOpacity>
+<View style={styles.menuDivider} />
+                   </>
                 )}
 
-
+ {/*  */}
 
                 {selectedBill?.canEdit && (
+                  <>
                   <TouchableOpacity
                     style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                     disabled={!canUpdateInvoice}
@@ -4399,6 +4410,8 @@ export default function BillsDesign({ route }) {
                     />
                     <Text style={styles.popupText}>Edit</Text>
                   </TouchableOpacity>
+                   <View style={styles.menuDivider} />
+                  </>
                 )}
 
                 {/* {(selectedBill?.canEdit === "Recurring" && selectedBill?.paymentStatus === "Pending") && (
@@ -4416,6 +4429,7 @@ export default function BillsDesign({ route }) {
 
                 {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
+                    <>
                     <TouchableOpacity
                       style={styles.popupRow}
                       onPress={() => {
@@ -4432,8 +4446,12 @@ export default function BillsDesign({ route }) {
                       />
                       <Text style={styles.popupText}>Make as discount</Text>
                     </TouchableOpacity>
+                       <View style={styles.menuDivider} />
+                    </>
                   )}
+
                 {showApplyToInvoices && (
+                  <>
                   <TouchableOpacity
                     style={styles.popupRow}
                     onPress={handleApplyInvoice}
@@ -4452,10 +4470,13 @@ export default function BillsDesign({ route }) {
                       Apply to Invoices
                     </Text>
                   </TouchableOpacity>
+                   <View style={styles.menuDivider} />
+                  </>
                 )}
 
 
                 {showAdjustWithAdvance && (
+                  <>
                   <TouchableOpacity
                     style={[
                       styles.popupRow,
@@ -4482,6 +4503,8 @@ export default function BillsDesign({ route }) {
                       Adjust with Advance
                     </Text>
                   </TouchableOpacity>
+                     <View style={styles.menuDivider} />
+                  </>
                 )}
 
                 {/* <TouchableOpacity
@@ -4509,6 +4532,7 @@ export default function BillsDesign({ route }) {
 
                 {
                   !isPaid && (
+                    <>
                     <TouchableOpacity
                       style={[
                         styles.popupRow,
@@ -4533,6 +4557,8 @@ export default function BillsDesign({ route }) {
                         Delete
                       </Text>
                     </TouchableOpacity>
+                     {/* <View style={styles.menuDivider} /> */}
+                    </>
                   )
                 }
               </View>
@@ -6319,6 +6345,19 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 30,
     elevation: 5,
+
+      borderWidth: 0.4,
+  borderColor: '#D9D9D9',
+  // borderRadius: 12,
+
+      // iOS
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  shadowOffset: { width: 0, height: 1 },
+
+  // Android
+  elevation: 1,
   },
 
   addBtn: {
@@ -6441,9 +6480,27 @@ const styles = StyleSheet.create({
     elevation: 50,
     zIndex: 20001,
     paddingVertical: 10,
+
+    // Add these
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+
+  // Shadow
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.12,
+  shadowRadius: 12,
+
+  elevation: 8, // Android
   },
 
-
+menuDivider: {
+  height: 1,
+  backgroundColor: "#E8F0FF",
+},
 
   // popupBox: {
   //   position: "absolute",
