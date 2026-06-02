@@ -66,6 +66,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const [isDeleteClicked,setIsDeleteClicked]=useState(false);
   const DeleteMenu = () => {
     setDeleteTenants(true)
     setMenuVisible(false)
@@ -76,7 +77,13 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   const handleDeleteCustomer = async () => {
     if (!deleteUserId) return;
 
+    if(isDeleteClicked) return;
+
+    try{
+      setIsDeleteClicked(true)
+
     const res = await deleteCustomer(activeHostelId, deleteUserId);
+    console.log("tenantDelete",res)
 
     if (res.success) {
       setModalType("success");
@@ -95,7 +102,12 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
+        setIsDeleteClicked(false);
       }, 1500);
+    }
+    }catch(error){
+      console.log(error)
+      setIsDeleteClicked(false)
     }
   };
 
@@ -588,7 +600,8 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.deleteBtn}
+                  style={[styles.deleteBtn , isDeleteClicked && {opacity:0.4}]}
+                  disabled={isDeleteClicked}
                   onPress={handleDeleteCustomer}
                 >
                   <Text style={styles.deleteBtnText}>Delete</Text>

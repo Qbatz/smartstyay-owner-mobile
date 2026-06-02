@@ -116,6 +116,7 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
   // }
 
   const handleLogout = async () => {
+    onClose();
     const res = await logout();
     console.log(res)
 
