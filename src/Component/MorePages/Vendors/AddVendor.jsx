@@ -94,7 +94,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
 
   const [showProfileSheet, setShowProfileSheet] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState({
-    code: "+91",
+    code:vendorData?.countryCode || "+91",
     label: "India",
   });
 
@@ -164,7 +164,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
     setStateName(snapshot.stateName);
     setCountry(snapshot.country);
     setPinCode(snapshot.pinCode);
-    setSelectedCountry(snapshot.countryCode)
+    setSelectedCountry(snapshot?.countryCode)
 
 
     if (vendorData.profilePic) {
@@ -876,7 +876,8 @@ export default function AddVendorSheet({ onClose, vendorData }) {
                 style={styles.countryCodeBox}
                 onPress={() => setCountryCodeOpen(!countryCodeOpen)}
               >
-                <Text style={styles.countryCodeText}>{selectedCountry.code || selectedCountry}</Text>
+                <Text style={styles.countryCodeText}>
+                  {selectedCountry?.code || selectedCountry || "+91"}</Text>
                 <Image source={DownArrow} style={styles.countryArrow} />
               </TouchableOpacity>
             
