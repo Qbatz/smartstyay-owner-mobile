@@ -645,6 +645,7 @@ export default function CreateBill({ navigation }) {
     setCustomerDropdownVisible((v) => !v);
   };
 
+  console.log(items,)
   const validateAndSubmit = async () => {
     if (isSubmitted) return;
     setIsSubmitted(true)
@@ -706,21 +707,23 @@ export default function CreateBill({ navigation }) {
       };
 
       console.log("FINAL PAYLOAD", payload);
+      console.log(items)
       let res;
 
       if (mode === "edit") {
 
-        //   const changedItems = items.map((i) => ({
-        //   type: i.description,
-        //   amount: Number(i.amount),
-        // }));
+          const changedItems = items.map((i) => ({
+          type: i.description,
+          amount: Number(i.amount),
+        }));
 
-        const changedItems = items
-          .filter((i) => !i.isExisting)
-          .map((i) => ({
-            type: i.description,
-            amount: Number(i.amount),
-          }));
+        // const changedItems = items
+        //   .filter((i) => !i.isExisting)
+        //   .map((i) => ({
+        //     type: i.description,
+        //     amount: Number(i.amount),
+        //   }));
+        
 
         console.log("changesitems", changedItems);
 
