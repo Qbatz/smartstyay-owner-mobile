@@ -794,7 +794,11 @@ console.log(
     const payload = {
       discountAmount: Number(discountValue) || 0,
       deductions: extraDeductionsPayload,
+      shouldCollectFullRent : collectFullRent
     }
+
+    console.log("generatepayload", payload);
+    
 
     // const payload = {
     //   ...(discountValue !== "" && {
@@ -809,7 +813,7 @@ console.log(
 
     const res = await submitSettlement(customerId, payload);
 
-    if (res.success) {
+    if (res?.success) {
 
       setModalType("success");
       setMessage(res.data);
@@ -843,6 +847,12 @@ console.log(
   const isRefundable = settlementDetails?.settlementInfo?.isRefundable;
   const discountApplied = settlementDetails?.currentMonthRentInfo?.isDiscountApplied;
   const label = settlementDetails?.settlementInfo?.label;
+  const rentTitle =
+  Number(
+    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  ) > 0
+    ? "Refundable Rent"
+    : "Rent";
   console.log("settlement", settlementDetails);
 
 
@@ -1111,7 +1121,7 @@ console.log(
                       openRefundRent && { transform: [{ rotate: "180deg" }] },
                     ]}
                   />
-                  <Text style={styles.refundTitle}>Refundable Rent</Text>
+                  <Text style={styles.refundTitle}> {rentTitle}</Text>
                 </View>
 
                 <Text style={styles.refundAmount}>
