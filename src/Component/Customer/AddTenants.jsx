@@ -32,6 +32,7 @@ export default function AddTenant() {
     const stateInputRef = useRef(null);
     const [countryOpen, setCountryOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
+    const [isSubmitClicked,setIsSubmitClicked]=useState(false)
 
     const countryList = [
         { label: "India", code: "+91" },
@@ -270,6 +271,8 @@ export default function AddTenant() {
 
         }
 
+        if(isSubmitClicked) return;
+
         const payloads = {
 
             customerInfo: {
@@ -297,6 +300,8 @@ export default function AddTenant() {
 
 
         console.log("FINAL PAYLOAD 👉", payloads);
+        try{
+            setIsSubmitClicked(true)
 
         const res = await addCustomer(activeHostelId, payloads, selectedImage);
         console.log(res)
@@ -308,7 +313,7 @@ export default function AddTenant() {
             navigation.goBack();
             setTimeout(() => {
                 setShowSuccess(false);
-
+                setIsSubmitClicked(false)
             }, 800);
         }
 
@@ -318,11 +323,16 @@ export default function AddTenant() {
 
             setMobileError(mobileMsg);
             setEmailError(emailMsg);
+            setIsSubmitClicked(false)
 
             // 🔥 IMPORTANT: Go back to step 1 if basic error
             if (mobileMsg || emailMsg) {
                 setStep(1);
             }
+        }
+        }catch(error){
+            console.log(error)
+            setIsSubmitClicked(false)
         }
     };
 
@@ -585,7 +595,8 @@ export default function AddTenant() {
 
                                         ]}
 
-                                        onPress={handleCreateTenant}  >
+                                        onPress={handleCreateTenant}
+                                        disabled={isSubmitClicked}  >
                                         <Text
                                             style={[
                                                 styles.secondaryText
@@ -824,7 +835,7 @@ export default function AddTenant() {
                                                     styles.primaryBtn,
                                                     !isAddressValid && styles.primaryBtnDisabled
                                                 ]}
-                                                disabled={!isAddressValid}
+                                                disabled={!isAddressValid || isSubmitClicked}
                                                 onPress={handleCreateTenant}
                                             >
 

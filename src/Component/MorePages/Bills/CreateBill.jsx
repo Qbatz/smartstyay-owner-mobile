@@ -160,11 +160,17 @@ export default function CreateBill({ navigation }) {
   // });
 
   const filteredOptions = itemOptions.filter((op) => {
+    console.log(op)
     if (op === "Others") return true;
+    const normalizedOption = op.toLowerCase() .replace(/\s/g, "");
+    console.log(normalizedOption)
+     return !selectedTypes.some((type) =>
+    normalizedOption.includes(type.toLowerCase().replace(/\s/g, ""))
+  );
 
-    return !selectedTypes.includes(
-      op.toLowerCase().replace(/\s/g, "")
-    );
+    // return !selectedTypes.includes(
+    //   op.toLowerCase().replace(/\s/g, "")
+    // );
   });
   // const filteredOptions = itemOptions.filter(
   //   (op) => op === "Others" || !selectedTypes.includes(op)
@@ -174,6 +180,8 @@ export default function CreateBill({ navigation }) {
   // { id, name }
 
   console.log(items)
+  console.log(selectedTypes)
+  console.log("filerOP",filteredOptions)
   const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
 
@@ -247,7 +255,6 @@ export default function CreateBill({ navigation }) {
       }
 
       const bill = res.data;
-
       console.log("BILL DETAILS API", bill);
 
 
@@ -275,7 +282,7 @@ export default function CreateBill({ navigation }) {
 
           // 🔥 FIX
           if (type?.toLowerCase() === "rent") {
-            type = "Room rent";
+            type = "Rent" ;
           }
           if (type?.toLowerCase() === "electricity" || type?.toLowerCase() === "eb") {
             type = "EB";
