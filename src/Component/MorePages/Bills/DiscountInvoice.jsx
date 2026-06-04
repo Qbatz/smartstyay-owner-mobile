@@ -46,6 +46,8 @@ export default function DiscountInvoiceScreen() {
 
   const bill = route?.params?.bill
 
+  console.log("billty",bill)
+
   console.log("BillPdfdetails", BillPdfdetails);
 
   const discountAmountParam = route?.params?.discountAmount;
@@ -302,7 +304,7 @@ export default function DiscountInvoiceScreen() {
 
     const payload = {
       hostelId: activeHostelId,
-      invoiceId: BillPdfdetails?.invoiceId,
+      invoiceId: BillPdfdetails?.invoiceId || bill?.invoiceId,
       reason: reason || "",
       ...(discountType === "Amount" && {
         discountAmount: Number(discount),
@@ -339,6 +341,7 @@ export default function DiscountInvoiceScreen() {
 
 
     const res = await apiFunction(payload);
+    console.log("discounty",res)
 
     if (res?.success) {
       setModalType("success");

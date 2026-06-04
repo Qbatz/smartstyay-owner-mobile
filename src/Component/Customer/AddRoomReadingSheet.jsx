@@ -332,7 +332,7 @@ export default function AddRoomReadingSheet({
             }}
           />
 
-          {console.log("billa", readingError)}
+         
           {readingError && <ErrorMessage message={readingError} type="error" />}
 
           {/* Buttons */}

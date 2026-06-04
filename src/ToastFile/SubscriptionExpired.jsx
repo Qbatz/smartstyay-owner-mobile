@@ -41,6 +41,7 @@ export default function SubscriptionExpired({setTabBar,onClose}){
   );
 
   const handleSubscriptionPage = () => {
+    console.log("buttonclcikedforSubscription")
     navigation.navigate("SubscriptionPlans")  
   }
 
@@ -103,8 +104,9 @@ export default function SubscriptionExpired({setTabBar,onClose}){
             width: "100%",
             alignItems: "center"
           }}
+          onPress={handleSubscriptionPage} 
         >
-          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }} onPress={handleSubscriptionPage} >
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }} >
             Renew Now →
           </Text>
         </TouchableOpacity>

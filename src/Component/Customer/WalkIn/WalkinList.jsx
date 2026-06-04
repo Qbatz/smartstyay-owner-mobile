@@ -93,6 +93,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
         setShowSuccess(false);
         setDeleteTenants(false);
         setMenuVisible(false);
+        setIsDeleteClicked(false)
       }, 800);
 
       fetchWalkinCustomers(); // refresh
