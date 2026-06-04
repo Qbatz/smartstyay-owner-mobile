@@ -88,7 +88,6 @@ export default function BillsApplyInvoices() {
     const [finalValue, setFinalValue] = useState("")
 
     const [appliedAmounts, setAppliedAmounts] = useState({});
-    const [isApplyClicked, setIsApplyClicked]= useState(false)
 
     const bookingData = InitializebookingBills?.data;
 
@@ -353,8 +352,6 @@ export default function BillsApplyInvoices() {
             return;
         }
 
-        if(isApplyClicked) return;
-
         const listItems = Object.entries(appliedAmounts).map(
             ([invoiceId, amount]) => ({
                 invoiceId,
@@ -373,8 +370,7 @@ export default function BillsApplyInvoices() {
 
         console.log("payload", payload);
 
-        try{
-            setIsApplyClicked(true)
+
 
         const res = await ApplyAdvanceToInvoices({
             hostelId: activeHostelId,
@@ -406,13 +402,7 @@ export default function BillsApplyInvoices() {
 
             setTimeout(() => {
                 setShowSuccessModal(false);
-                setIsApplyClicked(false)
             }, 2500);
-        }
-        }
-        catch(error){
-            console.log(error)
-            setIsApplyClicked(false)
         }
     };
 
@@ -678,9 +668,8 @@ export default function BillsApplyInvoices() {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.applyBtn, isApplyClicked && {opacity:0.4}]}
+                                style={styles.applyBtn}
                                 onPress={handleApply}
-                                disabled={isApplyClicked}
                             >
                                 <Text style={{ color: "#fff", fontFamily: "Gilroy-Medium" }}>Apply →</Text>
                             </TouchableOpacity>

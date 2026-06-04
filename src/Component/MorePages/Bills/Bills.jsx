@@ -2267,6 +2267,10 @@ export default function BillsDesign({ route }) {
   const isNotDiscounted =
     BillPdfdetails?.invoiceInfo?.isDiscounted === false;
 
+    const showSettlementRedeem =
+  selectedBill?.invoiceType === "Settlement" &&
+  BillPdfdetails?.invoiceInfo?.isNewPattern;
+
 
   const getOverdueDays = (dueDate) => {
     if (!dueDate) return 0;
@@ -2761,7 +2765,7 @@ export default function BillsDesign({ route }) {
                         <View style={{ display: 'flex', flexDirection: 'column' }}>
                           <Text style={styles.amountValue}>
                             {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
-                            ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ? Number(BillPdfdetails?.invoiceInfo?.totalAmount).toFixed(2) : "0.00"}
+                            ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ? Number(BillPdfdetails?.invoiceInfo?.totalAmount).toFixed(2) : BillPdfdetails?.invoiceInfo?.finalAmount}
                           </Text>
                           {isPaid && (
                             <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
@@ -2816,7 +2820,7 @@ export default function BillsDesign({ route }) {
 
 
 
-                    {selectedBill?.invoiceType === "Settlement" && (
+                       {selectedBill?.invoiceType === "Settlement" && showSettlementRedeem && (
 
 
                       <>
@@ -2827,7 +2831,8 @@ export default function BillsDesign({ route }) {
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-                              ₹
+
+                               ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2839,7 +2844,7 @@ export default function BillsDesign({ route }) {
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-                              ₹
+                              ₹ {Number(BillPdfdetails?.currentMonthRentInfo?.currentMonthOtherItemAmount || 0).toLocaleString("en-IN")}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2854,7 +2859,7 @@ export default function BillsDesign({ route }) {
                               styles.amountValue,
                               { color: "#FF0000" },
                             ]}>
-                              - ₹
+                                ₹  {BillPdfdetails?.invoiceInfo?.deductionAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2869,7 +2874,8 @@ export default function BillsDesign({ route }) {
                               styles.amountValue,
                               { color: "#FF0000" },
                             ]}>
-                              - ₹
+                              
+                               ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2884,7 +2890,7 @@ export default function BillsDesign({ route }) {
                               styles.amountValue,
                               { color: "#FF0000" },
                             ]} >
-                              - ₹
+                                ₹  {BillPdfdetails?.invoiceInfo?.unpaidInvoiceAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2981,7 +2987,7 @@ export default function BillsDesign({ route }) {
                       </View>
                       <View>
                         <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                          {BillPdfdetails?.invoiceDate ?? "--"}
+                          {BillPdfdetails?.invoiceDate ?? BillPdfdetails?.invoiceInfo?.invoiceDate}
                         </Text>
                       </View>
                     </View>
@@ -3152,7 +3158,7 @@ export default function BillsDesign({ route }) {
 
 
 
-                    {selectedBill?.invoiceType === "Settlement" && (
+                    {selectedBill?.invoiceType === "Settlement" && showSettlementRedeem && (
 
 
                       <>
@@ -3168,14 +3174,7 @@ export default function BillsDesign({ route }) {
                             />
                             <Text style={styles.cardTitle}>Unpaid Invoices</Text>
                             <Text style={styles.amountText}>
-
-                              ₹ 0
-                              {/* {
-                                      settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
-                                        (sum, inv) => sum + Number(inv.payableAmount || 0),
-                                        0
-                                      ) || 0
-                                    } */}
+                              ₹  {BillPdfdetails?.invoiceInfo?.unpaidInvoiceAmount || 0}
                             </Text>
                           </TouchableOpacity>
 
@@ -3192,28 +3191,28 @@ export default function BillsDesign({ route }) {
                               </View>
 
 
-                              {/* {Array.isArray(settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices) &&
-                                        settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.length > 0 ? (
+                              {Array.isArray(BillPdfdetails?.unpaidInvoiceInfo) &&
+                                        BillPdfdetails?.unpaidInvoiceInfo?.length > 0 ? (
                                         <>
-                                          {settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.map((item, index) => (
+                                          {BillPdfdetails?.unpaidInvoiceInfo?.map((item, index) => (
                                             <View key={index} style={styles.invoiceRow}>
                                               <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                                {item.invoiceNumber}
+                                                {item?.invoiceNumber}
                                               </Text>
                                               <Text style={[styles.invText, { flex: 1 }]}>
-                                                {item.type}
+                                                {item?.type}
                                               </Text>
                                               <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                                                ₹ {item.payableAmount}
+                                                ₹ {item?.payableAmount}
                                               </Text>
                                             </View>
                                           ))}
                                         </>
-                                      ) : ( */}
+                                      ) : (
                               <View style={styles.emptyState}>
                                 <Text style={styles.emptyText}>No pending invoices</Text>
                               </View>
-                              {/* )} */}
+                               )} 
 
                               <View style={styles.totalInvoiceRow}>
                                 <Text style={styles.totalText}>Total</Text>
@@ -3252,7 +3251,7 @@ export default function BillsDesign({ route }) {
                             </View>
 
                             <Text style={styles.refundAmount}>
-                              0
+                            ₹ 0
                               {/* ₹{" "}
                                       {Number(
                                         settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
@@ -3338,25 +3337,26 @@ export default function BillsDesign({ route }) {
                                 </Text>
                               </TouchableOpacity>
 
-                              {/* {showDetails &&
-                                        settlementDetails?.currentMonthRentInfo?.rentLists?.map(
+                              {showDetails &&
+                                        BillPdfdetails?.currentMonthRentInfo?.listBreakup?.map(
                                           (item, index) => (
                                           
                                             <View key={index} style={styles.detailCard}>
                                               <Text style={styles.linkText}>
-                                                {item.floorName} | {item.roomName} - {item.bedName}
+                                                {item?.floorName} | {item?.roomName} - {item?.bedName}
                                               </Text>
                     
                                               <Text
                                                 style={styles.rightMuted}
                                                 numberOfLines={0}
                                               >
-                                                ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
+                                                ({item?.noOfDays} {item?.noOfDays === 1 ? "day" : "days"} × {item?.rentPerDay} = {item?.currentMonthPayableAmount})
                                               </Text>
                                             </View>
                     
                                           )
-                                        )} */}
+                                        )
+                                        }
                               <TouchableOpacity
                                 style={styles.rowBetween}
                                 onPress={() => setShowOtherDetails(!showOtherDetails)}
@@ -3377,18 +3377,16 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                                 <Text style={styles.amountText}>
-                                  0
-                                  {/* ₹{" "}
-                                          {Number(
-                                            settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
-                                          ).toLocaleString("en-IN")} */}
+                                  
+                                  ₹{" "}
+                                          {Number(BillPdfdetails?.currentMonthRentInfo?.currentMonthOtherItemAmount || 0).toLocaleString("en-IN")}
 
 
                                 </Text>
                               </TouchableOpacity>
 
-                              {/* {showOtherDetails &&
-                                        settlementDetails?.currentMonthRentInfo?.currentMonthOtherItems?.map(
+                              {showOtherDetails &&
+                                        BillPdfdetails?.currentMonthRentInfo?.listCurrentMonthOtherItems?.map(
                                           (i, index) => (
                                             <View key={index} style={styles.detailCard}>
                                               <Text style={styles.linkText}>
@@ -3400,7 +3398,7 @@ export default function BillsDesign({ route }) {
                                               </Text>
                                             </View>
                                           )
-                                        )} */}
+                                        )}
                             </View>
                           )}
                         </View>
@@ -3417,8 +3415,7 @@ export default function BillsDesign({ route }) {
                             />
                             <Text style={styles.cardTitle}>Electricity Bill</Text>
                             <Text style={styles.amountText}>
-                              0
-                              {/* ₹ {settlementDetails?.ebInfo?.pendingEbAmount} */}
+                               ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
                             </Text>
                           </TouchableOpacity>
 
@@ -3429,18 +3426,18 @@ export default function BillsDesign({ route }) {
                                         <Text style={styles.sectionLabel}>Missed Electricity</Text>
                                       )} */}
 
-
-                              {/* {settlementDetails?.ebInfo?.missedEb?.map((item, index) => (
+{/* 
+                              {BillPdfdetails?.currentMonthEbInfo?.map((item, index) => (
                                         <View key={index} style={styles.ebRowWeb}>
                     
                                           <View style={{ flex: 1 }}>
                                             <Text style={styles.ebText}>
-                                              {item.floorName} | {item.roomName} - {item.bedName}
+                                              {item?.floorName} | {item?.roomName} - {item?.bedName}
                                             </Text>
                     
                                             <View style={styles.dateChip}>
                                               <Text style={styles.dateChipText}>
-                                                {item.fromDate} - {item.toDate}
+                                                {item?.fromDate} - {item?.toDate}
                                               </Text>
                                             </View>
                                           </View>
@@ -3450,34 +3447,34 @@ export default function BillsDesign({ route }) {
                                       ))} */}
 
 
-                              <Text style={styles.sectionLabel}>Pending Invoices</Text>
-                              {/*                     
-                                      {settlementDetails?.ebInfo?.pendingEb?.map((item, index) => (
+                              {/* <Text style={styles.sectionLabel}>Pending Invoices</Text> */}
+                                                  
+                                      {BillPdfdetails?.currentMonthEbInfo?.map((item, index) => (
                                         <View key={index} style={styles.ebRowWeb}>
                     
                                           <View style={{ flex: 1 }}>
                                             <Text style={styles.ebText}>
-                                              {item.floorName} | {item.roomName} - {item.bedName}
+                                              {item?.floorName} | {item?.roomName} - {item?.bedName}
                                             </Text>
                     
                                             <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
                                               <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
-                                                {item.fromDate} - {item.toDate}
+                                                {item?.fromDate} - {item?.toDate}
                                               </Text>
                                             </View>
                                           </View>
                     
                                           <View style={styles.ebRightBox}>
                                             <Text style={styles.unitText}>
-                                              ({item.units} Units)
+                                              ({item?.units} Units)
                                             </Text>
                                             <Text style={styles.amountText}>
-                                              ₹ {item.amount}
+                                              ₹ {item?.amount}
                                               </Text>
                                           </View>
                     
                                         </View>
-                                      ))} */}
+                                      ))}
 
 
 
@@ -3486,7 +3483,7 @@ export default function BillsDesign({ route }) {
                         </View>
 
 
-
+               {showSettlementRedeem && (
                         <View style={styles.accordionCard}>
                           <TouchableOpacity
                             style={styles.accordionHeader}
@@ -3522,34 +3519,37 @@ export default function BillsDesign({ route }) {
                                 </Text>
                               </View>
 
+{BillPdfdetails?.advanceItems ? (
+  <View style={styles.invoiceRow}>
+    <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+      {BillPdfdetails?.advanceItems?.invoiceNo}
+    </Text>
 
-                              {/* {Array.isArray(settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices) &&
-                                        settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.length > 0 ? (
-                                        <>
-                                          {settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.map((item, index) => (
-                                            <View key={index} style={styles.invoiceRow}>
-                                              <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                                {item.invoiceNumber}
-                                              </Text>
-                                              <Text style={[styles.invText, { flex: 1 }]}>
-                                                {item.type}
-                                              </Text>
-                                              <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                                                ₹ {item.payableAmount}
-                                              </Text>
-                                            </View>
-                                          ))}
-                                        </>
-                                      ) : ( */}
-                              <View style={styles.emptyState}>
-                                <Text style={styles.emptyText}>No pending invoices</Text>
-                              </View>
+    <Text style={[styles.invText, { flex: 1 }]}>
+      {BillPdfdetails?.advanceItems?.label}
+    </Text>
+
+    <Text
+      style={[
+        styles.invText,
+        { flex: 1, textAlign: "right" }
+      ]}
+    >
+      ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+    </Text>
+  </View>
+) : (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyText}>No pending invoices</Text>
+  </View>
+)}
+                           
                               {/* )} */}
 
                               <View style={styles.totalInvoiceRow}>
                                 <Text style={styles.totalText}>Total</Text>
                                 <Text style={styles.totalAmount}>
-                                  0
+                                   ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
                                   {/* ₹{" "}
                                           {Array.isArray(settlementDetails?.unpaidInvoices)
                                             ? settlementDetails.unpaidInvoices.reduce(
@@ -3563,11 +3563,12 @@ export default function BillsDesign({ route }) {
 
                           )}
                         </View>
+               )}
 
 
 
 
-
+{showSettlementRedeem && (
                         <View style={styles.accordionCard}>
                           <TouchableOpacity
                             style={styles.accordionHeader}
@@ -3605,46 +3606,38 @@ export default function BillsDesign({ route }) {
 
 
 
-                              {/* {Array.isArray(settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices) &&
-                                        settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.length > 0 ? (
-                                        <>
-                                          {settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.map((item, index) => (
-                                            <View key={index} style={styles.invoiceRow}>
-                                              <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                                {item.invoiceNumber}
-                                              </Text>
-                                              <Text style={[styles.invText, { flex: 1 }]}>
-                                                {item.type}
-                                              </Text>
-                                              <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                                                ₹ {item.payableAmount}
-                                              </Text>
-                                            </View>
-                                          ))}
-                                        </>
-                                      ) : ( */}
-                              <View style={styles.emptyState}>
-                                <Text style={styles.emptyText}>No Pending Bookings</Text>
-                              </View>
-                              {/* )} */}
+                             {BillPdfdetails?.bookingItems ? (
+  <View style={styles.invoiceRow}>
+    <Text style={[styles.invText, { flex: 1 }]}>
+      {BillPdfdetails?.bookingItems?.invoiceNo}
+    </Text>
+
+    <Text
+      style={[
+        styles.invText,
+        { flex: 1, textAlign: "right" }
+      ]}
+    >
+      ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
+    </Text>
+  </View>
+) : (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyText}>No Pending Bookings</Text>
+  </View>
+)}
 
                               <View style={styles.totalInvoiceRow}>
                                 <Text style={styles.totalText}>Total</Text>
                                 <Text style={styles.totalAmount}>
-                                  0
-                                  {/* ₹{" "}
-                                          {Array.isArray(settlementDetails?.unpaidInvoices)
-                                            ? settlementDetails.unpaidInvoices.reduce(
-                                              (sum, i) => sum + Number(i.payableAmount || 0),
-                                              0
-                                            )
-                                            : 0} */}
+                                 ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
                                 </Text>
                               </View>
                             </View>
 
                           )}
                         </View>
+)}
 
 
 
