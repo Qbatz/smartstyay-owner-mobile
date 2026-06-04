@@ -74,6 +74,8 @@ export default function AddBookingScreen({ navigation, route }) {
   const [datePickerPos, setDatePickerPos] = useState({ top: 0 });
   const [datePickerTop, setDatePickerTop] = useState(0);
 
+  const [isSubmitClicked,setIsSubmitClicked]=useState(false)
+
   useEffect(() => {
     if (!activeHostelId) return;
 
@@ -217,6 +219,8 @@ export default function AddBookingScreen({ navigation, route }) {
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
+    if(isSubmitClicked) return;
+
     const payload = {
       bookingDate: bookingDate.format("DD-MM-YYYY"),
       joiningDate: joiningDate.format("DD-MM-YYYY"),
@@ -229,8 +233,9 @@ export default function AddBookingScreen({ navigation, route }) {
       referenceNumber: referenceNumber || "",
     };
 
+    try{
 
-
+      setIsSubmitClicked(true)
     const res = await bookCustomer(activeHostelId, payload);
 
     if (res?.success) {
@@ -242,6 +247,7 @@ export default function AddBookingScreen({ navigation, route }) {
       setTimeout(() => {
         navigation.goBack();
         setShowSuccess(false);
+        setIsSubmitClicked(false)
       }, 1500);
     } else {
       setModalType("error");
@@ -249,7 +255,12 @@ export default function AddBookingScreen({ navigation, route }) {
       setShowSuccess(true);
        setTimeout(() => {
         setShowSuccess(false);
+        setIsSubmitClicked(false)
       }, 1500);
+    }
+    }catch(error){
+      console.log(error)
+      setIsSubmitClicked(false)
     }
   };
 
@@ -658,7 +669,7 @@ export default function AddBookingScreen({ navigation, route }) {
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.bookBtn} onPress={handleSubmit}>
+              <TouchableOpacity style={styles.bookBtn} onPress={handleSubmit} disabled={isSubmitClicked}>
                 <Text style={styles.bookText}>Book</Text>
               </TouchableOpacity>
             </View>
