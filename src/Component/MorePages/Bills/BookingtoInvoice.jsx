@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState,useRef ,  useContext } from "react";
 import {
     View,
     Text,
@@ -41,6 +41,8 @@ export default function BookingToInvoice() {
         ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
 
+    const isApplyTriggeredRef = useRef(false);
+
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
@@ -50,6 +52,8 @@ export default function BookingToInvoice() {
     const [initialType, setInitialType] = useState("");
 
     const bill = route?.params?.bill
+
+    
 
     console.log("BillPdfdetails", BillPdfdetails);
 
@@ -281,6 +285,11 @@ export default function BookingToInvoice() {
 
 
     const handleApply = async () => {
+
+         if (isApplyTriggeredRef.current) return;
+    isApplyTriggeredRef.current = true;
+
+    try {
         const bookingAmount =
             Number(
                 advanceInfo?.availableBalance ||
@@ -302,7 +311,8 @@ export default function BookingToInvoice() {
                 setShowSuccessModal(false);
             }, 2000);
 
-            return;
+            //    isApplyTriggeredRef.current = false;
+    return
         }
 
         if (totalApplied > bookingAmount) {
@@ -313,7 +323,7 @@ export default function BookingToInvoice() {
             setTimeout(() => {
                 setShowSuccessModal(false);
             }, 2000);
-
+// isApplyTriggeredRef.current = false;
             return;
         }
 
@@ -370,6 +380,14 @@ export default function BookingToInvoice() {
                 setShowSuccessModal(false);
             }, 2500);
         }
+    }
+    catch {
+        console.log("error");
+        
+    }
+    finally {
+        isApplyTriggeredRef.current = false;
+    }
     };
 
 
@@ -836,8 +854,12 @@ export default function BookingToInvoice() {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={styles.applyBtn}
-                                onPress={handleApply}
+                                   style={[
+        styles.applyBtn,
+        isApplyTriggeredRef.current && { opacity: 0.6 }
+    ]}
+    onPress={handleApply}
+    disabled={isApplyTriggeredRef.current}
                             >
                                 <Text style={{ color: "#fff", fontFamily: "Gilroy-Medium" }}>Apply →</Text>
                             </TouchableOpacity>

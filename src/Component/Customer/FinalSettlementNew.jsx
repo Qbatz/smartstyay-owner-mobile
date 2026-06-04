@@ -378,21 +378,42 @@ useEffect(() => {
 
   let payableAmount = Number(amountTobePaid || 0);
 
-  // ✅ Checkbox checked => full rent calculate
+  // if (collectFullRent) {
+  //   const currentMonthRent = Number(
+  //     settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  //   );
+
+  //   const currentMonthPayableAmount = Number(
+  //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  //   );
+
+  //   const rentDifference =
+  //     currentMonthRent - currentMonthPayableAmount;
+
+  //   payableAmount = payableAmount + rentDifference;
+  // }
+
   if (collectFullRent) {
-    const currentMonthRent = Number(
-      settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
-    );
+  const currentMonthRent = Number(
+    settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  );
 
-    const currentMonthPayableAmount = Number(
-      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-    );
+  const currentMonthPayableAmount = Number(
+    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  );
 
-    const rentDifference =
-      currentMonthRent - currentMonthPayableAmount;
+  const otherItemAmount = Number(
+    settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+  );
 
-    payableAmount = payableAmount + rentDifference;
-  }
+  const rentDifference =
+    currentMonthRent - currentMonthPayableAmount;
+
+  payableAmount =
+    payableAmount +
+    rentDifference +
+    otherItemAmount;
+}
 
   let finalAmount = 0;
 
@@ -428,6 +449,12 @@ console.log(
   console.log("amountTobePaid", amountTobePaid);
   console.log("payableAmount", payableAmount);
   console.log("finalAmount", finalAmount);
+
+console.log(
+  "fullrenttotal",
+  Number(settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0) +
+  Number(settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0)
+);
 
 }, [
   settlementDetails,
@@ -768,6 +795,17 @@ console.log(
   };
 
   console.log("discountvalue", discountValue);
+
+   const sendpayload = {
+      discountAmount: Number(discountValue) || 0,
+      deductions: extraDeductionsPayload,
+      shouldCollectFullRent : collectFullRent
+    }
+
+    console.log("sendpayload", sendpayload);
+    
+
+
 
 
   const handleGenerate = async () => {
