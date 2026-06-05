@@ -2259,6 +2259,20 @@ export default function BillsDesign({ route }) {
   const isExportAllow = isValidSubscription && canReadInvoice;
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
+  const showDotsbtn =
+  !cancelled &&
+  !pendingRefund &&
+  !partiallyRefund &&
+  !FullyRefund &&
+  (
+    !isPaid ||
+    (
+      isPaid &&
+      selectedBill?.invoiceMode === "Manual" &&
+      selectedBill?.invoiceType !== "Settlement"
+    )
+  );
+
 
 
   const isDiscounted =
@@ -2681,7 +2695,7 @@ export default function BillsDesign({ route }) {
 
 
                         {
-                          ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" && selectedBill?.invoiceType !== "Settlement")) && (
+                          showDotsbtn && (
                             <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                               onPress={() => openMenu(selectedBill)}>
                               <Image

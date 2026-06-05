@@ -199,7 +199,8 @@ const BillDetailsSheet = ({
 
   const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
 
-  console.log("invoiceDetail", invoiceDetail);
+  console.log("invoiceDetail", BillDetails);
+   console.log("invoiceDetail", BillPdfdetails);
 
 
   const billDetailsPan = useRef(
@@ -668,10 +669,17 @@ const BillDetailsSheet = ({
                 </View>
 
 
-                {
+                {/* {
                   ((!isPaid) ||
-                    (isPaid && invoiceDetail?.invoiceMode === "Manual" && bill?.configurations?.invoiceType !== "Settlement")) && (
-
+                    (isPaid && invoiceDetail?.invoiceMode === "Manual" && bill?.configurations?.invoiceType !== "Settlement")) && ( */}
+{
+  !cancelled &&
+  (
+    (!isPaid) ||
+    (isPaid &&
+      invoiceDetail?.invoiceMode === "Manual" &&
+      bill?.configurations?.invoiceType !== "Settlement")
+  ) && (
                     <TouchableOpacity
                       ref={(ref) => (dotsRefs.current[bill?.invoiceId] = ref)}
                       onPress={() => openMenu(bill)}
@@ -1013,7 +1021,8 @@ const BillDetailsSheet = ({
 
 
 
-
+            {!cancelled &&
+ bill?.configurations?.invoiceType !== "Booking" && (
             <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
                 <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Invoice date</Text>
@@ -1024,8 +1033,12 @@ const BillDetailsSheet = ({
                 </Text>
               </View>
             </View>
+            )}
 
-            {!isPaid && (
+
+{!isPaid &&
+ !cancelled &&
+ bill?.configurations?.invoiceType !== "Booking" && (
               <View
                 style={{
                   marginTop: 10,
