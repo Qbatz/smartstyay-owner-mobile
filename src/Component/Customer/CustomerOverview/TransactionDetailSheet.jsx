@@ -15,6 +15,9 @@ export default function TransactionDetailSheet({ visible, onClose, selectedTrans
     
     const { CommonModule } = NativeModules;
 
+    console.log("selectedTransaction", selectedTransaction);
+    
+
     useEffect(() => {
         if (visible) {
             detailsSheetY.setValue(300);
@@ -99,12 +102,13 @@ export default function TransactionDetailSheet({ visible, onClose, selectedTrans
 
                     <ScrollView >
                         <View style={styles.header}>
-                            <Text style={styles.billNametxt}>{selectedTransaction?.billName}</Text>
+                            {/* <Text style={styles.billNametxt}>{selectedTransaction?.billName}</Text> */}
+                            <Text style={styles.billNametxt}>Transaction Details</Text>
 
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            {/* <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
                                 <Text style={styles.paymentStatus}>{selectedTransaction?.status}</Text>
                                 <Image source={Dots} style={{ width: 30, height: 30 }} />
-                            </View>
+                            </View> */}
                         </View>
 
                         <View style={{ borderWidth: 0.5, marginVertical: 15, borderColor: '#E7F1FF' }} />
