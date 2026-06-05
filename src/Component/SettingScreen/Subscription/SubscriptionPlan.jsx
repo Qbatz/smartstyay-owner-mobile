@@ -25,9 +25,9 @@ export default function SubscriptionPlans({ navigation }) {
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [billingType, setBillingType] = useState("monthly")
   const [plans, setPlans] = useState([]);
-  const [currentPlan, setCurrentPlan] = useState(null);
+  // const [currentPlan, setCurrentPlan] = useState(null);
 
-  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription,verfiyPayment } = UseSetting();
+  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription,verfiyPayment,currentPlan } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
   const insets = useSafeAreaInsets();
@@ -70,7 +70,7 @@ export default function SubscriptionPlans({ navigation }) {
 
     if (res.success) {
       console.log("Current Plan →", res.data);
-      setCurrentPlan(res.data);
+      // setCurrentPlan(res.data);
     }
   };
 
@@ -161,6 +161,7 @@ console.log("sessionId", res?.data?.sessionId)
           if(response.status === 200){
             console.log(response?.message)
             fetchPlans();
+            fetchCurrentPlan();
           }
           else{
             console.log(response?.message)

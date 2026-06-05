@@ -11,6 +11,7 @@ export const SettingProvider = ({ children }) => {
 const [loading, setLoading] = useState(false);
   const [Reportsdetails , setReportsDetails] = useState(null)
   const [invoiceReports, setInvoiceReports] = useState(null);
+  const [currentPlan, setCurrentPlan] = useState(null);
 const getElectricity = async (hostelId) => {
   try {
     setLoading(true)
@@ -823,10 +824,11 @@ const getCurrentHostelPlan = async (hostelId) => {
     );
 
     console.log("CURRENT PLAN →", res.data);
-
+     setCurrentPlan(res.data);
     return {
       success: true,
       data: res.data,
+     
     };
 
   } catch (err) {
@@ -883,7 +885,7 @@ const verfiyPayment=async(hostelId,paymentId)=>{
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
     getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
-     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription,verfiyPayment }}>
+     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription,verfiyPayment,currentPlan }}>
       {children}
     </ElectricityContext.Provider>
   );

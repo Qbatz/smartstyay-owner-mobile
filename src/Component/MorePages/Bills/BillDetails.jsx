@@ -521,6 +521,7 @@ const BillDetailsSheet = ({
   };
 
   const handleEditBill = (item) => {
+    onClose();
 
     navigation.navigate("CreateBills", {
       mode: "edit",

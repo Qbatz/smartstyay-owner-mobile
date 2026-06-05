@@ -14,10 +14,10 @@ import { useHasPermission } from "../../../Utils/useHasPermission";
 
 export default function PlanDetailsScreen({ route, navigation }) {
 
-  const { getCurrentHostelPlan } = UseSetting();
+  const { getCurrentHostelPlan,currentPlan} = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
-  const [currentPlan, setCurrentPlan] = useState(null);
+  // const [currentPlan, setCurrentPlan] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,13 +46,14 @@ export default function PlanDetailsScreen({ route, navigation }) {
       fetchCurrentPlan();
     }
   }, [activeHostelId]);
+  
 
   const fetchCurrentPlan = async () => {
     const res = await getCurrentHostelPlan(activeHostelId);
 
     if (res.success) {
       console.log("Current Plan →", res.data);
-      setCurrentPlan(res.data);
+      // setCurrentPlan(res.data);
     }
   };
 
