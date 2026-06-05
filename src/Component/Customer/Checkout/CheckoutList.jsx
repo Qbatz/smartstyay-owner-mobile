@@ -253,7 +253,7 @@ const handleScroll = (event) => {
             <View style={[styles.info,{flex:1}]}>
               <View style={{ flexShrink: 1}}>
 
-                <Text style={styles.name} numberOfLines={1} ellipsizeMode="clip">{item.firstName} {item.lastName}fdfsdfsdfsdfsdsdfsfsd</Text>
+                <Text style={styles.name} numberOfLines={1} ellipsizeMode="clip">{item.firstName} {item.lastName}</Text>
 
                 <View style={styles.row}>
                   <View style={styles.floorBadge}>

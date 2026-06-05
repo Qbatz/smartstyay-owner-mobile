@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import {
     View,
     Text,
@@ -39,6 +39,8 @@ export default function BillsApplyInvoices() {
         UpdateBillDiscount,
         ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices, advanceCreditDetails } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
+
+    const isApplyTriggeredRef = useRef(false);
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -217,33 +219,33 @@ export default function BillsApplyInvoices() {
 
     const handleSetAmount = (invoiceId, value, maxAmount) => {
 
-    // remove spaces
-    const trimmedValue = value?.trim();
+        // remove spaces
+        const trimmedValue = value?.trim();
 
-    // validation for 0,00,0000
-    if (!trimmedValue || Number(trimmedValue) <= 0) {
-        setModalType("warning");
-        setModalMessage("Please Enter  valid Amount");
-        setShowSuccessModal(true);
+        // validation for 0,00,0000
+        if (!trimmedValue || Number(trimmedValue) <= 0) {
+            setModalType("warning");
+            setModalMessage("Please Enter  valid Amount");
+            setShowSuccessModal(true);
 
-        setTimeout(() => {
-            setShowSuccessModal(false);
-        }, 2000);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 2000);
 
-        return;
-    }
+            return;
+        }
 
-    let amount = Number(trimmedValue);
+        let amount = Number(trimmedValue);
 
-    if (amount > maxAmount) {
-        amount = maxAmount;
-    }
+        if (amount > maxAmount) {
+            amount = maxAmount;
+        }
 
-    setAppliedAmounts((prev) => ({
-        ...prev,
-        [invoiceId]: amount,
-    }));
-};
+        setAppliedAmounts((prev) => ({
+            ...prev,
+            [invoiceId]: amount,
+        }));
+    };
 
     const isValidNumber = (val) => {
         if (!val) return false;
@@ -320,94 +322,172 @@ export default function BillsApplyInvoices() {
     //         return;
     //     }
 
+    // const handleApply = async () => {
+    //     const bookingAmount = advanceInfo?.availableBalance || 0;
+
+    //     const totalApplied = Object.values(appliedAmounts).reduce(
+    //         (sum, val) => sum + Number(val || 0),
+    //         0
+    //     );
+
+    //     if (totalApplied <= 0) {
+    //         setModalType("warning");
+    //         setModalMessage("Please Enter valid Amount");
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccessModal(false);
+    //         }, 2000);
+
+    //         return;
+    //     }
+
+    //     if (totalApplied > bookingAmount) {
+    //         setModalType("warning");
+    //         setModalMessage("Applied amount exceeds booking amount");
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccessModal(false);
+    //         }, 2000);
+
+    //         return;
+    //     }
+
+    //     const listItems = Object.entries(appliedAmounts).map(
+    //         ([invoiceId, amount]) => ({
+    //             invoiceId,
+    //             amount: Number(amount),
+    //         })
+    //     )
+
+    //     console.log("listitems", listItems);
+
+
+    //     const payload = {
+
+    //         listItems,
+    //     }
+
+    //     console.log("payload", payload);
+
+
+
+    //     const res = await ApplyAdvanceToInvoices({
+    //         hostelId: activeHostelId,
+    //         invoiceId: advanceInfo?.invoiceId,
+    //         listItems,
+    //     });
+
+    //     console.log("res", res);
+
+
+    //     if (res?.success) {
+    //         await GetAllBillDetails(activeHostelId);
+    //         await GetAdvanceBookingBills(activeHostelId);
+    //         await getBillsPdfDetails( activeHostelId, advanceInfo?.invoiceId)
+    //         setModalType("success");
+    //         setModalMessage("Applied successfully");
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => {
+    //             navigation.goBack();
+    //             setShowSuccessModal(false);
+    //         }, 1500);
+
+    //     } else {
+
+    //         setModalType("warning");
+    //         setModalMessage(res?.message || "Something went wrong");
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccessModal(false);
+    //         }, 2500);
+    //     }
+    // };
+
+
     const handleApply = async () => {
-        const bookingAmount = advanceInfo?.availableBalance || 0;
+        if (isApplyTriggeredRef.current) return;
+        isApplyTriggeredRef.current = true;
 
-        const totalApplied = Object.values(appliedAmounts).reduce(
-            (sum, val) => sum + Number(val || 0),
-            0
-        );
+        try {
+            const bookingAmount = advanceInfo?.availableBalance || 0;
 
-        if (totalApplied <= 0) {
-            setModalType("warning");
-            setModalMessage("Please Enter valid Amount");
-            setShowSuccessModal(true);
+            const totalApplied = Object.values(appliedAmounts).reduce(
+                (sum, val) => sum + Number(val || 0),
+                0
+            );
 
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2000);
+            if (totalApplied <= 0) {
+                setModalType("warning");
+                setModalMessage("Please Enter valid Amount");
+                setShowSuccessModal(true);
 
-            return;
-        }
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2000);
 
-        if (totalApplied > bookingAmount) {
-            setModalType("warning");
-            setModalMessage("Applied amount exceeds booking amount");
-            setShowSuccessModal(true);
+                isApplyTriggeredRef.current = false;
+                return;
+            }
 
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2000);
+            if (totalApplied > bookingAmount) {
+                setModalType("warning");
+                setModalMessage("Applied amount exceeds booking amount");
+                setShowSuccessModal(true);
 
-            return;
-        }
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2000);
 
-        const listItems = Object.entries(appliedAmounts).map(
-            ([invoiceId, amount]) => ({
-                invoiceId,
-                amount: Number(amount),
-            })
-        )
+                isApplyTriggeredRef.current = false;
+                return;
+            }
 
-        console.log("listitems", listItems);
+            const listItems = Object.entries(appliedAmounts).map(
+                ([invoiceId, amount]) => ({
+                    invoiceId,
+                    amount: Number(amount),
+                })
+            );
 
+            const res = await ApplyAdvanceToInvoices({
+                hostelId: activeHostelId,
+                invoiceId: advanceInfo?.invoiceId,
+                listItems,
+            });
 
-        const payload = {
-            // reason: "Advance Applied",
-            // date: new Date().toISOString(),
-            listItems,
-        }
+            if (res?.success) {
+                await GetAllBillDetails(activeHostelId);
+                await GetAdvanceBookingBills(activeHostelId);
+                await getBillsPdfDetails(activeHostelId, advanceInfo?.invoiceId)
+                setModalType("success");
+                setModalMessage("Applied successfully");
+                setShowSuccessModal(true);
 
-        console.log("payload", payload);
+                setTimeout(() => {
+                    navigation.goBack();
+                    setShowSuccessModal(false);
+                }, 1500);
 
+            } else {
 
+                setModalType("warning");
+                setModalMessage(res?.message || "Something went wrong");
+                setShowSuccessModal(true);
 
-        const res = await ApplyAdvanceToInvoices({
-            hostelId: activeHostelId,
-            invoiceId: advanceInfo?.invoiceId,
-            listItems,
-        });
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2500);
+            }
+            // success / error logic
 
-        console.log("res", res);
-
-
-        if (res?.success) {
-            await GetAllBillDetails(activeHostelId);
-            await GetAdvanceBookingBills(activeHostelId);
-            await getBillsPdfDetails( activeHostelId, advanceInfo?.invoiceId)
-            setModalType("success");
-            setModalMessage("Applied successfully");
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                navigation.goBack();
-                setShowSuccessModal(false);
-            }, 1500);
-
-        } else {
-
-            setModalType("warning");
-            setModalMessage(res?.message || "Something went wrong");
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2500);
+        } finally {
+            isApplyTriggeredRef.current = false;
         }
     };
-
-
-
 
 
 
@@ -551,62 +631,62 @@ export default function BillsApplyInvoices() {
                                             }
                                         /> */}
                                         <ValidatedInput
-    type="numberOnly"
-    inputType="numeric"
-    style={styles.inputField}
-    placeholder="₹ 0.00"
-    value={tempValue?.[item.invoiceId] || ""}
-    maxLength={7}
-    onChangeText={(text) => {
+                                            type="numberOnly"
+                                            inputType="numeric"
+                                            style={styles.inputField}
+                                            placeholder="₹ 0.00"
+                                            value={tempValue?.[item.invoiceId] || ""}
+                                            maxLength={7}
+                                            onChangeText={(text) => {
 
-        if (text === "") {
-            setTempValue((prev) => ({
-                ...prev,
-                [item.invoiceId]: "",
-            }));
+                                                if (text === "") {
+                                                    setTempValue((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: "",
+                                                    }));
 
-            setAppliedAmounts((prev) => ({
-                ...prev,
-                [item.invoiceId]: 0,
-            }));
+                                                    setAppliedAmounts((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: 0,
+                                                    }));
 
-            return;
-        }
+                                                    return;
+                                                }
 
-        let amount = Number(text);
+                                                let amount = Number(text);
 
-        const maxAllowed = Math.min(
-            item.pendingAmount,
-            remainingBalance + (appliedAmounts[item.invoiceId] || 0)
-        );
+                                                const maxAllowed = Math.min(
+                                                    item.pendingAmount,
+                                                    remainingBalance + (appliedAmounts[item.invoiceId] || 0)
+                                                );
 
-        if (amount > maxAllowed) {
+                                                if (amount > maxAllowed) {
 
-            setModalType("warning");
-            setModalMessage(
-                `Maximum allowed amount is ₹ ${maxAllowed}`
-            );
-            setShowSuccessModal(true);
+                                                    setModalType("warning");
+                                                    setModalMessage(
+                                                        `Maximum allowed amount is ₹ ${maxAllowed}`
+                                                    );
+                                                    setShowSuccessModal(true);
 
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 1500);
+                                                    setTimeout(() => {
+                                                        setShowSuccessModal(false);
+                                                    }, 1500);
 
-            text = String(maxAllowed);
-            amount = maxAllowed;
-        }
+                                                    text = String(maxAllowed);
+                                                    amount = maxAllowed;
+                                                }
 
-        setTempValue((prev) => ({
-            ...prev,
-            [item.invoiceId]: text,
-        }));
+                                                setTempValue((prev) => ({
+                                                    ...prev,
+                                                    [item.invoiceId]: text,
+                                                }));
 
-        setAppliedAmounts((prev) => ({
-            ...prev,
-            [item.invoiceId]: amount,
-        }));
-    }}
-/>
+                                                setAppliedAmounts((prev) => ({
+                                                    ...prev,
+                                                    [item.invoiceId]: amount,
+                                                }));
+                                            }}
+                                        />
 
                                         <TouchableOpacity
                                             style={styles.setBtn}
@@ -668,8 +748,12 @@ export default function BillsApplyInvoices() {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={styles.applyBtn}
+                                style={[
+                                    styles.applyBtn,
+                                    isApplyTriggeredRef.current && { opacity: 0.6 }
+                                ]}
                                 onPress={handleApply}
+                                disabled={isApplyTriggeredRef.current}
                             >
                                 <Text style={{ color: "#fff", fontFamily: "Gilroy-Medium" }}>Apply →</Text>
                             </TouchableOpacity>
