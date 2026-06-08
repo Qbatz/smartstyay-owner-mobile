@@ -30,6 +30,7 @@ import { Calendar } from "react-native-calendars";
 import SuccessModal from "../../ToastFile/ToastPage";
 import FinalSettlementDiscount from "./FinalSettlementDiscountSheet"
 import SettlementDiscountAction from "./settlementdiscountAction"
+import SettlementCustomRentSheet from "./FinalSettlementCustomRentSheet"
 
 
 
@@ -77,7 +78,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [showBookings, setShowBookings] = useState(false);
 
   const [collectFullRent, setCollectFullRent] = useState(false);
+  const [showRentSheet, setShowRentSheet] = useState(false);
+  const [customRentAmount, setCustomRentAmount] = useState(null);
   console.log("actualcheckoutdate", actualCheckoutDate);
+
+  const [isGenerating, setIsGenerating] = useState(false);
 
 
 
@@ -180,11 +185,20 @@ export default function FinalSettlementScreen({ navigation, route }) {
   );
 
 
+  // useEffect(() => {
+  //   if (settlementDetails?.currentMonthRentInfo?.discountAmount) {
+  //     setDiscountValue(
+  //       String(settlementDetails.currentMonthRentInfo.discountAmount)
+  //     );
+  //   }
+  // }, [settlementDetails]);
+
   useEffect(() => {
-    if (settlementDetails?.currentMonthRentInfo?.discountAmount) {
-      setDiscountValue(
-        String(settlementDetails.currentMonthRentInfo.discountAmount)
-      );
+    const apiDiscount =
+      settlementDetails?.currentMonthRentInfo?.discountAmount;
+
+    if (apiDiscount !== undefined && apiDiscount !== null) {
+      setDiscountValue(String(apiDiscount));
     }
   }, [settlementDetails]);
 
@@ -319,150 +333,164 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //   setReturnAmount(finalAmount);
   // }, [settlementDetails, userEnteredDeductionsTotal, discountValue]);
 
-//   useEffect(() => {
-//     if (!settlementDetails?.settlementInfo) return;
+  //   useEffect(() => {
+  //     if (!settlementDetails?.settlementInfo) return;
 
-//     const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
+  //     const { isRefundable, amountTobePaid } = settlementDetails.settlementInfo;
 
-//     const unpaidInvoice =
-//   Number(settlementDetails?.settlementInfo?.unpaidInvoiceAmount || 0);
+  //     const unpaidInvoice =
+  //   Number(settlementDetails?.settlementInfo?.unpaidInvoiceAmount || 0);
 
-// const electricity =
-//   Number(settlementDetails?.settlementInfo?.electricityAmount || 0);
+  // const electricity =
+  //   Number(settlementDetails?.settlementInfo?.electricityAmount || 0);
 
-// const refundableAdvance =
-//   Number(settlementDetails?.settlementInfo?.refundableAdvance || 0);
+  // const refundableAdvance =
+  //   Number(settlementDetails?.settlementInfo?.refundableAdvance || 0);
 
-// const rentAmount = collectFullRent
-//   ? Number(
-//       settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
-//     )
-//   : Number(
-//       settlementDetails?.currentMonthRentInfo
-//         ?.currentMonthPayableAmount || 0
-//     );
+  // const rentAmount = collectFullRent
+  //   ? Number(
+  //       settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  //     )
+  //   : Number(
+  //       settlementDetails?.currentMonthRentInfo
+  //         ?.currentMonthPayableAmount || 0
+  //     );
 
-// let finalAmount =
-//   rentAmount +
-//   unpaidInvoice +
-//   electricity -
-//   refundableAdvance +
-//   userEnteredDeductionsTotal;
+  // let finalAmount =
+  //   rentAmount +
+  //   unpaidInvoice +
+  //   electricity -
+  //   refundableAdvance +
+  //   userEnteredDeductionsTotal;
 
-// finalAmount -= Number(appliedDiscount || 0);
+  // finalAmount -= Number(appliedDiscount || 0);
 
-// setReturnAmount(finalAmount);
-
-
-//     if (amountTobePaid < 0) {
-//       finalAmount = isRefundable
-//         ? amountTobePaid + userEnteredDeductionsTotal
-//         : amountTobePaid - userEnteredDeductionsTotal;
-//     } else {
-//       finalAmount = isRefundable
-//         ? amountTobePaid - userEnteredDeductionsTotal
-//         : amountTobePaid + userEnteredDeductionsTotal;
-//     }
-
-//     finalAmount -= Number(appliedDiscount || 0);
-
-//     setReturnAmount(finalAmount);
-
-//   }, [settlementDetails, userEnteredDeductionsTotal, appliedDiscount , collectFullRent])
-
-useEffect(() => {
-  if (!settlementDetails?.settlementInfo) return;
-
-  const { isRefundable, amountTobePaid } =
-    settlementDetails.settlementInfo;
-
-  let payableAmount = Number(amountTobePaid || 0);
-
-  // if (collectFullRent) {
-  //   const currentMonthRent = Number(
-  //     settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
-  //   );
-
-  //   const currentMonthPayableAmount = Number(
-  //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-  //   );
-
-  //   const rentDifference =
-  //     currentMonthRent - currentMonthPayableAmount;
-
-  //   payableAmount = payableAmount + rentDifference;
-  // }
-
-  if (collectFullRent) {
-  const currentMonthRent = Number(
-    settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
-  );
-
-  const currentMonthPayableAmount = Number(
-    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-  );
-
-  const otherItemAmount = Number(
-    settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
-  );
-
-  const rentDifference =
-    currentMonthRent - currentMonthPayableAmount;
-
-  payableAmount =
-    payableAmount +
-    rentDifference +
-    otherItemAmount;
-}
-
-  let finalAmount = 0;
-
-if (payableAmount < 0) {
-  finalAmount = isRefundable
-    ? payableAmount + userEnteredDeductionsTotal
-    : payableAmount - userEnteredDeductionsTotal;
-} else {
-  finalAmount = isRefundable
-    ? payableAmount - userEnteredDeductionsTotal
-    : payableAmount + userEnteredDeductionsTotal;
-}
-
-const appliedDiscountAmount =
-  Number(discountValue || appliedDiscount || 0);
-
-finalAmount -= appliedDiscountAmount;
-
-const normalizedAmount =
-  finalAmount > -1 && finalAmount < 0 ? 0 : finalAmount;
-
-setReturnAmount(normalizedAmount);
+  // setReturnAmount(finalAmount);
 
 
-console.log(
-  settlementDetails?.currentMonthRentInfo?.discountAmount
-);
+  //     if (amountTobePaid < 0) {
+  //       finalAmount = isRefundable
+  //         ? amountTobePaid + userEnteredDeductionsTotal
+  //         : amountTobePaid - userEnteredDeductionsTotal;
+  //     } else {
+  //       finalAmount = isRefundable
+  //         ? amountTobePaid - userEnteredDeductionsTotal
+  //         : amountTobePaid + userEnteredDeductionsTotal;
+  //     }
 
-console.log(
-  settlementDetails?.settlementInfo?.amountTobePaid
-);
-  console.log("collectFullRent", collectFullRent);
-  console.log("amountTobePaid", amountTobePaid);
-  console.log("payableAmount", payableAmount);
-  console.log("finalAmount", finalAmount);
+  //     finalAmount -= Number(appliedDiscount || 0);
 
-console.log(
-  "fullrenttotal",
-  Number(settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0) +
-  Number(settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0)
-);
+  //     setReturnAmount(finalAmount);
 
-}, [
-  settlementDetails,
-  userEnteredDeductionsTotal,
-  appliedDiscount,
-  collectFullRent,discountValue
+  //   }, [settlementDetails, userEnteredDeductionsTotal, appliedDiscount , collectFullRent])
 
-]);
+  useEffect(() => {
+    if (!settlementDetails?.settlementInfo) return;
+
+    const { isRefundable, amountTobePaid } =
+      settlementDetails.settlementInfo;
+
+    let payableAmount = Number(amountTobePaid || 0);
+
+
+
+    // if (collectFullRent) {
+    //   const currentMonthRent = Number(
+    //     settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+    //   );
+
+    //   const currentMonthPayableAmount = Number(
+    //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+    //   );
+
+    //   const otherItemAmount = Number(
+    //     settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+    //   );
+
+    //   const rentDifference =
+    //     currentMonthRent - currentMonthPayableAmount;
+
+    //   payableAmount =
+    //     payableAmount +
+    //     rentDifference +
+    //     otherItemAmount;
+    // }
+
+    if (collectFullRent) {
+
+      const currentMonthRent = Number(
+        customRentAmount ??
+        settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
+        0
+      );
+
+      const currentMonthPayableAmount = Number(
+        settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+      );
+
+      const otherItemAmount = Number(
+        settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+      );
+
+      const rentDifference =
+        currentMonthRent - currentMonthPayableAmount;
+
+      payableAmount =
+        payableAmount +
+        rentDifference +
+        otherItemAmount;
+    }
+
+    let finalAmount = 0;
+
+    if (payableAmount < 0) {
+      finalAmount = isRefundable
+        ? payableAmount + userEnteredDeductionsTotal
+        : payableAmount - userEnteredDeductionsTotal;
+    } else {
+      finalAmount = isRefundable
+        ? payableAmount - userEnteredDeductionsTotal
+        : payableAmount + userEnteredDeductionsTotal;
+    }
+
+    // const appliedDiscountAmount =
+    //   Number(discountValue || appliedDiscount || 0);
+
+    const appliedDiscountAmount = Number(appliedDiscount || 0);
+
+    finalAmount -= appliedDiscountAmount;
+
+    const normalizedAmount =
+      finalAmount > -1 && finalAmount < 0 ? 0 : finalAmount;
+
+    setReturnAmount(normalizedAmount);
+
+
+    console.log(
+      settlementDetails?.currentMonthRentInfo?.discountAmount
+    );
+
+    console.log(
+      settlementDetails?.settlementInfo?.amountTobePaid
+    );
+    console.log("collectFullRent", collectFullRent);
+    console.log("amountTobePaid", amountTobePaid);
+    console.log("payableAmount", payableAmount);
+    console.log("finalAmount", finalAmount);
+
+    console.log(
+      "fullrenttotal",
+      Number(settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0) +
+      Number(settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0)
+    );
+
+  }, [
+    settlementDetails,
+    userEnteredDeductionsTotal,
+    appliedDiscount,
+    collectFullRent,
+
+  ]);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const discountRef = useRef(null);
@@ -601,15 +629,42 @@ console.log(
 
 
 
+  // const selectedRentAmount = collectFullRent
+  //   ? Number(
+  //     settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  //   )
+  //   : Number(
+  //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  //   );
+
+  // const selectedRentAmount = collectFullRent
+  //   ? (
+  //     Number(
+  //       settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  //     ) +
+  //     Number(
+  //       settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+  //     )
+  //   )
+  //   : Number(
+  //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  //   );
+
   const selectedRentAmount = collectFullRent
-  ? Number(
-      settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+    ? (
+      Number(
+        customRentAmount ??
+        settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
+        0
+      ) +
+      Number(
+        settlementDetails?.currentMonthRentInfo?.otherItemAmount ?? 0
+      )
     )
-  : Number(
-      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+    : Number(
+      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount ?? 0
     );
 
-  // ✅ Add Non Refund charge
   const addCharge = () => {
     setExtraCharges((prev) => [
       ...prev,
@@ -772,18 +827,23 @@ console.log(
     );
 
     if (discountValue === "") {
-      setMessage("Please enter discount amount");
+      return true; // empty means 0 discount
+    }
+    else if (/^0+$/.test(discountValue) && discountValue !== "0") {
+      setMessage("Invalid discount amount");
       setModalType("warning");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 1500);
-      valid = false;
-    } else if (isNaN(discount) || discount < 0) {
+      return false;
+    }
+    else if (isNaN(discount) || discount < 0) {
       setMessage("Invalid discount amount");
       setModalType("warning");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 1500);
       valid = false;
-    } else if (discount > baseAmount) {
+    }
+    else if (discount > baseAmount) {
       setMessage("Discount cannot be greater than payable amount");
       setModalType("warning");
       setShowSuccess(true);
@@ -796,82 +856,96 @@ console.log(
 
   console.log("discountvalue", discountValue);
 
-   const sendpayload = {
-      discountAmount: Number(discountValue) || 0,
-      deductions: extraDeductionsPayload,
-      shouldCollectFullRent : collectFullRent
-    }
+  const sendpayload = {
+    discountAmount: Number(discountValue) || 0,
+    deductions: extraDeductionsPayload,
+    shouldCollectFullRent: collectFullRent
+  }
 
-    console.log("sendpayload", sendpayload);
-    
+  console.log("sendpayload", sendpayload);
 
 
+const isGenerateTriggeredRef = useRef(false);
 
 
   const handleGenerate = async () => {
-    const chargeValid = validateExtraCharges();
-    //   const discountValid = validateDiscount();
 
-    // if (!chargeValid || !discountValid) return;
+    if (isGenerateTriggeredRef.current) return;
 
-    let discountValid = true;
+    isGenerateTriggeredRef.current = true;
 
-    // 👉 only validate if value entered
-    if (discountValue !== "") {
-      discountValid = validateDiscount();
+
+
+    try {
+
+      const chargeValid = validateExtraCharges();
+      //   const discountValid = validateDiscount();
+
+      // if (!chargeValid || !discountValid) return;
+
+      let discountValid = true;
+
+      // 👉 only validate if value entered
+      if (discountValue !== "") {
+        discountValid = validateDiscount();
+      }
+
+      if (!chargeValid || !discountValid) return;
+
+      // if (!chargeValid) return;
+      const customerId =
+        selectedItem?.customerId ||
+        selectedBed?.currentTenantInfo[0]?.tenetId;
+
+
+      const payload = {
+        discountAmount: Number(discountValue) || 0,
+        deductions: extraDeductionsPayload,
+        shouldCollectFullRent: collectFullRent,
+        customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
+      }
+
+      console.log("generatepayload", payload);
+
+
+      // const payload = {
+      //   ...(discountValue !== "" && {
+      //     discountAmount: Number(discountValue)
+      //   }),
+      //   deductions: extraDeductionsPayload,
+      // };
+
+      // const payload = extraDeductionsPayload;
+
+
+
+      const res = await submitSettlement(customerId, payload);
+
+      if (res?.success) {
+
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
+        navigation.goBack();
+
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 1000);
+
+      } else {
+
+        setModalType("warning");
+        setMessage(res.message);
+        setShowSuccess(true)
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 1000);
+      }
     }
-
-    if (!chargeValid || !discountValid) return;
-
-    // if (!chargeValid) return;
-    const customerId =
-      selectedItem?.customerId ||
-      selectedBed?.currentTenantInfo[0]?.tenetId;
-
-
-    const payload = {
-      discountAmount: Number(discountValue) || 0,
-      deductions: extraDeductionsPayload,
-      shouldCollectFullRent : collectFullRent
+    finally {
+      isGenerateTriggeredRef.current = false;
     }
-
-    console.log("generatepayload", payload);
-    
-
-    // const payload = {
-    //   ...(discountValue !== "" && {
-    //     discountAmount: Number(discountValue)
-    //   }),
-    //   deductions: extraDeductionsPayload,
-    // };
-
-    // const payload = extraDeductionsPayload;
-
-
-
-    const res = await submitSettlement(customerId, payload);
-
-    if (res?.success) {
-
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-      navigation.goBack();
-
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1000);
-
-    } else {
-
-      setModalType("warning");
-      setMessage(res.message);
-      setShowSuccess(true)
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1000);
-    }
-  };
+  }
 
   const handleDiscount = () => {
     if (discountApplied) {
@@ -886,11 +960,11 @@ console.log(
   const discountApplied = settlementDetails?.currentMonthRentInfo?.isDiscountApplied;
   const label = settlementDetails?.settlementInfo?.label;
   const rentTitle =
-  Number(
-    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-  ) > 0
-    ? "Refundable Rent"
-    : "Rent";
+    Number(
+      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+    ) > 0
+      ? "Refundable Rent"
+      : "Rent";
   console.log("settlement", settlementDetails);
 
 
@@ -1126,11 +1200,11 @@ console.log(
                     <Text style={styles.totalAmount}>
                       ₹{" "}
                       {(
-                    settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
-                      (sum, inv) => sum + Number(inv.payableAmount || 0),
-                      0
-                    ) || 0
-                  ).toFixed(2)}
+                        settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
+                          (sum, inv) => sum + Number(inv.payableAmount || 0),
+                          0
+                        ) || 0
+                      ).toFixed(2)}
                       {/* {Array.isArray(settlementDetails?.unpaidInvoices)
                         ? settlementDetails.unpaidInvoices.reduce(
                           (sum, i) => sum + Number(i.payableAmount || 0),
@@ -1173,32 +1247,36 @@ console.log(
 
               {openRefundRent && (
                 <View style={styles.refundBody}>
-     <TouchableOpacity
-  activeOpacity={0.8}
-  style={styles.fullRentRow}
-  onPress={() => setCollectFullRent(!collectFullRent)}
->
-  <View
-    style={[
-      styles.checkbox,
-      collectFullRent && styles.checkedBox,
-    ]}
-  >
-    {collectFullRent && (
-      <Text style={styles.checkMark}>✓</Text>
-    )}
-  </View>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.fullRentRow}
+                    // onPress={() => 
+                    //   setCollectFullRent(!collectFullRent)}
+                    onPress={() => {
+                      setShowRentSheet(true);
+                    }}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        collectFullRent && styles.checkedBox,
+                      ]}
+                    >
+                      {collectFullRent && (
+                        <Text style={styles.checkMark}>✓</Text>
+                      )}
+                    </View>
 
-  <Text style={styles.fullRentText}>
-    Do you want to collect Full Rent for current month?
-  </Text>
+                    <Text style={styles.fullRentText}>
+                      Do you want to collect Full Rent for current month?
+                    </Text>
 
-  <TouchableOpacity style={styles.infoCircle}>
-    <Text style={styles.infoText}>i</Text>
-  </TouchableOpacity>
-</TouchableOpacity>
+                    <TouchableOpacity style={styles.infoCircle}>
+                      <Text style={styles.infoText}>i</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
 
-    <View style={styles.divider} />
+                  <View style={styles.divider} />
 
                   {/* <View style={styles.rowBetween}>
                     <Text style={styles.descText}>
@@ -1512,7 +1590,7 @@ console.log(
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Total Deductions</Text>
                     <Text style={styles.negativeamountlabel}>
-                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.deductionsInfo?.totalDeductionsAmount|| totalDeduction}
+                      {!isRefundable ? "- " : ""}   ₹ {settlementDetails?.deductionsInfo?.totalDeductionsAmount || totalDeduction}
                     </Text>
                   </View>
 
@@ -1617,35 +1695,35 @@ console.log(
 
                   <>
 
-                  {settlementDetails?.bookingItems?.redeemedList?.length > 0 ? (
-  settlementDetails.bookingItems.redeemedList.map((item, index) => (
-    <View key={index} style={styles.invoiceRow}>
-      <Text
-        style={[
-          styles.invText,
-          { flex: 1, color: "#2563EB" },
-        ]}
-      >
-        {item.invoiceNumber}
-      </Text>
+                    {settlementDetails?.bookingItems?.redeemedList?.length > 0 ? (
+                      settlementDetails.bookingItems.redeemedList.map((item, index) => (
+                        <View key={index} style={styles.invoiceRow}>
+                          <Text
+                            style={[
+                              styles.invText,
+                              { flex: 1, color: "#2563EB" },
+                            ]}
+                          >
+                            {item.invoiceNumber}
+                          </Text>
 
-      <Text
-        style={[
-          styles.invText,
-          { flex: 1, textAlign: "right" },
-        ]}
-      >
-        ₹ {item.redeemedAmount}
-      </Text>
-    </View>
-  ))
-) : (
-  <View style={styles.emptyState}>
-    <Text style={styles.emptyText}>
-      No booking transactions available
-    </Text>
-  </View>
-)}
+                          <Text
+                            style={[
+                              styles.invText,
+                              { flex: 1, textAlign: "right" },
+                            ]}
+                          >
+                            ₹ {item.redeemedAmount}
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Text style={styles.emptyText}>
+                          No booking transactions available
+                        </Text>
+                      </View>
+                    )}
 
                   </>
 
@@ -1655,15 +1733,15 @@ console.log(
           </Text>
         </View> */}
 
-{settlementDetails?.bookingItems?.redeemedList?.length > 0 && (
-                  <View style={styles.totalInvoiceRow}>
-                    <Text style={styles.totalText}>Total</Text>
+                  {settlementDetails?.bookingItems?.redeemedList?.length > 0 && (
+                    <View style={styles.totalInvoiceRow}>
+                      <Text style={styles.totalText}>Total</Text>
 
-                    <Text style={styles.totalAmount}>
-                      ₹ {settlementDetails?.bookingItems?.appliedAmount || 0}
-                    </Text>
-                  </View>
-)}
+                      <Text style={styles.totalAmount}>
+                        ₹ {settlementDetails?.bookingItems?.appliedAmount || 0}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               )}
             </View>
@@ -1700,35 +1778,35 @@ console.log(
 
                   <>
 
-                  {settlementDetails?.advanceItems?.redeemedList?.length > 0 ? (
-  settlementDetails.advanceItems.redeemedList.map((item, index) => (
-    <View key={index} style={styles.invoiceRow}>
-      <Text
-        style={[
-          styles.invText,
-          { flex: 1, color: "#2563EB" },
-        ]}
-      >
-        {item.invoiceNumber}
-      </Text>
+                    {settlementDetails?.advanceItems?.redeemedList?.length > 0 ? (
+                      settlementDetails.advanceItems.redeemedList.map((item, index) => (
+                        <View key={index} style={styles.invoiceRow}>
+                          <Text
+                            style={[
+                              styles.invText,
+                              { flex: 1, color: "#2563EB" },
+                            ]}
+                          >
+                            {item.invoiceNumber}
+                          </Text>
 
-      <Text
-        style={[
-          styles.invText,
-          { flex: 1, textAlign: "right" },
-        ]}
-      >
-        ₹ {item.redeemedAmount}
-      </Text>
-    </View>
-  ))
-) : (
-  <View style={styles.emptyState}>
-    <Text style={styles.emptyText}>
-      No refundable advance transactions available
-    </Text>
-  </View>
-)}
+                          <Text
+                            style={[
+                              styles.invText,
+                              { flex: 1, textAlign: "right" },
+                            ]}
+                          >
+                            ₹ {item.redeemedAmount}
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Text style={styles.emptyText}>
+                          No refundable advance transactions available
+                        </Text>
+                      </View>
+                    )}
 
                   </>
 
@@ -1738,15 +1816,15 @@ console.log(
           </Text>
         </View> */}
 
-{settlementDetails?.advanceItems?.redeemedList?.length > 0 && (
-                  <View style={styles.totalInvoiceRow}>
-                    <Text style={styles.totalText}>Total</Text>
+                  {settlementDetails?.advanceItems?.redeemedList?.length > 0 && (
+                    <View style={styles.totalInvoiceRow}>
+                      <Text style={styles.totalText}>Total</Text>
 
-                    <Text style={styles.totalAmount}>
-                      ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
-                    </Text>
-                  </View>
-                )}
+                      <Text style={styles.totalAmount}>
+                        ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
+                      </Text>
+                    </View>
+                  )}
 
                 </View>
               )}
@@ -1998,9 +2076,35 @@ console.log(
                   />
 
                   <TouchableOpacity
+                    // onPress={() => {
+                    //   if (!validateDiscount()) return;
+                    //   setAppliedDiscount(Number(discountValue) || 0);
+                    //   setIsEditingDiscount(false);
+                    // }}
+
                     onPress={() => {
+                      const value = discountValue.trim();
+
+                      // empty -> 0
+                      if (value === "") {
+                        setDiscountValue("0");
+                        setAppliedDiscount(0);
+                        setIsEditingDiscount(false);
+                        return;
+                      }
+
+                      // 0000 prevent
+                      if (/^0+$/.test(value) && value !== "0") {
+                        setMessage("Invalid discount amount");
+                        setModalType("warning");
+                        setShowSuccess(true);
+                        setTimeout(() => setShowSuccess(false), 1500);
+                        return;
+                      }
+
                       if (!validateDiscount()) return;
-                      setAppliedDiscount(Number(discountValue) || 0);
+
+                      setAppliedDiscount(Number(value));
                       setIsEditingDiscount(false);
                     }}
                     style={{
@@ -2091,7 +2195,13 @@ console.log(
                 <Text style={styles.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.generateBtn} onPress={handleGenerate}>
+              <TouchableOpacity 
+                              style={[
+                  styles.generateBtn,
+                  isGenerateTriggeredRef.current && { opacity: 0.6 }
+                ]}
+                   disabled={isGenerateTriggeredRef.current}
+              onPress={handleGenerate}>
                 <Text style={styles.generateTxt}>Generate Bill</Text>
               </TouchableOpacity>
             </View>
@@ -2224,6 +2334,20 @@ console.log(
 
         onSuccess={() => {
           fetchSettlement(); // 👈 refresh after delete
+        }}
+      />
+
+      <SettlementCustomRentSheet
+        visible={showRentSheet}
+        rentAmount={
+          settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+        }
+        onClose={() => setShowRentSheet(false)}
+        onSet={(amount) => {
+
+          setCustomRentAmount(amount);
+          setCollectFullRent(true);
+
         }}
       />
     </>
@@ -2788,64 +2912,64 @@ const styles = StyleSheet.create({
     color: "#338BFF",
     fontFamily: "Gilroy-Medium",
   },
-fullRentRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 14,
-},
+  fullRentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
 
-checkbox: {
-  width: 20,
-  height: 20,
-  borderWidth: 1.5,
-  borderColor: "#D1D5DB",
-  borderRadius: 6,
-  marginRight: 10,
-  backgroundColor: "#fff",
-},
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1.5,
+    borderColor: "#D1D5DB",
+    borderRadius: 6,
+    marginRight: 10,
+    backgroundColor: "#fff",
+  },
 
-fullRentText: {
-  flex: 1,
-  fontSize: 12,
-  color: "#4B5563",
-  fontFamily: "Gilroy-Medium",
-},
+  fullRentText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#4B5563",
+    fontFamily: "Gilroy-Medium",
+  },
 
-infoCircle: {
-  width: 20,
-  height: 20,
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#CBD5E1",
-  alignItems: "center",
-  justifyContent: "center",
-  marginLeft: 8,
-},
+  infoCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
+  },
 
-infoText: {
-  fontSize: 12,
-  color: "#64748B",
-  fontFamily: "Gilroy-Bold",
-},
+  infoText: {
+    fontSize: 12,
+    color: "#64748B",
+    fontFamily: "Gilroy-Bold",
+  },
 
-divider: {
-  height: 1,
-  backgroundColor: "#E5E7EB",
-  marginBottom: 16,
-},
-checkedBox: {
-  backgroundColor: "#2563EB",
-  borderColor: "#2563EB",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 16,
+  },
+  checkedBox: {
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
 
-checkMark: {
-  color: "#fff",
-  fontSize: 12,
-  fontFamily: "Gilroy-Bold",
-},
+  checkMark: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "Gilroy-Bold",
+  },
 
   // rightMuted: {
   //   fontSize: 12,

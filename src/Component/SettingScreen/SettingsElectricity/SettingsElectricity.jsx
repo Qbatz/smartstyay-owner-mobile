@@ -398,6 +398,15 @@ export default function SettingsElecticity({ navigation }) {
           </View>
         )}
 
+        {!activeHostelId && !loading && (
+          <View style={styles.emptyContainer}>
+            <Image source={EmptyElectricity} style={styles.emptyImg} />
+            <Text style={styles.emptyTitle}>
+              You do not have access to view Electricity
+            </Text>
+          </View>
+        )}
+
         {canReadElectricity && (
 
           <KeyboardAvoidingView

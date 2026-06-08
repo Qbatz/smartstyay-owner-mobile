@@ -2259,6 +2259,20 @@ export default function BillsDesign({ route }) {
   const isExportAllow = isValidSubscription && canReadInvoice;
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
+  const showDotsbtn =
+  !cancelled &&
+  !pendingRefund &&
+  !partiallyRefund &&
+  !FullyRefund &&
+  (
+    !isPaid ||
+    (
+      isPaid &&
+      selectedBill?.invoiceMode === "Manual" &&
+      selectedBill?.invoiceType !== "Settlement"
+    )
+  );
+
 
 
   const isDiscounted =
@@ -2533,7 +2547,10 @@ export default function BillsDesign({ route }) {
                               <Text style={[styles.detailText, { flexShrink: 1, flex: 1 }]}>{item.invoiceNumber}</Text>
                             </View>
 
-                            {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                           {(
+  ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
+  (item.paymentStatus === "Pending" && item.isDiscounted)
+) && (
                               <Text style={styles.dueLabel}>Outstanding</Text>
                             )}
                           </View>
@@ -2548,7 +2565,10 @@ export default function BillsDesign({ route }) {
 
                             <Text style={{ fontSize: 10, color: "#6B7280", fontFamily: "Gilroy-Regular", marginTop: 4 }}>
                               {item.invoiceDate}</Text>
-                            {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                         {(
+  ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
+  (item.paymentStatus === "Pending" && item.isDiscounted)
+) && (
                               <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
                             )}
                           </View>
@@ -2681,7 +2701,7 @@ export default function BillsDesign({ route }) {
 
 
                         {
-                          ((!isPaid) || (isPaid && selectedBill?.invoiceMode === "Manual" && selectedBill?.invoiceType !== "Settlement")) && (
+                          showDotsbtn && (
                             <TouchableOpacity ref={(ref) => (dotsRefs.current[selectedBill?.invoiceId] = ref)}
                               onPress={() => openMenu(selectedBill)}>
                               <Image
