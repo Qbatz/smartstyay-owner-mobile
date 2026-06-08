@@ -31,12 +31,13 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   console.log("customer", customer);
-  
+
 
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
 
+  const isSubmitTriggeredRef = useRef(false);
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
@@ -385,79 +386,92 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
 
   const handleSubmit = async () => {
-    const customerId = customer?.customerId || customer?.id;
-    let valid = true;
 
-    // reset errors
-    setDateError("");
-    setFloorError("");
-    setRoomError("");
-    setBedError("");
-    setRentError("");
 
-    if (!date) {
-      setDateError("Please Select Date");
-      valid = false;
+    if (isSubmitTriggeredRef.current) return;
+    isSubmitTriggeredRef.current = true;
+
+    try {
+      const customerId = customer?.customerId || customer?.id;
+      let valid = true;
+
+      // reset errors
+      setDateError("");
+      setFloorError("");
+      setRoomError("");
+      setBedError("");
+      setRentError("");
+
+      if (!date) {
+        setDateError("Please Select Date");
+        valid = false;
+      }
+
+      if (!floorSelected) {
+        setFloorError("Please Select Floor");
+        valid = false;
+      }
+
+      if (!roomSelected) {
+        setRoomError("Please Select Room");
+        valid = false;
+      }
+
+      if (!bedSelected) {
+        setBedError("Please Select Bed");
+        valid = false;
+      }
+
+      if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        setRentError("Please Enter valid Rent Amount");
+        valid = false;
+      }
+
+      if (!valid) return;
+
+
+      const payload = {
+        bedId: bedSelected.bedId,
+        rentAmount: Number(amount),
+        joiningDate: dayjs(date).format("DD-MM-YYYY"),
+        reason: reason || "",
+      }
+      const res = await changeBedCustomer(
+        activeHostelId,
+        customerId,
+        payload
+      )
+
+      if (res.success) {
+
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
+        onSuccess && onSuccess();
+        await getAllBedsByRoom(roomSelected.id);
+        setTimeout(() => {
+          setShowSuccess(false);
+          closeSheet();
+
+        }, 800);
+
+
+      }
+      else {
+        console.log(res.message || "Change bed failed")
+      }
     }
-
-    if (!floorSelected) {
-      setFloorError("Please Select Floor");
-      valid = false;
+    catch (error) {
+      console.log("error", error);
     }
-
-    if (!roomSelected) {
-      setRoomError("Please Select Room");
-      valid = false;
+    finally {
+      isSubmitTriggeredRef.current = false;
     }
-
-    if (!bedSelected) {
-      setBedError("Please Select Bed");
-      valid = false;
-    }
-
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      setRentError("Please Enter valid Rent Amount");
-      valid = false;
-    }
-
-    if (!valid) return;
-
-
-    const payload = {
-      bedId: bedSelected.bedId,
-      rentAmount: Number(amount),
-      joiningDate: dayjs(date).format("DD-MM-YYYY"),
-      reason: reason || "",
-    }
-    const res = await changeBedCustomer(
-      activeHostelId,
-      customerId,
-      payload
-    )
-
-    if (res.success) {
-
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-      onSuccess && onSuccess();
-      await getAllBedsByRoom(roomSelected.id);
-      setTimeout(() => {
-        setShowSuccess(false);
-        closeSheet();
-
-      }, 800);
-
-
-    }
-    else {
-      console.log(res.message || "Change bed failed")
-    }
-  };
+  }
 
   console.log("customerDetails", customerDetails);
-  
-  
+
+
   const hasRooms = rooms && rooms.length > 0;
   const hasBeds = filteredBeds && filteredBeds.length > 0;
 
@@ -608,9 +622,9 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
             </View>
 
-            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginTop:15}}>
-              <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold'}}>Rental Amount</Text>
-              <Text style={{fontSize:15,fontFamily:'Gilroy-Semibold',color:'grey'}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 15 }}>
+              <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>Rental Amount</Text>
+              <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Semibold', color: 'grey' }}>
                 {customerDetails?.hostelInfo?.monthlyRent ? `₹ ${customerDetails?.hostelInfo?.monthlyRent}` : "N/A"}</Text>
             </View>
 
@@ -647,7 +661,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             </View> */}
 
 
-              <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
+            <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
               style={styles.inputBoxdate}
               onPress={() => setOpenDatePicker(true)}
@@ -853,7 +867,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             )}
 
 
-           
+
             <View style={styles.rentHeader}>
               <Text style={styles.label}>
                 New Rent Amount <Text style={{ color: "red" }}>*</Text>
@@ -895,7 +909,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                 value={amount}
 
                 onChangeText={(text) => {
-                  const onlyNum =text.replace(/[^0-9]/g, "");
+                  const onlyNum = text.replace(/[^0-9]/g, "");
                   setAmount(onlyNum);
                   setRentError("");
                 }}
@@ -932,17 +946,24 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
-                <Text style={{fontFamily: "Gilroy-Semibold"}}>Cancel</Text>
+                <Text style={{ fontFamily: "Gilroy-Semibold" }}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.reassignBtn} onPress={handleSubmit}>
-                <Text style={{ color: "#fff" ,fontFamily: "Gilroy-Semibold"}}>Change Bed</Text>
+              <TouchableOpacity
+                style={[
+                  styles.reassignBtn,
+                  isSubmitTriggeredRef.current && { opacity: 0.6 }
+                ]}
+                onPress={handleSubmit}
+                disabled={isSubmitTriggeredRef.current}
+
+              >
+                <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Change Bed</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </Animated.View>
-
 
     </>
   );
@@ -981,8 +1002,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 10,
   },
-  title: { fontSize: 18, fontFamily: "Gilroy-Bold"  },
-  label: { marginTop: 14,fontFamily: "Gilroy-Semibold" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold" },
+  label: { marginTop: 14, fontFamily: "Gilroy-Semibold" },
   star: { color: "red" },
   inputBox: {
     backgroundColor: "#F6F8FF",
@@ -1019,7 +1040,7 @@ const styles = StyleSheet.create({
     padding: 12,
     height: 100,
   },
-  textAreaInput: { height: 100, textAlignVertical: "top" ,fontFamily: "Gilroy-Semibold"},
+  textAreaInput: { height: 100, textAlignVertical: "top", fontFamily: "Gilroy-Semibold" },
   buttonRow: {
     flexDirection: "row",
     marginVertical: 20,
@@ -1081,7 +1102,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  selectText: { color: "#555" ,fontFamily: "Gilroy-Semibold"},
+  selectText: { color: "#555", fontFamily: "Gilroy-Semibold" },
   arrow: { width: 18, height: 18, tintColor: "#777" },
   dropdownMenu: {
     position: "absolute",
