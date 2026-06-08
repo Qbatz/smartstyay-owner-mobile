@@ -82,6 +82,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [customRentAmount, setCustomRentAmount] = useState(null);
   console.log("actualcheckoutdate", actualCheckoutDate);
 
+  const [isGenerating, setIsGenerating] = useState(false);
+
 
 
   //    useEffect(() => {
@@ -390,7 +392,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
     let payableAmount = Number(amountTobePaid || 0);
 
-   
+
 
     // if (collectFullRent) {
     //   const currentMonthRent = Number(
@@ -416,28 +418,28 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
     if (collectFullRent) {
 
-const currentMonthRent = Number(
-  customRentAmount ??
-  settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
-  0
-);
+      const currentMonthRent = Number(
+        customRentAmount ??
+        settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
+        0
+      );
 
-  const currentMonthPayableAmount = Number(
-    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-  );
+      const currentMonthPayableAmount = Number(
+        settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+      );
 
-  const otherItemAmount = Number(
-    settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
-  );
+      const otherItemAmount = Number(
+        settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+      );
 
-  const rentDifference =
-    currentMonthRent - currentMonthPayableAmount;
+      const rentDifference =
+        currentMonthRent - currentMonthPayableAmount;
 
-  payableAmount =
-    payableAmount +
-    rentDifference +
-    otherItemAmount;
-}
+      payableAmount =
+        payableAmount +
+        rentDifference +
+        otherItemAmount;
+    }
 
     let finalAmount = 0;
 
@@ -648,8 +650,8 @@ const currentMonthRent = Number(
   //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
   //   );
 
-const selectedRentAmount = collectFullRent
-  ? (
+  const selectedRentAmount = collectFullRent
+    ? (
       Number(
         customRentAmount ??
         settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
@@ -659,7 +661,7 @@ const selectedRentAmount = collectFullRent
         settlementDetails?.currentMonthRentInfo?.otherItemAmount ?? 0
       )
     )
-  : Number(
+    : Number(
       settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount ?? 0
     );
 
@@ -863,74 +865,87 @@ const selectedRentAmount = collectFullRent
   console.log("sendpayload", sendpayload);
 
 
-
+const isGenerateTriggeredRef = useRef(false);
 
 
   const handleGenerate = async () => {
-    const chargeValid = validateExtraCharges();
-    //   const discountValid = validateDiscount();
 
-    // if (!chargeValid || !discountValid) return;
+    if (isGenerateTriggeredRef.current) return;
 
-    let discountValid = true;
+    isGenerateTriggeredRef.current = true;
 
-    // 👉 only validate if value entered
-    if (discountValue !== "") {
-      discountValid = validateDiscount();
+
+
+    try {
+
+      const chargeValid = validateExtraCharges();
+      //   const discountValid = validateDiscount();
+
+      // if (!chargeValid || !discountValid) return;
+
+      let discountValid = true;
+
+      // 👉 only validate if value entered
+      if (discountValue !== "") {
+        discountValid = validateDiscount();
+      }
+
+      if (!chargeValid || !discountValid) return;
+
+      // if (!chargeValid) return;
+      const customerId =
+        selectedItem?.customerId ||
+        selectedBed?.currentTenantInfo[0]?.tenetId;
+
+
+      const payload = {
+        discountAmount: Number(discountValue) || 0,
+        deductions: extraDeductionsPayload,
+        shouldCollectFullRent: collectFullRent,
+        customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
+      }
+
+      console.log("generatepayload", payload);
+
+
+      // const payload = {
+      //   ...(discountValue !== "" && {
+      //     discountAmount: Number(discountValue)
+      //   }),
+      //   deductions: extraDeductionsPayload,
+      // };
+
+      // const payload = extraDeductionsPayload;
+
+
+
+      const res = await submitSettlement(customerId, payload);
+
+      if (res?.success) {
+
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
+        navigation.goBack();
+
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 1000);
+
+      } else {
+
+        setModalType("warning");
+        setMessage(res.message);
+        setShowSuccess(true)
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 1000);
+      }
     }
-
-    if (!chargeValid || !discountValid) return;
-
-    // if (!chargeValid) return;
-    const customerId =
-      selectedItem?.customerId ||
-      selectedBed?.currentTenantInfo[0]?.tenetId;
-
-
-    const payload = {
-      discountAmount: Number(discountValue) || 0,
-      deductions: extraDeductionsPayload,
-      shouldCollectFullRent: collectFullRent,
-      customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
+    finally {
+      isGenerateTriggeredRef.current = false;
     }
-
-    console.log("generatepayload", payload);
-
-
-    // const payload = {
-    //   ...(discountValue !== "" && {
-    //     discountAmount: Number(discountValue)
-    //   }),
-    //   deductions: extraDeductionsPayload,
-    // };
-
-    // const payload = extraDeductionsPayload;
-
-
-
-    const res = await submitSettlement(customerId, payload);
-
-    if (res?.success) {
-
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-      navigation.goBack();
-
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1000);
-
-    } else {
-
-      setModalType("warning");
-      setMessage(res.message);
-      setShowSuccess(true)
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1000);
-    }
-  };
+  }
 
   const handleDiscount = () => {
     if (discountApplied) {
@@ -2180,7 +2195,13 @@ const selectedRentAmount = collectFullRent
                 <Text style={styles.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.generateBtn} onPress={handleGenerate}>
+              <TouchableOpacity 
+                              style={[
+                  styles.generateBtn,
+                  isGenerateTriggeredRef.current && { opacity: 0.6 }
+                ]}
+                   disabled={isGenerateTriggeredRef.current}
+              onPress={handleGenerate}>
                 <Text style={styles.generateTxt}>Generate Bill</Text>
               </TouchableOpacity>
             </View>
@@ -2316,19 +2337,19 @@ const selectedRentAmount = collectFullRent
         }}
       />
 
-   <SettlementCustomRentSheet
-  visible={showRentSheet}
-  rentAmount={
-    settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
-  }
-  onClose={() => setShowRentSheet(false)}
-  onSet={(amount) => {
+      <SettlementCustomRentSheet
+        visible={showRentSheet}
+        rentAmount={
+          settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+        }
+        onClose={() => setShowRentSheet(false)}
+        onSet={(amount) => {
 
-    setCustomRentAmount(amount);
-    setCollectFullRent(true);
+          setCustomRentAmount(amount);
+          setCollectFullRent(true);
 
-  }}
-/>
+        }}
+      />
     </>
   );
 }
