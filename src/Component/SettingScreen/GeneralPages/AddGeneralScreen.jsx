@@ -168,9 +168,7 @@ export default function AddGeneralScreen({ navigation, route }) {
   };
 
   const handleSubmit = async () => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
+   
     let newErrors = {};
 
 
@@ -213,10 +211,14 @@ export default function AddGeneralScreen({ navigation, route }) {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      isSubmittingRef.current = false;
+      // isSubmittingRef.current = false;
       return;
     }
 
+    setErrors({});
+     if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     setErrors({});
 
     const payload = {
@@ -256,7 +258,7 @@ export default function AddGeneralScreen({ navigation, route }) {
 
 
     if (res.success === false) {
-      const apiError = res.data;
+      const apiError = res.data || res?.message;
 
       if (apiError.emailStatus) setEmailError(apiError.emailStatus);
       if (apiError.mobileStatus) setPhoneError(apiError.mobileStatus);
