@@ -799,9 +799,9 @@ export default function GeneralDetailsScreen({ navigation }) {
                     {getFullName(profileDetails)}
                   </Text>
 
-                <TouchableOpacity
+                <View
                   style={[styles.changePwdRow,{marginTop:10,paddingHorizontal:4,backgroundColor:'#FFFAF1',borderRadius:4,paddingVertical:2}]}
-                  onPress={() => setShowPasswordSheet(true)}
+                  // onPress={() => setShowPasswordSheet(true)}
                 >
                   <Image
                     source={CrownIcon}
@@ -810,7 +810,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                   <Text style={styles.changePwdText}>
                     {profileDetails.roleName}
                   </Text>
-                </TouchableOpacity>
+                </View>
                 </View>
 
                 {/* <View style={{ flex: 1, marginLeft: 7 }}>

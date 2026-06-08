@@ -523,6 +523,24 @@ export default function BookingCheckIn({ navigation, route }) {
 
                         {tab === "long" && (
                             <View>
+                            
+                            <View style={{flexDirection:'row',alignItems:'center',marginVertical:10}}>
+                                {customer?.profilePic ? <Image source={{ uri: customer?.profilePic }} style={{ width: 45, height: 45 }} /> :
+
+                                    <View style={{width:45,height:45,borderRadius:22.5,backgroundColor:'#e6e7eb',
+                                                justifyContent:'center',alignItems:'center'}}>
+                                        <Text style={{fontSize:18,fontFamily:'Gilroy-Semibold'}}>{customer?.initials}</Text>
+
+                                    </View>
+                                }
+
+                                <View style={{marginLeft:8}}>
+                                    <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold'}}>{customer?.fullName}</Text>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',marginTop:4}}>
+                                        +{customer?.countryCode} {customer?.mobile}</Text>
+                                </View>
+                            </View>
+
 
 
 
@@ -1071,7 +1089,7 @@ const styles = StyleSheet.create({
         marginRight: 6
     },
 
-    addText: { color: "#fff", fontSize: 12, fontFamily: "Gilroy-Semibold"},
+    addText: { color: "#fff", fontSize: 12, fontFamily: "Gilroy-Semibold" },
 
     BtnRow: {
         flexDirection: "row",
@@ -1100,7 +1118,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
 
-    submitText: { color: "#fff", fontFamily: "Gilroy-Semibold"},
+    submitText: { color: "#fff", fontFamily: "Gilroy-Semibold" },
 
 
 
