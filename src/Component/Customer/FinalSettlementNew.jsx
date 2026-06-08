@@ -30,6 +30,7 @@ import { Calendar } from "react-native-calendars";
 import SuccessModal from "../../ToastFile/ToastPage";
 import FinalSettlementDiscount from "./FinalSettlementDiscountSheet"
 import SettlementDiscountAction from "./settlementdiscountAction"
+import SettlementCustomRentSheet from "./FinalSettlementCustomRentSheet"
 
 
 
@@ -77,6 +78,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [showBookings, setShowBookings] = useState(false);
 
   const [collectFullRent, setCollectFullRent] = useState(false);
+  const [showRentSheet, setShowRentSheet] = useState(false);
+  const [customRentAmount, setCustomRentAmount] = useState(null);
   console.log("actualcheckoutdate", actualCheckoutDate);
 
 
@@ -189,13 +192,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
   // }, [settlementDetails]);
 
   useEffect(() => {
-  const apiDiscount =
-    settlementDetails?.currentMonthRentInfo?.discountAmount;
+    const apiDiscount =
+      settlementDetails?.currentMonthRentInfo?.discountAmount;
 
-  if (apiDiscount !== undefined && apiDiscount !== null) {
-    setDiscountValue(String(apiDiscount));
-  }
-}, [settlementDetails]);
+    if (apiDiscount !== undefined && apiDiscount !== null) {
+      setDiscountValue(String(apiDiscount));
+    }
+  }, [settlementDetails]);
 
 
   // useEffect(() => {
@@ -387,6 +390,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
     let payableAmount = Number(amountTobePaid || 0);
 
+   
+
     // if (collectFullRent) {
     //   const currentMonthRent = Number(
     //     settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
@@ -396,33 +401,43 @@ export default function FinalSettlementScreen({ navigation, route }) {
     //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
     //   );
 
+    //   const otherItemAmount = Number(
+    //     settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+    //   );
+
     //   const rentDifference =
     //     currentMonthRent - currentMonthPayableAmount;
 
-    //   payableAmount = payableAmount + rentDifference;
+    //   payableAmount =
+    //     payableAmount +
+    //     rentDifference +
+    //     otherItemAmount;
     // }
 
     if (collectFullRent) {
-      const currentMonthRent = Number(
-        settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
-      );
 
-      const currentMonthPayableAmount = Number(
-        settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
-      );
+const currentMonthRent = Number(
+  customRentAmount ??
+  settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
+  0
+);
 
-      const otherItemAmount = Number(
-        settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
-      );
+  const currentMonthPayableAmount = Number(
+    settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  );
 
-      const rentDifference =
-        currentMonthRent - currentMonthPayableAmount;
+  const otherItemAmount = Number(
+    settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+  );
 
-      payableAmount =
-        payableAmount +
-        rentDifference +
-        otherItemAmount;
-    }
+  const rentDifference =
+    currentMonthRent - currentMonthPayableAmount;
+
+  payableAmount =
+    payableAmount +
+    rentDifference +
+    otherItemAmount;
+}
 
     let finalAmount = 0;
 
@@ -439,9 +454,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
     // const appliedDiscountAmount =
     //   Number(discountValue || appliedDiscount || 0);
 
-   const appliedDiscountAmount = Number(appliedDiscount || 0);
+    const appliedDiscountAmount = Number(appliedDiscount || 0);
 
-finalAmount -= appliedDiscountAmount;
+    finalAmount -= appliedDiscountAmount;
 
     const normalizedAmount =
       finalAmount > -1 && finalAmount < 0 ? 0 : finalAmount;
@@ -471,7 +486,7 @@ finalAmount -= appliedDiscountAmount;
     settlementDetails,
     userEnteredDeductionsTotal,
     appliedDiscount,
-    collectFullRent, 
+    collectFullRent,
 
   ]);
 
@@ -620,20 +635,34 @@ finalAmount -= appliedDiscountAmount;
   //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
   //   );
 
-  const selectedRentAmount = collectFullRent
+  // const selectedRentAmount = collectFullRent
+  //   ? (
+  //     Number(
+  //       settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  //     ) +
+  //     Number(
+  //       settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+  //     )
+  //   )
+  //   : Number(
+  //     settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+  //   );
+
+const selectedRentAmount = collectFullRent
   ? (
       Number(
-        settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+        customRentAmount ??
+        settlementDetails?.currentMonthRentInfo?.currentMonthRent ??
+        0
       ) +
       Number(
-        settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+        settlementDetails?.currentMonthRentInfo?.otherItemAmount ?? 0
       )
     )
   : Number(
-      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
+      settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount ?? 0
     );
 
-  // Add Non Refund charge
   const addCharge = () => {
     setExtraCharges((prev) => [
       ...prev,
@@ -795,23 +824,23 @@ finalAmount -= appliedDiscountAmount;
       Number(settlementDetails?.settlementInfo?.amountTobePaid || 0)
     );
 
-   if (discountValue === "") {
-  return true; // empty means 0 discount
-}
-else if (/^0+$/.test(discountValue) && discountValue !== "0") {
-  setMessage("Invalid discount amount");
-  setModalType("warning");
-  setShowSuccess(true);
-  setTimeout(() => setShowSuccess(false), 1500);
-  return false;
-}
+    if (discountValue === "") {
+      return true; // empty means 0 discount
+    }
+    else if (/^0+$/.test(discountValue) && discountValue !== "0") {
+      setMessage("Invalid discount amount");
+      setModalType("warning");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+      return false;
+    }
     else if (isNaN(discount) || discount < 0) {
       setMessage("Invalid discount amount");
       setModalType("warning");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 1500);
       valid = false;
-    } 
+    }
     else if (discount > baseAmount) {
       setMessage("Discount cannot be greater than payable amount");
       setModalType("warning");
@@ -861,7 +890,8 @@ else if (/^0+$/.test(discountValue) && discountValue !== "0") {
     const payload = {
       discountAmount: Number(discountValue) || 0,
       deductions: extraDeductionsPayload,
-      shouldCollectFullRent: collectFullRent
+      shouldCollectFullRent: collectFullRent,
+      customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
     }
 
     console.log("generatepayload", payload);
@@ -1205,7 +1235,11 @@ else if (/^0+$/.test(discountValue) && discountValue !== "0") {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.fullRentRow}
-                    onPress={() => setCollectFullRent(!collectFullRent)}
+                    // onPress={() => 
+                    //   setCollectFullRent(!collectFullRent)}
+                    onPress={() => {
+                      setShowRentSheet(true);
+                    }}
                   >
                     <View
                       style={[
@@ -2281,6 +2315,20 @@ else if (/^0+$/.test(discountValue) && discountValue !== "0") {
           fetchSettlement(); // 👈 refresh after delete
         }}
       />
+
+   <SettlementCustomRentSheet
+  visible={showRentSheet}
+  rentAmount={
+    settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0
+  }
+  onClose={() => setShowRentSheet(false)}
+  onSet={(amount) => {
+
+    setCustomRentAmount(amount);
+    setCollectFullRent(true);
+
+  }}
+/>
     </>
   );
 }

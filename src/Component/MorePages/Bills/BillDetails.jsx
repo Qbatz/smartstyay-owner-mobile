@@ -919,7 +919,7 @@ const BillDetailsSheet = ({
                           </View>
                           <View>
                             <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              {pay?.paymentMode ?? "N/A"}
+                              {pay?.bankAccount ?? "N/A"}
                             </Text>
                           </View>
                         </View>
