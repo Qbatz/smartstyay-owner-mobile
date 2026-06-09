@@ -99,7 +99,7 @@ export default function MastersDetails({ visible, onClose, masterDetail, passwor
 
 
                             <View style={styles.subHeader}>
-                                <Text style={styles.masterName}>{masterDetail?.fullName}</Text>
+                                <Text style={styles.masterName}> {masterDetail?.fullName?.replace(" null", "")}</Text>
 
                                 <View style={styles.rolefield}>
                                 <Image source={SheildIcon} style={{width:8.95,height:10.5,marginRight:5}}/>
