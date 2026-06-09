@@ -2221,6 +2221,16 @@ export default function BillsDesign({ route }) {
   // ];
 
 
+  const handleTabChange = (tab) => {
+  setActiveTab(tab);
+
+  setSearchText("");
+
+  if (tab === "Invoices") {
+    GetAllBillDetails(activeHostelId);
+  }
+}
+
   const getPaymentIcon = (status) => {
     switch (status) {
       case "Paid":
@@ -2404,7 +2414,8 @@ export default function BillsDesign({ route }) {
               <TouchableOpacity
                 key={tab.key}
                 style={[styles.tab, activeTab === tab.key && styles.activeTab]}
-                onPress={() => setActiveTab(tab.key)}
+                // onPress={() => setActiveTab(tab.key)}
+                onPress={() => handleTabChange(tab.key)}
               >
                 <View style={styles.tabContent}>
 
