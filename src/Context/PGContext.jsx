@@ -53,6 +53,10 @@ export default function PGProvider({ children }) {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      if(response.status === 200){
+        setPgLoading(false);
+      }
+      
       return response;
     } catch (error) {
       console.log("ADD PG ERROR:", error);
@@ -60,10 +64,12 @@ export default function PGProvider({ children }) {
         await AutoLogout(loginContext)
       }
       setPgError(error);
-      return error;
-    } finally {
       setPgLoading(false);
-    }
+      return error;
+    } 
+    // finally {
+    //   setPgLoading(false);
+    // }
   };
 
 
