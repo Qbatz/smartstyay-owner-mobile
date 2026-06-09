@@ -210,9 +210,9 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
 
   const paymentModes = ["Cash", "UPI", "Card", "Bank Transfer"];
 
-
-
   const [errors, setErrors] = useState({});
+
+  const [isSubmitClicked, setIsSubmitClicked] = useState(false);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -303,6 +303,9 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
       return;
     }
 
+    if(isSubmitClicked) return;
+    setIsSubmitClicked(true)
+
     const payload = {
       hostelId: activeHostelId,
       assetName,
@@ -323,6 +326,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
     }
 
 
+    try{
     if (isEdit) {
       const res = await handleUpdateAsset(payload);
 
@@ -334,6 +338,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
         setTimeout(() => {
           setShowSuccessModal(false);
           onClose();
+           setIsSubmitClicked(false)
         }, 1500);
 
         return;
@@ -345,12 +350,18 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
 
       setTimeout(() => {
         setShowSuccessModal(false);
+         setIsSubmitClicked(false)
       }, 1500);
 
       return;
     }
+    }catch(error){
+      console.log(error)
+      setIsSubmitClicked(false)
+    }
 
     // ✅ ADD FLOW
+    try{
     const res = await addAsset(payload);
 
     if (res?.success) {
@@ -361,9 +372,14 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
       setTimeout(() => {
         setShowSuccessModal(false);
         onClose();
+        setIsSubmitClicked(false)
       }, 1500);
     } else {
       setErrors({ api: res?.message });
+      setIsSubmitClicked(false)
+    }
+    }catch(error){
+      setIsSubmitClicked(false)
     }
   };
 
@@ -817,7 +833,8 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
                 <Text style={styles.cancel}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.addBtn} onPress={handleSubmit}>
+              <TouchableOpacity style={[styles.addBtn, isSubmitClicked && {opacity:0.4}]} onPress={handleSubmit} 
+              disabled={isSubmitClicked}>
                 <Text style={styles.addBtnText}>Save</Text>
               </TouchableOpacity>
             </View>

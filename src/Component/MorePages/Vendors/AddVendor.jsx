@@ -97,6 +97,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
     code:vendorData?.countryCode || "+91",
     label: "India",
   });
+  const [isSubmitClicked, setIsSubmitClicked]=useState(false)
 
   const scrollRef = useRef(null);
   const mobileRef = useRef(null);
@@ -412,6 +413,8 @@ export default function AddVendorSheet({ onClose, vendorData }) {
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if(isSubmitClicked) return;
+    setIsSubmitClicked(true)
 
     setLoading(true);
 
@@ -446,6 +449,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
     } catch (err) {
       console.log("❌ API ERROR 👉", err?.response?.data || err);
       res = { success: false, message: "Something went wrong" };
+      setIsSubmitClicked(false)
     }
 
     setLoading(false);
@@ -459,6 +463,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
       setTimeout(() => {
         setShowSuccessModal(false);
         onClose();
+          setIsSubmitClicked(false)
       }, 1500);
     } else {
 
@@ -468,6 +473,7 @@ export default function AddVendorSheet({ onClose, vendorData }) {
 
       setTimeout(() => {
         setShowSuccessModal(false);
+          setIsSubmitClicked(false)
       }, 1500);
     }
   };
@@ -1263,7 +1269,8 @@ export default function AddVendorSheet({ onClose, vendorData }) {
                 <Text style={styles.cancel}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.addBtn} onPress={handleSubmit}>
+              <TouchableOpacity style={[styles.addBtn, isSubmitClicked && {opacity:0.4}]} onPress={handleSubmit}
+              disabled={isSubmitClicked}>
                 <Text style={styles.addBtnText}>
                   {vendorData ? "Save Changes" : "Add Vendor"}
                 </Text>
