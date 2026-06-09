@@ -426,7 +426,9 @@ export default function CreateBill({ navigation }) {
   }
 
 
-
+const filteredCustomers = customers.filter(
+  (item) => item.currentStatus !== "Booked"
+);
 
   console.log("customers", customers);
 
@@ -923,7 +925,7 @@ export default function CreateBill({ navigation }) {
           {customerOpen && (
             <View style={styles.customerDropdownMenu}>
               <ScrollView style={{ maxHeight: 120 }} nestedScrollEnabled={true}>
-                {customers.map((item) => {
+                {filteredCustomers?.map((item) => {
                   const isSelected = selectedCustomer?.id === item.customerId;
 
                   return (
