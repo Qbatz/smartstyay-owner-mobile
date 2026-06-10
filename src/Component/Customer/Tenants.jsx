@@ -1125,7 +1125,7 @@ export default function TenantsScreen({ route }) {
 
                           <View style={styles.detailRow}>
                             {item.floorName && (
-                              <View style={[styles.floorBadge, { flex: 1 }]}>
+                              <View style={[styles.floorBadge, { flex: 1,alignItems:'center' }]}>
                                 <Text style={[styles.floorText]} numberOfLines={1}
                                   ellipsizeMode="tail">{item.floorName}</Text>
                               </View>
@@ -2420,6 +2420,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Gilroy-Semibold",
     color: "#111827",
+    marginRight:8
   },
   detailRow: {
     flexDirection: "row",

@@ -277,7 +277,7 @@ export default function CancelNotice({ navigation, route }) {
 
 
           {/* Reason */}
-          <Text style={styles.label}>Reason (Comments)</Text>
+          <Text style={styles.label}>Reason (Comments) <Text style={{ color: "red" }}>*</Text></Text>
           <TextInput
             style={styles.textarea}
             multiline

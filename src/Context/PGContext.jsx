@@ -123,6 +123,7 @@ export default function PGProvider({ children }) {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
+     
 
       return response;
     } catch (error) {
@@ -133,7 +134,8 @@ export default function PGProvider({ children }) {
       }
       setPgError(error);
       return error;
-    } finally {
+    } 
+    finally {
       setPgLoading(false);
     }
   };
