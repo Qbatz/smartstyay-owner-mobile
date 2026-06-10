@@ -14,6 +14,7 @@ import EmptyState from "../../../Assets/Images/Empty_state.png";
 import ChecksIcon from "../../../Assets/Images/checks.png";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { initialize, showCheckout, canGoBack, goBack } from "zoho-payments-react-native-sdk"
+import { PGContext } from "../../../Context/PGContext";
 
 
 
@@ -27,8 +28,9 @@ export default function SubscriptionPlans({ navigation }) {
   const [plans, setPlans] = useState([]);
   // const [currentPlan, setCurrentPlan] = useState(null);
 
-  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription,verfiyPayment,currentPlan } = UseSetting();
+  const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription, verfiyPayment, currentPlan } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
+  const {getParticularHostelDetails}=useContext(PGContext)
 
   const insets = useSafeAreaInsets();
 
@@ -59,11 +61,18 @@ export default function SubscriptionPlans({ navigation }) {
     }
   };
 
-  useEffect(() => {
-    if (activeHostelId) {
-      fetchCurrentPlan();
-    }
-  }, [activeHostelId]);
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     fetchCurrentPlan();
+  //   }
+  // }, [activeHostelId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        fetchCurrentPlan();
+      }
+    }, [activeHostelId])
+  )
 
   const fetchCurrentPlan = async () => {
     const res = await getCurrentHostelPlan(activeHostelId);
@@ -109,14 +118,14 @@ export default function SubscriptionPlans({ navigation }) {
     }, [navigation])
   );
 
-  console.log("slectPlan",selectedPlan)
+  console.log("slectPlan", selectedPlan)
 
   const handleExpand = (id) => {
     setExpandedPlan(expandedPlan === id ? null : id);
   };
 
   const selectplan = async (planId) => {
-   
+
     console.log(planId)
 
     const apiKey = "1003.b2a3acfd49c278e09485f9d3a07e6728.07ecfeb8627ef8e907173b524a161bee"
@@ -138,32 +147,35 @@ export default function SubscriptionPlans({ navigation }) {
       const sessionId = res?.data?.sessionId;
       const environment = res?.data?.environment;
 
-      initialize( apiKey, accountId, "india", environment)
+      initialize(apiKey, accountId, "india", environment)
 
-console.log("sessionId", res?.data?.sessionId)
+      console.log("sessionId", res?.data?.sessionId)
       try {
         const result = await showCheckout({
-          paymentSessionId:  res?.data?.sessionId,
+          paymentSessionId: res?.data?.sessionId,
           // paymentMethod: 'upi',
         });
         console.log(result)
         console.log('Payment ID:', result.paymentId);
         console.log('Signature:', result.signature);
-        const paymentId=result.paymentId;
+        const paymentId = result.paymentId;
 
         if (result.mandateId) {
           console.log('Mandate ID:', result.mandateId);
         }
-        if(result.status == "success"){
-          const response= await verfiyPayment(activeHostelId,paymentId)
-          console.log("verifypayment",response)
+        if (result.status == "success") {
+          const response = await verfiyPayment(activeHostelId, paymentId)
+          console.log("verifypayment", response)
 
-          if(response.status === 200){
+          if (response.status === 200) {
             console.log(response?.message)
             fetchPlans();
-            fetchCurrentPlan();
+            // fetchCurrentPlan();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            await fetchCurrentPlan();
+            await getParticularHostelDetails(activeHostelId);
           }
-          else{
+          else {
             console.log(response?.message)
           }
         }
@@ -172,11 +184,11 @@ console.log("sessionId", res?.data?.sessionId)
         console.log('Error Code:', e?.code);
         console.log('Error Message:', e?.message);
       }
-    }else {
-    console.log("API Error:", res?.data);
+    } else {
+      console.log("API Error:", res?.data);
 
-    alert(res?.data?.message || res?.message || "Something went wrong. Please try again.");
-  }
+      alert(res?.data?.message || res?.message || "Something went wrong. Please try again.");
+    }
 
 
 
@@ -464,7 +476,7 @@ console.log("sessionId", res?.data?.sessionId)
                     //   selectplan(item?.planCode)
                     // }}
 
-                  onPress={() => handleExpand(item.id)}
+                    onPress={() => handleExpand(item.id)}
                   >
                     <Text style={styles.seeMoreText}>{expanded ? "See less →" : "See more →"}</Text>
                   </TouchableOpacity>
@@ -488,7 +500,7 @@ console.log("sessionId", res?.data?.sessionId)
             //     planId: selectedPlan?.code
             //   });
             // }}
-            onPress={()=>selectplan(selectedPlan?.code)}
+            onPress={() => selectplan(selectedPlan?.code)}
           >
             <Text style={styles.continueText}>Continue →</Text>
           </TouchableOpacity>

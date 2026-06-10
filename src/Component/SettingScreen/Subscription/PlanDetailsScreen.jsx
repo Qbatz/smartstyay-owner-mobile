@@ -46,6 +46,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
       fetchCurrentPlan();
     }
   }, [activeHostelId]);
+  console.log("currentPlan",currentPlan)
   
 
   const fetchCurrentPlan = async () => {

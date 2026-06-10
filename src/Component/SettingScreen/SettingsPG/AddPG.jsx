@@ -279,10 +279,10 @@ export default function AddPG({ navigation, route }) {
 
 
   const handleSubmit = async () => {
-     if (isSubmittingRef.current) return;
+    if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     setIsSubmitting(true);
-    
+
     let errors = {};
 
     if (!hostelName.trim())
@@ -322,7 +322,7 @@ export default function AddPG({ navigation, route }) {
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
       isSubmittingRef.current = false;
-        setIsSubmitting(false);
+      setIsSubmitting(false);
       return;
     }
 
@@ -364,7 +364,7 @@ export default function AddPG({ navigation, route }) {
     };
 
     console.log("FINAL PG PAYLOAD ===>", finalPayload);
-   
+
 
     try {
       if (isEdit) {
@@ -386,12 +386,21 @@ export default function AddPG({ navigation, route }) {
           setModalType("success");
           setModalMessage("PG Updated Successfully");
           setShowSuccessModal(true);
+            navigation.goBack();
           setTimeout(() => {
             setShowSuccessModal(false)
-            navigation.goBack();
+
+            setTimeout(() => {
+               isSubmittingRef.current = false;
+            setIsSubmitting(false);
+            }, 3000);
+              
+          
+           
           }
 
             , 1500);
+          
 
         } else {
           setModalType("error");
@@ -400,11 +409,19 @@ export default function AddPG({ navigation, route }) {
           setTimeout(() => {
             setShowSuccessModal(false)
             navigation.goBack();
+            isSubmittingRef.current = false;
+            setIsSubmitting(false);
           }, 1500);
         }
         return;
       }
+    } catch (e) {
+      console.log(e)
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
 
+    try {
       const res = await addPG(finalPayload)
 
       if (res?.status === 201) {
@@ -414,6 +431,8 @@ export default function AddPG({ navigation, route }) {
         setTimeout(() => {
           setShowSuccessModal(false)
           navigation.goBack()
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
         }, 1500);
         const fresh = await getHostels()
         const data = fresh.data
@@ -427,168 +446,175 @@ export default function AddPG({ navigation, route }) {
         else {
           const reordered = reorderHostels(data, activeHostelId)
           updateHostelList(reordered)
+
         }
 
         // navigation.goBack()
+      } else {
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
       }
-    } catch (e) {
-      console.log(e)
-    } finally {
+    } catch (error) {
+      console.log(error)
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
+    //  finally {
+    //   isSubmittingRef.current = false;
+    //   setIsSubmitting(false);
+    // }
 
 
 
   };
 
-const [picModal, setPicModal] = useState(false);
+  const [picModal, setPicModal] = useState(false);
 
-const [selectedImageSetter, setSelectedImageSetter] = useState(null);
+  const [selectedImageSetter, setSelectedImageSetter] = useState(null);
 
-const openCameraPic = () => {
-  launchCamera(
-    {
-      mediaType: "photo",
-      quality: 0.7,
-    },
-    (response) => {
-      if (response.didCancel) return;
+  const openCameraPic = () => {
+    launchCamera(
+      {
+        mediaType: "photo",
+        quality: 0.7,
+      },
+      (response) => {
+        if (response.didCancel) return;
 
-      if (response.assets?.length > 0) {
-        const image = response.assets[0];
+        if (response.assets?.length > 0) {
+          const image = response.assets[0];
 
-        if (selectedImageSetter) {
-          selectedImageSetter(image);
+          if (selectedImageSetter) {
+            selectedImageSetter(image);
+          }
+
+          setPicModal(false);
         }
-
-        setPicModal(false);
       }
-    }
-  );
-};
+    );
+  };
 
-const openGalleryPic = () => {
-  launchImageLibrary(
-    {
-      mediaType: "photo",
-      quality: 0.7,
-    },
-    (response) => {
-      if (response.didCancel) return;
+  const openGalleryPic = () => {
+    launchImageLibrary(
+      {
+        mediaType: "photo",
+        quality: 0.7,
+      },
+      (response) => {
+        if (response.didCancel) return;
 
-      if (response.assets?.length > 0) {
-        const image = response.assets[0];
+        if (response.assets?.length > 0) {
+          const image = response.assets[0];
 
-        if (selectedImageSetter) {
-          selectedImageSetter(image);
+          if (selectedImageSetter) {
+            selectedImageSetter(image);
+          }
+
+          setPicModal(false);
         }
-
-        setPicModal(false);
       }
-    }
-  );
-};
+    );
+  };
 
 
-  const renderImageBox=(image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
-  setModalMessage,
-  setModalType)=> {
-  { console.log(image) }
-  const imageUri = image?.uri?.image || image?.uri;
+  const renderImageBox = (image, setImage, activeHostelId, deleteAdditionalImages, setShowSuccessModal,
+    setModalMessage,
+    setModalType) => {
+    { console.log(image) }
+    const imageUri = image?.uri?.image || image?.uri;
 
-  const deleteAdditionalPic = async (image) => {
-    setImage(null);
+    const deleteAdditionalPic = async (image) => {
+      setImage(null);
 
-    if (image?.uri?.id) {
-      const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
+      if (image?.uri?.id) {
+        const res = await deleteAdditionalImages(activeHostelId, image?.uri?.id)
 
-      console.log(res)
-      if (res?.status == 200) {
-        console.log("Deleted Successfully")
-        // setShowSuccessModal(true)
-        // setModalMessage(res.data || "updated")
-        // setModalType("success")
-        // setTimeout(() => {
-        //   setShowSuccessModal(false)
-        // }, 1500);
+        console.log(res)
+        if (res?.status == 200) {
+          console.log("Deleted Successfully")
+          // setShowSuccessModal(true)
+          // setModalMessage(res.data || "updated")
+          // setModalType("success")
+          // setTimeout(() => {
+          //   setShowSuccessModal(false)
+          // }, 1500);
+        } else {
+          setShowSuccessModal(true)
+          setModalMessage(res.message || "Something Went Wrong")
+          setModalType("error")
+          setTimeout(() => {
+            setShowSuccessModal(false)
+          }, 1000);
+        }
       } else {
-        setShowSuccessModal(true)
-        setModalMessage(res.message || "Something Went Wrong")
-        setModalType("error")
-        setTimeout(() => {
-          setShowSuccessModal(false)
-        }, 1000);
+        setImage(null)
       }
-    } else {
-      setImage(null)
-    }
 
-  };
-  return (
-    <View style={{ position: "relative" }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator>
-        <TouchableOpacity
-        onPress={() => {
-    setSelectedImageSetter(() => setImage);
-    setPicModal(true);
-  }}
-          // onPress={() =>
-          //   launchImageLibrary({ mediaType: "photo" }).then((r) =>
-          //     r?.assets?.length && setImage(r.assets[0])
-          //   )
-          // }
-          style={styles.imgBox}
-        >
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.thumb} />
-          ) : (
-            <>
-              <Image source={AddImageIcon} style={styles.imgPlus} />
-              <Text style={styles.imgSmall}>Add Image</Text>
-              <Text style={styles.imgSize}>Max size 10 MB</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {image?.uri && (
-          <TouchableOpacity onPress={() => {
-            deleteAdditionalPic(image)
-          }} style={styles.deleteIcon}>
-            <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
+    };
+    return (
+      <View style={{ position: "relative" }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedImageSetter(() => setImage);
+              setPicModal(true);
+            }}
+            // onPress={() =>
+            //   launchImageLibrary({ mediaType: "photo" }).then((r) =>
+            //     r?.assets?.length && setImage(r.assets[0])
+            //   )
+            // }
+            style={styles.imgBox}
+          >
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.thumb} />
+            ) : (
+              <>
+                <Image source={AddImageIcon} style={styles.imgPlus} />
+                <Text style={styles.imgSmall}>Add Image</Text>
+                <Text style={styles.imgSize}>Max size 10 MB</Text>
+              </>
+            )}
           </TouchableOpacity>
-        )}
-         <ImagePickerSheet
-                visible={picModal}
-                onClose={() => setPicModal(false)}
-                title="Change Profile Picture"
-                options={[
-                  {
-                    label: "Take Picture",
-                    icon: require("../../../Assets/Images/CameraIcon.png"),
-                    showArrow: true,
-                    onPress: openCameraPic,
-                  },
-                  {
-                    label: "Select from Gallery",
-                    icon: require("../../../Assets/Images/GalleryIcon.png"),
-                    showArrow: true,
-                    onPress: openGalleryPic,
-                  },
-                  {
-                    label: "Remove Picture",
-                    icon: require("../../../Assets/Images/DeleteIcon.png"),
-                    showArrow: false,
-                    onPress: () => console.log("remove"),
-                  },
-                ]}
-              />
-      </ScrollView>
+
+          {image?.uri && (
+            <TouchableOpacity onPress={() => {
+              deleteAdditionalPic(image)
+            }} style={styles.deleteIcon}>
+              <Image source={DeleteIcon} style={{ width: 16, height: 16 }} />
+            </TouchableOpacity>
+          )}
+          <ImagePickerSheet
+            visible={picModal}
+            onClose={() => setPicModal(false)}
+            title="Change Profile Picture"
+            options={[
+              {
+                label: "Take Picture",
+                icon: require("../../../Assets/Images/CameraIcon.png"),
+                showArrow: true,
+                onPress: openCameraPic,
+              },
+              {
+                label: "Select from Gallery",
+                icon: require("../../../Assets/Images/GalleryIcon.png"),
+                showArrow: true,
+                onPress: openGalleryPic,
+              },
+              {
+                label: "Remove Picture",
+                icon: require("../../../Assets/Images/DeleteIcon.png"),
+                showArrow: false,
+                onPress: () => console.log("remove"),
+              },
+            ]}
+          />
+        </ScrollView>
 
 
-    </View>
-  );
-}
+      </View>
+    );
+  }
 
 
 
@@ -1002,7 +1028,7 @@ const openGalleryPic = () => {
 
 
 
-              <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}
+              <TouchableOpacity style={[styles.submitBtn,isSubmitting&&{opacity:0.4}]} onPress={handleSubmit}
                 disabled={isSubmitting}>
                 <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
               </TouchableOpacity>
