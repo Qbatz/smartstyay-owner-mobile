@@ -398,16 +398,16 @@ export default function SettingsElecticity({ navigation }) {
           </View>
         )}
 
-        {!activeHostelId && !loading && (
+        {/* {!activeHostelId && !loading && (
           <View style={styles.emptyContainer}>
             <Image source={EmptyElectricity} style={styles.emptyImg} />
             <Text style={styles.emptyTitle}>
               You do not have access to view Electricity
             </Text>
           </View>
-        )}
+        )} */}
 
-        {canReadElectricity && (
+        {canReadElectricity &&   (
 
           <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -1310,7 +1310,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyImg: { width: 200, height: 160, marginBottom: 10 },
-  emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 },
+  emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 ,   fontFamily: "Gilroy-Regular",},
 
 flatConfigWrapper: {
   borderLeftWidth: 4,
