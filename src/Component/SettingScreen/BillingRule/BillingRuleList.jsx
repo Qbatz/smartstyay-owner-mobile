@@ -448,7 +448,7 @@ infoValue: {
     marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
-    fontWeight: "500",
+    fontFamily: "Gilroy-Regular",
   },
 
 ruleBtn: {

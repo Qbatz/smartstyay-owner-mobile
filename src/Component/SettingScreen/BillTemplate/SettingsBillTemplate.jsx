@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useContext} from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, BackHandler } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import { CommonContexts } from "../../../Context/CommonContext";
 import BillIcon from "../../../Assets/Images/Global_Bill_Icon.png";
 import TemplateIcon from "../../../Assets/Images/Bill_Template_Icon.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
@@ -11,6 +12,8 @@ import { StatusBar , Platform } from "react-native";
 
 export default function BillTemplateSettings({navigation}) {
   const [screen, setScreen] = useState("main");
+
+   const { activeHostelId } = useContext(CommonContexts)
 
     const {
     // canWriteModule: canWriteProfile,
@@ -79,7 +82,14 @@ export default function BillTemplateSettings({navigation}) {
 
         {canReadInvoice &&  (
           <>
-      <TouchableOpacity style={styles.cardBox} onPress={() => setScreen("global")}>
+      <TouchableOpacity 
+      // style={styles.cardBox} 
+             style={[
+    styles.cardBox,
+    !activeHostelId && { opacity: 0.5 }
+  ]}
+  disabled={!activeHostelId}
+      onPress={() => setScreen("global")}>
         <View style={[styles.iconBox, { backgroundColor: "#E7F7EC" }]}>
           <Image source={BillIcon} style={styles.icon} />
         </View>
@@ -91,7 +101,14 @@ export default function BillTemplateSettings({navigation}) {
       </TouchableOpacity>
 
   
-      <TouchableOpacity style={styles.cardBox} onPress={() => setScreen("template")}>
+      <TouchableOpacity
+      //  style={styles.cardBox} 
+       style={[
+    styles.cardBox,
+    !activeHostelId && { opacity: 0.5 }
+  ]}
+  disabled={!activeHostelId}
+      onPress={() => setScreen("template")}>
         <View style={[styles.iconBox, { backgroundColor: "#F3E8FF" }]}>
           <Image source={TemplateIcon} style={styles.icon} />
         </View>
