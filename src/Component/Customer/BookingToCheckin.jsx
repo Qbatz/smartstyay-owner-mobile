@@ -537,7 +537,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                 <View style={{marginLeft:8}}>
                                     <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold'}}>{customer?.fullName}</Text>
                                     <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',marginTop:4}}>
-                                        +{customer?.countryCode} {customer?.mobile}</Text>
+                                        +{customer?.countryCode} {customer?.mobile || customer?.mobileNo}</Text>
                                 </View>
                             </View>
 

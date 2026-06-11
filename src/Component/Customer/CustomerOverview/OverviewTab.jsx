@@ -410,7 +410,7 @@ export default function OverviewTab({ customerDetails,
               {addressTab === "MANUAL" && (
 
 
-                customerDetails?.customerCurrentStatus !== "VACATED" && (
+                (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING")  && (
                   <TouchableOpacity
                     disabled={!canUpdateTenant}
                     style={!canUpdateTenant && { opacity: 0.4 }}
