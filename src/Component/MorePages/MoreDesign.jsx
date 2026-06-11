@@ -60,6 +60,7 @@ export default function MoreDesign({ navigation }) {
     { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
     { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
     { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
+     { title: "Vendor New", icon: Vendorimage, bg: "#FF7A00", screen: "Vendor" },
     { title: "Settings", icon: SettingsImage, bg: "#1E45E1", screen: "SettingsScreen" },
   ];
 
