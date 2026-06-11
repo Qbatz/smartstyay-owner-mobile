@@ -25,6 +25,9 @@ import AddExpenses from "../src/Component/MorePages/Expenses/AddExpenses";
 import TenantsList from "../src/Component/MorePages/Electricity/TenantsList";
 import CustomerReading from "../src/Component/MorePages/Electricity/CustomerReadingDetails";
 import VendorsList from "../src/Component/MorePages/Vendors/VendorsList";
+import Vendor from "../src/Component/MorePages/Vendors/Vendor";
+import VendorDetails from "../src/Component/MorePages/Vendors/VendorDetails";
+import AddVendorPage from "../src/Component/MorePages/Vendors/AddVendorPage";
 import CancelNotice from "../src/Component/Customer/Checkout/CancelNotice";
 import SettingsScreen from "../src/Component/SettingScreen/SettingScreen";
 import GeneralDetailsScreen from "../src/Component/SettingScreen/GeneralPages/General";
@@ -130,6 +133,9 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="TenantsList" component={TenantsList} />
                     <Navigation.Screen name="CustomerReading" component={CustomerReading} />
                     <Navigation.Screen name="VendorsList" component={VendorsList} />
+                    <Navigation.Screen name="Vendor" component={Vendor} />
+                    <Navigation.Screen name="VendorDetails" component={VendorDetails} />
+                    <Navigation.Screen name="AddVendorPage" component={AddVendorPage} />
                     <Navigation.Screen name="CancelNotice" component={CancelNotice} />
                     <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
                     <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
