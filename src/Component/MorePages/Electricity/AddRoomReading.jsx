@@ -64,6 +64,10 @@ export default function AddRoomReading({
     return false;
   };
 
+  console.log(readingDate)
+  console.log("intialsVa",initialValues)
+
+
 
   const readingMarkedDates = {};
 

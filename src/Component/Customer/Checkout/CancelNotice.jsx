@@ -38,6 +38,7 @@ export default function CancelNotice({ navigation, route }) {
   const data = selectedItem || selectedBed;
   const [customerDetails, setCustomerDetails] = useState("")
   const [checkInDateError, setcheckInDateError] = useState("")
+  const [reasonError, setReasonError]=useState("")
 
   const bedId =
     data?.bedId;
@@ -131,6 +132,9 @@ export default function CancelNotice({ navigation, route }) {
 
   const handleCancelNotice = async () => {
     setcheckInDateError("")
+    setReasonError("")
+
+    let hasError =false;
     const data = selectedItem || selectedBed;
 
     const bedId = data?.bedId || data?.hostelInfo?.bedId
@@ -149,8 +153,14 @@ export default function CancelNotice({ navigation, route }) {
 
     if (!checkInDate) {
       setcheckInDateError("Please Select Re Check-in Date");
-      return;
+      hasError=true;
     }
+    if(!reason){
+      setReasonError("Please enter a reason");
+      hasError=true;
+    }
+
+    if(hasError) return;
 
     const payload = {
       bedId: bedId,
@@ -283,8 +293,15 @@ export default function CancelNotice({ navigation, route }) {
             multiline
             placeholder="Add reason..."
             value={reason}
-            onChangeText={setReason}
+            onChangeText={(text)=>{
+              const filtered = text.replace(/[^a-zA-Z0-9 ]/g, "");
+              setReason(filtered)
+              if(filtered){
+                setReasonError("")
+              }
+            }}
           />
+          {reasonError && <ErrorMessage message={reasonError} type="error"/>}
         </ScrollView>
         {/* {openDate && (
         <View style={styles.dropdownBox}>

@@ -1418,6 +1418,7 @@ const handleFloorScroll = (event) => {
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
             onScroll={onScroll}
+            bounces={false}
   scrollEventThrottle={16}
 
             keyExtractor={(item) => item.id}

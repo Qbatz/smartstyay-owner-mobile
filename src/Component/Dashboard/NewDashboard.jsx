@@ -564,10 +564,11 @@ export default function DashboardNewDesign({ initialParams, route }) {
     console.log("item", item);
 
     const res = await GetParticularCustomerDetails(item.tenantId)
+    console.log("customerD",res)
     if (res?.success) {
       navigation.navigate("BookingCheckIn", {
         customerId: item?.tenantId,
-        customer: res?.data?.hostelInfo,
+        customer: res?.data,
       });
     }
 
