@@ -20,6 +20,7 @@ export default function SettlementCustomRentSheet({
 }) {
     const [amount, setAmount] = useState("");
     const [rentError, setRentError] = useState("");
+    const [finalAmountSetClicked, setFinalAmountSetClicked] = useState(false);
 
     const translateY = useRef(
         new Animated.Value(SCREEN_HEIGHT)
@@ -122,17 +123,23 @@ export default function SettlementCustomRentSheet({
                         fontSize: 20,
                         fontFamily: "Gilroy-Bold",
                         marginBottom: 50,
-                        
+
                     }}
                     placeholder="₹ 0.00"
                     value={amount}
-                    onChangeText={setAmount}
+                    // onChangeText={setAmount}
+                    onChangeText={(text) => {
+                        setAmount(text);
+                        if (rentError) {
+                            setRentError("");
+                        }
+                    }}
                     maxLength={7}
 
                 />
-               {rentError ? (
-    <ErrorMessage message={rentError} type="error" />
-) : null}
+                {rentError ? (
+                    <ErrorMessage message={rentError} type="error" />
+                ) : null}
 
 
                 <View
@@ -165,25 +172,47 @@ export default function SettlementCustomRentSheet({
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                       onPress={() => {
+                        // onPress={() => {
+                        //     if (!amount || Number(amount) <= 0) {
+                        //         setRentError("Please enter rent amount");
+                        //         return;
+                        //     }
 
-    if (!amount || Number(amount) <= 0) {
-        setRentError("Please enter rent amount");
-        return;
-    }
+                        //     setRentError("");
 
-    if (Number(amount) > Number(rentAmount)) {
-        setRentError(
-            `Amount should not exceed ₹${rentAmount}`
-        );
-        return;
-    }
+                        //     onSet(Number(amount));
+                        //     closeSheet();
+                        // }}
 
-    setRentError("");
+                        onPress={() => {
 
-    onSet(Number(amount));
-    closeSheet();
-}}
+                            if (!amount) {
+                                setRentError("Please enter rent amount");
+                                return;
+                            }
+
+                            if (Number(amount) <= 0) {
+                                setRentError("Amount must be greater than 0");
+                                return;
+                            }
+
+                            if (/^0+$/.test(amount) && amount !== "0") {
+                                setRentError("Invalid rent amount");
+                                return;
+                            }
+
+                            // if (Number(amount) > Number(rentAmount)) {
+                            //     setRentError(
+                            //         `Amount should not exceed ₹${rentAmount}`
+                            //     );
+                            //     return;
+                            // }
+
+                            setRentError("");
+
+                            onSet(Number(amount));
+                            closeSheet();
+                        }}
                         style={{
                             flex: 1,
                             height: 50,

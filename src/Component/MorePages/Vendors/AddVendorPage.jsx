@@ -16,7 +16,8 @@ import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import ArrowLeft from "../../../Assets/Images/directionleft.png";
+import ValidatedInput from "../ValidatedInput"
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -334,18 +335,15 @@ const [creditPeriod, setCreditPeriod] = useState("");
 
 return(
 
-    <>
-    
-    return (
+   
   <View style={styles.container}>
 
     {/* Header */}
-
-    <View style={styles.header}>
+   <View style={styles.header}>
       <TouchableOpacity
         style={styles.backBtn}
       >
-        <Image source={ArrowLeft} />
+        <Image source={ArrowLeft} style={{height:18, width:18}}/>
       </TouchableOpacity>
 
       <Text style={styles.headerTitle}>
@@ -353,12 +351,14 @@ return(
       </Text>
     </View>
 
+
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.content}
     >
 
       {/* Vendor Information */}
+       
 
       <View style={styles.sectionHeader}>
         <View style={styles.blueBar} />
@@ -367,14 +367,17 @@ return(
         </Text>
       </View>
 <Text style={styles.label}>
-  Vendor / Business Name *
+  Vendor / Business Name <Text style={{ color: "red" }}>*</Text>
 </Text>
 
-<TextInput
-  style={styles.input}
+<ValidatedInput
+  type="name"
+  inputType="text"
   value={businessName}
   onChangeText={setBusinessName}
   placeholder="Enter Vendor Name"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
 />
 
 <Text style={styles.note}>
@@ -382,7 +385,7 @@ return(
 </Text>
 
 <Text style={styles.label}>
-  Vendor Category *
+  Vendor Category <Text style={{ color: "red" }}>*</Text>
 </Text>
 
 <TouchableOpacity style={styles.select}>
@@ -397,54 +400,80 @@ return(
 </TouchableOpacity>
 
 <Text style={styles.label}>
-  Business Mob Number *
+  Business Mob Number <Text style={{ color: "red" }}>*</Text>
 </Text>
 
 <View style={styles.mobileWrapper}>
-  {/* Existing Country Code + Mobile */}
+<ValidatedInput
+  type="mobile"
+  inputType="numeric"
+  value={mobile}
+  onChangeText={setMobile}
+  placeholder="98765 43210"
+  placeholderTextColor="#9CA3AF"
+  style={styles.mobileInput}
+/>
 </View>
 
 <Text style={styles.label}>
- Proprietor / Contact Person Name *
+ Proprietor / Contact Person Name <Text style={{ color: "red" }}>*</Text>
 </Text>
 
-<TextInput
-  style={styles.input}
+<ValidatedInput
+  type="name"
+  inputType="text"
   value={contactPerson}
   onChangeText={setContactPerson}
   placeholder="Enter Name"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
 />
 
 <Text style={styles.label}>
- Mob Number *
+ Mob Number <Text style={{ color: "red" }}>*</Text>
 </Text>
 
 <View style={styles.mobileWrapper}>
- {/* Existing Mobile Field */}
+ 
+<ValidatedInput
+  type="email"
+  inputType="email"
+  value={email}
+  onChangeText={setEmail}
+  placeholder="+91"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
+/>
+
 </View>
 
 <Text style={styles.label}>
  Email Address
 </Text>
 
-<TextInput
-  style={styles.input}
+<ValidatedInput
+  type="email"
+  inputType="email"
   value={email}
   onChangeText={setEmail}
   placeholder="Enter Mail ID"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
 />
 
 <Text style={styles.label}>
  Commercial Address *
 </Text>
 
-<TextInput
+<ValidatedInput
+  type="description"
+  inputType="text"
   multiline
-  numberOfLines={5}
-  style={styles.textArea}
   value={street}
   onChangeText={setStreet}
   placeholder="Enter Address"
+  placeholderTextColor="#9CA3AF"
+  style={styles.textArea}
 />
 
 
@@ -464,35 +493,52 @@ return(
 
   <View style={styles.half}>
     <Text style={styles.label}>
-      City *
+      City <Text style={{ color: "red" }}>*</Text>
     </Text>
 
-    <TextInput
-      style={styles.input}
-      value={city}
-      onChangeText={setCity}
-      placeholder="Enter City"
-    />
+   <ValidatedInput
+  type="name"
+  inputType="text"
+  value={city}
+  onChangeText={setCity}
+  placeholder="Enter City"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
+/>
   </View>
 </View>
 
 <View style={styles.row}>
   <View style={styles.half}>
-     {/* Existing State Dropdown */}
+   <Text style={styles.label}>
+      State <Text style={{ color: "red" }}>*</Text>
+    </Text>
+
+   <ValidatedInput
+  type="pincode"
+  inputType="numeric"
+  value={pinCode}
+  onChangeText={setPinCode}
+  placeholder="Select State"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
+/>
   </View>
 
   <View style={styles.half}>
     <Text style={styles.label}>
-      Pincode *
+      Pincode <Text style={{ color: "red" }}>*</Text>
     </Text>
 
-    <TextInput
-      style={styles.input}
-      value={pinCode}
-      onChangeText={setPinCode}
-      keyboardType="numeric"
-      placeholder="Enter Pincode"
-    />
+   <ValidatedInput
+  type="pincode"
+  inputType="numeric"
+  value={pinCode}
+  onChangeText={setPinCode}
+  placeholder="Enter Pincode"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
+/>
   </View>
 </View>
 
@@ -520,22 +566,30 @@ return(
  GST IN Number (Optional)
 </Text>
 
-<TextInput
-  style={styles.input}
+<ValidatedInput
+  type="description"
+  inputType="text"
   value={gstNumber}
   onChangeText={setGstNumber}
-  placeholder="Enter GST IN"
+  placeholder="Enter GSTIN"
+  autoCapitalize="characters"
+  style={styles.input}
 />
 
 <Text style={styles.label}>
  PAN Number (Optional)
 </Text>
 
-<TextInput
-  style={styles.input}
+<ValidatedInput
+  type="description"
+  inputType="text"
   value={panNumber}
-  onChangeText={setPanNumber}
+  onChangeText={(text) =>
+    setPanNumber(text.toUpperCase())
+  }
   placeholder="Enter PAN Number"
+  autoCapitalize="characters"
+  style={styles.input}
 />
 
 <Text style={styles.label}>
@@ -616,7 +670,8 @@ return(
         <TouchableOpacity
           style={styles.cancelBtn}
         >
-          <Text style={styles.cancelText}>
+          <Text style={{fontFamily: "Gilroy-Bold",  
+  fontSize: 16,}}>
             Cancel
           </Text>
         </TouchableOpacity>
@@ -633,11 +688,7 @@ return(
     </ScrollView>
 
   </View>
-);
-   
 
-    
-     </>
 )
 
 
@@ -647,10 +698,11 @@ const styles = StyleSheet.create({
  container: {
   flex: 1,
   backgroundColor: "#FFF",
+  paddingTop:50
 },
 
 header: {
-  height: 70,
+  height: 60,
   flexDirection: "row",
   alignItems: "center",
   paddingHorizontal: 20,
@@ -659,8 +711,8 @@ header: {
 },
 
 backBtn: {
-  width: 36,
-  height: 36,
+  width: 18,
+  height: 18,
   borderRadius: 8,
   backgroundColor: "#F5F7FB",
   justifyContent: "center",
@@ -668,7 +720,7 @@ backBtn: {
 },
 
 headerTitle: {
-  fontSize: 28,
+  fontSize: 20,
   fontFamily: "Gilroy-Bold",
   marginLeft: 16,
 },
@@ -676,9 +728,10 @@ headerTitle: {
 content: {
   padding: 20,
   paddingBottom: 60,
+  paddingTop:10
 },
 
-  title: { fontSize: 20, fontWeight: "700", marginBottom: 20 },
+  title: { fontSize: 20,     fontFamily: "Gilroy-Bold", marginBottom: 20 },
 
   profileRow: {
     flexDirection: "row",
@@ -726,13 +779,13 @@ content: {
 
   plusText: {
     fontSize: 16,
-    fontWeight: "700",
+       fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
   profileTitle: {
     fontSize: 14,
-    fontWeight: "700",
+       fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
@@ -747,33 +800,66 @@ content: {
   profileImg: { width: 60, height: 60, borderRadius: 30, backgroundColor: "#737373", },
 
 
-  profileText: { fontSize: 14, fontWeight: "700" },
+  profileText: { fontSize: 14,     fontFamily: "Gilroy-Bold", },
   subText: { color: "#777", fontSize: 12, lineHeight: 16, marginTop: 4 },
 
- label: {
-  fontSize: 15,
-  color: "#111827",
-  marginBottom: 10,
-  marginTop: 18,
-  fontFamily: "Gilroy-Medium",
-},
+//  label: {
+//   fontSize: 15,
+//   color: "#111827",
+//   marginBottom: 10,
+//   marginTop: 18,
+//   fontFamily: "Gilroy-Medium",
+// },
+// input: {
+//   height: 58,
+//   borderWidth: 1,
+//   borderColor: "#E5E7EB",
+//   borderRadius: 14,
+//   paddingHorizontal: 16,
+//   fontSize: 16,
+//   backgroundColor: "#FFF",
+// },
+// textArea: {
+//   height: 110,
+//   borderWidth: 1,
+//   borderColor: "#DCE3F1",
+//   borderRadius: 14,
+//   padding: 16,
+//   textAlignVertical: "top",
+//   fontSize: 16,
+// },
 input: {
-  height: 58,
+  height: 56,
   borderWidth: 1,
   borderColor: "#E5E7EB",
-  borderRadius: 14,
+  borderRadius: 12,
   paddingHorizontal: 16,
+  backgroundColor: "#FFFFFF",
   fontSize: 16,
-  backgroundColor: "#FFF",
+  fontFamily: "Gilroy-Medium",
+  color: "#111827",
 },
+
 textArea: {
-  height: 110,
+  minHeight: 110,
   borderWidth: 1,
-  borderColor: "#DCE3F1",
-  borderRadius: 14,
-  padding: 16,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  paddingHorizontal: 16,
+  paddingTop: 16,
+  backgroundColor: "#FFFFFF",
   textAlignVertical: "top",
   fontSize: 16,
+  fontFamily: "Gilroy-Medium",
+  color: "#111827",
+},
+
+label: {
+  fontSize: 15,
+  fontFamily: "Gilroy-Medium",
+  color: "#111827",
+  marginBottom: 8,
+  marginTop: 16,
 },
 
   selectBox: {
@@ -845,14 +931,14 @@ submitText: {
   },
 
 
-  cancel: { color: "#777", fontSize: 16 },
+  cancel: { color: "#777", fontSize: 16 , fontFamily: "Gilroy-Bold", },
   addBtn: {
     backgroundColor: "#4662FF",
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: 12,
   },
-  addBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  addBtnText: { color: "#fff", fontSize: 16,     fontFamily: "Gilroy-Bold",},
   profileCircle: {
     width: 70,
     height: 70,
@@ -895,6 +981,7 @@ submitText: {
     borderColor: "#e1e1e1",
     borderRadius: 12,
     paddingHorizontal: 12,
+    fontFamily: "Gilroy-Regular"
   },
 
   select: {
@@ -952,7 +1039,7 @@ submitText: {
 
   selectedOptionText: {
     color: "#2D6CDF",
-    fontWeight: "700",
+       fontFamily: "Gilroy-Bold",
   },
 
   noResult: {
@@ -1052,7 +1139,7 @@ countryOptionText: {
 sectionHeader: {
   flexDirection: "row",
   alignItems: "center",
-  marginTop: 25,
+  marginTop: 15,
   marginBottom: 20,
 },
 
@@ -1109,12 +1196,13 @@ checkboxActive: {
 
 creditTitle: {
   fontSize: 18,
-  fontWeight: "600",
+   fontFamily: "Gilroy-Semibold"
 },
 
 creditSub: {
   marginTop: 5,
   color: "#64748B",
+  fontFamily: "Gilroy-Regular"
 },
 
 creditNote: {
