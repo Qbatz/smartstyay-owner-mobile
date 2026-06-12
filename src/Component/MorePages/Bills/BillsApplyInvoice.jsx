@@ -470,6 +470,11 @@ export default function BillsApplyInvoices() {
                 setTimeout(() => {
                     navigation.goBack();
                     setShowSuccessModal(false);
+
+                    setTimeout(()=>{
+                        isApplyTriggeredRef.current = false;
+                    },2000)
+                     
                 }, 1500);
 
             } else {
@@ -480,13 +485,18 @@ export default function BillsApplyInvoices() {
 
                 setTimeout(() => {
                     setShowSuccessModal(false);
+                     isApplyTriggeredRef.current = false;
                 }, 2500);
             }
             // success / error logic
 
-        } finally {
-            isApplyTriggeredRef.current = false;
+        }catch(error){
+             isApplyTriggeredRef.current = false;
         }
+        
+        // finally {
+        //     isApplyTriggeredRef.current = false;
+        // }
     };
 
 

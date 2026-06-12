@@ -296,6 +296,11 @@ export default function DoubleStatusSheet({
                             <Text style={styles.menuText}>Checkout</Text>
                           </TouchableOpacity>
 
+                          <TouchableOpacity style={styles.menuItem} onPress={handleNewReserve}>
+                            <Image style={styles.menuIcon} source={require("../../../Assets/Images/NewBook.png")} />
+                            <Text style={styles.menuText}>New Booking</Text>
+                          </TouchableOpacity>
+
                         </>
                       ) : (
                         <>
