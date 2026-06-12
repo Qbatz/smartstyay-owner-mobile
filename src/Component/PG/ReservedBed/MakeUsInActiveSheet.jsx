@@ -40,6 +40,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [refundFromError, setRefundFromError] = useState("");
   const [refundFrom, setRefundFrom] = useState("");
   const [showRefundFrom, setShowRefundFrom] = useState(false);
+  const [transactionId,setTransactionID]=useState("");
 
 
   console.log("bookingDetails", bookingDetails)
@@ -428,6 +429,16 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             {refundFromError && (
               <ErrorMessage message={refundFromError} type="error" />
             )}
+
+            <Text style={styles.label}>Transaction ID</Text>
+
+            <TextInput
+            placeholder="Enter Transaction ID"
+            style={{borderWidth:1,borderColor: "#ccc",borderRadius:10,marginTop:10,paddingHorizontal:12, fontFamily: "Gilroy-Regular",paddingVertical:25}}
+            value={transactionId}
+            onChangeText={(text)=>{
+              setTransactionID(text)
+            }}/>
 
             {/* Reason */}
             <Text style={[styles.label, { marginTop: 12 }]}>

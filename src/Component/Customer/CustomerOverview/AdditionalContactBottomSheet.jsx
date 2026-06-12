@@ -57,6 +57,7 @@ export default function AdditionalContactBottomSheet({
   const [formErr, setFormErr] = useState("");
 
   const [initialState, setInitialState] = useState(null);
+  const [isSubmitClicked, setIsSubmitClicked]=useState(false);
 
   const relationshipOptions = [
     "Father",
@@ -261,6 +262,8 @@ export default function AdditionalContactBottomSheet({
       setFormErr("No Changes Detected");
       return;
     }
+    if(isSubmitClicked) return;
+    setIsSubmitClicked(true)
 
     const payload = {
       fullName,
@@ -271,12 +274,14 @@ export default function AdditionalContactBottomSheet({
 
     console.log("payload", payload);
 
-
+    try{
     const res = await AddAdditionalContacts(
       activeHostelId,
       ParticularcustomerDetails?.customerId,
       payload
     );
+
+    console.log("addContact",res)
 
     if (res.success) {
       setMessage("Saved Successfully");
@@ -290,6 +295,7 @@ export default function AdditionalContactBottomSheet({
       setTimeout(() => {
         setShowSuccess(false);
         closeSheet();
+        setIsSubmitClicked(false)
       }, 1200);
     } else {
       setMessage("Contact Add Failed");
@@ -298,8 +304,13 @@ export default function AdditionalContactBottomSheet({
 
       setTimeout(() => {
         setShowSuccess(false);
+        setIsSubmitClicked(false)
       }, 1200);
 
+    }
+    }catch(error){
+      console.log(error)
+      setIsSubmitClicked(false);
     }
   };
 
@@ -535,7 +546,7 @@ export default function AdditionalContactBottomSheet({
             <Text style={{ fontFamily: "Gilroy-Semibold" }}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.addBtn} onPress={handleSave}>
+          <TouchableOpacity style={styles.addBtn} onPress={handleSave} disabled={isSubmitClicked}>
             <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
           </TouchableOpacity>
         </View>

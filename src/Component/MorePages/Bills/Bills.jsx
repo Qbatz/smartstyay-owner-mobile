@@ -1360,7 +1360,7 @@ export default function BillsDesign({ route }) {
       invoiceId: selectedBill?.invoiceId,
       type: "Credit", // booking invoice
     })
-        setShowMenu(false);
+    setShowMenu(false);
     setShowBillDetails(false)
 
   }
@@ -1380,7 +1380,7 @@ export default function BillsDesign({ route }) {
 
 
   console.log("selectedBill", selectedBill);
-  
+
 
   const handleAdvanceApplyInvoices = async () => {
 
@@ -2222,14 +2222,14 @@ export default function BillsDesign({ route }) {
 
 
   const handleTabChange = (tab) => {
-  setActiveTab(tab);
+    setActiveTab(tab);
 
-  setSearchText("");
+    setSearchText("");
 
-  if (tab === "Invoices") {
-    GetAllBillDetails(activeHostelId);
+    if (tab === "Invoices") {
+      GetAllBillDetails(activeHostelId);
+    }
   }
-}
 
   const getPaymentIcon = (status) => {
     switch (status) {
@@ -2270,18 +2270,18 @@ export default function BillsDesign({ route }) {
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
   const showDotsbtn =
-  !cancelled &&
-  !pendingRefund &&
-  !partiallyRefund &&
-  !FullyRefund &&
-  (
-    !isPaid ||
+    !cancelled &&
+    !pendingRefund &&
+    !partiallyRefund &&
+    !FullyRefund &&
     (
-      isPaid &&
-      selectedBill?.invoiceMode === "Manual" &&
-      selectedBill?.invoiceType !== "Settlement"
-    )
-  );
+      !isPaid ||
+      (
+        isPaid &&
+        selectedBill?.invoiceMode === "Manual" &&
+        selectedBill?.invoiceType !== "Settlement"
+      )
+    );
 
 
 
@@ -2291,9 +2291,9 @@ export default function BillsDesign({ route }) {
   const isNotDiscounted =
     BillPdfdetails?.invoiceInfo?.isDiscounted === false;
 
-    const showSettlementRedeem =
-  selectedBill?.invoiceType === "Settlement" &&
-  BillPdfdetails?.invoiceInfo?.isNewPattern;
+  const showSettlementRedeem =
+    selectedBill?.invoiceType === "Settlement" &&
+    BillPdfdetails?.invoiceInfo?.isNewPattern;
 
 
   const getOverdueDays = (dueDate) => {
@@ -2558,12 +2558,12 @@ export default function BillsDesign({ route }) {
                               <Text style={[styles.detailText, { flexShrink: 1, flex: 1 }]}>{item.invoiceNumber}</Text>
                             </View>
 
-                           {(
-  ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
-  (item.paymentStatus === "Pending" && item.isDiscounted)
-) && (
-                              <Text style={styles.dueLabel}>Outstanding</Text>
-                            )}
+                            {(
+                              ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
+                              (item.paymentStatus === "Pending" && item.isDiscounted)
+                            ) && (
+                                <Text style={styles.dueLabel}>Outstanding</Text>
+                              )}
                           </View>
 
                           <View style={styles.rightSection}>
@@ -2576,12 +2576,12 @@ export default function BillsDesign({ route }) {
 
                             <Text style={{ fontSize: 10, color: "#6B7280", fontFamily: "Gilroy-Regular", marginTop: 4 }}>
                               {item.invoiceDate}</Text>
-                         {(
-  ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
-  (item.paymentStatus === "Pending" && item.isDiscounted)
-) && (
-                              <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
-                            )}
+                            {(
+                              ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
+                              (item.paymentStatus === "Pending" && item.isDiscounted)
+                            ) && (
+                                <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
+                              )}
                           </View>
 
                           <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -2829,9 +2829,14 @@ export default function BillsDesign({ route }) {
                         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
                           <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                             <Text style={styles.discountLabel}>Discount</Text>
-                            <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
-                              <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
-                            </TouchableOpacity>
+                            {
+                              BillPdfdetails?.invoiceInfo?.paymentStatus !== "Cancelled" && (
+                                <TouchableOpacity onPress={() => setShowDiscountSheet(true)}>
+                                  <Image source={DiscountDown} style={{ height: 22, width: 22 }} />
+                                </TouchableOpacity>
+                              )
+                            }
+
                           </View>
                           <Text style={styles.discountMinus}>
                             - ₹ {BillPdfdetails?.invoiceInfo?.discountAmount.toFixed(2)}
@@ -2851,7 +2856,7 @@ export default function BillsDesign({ route }) {
 
 
 
-                       {selectedBill?.invoiceType === "Settlement" && showSettlementRedeem && (
+                    {selectedBill?.invoiceType === "Settlement" && showSettlementRedeem && (
 
 
                       <>
@@ -2863,7 +2868,7 @@ export default function BillsDesign({ route }) {
                           <View>
                             <Text style={styles.amountValue}>
 
-                               ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+                              ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2890,7 +2895,7 @@ export default function BillsDesign({ route }) {
                               styles.amountValue,
                               { color: "#FF0000" },
                             ]}>
-                                ₹  {BillPdfdetails?.invoiceInfo?.deductionAmount || 0}
+                              ₹  {BillPdfdetails?.invoiceInfo?.deductionAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2905,8 +2910,8 @@ export default function BillsDesign({ route }) {
                               styles.amountValue,
                               { color: "#FF0000" },
                             ]}>
-                              
-                               ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
+
+                              ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2921,7 +2926,7 @@ export default function BillsDesign({ route }) {
                               styles.amountValue,
                               { color: "#FF0000" },
                             ]} >
-                                ₹  {BillPdfdetails?.invoiceInfo?.unpaidInvoiceAmount || 0}
+                              ₹  {BillPdfdetails?.invoiceInfo?.unpaidInvoiceAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -2974,7 +2979,7 @@ export default function BillsDesign({ route }) {
                           </View>
                         ))}
 
-                         {BillPdfdetails?.invoiceInfo?.listDeductions?.map((pay, index) => (
+                        {BillPdfdetails?.invoiceInfo?.listDeductions?.map((pay, index) => (
                           <View key={index} style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                             <View>
                               <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>{pay?.type ?? "N/A"}</Text>
@@ -2986,7 +2991,7 @@ export default function BillsDesign({ route }) {
                             </View>
                           </View>
                         ))}
-                        
+
 
 
 
@@ -3223,27 +3228,27 @@ export default function BillsDesign({ route }) {
 
 
                               {Array.isArray(BillPdfdetails?.unpaidInvoiceInfo) &&
-                                        BillPdfdetails?.unpaidInvoiceInfo?.length > 0 ? (
-                                        <>
-                                          {BillPdfdetails?.unpaidInvoiceInfo?.map((item, index) => (
-                                            <View key={index} style={styles.invoiceRow}>
-                                              <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                                {item?.invoiceNumber}
-                                              </Text>
-                                              <Text style={[styles.invText, { flex: 1 }]}>
-                                                {item?.type}
-                                              </Text>
-                                              <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                                                ₹ {item?.payableAmount}
-                                              </Text>
-                                            </View>
-                                          ))}
-                                        </>
-                                      ) : (
-                              <View style={styles.emptyState}>
-                                <Text style={styles.emptyText}>No pending invoices</Text>
-                              </View>
-                               )} 
+                                BillPdfdetails?.unpaidInvoiceInfo?.length > 0 ? (
+                                <>
+                                  {BillPdfdetails?.unpaidInvoiceInfo?.map((item, index) => (
+                                    <View key={index} style={styles.invoiceRow}>
+                                      <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+                                        {item?.invoiceNumber}
+                                      </Text>
+                                      <Text style={[styles.invText, { flex: 1 }]}>
+                                        {item?.type}
+                                      </Text>
+                                      <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
+                                        ₹ {item?.payableAmount}
+                                      </Text>
+                                    </View>
+                                  ))}
+                                </>
+                              ) : (
+                                <View style={styles.emptyState}>
+                                  <Text style={styles.emptyText}>No pending invoices</Text>
+                                </View>
+                              )}
 
                               <View style={styles.totalInvoiceRow}>
                                 <Text style={styles.totalText}>Total</Text>
@@ -3282,7 +3287,7 @@ export default function BillsDesign({ route }) {
                             </View>
 
                             <Text style={styles.refundAmount}>
-                            ₹ 0
+                              ₹ 0
                               {/* ₹{" "}
                                       {Number(
                                         settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
@@ -3369,25 +3374,25 @@ export default function BillsDesign({ route }) {
                               </TouchableOpacity>
 
                               {showDetails &&
-                                        BillPdfdetails?.currentMonthRentInfo?.listBreakup?.map(
-                                          (item, index) => (
-                                          
-                                            <View key={index} style={styles.detailCard}>
-                                              <Text style={styles.linkText}>
-                                                {item?.floorName} | {item?.roomName} - {item?.bedName}
-                                              </Text>
-                    
-                                              <Text
-                                                style={styles.rightMuted}
-                                                numberOfLines={0}
-                                              >
-                                                ({item?.noOfDays} {item?.noOfDays === 1 ? "day" : "days"} × {item?.rentPerDay} = {item?.currentMonthPayableAmount})
-                                              </Text>
-                                            </View>
-                    
-                                          )
-                                        )
-                                        }
+                                BillPdfdetails?.currentMonthRentInfo?.listBreakup?.map(
+                                  (item, index) => (
+
+                                    <View key={index} style={styles.detailCard}>
+                                      <Text style={styles.linkText}>
+                                        {item?.floorName} | {item?.roomName} - {item?.bedName}
+                                      </Text>
+
+                                      <Text
+                                        style={styles.rightMuted}
+                                        numberOfLines={0}
+                                      >
+                                        ({item?.noOfDays} {item?.noOfDays === 1 ? "day" : "days"} × {item?.rentPerDay} = {item?.currentMonthPayableAmount})
+                                      </Text>
+                                    </View>
+
+                                  )
+                                )
+                              }
                               <TouchableOpacity
                                 style={styles.rowBetween}
                                 onPress={() => setShowOtherDetails(!showOtherDetails)}
@@ -3408,28 +3413,28 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                                 <Text style={styles.amountText}>
-                                  
+
                                   ₹{" "}
-                                          {Number(BillPdfdetails?.currentMonthRentInfo?.currentMonthOtherItemAmount || 0).toLocaleString("en-IN")}
+                                  {Number(BillPdfdetails?.currentMonthRentInfo?.currentMonthOtherItemAmount || 0).toLocaleString("en-IN")}
 
 
                                 </Text>
                               </TouchableOpacity>
 
                               {showOtherDetails &&
-                                        BillPdfdetails?.currentMonthRentInfo?.listCurrentMonthOtherItems?.map(
-                                          (i, index) => (
-                                            <View key={index} style={styles.detailCard}>
-                                              <Text style={styles.linkText}>
-                                                {i?.item}
-                                              </Text>
-                    
-                                              <Text style={styles.rightMuted}>
-                                                ₹ {i?.amount}
-                                              </Text>
-                                            </View>
-                                          )
-                                        )}
+                                BillPdfdetails?.currentMonthRentInfo?.listCurrentMonthOtherItems?.map(
+                                  (i, index) => (
+                                    <View key={index} style={styles.detailCard}>
+                                      <Text style={styles.linkText}>
+                                        {i?.item}
+                                      </Text>
+
+                                      <Text style={styles.rightMuted}>
+                                        ₹ {i?.amount}
+                                      </Text>
+                                    </View>
+                                  )
+                                )}
                             </View>
                           )}
                         </View>
@@ -3446,7 +3451,7 @@ export default function BillsDesign({ route }) {
                             />
                             <Text style={styles.cardTitle}>Electricity Bill</Text>
                             <Text style={styles.amountText}>
-                               ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
+                              ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
                             </Text>
                           </TouchableOpacity>
 
@@ -3457,7 +3462,7 @@ export default function BillsDesign({ route }) {
                                         <Text style={styles.sectionLabel}>Missed Electricity</Text>
                                       )} */}
 
-{/* 
+                              {/* 
                               {BillPdfdetails?.currentMonthEbInfo?.map((item, index) => (
                                         <View key={index} style={styles.ebRowWeb}>
                     
@@ -3479,33 +3484,33 @@ export default function BillsDesign({ route }) {
 
 
                               {/* <Text style={styles.sectionLabel}>Pending Invoices</Text> */}
-                                                  
-                                      {BillPdfdetails?.currentMonthEbInfo?.map((item, index) => (
-                                        <View key={index} style={styles.ebRowWeb}>
-                    
-                                          <View style={{ flex: 1 }}>
-                                            <Text style={styles.ebText}>
-                                              {item?.floorName} | {item?.roomName} - {item?.bedName}
-                                            </Text>
-                    
-                                            <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
-                                              <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
-                                                {item?.fromDate} - {item?.toDate}
-                                              </Text>
-                                            </View>
-                                          </View>
-                    
-                                          <View style={styles.ebRightBox}>
-                                            <Text style={styles.unitText}>
-                                              ({item?.units} Units)
-                                            </Text>
-                                            <Text style={styles.amountText}>
-                                              ₹ {item?.amount}
-                                              </Text>
-                                          </View>
-                    
-                                        </View>
-                                      ))}
+
+                              {BillPdfdetails?.currentMonthEbInfo?.map((item, index) => (
+                                <View key={index} style={styles.ebRowWeb}>
+
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={styles.ebText}>
+                                      {item?.floorName} | {item?.roomName} - {item?.bedName}
+                                    </Text>
+
+                                    <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
+                                      <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
+                                        {item?.fromDate} - {item?.toDate}
+                                      </Text>
+                                    </View>
+                                  </View>
+
+                                  <View style={styles.ebRightBox}>
+                                    <Text style={styles.unitText}>
+                                      ({item?.units} Units)
+                                    </Text>
+                                    <Text style={styles.amountText}>
+                                      ₹ {item?.amount}
+                                    </Text>
+                                  </View>
+
+                                </View>
+                              ))}
 
 
 
@@ -3514,161 +3519,161 @@ export default function BillsDesign({ route }) {
                         </View>
 
 
-               {showSettlementRedeem && (
-                        <View style={styles.accordionCard}>
-                          <TouchableOpacity
-                            style={styles.accordionHeader}
-                            onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
-                            activeOpacity={0.8}
-                          >
-                            <Animated.Image
-                              source={DownArrow}
-                              style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
-                            />
-                            <Text style={styles.cardTitle}>Refundable Advance</Text>
-                            <Text style={styles.amountText}>
+                        {showSettlementRedeem && (
+                          <View style={styles.accordionCard}>
+                            <TouchableOpacity
+                              style={styles.accordionHeader}
+                              onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
+                              activeOpacity={0.8}
+                            >
+                              <Animated.Image
+                                source={DownArrow}
+                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                              />
+                              <Text style={styles.cardTitle}>Refundable Advance</Text>
+                              <Text style={styles.amountText}>
 
-                              ₹ 0
-                              {/* {
+                                ₹ 0
+                                {/* {
                                       settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
                                         (sum, inv) => sum + Number(inv.payableAmount || 0),
                                         0
                                       ) || 0
                                     } */}
-                            </Text>
-                          </TouchableOpacity>
+                              </Text>
+                            </TouchableOpacity>
 
-                          {showRefundableAdvance && (
+                            {showRefundableAdvance && (
 
-                            <View style={styles.accordionBody}>
+                              <View style={styles.accordionBody}>
 
-                              <View style={styles.tableHeader}>
-                                <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
-                                <Text style={[styles.th, { flex: 1 }]}>Type</Text>
-                                <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                                  Invoice Amount
-                                </Text>
-                              </View>
+                                <View style={styles.tableHeader}>
+                                  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+                                  <Text style={[styles.th, { flex: 1 }]}>Type</Text>
+                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                                    Invoice Amount
+                                  </Text>
+                                </View>
 
-{BillPdfdetails?.advanceItems ? (
-  <View style={styles.invoiceRow}>
-    <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-      {BillPdfdetails?.advanceItems?.invoiceNo}
-    </Text>
+                                {BillPdfdetails?.advanceItems ? (
+                                  <View style={styles.invoiceRow}>
+                                    <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+                                      {BillPdfdetails?.advanceItems?.invoiceNo}
+                                    </Text>
 
-    <Text style={[styles.invText, { flex: 1 }]}>
-      {BillPdfdetails?.advanceItems?.label}
-    </Text>
+                                    <Text style={[styles.invText, { flex: 1 }]}>
+                                      {BillPdfdetails?.advanceItems?.label}
+                                    </Text>
 
-    <Text
-      style={[
-        styles.invText,
-        { flex: 1, textAlign: "right" }
-      ]}
-    >
-      ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-    </Text>
-  </View>
-) : (
-  <View style={styles.emptyState}>
-    <Text style={styles.emptyText}>No pending invoices</Text>
-  </View>
-)}
-                           
-                              {/* )} */}
+                                    <Text
+                                      style={[
+                                        styles.invText,
+                                        { flex: 1, textAlign: "right" }
+                                      ]}
+                                    >
+                                      ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+                                    </Text>
+                                  </View>
+                                ) : (
+                                  <View style={styles.emptyState}>
+                                    <Text style={styles.emptyText}>No pending invoices</Text>
+                                  </View>
+                                )}
 
-                              <View style={styles.totalInvoiceRow}>
-                                <Text style={styles.totalText}>Total</Text>
-                                <Text style={styles.totalAmount}>
-                                   ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-                                  {/* ₹{" "}
+                                {/* )} */}
+
+                                <View style={styles.totalInvoiceRow}>
+                                  <Text style={styles.totalText}>Total</Text>
+                                  <Text style={styles.totalAmount}>
+                                    ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+                                    {/* ₹{" "}
                                           {Array.isArray(settlementDetails?.unpaidInvoices)
                                             ? settlementDetails.unpaidInvoices.reduce(
                                               (sum, i) => sum + Number(i.payableAmount || 0),
                                               0
                                             )
                                             : 0} */}
-                                </Text>
+                                  </Text>
+                                </View>
                               </View>
-                            </View>
 
-                          )}
-                        </View>
-               )}
-
+                            )}
+                          </View>
+                        )}
 
 
 
-{showSettlementRedeem && (
-                        <View style={styles.accordionCard}>
-                          <TouchableOpacity
-                            style={styles.accordionHeader}
-                            onPress={() => setShowBookings(!showBookings)}
-                            activeOpacity={0.8}
-                          >
-                            <Animated.Image
-                              source={DownArrow}
-                              style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
-                            />
-                            <Text style={styles.cardTitle}>Bookings</Text>
-                            <Text style={styles.amountText}>
 
-                              ₹ 0
-                              {/* {
+                        {showSettlementRedeem && (
+                          <View style={styles.accordionCard}>
+                            <TouchableOpacity
+                              style={styles.accordionHeader}
+                              onPress={() => setShowBookings(!showBookings)}
+                              activeOpacity={0.8}
+                            >
+                              <Animated.Image
+                                source={DownArrow}
+                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                              />
+                              <Text style={styles.cardTitle}>Bookings</Text>
+                              <Text style={styles.amountText}>
+
+                                ₹ 0
+                                {/* {
                                       settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
                                         (sum, inv) => sum + Number(inv.payableAmount || 0),
                                         0
                                       ) || 0
                                     } */}
-                            </Text>
-                          </TouchableOpacity>
+                              </Text>
+                            </TouchableOpacity>
 
-                          {showBookings && (
+                            {showBookings && (
 
-                            <View style={styles.accordionBody}>
+                              <View style={styles.accordionBody}>
 
-                              <View style={styles.tableHeader}>
-                                <Text style={[styles.th, { flex: 1 }]}>Adjusted with</Text>
-                                {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
-                                <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                                  APllied Amount
-                                </Text>
+                                <View style={styles.tableHeader}>
+                                  <Text style={[styles.th, { flex: 1 }]}>Adjusted with</Text>
+                                  {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
+                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                                    APllied Amount
+                                  </Text>
+                                </View>
+
+
+
+                                {BillPdfdetails?.bookingItems ? (
+                                  <View style={styles.invoiceRow}>
+                                    <Text style={[styles.invText, { flex: 1 }]}>
+                                      {BillPdfdetails?.bookingItems?.invoiceNo}
+                                    </Text>
+
+                                    <Text
+                                      style={[
+                                        styles.invText,
+                                        { flex: 1, textAlign: "right" }
+                                      ]}
+                                    >
+                                      ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
+                                    </Text>
+                                  </View>
+                                ) : (
+                                  <View style={styles.emptyState}>
+                                    <Text style={styles.emptyText}>No Pending Bookings</Text>
+                                  </View>
+                                )}
+
+                                <View style={styles.totalInvoiceRow}>
+                                  <Text style={styles.totalText}>Total</Text>
+                                  <Text style={styles.totalAmount}>
+                                    ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
+                                  </Text>
+                                </View>
                               </View>
 
-
-
-                             {BillPdfdetails?.bookingItems ? (
-  <View style={styles.invoiceRow}>
-    <Text style={[styles.invText, { flex: 1 }]}>
-      {BillPdfdetails?.bookingItems?.invoiceNo}
-    </Text>
-
-    <Text
-      style={[
-        styles.invText,
-        { flex: 1, textAlign: "right" }
-      ]}
-    >
-      ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
-    </Text>
-  </View>
-) : (
-  <View style={styles.emptyState}>
-    <Text style={styles.emptyText}>No Pending Bookings</Text>
-  </View>
-)}
-
-                              <View style={styles.totalInvoiceRow}>
-                                <Text style={styles.totalText}>Total</Text>
-                                <Text style={styles.totalAmount}>
-                                 ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
-                                </Text>
-                              </View>
-                            </View>
-
-                          )}
-                        </View>
-)}
+                            )}
+                          </View>
+                        )}
 
 
 
@@ -4171,7 +4176,7 @@ export default function BillsDesign({ route }) {
                         <Image source={EditIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Edit</Text>
                       </TouchableOpacity>
-                        <View style={styles.menuDivider} />
+                      <View style={styles.menuDivider} />
 
 
                       <TouchableOpacity
@@ -4350,19 +4355,19 @@ export default function BillsDesign({ route }) {
 
                 {selectedBill?.invoiceAmount < 0 && selectedBill?.paymentStatus !== "Refunded" && selectedBill?.paymentStatus !== "Cancelled" && (
                   <>
-                  <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
-                    onPress={handleShowRefundPayment} disabled={!canWriteInvoice}>
-                    <Image
-                      source={PaymentIcon}
-                      style={styles.popupIcon}
-                    />
-                    <Text style={styles.popupText}>Refund Amount</Text>
-                  </TouchableOpacity>
-                  <View style={styles.menuDivider} />
+                    <TouchableOpacity style={[styles.popupRow, !canWriteInvoice && { opacity: 0.4 }]}
+                      onPress={handleShowRefundPayment} disabled={!canWriteInvoice}>
+                      <Image
+                        source={PaymentIcon}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Refund Amount</Text>
+                    </TouchableOpacity>
+                    <View style={styles.menuDivider} />
                   </>
                 )}
 
-                
+
 
 
                 {/* {(selectedBill?.dueAmount !== 0 && selectedBill?.invoiceAmount > 0 && selectedBill?.paymentStatus !== "Cancelled" && selectedBill?.paymentStatus !== "Paid") && (
@@ -4403,38 +4408,38 @@ export default function BillsDesign({ route }) {
 
                 {isPaid && (selectedBill?.invoiceMode === "Manual" && selectedBill?.paymentStatus === "Paid" && selectedBill?.invoiceType === "Rent") && (
                   <>
-                 
-                  <TouchableOpacity
-                    style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                    disabled={!canUpdateInvoice}
-                    // style={styles.popupRow} 
-                    onPress={() => setShowUnpaidModal(true)} >
-                    <Image
-                      source={require("../../../Assets/Images/Union.png")}
-                      style={styles.popupIcon}
-                    />
-                    <Text style={styles.popupText}>UnPaid</Text>
-                  </TouchableOpacity>
-<View style={styles.menuDivider} />
-                   </>
+
+                    <TouchableOpacity
+                      style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                      disabled={!canUpdateInvoice}
+                      // style={styles.popupRow} 
+                      onPress={() => setShowUnpaidModal(true)} >
+                      <Image
+                        source={require("../../../Assets/Images/Union.png")}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>UnPaid</Text>
+                    </TouchableOpacity>
+                    <View style={styles.menuDivider} />
+                  </>
                 )}
 
- {/*  */}
+                {/*  */}
 
                 {selectedBill?.canEdit && (
                   <>
-                  <TouchableOpacity
-                    style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                    disabled={!canUpdateInvoice}
-                    onPress={() => handleEditBill(selectedBill)}
-                  >
-                    <Image
-                      source={EditIcon}
-                      style={styles.popupIcon}
-                    />
-                    <Text style={styles.popupText}>Edit</Text>
-                  </TouchableOpacity>
-                   <View style={styles.menuDivider} />
+                    <TouchableOpacity
+                      style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                      disabled={!canUpdateInvoice}
+                      onPress={() => handleEditBill(selectedBill)}
+                    >
+                      <Image
+                        source={EditIcon}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Edit</Text>
+                    </TouchableOpacity>
+                    <View style={styles.menuDivider} />
                   </>
                 )}
 
@@ -4454,80 +4459,80 @@ export default function BillsDesign({ route }) {
                 {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
                     <>
-                    <TouchableOpacity
-                      style={styles.popupRow}
-                      onPress={() => {
-                        setShowMenu(false);
-                        setShowBillDetails(false)
-                        navigation.navigate("DiscountInvoice", {
-                          bill: selectedBill,
-                        });
-                      }}
-                    >
-                      <Image
-                        source={require("../../../Assets/Images/discount-circle.png")}
-                        style={styles.popupIcon}
-                      />
-                      <Text style={styles.popupText}>Make as discount</Text>
-                    </TouchableOpacity>
-                       <View style={styles.menuDivider} />
+                      <TouchableOpacity
+                        style={styles.popupRow}
+                        onPress={() => {
+                          setShowMenu(false);
+                          setShowBillDetails(false)
+                          navigation.navigate("DiscountInvoice", {
+                            bill: selectedBill,
+                          });
+                        }}
+                      >
+                        <Image
+                          source={require("../../../Assets/Images/discount-circle.png")}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Make as discount</Text>
+                      </TouchableOpacity>
+                      <View style={styles.menuDivider} />
                     </>
                   )}
 
                 {showApplyToInvoices && (
                   <>
-                  <TouchableOpacity
-                    style={styles.popupRow}
-                    onPress={handleApplyInvoice}
-                  >
-                    <Image
-                      source={BillIcon}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        tintColor: "#000",
-                        marginRight: 10,
-                      }}
-                    />
+                    <TouchableOpacity
+                      style={styles.popupRow}
+                      onPress={handleApplyInvoice}
+                    >
+                      <Image
+                        source={BillIcon}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          tintColor: "#000",
+                          marginRight: 10,
+                        }}
+                      />
 
-                    <Text style={styles.popupText}>
-                      Apply to Invoices
-                    </Text>
-                  </TouchableOpacity>
-                   <View style={styles.menuDivider} />
+                      <Text style={styles.popupText}>
+                        Apply to Invoices
+                      </Text>
+                    </TouchableOpacity>
+                    <View style={styles.menuDivider} />
                   </>
                 )}
 
 
                 {showAdjustWithAdvance && (
                   <>
-                  <TouchableOpacity
-                    style={[
-                      styles.popupRow,
-                       
-                    ]}
-                    onPress={handleAdvanceApplyInvoices}
-                  >
-                    <Image
-                      source={BillIcon}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        tintColor:  "#000",
-                        marginRight: 10,
-                      }}
-                    />
-
-                    <Text
+                    <TouchableOpacity
                       style={[
-                        styles.popupText,
-                       
+                        styles.popupRow,
+
                       ]}
+                      onPress={handleAdvanceApplyInvoices}
                     >
-                      Adjust with Advance
-                    </Text>
-                  </TouchableOpacity>
-                     <View style={styles.menuDivider} />
+                      <Image
+                        source={BillIcon}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          tintColor: "#000",
+                          marginRight: 10,
+                        }}
+                      />
+
+                      <Text
+                        style={[
+                          styles.popupText,
+
+                        ]}
+                      >
+                        Adjust with Advance
+                      </Text>
+                    </TouchableOpacity>
+                    <View style={styles.menuDivider} />
                   </>
                 )}
 
@@ -4557,31 +4562,31 @@ export default function BillsDesign({ route }) {
                 {
                   !isPaid && (
                     <>
-                    <TouchableOpacity
-                      style={[
-                        styles.popupRow,
-                        isBillLocked && styles.popupRowDisabled,
-                      ]}
-                      disabled={isBillLocked && !canDeleteInvoice}
-                    // onPress={() => {
-                    //   setShowMenu(false);
-                    //   setDeleteTenants(true);
-                    // }}
-                    >
-                      <Image
-                        source={require("../../../Assets/Images/trash.png")}
-                        style={styles.popupIcon}
-                      />
-                      <Text
+                      <TouchableOpacity
                         style={[
-                          styles.popupText,
-                          isBillLocked && styles.popupTextDisabled,
+                          styles.popupRow,
+                          isBillLocked && styles.popupRowDisabled,
                         ]}
+                        disabled={isBillLocked && !canDeleteInvoice}
+                      // onPress={() => {
+                      //   setShowMenu(false);
+                      //   setDeleteTenants(true);
+                      // }}
                       >
-                        Delete
-                      </Text>
-                    </TouchableOpacity>
-                     {/* <View style={styles.menuDivider} /> */}
+                        <Image
+                          source={require("../../../Assets/Images/trash.png")}
+                          style={styles.popupIcon}
+                        />
+                        <Text
+                          style={[
+                            styles.popupText,
+                            isBillLocked && styles.popupTextDisabled,
+                          ]}
+                        >
+                          Delete
+                        </Text>
+                      </TouchableOpacity>
+                      {/* <View style={styles.menuDivider} /> */}
                     </>
                   )
                 }
@@ -6370,18 +6375,18 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     elevation: 5,
 
-      borderWidth: 0.4,
-  borderColor: '#D9D9D9',
-  // borderRadius: 12,
+    borderWidth: 0.4,
+    borderColor: '#D9D9D9',
+    // borderRadius: 12,
 
-      // iOS
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowRadius: 2,
-  shadowOffset: { width: 0, height: 1 },
+    // iOS
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
 
-  // Android
-  elevation: 1,
+    // Android
+    elevation: 1,
   },
 
   addBtn: {
@@ -6506,25 +6511,25 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
 
     // Add these
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
 
-  // Shadow
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 4,
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+
+    elevation: 8, // Android
   },
-  shadowOpacity: 0.12,
-  shadowRadius: 12,
 
-  elevation: 8, // Android
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#E8F0FF",
   },
-
-menuDivider: {
-  height: 1,
-  backgroundColor: "#E8F0FF",
-},
 
   // popupBox: {
   //   position: "absolute",

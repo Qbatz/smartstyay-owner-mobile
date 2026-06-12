@@ -244,7 +244,7 @@ export default function NoticePeriodBedSheet({
 
           {menuVisible && (
             <>
-  
+
               <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
                 <View style={StyleSheet.absoluteFillObject} />
               </TouchableWithoutFeedback>
@@ -263,16 +263,31 @@ export default function NoticePeriodBedSheet({
                   <Text style={styles.menuText}>Edit</Text>
                 </TouchableOpacity>
                 {matchedCustomer?.currentStatus === "Settlement Generated" ? (
-                  <TouchableOpacity
-                    disabled={!canWriteCustomers}
-                    style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
-                    onPress={handleCheckoutSheet}>
-                    <Image
-                      source={CheckoutIcon}
-                      style={styles.menuIcon}
-                    />
-                    <Text style={styles.menuText}>Checkout</Text>
-                  </TouchableOpacity>
+                  <>
+                    <TouchableOpacity
+                      disabled={!canWriteCustomers}
+                      style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                      onPress={handleCheckoutSheet}>
+                      <Image
+                        source={CheckoutIcon}
+                        style={styles.menuIcon}
+                      />
+                      <Text style={styles.menuText}>Checkout</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      disabled={!canWriteCustomers}
+                      style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                      onPress={handleNoticeToBooking}
+                    >
+                      <Image
+                        source={ReserveIcon}
+                        style={styles.menuIcon}
+                      />
+                      <Text style={styles.menuText}>New Booking</Text>
+                    </TouchableOpacity>
+                  </>
+
                 ) : (
                   <>
                     <TouchableOpacity
@@ -330,22 +345,22 @@ export default function NoticePeriodBedSheet({
 
           {selectedBed?.currentTenantInfo?.map((tenant, index) => {
 
-  const isNotice = tenant?.currentStatus === "NOTICE";
+            const isNotice = tenant?.currentStatus === "NOTICE";
 
-  return (
-    <View
-      key={`${tenant?.tenetId}-${index}`}
-      style={{
-        paddingBottom: 20,
-        marginBottom: 20,
-        borderBottomWidth:
-          index !== selectedBed.currentTenantInfo.length - 1 ? 0.6 : 0,
-        borderColor: "#E5E7EB",
-      }}
-    >
+            return (
+              <View
+                key={`${tenant?.tenetId}-${index}`}
+                style={{
+                  paddingBottom: 20,
+                  marginBottom: 20,
+                  borderBottomWidth:
+                    index !== selectedBed.currentTenantInfo.length - 1 ? 0.6 : 0,
+                  borderColor: "#E5E7EB",
+                }}
+              >
 
-      {/* TITLE */}
-      {/* <Text
+                {/* TITLE */}
+                {/* <Text
         style={{
           color: "#000",
           fontSize: 14,
@@ -357,143 +372,143 @@ export default function NoticePeriodBedSheet({
         Occupied by
       </Text> */}
 
-    
 
-      <View style={styles.profileRow}>
-            {tenant?.profilePic ? (
-              <Image
-                source={{ uri: tenant?.profilePic }}
-                style={styles.profileImg}
-              />
-            ) : (
-              <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
-                <Text style={styles.initialText}>
-                  {tenant?.tenantFullName
-                    ?.split(" ")
-                    ?.map(w => w[0])
-                    ?.join("")
-                    ?.slice(0, 2)
-                    ?.toUpperCase() || "--"}
-                </Text>
+
+                <View style={styles.profileRow}>
+                  {tenant?.profilePic ? (
+                    <Image
+                      source={{ uri: tenant?.profilePic }}
+                      style={styles.profileImg}
+                    />
+                  ) : (
+                    <View style={[styles.initialCircle, { width: 42, height: 42, borderRadius: 21 }]}>
+                      <Text style={styles.initialText}>
+                        {tenant?.tenantFullName
+                          ?.split(" ")
+                          ?.map(w => w[0])
+                          ?.join("")
+                          ?.slice(0, 2)
+                          ?.toUpperCase() || "--"}
+                      </Text>
+                    </View>
+                  )}
+
+                  <View>
+                    {console.log("haha", selectedBed)}
+                    <TouchableOpacity onPress={() =>
+                      navigation.navigate("CustomerOverviewScreen", {
+                        customerId: tenant.tenetId,
+                        customer: tenant,
+                      })
+                    }>
+                      <Text style={styles.tenantName}>{tenant?.tenantFullName}</Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.tenantPhone}>+91{tenant?.mobile}</Text>
+                  </View>
+                </View>
+
+                {/* ACTIONS */}
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    style={styles.chatBtn}
+                    onPress={() => handleOpenWhatsapp(tenant)}
+                  >
+                    <Image
+                      source={WhatsappGreenIcon}
+                      style={styles.actionIcon}
+                    />
+                    <Text style={styles.chatText}>Chat</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.callBtn}
+                    onPress={() => handleCallPhone(tenant?.mobile)}
+                  >
+                    <Image
+                      source={Call}
+                      style={styles.actionIcon}
+                    />
+                    <Text style={styles.callText}>Call</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* RENT */}
+                <View style={styles.infoRow}>
+                  <Text style={styles.label}>Rental Amount</Text>
+
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Image
+                      source={Money}
+                      style={{ width: 20, height: 20, marginRight: 6 }}
+                    />
+                    <Text style={styles.value}>
+                      ₹ {tenant?.rentAmount}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* DATE */}
+                <View style={styles.infoRow}>
+                  <Text style={styles.label}>
+                    {isNotice ? "Checkout Date" : "Check-In Date"}
+                  </Text>
+
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Image
+                      source={Calendar}
+                      style={{ width: 20, height: 20, marginRight: 6 }}
+                    />
+
+                    <Text style={styles.value}>
+                      {isNotice
+                        ? tenant?.leavingDate || "N/A"
+                        : tenant?.joiningDate || "N/A"}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* REQUEST DATE */}
+                {isNotice && (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>Request Date</Text>
+
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Image
+                        source={Calendar}
+                        style={{ width: 20, height: 20, marginRight: 6 }}
+                      />
+
+                      <Text style={styles.value}>
+                        {tenant?.requestedLeavingDate || "N/A"}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* LAST INVOICE */}
+                <View style={styles.infoRow}>
+                  <Text style={styles.label}>Last Invoice</Text>
+
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Image
+                      source={Invoice}
+                      style={{ width: 20, height: 20, marginRight: 6 }}
+                    />
+
+                    <Text style={styles.link}>
+                      {tenant?.lastInvoiceNumber || "N/A"}
+
+                      {tenant?.totalInvoices > 0
+                        ? ` & ${tenant?.totalInvoices - 1} more`
+                        : ""}
+                    </Text>
+                  </View>
+                </View>
+
               </View>
-            )}
-
-            <View>
-              {console.log("haha", selectedBed)}
-              <TouchableOpacity onPress={() =>
-                navigation.navigate("CustomerOverviewScreen", {
-                  customerId: tenant.tenetId,
-                  customer: tenant,
-                })
-              }>
-                <Text style={styles.tenantName}>{tenant?.tenantFullName}</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.tenantPhone}>+91{tenant?.mobile}</Text>
-            </View>
-          </View>
-
-      {/* ACTIONS */}
-      <View style={styles.actionRow}>
-        <TouchableOpacity
-          style={styles.chatBtn}
-          onPress={() => handleOpenWhatsapp(tenant)}
-        >
-          <Image
-            source={WhatsappGreenIcon}
-            style={styles.actionIcon}
-          />
-          <Text style={styles.chatText}>Chat</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.callBtn}
-          onPress={() => handleCallPhone(tenant?.mobile)}
-        >
-          <Image
-            source={Call}
-            style={styles.actionIcon}
-          />
-          <Text style={styles.callText}>Call</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* RENT */}
-      <View style={styles.infoRow}>
-        <Text style={styles.label}>Rental Amount</Text>
-
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image
-            source={Money}
-            style={{ width: 20, height: 20, marginRight: 6 }}
-          />
-          <Text style={styles.value}>
-            ₹ {tenant?.rentAmount}
-          </Text>
-        </View>
-      </View>
-
-      {/* DATE */}
-      <View style={styles.infoRow}>
-        <Text style={styles.label}>
-          {isNotice ? "Checkout Date" : "Check-In Date"}
-        </Text>
-
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image
-            source={Calendar}
-            style={{ width: 20, height: 20, marginRight: 6 }}
-          />
-
-          <Text style={styles.value}>
-            {isNotice
-              ? tenant?.leavingDate || "N/A"
-              : tenant?.joiningDate || "N/A"}
-          </Text>
-        </View>
-      </View>
-
-      {/* REQUEST DATE */}
-      {isNotice && (
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Request Date</Text>
-
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={Calendar}
-              style={{ width: 20, height: 20, marginRight: 6 }}
-            />
-
-            <Text style={styles.value}>
-              {tenant?.requestedLeavingDate || "N/A"}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* LAST INVOICE */}
-      <View style={styles.infoRow}>
-        <Text style={styles.label}>Last Invoice</Text>
-
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image
-            source={Invoice}
-            style={{ width: 20, height: 20, marginRight: 6 }}
-          />
-
-          <Text style={styles.link}>
-            {tenant?.lastInvoiceNumber || "N/A"}
-
-            {tenant?.totalInvoices > 0
-              ? ` & ${tenant?.totalInvoices-1} more`
-              : ""}
-          </Text>
-        </View>
-      </View>
-
-    </View>
-  );
-})}
+            );
+          })}
 
           {/* <View style={styles.profileRow}>
             {selectedBed?.currentTenantInfo?.[0]?.profilePic ? (
