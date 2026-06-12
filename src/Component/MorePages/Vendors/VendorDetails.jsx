@@ -136,7 +136,11 @@ case "Comments":
 
         </View>
 
-        <TouchableOpacity style={styles.settleBtn}>
+        <TouchableOpacity style={styles.settleBtn}  
+         onPress={() => navigation.navigate("VendorSettlePayment", {
+      vendor,
+    })
+  }>
           <Text style={styles.settleText}>
             Settle Payment →
           </Text>

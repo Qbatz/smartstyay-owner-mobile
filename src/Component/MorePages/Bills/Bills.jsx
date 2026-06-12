@@ -3007,7 +3007,7 @@ export default function BillsDesign({ route }) {
                                   { color: "#FF0000" },
                                 ]}
                               >
-                                ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0}
+                               ₹ {Math.round(BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0)}
                               </Text>
                             </View>
                           </View>

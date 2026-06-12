@@ -28,6 +28,7 @@ import VendorsList from "../src/Component/MorePages/Vendors/VendorsList";
 import Vendor from "../src/Component/MorePages/Vendors/Vendor";
 import VendorDetails from "../src/Component/MorePages/Vendors/VendorDetails";
 import AddVendorPage from "../src/Component/MorePages/Vendors/AddVendorPage";
+import VendorSettlePayment from "../src/Component/MorePages/Vendors/VendorSettlePayment";
 import CancelNotice from "../src/Component/Customer/Checkout/CancelNotice";
 import SettingsScreen from "../src/Component/SettingScreen/SettingScreen";
 import GeneralDetailsScreen from "../src/Component/SettingScreen/GeneralPages/General";
@@ -136,6 +137,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="Vendor" component={Vendor} />
                     <Navigation.Screen name="VendorDetails" component={VendorDetails} />
                     <Navigation.Screen name="AddVendorPage" component={AddVendorPage} />
+                    <Navigation.Screen name="VendorSettlePayment" component={VendorSettlePayment} />
                     <Navigation.Screen name="CancelNotice" component={CancelNotice} />
                     <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
                     <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
