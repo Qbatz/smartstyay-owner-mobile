@@ -549,6 +549,7 @@ export default function RoomDetails({ route, navigation }) {
     }
   }
 
+  console.log("roomRed",EbRoomReading)
 
 
   //  const handleSubmit = async () => {
