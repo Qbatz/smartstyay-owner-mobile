@@ -85,6 +85,8 @@ import BillsDiscount from "../src/Component/MorePages/Bills/DiscountInvoice"
 import BookingtoDiscount from  "../src/Component/MorePages/Bills/BookingtoInvoice"
 import BillsApplyInvoices from  "../src/Component/MorePages/Bills/BillsApplyInvoice"
 import EditProfileSheet from "./Component/SettingScreen/GeneralPages/EditProfileSheet";
+import ExpensesList from "../src/Component/MorePages/Expenses/ExpensesList";
+import ExpensesDetails from "../src/Component/MorePages/Expenses/ExpensesDetails";
 
 
 const SuccessFlow = (props) => {
@@ -131,6 +133,8 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="RoomDetails" component={RoomDetails} />
                     <Navigation.Screen name="Expenses" component={ExpensesScreen} />
                     <Navigation.Screen name="AddExpenses" component={AddExpenses} />
+                    <Navigation.Screen name="ExpensesList" component={ExpensesList} />
+                     <Navigation.Screen name="ExpensesDetails" component={ExpensesDetails} />
                     <Navigation.Screen name="TenantsList" component={TenantsList} />
                     <Navigation.Screen name="CustomerReading" component={CustomerReading} />
                     <Navigation.Screen name="VendorsList" component={VendorsList} />
