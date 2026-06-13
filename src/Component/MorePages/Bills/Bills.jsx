@@ -2880,7 +2880,7 @@ export default function BillsDesign({ route }) {
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-                              ₹ {Number(BillPdfdetails?.currentMonthRentInfo?.currentMonthOtherItemAmount || 0).toLocaleString("en-IN")}
+                              ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -3220,26 +3220,26 @@ export default function BillsDesign({ route }) {
 
                               <View style={styles.tableHeader}>
                                 <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
-                                <Text style={[styles.th, { flex: 1 }]}>Type</Text>
+                                {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
                                 <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
                                   Invoice Amount
                                 </Text>
                               </View>
 
 
-                              {Array.isArray(BillPdfdetails?.unpaidInvoiceInfo) &&
-                                BillPdfdetails?.unpaidInvoiceInfo?.length > 0 ? (
+                              {Array.isArray(BillPdfdetails?.unpaidInvoiceInfo?.unpaidInvoiceItems) &&
+                                BillPdfdetails?.unpaidInvoiceInfo?.unpaidInvoiceItems.length > 0 ? (
                                 <>
-                                  {BillPdfdetails?.unpaidInvoiceInfo?.map((item, index) => (
+                                  {BillPdfdetails?.unpaidInvoiceInfo?.unpaidInvoiceItems?.map((item, index) => (
                                     <View key={index} style={styles.invoiceRow}>
                                       <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
                                         {item?.invoiceNumber}
                                       </Text>
-                                      <Text style={[styles.invText, { flex: 1 }]}>
+                                      {/* <Text style={[styles.invText, { flex: 1 }]}>
                                         {item?.type}
-                                      </Text>
+                                      </Text> */}
                                       <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                                        ₹ {item?.payableAmount}
+                                        ₹ {item?.pendingAmount}
                                       </Text>
                                     </View>
                                   ))}
@@ -3253,7 +3253,7 @@ export default function BillsDesign({ route }) {
                               <View style={styles.totalInvoiceRow}>
                                 <Text style={styles.totalText}>Total</Text>
                                 <Text style={styles.totalAmount}>
-                                  0
+                                  {BillPdfdetails?.unpaidInvoiceInfo?.unpaidInvoiceTotalAmount}
                                   {/* ₹{" "}
                                           {Array.isArray(settlementDetails?.unpaidInvoices)
                                             ? settlementDetails.unpaidInvoices.reduce(
@@ -3287,7 +3287,7 @@ export default function BillsDesign({ route }) {
                             </View>
 
                             <Text style={styles.refundAmount}>
-                              ₹ 0
+                              ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount}
                               {/* ₹{" "}
                                       {Number(
                                         settlementDetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0
@@ -3306,8 +3306,8 @@ export default function BillsDesign({ route }) {
                               >
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                   <Text style={styles.descText}>
-                                    0 days
-                                    {/* Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days) */}
+                                    {/* 0 days */}
+                                    Last Rent Paid ({BillPdfdetails?.currentMonthRentInfo?.currentMonthStayDays} days)
                                   </Text>
 
                                   <Image
@@ -3485,12 +3485,12 @@ export default function BillsDesign({ route }) {
 
                               {/* <Text style={styles.sectionLabel}>Pending Invoices</Text> */}
 
-                              {BillPdfdetails?.currentMonthEbInfo?.map((item, index) => (
+                              {BillPdfdetails?.currentMonthEbInfo?.ebItemsList.map((item, index) => (
                                 <View key={index} style={styles.ebRowWeb}>
 
                                   <View style={{ flex: 1 }}>
                                     <Text style={styles.ebText}>
-                                      {item?.floorName} | {item?.roomName} - {item?.bedName}
+                                      {item?.floorName || "Floor"} | {item?.roomName || "Room"} - {item?.bedName || "Bed"}
                                     </Text>
 
                                     <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
@@ -3502,10 +3502,10 @@ export default function BillsDesign({ route }) {
 
                                   <View style={styles.ebRightBox}>
                                     <Text style={styles.unitText}>
-                                      ({item?.units} Units)
+                                      ({item.consumption} Units)
                                     </Text>
                                     <Text style={styles.amountText}>
-                                      ₹ {item?.amount}
+                                      ₹ {item?.totalAmount}
                                     </Text>
                                   </View>
 
@@ -3533,14 +3533,14 @@ export default function BillsDesign({ route }) {
                               <Text style={styles.cardTitle}>Refundable Advance</Text>
                               <Text style={styles.amountText}>
 
-                                ₹ 0
+                                ₹ {BillPdfdetails?.advanceItems?.availableAdvanceBalance}
                                 {/* {
                                       settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
                                         (sum, inv) => sum + Number(inv.payableAmount || 0),
                                         0
                                       ) || 0
                                     } */}
-                              </Text>
+                             </Text>
                             </TouchableOpacity>
 
                             {showRefundableAdvance && (
@@ -3618,7 +3618,7 @@ export default function BillsDesign({ route }) {
                               <Text style={styles.cardTitle}>Bookings</Text>
                               <Text style={styles.amountText}>
 
-                                ₹ 0
+                                ₹ {BillPdfdetails?.bookingItems?.availableAdvanceBalance}
                                 {/* {
                                       settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
                                         (sum, inv) => sum + Number(inv.payableAmount || 0),
@@ -3641,27 +3641,28 @@ export default function BillsDesign({ route }) {
                                 </View>
 
 
+{BillPdfdetails?.bookingItems?.redeemedList?.length > 0 ? (
+  BillPdfdetails.bookingItems.redeemedList.map((item, index) => (
+    <View key={index} style={styles.invoiceRow}>
+      <Text style={[styles.invText, { flex: 1 }]}>
+        {item?.invoiceNumber}
+      </Text>
 
-                                {BillPdfdetails?.bookingItems ? (
-                                  <View style={styles.invoiceRow}>
-                                    <Text style={[styles.invText, { flex: 1 }]}>
-                                      {BillPdfdetails?.bookingItems?.invoiceNo}
-                                    </Text>
-
-                                    <Text
-                                      style={[
-                                        styles.invText,
-                                        { flex: 1, textAlign: "right" }
-                                      ]}
-                                    >
-                                      ₹ {BillPdfdetails?.bookingItems?.paidAmount || 0}
-                                    </Text>
-                                  </View>
-                                ) : (
-                                  <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No Pending Bookings</Text>
-                                  </View>
-                                )}
+      <Text
+        style={[
+          styles.invText,
+          { flex: 1, textAlign: "right" }
+        ]}
+      >
+        ₹ {item?.redeemedAmount || 0}
+      </Text>
+    </View>
+  ))
+) : (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyText}>No Pending Bookings</Text>
+  </View>
+)}
 
                                 <View style={styles.totalInvoiceRow}>
                                   <Text style={styles.totalText}>Total</Text>
