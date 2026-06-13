@@ -992,30 +992,76 @@ const onScroll = (e) => {
 // };
 const triggerPoint = useRef(0); // 👈 prevents frequent updates
 
+// const handleFloorScroll = (event) => {
+//   const y = event.nativeEvent.contentOffset.y;
+
+//   if (
+//     y - triggerPoint.current > 30 &&  
+//     y > 60 &&
+//     !isHiddenRef.current
+//   ) {
+//     isHiddenRef.current = true;
+//     triggerPoint.current = y;
+//     setShowFloorBar(false);
+//   }
+
+//   else if (
+//     triggerPoint.current - y > 30 &&   
+//     isHiddenRef.current
+//   ) {
+//     isHiddenRef.current = false;
+//     triggerPoint.current = y;
+//     setShowFloorBar(true);
+//   }
+
+//   lastScrollY.current = y;
+// };
+
 const handleFloorScroll = (event) => {
   const y = event.nativeEvent.contentOffset.y;
 
-  if (
-    y - triggerPoint.current > 30 &&  
-    y > 60 &&
-    !isHiddenRef.current
-  ) {
-    isHiddenRef.current = true;
-    triggerPoint.current = y;
-    setShowFloorBar(false);
+  if (y < 0) return;
+
+  const diff = y - lastScrollY.current;
+
+  // Ignore tiny movements
+  if (Math.abs(diff) < 10) {
+    lastScrollY.current = y;
+    return;
   }
 
-  else if (
-    triggerPoint.current - y > 30 &&   
-    isHiddenRef.current
-  ) {
-    isHiddenRef.current = false;
-    triggerPoint.current = y;
-    setShowFloorBar(true);
+  // Scrolling DOWN
+  // if (diff > 0 && !isHiddenRef.current) {
+  //   isHiddenRef.current = true;
+  //   setShowFloorBar(false);
+  //   return;
+  // }
+
+  // // Scrolling UP
+  // else if (diff < 0 && isHiddenRef.current) {
+  //   isHiddenRef.current = false;
+  //   setShowFloorBar(true);
+  // }
+
+    if (diff > 0) {
+    if (!isHiddenRef.current) {
+      isHiddenRef.current = true;
+      setShowFloorBar(false);
+    }
+  }
+
+  // UP → SHOW
+  else if (diff < 0) {
+    if (isHiddenRef.current) {
+      isHiddenRef.current = false;
+      setShowFloorBar(true);
+    }
   }
 
   lastScrollY.current = y;
 };
+
+
 
   return (
     <>

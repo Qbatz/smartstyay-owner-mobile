@@ -42,6 +42,8 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [showRefundFrom, setShowRefundFrom] = useState(false);
   const [transactionId,setTransactionID]=useState("");
 
+  console.log("tanId",transactionId)
+
 
   console.log("bookingDetails", bookingDetails)
   const today = dayjs().format("YYYY-MM-DD");
@@ -147,6 +149,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
     setJoiningDateError("")
     setRefundFromError("")
     setRefundFrom("")
+    setTransactionID("")
     setShowRefundFrom(false)
     setJoiningDate(null);
     setOpenJoinDatePic(false);
@@ -221,6 +224,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
       reason: comments,
       cancelDate: dayjs(joiningDate).format("DD-MM-YYYY"),
       bankId: refundFrom,
+      referenceNumber: transactionId,
     };
 
     console.log("PAYLOAD", payload);
@@ -434,7 +438,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
             <TextInput
             placeholder="Enter Transaction ID"
-            style={{borderWidth:1,borderColor: "#ccc",borderRadius:10,marginTop:10,paddingHorizontal:12, fontFamily: "Gilroy-Regular",paddingVertical:25}}
+            style={{borderWidth:1,borderColor: "#ccc",borderRadius:10,marginTop:10,paddingHorizontal:12, fontFamily: "Gilroy-Regular",paddingVertical:15}}
             value={transactionId}
             onChangeText={(text)=>{
               setTransactionID(text)
