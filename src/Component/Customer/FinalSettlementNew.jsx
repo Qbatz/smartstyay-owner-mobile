@@ -628,7 +628,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           id: Date.now() + Math.random(),
           type: isMaintenance ? "Maintenance" : "Others",
           title: isMaintenance ? "" : item?.item,
-          amount: String(item?.pendingAmount || 0),
+          amount: String(item?.amount || 0),
           isDefault: true,
         };
       });
@@ -866,6 +866,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //   return valid;
   // }
 
+  console.log("WEB API amountTobePaid", settlementDetails?.settlementInfo?.amountTobePaid);
+console.log("rentDifference", settlementDetails?.currentMonthRentInfo?.rentDifference);
+console.log("customRentAmount", customRentAmount);
+console.log("userEnteredDeductionsTotal", userEnteredDeductionsTotal);
+console.log("appliedDiscount", appliedDiscount);
+console.log("ReturnAmount", ReturnAmount);
+
   const validateDiscount = () => {
     let valid = true;
 
@@ -951,10 +958,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
         deductions: extraDeductionsPayload,
         shouldCollectFullRent: collectFullRent,
         // customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
-        customRent: collectFullRent ? Number(finalAmountSetClicked ? customRentAmount
-          : settlementDetails?.currentMonthRentInfo?.currentMonthRent
-        )
-          : ""
+      customRent: collectFullRent
+  ? Number(
+      finalAmountSetClicked
+        ? customRentAmount
+        : settlementDetails?.currentMonthRentInfo?.currentMonthRent
+    )
+  : ""
       }
 
       console.log("generatepayload", payload);

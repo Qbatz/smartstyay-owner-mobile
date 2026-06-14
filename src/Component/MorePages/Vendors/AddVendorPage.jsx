@@ -24,7 +24,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 
-export default function AddVendorSheet({  vendorData }) {
+export default function AddVendorSheet({  vendorData , navigation}) {
 
  const { addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
   const { activeHostelId } = useContext(CommonContexts);
@@ -340,7 +340,7 @@ return(
 
     {/* Header */}
    <View style={styles.header}>
-      <TouchableOpacity
+      <TouchableOpacity onPress={() => navigation.goBack()}
         style={styles.backBtn}
       >
         <Image source={ArrowLeft} style={{height:18, width:18}}/>
@@ -669,6 +669,7 @@ return(
       <View style={styles.footerRow}>
         <TouchableOpacity
           style={styles.cancelBtn}
+          onPress={() => navigation.goBack()}
         >
           <Text style={{fontFamily: "Gilroy-Bold",  
   fontSize: 16,}}>

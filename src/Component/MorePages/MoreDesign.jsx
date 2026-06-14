@@ -1,4 +1,4 @@
-import React,{useContext, useEffect} from "react";
+import React,{useState ,useContext, useEffect} from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  BackHandler
+  BackHandler , NativeModules
 } from "react-native";
 
 import HostelImage from "../../Assets/Images/PgImg.png"
@@ -27,6 +27,18 @@ import { CommonContexts } from "../../Context/CommonContext";
 export default function MoreDesign({ navigation }) {
 
   const {hostelList,activeHostelId}=useContext(CommonContexts)
+
+    const [environment, setEnvironment] = useState("")
+  
+    const { CommonModule } = NativeModules;
+
+      useEffect(() => {
+        CommonModule.fetchEnvironment().then(r => {
+          setEnvironment(r)
+        })
+      }, [])
+
+      console.log("Environment", environment);
 
   // useEffect(() => {
   //   const backHandler = BackHandler.addEventListener(
@@ -52,18 +64,59 @@ export default function MoreDesign({ navigation }) {
     //             return () => backHandler.remove();
     //           }, [])
 
+     
+  // const menuItems = [
+  //   { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
+  //   { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
+  //   { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
+  //   { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
+  //   { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
+  //     { title: "ExpensesList", icon: Expensesimage, bg: "#16C25B", screen: "ExpensesList" },
+  //   { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
+  //   { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
+  //    { title: "Vendor New", icon: Vendorimage, bg: "#FF7A00", screen: "Vendor" },
+  //   { title: "Settings", icon: SettingsImage, bg: "#1E45E1", screen: "SettingsScreen" },
+  // ];
+
   const menuItems = [
-    { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
-    { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
-    { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
-    { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
-    { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
-      { title: "ExpensesList", icon: Expensesimage, bg: "#16C25B", screen: "ExpensesList" },
-    { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
-    { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
-     { title: "Vendor New", icon: Vendorimage, bg: "#FF7A00", screen: "Vendor" },
-    { title: "Settings", icon: SettingsImage, bg: "#1E45E1", screen: "SettingsScreen" },
-  ];
+  { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
+  { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
+  { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
+  { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
+  { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
+
+  ...(environment !== "PROD"
+    ? [
+        {
+          title: "ExpensesList",
+          icon: Expensesimage,
+          bg: "#16C25B",
+          screen: "ExpensesList",
+        },
+      ]
+    : []),
+
+  { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
+  { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
+
+  ...(environment !== "PROD"
+    ? [
+        {
+          title: "Vendor New",
+          icon: Vendorimage,
+          bg: "#FF7A00",
+          screen: "Vendor",
+        },
+      ]
+    : []),
+
+  {
+    title: "Settings",
+    icon: SettingsImage,
+    bg: "#1E45E1",
+    screen: "SettingsScreen",
+  },
+];
 
   const activeHostel =
   hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??

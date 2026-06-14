@@ -10,7 +10,6 @@ import {
 
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ThreeDots from "../../../Assets/Images/3dots.png";
-
 import ExpensesInfo from "./ExpensesInfo";
 import ExpensesTransactions from "./ExpensesTransaction";
 import ExpensesItems from "./ExpensesItems";
