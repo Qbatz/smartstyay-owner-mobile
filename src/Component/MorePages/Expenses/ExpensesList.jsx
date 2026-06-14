@@ -269,7 +269,7 @@ useFocusEffect(
  
 
 
-    const handleAddVendorClick = () => {
+    const handleAddExpenses = () => {
         if (!activeHostelId) {
             setModalType("warning");
             setModalMessage("Please add a hostel first");
@@ -278,7 +278,7 @@ useFocusEffect(
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
-         navigation.navigate("AddVendorPage", {
+         navigation.navigate("AddExpensesPage", {
     //   vendor: item,
     })
    
@@ -484,7 +484,7 @@ const paidAmount = totalExpense;
                             styles.addVendorBtn,
                             !canWriteVendor && { opacity: 0.7 }
                         ]}
-                            disabled={!canWriteVendor} onPress={handleAddVendorClick}>
+                            disabled={!canWriteVendor} onPress={handleAddExpenses}>
                             <Text style={styles.addVendorText}>+ Add Expenses</Text>
                         </TouchableOpacity>
                     </View>
@@ -631,7 +631,7 @@ const paidAmount = totalExpense;
                                 !canWriteVendor && { opacity: 0.7 }
                             ]}
                             disabled={!canWriteVendor}
-                           onPress={handleAddVendorClick}
+                           onPress={handleAddExpenses}
                         >
                             <Image source={AddIcon} style={styles.addIcon} />
                         </TouchableOpacity>
