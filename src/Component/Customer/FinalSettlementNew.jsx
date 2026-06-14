@@ -481,7 +481,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
       } else {
         const customRentDiff =
           Number(customRentAmount || 0) -
-          Number(rentInfo?.currentMonthRent || 0);
+          Number(settlementDetails?.customerInfo?.rentAmount || 0);
 
         updatedAmountToBePaid =
           updatedAmountToBePaid +

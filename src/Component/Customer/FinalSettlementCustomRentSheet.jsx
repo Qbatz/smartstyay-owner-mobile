@@ -58,29 +58,54 @@ export default function SettlementCustomRentSheet({
         })
     ).current;
 
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    useEffect(() => {
-        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-            Animated.timing(translateY, {
-                toValue: -e.endCoordinates.height + 70,
-                duration: 180,
-                useNativeDriver: true,
-            }).start();
-        });
+useEffect(() => {
+    if (!visible) return;
 
-        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-            Animated.timing(translateY, {
-                toValue: 0,
-                duration: 180,
-                useNativeDriver: true,
-            }).start();
-        });
+    const showSub = Keyboard.addListener(
+        "keyboardDidShow",
+        (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        }
+    );
 
-        return () => {
-            showSub.remove();
-            hideSub.remove();
-        };
-    }, []);
+    const hideSub = Keyboard.addListener(
+        "keyboardDidHide",
+        () => {
+            setKeyboardHeight(0);
+        }
+    );
+
+    return () => {
+        showSub.remove();
+        hideSub.remove();
+    };
+}, [visible]);
+
+
+    // useEffect(() => {
+    //     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+    //         Animated.timing(translateY, {
+    //             toValue: -e.endCoordinates.height + 70,
+    //             duration: 180,
+    //             useNativeDriver: true,
+    //         }).start();
+    //     });
+
+    //     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    //         Animated.timing(translateY, {
+    //             toValue: 0,
+    //             duration: 180,
+    //             useNativeDriver: true,
+    //         }).start();
+    //     });
+
+    //     return () => {
+    //         showSub.remove();
+    //         hideSub.remove();
+    //     };
+    // }, []);
 
     const openSheet = () => {
         Animated.spring(translateY, {
@@ -107,7 +132,7 @@ export default function SettlementCustomRentSheet({
             <View style={styles.root}>
                 <TouchableOpacity style={styles.overlay} onPress={closeSheet} />
 
-                <Animated.View
+                {/* <Animated.View
                     {...panResponder.panHandlers}
                     style={[
                         styles.sheet,
@@ -116,7 +141,26 @@ export default function SettlementCustomRentSheet({
                             paddingBottom: 20 + insets.bottom,
                         },
                     ]}
-                >
+                > */}
+                <Animated.View
+    {...panResponder.panHandlers}
+    style={[
+        styles.sheet,
+        {
+            paddingBottom: 20 + insets.bottom,
+            transform: [
+                {
+                    translateY: Animated.subtract(
+                        translateY,
+                        new Animated.Value(
+                            keyboardHeight > 0 ? 240 : 0
+                        )
+                    ),
+                },
+            ],
+        },
+    ]}
+>
 
                     <View
                         style={{
