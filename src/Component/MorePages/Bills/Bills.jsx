@@ -43,7 +43,7 @@ import ActiveCheckout from "../../../Assets/Images/Active_checkout.png";
 import CheckoutIcon from "../../../Assets/Images/checkout.png";
 import ActiveWalkin from "../../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../../Assets/Images/walkin.png";
-import RefundedIcon from "../../../Assets/Images/CancelledIcon.png";
+import RefundedIcon from "../../../Assets/Images/Repeat.png";
 import WhatsappIcon from "../../../Assets/Images/whatsapp_blue.png";
 import WhatsappGreenIcon from "../../../Assets/Images/whatsapp.png";
 import PlusIcon from "../../../Assets/Images/add.png";
@@ -2264,6 +2264,13 @@ export default function BillsDesign({ route }) {
   const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
   const FullyRefund = selectedBill?.paymentStatus === "Refunded"
 
+                          const isPendingRefund =
+  BillPdfdetails?.invoiceInfo?.status === "PENDING_REFUND";
+
+const showRefundButton =
+  selectedBill?.invoiceType === "Settlement" &&
+  isPendingRefund || partiallyRefund
+
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadInvoice;
@@ -3899,6 +3906,23 @@ export default function BillsDesign({ route }) {
                           <Image source={DownloadIcon} style={styles.iconDark} />
                           <Text style={styles.paidText}>Download</Text>
                         </TouchableOpacity>
+                        {showRefundButton && (
+    <TouchableOpacity
+      style={styles.refundBtn}
+      onPress={handleShowRefundPayment}
+    >
+      <Image
+        source={RefundedIcon}
+        style={styles.refundIcon}
+      />
+      <Text style={styles.refundText}>
+        Refund
+      </Text>
+    </TouchableOpacity>
+  )}
+
+
+
                       </>
                     )}
 
@@ -8161,6 +8185,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#EF4444",
   },
+// bottomActions: {
+//   flexDirection: "row",
+//   justifyContent: "space-between",
+//   paddingHorizontal: 20,
+//   paddingTop: 16,
+// },
 
+// actionBtn: {
+//   width: "30%",
+//   height: 56,
+//   borderRadius: 10,
+//   backgroundColor: "#F5F5F5",
+//   justifyContent: "center",
+//   alignItems: "center",
+// },
+
+refundBtn: {
+ 
+
+      flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E67E22",
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginHorizontal: 6
+},
+
+refundIcon: {
+  width: 15,
+  height: 15,
+  tintColor: "#FFFFFF",
+},
+
+refundText: {
+  marginLeft:7,
+  color: "#FFFFFF",
+  marginTop: 4,
+  // fontSize: 12,
+  fontFamily: "Gilroy-Semibold",
+},
+
+actionText: {
+  marginTop: 4,
+  fontSize: 12,
+  color: "#333",
+},
 
 });
