@@ -1687,6 +1687,10 @@ export default function BillsDesign({ route }) {
 
   const invoiceDate = dayjs(selectedBill?.invoiceDate, "DD-MM-YYYY");
 
+  const formatEBDate = (date) => {
+  if (!date) return "-";
+  return dayjs(date).format("DD/MM/YYYY");
+};
 
   const getInvoiceDate = () => {
     if (!selectedBill?.invoiceDate) return null;
@@ -3504,7 +3508,7 @@ const showRefundButton =
 
                                     <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
                                       <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
-                                        {item?.fromDate} - {item?.toDate}
+                                    {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
                                       </Text>
                                     </View>
                                   </View>
