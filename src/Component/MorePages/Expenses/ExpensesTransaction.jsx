@@ -3,11 +3,12 @@ import {
   FlatList,
   View,
   Text,
-  StyleSheet,Image
+  StyleSheet,Image , TouchableOpacity
 } from "react-native";
-
+import { useNavigation } from "@react-navigation/native";
 // import MobileIcon from "../../../Assets/Images/mobile.png";
 import ExpensesIcon from "../../../Assets/Images/direct-right.png";
+import SettleIcon from "../../../Assets/Images/SettleIcon.png";
 
 const DATA = [
   {
@@ -36,39 +37,76 @@ const DATA = [
 ];
 
 export default function ExpensesTransactions() {
+
+    const navigation = useNavigation();
   return (
-    <FlatList
-      data={DATA}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <View style={styles.card}>
-           <View style={styles.iconCircle}>
-                   <Image source={ExpensesIcon} style={{ height: 24, width: 24 }} />
-                 </View>
+   <FlatList
+  data={DATA}
+  keyExtractor={(item) => item.id}
+  ListHeaderComponent={() => (
+    <View style={styles.settlementCard}>
+     <View style={styles.settlementHeader}>
+  <Image
+    source={SettleIcon}
+    style={styles.settlementIcon}
+  />
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>
-              {item.type}
-            </Text>
+  <Text style={styles.settlementTitle}>
+    Complete Settlement
+  </Text>
+</View>
 
-            <Text style={styles.status}>
-              ✓ {item.status}
-              {item.txn ? ` • ${item.txn}` : ""}
-            </Text>
-          </View>
+<Text style={styles.settlementSubTitle}>
+  Remain the payment settlement Due ₹ 1,200
+</Text>
 
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.amount}>
-              {item.amount}
-            </Text>
+      <TouchableOpacity
+        style={styles.settlementBtn}
+               onPress={() => navigation.navigate("VendorSettlePayment", {
+      // vendor,
+    })
+  }
+      >
+        <Text style={styles.settlementBtnText}>
+          Settle Payment
+        </Text>
 
-            <Text style={styles.date}>
-              {item.date}
-            </Text>
-          </View>
-        </View>
-      )}
-    />
+        <Text style={styles.arrowText}>→</Text>
+      </TouchableOpacity>
+    </View>
+  )}
+  renderItem={({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.iconCircle}>
+        <Image
+          source={ExpensesIcon}
+          style={{ height: 24, width: 24 }}
+        />
+      </View>
+
+      <View style={{ flex: 1, marginLeft: 14 }}>
+        <Text style={styles.title}>
+          {item.type}
+        </Text>
+
+        <Text style={styles.status}>
+          ✓ {item.status}
+          {item.txn ? ` • ${item.txn}` : ""}
+        </Text>
+      </View>
+
+      <View style={{ alignItems: "flex-end" }}>
+        <Text style={styles.amount}>
+          {item.amount}
+        </Text>
+
+        <Text style={styles.date}>
+          {item.date}
+        </Text>
+      </View>
+    </View>
+  )}
+/>
   );
 }
 
@@ -119,4 +157,104 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  settlementCard: {
+  margin: 16,
+  padding: 18,
+  borderRadius: 16,
+  backgroundColor: "#141497",
+},
+
+settlementHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+settlementIcon: {
+  width: 28,
+  height: 28,
+  tintColor: "#FFFFFF",
+  marginRight: 12,
+},
+
+settlementTitle: {
+  color: "#FFFFFF",
+  fontSize: 20,
+  fontFamily: "Gilroy-Bold",
+},
+
+settlementSubTitle: {
+  color: "#D7DBFF",
+  fontSize: 15,
+  marginTop: 12,
+  fontFamily: "Gilroy-Medium",
+  lineHeight: 22,
+},
+
+settlementBtn: {
+  marginTop: 22,
+  alignSelf: "flex-end",
+  backgroundColor: "#FFFFFF",
+  height: 48,
+  borderRadius: 24,
+  paddingHorizontal: 22,
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+settlementBtnText: {
+  color: "#2457FF",
+  fontSize: 15,
+  fontFamily: "Gilroy-SemiBold",
+},
+
+arrowText: {
+  marginLeft: 10,
+  color: "#2457FF",
+  fontSize: 18,
+  fontFamily: "Gilroy-Bold",
+},
+
+card: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingVertical: 20,
+  borderBottomWidth: 1,
+  borderBottomColor: "#EEF2F7",
+},
+
+iconCircle: {
+  height: 48,
+  width: 48,
+  borderRadius: 24,
+  backgroundColor: "#EEF2FF",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+title: {
+  fontSize: 18,
+  fontFamily: "Gilroy-Bold",
+  color: "#111827",
+},
+
+status: {
+  color: "#22C55E",
+  marginTop: 8,
+  fontSize: 15,
+  fontFamily: "Gilroy-Medium",
+},
+
+amount: {
+  fontSize: 18,
+  fontFamily: "Gilroy-Bold",
+  color: "#111827",
+},
+
+date: {
+  marginTop: 10,
+  color: "#6B7280",
+  fontSize: 14,
+  fontFamily: "Gilroy-Medium",
+},
 });

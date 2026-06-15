@@ -10,6 +10,7 @@ import {
 
 
 import CommentIcon from "../../../Assets/Images/chat-notification.png"
+import AddCommentIcon from "../../../Assets/Images/CommentAddIcon.png"
 
 
 const COMMENTS = [
@@ -99,8 +100,10 @@ export default function ExpensesComments() {
         </View>
 
         <TouchableOpacity style={styles.addBtn}>
+          <Image source={AddCommentIcon}   style={{ height: 16, width: 16 , marginRight:10 , marginTop:2}}
+  resizeMode="contain"/>
           <Text style={styles.addText}>
-            ✈ Add
+             Add
           </Text>
         </TouchableOpacity>
       </View>
@@ -163,6 +166,7 @@ const styles = StyleSheet.create({
   },
 
   addBtn: {
+    flexDirection:'row',
     marginTop: 14,
     alignSelf: "flex-end",
     backgroundColor: "#2D5BFF",

@@ -63,6 +63,7 @@ export default function AddExpensesPage({ vendorData, navigation }) {
 
 
 
+
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
@@ -91,8 +92,8 @@ export default function AddExpensesPage({ vendorData, navigation }) {
     const [linkVendor, setLinkVendor] = useState(false);
     const [vendor, setVendor] = useState("");
 
-    const [paymentStatus, setPaymentStatus] =
-        useState("fully_paid");
+    // const [paymentStatus, setPaymentStatus] =
+    //     useState("fully_paid");
 
     const [paidAmount, setPaidAmount] = useState("");
     const [balanceAmount, setBalanceAmount] = useState("");
@@ -105,16 +106,76 @@ export default function AddExpensesPage({ vendorData, navigation }) {
 
     const [description, setDescription] =
         useState("");
+        const [paymentStatus, setPaymentStatus] =
+  useState("Partially Paid");
 
-    const [items, setItems] = useState([
-        {
-            itemDetail: "",
-            quantity: "",
-            unit: "",
-            unitPrice: "",
-            amount: "",
-        },
-    ]);
+  
+
+    const emptyItem = {
+  itemDetail: "",
+  quantity: "",
+  unit: "",
+  unitPrice: "",
+  amount: "",
+};
+
+const [items, setItems] = useState([emptyItem]);
+
+const handleAddRow = () => {
+  setItems((prev) => [
+    ...prev,
+    {
+      itemDetail: "",
+      quantity: "",
+      unit: "",
+      unitPrice: "",
+      amount: "",
+    },
+  ]);
+};
+
+
+const handleCloneRow = (index) => {
+  const clonedItem = {
+    ...items[index],
+  };
+
+  const updated = [...items];
+  updated.splice(index + 1, 0, clonedItem);
+
+  setItems(updated);
+};
+
+const handleDeleteRow = (index) => {
+  if (items.length === 1) {
+    setItems([emptyItem]);
+    return;
+  }
+
+  setItems((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+};
+
+const updateItem = (
+  index,
+  field,
+  value
+) => {
+  const updated = [...items];
+
+  updated[index][field] = value;
+
+  const qty =
+    Number(updated[index].quantity) || 0;
+
+  const price =
+    Number(updated[index].unitPrice) || 0;
+
+  updated[index].amount = qty * price;
+
+  setItems(updated);
+};
 
     const scrollRef = useRef(null);
     const mobileRef = useRef(null);
@@ -432,7 +493,7 @@ export default function AddExpensesPage({ vendorData, navigation }) {
 
                 <View style={{
                     flexDirection: "row",
-                    gap: 10 , marginTop:10 , marginBottom:5
+                    gap: 10, marginTop: 10, marginBottom: 5
                 }}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.label}>
@@ -452,19 +513,19 @@ export default function AddExpensesPage({ vendorData, navigation }) {
                     </View>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.label}>
-                           Sub Category <Text style={{ color: "red" }}>*</Text>
+                            Sub Category <Text style={{ color: "red" }}>*</Text>
                         </Text>
 
-                       <TouchableOpacity style={styles.select}>
-   <Text>
-      {subCategory || "Vegetables"}
-   </Text>
+                        <TouchableOpacity style={styles.select}>
+                            <Text>
+                                {subCategory || "Vegetables"}
+                            </Text>
 
-   <Image
-      source={DownArrow}
-      style={styles.arrow}
-   />
-</TouchableOpacity>
+                            <Image
+                                source={DownArrow}
+                                style={styles.arrow}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -480,27 +541,29 @@ export default function AddExpensesPage({ vendorData, navigation }) {
                     value={amount}
                     onChangeText={setAmount}
                     placeholder="₹ 5,500"
-                      placeholderTextColor="#9CA3AF"
+                    placeholderTextColor="#9CA3AF"
                     style={styles.input}
                 />
-                
+
 
                 <Text style={styles.label}>
                     Expense Date <Text style={styles.required}>*</Text>
                 </Text>
 
                 <TouchableOpacity
-                    style={{flexDirection:'row', justifyContent:'space-between' , height: 56,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        backgroundColor: "#FFFFFF",
-        fontSize: 16,
-        fontFamily: "Gilroy-Medium", alignItems:'center',
-        color: "#111827",}}
-                      
-                   
+                    style={{
+                        flexDirection: 'row', justifyContent: 'space-between', height: 56,
+                        borderWidth: 1,
+                        borderColor: "#E5E7EB",
+                        borderRadius: 12,
+                        paddingHorizontal: 16,
+                        backgroundColor: "#FFFFFF",
+                        fontSize: 16,
+                        fontFamily: "Gilroy-Medium", alignItems: 'center',
+                        color: "#111827",
+                    }}
+
+
                 >
                     <Text>
                         {expenseDate || "10 July 2026"}
@@ -508,49 +571,250 @@ export default function AddExpensesPage({ vendorData, navigation }) {
 
                     <Image
                         source={CalendarIcon}
-                        style={{height:14 , width:14}}
+                        style={{ height: 14, width: 14 }}
                     />
                 </TouchableOpacity>
 
+             <View
+  style={{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+  }}
+>
+  <Text
+    style={{
+      fontSize: 16,
+      fontFamily: "Gilroy-Medium",
+      color: "#1E1E1E",
+      width: "45%",
+      lineHeight: 24,
+    }}
+  >
+    Link this Expense to a Vendor?
+  </Text>
 
-                <View style={styles.vendorRow}>
-                    <Text style={styles.labelVendor}>
-                        Link this Expense to a Vendor?
-                    </Text>
-                    <View style={styles.toggleContainer}>
-                        <Text
-                            style={[
-                                styles.toggleText,
-                                !linkVendor && styles.activeText
-                            ]}
-                        >
-                            No
+  <View
+    style={{
+      width: "30%",
+      height: 48,
+      backgroundColor: "#EEF2FF",
+      borderRadius: 14,
+      padding: 6,
+      flexDirection: "row",
+    }}
+  >
+      <TouchableOpacity
+        onPress={() => setLinkVendor(false)}
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 10,
+          backgroundColor: !linkVendor
+            ? "#2F54EB"
+            : "transparent",
+        }}
+      >
+        <Text
+          style={{
+            color: !linkVendor ? "#FFF" : "#1E1E1E",
+            fontSize: 13,
+            fontFamily: !linkVendor
+              ? "Gilroy-Bold"
+              : "Gilroy-Medium",
+          }}
+        >
+          No
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => setLinkVendor(true)}
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 10,
+          backgroundColor: linkVendor
+            ? "#2F54EB"
+            : "transparent",
+        }}
+      >
+        <Text
+          style={{
+            color: linkVendor ? "#FFF" : "#1E1E1E",
+            fontSize: 13,
+            fontFamily: linkVendor
+              ? "Gilroy-Bold"
+              : "Gilroy-Medium",
+          }}
+        >
+          Yes
+        </Text>
+      </TouchableOpacity>
+  </View>
+</View>
+
+
+                {!linkVendor && (
+                    <>
+                        <Text style={styles.label}>
+                            Payment method <Text style={styles.required}>*</Text>
                         </Text>
 
-                        <Text
-                            style={[
-                                styles.toggleText,
-                                linkVendor && styles.activeText
-                            ]}
-                        >
-                            Yes
+                        <TouchableOpacity style={styles.select}>
+                            <Text>G Pay UPI (smartstay@oksbi)</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>Transaction ID</Text>
+
+                        <TouchableOpacity style={styles.select}>
+                            <Text>1328H202511</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
+                    </>
+                )}
+
+
+                {linkVendor && (
+                    <>
+                        <Text style={styles.label}>
+                            Vendor <Text style={styles.required}>*</Text>
                         </Text>
-                    </View>
-                </View>
 
-                <TouchableOpacity
-                    style={styles.uploadBox}
-                >
-                    {/* <Image source={UploadIcon} /> */}
+                        <TouchableOpacity style={styles.select}>
+                            <Text>Kural Kaikani Angadi</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
 
-                    <Text>
-                        Choose Image to Upload
-                    </Text>
+                        <Text style={styles.label}>
+                            Payment Status <Text style={styles.required}>*</Text>
+                        </Text>
 
-                    <Text>
-                        JPG/JPEG Format
-                    </Text>
-                </TouchableOpacity>
+                        <View style={{ marginTop: 10 }}>
+                            {[
+                                "Fully Paid",
+                                "Partially Paid",
+                                "Credit / Pending",
+                            ].map((status) => (
+                                <TouchableOpacity
+                                    key={status}
+                                    style={styles.radioRow}
+                                    onPress={() => setPaymentStatus(status)}
+                                >
+                                    <View
+                                        style={[
+                                            styles.radioOuter,
+                                            paymentStatus === status &&
+                                            styles.radioOuterActive,
+                                        ]}
+                                    >
+                                        {paymentStatus === status && (
+                                            <View style={styles.radioInner} />
+                                        )}
+                                    </View>
+
+                                    <Text style={styles.radioText}>
+                                        {status}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                       {paymentStatus === "Partially Paid" && (
+<View
+  style={{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  }}
+>
+  <View style={{ width: "48%" }}>
+    <Text
+      style={[
+        styles.label,
+        {
+          height: 52,
+          textAlignVertical: "top",
+        },
+      ]}
+    >
+      Paid Amount (INR)
+      <Text style={{ color: "red" }}> *</Text>
+    </Text>
+
+    <ValidatedInput
+      value={paidAmount}
+      onChangeText={setPaidAmount}
+      placeholder="₹ 2,500"
+      type="amount"
+      style={styles.input}
+    />
+  </View>
+
+  <View style={{ width: "48%" }}>
+    <Text
+      style={[
+        styles.label,
+        {
+          height: 52,
+          lineHeight: 24,
+        },
+      ]}
+    >
+      Balance Amount{"\n"}(Outstanding)
+    </Text>
+
+    <ValidatedInput
+      editable={false}
+      value={balanceAmount}
+      placeholder="₹ 3,000"
+      style={styles.input}
+    />
+  </View>
+</View>
+)}
+
+                        <Text style={styles.label}>
+                            Payment method <Text style={{ color: "red" }}>*</Text>
+                        </Text>
+
+                        <TouchableOpacity style={styles.select}>
+                            <Text>G Pay UPI (smartstay@oksbi)</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>
+                            Transaction ID
+                        </Text>
+
+                        <TouchableOpacity style={styles.select}>
+                            <Text>1328H202511</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>
+                            Attachments/Proofs (If any)
+                        </Text>
+
+                        <TouchableOpacity style={styles.uploadBox}>
+                            <Text style={styles.uploadText}>
+                                Choose Image
+                            </Text>
+
+                            <Text style={styles.uploadSub}>
+                                JPG/JPEG Format
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+
+
+              
 
                 <Text style={styles.label}>
                     Description
@@ -578,13 +842,142 @@ export default function AddExpensesPage({ vendorData, navigation }) {
                     </View>
                 </View>
 
+                {items.map((item, index) => (
+  <View key={index} style={styles.itemCard}>
+    
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 12,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 18,
+          fontFamily: "Gilroy-Bold",
+        }}
+      >
+        Item - {String(index + 1).padStart(2, "0")}
+      </Text>
 
-<TouchableOpacity
- style={styles.addRowBtn}
+  <View style={styles.itemActionRow}>
+  <TouchableOpacity
+    style={[styles.iconBtn, styles.cloneBtn]}
+    onPress={() => handleCloneRow(index)}
+  >
+    <Text style={styles.cloneIcon}>⧉</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={[styles.iconBtn, styles.deleteBtn]}
+    onPress={() => handleDeleteRow(index)}
+  >
+    <Text style={styles.deleteIcon}>✕</Text>
+  </TouchableOpacity>
+</View>
+    </View>
+
+    <Text style={styles.label}>
+      Item Detail
+    </Text>
+
+    <ValidatedInput
+      value={item.itemDetail}
+      onChangeText={(text) =>
+        updateItem(index, "itemDetail", text)
+      }
+      placeholder="LED Tube Light"
+                          placeholderTextColor="#9CA3AF"
+                    style={styles.input}
+    />
+
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+      }}
+    >
+      <View style={{ width: "48%" }}>
+        <Text style={styles.label}>
+          Quantity
+        </Text>
+
+        <ValidatedInput
+          type="amount"
+          value={item.quantity}
+          onChangeText={(text) =>
+            updateItem(index, "quantity", text)
+          }
+          placeholder="0"
+                              placeholderTextColor="#9CA3AF"
+                    style={styles.input}
+        />
+      </View>
+
+      <View style={{ width: "48%" }}>
+        <Text style={styles.label}>
+          Unit
+        </Text>
+
+        <TouchableOpacity style={styles.select}>
+          <Text>
+            {item.unit || "Nos"}
+          </Text>
+
+          <Image
+            source={DownArrow}
+            style={styles.arrow}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+
+    <Text style={styles.label}>
+      Per Unit price (INR)
+    </Text>
+
+    <ValidatedInput
+      type="amount"
+      value={item.unitPrice}
+      onChangeText={(text) =>
+        updateItem(index, "unitPrice", text)
+      }
+      placeholder="₹ 150"
+                          placeholderTextColor="#9CA3AF"
+                    style={styles.input}
+    />
+
+    <Text style={styles.label}>
+      Amount
+    </Text>
+
+    <ValidatedInput
+      editable={false}
+      value={String(
+        (Number(item.quantity) || 0) *
+        (Number(item.unitPrice) || 0)
+      )}
+                          placeholderTextColor="#9CA3AF"
+                    style={styles.input}
+    />
+  </View>
+))}
+
+
+               <TouchableOpacity
+  style={styles.addRowBtn}
+  onPress={handleAddRow}
 >
- <Text>
-   + Add New Row
- </Text>
+  <Text
+    style={{
+      color: "#2952FF",
+      fontFamily: "Gilroy-Bold",
+    }}
+  >
+    + Add New Row
+  </Text>
 </TouchableOpacity>
 
 
@@ -592,34 +985,74 @@ export default function AddExpensesPage({ vendorData, navigation }) {
 
 
 
+<View style={styles.summaryCard}>
+  <View style={styles.summaryRow}>
+    <Text style={styles.summaryLabel}>
+      Sub Total
+    </Text>
 
-                <View style={styles.summaryCard}>
-                    <View style={styles.summaryRow}>
-                        <Text>Sub Total</Text>
-                        <Text>₹1600.00</Text>
-                    </View>
+    <Text style={styles.summaryValue}>
+      ₹ 1,600.00
+    </Text>
+  </View>
 
-                   <View style={styles.taxRow}>
- <Text>
-   Tax Optional
- </Text>
+  <View style={styles.summaryInputRow}>
+    <Text style={styles.summaryLabel}>
+      Tax Optional
+    </Text>
 
- <ValidatedInput
-   type="amount"
-   value={900}
- />
+    <ValidatedInput
+      type="amount"
+      placeholder="₹ 0.00"
+      style={styles.summaryInput}
+    />
+  </View>
+
+  <View style={styles.summaryInputRow}>
+    <Text style={styles.summaryLabel}>
+      Discount
+    </Text>
+
+    <View style={styles.discountRow}>
+      <View style={styles.discountToggle}>
+        <TouchableOpacity
+          style={[
+            styles.discountBtn,
+            styles.discountBtnActive,
+          ]}
+        >
+          <Text style={styles.discountBtnTextActive}>
+            ₹
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.discountBtn}
+        >
+          <Text style={styles.discountBtnText}>
+            %
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ValidatedInput
+        type="amount"
+        placeholder="₹ 0.00"
+        style={styles.discountInput}
+      />
+    </View>
+  </View>
+
+  <View style={styles.totalContainer}>
+    <Text style={styles.totalLabel}>
+      TOTAL RETAINER AMOUNT
+    </Text>
+
+    <Text style={styles.totalValue}>
+      ₹ 1,600.00
+    </Text>
+  </View>
 </View>
-
-                    <View style={styles.summaryRow}>
-                        <Text>Discount</Text>
-                        <TextInput />
-                    </View>
-
-                    <View style={styles.totalRow}>
-                        <Text>TOTAL RETAINER AMOUNT</Text>
-                        <Text>₹1600.00</Text>
-                    </View>
-                </View>
 
                 <View style={styles.footerRow}>
                     <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
@@ -1203,18 +1636,114 @@ const styles = StyleSheet.create({
         color: "#FFF",
         fontFamily: "Gilroy-SemiBold"
     },
-    summaryCard: {
-        backgroundColor: "#F8FAFC",
-        borderRadius: 12,
-        padding: 16,
-        marginTop: 20
-    },
+  summaryCard: {
+  backgroundColor: "#F8F9FB",
+  borderRadius: 16,
+  overflow: "hidden",
+  marginTop: 20,
+},
 
-    summaryRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 16
-    },
+summaryRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingTop: 20,
+  paddingBottom: 10,
+},
+
+summaryInputRow: {
+  paddingHorizontal: 16,
+  marginTop: 10,
+},
+
+summaryLabel: {
+  fontSize: 16,
+  color: "#1E1E1E",
+  fontFamily: "Gilroy-Medium",
+  marginBottom: 12,
+},
+
+summaryValue: {
+  fontSize: 18,
+  color: "#1E1E1E",
+  fontFamily: "Gilroy-Bold",
+},
+
+summaryInput: {
+  height: 56,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  backgroundColor: "#FFF",
+},
+
+discountRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+discountToggle: {
+  flexDirection: "row",
+  backgroundColor: "#E9EEFF",
+  borderRadius: 10,
+  padding: 4,
+  width: 115,
+  height: 40,
+},
+
+discountBtn: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  borderRadius: 8,
+},
+
+discountBtnActive: {
+  backgroundColor: "#2952FF",
+},
+
+discountBtnText: {
+  color: "#1E1E1E",
+  fontFamily: "Gilroy-Bold",
+},
+
+discountBtnTextActive: {
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Bold",
+},
+
+discountInput: {
+  width: "58%",
+  height: 56,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  backgroundColor: "#FFF",
+},
+
+totalContainer: {
+  marginTop: 20,
+  backgroundColor: "#EEF1F5",
+  paddingHorizontal: 16,
+  paddingVertical: 20,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+totalLabel: {
+  fontSize: 16,
+  color: "#475569",
+  fontFamily: "Gilroy-Bold",
+},
+
+totalValue: {
+  fontSize: 20,
+  color: "#111827",
+  fontFamily: "Gilroy-Bold",
+},
 
     totalRow: {
         flexDirection: "row",
@@ -1243,45 +1772,235 @@ const styles = StyleSheet.create({
     //     borderRadius: 12,
     //     marginLeft: 12
     // },
-//     sectionTitle:{
-//  fontSize:28,
-//  fontFamily:"Gilroy-Bold",
-//  color:"#1E1E1E"
-// },
+    //     sectionTitle:{
+    //  fontSize:28,
+    //  fontFamily:"Gilroy-Bold",
+    //  color:"#1E1E1E"
+    // },
 
-label:{
- fontSize:16,
- fontFamily:"Gilroy-Medium",
- color:"#1E1E1E",
- marginBottom:8
+    label: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Medium",
+        color: "#1E1E1E",
+        marginBottom: 8
+    },
+
+    input: {
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#E4E4E7",
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        backgroundColor: "#FFF"
+    },
+
+    select: {
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#E4E4E7",
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center"
+    }
+    ,
+    itemCard: {
+        borderWidth: 1,
+        borderColor: "#ECECEC",
+        borderRadius: 14,
+        padding: 14,
+        marginBottom: 12,
+        backgroundColor: "#FFF"
+    },
+    vendorSection: {
+  marginTop: 18,
 },
 
-input:{
- height:54,
- borderWidth:1,
- borderColor:"#E4E4E7",
- borderRadius:12,
- paddingHorizontal:16,
- backgroundColor:"#FFF"
+vendorLabel: {
+  fontSize: 16,
+  fontFamily: "Gilroy-Medium",
+  marginBottom: 12,
 },
 
-select:{
- height:54,
- borderWidth:1,
- borderColor:"#E4E4E7",
- borderRadius:12,
- paddingHorizontal:16,
- flexDirection:"row",
- justifyContent:"space-between",
- alignItems:"center"
-}
-,
-itemCard:{
- borderWidth:1,
- borderColor:"#ECECEC",
- borderRadius:14,
- padding:14,
- marginBottom:12,
- backgroundColor:"#FFF"
-}
+vendorToggle: {
+  flexDirection: "row",
+  backgroundColor: "#EEF2FF",
+  borderRadius: 12,
+  padding: 4,
+},
+
+vendorOption: {
+  flex: 1,
+  height: 42,
+  justifyContent: "center",
+  alignItems: "center",
+  borderRadius: 10,
+},
+
+activeVendorOption: {
+  backgroundColor: "#2952FF",
+},
+
+vendorOptionText: {
+  color: "#111827",
+  fontFamily: "Gilroy-Medium",
+},
+
+activeVendorOptionText: {
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Bold",
+},
+
+radioRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 16,
+},
+
+radioOuter: {
+  width: 20,
+  height: 20,
+  borderRadius: 10,
+  borderWidth: 1.5,
+  borderColor: "#D1D5DB",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+radioOuterActive: {
+  borderColor: "#2952FF",
+},
+
+radioInner: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: "#2952FF",
+},
+
+radioText: {
+  marginLeft: 10,
+  fontSize: 15,
+  color: "#111827",
+},
+
+uploadBox: {
+  height: 90,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 12,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 8,
+},
+
+uploadText: {
+  color: "#2952FF",
+  fontFamily: "Gilroy-SemiBold",
+},
+
+uploadSub: {
+  color: "#94A3B8",
+  marginTop: 4,
+  fontSize: 12,
+},
+sectionSubTitle: {
+  fontSize: 14,
+  color: "#64748B",
+  marginTop: 2,
+  fontFamily: "Gilroy-Regular",
+},
+
+itemCard: {
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 16,
+  padding: 16,
+  backgroundColor: "#FFFFFF",
+  marginBottom: 16,
+},
+
+itemHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+itemTitle: {
+  fontSize: 18,
+  fontFamily: "Gilroy-Bold",
+  color: "#111827",
+},
+
+itemActionRow: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+iconBtn: {
+  width: 32,
+  height: 32,
+  borderRadius: 8,
+  justifyContent: "center",
+  alignItems: "center",
+  marginLeft: 8,
+},
+
+cloneBtn: {
+  backgroundColor: "#F8FAFC",
+},
+
+deleteBtn: {
+  backgroundColor: "#FFF1F2",
+},
+
+cloneIcon: {
+  fontSize: 18,
+  color: "#111827",
+},
+
+deleteIcon: {
+  fontSize: 18,
+  color: "#EF4444",
+},
+
+itemRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+halfField: {
+  width: "48%",
+},
+
+amountBox: {
+  marginTop: 12,
+  borderWidth: 1,
+  borderColor: "#BFD0FF",
+  borderRadius: 12,
+  backgroundColor: "#FFFFFF",
+},
+
+amountInput: {
+  color: "#111827",
+  fontFamily: "Gilroy-Bold",
+},
+
+addRowBtn: {
+  height: 52,
+  borderRadius: 12,
+  backgroundColor: "#EEF2FF",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 8,
+  marginBottom: 20,
+},
+
+addRowText: {
+  color: "#2952FF",
+  fontSize: 16,
+  fontFamily: "Gilroy-Bold",
+},
 });

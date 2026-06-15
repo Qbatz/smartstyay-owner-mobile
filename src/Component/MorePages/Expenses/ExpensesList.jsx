@@ -24,6 +24,8 @@ import DotsIcon from "../../../Assets/Images/3dots.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/TenantAdd.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
+
+
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import DownArrow from "../../../Assets/Images/direction-down.png";
@@ -39,7 +41,9 @@ import CategoryIcon from "../../../Assets/Images/Category.png";
 import DirectionImage from "../../../Assets/Images/direction-down.png"
 import Filter from "../../../Assets/Images/filter.png";
 import OutstandingIcon from "../../../Assets/Images/Outstanding.png"
-import GreenRupees from "../../../Assets/Images/GreenRupees.png"
+import GreenRupees from "../../../Assets/Images/RupeesBlue.png"
+import LocationIcon from "../../../Assets/Images/LocatIcon.png";
+import TickIcon from "../../../Assets/Images/tickgreen.png";
 
 
 
@@ -58,9 +62,9 @@ export default function ExpensesList({ navigation }) {
     // } = useContext(VendorContext);
 
     const { vendorList, getVendorList, deleteVendor } = useContext(CustomerContext);;
-    const { expensesList, GetExpenseList, loading , IntializeexpensesList  , GetInitializeExpense ,
+    const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
         DeleteExpense
-      } = useContext(ExpensesContext);
+    } = useContext(ExpensesContext);
 
     const { activeHostelId } = useContext(CommonContexts)
 
@@ -72,13 +76,13 @@ export default function ExpensesList({ navigation }) {
     } = useHasPermission("Vendor");
 
 
-useFocusEffect(
-    useCallback(() => {
-      if (activeHostelId) {
-        GetExpenseList(activeHostelId);
-      }
-    }, [activeHostelId])
-  );
+    useFocusEffect(
+        useCallback(() => {
+            if (activeHostelId) {
+                GetExpenseList(activeHostelId);
+            }
+        }, [activeHostelId])
+    );
 
     console.log("expenses", expensesList);
 
@@ -110,54 +114,54 @@ useFocusEffect(
     const [searchText, setSearchText] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
 
-      const staticExpenses = [
-  {
-    id: "1",
-    title: "Vegetables 70 KG",
-    amount: "5,000",
-    date: "18 July 2026",
-    status: "Paid",
-    statusColor: "#16A34A",
-  },
-  {
-    id: "2",
-    title: "PVC valve Repairs",
-    amount: "5,100",
-    date: "18 July 2026",
-    status: "Unpaid",
-    statusColor: "#FF3B30",
-  },
-  {
-    id: "3",
-    title: "Milk 10 liters",
-    amount: "600",
-    date: "18 July 2026",
-    status: "Paid",
-    statusColor: "#16A34A",
-    vendor: "Kural kaikai Angadi- Salem",
-  },
-  {
-    id: "4",
-    title: "Kitchen rack modular kitchen S...",
-    amount: "8,100",
-    date: "18 July 2026",
-    status: "Partially paid",
-    statusColor: "#FF8A00",
-  },
-  {
-    id: "5",
-    title: "3 Gas",
-    amount: "2,700",
-    date: "18 July 2026",
-    status: "Paid",
-    statusColor: "#16A34A",
-    vendor: "Indane Gas Agencies- Thuraiyur",
-  },
-];
+    const staticExpenses = [
+        {
+            id: "1",
+            title: "Vegetables 70 KG",
+            amount: "5,000",
+            date: "18 July 2026",
+            status: "Paid",
+            statusColor: "#16A34A",
+        },
+        {
+            id: "2",
+            title: "PVC valve Repairs",
+            amount: "5,100",
+            date: "18 July 2026",
+            status: "Unpaid",
+            statusColor: "#FF3B30",
+        },
+        {
+            id: "3",
+            title: "Milk 10 liters",
+            amount: "600",
+            date: "18 July 2026",
+            status: "Paid",
+            statusColor: "#16A34A",
+            vendor: "Kural kaikai Angadi- Salem",
+        },
+        {
+            id: "4",
+            title: "Kitchen rack modular kitchen S...",
+            amount: "8,100",
+            date: "18 July 2026",
+            status: "Partially paid",
+            statusColor: "#FF8A00",
+        },
+        {
+            id: "5",
+            title: "3 Gas",
+            amount: "2,700",
+            date: "18 July 2026",
+            status: "Paid",
+            statusColor: "#16A34A",
+            vendor: "Indane Gas Agencies- Thuraiyur",
+        },
+    ];
 
-   const filteredExpenses = staticExpenses.filter(item =>
-  item.title.toLowerCase().includes(searchText.toLowerCase())
-);
+    const filteredExpenses = staticExpenses.filter(item =>
+        item.title.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     useFocusEffect(
         useCallback(() => {
@@ -266,7 +270,7 @@ useFocusEffect(
     }
 
 
- 
+
 
 
     const handleAddExpenses = () => {
@@ -278,46 +282,46 @@ useFocusEffect(
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
-         navigation.navigate("AddExpensesPage", {
-    //   vendor: item,
-    })
-   
+        navigation.navigate("AddExpensesPage", {
+            //   vendor: item,
+        })
+
     };
 
     const totalExpense =
-  expensesList?.reduce(
-    (sum, item) => sum + Number(item.totalAmount || 0),
-    0
-  ) || 0;
+        expensesList?.reduce(
+            (sum, item) => sum + Number(item.totalAmount || 0),
+            0
+        ) || 0;
 
-const paidAmount = totalExpense;
+    const paidAmount = totalExpense;
 
-   const SummaryCard = ({
-  icon,
-  title,
-  value,
-  prefix,
-  suffix,
-  valueColor = "#111827",
-}) => (
-  <View style={styles.summaryCard}>
-    <View style={styles.cardTopRow}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle}>{title}</Text>
+    const SummaryCard = ({
+        icon,
+        title,
+        value,
+        prefix,
+        suffix,
+        valueColor = "#111827",
+    }) => (
+        <View style={styles.summaryCard}>
+            <View style={styles.cardTopRow}>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.cardTitle}>{title}</Text>
 
-        <Text style={[styles.cardValue, { color: valueColor }]}>
-          {prefix && <Text>{prefix}</Text>}
-          <AnimatedNumber value={value} />
-          {suffix && <Text>{suffix}</Text>}
-        </Text>
-      </View>
+                    <Text style={[styles.cardValue, { color: valueColor }]}>
+                        {prefix && <Text>{prefix}</Text>}
+                        <AnimatedNumber value={value} />
+                        {suffix && <Text>{suffix}</Text>}
+                    </Text>
+                </View>
 
-      <View style={styles.iconBox}>
-        <Image source={icon} style={styles.cardIcon} />
-      </View>
-    </View>
-  </View>
-);
+                <View style={styles.iconBox}>
+                    <Image source={icon} style={styles.cardIcon} />
+                </View>
+            </View>
+        </View>
+    );
 
     const AnimatedNumber = ({ value, duration = 800 }) => {
         const animatedValue = useRef(new Animated.Value(0)).current;
@@ -345,55 +349,59 @@ const paidAmount = totalExpense;
     };
 
 
-  const renderExpensesItem = ({ item }) => (
-  <TouchableOpacity
-    activeOpacity={0.8}
-    onPress={() =>
-      navigation.navigate("ExpensesDetails", {
-        expense: item,
-      })
-    }
-  >
-    <View>
-      <View style={styles.expenseCard}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.expenseTitle}>
-            {item.title}
-          </Text>
+    const renderExpensesItem = ({ item }) => (
+        <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() =>
+                navigation.navigate("ExpensesDetails", {
+                    expense: item,
+                })
+            }
+        >
+            <View>
+                <View style={styles.expenseCard}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.expenseTitle}>
+                            {item.title}
+                        </Text>
 
-          <Text style={styles.expenseMeta}>
-            EXP 001 • {item.date}
-          </Text>
-        </View>
+                        <Text style={styles.expenseMeta}>
+                            EXP 001 • {item.date}
+                        </Text>
+                    </View>
 
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.expenseAmount}>
-            ₹ {item.amount}
-          </Text>
+                    <View style={{ alignItems: "flex-end" }}>
+                        <Text style={styles.expenseAmount}>
+                            ₹ {item.amount}
+                        </Text>
 
-          <Text
-            style={[
-              styles.statusText,
-              { color: item.statusColor },
-            ]}
-          >
-            {item.status}
-          </Text>
-        </View>
-      </View>
+                        <Text
+                            style={[
+                                styles.statusText,
+                                { color: item.statusColor },
+                            ]}
+                        >
+                            {item.status}
+                        </Text>
+                    </View>
+                </View>
 
-      {item.vendor && (
-        <View style={styles.vendorRow}>
-          <View style={styles.vendorBadge}>
-            <Text style={styles.vendorText}>
-              {item.vendor}
-            </Text>
-          </View>
-        </View>
-      )}
-    </View>
-  </TouchableOpacity>
-);
+                {item.vendor && (
+                    <View style={styles.vendorBadge}>
+                        <Image
+                            source={LocationIcon}
+                            style={styles.locationIcon}
+                        />
+
+                        <Text style={styles.vendorBadgeText}>
+                            {item?.vendor ||
+                                "Kural kaikai Angadi- Salem"}
+                        </Text>
+                    </View>
+                )}
+            </View>
+        </TouchableOpacity>
+    );
 
     if (!canReadVendor && !loading) {
         return (
@@ -426,47 +434,47 @@ const paidAmount = totalExpense;
                 type={modalType} />
 
             <View style={styles.container}>
-              <View style={styles.header}>
-  <TouchableOpacity
-    style={styles.backBtn}
-    onPress={() => navigation.goBack()}
-  >
-    <Image source={BackIcon} style={styles.backArrow} />
-  </TouchableOpacity>
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        style={styles.backBtn}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Image source={BackIcon} style={styles.backArrow} />
+                    </TouchableOpacity>
 
-  {!searchOpen ? (
-    <>
-      <Text style={styles.headerTitle}>Expenses</Text>
+                    {!searchOpen ? (
+                        <>
+                            <Text style={styles.headerTitle}>Expenses</Text>
 
-      <TouchableOpacity
-        style={styles.searchBtn}
-        onPress={() => setSearchOpen(true)}
-      >
-        <Image source={SearchIcon} style={styles.headerSearchIcon} />
-      </TouchableOpacity>
-    </>
-  ) : (
-    <View style={styles.searchWrapper}>
-      <TextInput
-        placeholder="Search Expenses"
-        value={searchText}
-        onChangeText={setSearchText}
-        style={styles.searchInput}
-        placeholderTextColor="#9CA3AF"
-        autoFocus
-      />
+                            <TouchableOpacity
+                                style={styles.searchBtn}
+                                onPress={() => setSearchOpen(true)}
+                            >
+                                <Image source={SearchIcon} style={styles.headerSearchIcon} />
+                            </TouchableOpacity>
+                        </>
+                    ) : (
+                        <View style={styles.searchWrapper}>
+                            <TextInput
+                                placeholder="Search Expenses"
+                                value={searchText}
+                                onChangeText={setSearchText}
+                                style={styles.searchInput}
+                                placeholderTextColor="#9CA3AF"
+                                autoFocus
+                            />
 
-      <TouchableOpacity
-        onPress={() => {
-          setSearchText("");
-          setSearchOpen(false);
-        }}
-      >
-        <Text style={styles.closeIcon}>✕</Text>
-      </TouchableOpacity>
-    </View>
-  )}
-</View>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setSearchText("");
+                                    setSearchOpen(false);
+                                }}
+                            >
+                                <Text style={styles.closeIcon}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
 
 
 
@@ -504,7 +512,7 @@ const paidAmount = totalExpense;
     style={styles.searchInput}
   />
 </View> */}
-{/* 
+                                    {/* 
                                     <ScrollView
                                         horizontal
                                         ref={horizontalRef}
@@ -557,59 +565,67 @@ const paidAmount = totalExpense;
                             showsVerticalScrollIndicator={false}
                         /> */}
 
-                
 
 
-<FlatList
- data={staticExpenses}
-  keyExtractor={(item) => item.id}
-  renderItem={renderExpensesItem}
- ListHeaderComponent={() => (
-  <>
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.cardRow}
-    >
-     <SummaryCard
-  title="Total Expense Amount"
-  value={142300}
-  icon={RupeeIcon}
-/>
 
-<SummaryCard
-  title="Paid"
-  value={136300}
-  icon={GreenRupees}
-  valueColor="#00A651"
-/>
-    </ScrollView>
+                        <FlatList
+                            data={staticExpenses}
+                            keyExtractor={(item) => item.id}
+                            renderItem={renderExpensesItem}
+                            ListHeaderComponent={() => (
+                                <>
+                                    <ScrollView
+                                        horizontal
+                                        showsHorizontalScrollIndicator={false}
+                                        contentContainerStyle={styles.cardRow}
+                                    >
+                                        <SummaryCard
+                                            title="Total Expense Amount"
+                                            value={142300}
+                                            icon={GreenRupees}
+                                        />
 
-    <View style={styles.filterRow}>
-        <View style={{display:'flex', flexDirection:'row'}}>
-      <TouchableOpacity style={styles.filterChipActive}>
-        <Text style={styles.filterChipTextActive}>All</Text>
-      </TouchableOpacity>
+                                        <SummaryCard
+                                            title="Paid"
+                                            value={136300}
+                                            icon={TickIcon}
+                                            valueColor="#00A651"
+                                        />
 
-      <TouchableOpacity style={styles.filterChip}>
-        <Text style={styles.filterChipText}>Category</Text>
-      </TouchableOpacity>
-      </View>
 
-      <TouchableOpacity
-        style={styles.filterIconBtn}
-        onPress={() => setShowFilter(true)}
-      >
-        <Image source={FilterIcon} style={{ width: 18, height: 18 }}/>
-      </TouchableOpacity>
-    </View>
-  </>
-)}
- contentContainerStyle={{
-  paddingHorizontal:20,
-  paddingBottom:120
-}}
-/>
+                                        <SummaryCard
+                                            title="UnPaid"
+                                            value={7650}
+                                            icon={RupeeIcon}
+
+                                        />
+                                    </ScrollView>
+
+                                    <View style={styles.filterRow}>
+                                        <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                            <TouchableOpacity style={styles.filterChipActive}>
+                                                <Text style={styles.filterChipTextActive}>All</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity style={styles.filterChip}>
+                                                <Text style={styles.filterChipText}>Category</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        <TouchableOpacity
+                                            style={styles.filterIconBtn}
+                                            onPress={() => setShowFilter(true)}
+                                        >
+                                            <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
+                            contentContainerStyle={{
+                                paddingHorizontal: 20,
+                                paddingBottom: 120
+                            }}
+                        />
 
                     </>
                 )}
@@ -631,7 +647,7 @@ const paidAmount = totalExpense;
                                 !canWriteVendor && { opacity: 0.7 }
                             ]}
                             disabled={!canWriteVendor}
-                           onPress={handleAddExpenses}
+                            onPress={handleAddExpenses}
                         >
                             <Image source={AddIcon} style={styles.addIcon} />
                         </TouchableOpacity>
@@ -838,56 +854,56 @@ const paidAmount = totalExpense;
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#FFFFFF", paddingTop: Platform.OS === "ios" ? 50 : 60, },
 
-   header: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  marginBottom: 10,
-},
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        marginBottom: 10,
+    },
 
 
-headerTitle: {
-  flex: 1,
-  fontSize: 22,
-  color: "#111827",
-  fontFamily: "Gilroy-Semibold",
-},
+    headerTitle: {
+        flex: 1,
+        fontSize: 22,
+        color: "#111827",
+        fontFamily: "Gilroy-Semibold",
+    },
 
-searchBtn: {
-  width: 40,
-  height: 40,
-  justifyContent: "center",
-  alignItems: "center",
-},
+    searchBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
-headerSearchIcon: {
-  width: 24,
-  height: 24,
-},
+    headerSearchIcon: {
+        width: 24,
+        height: 24,
+    },
 
-searchWrapper: {
-  flex: 1,
-  height: 46,
-  borderWidth: 1,
-  borderColor: "#DDE3F0",
-  borderRadius: 24,
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  marginLeft: 10,
-},
+    searchWrapper: {
+        flex: 1,
+        height: 46,
+        borderWidth: 1,
+        borderColor: "#DDE3F0",
+        borderRadius: 24,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        marginLeft: 10,
+    },
 
-searchInput: {
-  flex: 1,
-  fontSize: 16,
-  color: "#111827",
-},
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: "#111827",
+    },
 
-closeIcon: {
-  fontSize: 20,
-  color: "#6B7280",
-  fontWeight: "600",
-},
+    closeIcon: {
+        fontSize: 20,
+        color: "#6B7280",
+        fontWeight: "600",
+    },
     menuOverlay: {
         position: "absolute",
         top: 0,
@@ -1008,7 +1024,7 @@ closeIcon: {
         bottom: 60,
         width: 56,
         height: 56,
-        borderRadius: 28,
+        borderRadius: 20,
 
         justifyContent: "center",
         alignItems: "center",
@@ -1403,177 +1419,202 @@ closeIcon: {
 
     // },
     summaryCard: {
-  width: CARD_WIDTH,
-  height: 90,
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  paddingHorizontal: 14,
-  paddingVertical: 12,
+        width: CARD_WIDTH,
+        height: 90,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
 
-  borderWidth: 1,
-  borderColor: "#EEF2F6",
+        borderWidth: 1,
+        borderColor: "#EEF2F6",
 
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.04,
-  shadowRadius: 4,
-  elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 2,
 
-  marginRight: 12,
-  marginBottom:10,marginTop:5
-},
-cardTopRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  flex: 1,
-},
+        marginRight: 12,
+        marginBottom: 10, marginTop: 5
+    },
+    cardTopRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flex: 1,
+    },
 
-   iconBox: {
-  width: 42,
-  height: 42,
-  borderRadius: 12,
-  backgroundColor: "#fff",
+    iconBox: {
+        width: 42,
+        height: 42,
+        borderRadius: 12,
+        backgroundColor: "#fff",
 
-  justifyContent: "center",
-  alignItems: "center",
+        justifyContent: "center",
+        alignItems: "center",
 
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
 
-  shadowColor: "#000",
-  shadowOpacity: 0.05,
-  shadowRadius: 4,
-  elevation: 2,
-},
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
     cardIcon: { width: 20, height: 20 },
 
-  cardTitle: {
-  fontSize: 13,
-  color: "#64748B",
-  fontFamily: "Gilroy-Medium",
-},
+    cardTitle: {
+        fontSize: 13,
+        color: "#64748B",
+        fontFamily: "Gilroy-Medium",
+    },
 
-cardValue: {
-  marginTop: 12,
-  fontSize: 18,
-  color: "#111827",
-  fontFamily: "Gilroy-Bold",
-},
- filterRow: {
-   flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginTop: 10,
-  marginBottom: 14,
-  paddingHorizontal: 2,
-},
+    cardValue: {
+        marginTop: 12,
+        fontSize: 18,
+        color: "#111827",
+        fontFamily: "Gilroy-Bold",
+    },
+    filterRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: 10,
+        marginBottom: 14,
+        paddingHorizontal: 2,
+    },
 
-filterChip: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 22,
-  paddingHorizontal: 18,
-  paddingVertical: 10,
-  marginLeft:8
-},
+    filterChip: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+        marginLeft: 8
+    },
 
-filterChipActive: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#EAF2FF",
-  borderRadius: 22,
-  paddingHorizontal: 18,
-  paddingVertical: 10,
-},
+    filterChipActive: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#EAF2FF",
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+    },
 
-  filterChipText: {
-    fontSize: 13,
-    color: "#374151",
-  },
+    filterChipText: {
+        fontSize: 13,
+        color: "#374151",
+    },
 
-  filterChipTextActive: {
-    fontSize: 13,
-    color: "#2D6CDF",
-    fontFamily: "Gilroy-Semibold",
-  },
+    filterChipTextActive: {
+        fontSize: 13,
+        color: "#2D6CDF",
+        fontFamily: "Gilroy-Semibold",
+    },
 
-  filterIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    // backgroundColor: "#F3F4F6",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-  },
-  chipContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+    filterIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        // backgroundColor: "#F3F4F6",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#F3F4F6",
+    },
+    chipContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
 
-  chipArrow: {
-    width: 14,
-    height: 14,
-    marginLeft: 6,
-  },
+    chipArrow: {
+        width: 14,
+        height: 14,
+        marginLeft: 6,
+    },
 
-  expenseCard: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
+    expenseCard: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
 
-  paddingVertical: 18,
+        paddingVertical: 18,
 
-  borderBottomWidth: 1,
-  borderBottomColor: "#F1F5F9",
-},
+        borderBottomWidth: 1,
+        borderBottomColor: "#F1F5F9",
+    },
 
-expenseTitle: {
-  fontSize: 18,
-  fontFamily: "Gilroy-Semibold",
-  color: "#111827",
-},
+    expenseTitle: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Semibold",
+        color: "#111827",
+    },
 
-expenseMeta: {
-  marginTop: 8,
-  color: "#6B7280",
-  fontSize: 13,
-},
+    expenseMeta: {
+        marginTop: 8,
+        color: "#6B7280",
+        fontSize: 13,
+    },
 
-expenseAmount: {
-  fontSize: 18,
-  fontFamily: "Gilroy-Bold",
-  color: "#111827",
-},
+    expenseAmount: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        color: "#111827",
+    },
 
-statusText: {
-  marginTop: 8,
-  fontSize: 14,
-  color: "#16A34A",
-},
-vendorRow: {
-  alignItems: "flex-end",
-  marginTop: -8,
-  marginBottom: 12,
-},
+    statusText: {
+        marginTop: 8,
+        fontSize: 14,
+        color: "#16A34A",
+    },
+    vendorRow: {
+        alignItems: "flex-end",
+        marginTop: -8,
+        marginBottom: 12,
+    },
 
-vendorBadge: {
-  alignSelf: "flex-end",
-  marginTop: 10,
-  backgroundColor: "#1E3A8A",
-  borderRadius: 20,
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-},
-vendorText: {
-  fontSize: 14,
-  color:"#fff"
-}
+    // vendorBadge: {
+    //   alignSelf: "flex-end",
+    //   marginTop: 10,
+    //   backgroundColor: "#1E3A8A",
+    //   borderRadius: 20,
+    //   paddingHorizontal: 12,
+    //   paddingVertical: 6,
+    // },
+    // vendorText: {
+    //   fontSize: 14,
+    //   color:"#fff"
+    // },
+
+
+    vendorBadge: {
+        marginLeft: 10,
+        backgroundColor: "#1E2FA3",
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        alignSelf: "flex-end",
+    },
+
+    locationIcon: {
+        width: 22,
+        height: 22,
+        tintColor: "#FFFFFF",
+        marginRight: 10,
+    },
+
+    vendorBadgeText: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontFamily: "Gilroy-Medium",
+    },
 })
 
 
