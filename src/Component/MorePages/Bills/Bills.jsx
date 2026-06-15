@@ -247,6 +247,8 @@ export default function BillsDesign({ route }) {
   const [refundMode, setRefundMode] = useState("");
   const [showRefundMode, setShowRefundMode] = useState(false);
 
+  const [showWallet, setShowWallet] = useState(false);
+
 
   const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
   const refundModes = ["UPI", "Cash", "Bank Transfer"];
@@ -3618,6 +3620,7 @@ const showRefundButton =
                               onPress={() => setShowBookings(!showBookings)}
                               activeOpacity={0.8}
                             >
+                              
                               <Animated.Image
                                 source={DownArrow}
                                 style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
@@ -3683,7 +3686,87 @@ const showRefundButton =
                           </View>
                         )}
 
+<TouchableOpacity
+  activeOpacity={0.8}
+  style={styles.accordionCard}
+  onPress={() => setShowWallet(!showWallet)}
+>
+  <View style={styles.accordionHeader}>
+    <View style={styles.accordionLeft}>
+      {/* <Image
+        source={showWallet ? ArrowUp : ArrowDown}
+        style={styles.arrowIcon}
+      /> */}
 
+       <Image
+                                    source={DownArrow}
+                                    style={[
+                                      styles.arrowImg,
+                                      showWallet && { transform: [{ rotate: "180deg" }] },
+                                    ]}
+                                  />
+      {/* <Animated.Image
+                                source={DownArrow}
+                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                              /> */}
+
+      <Text style={styles.accordionTitle}>
+        Wallet
+      </Text>
+    </View>
+
+    <Text
+      style={[
+        styles.amountText,
+        {
+          color:
+            (BillPdfdetails?.walletInfo?.totalWalletAmount || 0) < 0
+              ? "#DC2626"
+              : "#16A34A",
+        },
+      ]}
+    >
+      ₹ {BillPdfdetails?.walletInfo?.totalWalletAmount || 0}
+    </Text>
+  </View>
+
+  {showWallet && (
+    <View style={styles.accordionBody}>
+      {BillPdfdetails?.walletInfo?.walletItems?.length > 0 ? (
+        BillPdfdetails?.walletInfo?.walletItems?.map((item, index) => (
+          <View
+            key={index}
+            style={styles.walletRow}
+          >
+            <Text style={styles.walletSource}>
+              {item?.source}
+            </Text>
+
+            <Text
+              style={[
+                styles.walletAmount,
+                {
+                  color:
+                    item?.amount < 0
+                      ? "#DC2626"
+                      : "#16A34A",
+                },
+              ]}
+            >
+              ₹ {item?.amount}
+            </Text>
+          </View>
+        ))
+      ) : (
+        <View style={styles.emptyWallet}>
+          <Text style={styles.emptyWalletText}>
+            No wallet transactions available
+          </Text>
+        </View>
+      )}
+    </View>
+  )}
+</TouchableOpacity>
 
 
 
@@ -8232,6 +8315,87 @@ actionText: {
   marginTop: 4,
   fontSize: 12,
   color: "#333",
+},
+
+// accordionCard: {
+//   backgroundColor: "#FFF",
+//   borderWidth: 1,
+//   borderColor: "#E5E7EB",
+//   borderRadius: 16,
+//   marginTop: 12,
+//   overflow: "hidden",
+// },
+
+// accordionHeader: {
+//   flexDirection: "row",
+//   justifyContent: "space-between",
+//   alignItems: "center",
+//   paddingHorizontal: 16,
+//   paddingVertical: 18,
+// },
+
+accordionLeft: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+arrowIcon: {
+  width: 16,
+  height: 16,
+  resizeMode: "contain",
+  marginRight: 10,
+},
+
+accordionTitle: {
+  fontSize: 14,
+fontFamily: "Gilroy-Bold",
+  color: "#111827",
+},
+
+// amountText: {
+//   fontSize: 20,
+//   fontFamily: "Gilroy-Bold",
+// },
+
+accordionBody: {
+  borderTopWidth: 1,
+  borderTopColor: "#F1F5F9",
+},
+
+walletRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  borderBottomWidth: 1,
+  borderBottomColor: "#F3F4F6",
+},
+
+walletSource: {
+  fontSize: 14,
+  color: "#111827",
+  fontFamily: "Gilroy-Medium",
+},
+
+walletAmount: {
+  fontSize: 14,
+  fontFamily: "Gilroy-SemiBold",
+},
+
+emptyWallet: {
+  paddingVertical: 16,
+  alignItems: "center",
+},
+
+emptyWalletText: {
+  backgroundColor: "#FFF5EE",
+  color: "#AA6805",
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 8,
+  fontSize: 12,
+  fontFamily: "Gilroy-Medium",
 },
 
 });
