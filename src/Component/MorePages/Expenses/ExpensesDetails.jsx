@@ -10,6 +10,7 @@ import {
 
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ThreeDots from "../../../Assets/Images/3dots.png";
+import LocationIcon from "../../../Assets/Images/LocatIcon.png";
 import ExpensesInfo from "./ExpensesInfo";
 import ExpensesTransactions from "./ExpensesTransaction";
 import ExpensesItems from "./ExpensesItems";
@@ -93,11 +94,17 @@ case "Comments":
       </Text>
     </View>
 
-    <View style={styles.vendorBadge}>
-      <Text style={styles.vendorBadgeText}>
-        {expense?.vendor || "Kural kaikai Angadi- Salem"}
-      </Text>
-    </View>
+  <View style={styles.vendorBadge}>
+  <Image
+    source={LocationIcon}
+    style={styles.locationIcon}
+  />
+
+  <Text style={styles.vendorBadgeText}>
+    {expense?.vendor ||
+      "Kural kaikai Angadi- Salem"}
+  </Text>
+</View>
   </View>
 
   <View style={styles.amountRow}>
@@ -313,26 +320,38 @@ expCodeBadge: {
   paddingHorizontal: 10,
   paddingVertical: 6,
   borderRadius: 4,
+  justifyContent:'center'
 },
 
 expCodeText: {
-  color: "#1D4ED8",
+  color: "#0D1B8E",
   fontSize: 12,
   fontFamily: "Gilroy-Semibold",
 },
 
 vendorBadge: {
-  marginLeft: 8,
-  backgroundColor: "#1E3A8A",
-  borderRadius: 4,
+  marginLeft: 10,
+  backgroundColor: "#141497",
+  borderRadius: 8,
   paddingHorizontal: 12,
-  paddingVertical: 6,
+  paddingVertical: 8,
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+locationIcon: {
+  width: 22,
+  height: 22,
+  tintColor: "#FFFFFF",
+  marginRight: 10,
 },
 
 vendorBadgeText: {
-  color: "#fff",
-  fontSize: 12,
+  color: "#FFFFFF",
+  fontSize: 14,
+  fontFamily: "Gilroy-Medium",
 },
+
 
 amountRow: {
   flexDirection: "row",
@@ -344,6 +363,7 @@ amountRow: {
 amountLabel: {
   fontSize: 16,
   color: "#6B7280",
+   fontFamily: "Gilroy-Semibold",
 },
 
 amountValue: {
@@ -357,11 +377,12 @@ partialBadge: {
   backgroundColor: "#FFF7ED",
   paddingHorizontal: 10,
   paddingVertical: 5,
-  borderRadius: 4,
+  borderRadius: 2,
 },
 
 partialText: {
   color: "#F97316",
   fontSize: 12,
+   fontFamily: "Gilroy-Semibold",
 },
 });

@@ -140,7 +140,8 @@ case "Comments":
          onPress={() => navigation.navigate("VendorSettlePayment", {
       vendor,
     })
-  }>
+  }
+  >
           <Text style={styles.settleText}>
             Settle Payment →
           </Text>
