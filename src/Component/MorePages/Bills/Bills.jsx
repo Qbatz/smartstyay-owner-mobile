@@ -1688,9 +1688,9 @@ export default function BillsDesign({ route }) {
   const invoiceDate = dayjs(selectedBill?.invoiceDate, "DD-MM-YYYY");
 
   const formatEBDate = (date) => {
-  if (!date) return "-";
-  return dayjs(date).format("DD/MM/YYYY");
-};
+    if (!date) return "-";
+    return dayjs(date).format("DD/MM/YYYY");
+  };
 
   const getInvoiceDate = () => {
     if (!selectedBill?.invoiceDate) return null;
@@ -2270,12 +2270,12 @@ export default function BillsDesign({ route }) {
   const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
   const FullyRefund = selectedBill?.paymentStatus === "Refunded"
 
-                          const isPendingRefund =
-  BillPdfdetails?.invoiceInfo?.status === "PENDING_REFUND";
+  const isPendingRefund =
+    BillPdfdetails?.invoiceInfo?.status === "PENDING_REFUND";
 
-const showRefundButton =
-  selectedBill?.invoiceType === "Settlement" &&
-  isPendingRefund || partiallyRefund
+  const showRefundButton =
+    selectedBill?.invoiceType === "Settlement" &&
+    isPendingRefund || partiallyRefund
 
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
@@ -3020,7 +3020,7 @@ const showRefundButton =
                                   { color: "#FF0000" },
                                 ]}
                               >
-                               ₹ {Math.round(BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0)}
+                                ₹ {Math.round(BillPdfdetails?.invoiceInfo?.balanceAmount ?? 0)}
                               </Text>
                             </View>
                           </View>
@@ -3103,7 +3103,7 @@ const showRefundButton =
                                   </View>
                                   <View>
                                     <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                      {pay?.paymentMode ?? "N/A"}
+                                      {pay?.bankAccount ?? "N/A"}
                                     </Text>
                                   </View>
                                 </View>
@@ -3179,7 +3179,7 @@ const showRefundButton =
                                   </View>
                                   <View>
                                     <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                      {pay?.paymentMode ?? "N/A"}
+                                      {pay?.bankAccount ?? "N/A"}
                                     </Text>
                                   </View>
                                 </View>
@@ -3508,7 +3508,7 @@ const showRefundButton =
 
                                     <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
                                       <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
-                                    {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
+                                        {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
                                       </Text>
                                     </View>
                                   </View>
@@ -3553,7 +3553,7 @@ const showRefundButton =
                                         0
                                       ) || 0
                                     } */}
-                             </Text>
+                              </Text>
                             </TouchableOpacity>
 
                             {showRefundableAdvance && (
@@ -3624,7 +3624,7 @@ const showRefundButton =
                               onPress={() => setShowBookings(!showBookings)}
                               activeOpacity={0.8}
                             >
-                              
+
                               <Animated.Image
                                 source={DownArrow}
                                 style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
@@ -3655,28 +3655,28 @@ const showRefundButton =
                                 </View>
 
 
-{BillPdfdetails?.bookingItems?.redeemedList?.length > 0 ? (
-  BillPdfdetails.bookingItems.redeemedList.map((item, index) => (
-    <View key={index} style={styles.invoiceRow}>
-      <Text style={[styles.invText, { flex: 1 }]}>
-        {item?.invoiceNumber}
-      </Text>
+                                {BillPdfdetails?.bookingItems?.redeemedList?.length > 0 ? (
+                                  BillPdfdetails.bookingItems.redeemedList.map((item, index) => (
+                                    <View key={index} style={styles.invoiceRow}>
+                                      <Text style={[styles.invText, { flex: 1 }]}>
+                                        {item?.invoiceNumber}
+                                      </Text>
 
-      <Text
-        style={[
-          styles.invText,
-          { flex: 1, textAlign: "right" }
-        ]}
-      >
-        ₹ {item?.redeemedAmount || 0}
-      </Text>
-    </View>
-  ))
-) : (
-  <View style={styles.emptyState}>
-    <Text style={styles.emptyText}>No Pending Bookings</Text>
-  </View>
-)}
+                                      <Text
+                                        style={[
+                                          styles.invText,
+                                          { flex: 1, textAlign: "right" }
+                                        ]}
+                                      >
+                                        ₹ {item?.redeemedAmount || 0}
+                                      </Text>
+                                    </View>
+                                  ))
+                                ) : (
+                                  <View style={styles.emptyState}>
+                                    <Text style={styles.emptyText}>No Pending Bookings</Text>
+                                  </View>
+                                )}
 
                                 <View style={styles.totalInvoiceRow}>
                                   <Text style={styles.totalText}>Total</Text>
@@ -3690,87 +3690,87 @@ const showRefundButton =
                           </View>
                         )}
 
-<TouchableOpacity
-  activeOpacity={0.8}
-  style={styles.accordionCard}
-  onPress={() => setShowWallet(!showWallet)}
->
-  <View style={styles.accordionHeader}>
-    <View style={styles.accordionLeft}>
-      {/* <Image
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={styles.accordionCard}
+                          onPress={() => setShowWallet(!showWallet)}
+                        >
+                          <View style={styles.accordionHeader}>
+                            <View style={styles.accordionLeft}>
+                              {/* <Image
         source={showWallet ? ArrowUp : ArrowDown}
         style={styles.arrowIcon}
       /> */}
 
-       <Image
-                                    source={DownArrow}
-                                    style={[
-                                      styles.arrowImg,
-                                      showWallet && { transform: [{ rotate: "180deg" }] },
-                                    ]}
-                                  />
-      {/* <Animated.Image
+                              <Image
+                                source={DownArrow}
+                                style={[
+                                  styles.arrowImg,
+                                  showWallet && { transform: [{ rotate: "180deg" }] },
+                                ]}
+                              />
+                              {/* <Animated.Image
                                 source={DownArrow}
                                 style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
                               /> */}
 
-      <Text style={styles.accordionTitle}>
-        Wallet
-      </Text>
-    </View>
+                              <Text style={styles.accordionTitle}>
+                                Wallet
+                              </Text>
+                            </View>
 
-    <Text
-      style={[
-        styles.amountText,
-        {
-          color:
-            (BillPdfdetails?.walletInfo?.totalWalletAmount || 0) < 0
-              ? "#DC2626"
-              : "#16A34A",
-        },
-      ]}
-    >
-      ₹ {BillPdfdetails?.walletInfo?.totalWalletAmount || 0}
-    </Text>
-  </View>
+                            <Text
+                              style={[
+                                styles.amountText,
+                                {
+                                  color:
+                                    (BillPdfdetails?.walletInfo?.totalWalletAmount || 0) < 0
+                                      ? "#DC2626"
+                                      : "#16A34A",
+                                },
+                              ]}
+                            >
+                              ₹ {BillPdfdetails?.walletInfo?.totalWalletAmount || 0}
+                            </Text>
+                          </View>
 
-  {showWallet && (
-    <View style={styles.accordionBody}>
-      {BillPdfdetails?.walletInfo?.walletItems?.length > 0 ? (
-        BillPdfdetails?.walletInfo?.walletItems?.map((item, index) => (
-          <View
-            key={index}
-            style={styles.walletRow}
-          >
-            <Text style={styles.walletSource}>
-              {item?.source}
-            </Text>
+                          {showWallet && (
+                            <View style={styles.accordionBody}>
+                              {BillPdfdetails?.walletInfo?.walletItems?.length > 0 ? (
+                                BillPdfdetails?.walletInfo?.walletItems?.map((item, index) => (
+                                  <View
+                                    key={index}
+                                    style={styles.walletRow}
+                                  >
+                                    <Text style={styles.walletSource}>
+                                      {item?.source}
+                                    </Text>
 
-            <Text
-              style={[
-                styles.walletAmount,
-                {
-                  color:
-                    item?.amount < 0
-                      ? "#DC2626"
-                      : "#16A34A",
-                },
-              ]}
-            >
-              ₹ {item?.amount}
-            </Text>
-          </View>
-        ))
-      ) : (
-        <View style={styles.emptyWallet}>
-          <Text style={styles.emptyWalletText}>
-            No wallet transactions available
-          </Text>
-        </View>
-      )}
-    </View>
-  )}
-</TouchableOpacity>
+                                    <Text
+                                      style={[
+                                        styles.walletAmount,
+                                        {
+                                          color:
+                                            item?.amount < 0
+                                              ? "#DC2626"
+                                              : "#16A34A",
+                                        },
+                                      ]}
+                                    >
+                                      ₹ {item?.amount}
+                                    </Text>
+                                  </View>
+                                ))
+                              ) : (
+                                <View style={styles.emptyWallet}>
+                                  <Text style={styles.emptyWalletText}>
+                                    No wallet transactions available
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+                          )}
+                        </TouchableOpacity>
 
 
 
@@ -3994,19 +3994,19 @@ const showRefundButton =
                           <Text style={styles.paidText}>Download</Text>
                         </TouchableOpacity>
                         {showRefundButton && (
-    <TouchableOpacity
-      style={styles.refundBtn}
-      onPress={handleShowRefundPayment}
-    >
-      <Image
-        source={RefundedIcon}
-        style={styles.refundIcon}
-      />
-      <Text style={styles.refundText}>
-        Refund
-      </Text>
-    </TouchableOpacity>
-  )}
+                          <TouchableOpacity
+                            style={styles.refundBtn}
+                            onPress={handleShowRefundPayment}
+                          >
+                            <Image
+                              source={RefundedIcon}
+                              style={styles.refundIcon}
+                            />
+                            <Text style={styles.refundText}>
+                              Refund
+                            </Text>
+                          </TouchableOpacity>
+                        )}
 
 
 
@@ -8272,26 +8272,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#EF4444",
   },
-// bottomActions: {
-//   flexDirection: "row",
-//   justifyContent: "space-between",
-//   paddingHorizontal: 20,
-//   paddingTop: 16,
-// },
+  // bottomActions: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   paddingHorizontal: 20,
+  //   paddingTop: 16,
+  // },
 
-// actionBtn: {
-//   width: "30%",
-//   height: 56,
-//   borderRadius: 10,
-//   backgroundColor: "#F5F5F5",
-//   justifyContent: "center",
-//   alignItems: "center",
-// },
+  // actionBtn: {
+  //   width: "30%",
+  //   height: 56,
+  //   borderRadius: 10,
+  //   backgroundColor: "#F5F5F5",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  // },
 
-refundBtn: {
- 
+  refundBtn: {
 
-      flex: 1,
+
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -8299,107 +8299,107 @@ refundBtn: {
     paddingVertical: 10,
     borderRadius: 10,
     marginHorizontal: 6
-},
+  },
 
-refundIcon: {
-  width: 15,
-  height: 15,
-  tintColor: "#FFFFFF",
-},
+  refundIcon: {
+    width: 15,
+    height: 15,
+    tintColor: "#FFFFFF",
+  },
 
-refundText: {
-  marginLeft:7,
-  color: "#FFFFFF",
-  marginTop: 4,
-  // fontSize: 12,
-  fontFamily: "Gilroy-Semibold",
-},
+  refundText: {
+    marginLeft: 7,
+    color: "#FFFFFF",
+    marginTop: 4,
+    // fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
 
-actionText: {
-  marginTop: 4,
-  fontSize: 12,
-  color: "#333",
-},
+  actionText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#333",
+  },
 
-// accordionCard: {
-//   backgroundColor: "#FFF",
-//   borderWidth: 1,
-//   borderColor: "#E5E7EB",
-//   borderRadius: 16,
-//   marginTop: 12,
-//   overflow: "hidden",
-// },
+  // accordionCard: {
+  //   backgroundColor: "#FFF",
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   borderRadius: 16,
+  //   marginTop: 12,
+  //   overflow: "hidden",
+  // },
 
-// accordionHeader: {
-//   flexDirection: "row",
-//   justifyContent: "space-between",
-//   alignItems: "center",
-//   paddingHorizontal: 16,
-//   paddingVertical: 18,
-// },
+  // accordionHeader: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   alignItems: "center",
+  //   paddingHorizontal: 16,
+  //   paddingVertical: 18,
+  // },
 
-accordionLeft: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+  accordionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-arrowIcon: {
-  width: 16,
-  height: 16,
-  resizeMode: "contain",
-  marginRight: 10,
-},
+  arrowIcon: {
+    width: 16,
+    height: 16,
+    resizeMode: "contain",
+    marginRight: 10,
+  },
 
-accordionTitle: {
-  fontSize: 14,
-fontFamily: "Gilroy-Bold",
-  color: "#111827",
-},
+  accordionTitle: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+    color: "#111827",
+  },
 
-// amountText: {
-//   fontSize: 20,
-//   fontFamily: "Gilroy-Bold",
-// },
+  // amountText: {
+  //   fontSize: 20,
+  //   fontFamily: "Gilroy-Bold",
+  // },
 
-accordionBody: {
-  borderTopWidth: 1,
-  borderTopColor: "#F1F5F9",
-},
+  accordionBody: {
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+  },
 
-walletRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  borderBottomWidth: 1,
-  borderBottomColor: "#F3F4F6",
-},
+  walletRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
 
-walletSource: {
-  fontSize: 14,
-  color: "#111827",
-  fontFamily: "Gilroy-Medium",
-},
+  walletSource: {
+    fontSize: 14,
+    color: "#111827",
+    fontFamily: "Gilroy-Medium",
+  },
 
-walletAmount: {
-  fontSize: 14,
-  fontFamily: "Gilroy-SemiBold",
-},
+  walletAmount: {
+    fontSize: 14,
+    fontFamily: "Gilroy-SemiBold",
+  },
 
-emptyWallet: {
-  paddingVertical: 16,
-  alignItems: "center",
-},
+  emptyWallet: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
 
-emptyWalletText: {
-  backgroundColor: "#FFF5EE",
-  color: "#AA6805",
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 8,
-  fontSize: 12,
-  fontFamily: "Gilroy-Medium",
-},
+  emptyWalletText: {
+    backgroundColor: "#FFF5EE",
+    color: "#AA6805",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    fontSize: 12,
+    fontFamily: "Gilroy-Medium",
+  },
 
 });
