@@ -808,7 +808,7 @@ const filteredCustomers = customers.filter(
   };
 
 
-
+console.log("modey",mode)
 
   return (
     <>
@@ -911,6 +911,7 @@ const filteredCustomers = customers.filter(
             style={styles.customerdropdownBox}
             onPress={() => {
               if (mode === "edit") return;
+              if(mode == "addBill") return;
               setCustomerOpen((v) => !v);
             }}
           // onPress={() => setCustomerOpen((v) => !v)}
