@@ -724,7 +724,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
   const handleCreateBill = () => {
     if (!canWriteInvoice) return;
-    navigation.navigate("CreateBills", { mode: "add", customerDetails })
+    navigation.navigate("CreateBills", { mode: "addBill", customerDetails })
   }
 
   const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
