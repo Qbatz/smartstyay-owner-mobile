@@ -1030,6 +1030,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
 
     },
+    
     addIcon: { width: 60, height: 60, },
     menuBox: {
         position: "absolute",
