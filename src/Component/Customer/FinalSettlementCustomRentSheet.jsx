@@ -19,6 +19,7 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function SettlementCustomRentSheet({
     visible,
     onClose,
+    mode,
     rentAmount,
     onSet,
 }) {
@@ -183,6 +184,7 @@ useEffect(() => {
                     >
                         Tenant's last rent is ₹ {rentAmount} !
                     </Text>
+                    {console.log("maad",mode)}
 
                     <Text
                         style={{
@@ -191,7 +193,7 @@ useEffect(() => {
                             marginBottom: 16,
                         }}
                     >
-                        Enter the amount you want to collect ?
+                     {mode === "edit" ? "Edit Amount" : "Enter the amount you want to collect ?"}   
                     </Text>
 
                     <ValidatedInput

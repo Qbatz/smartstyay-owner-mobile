@@ -61,10 +61,10 @@ const BillBookingDetailsSheet = ({
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid , GetInitializeAdvanceRedeem  , InitializebookingBills} = useContext(BillContext);
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetInitializeAdvanceRedeem, InitializebookingBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  
+
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
@@ -83,10 +83,10 @@ const BillBookingDetailsSheet = ({
     canDeleteModule: canDeleteReceipt,
   } = useHasPermission("Receipt")
 
-      const {
-      canReadModule: canReadBooking,
-    } = useHasPermission("Booking");
-  
+  const {
+    canReadModule: canReadBooking,
+  } = useHasPermission("Booking");
+
 
   const dotsRefs = useRef({});
 
@@ -103,8 +103,8 @@ const BillBookingDetailsSheet = ({
   const [modalType, setModalType] = useState("success");
   const [showDiscountSheet, setShowDiscountSheet] = useState(false)
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
-  
-  const [showBookingInvoice , setShowBookingInvoice] = useState(false)
+
+  const [showBookingInvoice, setShowBookingInvoice] = useState(false)
 
 
 
@@ -123,35 +123,35 @@ const BillBookingDetailsSheet = ({
   console.log("bookingdata", bookingData);
 
   console.log("selectedBill", selectedBill);
-  
-  
-const invoicesList = InitializebookingBills?.listInvoices || [];
 
 
- 
-
-
- 
+  const invoicesList = InitializebookingBills?.listInvoices || [];
 
 
 
- useEffect(() => {
-  const fetchData = async () => {
-    if (activeHostelId && selectedBill?.invoiceId) {
-      const res = await GetInitializeAdvanceRedeem({
-        hostelId: activeHostelId,
-        advanceInvoiceId: selectedBill?.invoiceId,
-      });
 
-      console.log("API RESPONSE:", res);
-    }
-  };
 
-  fetchData();
-}, [activeHostelId , selectedBill]);
+
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (activeHostelId && selectedBill?.invoiceId) {
+        const res = await GetInitializeAdvanceRedeem({
+          hostelId: activeHostelId,
+          advanceInvoiceId: selectedBill?.invoiceId,
+        });
+
+        console.log("API RESPONSE:", res);
+      }
+    };
+
+    fetchData();
+  }, [activeHostelId, selectedBill]);
 
   console.log("InitializebookingBills", InitializebookingBills);
-  
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -184,8 +184,8 @@ const invoicesList = InitializebookingBills?.listInvoices || [];
     }, [visible, showRecordPayment, showRefundPayement])
   );
 
-console.log("InitializebookingBills", InitializebookingBills);
-console.log("invoicesList", invoicesList);
+  console.log("InitializebookingBills", InitializebookingBills);
+  console.log("invoicesList", invoicesList);
 
 
 
@@ -339,21 +339,21 @@ console.log("invoicesList", invoicesList);
     }
   }
 
-//   const handleShowRecordPayment = () => {
-//     setShowMenu(false);
-//     setShowRecordPayment(true);
-//   };
+  //   const handleShowRecordPayment = () => {
+  //     setShowMenu(false);
+  //     setShowRecordPayment(true);
+  //   };
 
-//   const handleShowRefundPayment = () => {
-//     setShowMenu(false);
-//     setShowRefundPayment(true);
-//   };
+  //   const handleShowRefundPayment = () => {
+  //     setShowMenu(false);
+  //     setShowRefundPayment(true);
+  //   };
 
 
   const handleShowBookingtoInvoice = () => {
-     navigation.navigate("BookingtoDiscount")
-      onClose()
-       
+    navigation.navigate("BookingtoDiscount")
+    onClose()
+
   }
 
 
@@ -539,9 +539,9 @@ console.log("invoicesList", invoicesList);
   // }
 
 
-const canRedeem = selectedBill?.canRedeem;
+  const canRedeem = selectedBill?.canRedeem;
 
-console.log("canRedeem", canRedeem);
+  console.log("canRedeem", canRedeem);
 
 
 
@@ -638,35 +638,42 @@ console.log("canRedeem", canRedeem);
             </View>
 
             <View style={styles.userRow}>
-  {customer?.profilePic ? (
-    <Image source={{ uri: customer.profilePic }} style={styles.userImg} />
-  ) : (
-    <View style={styles.initialCircle}>
-      <Text style={styles.initialText}>
-        {customer?.initials || customer?.fullName?.slice(0, 2)?.toUpperCase()}
-      </Text>
-    </View>
-  )}
+              {customer?.profilePic ? (
+                <Image source={{ uri: customer.profilePic }} style={styles.userImg} />
+              ) : (
+                <View style={styles.initialCircle}>
+                  <Text style={styles.initialText}>
+                    {customer?.initials || customer?.fullName?.slice(0, 2)?.toUpperCase()}
+                  </Text>
+                </View>
+              )}
 
-  <View style={{ flex: 1, marginLeft: 12 }}>
-    <Text style={styles.userName}>
-      {customer?.fullName || "--"}
-    </Text>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <TouchableOpacity onPress={() => 
+                  navigation.navigate("CustomerOverviewScreen", {
+                    customerId: InitializebookingBills?.customerInfo?.customerId,
+                    customer: bill,
+                  })
+                }>
+                  <Text style={styles.userName}>
+                    {customer?.fullName || "--"}
+                  </Text>
+                </TouchableOpacity>
 
-    <View style={{ flexDirection: "row", marginTop: 4 , alignItems:'center'}}>
+                <View style={{ flexDirection: "row", marginTop: 4, alignItems: 'center' }}>
 
-          <View style={styles.invTypeBadge}>
-                                    <Text style={styles.invTypeText}>Booking</Text>
-                                  </View>
-      <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginRight: 5 }} />
-      <Text style={styles.billNumber}>
-        {customer?.invoiceNumber || "--"}
-      </Text>
-    </View>
-  </View>
-</View>
+                  <View style={styles.invTypeBadge}>
+                    <Text style={styles.invTypeText}>Booking</Text>
+                  </View>
+                  <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginRight: 5 }} />
+                  <Text style={styles.billNumber}>
+                    {customer?.invoiceNumber || "--"}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
-  
+
 
 
             <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -679,39 +686,39 @@ console.log("canRedeem", canRedeem);
                     {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
                     ₹ {selectedBill?.invoiceAmount ? Number(selectedBill?.invoiceAmount).toFixed(2) : "0.00"}
                   </Text>
-                    <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                  <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
-                      <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
-                      <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
+                    <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
+                    <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
 
-                    </View>
+                  </View>
                 </View>
 
               </View>
             </View>
 
-          
 
 
 
-          
-              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View>
-                  <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Booking</Text>
-                </View>
-                <View>
-                  <Text
-                    style={[
-                      styles.amountValue,
-                     
-                    ]}
-                  >
-                    ₹ {selectedBill?.availableAmount}
-                  </Text>
-                </View>
+
+
+            <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Booking</Text>
               </View>
+              <View>
+                <Text
+                  style={[
+                    styles.amountValue,
 
-         
+                  ]}
+                >
+                  ₹ {selectedBill?.availableAmount}
+                </Text>
+              </View>
+            </View>
+
+
 
 
 
@@ -742,33 +749,33 @@ console.log("canRedeem", canRedeem);
                       <View key={index} style={styles.paymentCard}>
 
                         <View style={styles.paymentTopRow}>
-                          <TouchableOpacity 
-                        //   onPress={() => handleOpenReceiptFromBill(pay)} 
-                        style={{ display: 'flex', flexDirection: 'row' , alignItems:'center'}}
+                          <TouchableOpacity
+                            //   onPress={() => handleOpenReceiptFromBill(pay)} 
+                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
                           >
-                             <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 , marginRight:5 }} />
+                            <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7, marginRight: 5 }} />
                             <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
                               #{pay?.invoiceNumber}
                             </Text>
-                           
+
                           </TouchableOpacity>
 
                           <Text style={styles.paymentAmount}>
-                          ₹ {pay?.pendingAmount ? Number(pay?.pendingAmount).toFixed(2) : "0.00"}
+                            ₹ {pay?.pendingAmount ? Number(pay?.pendingAmount).toFixed(2) : "0.00"}
                           </Text>
                         </View>
 
                         <View style={styles.divider} />
 
-                       
 
-                          <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+
+                        <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
                             <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Date</Text>
                           </View>
                           <View>
                             <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                               {pay?.invoiceDate || "--"}
+                              {pay?.invoiceDate || "--"}
                             </Text>
                           </View>
                         </View>
@@ -785,7 +792,7 @@ console.log("canRedeem", canRedeem);
                             </Text>
                           </View>
                         </View>
-                      
+
                       </View>
                     ))}
                   </View>
@@ -795,47 +802,47 @@ console.log("canRedeem", canRedeem);
             )}
 
 
-           
-               
+
+
 
           </ScrollView>
 
 
           <View style={styles.fixedBottomBar}>
 
-      
-              <>
-     
 
-  
-
-  <TouchableOpacity
-  style={[
-  styles.applyBtn,
-  (!canRedeem || !canUpdateInvoice) && {
-    backgroundColor: "#D1D5DB",
-    opacity: 0.7,
-  },
-]}
-  onPress={handleShowBookingtoInvoice}
-  disabled={!canRedeem || !canUpdateInvoice}  
->
-  <Image
-    source={LinkIcon}
-    style={{ height: 20, width: 20, marginRight: 5 }}
-  />
-
-  <Text style={styles.applyText}>
-    Apply to Invoices
-  </Text>
-</TouchableOpacity>
-  
+            <>
 
 
 
-              
-              </>
-          
+
+              <TouchableOpacity
+                style={[
+                  styles.applyBtn,
+                  (!canRedeem || !canUpdateInvoice) && {
+                    backgroundColor: "#D1D5DB",
+                    opacity: 0.7,
+                  },
+                ]}
+                onPress={handleShowBookingtoInvoice}
+                disabled={!canRedeem || !canUpdateInvoice}
+              >
+                <Image
+                  source={LinkIcon}
+                  style={{ height: 20, width: 20, marginRight: 5 }}
+                />
+
+                <Text style={styles.applyText}>
+                  Apply to Invoices
+                </Text>
+              </TouchableOpacity>
+
+
+
+
+
+            </>
+
 
             {(isPending || isPartial) && (
               <>
@@ -934,18 +941,18 @@ console.log("canRedeem", canRedeem);
             {
               invoiceDetail?.canEdit && (
                 <>
-                <TouchableOpacity
-                  style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                  disabled={!canUpdateInvoice}
-                  onPress={() => handleEditBill(invoiceDetail)}
-                >
-                  <Image
-                   source={EditIcon}
-                    style={styles.popupIcon}
-                  />
-                  <Text style={styles.popupText}>Edit</Text>
-                </TouchableOpacity>
-                <View style={styles.menuDivider} />
+                  <TouchableOpacity
+                    style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                    disabled={!canUpdateInvoice}
+                    onPress={() => handleEditBill(invoiceDetail)}
+                  >
+                    <Image
+                      source={EditIcon}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Edit</Text>
+                  </TouchableOpacity>
+                  <View style={styles.menuDivider} />
                 </>
               )}
 
@@ -1352,20 +1359,20 @@ const styles = StyleSheet.create({
     elevation: 50,
     zIndex: 20001,
     paddingVertical: 10,
-        // Add these
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
+    // Add these
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
 
-  // Shadow
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 4,
-  },
-  shadowOpacity: 0.12,
-  shadowRadius: 12,
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
 
-  elevation: 8, // Android
+    elevation: 8, // Android
   },
   popupRow: {
     flexDirection: "row",
@@ -1520,7 +1527,7 @@ const styles = StyleSheet.create({
     tintColor: "#fff"
   },
   fixedBottomBar: {
-  
+
     // paddingHorizontal: 20,
     paddingVertical: 14,
     borderTopWidth: 1,
@@ -1716,29 +1723,29 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold"
   },
   applyBtn: {
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#9C9C9C",
-  paddingVertical: 14,
-  borderRadius: 12,
-  flexDirection:'row',
-  justifyContent:'center', 
-  alignItems: "center",
-},
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#9C9C9C",
+    paddingVertical: 14,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: "center",
+  },
 
-applyText: {
-  fontFamily: "Gilroy-Semibold",
-  fontSize: 16,
-},
- billNumber: {
+  applyText: {
+    fontFamily: "Gilroy-Semibold",
+    fontSize: 16,
+  },
+  billNumber: {
     color: "#555",
     fontSize: 13,
     alignSelf: "center",
-    fontFamily: "Gilroy-Semibold", 
+    fontFamily: "Gilroy-Semibold",
   },
   menuDivider: {
-  height: 1,
-  backgroundColor: "#E8F0FF",
-},
+    height: 1,
+    backgroundColor: "#E8F0FF",
+  },
 
 })

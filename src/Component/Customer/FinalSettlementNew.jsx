@@ -80,6 +80,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [collectFullRent, setCollectFullRent] = useState(false);
   const [showRentSheet, setShowRentSheet] = useState(false);
   const [customRentAmount, setCustomRentAmount] = useState(null);
+  const [mode, setMode]=useState("")
   console.log("actualcheckoutdate", actualCheckoutDate);
 
   const [finalAmountSetClicked, setFinalAmountSetClicked] =
@@ -462,49 +463,49 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [payableOrRefundableRent, setPayableOrRefundableRent] = useState(0);
 
- 
 
-useEffect(() => {
-  const lastRentPaid = Number(
-    settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
-  );
 
-  if (collectFullRent) {
-    const rentAmount = finalAmountSetClicked
-      ? Number(customRentAmount || 0) +
-        Number(
-          settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
-        )
-      : Number(
-          settlementDetails?.currentMonthRentInfo
-            ?.currentMonthPayableAmount || 0
-        );
-
-    setPayableOrRefundableRent(
-      rentAmount - lastRentPaid
+  useEffect(() => {
+    const lastRentPaid = Number(
+      settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
     );
-  } else {
-    const rentAmount = finalAmountSetClicked
-      ? Number(customRentAmount || 0) +
+
+    if (collectFullRent) {
+      const rentAmount = finalAmountSetClicked
+        ? Number(customRentAmount || 0) +
         Number(
           settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
         )
-      : Number(
+        : Number(
           settlementDetails?.currentMonthRentInfo
             ?.currentMonthPayableAmount || 0
         );
 
-    setPayableOrRefundableRent(rentAmount);
-  }
-}, [
-  finalAmountSetClicked,
-  settlementDetails?.currentMonthRentInfo
-    ?.currentMonthPayableAmount,
-  settlementDetails?.currentMonthRentInfo?.otherItemAmount,
-  settlementDetails?.currentMonthRentInfo?.currentRentPaid,
-  customRentAmount,
-  collectFullRent,
-]);
+      setPayableOrRefundableRent(
+        rentAmount - lastRentPaid
+      );
+    } else {
+      const rentAmount = finalAmountSetClicked
+        ? Number(customRentAmount || 0) +
+        Number(
+          settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+        )
+        : Number(
+          settlementDetails?.currentMonthRentInfo
+            ?.currentMonthPayableAmount || 0
+        );
+
+      setPayableOrRefundableRent(rentAmount);
+    }
+  }, [
+    finalAmountSetClicked,
+    settlementDetails?.currentMonthRentInfo
+      ?.currentMonthPayableAmount,
+    settlementDetails?.currentMonthRentInfo?.otherItemAmount,
+    settlementDetails?.currentMonthRentInfo?.currentRentPaid,
+    customRentAmount,
+    collectFullRent,
+  ]);
 
 
 
@@ -520,7 +521,7 @@ useEffect(() => {
     const rentInfo =
       settlementDetails?.currentMonthRentInfo;
 
-  
+
 
     if (collectFullRent) {
       if (!finalAmountSetClicked) {
@@ -1350,19 +1351,30 @@ useEffect(() => {
                       : "Payable Rent"}
                   </Text>
                 </View>
-                <Text
-                  style={[
-                    styles.refundAmount,
-                    {
-                      color:
-                        payableOrRefundableRent < 0
-                          ? "#16A34A"
-                          : "#111827",
-                    },
-                  ]}
-                >
-                  ₹ {Math.abs(payableOrRefundableRent)}
-                </Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text
+                    style={[
+                      styles.refundAmount,
+                      {
+                        color:
+                          payableOrRefundableRent < 0
+                            ? "#16A34A"
+                            : "#111827",
+                      },
+                    ]}
+                  >
+                    ₹ {Math.abs(payableOrRefundableRent)}
+                  </Text>
+                  {customRentAmount &&
+                    <TouchableOpacity style={ { marginLeft: 4 }}
+                      onPress={()=>{
+                        setShowRentSheet(true)
+                        setMode("edit")}}>
+                      <Image source={EditIcon} style={styles.editIcon} />
+                    </TouchableOpacity>
+                  }
+                </View>
               </TouchableOpacity>
 
               {openRefundRent && (
@@ -1383,6 +1395,7 @@ useEffect(() => {
                         setFinalAmountSetClicked(false);
                       } else {
                         setShowRentSheet(true);
+                        setMode("add")
                       }
                     }}
                   >
@@ -2470,9 +2483,10 @@ useEffect(() => {
       <SettlementCustomRentSheet
         visible={showRentSheet}
         rentAmount={
-          settlementDetails?.currentMonthRentInfo?.currentMonthRent
+         customRentAmount ? customRentAmount : settlementDetails?.currentMonthRentInfo?.currentMonthRent
         }
         onClose={() => setShowRentSheet(false)}
+        mode={mode}
         onSet={(amount) => {
           setCustomRentAmount(Number(amount));
           setCollectFullRent(true);

@@ -152,6 +152,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
 
+  console.log("custosus",customerId)
+
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription && canUpdateTenant;
@@ -842,7 +844,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 }}
               >
                 <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
-                  <TouchableOpacity onPress={handleProfilePress}>
+                  <TouchableOpacity onPress={handleProfilePress}
+                  disabled={(customerDetails?.customerCurrentStatus == "VACATED" || customerDetails?.customerCurrentStatus == "CANCELLED_BOOKING")}>
                     <View style={{ width: 95, height: 95 }}>
                       {profileImage?.uri || customerDetails?.profilePic ? (
                         <Image
@@ -910,6 +913,14 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
                 {/* <Text style={styles.verified}>✔</Text> */}
               </View>
+
+              {customerDetails?.customerCurrentStatus == "VACATED" && 
+              <View style={{paddingHorizontal:8,backgroundColor:'#ffcfd3',paddingVertical:5,flexDirection:'row',
+                          alignItems:'center',marginBottom:8,borderRadius:5,marginLeft:5}}>
+                <View style={{width:8,height:8,borderRadius:4,backgroundColor:'#da252a',marginRight:5}}/>
+                  <Text style={{fontSize:14, fontFamily:'Gilroy-Medium',color:'#da252a'}}>
+                    {customerDetails?.customerCurrentStatus}</Text>
+                </View>}
 
               {/* ROOM DETAILS */}
 
