@@ -124,17 +124,23 @@ export default function EditRentalAmountSheet({
     }
   }
 
+  console.log("simbu",startMonth,endMonth)
 
   const isMonthDisabled = (year, monthIndex) => {
     if (!startMonth || !endMonth) return true;
+
+    console.log(year,monthIndex)
 
     const current = dayjs()
       .year(year)
       .month(monthIndex)
       .startOf("month");
+      console.log(current)
 
     return current.isBefore(startMonth, "month") || current.isAfter(endMonth, "month");
   }
+
+  console.log(isMonthDisabled)
 
 
 
@@ -535,8 +541,10 @@ export default function EditRentalAmountSheet({
               {/* MONTH GRID */}
               <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                 {dayjs.monthsShort().map((m, index) => {
+                  console.log("vety",m,index)
 
                   const disabled = isMonthDisabled(selectedYear, index);
+                  console.log(disabled)
 
                   return (
                     <TouchableOpacity

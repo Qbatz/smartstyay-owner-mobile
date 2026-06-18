@@ -3834,7 +3834,7 @@ export default function BillsDesign({ route }) {
 
                         {/* BODY */}
                         {showAdjustments && (
-                          <View style={{ marginTop: 14 }}>
+                          <View style={{ marginTop: 8}}>
 
                             {redeemedList.map((item, index) => (
                               <View
@@ -8194,14 +8194,14 @@ const styles = StyleSheet.create({
     color: "#222222",
     fontFamily: "Gilroy-Medium",
   },
-  adjustmentCard: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    overflow: "hidden",
-  },
+  // adjustmentCard: {
+  //   backgroundColor: "#fff",
+  //   borderRadius: 14,
+  //   marginTop: 14,
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   overflow: "hidden",
+  // },
 
   adjustmentHeader: {
     flexDirection: "row",
@@ -8230,10 +8230,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  adjustmentDivider: {
-    height: 1,
-    backgroundColor: "#E5E7EB",
-  },
+  // adjustmentDivider: {
+  //   height: 1,
+  //   backgroundColor: "#E5E7EB",
+  // },
 
   adjustmentRowHeader: {
     flexDirection: "row",
