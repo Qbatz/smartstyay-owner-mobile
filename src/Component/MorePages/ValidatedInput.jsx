@@ -36,6 +36,20 @@ const validationRules = {
   description: (text) => {
     return text;
   },
+
+  gst: (text) => {
+  return text
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 15);
+},
+
+pan: (text) => {
+  return text
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 10);
+},
 };
 
 const keyboardTypes = {
@@ -45,6 +59,8 @@ const keyboardTypes = {
   numberOnly: "numeric",
   name: "default",
   description: "default",
+  gst : "default",
+  pan :  "default",
 };
 
 const maxLengths = {

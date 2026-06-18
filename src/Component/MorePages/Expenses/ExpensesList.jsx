@@ -294,7 +294,37 @@ export default function ExpensesList({ navigation }) {
             0
         ) || 0;
 
-    const paidAmount = totalExpense;
+    const paidAmount =
+        expensesList
+            ?.filter(
+                (item) =>
+                    item?.paymentStatus?.toLowerCase() === "full"
+            )
+            ?.reduce(
+                (sum, item) =>
+                    sum + Number(item.totalAmount || 0),
+                0
+            ) || 0;
+
+
+    const unpaidAmount = totalExpense - paidAmount;
+
+
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case "full":
+                return "#16A34A";
+
+            case "partial":
+                return "#FF8A00";
+
+            case "pending":
+                return "#FF3B30";
+
+            default:
+                return "#6B7280";
+        }
+    };
 
     const SummaryCard = ({
         icon,
@@ -349,6 +379,61 @@ export default function ExpensesList({ navigation }) {
     };
 
 
+
+    // const renderExpensesItem = ({ item }) => (
+    //     <TouchableOpacity
+    //         activeOpacity={0.8}
+    //         onPress={() =>
+    //             navigation.navigate("ExpensesDetails", {
+    //                 expense: item,
+    //             })
+    //         }
+    //     >
+    //         <View>
+    //             <View style={styles.expenseCard}>
+    //                 <View style={{ flex: 1 }}>
+    //                     <Text style={styles.expenseTitle}>
+    //                         {item.title}
+    //                     </Text>
+
+    //                     <Text style={styles.expenseMeta}>
+    //                         EXP 001 • {item.date}
+    //                     </Text>
+    //                 </View>
+
+    //                 <View style={{ alignItems: "flex-end" }}>
+    //                     <Text style={styles.expenseAmount}>
+    //                         ₹ {item.amount}
+    //                     </Text>
+
+    //                     <Text
+    //                         style={[
+    //                             styles.statusText,
+    //                             { color: item.statusColor },
+    //                         ]}
+    //                     >
+    //                         {item.status}
+    //                     </Text>
+    //                 </View>
+    //             </View>
+
+    //             {item.vendor && (
+    //                 <View style={styles.vendorBadge}>
+    //                     <Image
+    //                         source={LocationIcon}
+    //                         style={styles.locationIcon}
+    //                     />
+
+    //                     <Text style={styles.vendorBadgeText}>
+    //                         {item?.vendor ||
+    //                             "Kural kaikai Angadi- Salem"}
+    //                     </Text>
+    //                 </View>
+    //             )}
+    //         </View>
+    //     </TouchableOpacity>
+    // );
+
     const renderExpensesItem = ({ item }) => (
         <TouchableOpacity
             activeOpacity={0.8}
@@ -362,31 +447,33 @@ export default function ExpensesList({ navigation }) {
                 <View style={styles.expenseCard}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.expenseTitle}>
-                            {item.title}
+                            {item?.categoryName || "-"}
                         </Text>
 
                         <Text style={styles.expenseMeta}>
-                            EXP 001 • {item.date}
+                            {item?.referenceNumber} • {item?.transactionDate}
                         </Text>
                     </View>
 
                     <View style={{ alignItems: "flex-end" }}>
                         <Text style={styles.expenseAmount}>
-                            ₹ {item.amount}
+                            ₹ {Number(item?.totalAmount || 0).toLocaleString("en-IN")}
                         </Text>
 
                         <Text
                             style={[
                                 styles.statusText,
-                                { color: item.statusColor },
+                                {
+                                    color: getStatusColor(item?.paymentStatus),
+                                },
                             ]}
                         >
-                            {item.status}
+                            {item?.paymentStatus}
                         </Text>
                     </View>
                 </View>
 
-                {item.vendor && (
+                {item?.vendorId && (
                     <View style={styles.vendorBadge}>
                         <Image
                             source={LocationIcon}
@@ -394,8 +481,7 @@ export default function ExpensesList({ navigation }) {
                         />
 
                         <Text style={styles.vendorBadgeText}>
-                            {item?.vendor ||
-                                "Kural kaikai Angadi- Salem"}
+                            Vendor Expense
                         </Text>
                     </View>
                 )}
@@ -569,8 +655,8 @@ export default function ExpensesList({ navigation }) {
 
 
                         <FlatList
-                            data={staticExpenses}
-                            keyExtractor={(item) => item.id}
+                            data={expensesList || []}
+                            keyExtractor={(item) => item.expenseId}
                             renderItem={renderExpensesItem}
                             ListHeaderComponent={() => (
                                 <>
@@ -581,24 +667,23 @@ export default function ExpensesList({ navigation }) {
                                     >
                                         <SummaryCard
                                             title="Total Expense Amount"
-                                            value={142300}
+                                            value={totalExpense}
                                             icon={GreenRupees}
                                         />
 
                                         <SummaryCard
                                             title="Paid"
-                                            value={136300}
+                                            value={paidAmount}
                                             icon={TickIcon}
                                             valueColor="#00A651"
                                         />
 
-
                                         <SummaryCard
                                             title="UnPaid"
-                                            value={7650}
+                                            value={unpaidAmount}
                                             icon={RupeeIcon}
-
                                         />
+
                                     </ScrollView>
 
                                     <View style={styles.filterRow}>
@@ -1030,7 +1115,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
 
     },
-    
+
     addIcon: { width: 60, height: 60, },
     menuBox: {
         position: "absolute",

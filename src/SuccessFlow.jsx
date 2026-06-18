@@ -49,6 +49,7 @@ import CreateReceipt from "../src/Component/MorePages/Bills/CreateReceipt";
 import ElectricitySettings from "../src/Component/SettingScreen/SettingsElectricity/SettingsElectricity";
 import ReserveToCheckin from "../src/Component/PG/ReservedBed/ReservedToCheckin";
 import ComplaintsSettings from "../src/Component/SettingScreen/ComplaintType/ComplaintsTypeSettings";
+import SettingsVendors from "../src/Component/SettingScreen/SettingsVendor/SettingsVendor";
 import ReassignBedScreen from "../src/Component/PG/OccupiedBed/ReAssignBed";
 import ExpensesSettings from "../src/Component/SettingScreen/ExpensesCategory/SettingsExpenses";
 import Integration from "../src/Component/SettingScreen/Integration/Integration";
@@ -166,6 +167,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="SettingsElectricity" component={ElectricitySettings} />
                     <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
                     <Navigation.Screen name="ComplaintType" component={ComplaintsSettings} />
+                     <Navigation.Screen name="SettingsVendors" component={SettingsVendors} />
                     <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
                     <Navigation.Screen name="ExpensesCategory" component={ExpensesSettings} />
                     <Navigation.Screen name="Integration" component={Integration} />

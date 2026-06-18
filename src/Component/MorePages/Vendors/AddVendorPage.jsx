@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { VendorContext } from "../../../Context/VendorContext";
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import ArrowLeft from "../../../Assets/Images/directionleft.png";
@@ -24,12 +25,12 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 
-export default function AddVendorSheet({  vendorData , navigation}) {
+export default function AddVendorSheet({ vendorData, navigation }) {
 
- const { addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
+  const { addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
   const { activeHostelId } = useContext(CommonContexts);
 
- const translateY = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [initialImage, setInitialImage] = useState(null);
@@ -40,6 +41,7 @@ export default function AddVendorSheet({  vendorData , navigation}) {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [businessmobile, setBusinessMobile] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -74,10 +76,47 @@ export default function AddVendorSheet({  vendorData , navigation}) {
 
   const [showProfileSheet, setShowProfileSheet] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState({
-    code:vendorData?.countryCode || "+91",
+    code: vendorData?.countryCode || "+91",
     label: "India",
   });
-  const [isSubmitClicked, setIsSubmitClicked]=useState(false)
+  const [isSubmitClicked, setIsSubmitClicked] = useState(false)
+
+
+  const [vendorCategory, setVendorCategory] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+
+  const [description, setDescription] = useState("");
+
+  const [gstNumber, setGstNumber] = useState("");
+  const [panNumber, setPanNumber] = useState("");
+
+  const [allowCredit, setAllowCredit] = useState(false);
+  const [creditLimit, setCreditLimit] = useState("");
+  const [creditPeriod, setCreditPeriod] = useState("");
+
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categoryErr, setCategoryErr] = useState("");
+  const [nochangeErr, setNochangeErr] = useState("");
+
+  const countryList = [
+    { label: "India", code: "+91" },
+    { label: "United States", code: "+1" },
+    { label: "United Kingdom", code: "+44" },
+    { label: "Australia", code: "+61" },
+    { label: "Singapore", code: "+65" },
+  ];
+
+
+  const {
+    vendorCategories,
+    getVendorCategories,
+  } = useContext(VendorContext);
+
+  console.log("vendorCategories", vendorCategories);
+
+
+
 
   const scrollRef = useRef(null);
   const mobileRef = useRef(null);
@@ -104,6 +143,10 @@ export default function AddVendorSheet({  vendorData , navigation}) {
       () => { }
     );
   };
+
+  useEffect(() => {
+    getVendorCategories();
+  }, []);
 
 
   useEffect(() => {
@@ -232,7 +275,25 @@ export default function AddVendorSheet({  vendorData , navigation}) {
 
 
 
-  //   const validate = () => {
+
+  const categoryOptions = vendorCategories.map(item => ({
+    label: item?.categoryName,
+    value: item?.id,
+  }));
+
+
+  // const validate = () => {
+  //   if (vendorData && initialData) {
+  //     const currentData = getCurrentData();
+  //     const dataSame = isSameData(initialData, currentData);
+  //     const imageSame = !isImageChanged();
+
+  //     if (dataSame && imageSame) {
+  //       setNoChangeError("No changes detected");
+  //       return false;
+  //     }
+  //   }
+
   //   let newErrors = {};
 
   //   if (!firstName.trim()) {
@@ -243,10 +304,18 @@ export default function AddVendorSheet({  vendorData , navigation}) {
   //     newErrors.mobile = "Please Enter Mobile Number";
   //   } else if (mobile.length !== 10) {
   //     newErrors.mobile = "Mobile number must be 10 digits";
+  //   } else if (mobile[0] === "0") {
+  //     newErrors.mobile = "Mobile number cannot start with 0";
+  //   } else if (/^0+$/.test(mobile)) {
+  //     newErrors.mobile = "Mobile number cannot be all zeros";
   //   }
 
-  //   if (email && !emailRegex.test(email)) {
-  //     newErrors.email = "Please Enter Valid Email ID";
+  //   if (!businessName.trim()) {
+  //     newErrors.businessName = "Please Enter Business Name";
+  //   }
+
+  //   if (!city.trim()) {
+  //     newErrors.city = "Please Enter City";
   //   }
 
   //   const pinError = validatePincode(pinCode);
@@ -254,49 +323,73 @@ export default function AddVendorSheet({  vendorData , navigation}) {
   //     newErrors.pinCode = pinError;
   //   }
 
-  //   if (!country) {
+  //   if (!stateName) {
+  //     newErrors.stateName = "Please Select State";
+  //   }
+
+  //   if (!countryValue) {
   //     newErrors.country = "Please Select Country";
+  //   }
+
+
+  //   if (email && !emailRegex.test(email)) {
+  //     newErrors.email = "Please Enter Valid Email ID";
   //   }
 
   //   setErrors(newErrors);
   //   return Object.keys(newErrors).length === 0;
   // };
 
+  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/;
+
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
 
   const validate = () => {
-    if (vendorData && initialData) {
-      const currentData = getCurrentData();
-      const dataSame = isSameData(initialData, currentData);
-      const imageSame = !isImageChanged();
-
-      if (dataSame && imageSame) {
-        setNoChangeError("No changes detected");
-        return false;
-      }
-    }
-
     let newErrors = {};
 
-    if (!firstName.trim()) {
-      newErrors.firstName = "Please Enter First Name";
+    if (!businessName.trim()) {
+      newErrors.businessName = "Please enter vendor/business name";
     }
 
-    if (!mobile.trim()) {
-      newErrors.mobile = "Please Enter Mobile Number";
+    if (!selectedCategory) {
+      newErrors.category = "Please select vendor category";
+    }
+
+    if (!businessmobile) {
+      newErrors.businessmobile = "Please enter business mobile number";
+    } else if (businessmobile.length !== 10) {
+      newErrors.businessmobile = "Business mobile number must be 10 digits";
+    } else if (businessmobile[0] === "0") {
+      newErrors.businessmobile = "Mobile number cannot start with 0";
+    }
+
+    if (!contactPerson.trim()) {
+      newErrors.contactPerson = "Please enter contact person name";
+    }
+
+    if (!mobile) {
+      newErrors.mobile = "Please enter mobile number";
     } else if (mobile.length !== 10) {
       newErrors.mobile = "Mobile number must be 10 digits";
     } else if (mobile[0] === "0") {
       newErrors.mobile = "Mobile number cannot start with 0";
-    } else if (/^0+$/.test(mobile)) {
-      newErrors.mobile = "Mobile number cannot be all zeros";
     }
 
-    if (!businessName.trim()) {
-      newErrors.businessName = "Please Enter Business Name";
+    if (email && !emailRegex.test(email)) {
+      newErrors.email = "Please enter valid email address";
+    }
+
+    if (!street.trim()) {
+      newErrors.street = "Please enter commercial address";
     }
 
     if (!city.trim()) {
-      newErrors.city = "Please Enter City";
+      newErrors.city = "Please enter city";
+    }
+
+    if (!stateName) {
+      newErrors.stateName = "Please select state";
     }
 
     const pinError = validatePincode(pinCode);
@@ -304,435 +397,906 @@ export default function AddVendorSheet({  vendorData , navigation}) {
       newErrors.pinCode = pinError;
     }
 
-    if (!stateName) {
-      newErrors.stateName = "Please Select State";
+    if (gstNumber && !gstRegex.test(gstNumber)) {
+      newErrors.gstNumber = "Please enter valid GST number";
     }
 
-    if (!countryValue) {
-      newErrors.country = "Please Select Country";
+    if (panNumber && !panRegex.test(panNumber)) {
+      newErrors.panNumber = "Please enter valid PAN number";
     }
 
+    // if (allowCredit) {
+    //   if (!creditLimit) {
+    //     newErrors.creditLimit = "Please enter credit limit";
+    //   }
 
-    if (email && !emailRegex.test(email)) {
-      newErrors.email = "Please Enter Valid Email ID";
+    //   if (!creditPeriod) {
+    //     newErrors.creditPeriod = "Please enter credit period";
+    //   }
+    // }
+
+    if (allowCredit) {
+      if (!creditLimit) {
+        newErrors.creditLimit =
+          "Please enter credit limit";
+      } else if (Number(creditLimit) <= 0) {
+        newErrors.creditLimit =
+          "Credit limit must be greater than 0";
+      }
+    }
+
+    if (allowCredit) {
+      if (!creditPeriod) {
+        newErrors.creditPeriod =
+          "Please enter credit period";
+      } else if (Number(creditPeriod) <= 0) {
+        newErrors.creditPeriod =
+          "Credit period must be greater than 0";
+      }
     }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
-  };
+  }
 
-  const [vendorCategory, setVendorCategory] = useState("");
-const [contactPerson, setContactPerson] = useState("");
+  const payLoads = {
+  firstName: contactPerson || "",
+  lastName: "",
 
-const [description, setDescription] = useState("");
+  countryCode:
+    selectedCountry?.code || "+91",
 
-const [gstNumber, setGstNumber] = useState("");
-const [panNumber, setPanNumber] = useState("");
+  mobile,
 
-const [allowCredit, setAllowCredit] = useState(false);
-const [creditLimit, setCreditLimit] = useState("");
-const [creditPeriod, setCreditPeriod] = useState("");
+  mailId: email,
 
-return(
+  houseNo,
 
+  landmark,
+
+  area: street,
+
+  pinCode: Number(pinCode),
+
+  city,
+
+  state: stateName,
+
+  businessName,
+
+  hostelId: activeHostelId,
+
+  vendorCategory:
+    selectedCategory?.value,
+
+  contactPerson,
+
+  description,
+
+  vendorCode: "VEN006",
+
+  gst: gstNumber,
+
+  pan: panNumber,
+
+  allowCredit,
+
+  creditLimit: allowCredit
+    ? Number(creditLimit)
+    : 0,
+
+  creditPeriod: allowCredit
+    ? Number(creditPeriod)
+    : 0,
+};
+
+console.log("payloads", payLoads);
+
+
+ const handleSubmit = async () => {
+  if (!validate()) return;
+
+  
+
+  const response = await addVendor({
+    profilePic: selectedImage,
+    payLoads,
+    hostelId: activeHostelId,
+  });
+
+  console.log("response", response);
+
+  if (response?.success) {
+      setModalType("success");
+      setModalMessage(vendorData ? "Vendor Updated Successfully" : "Vendor Added Successfully");
+      setShowSuccessModal(true);
+      // await getVendorList(activeHostelId);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+         navigation.goBack();
+      }, 1500);
    
-  <View style={styles.container}>
+  } else {
+    
+      setModalType("error");
+      setModalMessage(response?.message || "Something went wrong");
+      setShowSuccessModal(true);
 
-    {/* Header */}
-   <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()}
-        style={styles.backBtn}
-      >
-        <Image source={ArrowLeft} style={{height:18, width:18}}/>
-      </TouchableOpacity>
-
-      <Text style={styles.headerTitle}>
-        Add new Vendor
-      </Text>
-    </View>
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+  }
+};
 
 
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.content}
-    >
+  return (
 
-      {/* Vendor Information */}
-       
 
-      <View style={styles.sectionHeader}>
-        <View style={styles.blueBar} />
-        <Text style={styles.sectionTitle}>
-          Vendor Information
+    <View style={styles.container}>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+        >
+          <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>
+          Add new Vendor
         </Text>
       </View>
-<Text style={styles.label}>
-  Vendor / Business Name <Text style={{ color: "red" }}>*</Text>
-</Text>
-
-<ValidatedInput
-  type="name"
-  inputType="text"
-  value={businessName}
-  onChangeText={setBusinessName}
-  placeholder="Enter Vendor Name"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-
-<Text style={styles.note}>
-  Note : Max 50 Characters
-</Text>
-
-<Text style={styles.label}>
-  Vendor Category <Text style={{ color: "red" }}>*</Text>
-</Text>
-
-<TouchableOpacity style={styles.select}>
-  <Text>
-    {vendorCategory || "Food & Groceries"}
-  </Text>
-
-  <Image
-    source={DownArrow}
-    style={styles.arrow}
-  />
-</TouchableOpacity>
-
-<Text style={styles.label}>
-  Business Mob Number <Text style={{ color: "red" }}>*</Text>
-</Text>
-
-<View style={styles.mobileWrapper}>
-<ValidatedInput
-  type="mobile"
-  inputType="numeric"
-  value={mobile}
-  onChangeText={setMobile}
-  placeholder="98765 43210"
-  placeholderTextColor="#9CA3AF"
-  style={styles.mobileInput}
-/>
-</View>
-
-<Text style={styles.label}>
- Proprietor / Contact Person Name <Text style={{ color: "red" }}>*</Text>
-</Text>
-
-<ValidatedInput
-  type="name"
-  inputType="text"
-  value={contactPerson}
-  onChangeText={setContactPerson}
-  placeholder="Enter Name"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-
-<Text style={styles.label}>
- Mob Number <Text style={{ color: "red" }}>*</Text>
-</Text>
-
-<View style={styles.mobileWrapper}>
- 
-<ValidatedInput
-  type="email"
-  inputType="email"
-  value={email}
-  onChangeText={setEmail}
-  placeholder="+91"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-
-</View>
-
-<Text style={styles.label}>
- Email Address
-</Text>
-
-<ValidatedInput
-  type="email"
-  inputType="email"
-  value={email}
-  onChangeText={setEmail}
-  placeholder="Enter Mail ID"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-
-<Text style={styles.label}>
- Commercial Address *
-</Text>
-
-<ValidatedInput
-  type="description"
-  inputType="text"
-  multiline
-  value={street}
-  onChangeText={setStreet}
-  placeholder="Enter Address"
-  placeholderTextColor="#9CA3AF"
-  style={styles.textArea}
-/>
 
 
-<View style={styles.row}>
-  <View style={styles.half}>
-    <Text style={styles.label}>
-      Landmark
-    </Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
 
-    <TextInput
-      style={styles.input}
-      value={landmark}
-      onChangeText={setLandmark}
-      placeholder="Near ICICI Bank"
-    />
-  </View>
+        {/* Vendor Information */}
 
-  <View style={styles.half}>
-    <Text style={styles.label}>
-      City <Text style={{ color: "red" }}>*</Text>
-    </Text>
 
-   <ValidatedInput
-  type="name"
-  inputType="text"
-  value={city}
-  onChangeText={setCity}
-  placeholder="Enter City"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-  </View>
-</View>
-
-<View style={styles.row}>
-  <View style={styles.half}>
-   <Text style={styles.label}>
-      State <Text style={{ color: "red" }}>*</Text>
-    </Text>
-
-   <ValidatedInput
-  type="pincode"
-  inputType="numeric"
-  value={pinCode}
-  onChangeText={setPinCode}
-  placeholder="Select State"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-  </View>
-
-  <View style={styles.half}>
-    <Text style={styles.label}>
-      Pincode <Text style={{ color: "red" }}>*</Text>
-    </Text>
-
-   <ValidatedInput
-  type="pincode"
-  inputType="numeric"
-  value={pinCode}
-  onChangeText={setPinCode}
-  placeholder="Enter Pincode"
-  placeholderTextColor="#9CA3AF"
-  style={styles.input}
-/>
-  </View>
-</View>
-
-<Text style={styles.label}>
- Description
-</Text>
-
-<TextInput
-  multiline
-  numberOfLines={4}
-  style={styles.textArea}
-  value={description}
-  onChangeText={setDescription}
-  placeholder="Ex : Wifi Bill Paid for May"
-/>
-
-<View style={styles.sectionHeader}>
-  <View style={styles.blueBar} />
-  <Text style={styles.sectionTitle}>
-    Business Details
-  </Text>
-</View>
-
-<Text style={styles.label}>
- GST IN Number (Optional)
-</Text>
-
-<ValidatedInput
-  type="description"
-  inputType="text"
-  value={gstNumber}
-  onChangeText={setGstNumber}
-  placeholder="Enter GSTIN"
-  autoCapitalize="characters"
-  style={styles.input}
-/>
-
-<Text style={styles.label}>
- PAN Number (Optional)
-</Text>
-
-<ValidatedInput
-  type="description"
-  inputType="text"
-  value={panNumber}
-  onChangeText={(text) =>
-    setPanNumber(text.toUpperCase())
-  }
-  placeholder="Enter PAN Number"
-  autoCapitalize="characters"
-  style={styles.input}
-/>
-
-<Text style={styles.label}>
- Vendor Code
-</Text>
-
-<TextInput
-  editable={false}
-  value="VEN 006"
-  style={[
-    styles.input,
-    { backgroundColor: "#F8F9FA" }
-  ]}
-/>
-
-<TouchableOpacity
-  style={styles.creditRow}
-  onPress={() => setAllowCredit(!allowCredit)}
->
-  <View
-    style={[
-      styles.checkbox,
-      allowCredit &&
-      styles.checkboxActive
-    ]}
-  >
-    {allowCredit && (
-      <Text style={{color:"#FFF"}}>
-        ✓
-      </Text>
-    )}
-  </View>
-
-  <View style={{flex:1}}>
-    <Text style={styles.creditTitle}>
-      Allow Credit Purchases
-    </Text>
-
-    <Text style={styles.creditSub}>
-      It's like similar to debt purchase and will pay later
-    </Text>
-  </View>
-</TouchableOpacity>
-
-{allowCredit && (
-  <>
-    <Text style={styles.label}>
-      Credit Limit ₹ INR
-    </Text>
-
-    <TextInput
-      style={styles.input}
-      value={creditLimit}
-      onChangeText={setCreditLimit}
-      keyboardType="numeric"
-      placeholder="Enter Amount Limit"
-    />
-
-    <Text style={styles.label}>
-      Credit Period
-    </Text>
-
-    <TextInput
-      style={styles.input}
-      value={creditPeriod}
-      onChangeText={setCreditPeriod}
-      keyboardType="numeric"
-      placeholder="Enter Days"
-    />
-
-    <Text style={styles.creditNote}>
-      Note : Create the Credit limit for the Vendor which avoids the exemption of the Credit Balance.
-    </Text>
-  </>
-)}
-
-      <View style={styles.footerRow}>
-        <TouchableOpacity
-          style={styles.cancelBtn}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={{fontFamily: "Gilroy-Bold",  
-  fontSize: 16,}}>
-            Cancel
+        <View style={styles.sectionHeader}>
+          <View style={styles.blueBar} />
+          <Text style={styles.sectionTitle}>
+            Vendor Information
           </Text>
-        </TouchableOpacity>
+        </View>
+        <Text style={styles.label}>
+          Vendor / Business Name <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        <ValidatedInput
+          type="name"
+          inputType="text"
+          value={businessName}
+          onChangeText={(text) => {
+            setBusinessName(text);
+            setErrors(prev => ({
+              ...prev,
+              businessName: ""
+            }));
+          }}
+          placeholder="Enter Vendor Name"
+          placeholderTextColor="#9CA3AF"
+          style={styles.input}
+        />
+
+        {errors.businessName && (
+          <ErrorMessage
+            message={errors.businessName}
+            type="error"
+          />
+        )}
+
+        <Text style={styles.note}>
+          Note : Max 50 Characters
+        </Text>
+
+
+
+        <Text style={styles.label}>
+          Vendor   Category <Text style={{ color: "red" }}>*</Text>
+        </Text>
 
         <TouchableOpacity
-          style={styles.submitBtn}
+          style={styles.expensesDropdownBox}
+          onPress={() => {
+            setCategoryOpen(!categoryOpen)
+          }}
         >
-          <Text style={styles.submitText}>
-            Add Vendor
+          <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
+            {selectedCategory?.label || "Select Category"}
+
           </Text>
+          <Image source={DownArrow} style={styles.expensesArrowIcon} />
         </TouchableOpacity>
-      </View>
 
-    </ScrollView>
+        {categoryOpen && (
+          <View style={styles.expensesDropdownMenu}>
+            <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+              {categoryOptions.length === 0 ? (
+                <Text style={styles.expensesNoDataText}>
+                  No category found
+                </Text>
+              ) : (
+                categoryOptions.map((item, index) => {
+                  const isSelected =
+                    selectedCategory?.value === item?.value;
 
-  </View>
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.expensesOption,
+                        isSelected && styles.expensesOptionSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedCategory(item);
+                        setCategoryErr("");
+                        setNochangeErr("");
+                        setCategoryOpen(false);
+                        setErrors(prev => ({ ...prev, category: "" }))
+                      }}
 
-)
+                    >
+                      <Text
+                        style={[
+                          styles.expensesOptionText,
+                          isSelected && styles.expensesOptionTextSelected,
+                        ]}
+                      >
+                        {item?.label}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                })
+
+
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+        {errors.category && (
+          <ErrorMessage
+            message={errors.category}
+            type="error"
+          />
+        )}
+
+        <Text style={styles.label}>
+          Business Mob Number <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        <View style={styles.mobileWrapper}>
+          <TouchableOpacity
+            style={styles.countryCodeBox}
+            onPress={() => setCountryCodeOpen(!countryCodeOpen)}
+          >
+            <Text style={styles.countryCodeText}>
+              {selectedCountry?.code || selectedCountry || "+91"}</Text>
+            <Image source={DownArrow} style={styles.countryArrow} />
+          </TouchableOpacity>
+
+          <View ref={mobileRef}>
+            <ValidatedInput
+              style={styles.mobileInput}
+              type="mobile"
+              inputType="numeric"
+              keyboardType="numeric"
+              placeholder="Enter Mobile Number"
+              placeholderTextColor="#9CA3AF"
+              value={businessmobile}
+              onChangeText={(t) => {
+                const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
+                setBusinessMobile(cleaned)
+                setErrors({ ...errors, businessmobile: "" })
+                setNoChangeError("")
+              }}
+              onFocus={() => scrollToField(mobileRef)}
+            />
+
+          </View>
+
+        </View>
+
+
+        {errors.businessmobile && (
+          <ErrorMessage
+            message={errors.businessmobile}
+            type="error"
+          />
+        )}
+        {countryCodeOpen && (
+          <>
+            <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
+              <View style={styles.dropdownOverlay} />
+            </TouchableWithoutFeedback>
+
+            <View style={styles.countryDropdownMenu}>
+              <ScrollView>
+                {countryList.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.countryOption}
+                    onPress={() => {
+                      setSelectedCountry(item);
+                      setCountryCodeOpen(false);
+                    }}
+                  >
+                    <Text style={styles.countryOptionText}>
+                      {item?.label} ({item?.code})
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </>
+        )}
+
+        <Text style={styles.label}>
+          Proprietor / Contact Person Name <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        <ValidatedInput
+          type="name"
+          inputType="text"
+          value={contactPerson}
+          // onChangeText={setContactPerson}
+          onChangeText={(t) => {
+            // const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+            setContactPerson(t);
+            setErrors({ ...errors, contactPerson: "" })
+            setNoChangeError("")
+          }}
+          placeholder="Enter Name"
+          placeholderTextColor="#9CA3AF"
+          style={styles.input}
+        />
+
+        {errors.contactPerson && (
+          <ErrorMessage
+            message={errors.contactPerson}
+            type="error"
+          />
+        )}
+
+        <Text style={styles.label}>
+          Mob Number <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        <View style={styles.mobileWrapper}>
+          <TouchableOpacity
+            style={styles.countryCodeBox}
+            onPress={() => setCountryCodeOpen(!countryCodeOpen)}
+          >
+            <Text style={styles.countryCodeText}>
+              {selectedCountry?.code || selectedCountry || "+91"}</Text>
+            <Image source={DownArrow} style={styles.countryArrow} />
+          </TouchableOpacity>
+
+          <View ref={mobileRef}>
+            <ValidatedInput
+              style={styles.mobileInput}
+              type="mobile"
+              inputType="numeric"
+              keyboardType="numeric"
+              placeholder="Enter Mobile Number"
+              placeholderTextColor="#9CA3AF"
+              value={mobile}
+              onChangeText={(t) => {
+                const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
+                setMobile(cleaned)
+                setErrors({ ...errors, mobile: "" })
+                setNoChangeError("")
+              }}
+              onFocus={() => scrollToField(mobileRef)}
+            />
+          </View>
+
+        </View>
+
+
+        <ErrorMessage message={errors.mobile} type="error" />
+        {countryCodeOpen && (
+          <>
+            <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
+              <View style={styles.dropdownOverlay} />
+            </TouchableWithoutFeedback>
+
+            <View style={styles.countryDropdownMenu}>
+              <ScrollView>
+                {countryList.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.countryOption}
+                    onPress={() => {
+                      setSelectedCountry(item);
+                      setCountryCodeOpen(false);
+                    }}
+                  >
+                    <Text style={styles.countryOptionText}>
+                      {item?.label} ({item?.code})
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </>
+        )}
+
+        <Text style={styles.label}>
+          Email Address
+        </Text>
+
+        {/* <ValidatedInput
+          type="email"
+          inputType="email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Enter Mail ID"
+          placeholderTextColor="#9CA3AF"
+          style={styles.input}
+        /> */}
+
+        <View ref={emailRef}>
+          <ValidatedInput
+            type="email"
+            inputType="email"
+            value={email}
+            onChangeText={(t) => {
+              const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+              setEmail(sanitized);
+              setErrors({ ...errors, email: "" })
+              setNoChangeError("")
+            }}
+            style={styles.input}
+            placeholder="Enter Email"
+            onFocus={() => scrollToField(emailRef)}
+            placeholderTextColor="#9CA3AF"
+          />
+        </View>
+        {errors.email && (
+          <ErrorMessage message={errors.email} type="error" />
+        )}
+
+        <Text style={styles.label}>
+          Commercial address (No,Area/Street, Sector )  <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        <ValidatedInput
+          type="description"
+          inputType="text"
+          multiline
+          value={street}
+          onChangeText={(t) => {
+            // const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+            setStreet(t);
+            setErrors({ ...errors, street: "" })
+            setNoChangeError("")
+          }}
+          // onChangeText={setStreet}
+          placeholder="Enter Address"
+          placeholderTextColor="#9CA3AF"
+          style={styles.textArea}
+        />
+
+        {errors.street && (
+          <ErrorMessage
+            message={errors.street}
+            type="error"
+          />
+        )}
+
+
+        <View style={styles.row}>
+          <View style={styles.half}>
+            <Text style={styles.label}>
+              Landmark
+            </Text>
+
+
+            <ValidatedInput
+              value={landmark}
+              onChangeText={(t) => {
+                setLandmark(t.replace(/[^a-zA-Z\s]/g, ""))
+                setNoChangeError("")
+              }}
+              style={styles.input}
+              placeholder="Enter Landmark"
+              onFocus={() => scrollToField(landmarkRef)}
+            />
+          </View>
+
+          <View style={styles.half}>
+            <Text style={styles.label}>
+              City <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+
+
+            <ValidatedInput
+              type="name"
+              inputType="text"
+              value={city}
+              onChangeText={(t) => {
+                setCity(t.replace(/[^a-zA-Z\s]/g, ""));
+                setErrors({ ...errors, city: "" })
+                setNoChangeError("")
+              }}
+              style={styles.input}
+              placeholder="Enter City"
+              placeholderTextColor="#9CA3AF"
+              onFocus={() => scrollToField(cityRef)}
+            />
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <View style={styles.half}>
+            <Text style={styles.label}>
+              State <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <View style={{ position: "relative", marginBottom: 6 }}>
+              <View ref={stateRef}>
+                <TextInput
+                  style={styles.select}
+                  placeholder="Select State"
+                  placeholderTextColor="#9CA3AF"
+                  value={stateOpen ? stateQuery : stateName}
+                  editable={true}
+                  // onFocus={() => {
+                  //   setStateOpen(true);
+                  //   setStateQuery("");
+                  //    setIsInputFocused(true);
+                  // }}
+                  onChangeText={(t) => {
+                    setStateQuery(t);
+                    setStateOpen(true);
+                  }}
+                  onFocus={() => {
+                    if (!stateOpen) {
+                      setStateOpen(true);
+                      Keyboard.dismiss()
+                    }
+                    else {
+                      setStateOpen(false)
+                    }
+
+                    setStateQuery("")
+                    scrollToField(stateRef)
+                  }}
+
+                // onBlur={() => {
+                //   setIsInputFocused(false);
+                // }}
+                />
+              </View>
+
+              <Image source={DownArrow} style={styles.arrowIcon} />
+
+              {stateOpen && (
+
+                <View style={styles.dropdownMenu}>
+                  <TouchableWithoutFeedback onPress={() => setStateOpen(false)}>
+                    <View style={{ flex: 1 }} />
+                  </TouchableWithoutFeedback>
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    nestedScrollEnabled={true}
+                  >
+                    {filteredStateList.length > 0 ? (
+                      filteredStateList.map((v, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.option,
+                            stateName === v.label && styles.selectedOption,
+                          ]}
+                          onPress={() => {
+                            setStateName(v.label);
+                            setStateQuery("");
+                            setStateOpen(false);
+                            setErrors({ ...errors, stateName: "" });
+                            setNoChangeError("");
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.optionText,
+                              stateName === v.label && styles.selectedOptionText,
+                            ]}
+                          >
+                            {v.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))
+                    ) : (
+                      <Text style={styles.noResult}>No state found</Text>
+                    )}
+                  </ScrollView>
+                </View>
+              )}
+
+            </View>
+
+            {errors.stateName && (
+              <ErrorMessage message={errors.stateName} type="error" />
+            )}
+          </View>
+
+          <View style={styles.half}>
+            <Text style={styles.label}>
+              Pincode <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            {/* <ValidatedInput
+              type="pincode"
+              inputType="numeric"
+              value={pinCode}
+              onChangeText={setPinCode}
+              placeholder="Enter Pincode"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+            /> */}
+
+            <ValidatedInput
+              type="pincode"
+              inputType="numeric"
+              value={pinCode}
+              keyboardType="numeric"
+              onChangeText={(text) => {
+                const cleaned = text.replace(/[^0-9]/g, "").slice(0, 6);
+                setPinCode(cleaned);
+
+                const errorMsg = validatePincode(cleaned);
+                setErrors({ ...errors, pinCode: errorMsg })
+                setNoChangeError("")
+              }}
+              style={styles.input}
+              placeholder="Enter Pincode"
+              placeholderTextColor="#9CA3AF"
+              onFocus={() => scrollToField(pincodeRef)}
+            />
+            {errors.pinCode && (
+              <ErrorMessage message={errors.pinCode} type="error" />
+            )}
+          </View>
+        </View>
+
+        <Text style={styles.label}>
+          Description
+        </Text>
+
+        <ValidatedInput
+          type="description"
+          inputType="text"
+          multiline
+          numberOfLines={4}
+          style={styles.textArea}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Ex : Wifi Bill Paid for May"
+        />
+
+        <View style={styles.sectionHeader}>
+          <View style={styles.blueBar} />
+          <Text style={styles.sectionTitle}>
+            Business Details
+          </Text>
+        </View>
+
+        <Text style={styles.label}>
+          GST IN Number (Optional)
+        </Text>
+
+        <ValidatedInput
+          type="gst"
+          inputType="text"
+          value={gstNumber}
+          onChangeText={(text) => {
+            setGstNumber(text);
+            setErrors(prev => ({
+              ...prev,
+              gstNumber: "",
+            }));
+          }}
+          placeholder="Enter GSTIN"
+          autoCapitalize="characters"
+          style={styles.input}
+        />
+
+
+
+        <Text style={styles.label}>
+          PAN Number (Optional)
+        </Text>
+  
+
+        <ValidatedInput
+          type="pan"
+          inputType="text"
+          value={panNumber}
+           onChangeText={(text) => {
+    setPanNumber(text);
+    setErrors(prev => ({
+      ...prev,
+      panNumber: "",
+    }));
+  }}
+          placeholder="Enter PAN Number"
+          autoCapitalize="characters"
+          style={styles.input}
+        />
+
+        <Text style={styles.label}>
+          Vendor Code
+        </Text>
+
+        <TextInput
+          editable={false}
+          value="VEN 006"
+          style={[
+            styles.input,
+            { backgroundColor: "#F8F9FA" }
+          ]}
+        />
+
+        <TouchableOpacity
+          style={styles.creditRow}
+          onPress={() => setAllowCredit(!allowCredit)}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              allowCredit &&
+              styles.checkboxActive
+            ]}
+          >
+            {allowCredit && (
+              <Text style={{ color: "#FFF" }}>
+                ✓
+              </Text>
+            )}
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.creditTitle}>
+              Allow Credit Purchases
+            </Text>
+
+            <Text style={styles.creditSub}>
+              It's like similar to debt purchase and will pay later
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        {allowCredit && (
+          <>
+            <Text style={styles.label}>
+              Credit Limit ₹ INR
+            </Text>
+
+            <ValidatedInput
+              style={styles.input}
+              value={creditLimit}
+              onChangeText={setCreditLimit}
+              keyboardType="numeric"
+              type="numberOnly"
+              inputType="numeric"
+              placeholder="Enter Amount Limit"
+            />
+
+            {errors.creditLimit && (
+              <ErrorMessage
+                message={errors.creditLimit}
+                type="error"
+              />
+            )}
+
+
+
+            <Text style={styles.label}>
+              Credit Period
+            </Text>
+
+            <ValidatedInput
+              style={styles.input}
+              value={creditPeriod}
+              onChangeText={setCreditPeriod}
+              keyboardType="numeric"
+              type="numberOnly"
+              inputType="numeric"
+              placeholder="Enter Days"
+            />
+
+            {errors.creditPeriod && (
+              <ErrorMessage
+                message={errors.creditPeriod}
+                type="error"
+              />
+            )}
+
+            <Text style={styles.creditNote}>
+              Note : Create the Credit limit for the Vendor which avoids the exemption of the Credit Balance.
+            </Text>
+          </>
+        )}
+
+        <View style={styles.footerRow}>
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={{
+              fontFamily: "Gilroy-Bold",
+              fontSize: 16,
+            }}>
+              Cancel
+            </Text>
+          </TouchableOpacity>
+
+
+          <TouchableOpacity
+            style={styles.submitBtn} onPress={handleSubmit}
+          >
+            <Text style={styles.submitText}>
+              Add Vendor
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
+
+    </View>
+
+  )
 
 
 }
 
 const styles = StyleSheet.create({
- container: {
-  flex: 1,
-  backgroundColor: "#FFF",
-  paddingTop:50
-},
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF",
+    paddingTop: 50
+  },
 
-header: {
-  height: 60,
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 20,
-  borderBottomWidth: 1,
-  borderBottomColor: "#F1F5F9",
-},
+  header: {
+    height: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
 
-backBtn: {
-  width: 18,
-  height: 18,
-  borderRadius: 8,
-  backgroundColor: "#F5F7FB",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  backBtn: {
+    width: 18,
+    height: 18,
+    borderRadius: 8,
+    backgroundColor: "#F5F7FB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-headerTitle: {
-  fontSize: 20,
-  fontFamily: "Gilroy-Bold",
-  marginLeft: 16,
-},
+  headerTitle: {
+    fontSize: 20,
+    fontFamily: "Gilroy-Bold",
+    marginLeft: 16,
+  },
 
-content: {
-  padding: 20,
-  paddingBottom: 60,
-  paddingTop:10
-},
+  content: {
+    padding: 20,
+    paddingBottom: 60,
+    paddingTop: 10
+  },
 
-  title: { fontSize: 20,     fontFamily: "Gilroy-Bold", marginBottom: 20 },
+  title: { fontSize: 20, fontFamily: "Gilroy-Bold", marginBottom: 20 },
 
   profileRow: {
     flexDirection: "row",
@@ -780,13 +1344,13 @@ content: {
 
   plusText: {
     fontSize: 16,
-       fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
   profileTitle: {
     fontSize: 14,
-       fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
@@ -801,67 +1365,67 @@ content: {
   profileImg: { width: 60, height: 60, borderRadius: 30, backgroundColor: "#737373", },
 
 
-  profileText: { fontSize: 14,     fontFamily: "Gilroy-Bold", },
+  profileText: { fontSize: 14, fontFamily: "Gilroy-Bold", },
   subText: { color: "#777", fontSize: 12, lineHeight: 16, marginTop: 4 },
 
-//  label: {
-//   fontSize: 15,
-//   color: "#111827",
-//   marginBottom: 10,
-//   marginTop: 18,
-//   fontFamily: "Gilroy-Medium",
-// },
-// input: {
-//   height: 58,
-//   borderWidth: 1,
-//   borderColor: "#E5E7EB",
-//   borderRadius: 14,
-//   paddingHorizontal: 16,
-//   fontSize: 16,
-//   backgroundColor: "#FFF",
-// },
-// textArea: {
-//   height: 110,
-//   borderWidth: 1,
-//   borderColor: "#DCE3F1",
-//   borderRadius: 14,
-//   padding: 16,
-//   textAlignVertical: "top",
-//   fontSize: 16,
-// },
-input: {
-  height: 56,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  backgroundColor: "#FFFFFF",
-  fontSize: 16,
-  fontFamily: "Gilroy-Medium",
-  color: "#111827",
-},
+  //  label: {
+  //   fontSize: 15,
+  //   color: "#111827",
+  //   marginBottom: 10,
+  //   marginTop: 18,
+  //   fontFamily: "Gilroy-Medium",
+  // },
+  // input: {
+  //   height: 58,
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   borderRadius: 14,
+  //   paddingHorizontal: 16,
+  //   fontSize: 16,
+  //   backgroundColor: "#FFF",
+  // },
+  // textArea: {
+  //   height: 110,
+  //   borderWidth: 1,
+  //   borderColor: "#DCE3F1",
+  //   borderRadius: 14,
+  //   padding: 16,
+  //   textAlignVertical: "top",
+  //   fontSize: 16,
+  // },
+  input: {
+    height: 56,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#FFFFFF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+  },
 
-textArea: {
-  minHeight: 110,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingTop: 16,
-  backgroundColor: "#FFFFFF",
-  textAlignVertical: "top",
-  fontSize: 16,
-  fontFamily: "Gilroy-Medium",
-  color: "#111827",
-},
+  textArea: {
+    minHeight: 110,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    backgroundColor: "#FFFFFF",
+    textAlignVertical: "top",
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+  },
 
-label: {
-  fontSize: 15,
-  fontFamily: "Gilroy-Medium",
-  color: "#111827",
-  marginBottom: 8,
-  marginTop: 16,
-},
+  label: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+    marginBottom: 8,
+    marginTop: 16,
+  },
 
   selectBox: {
     borderWidth: 1,
@@ -876,37 +1440,37 @@ label: {
   selectText: { color: "#444" },
   arrow: { width: 18, height: 18, tintColor: "#444" },
 
- footerRow: {
-  flexDirection: "row",
-  justifyContent: "flex-end",
-  marginTop: 30,
-},
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 30,
+  },
 
-cancelBtn: {
-  width: 110,
-  height: 52,
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 14,
-},
+  cancelBtn: {
+    width: 110,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
 
-submitBtn: {
-  width: 160,
-  height: 52,
-  borderRadius: 12,
-  backgroundColor: "#2457FF",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  submitBtn: {
+    width: 160,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#2457FF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-submitText: {
-  color: "#FFF",
-  fontSize: 16,
-  fontFamily: "Gilroy-Bold",
-},
+  submitText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Bold",
+  },
   noChangeWrapper: {
     width: "100%",
     alignItems: "center",
@@ -932,14 +1496,14 @@ submitText: {
   },
 
 
-  cancel: { color: "#777", fontSize: 16 , fontFamily: "Gilroy-Bold", },
+  cancel: { color: "#777", fontSize: 16, fontFamily: "Gilroy-Bold", },
   addBtn: {
     backgroundColor: "#4662FF",
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: 12,
   },
-  addBtnText: { color: "#fff", fontSize: 16,     fontFamily: "Gilroy-Bold",},
+  addBtnText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold", },
   profileCircle: {
     width: 70,
     height: 70,
@@ -1035,12 +1599,12 @@ submitText: {
 
   selectedOption: {
     backgroundColor: "#E3EEFF",
-    borderRadius:7
+    borderRadius: 7
   },
 
   selectedOptionText: {
     color: "#2D6CDF",
-       fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
   },
 
   noResult: {
@@ -1059,6 +1623,7 @@ submitText: {
     fontSize: 15,
     color: "#000",
   },
+
 
   mobileWrapper: {
     flexDirection: "row",
@@ -1107,108 +1672,211 @@ submitText: {
   },
 
   dropdownOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 
-countryDropdownMenu: {
-  position: "absolute",
-  top: 355,
-  left: 0,
-  width: 180,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 10,
-  elevation: 10,
-  zIndex: 9999,
-  maxHeight: 250,
-},
-countryOption: {
-  paddingVertical: 12,
-  paddingHorizontal: 12,
-},
+  // countryDropdownMenu: {
+  //   position: "absolute",
+  //   top: 355,
+  //   left: 0,
+  //   width: 180,
+  //   backgroundColor: "#fff",
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   borderRadius: 10,
+  //   elevation: 10,
+  //   zIndex: 9999,
+  //   maxHeight: 250,
+  // },
+  // countryOption: {
+  //   paddingVertical: 12,
+  //   paddingHorizontal: 12,
+  // },
 
-countryOptionText: {
-  fontSize: 14,
-  color: "#111",
-},
+  // countryOptionText: {
+  //   fontSize: 14,
+  //   color: "#111",
+  // },
 
-sectionHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 15,
-  marginBottom: 20,
-},
+  // mobileInput: {
+  //   flex: 1,
+  //   paddingHorizontal: 12,
+  //   fontSize: 14,
+  // },
 
-blueBar: {
-  width: 4,
-  height: 28,
-  backgroundColor: "#2457FF",
-  borderRadius: 10,
-  marginRight: 12,
-},
+  countryDropdown: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    marginTop: 10,
+    zIndex: 9999,
+  },
 
-sectionTitle: {
-  fontSize: 18,
-  fontFamily: "Gilroy-Bold",
-  color: "#111827",
-},
+  //   dropdownOverlay: {
+  //   position: "absolute",
+  //   top: 0,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  // },
 
-row: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-},
+  countryDropdownMenu: {
+    position: "absolute",
+    top: 355,
+    left: 0,
+    width: 180,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    elevation: 10,
+    zIndex: 9999,
+    maxHeight: 250,
+  },
+  countryOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
 
-half: {
-  width: "48%",
-},
+  countryOptionText: {
+    fontSize: 14,
+    color: "#111",
+  },
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 15,
+    marginBottom: 20,
+  },
+
+  blueBar: {
+    width: 4,
+    height: 28,
+    backgroundColor: "#2457FF",
+    borderRadius: 10,
+    marginRight: 12,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: "#111827",
+  },
+
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  half: {
+    width: "48%",
+  },
 
 
 
-note: {
-  color: "#64748B",
-  marginTop: 6,
-},
+  note: {
+    color: "#64748B",
+    marginTop: 6,
+  },
 
-creditRow: {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  marginTop: 20,
-},
+  creditRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginTop: 20,
+  },
 
-checkbox: {
-  width: 24,
-  height: 24,
-  borderRadius: 6,
-  borderWidth: 1,
-  borderColor: "#6D4AFF",
-  marginRight: 12,
-  justifyContent: "center",
-  alignItems: "center",
-},
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#6D4AFF",
+    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-checkboxActive: {
-  backgroundColor: "#6D4AFF",
-},
+  checkboxActive: {
+    backgroundColor: "#6D4AFF",
+  },
 
-creditTitle: {
-  fontSize: 18,
-   fontFamily: "Gilroy-Semibold"
-},
+  creditTitle: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Semibold"
+  },
 
-creditSub: {
-  marginTop: 5,
-  color: "#64748B",
-  fontFamily: "Gilroy-Regular"
-},
+  creditSub: {
+    marginTop: 5,
+    color: "#64748B",
+    fontFamily: "Gilroy-Regular"
+  },
 
-creditNote: {
-  color: "#64748B",
-  marginTop: 10,
-  lineHeight: 22,
-},
+  creditNote: {
+    color: "#64748B",
+    marginTop: 10,
+    lineHeight: 22,
+  },
+
+  expensesDropdownBox: {
+    borderWidth: 1,
+    borderColor: "#D4D4D4",
+    borderRadius: 10,
+    padding: 14,
+    marginTop: 6,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+
+  expensesArrowIcon: {
+    width: 18,
+    height: 18,
+    tintColor: "#6A6A6A",
+  },
+
+  expensesDropdownMenu: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    elevation: 6,
+    zIndex: 999,
+  },
+
+  expensesOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+
+  expensesOptionSelected: {
+    backgroundColor: "#1D5BEE",
+  },
+
+  expensesOptionText: {
+    fontSize: 15,
+    color: "#111",
+  },
+
+  expensesOptionTextSelected: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  expensesNoDataText: {
+    paddingVertical: 14,
+    textAlign: "center",
+    color: "#9CA3AF",
+    fontSize: 14,
+  },
+
 });

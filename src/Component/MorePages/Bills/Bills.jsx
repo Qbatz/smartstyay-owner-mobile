@@ -3258,9 +3258,11 @@ export default function BillsDesign({ route }) {
                                   ))}
                                 </>
                               ) : (
+                                <View style={styles.emptyWallet}>
                                 <View style={styles.emptyState}>
-                                  <Text style={styles.emptyText}>No pending invoices</Text>
+                                  <Text style={styles.emptyWalletText}>No pending invoices</Text>
                                 </View>
+                                 </View>
                               )}
 
                               <View style={styles.totalInvoiceRow}>
@@ -3588,9 +3590,11 @@ export default function BillsDesign({ route }) {
                                     </Text>
                                   </View>
                                 ) : (
+                                    <View style={styles.emptyWallet}>
                                   <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No pending invoices</Text>
+                                    <Text style={styles.emptyWalletText}>No pending invoices</Text>
                                   </View>
+                                   </View>
                                 )}
 
                                 {/* )} */}
@@ -3673,9 +3677,11 @@ export default function BillsDesign({ route }) {
                                     </View>
                                   ))
                                 ) : (
+                                    <View style={styles.emptyWallet}>
                                   <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No Pending Bookings</Text>
+                                    <Text style={styles.emptyWalletText}>No Pending Bookings</Text>
                                   </View>
+                                   </View>
                                 )}
 
                                 <View style={styles.totalInvoiceRow}>
@@ -3743,7 +3749,7 @@ export default function BillsDesign({ route }) {
                                     style={styles.walletRow}
                                   >
                                     <Text style={styles.walletSource}>
-                                      {item?.source}
+                                      {item?.name}
                                     </Text>
 
                                     <Text
@@ -7946,11 +7952,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
     padding: 14,
+    paddingHorizontal:10
   },
 
 
   th: { fontSize: 12, fontFamily: "Gilroy-Bold", color: "#6B7280" },
-  invoiceRow: { flexDirection: "row", paddingVertical: 10 },
+  invoiceRow: { flexDirection: "row", paddingVertical: 10 , paddingHorizontal:10},
   invText: { fontSize: 13, color: "#111" },
 
   sectionLabel: { fontSize: 13, fontFamily: "Gilroy-Bold", marginBottom: 8 },
@@ -8074,6 +8081,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
+    paddingHorizontal:10, 
+    paddingVertical:10
   },
 
   totalText: {
@@ -8103,6 +8112,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",        // ✅ IMPORTANT
     paddingVertical: 10,
     backgroundColor: "#FBFDFF",
+    paddingHorizontal:10
   },
 
   arrow: { width: 18, height: 18, tintColor: "#444" },

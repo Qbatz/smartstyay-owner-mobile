@@ -25,6 +25,22 @@ export default function ExpensesDetails({ route, navigation }) {
   const [showExpenseSheet, setShowExpenseSheet] = useState(false);
 const [selectedExpense, setSelectedExpense] = useState(null);
 
+const getStatusColor = (status) => {
+  switch (status?.toLowerCase()) {
+    case "full":
+      return "#16A34A";
+
+    case "partial":
+      return "#F97316";
+
+    case "pending":
+      return "#DC2626";
+
+    default:
+      return "#6B7280";
+  }
+};
+
   const tabs = [
     "Info",
     "Transactions",
@@ -83,17 +99,23 @@ case "Comments":
 
       <View style={styles.summaryCard}>
 
+  
   <Text style={styles.expenseMainTitle}>
-    {expense?.title || "Vegetables 50 KG"}
-  </Text>
+  {expense?.categoryName || "-"}
+</Text>
 
   <View style={styles.badgeRow}>
     <View style={styles.expCodeBadge}>
+     
       <Text style={styles.expCodeText}>
-        EXP 001
-      </Text>
+  {expense?.referenceNumber || "-"}
+</Text>
     </View>
 
+
+
+
+{expense?.vendorId && (
   <View style={styles.vendorBadge}>
   <Image
     source={LocationIcon}
@@ -105,6 +127,8 @@ case "Comments":
       "Kural kaikai Angadi- Salem"}
   </Text>
 </View>
+)}
+
   </View>
 
   <View style={styles.amountRow}>
@@ -113,15 +137,34 @@ case "Comments":
     </Text>
 
     <View style={{ alignItems: "flex-end" }}>
-      <Text style={styles.amountValue}>
-        ₹ {expense?.amount || "6,200.00"}
-      </Text>
+    <Text style={styles.amountValue}>
+  ₹ {Number(expense?.totalAmount || 0).toLocaleString("en-IN")}
+</Text>
 
-      <View style={styles.partialBadge}>
-        <Text style={styles.partialText}>
-          ● Partially Paid
-        </Text>
-      </View>
+   <View
+  style={[
+    styles.partialBadge,
+    {
+      backgroundColor:
+        expense?.paymentStatus === "Full"
+          ? "#ECFDF5"
+          : "#FFF7ED",
+    },
+  ]}
+>
+  <Text
+    style={[
+      styles.partialText,
+      {
+        color: getStatusColor(
+          expense?.paymentStatus
+        ),
+      },
+    ]}
+  >
+    ● {expense?.paymentStatus || "-"}
+  </Text>
+</View>
     </View>
   </View>
 
