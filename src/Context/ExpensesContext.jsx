@@ -9,8 +9,15 @@ export default function ExpensesProvider({ children }) {
   const [IntializeexpensesList, setIntializeExpensesList] = useState(null)
   const [rolePermission, setRolePermission] = useState(null);
    const [profileDetails, setProfileDetails] = useState(null);
+   const [expenseUnits, setExpensesUnits] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+    const getErrorMessage = (err) =>
+    err?.response?.data?.message ||
+    err?.response?.data ||
+    err?.message ||
+    "Something went wrong";
 
    
   const fetchExpenses = async (hostelId) => {
@@ -394,6 +401,37 @@ const DeleteExpense = async (hostelId, expenseId) => {
   }
 };
 
+ const GetExpenseUnits = async () => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+    const res = await axios.get("/v2/expense/units");
+
+    if (res?.status === 200) {
+      setExpensesUnits(res?.data || []);
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log(
+      "Expense units Error:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
 
@@ -405,6 +443,7 @@ const DeleteExpense = async (hostelId, expenseId) => {
         IntializeexpensesList,
         rolePermission,
         profileDetails,
+        expenseUnits,
         loading,
         error,
         fetchExpenses,
@@ -420,6 +459,7 @@ const DeleteExpense = async (hostelId, expenseId) => {
         GetProfileDetails,
         UpdateExpense,
         DeleteExpense,
+        GetExpenseUnits,
       }}
     >
       {children}

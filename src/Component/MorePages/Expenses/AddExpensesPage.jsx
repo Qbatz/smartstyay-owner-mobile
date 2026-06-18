@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useContext } from "react";
+import React, { useRef, useState, useEffect, useContext, useCallback } from "react";
 import {
     View,
     Text,
@@ -12,11 +12,14 @@ import {
     PanResponder,
     Dimensions, BackHandler, Keyboard
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import ArrowLeft from "../../../Assets/Images/directionleft.png";
+import RepeatIcon from "../../../Assets/Images/RepeatIcon.png";
 import ValidatedInput from "../ValidatedInput"
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -24,11 +27,16 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
+import { Calendar } from "react-native-calendars";
+import dayjs from "dayjs";
 
-export default function AddExpensesPage({ vendorData, navigation }) {
+export default function AddExpensesPage({ route, vendorData, navigation }) {
 
-    const { addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
+    const { vendorList, addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
     const { activeHostelId } = useContext(CommonContexts);
+    const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense, AddExpense,
+        DeleteExpense, GetExpenseUnits, expenseUnits
+    } = useContext(ExpensesContext)
 
     const translateY = useRef(new Animated.Value(0)).current;
 
@@ -106,76 +114,125 @@ export default function AddExpensesPage({ vendorData, navigation }) {
 
     const [description, setDescription] =
         useState("");
-        const [paymentStatus, setPaymentStatus] =
-  useState("Partially Paid");
+    const [paymentStatus, setPaymentStatus] =
+        useState("Partially Paid");
 
-  
+    const [categoryOpen, setCategoryOpen] = useState(false);
+    const [subCategoryOpen, setSubCategoryOpen] = useState(false);
+    const [vendorOpen, setVendorOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+    const [selectedMode, setSelectedMode] = useState(null)
+
+    const [openPurchaseDate, setOpenPurchaseDate] = useState(false);
+    const [purchaseDate, setPurchaseDate] = useState(null);
+
+    const [modePaymentOpen, setModePaymentOpen] = useState(false);
+    const [modePayment, setModePayment] = useState(null);
+
+    const [unitsOpen, setUnitsOpen] = useState(false);
+    const [selectedUnits, setSelectedUnits] = useState(null);
+    const [categoryErr, setCategoryErr] = useState("");
+
+    const [subCategoryErr, setSubCategoryErr] = useState("");
+    const [dateErr, setDateErr] = useState("");
+
+    const [selectedVendor, setSelectedVendor] = useState(null);
+    const [vendorId, setVendorId] = useState(null);
+    const [amountErr, setAmountErr] = useState("");
+    const [unitcountErr, setUnitCountErr] = useState("")
+    const [modeErr, setModeErr] = useState("");
+    const [nochangeErr, setNochangeErr] = useState("");
+
+    const categoryList = IntializeexpensesList?.listExpenses || [];
+
+
+    const subCategoryList = selectedCategory?.subCategories || [];
+
+    console.log("vendorlist", vendorList);
+
+
+
 
     const emptyItem = {
-  itemDetail: "",
-  quantity: "",
-  unit: "",
-  unitPrice: "",
-  amount: "",
-};
+        itemDetail: "",
+        quantity: "",
+        unit: "",
+        unitPrice: "",
+        amount: "",
+    };
 
-const [items, setItems] = useState([emptyItem]);
+    const [items, setItems] = useState([emptyItem]);
 
-const handleAddRow = () => {
-  setItems((prev) => [
-    ...prev,
-    {
-      itemDetail: "",
-      quantity: "",
-      unit: "",
-      unitPrice: "",
-      amount: "",
-    },
-  ]);
-};
+    const handleAddRow = () => {
+        setItems((prev) => [
+            ...prev,
+            {
+                itemDetail: "",
+                quantity: "",
+                unit: "",
+                unitPrice: "",
+                amount: "",
+            },
+        ]);
+    }
+
+    useEffect(() => {
+        GetExpenseUnits();
+    }, []);
+
+    useEffect(() => {
+        if (activeHostelId) {
+            GetInitializeExpense(activeHostelId)
+        }
+
+    }, [activeHostelId])
+
+    useFocusEffect(
+        useCallback(() => {
+            if (activeHostelId) {
+                getVendorList(activeHostelId);
+            }
+        }, [activeHostelId])
+    );
 
 
-const handleCloneRow = (index) => {
-  const clonedItem = {
-    ...items[index],
-  };
+    const handleCloneRow = (index) => {
+        const clonedItem = {
+            ...items[index],
+        };
 
-  const updated = [...items];
-  updated.splice(index + 1, 0, clonedItem);
+        const updated = [...items];
+        updated.splice(index + 1, 0, clonedItem);
 
-  setItems(updated);
-};
+        setItems(updated);
+    };
 
-const handleDeleteRow = (index) => {
-  if (items.length === 1) {
-    setItems([emptyItem]);
-    return;
-  }
+    const handleDeleteRow = (index) => {
+        setItems((prev) =>
+            prev.filter((_, i) => i !== index)
+        );
+    };
 
-  setItems((prev) =>
-    prev.filter((_, i) => i !== index)
-  );
-};
+    const updateItem = (
+        index,
+        field,
+        value
+    ) => {
+        const updated = [...items];
 
-const updateItem = (
-  index,
-  field,
-  value
-) => {
-  const updated = [...items];
+        updated[index][field] = value;
 
-  updated[index][field] = value;
+        const qty =
+            Number(updated[index].quantity) || 0;
 
-  const qty =
-    Number(updated[index].quantity) || 0;
+        const price =
+            Number(updated[index].unitPrice) || 0;
 
-  const price =
-    Number(updated[index].unitPrice) || 0;
+        updated[index].amount = qty * price;
 
-  updated[index].amount = qty * price;
-
-  setItems(updated);
-};
+        setItems(updated);
+    };
 
     const scrollRef = useRef(null);
     const mobileRef = useRef(null);
@@ -202,6 +259,62 @@ const updateItem = (
             () => { }
         );
     };
+
+    const editData = route?.params?.editData || null;
+
+
+
+    console.log("IntializeexpensesList", editData);
+    const isEditMode = !!editData;
+
+
+    const closeAll = () => {
+        setCategoryOpen(false);
+        setUnitsOpen(false);
+        setModePaymentOpen(false);
+        setOpenDatePicker(false);
+    };
+
+
+    const today = dayjs();
+
+    const isDisabledDate = (d) => {
+        if (!d) return false;
+
+        if (d.isAfter(today, "day")) return true;
+
+        if (isEditMode && minDate && d.isBefore(minDate, "day")) return true;
+
+        return false;
+    }
+
+
+
+
+
+    const markedDates = {};
+
+    for (let i = -365; i <= 365; i++) {
+        const d = dayjs().add(i, "day");
+        const key = d.format("YYYY-MM-DD");
+
+        if (isDisabledDate(d)) {
+            markedDates[key] = {
+                disabled: true,
+                disableTouchEvent: true,
+                customStyles: {
+                    container: {
+                        backgroundColor: "#F3F4F6",
+                        opacity: 0.4,
+                        borderRadius: 8,
+                    },
+                    text: {
+                        color: "#9CA3AF",
+                    },
+                },
+            };
+        }
+    }
 
 
     useEffect(() => {
@@ -304,6 +417,16 @@ const updateItem = (
 
     const stateList = vendors; // reuse your vendors array
 
+    const unitsOptions = expenseUnits?.map(item => ({
+        label: item?.unitName,
+        value: item?.id,
+    }));
+
+    const paymentOptions =
+        IntializeexpensesList?.banks?.map((b) => ({
+            id: b?.bankId,
+            name: `${b?.holderName} - ${b?.bankName}`,
+        })) || [];
 
     const filteredStateList = stateList?.filter((s) =>
         s.label.toLowerCase().includes(stateQuery.toLowerCase())
@@ -359,6 +482,15 @@ const updateItem = (
     //   setErrors(newErrors);
     //   return Object.keys(newErrors).length === 0;
     // };
+
+    const handleTransactionChange = (text) => {
+        const filteredText = text.replace(
+            /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+            , ""
+        );
+
+        setTransactionId(filteredText);
+    };
 
 
     const validate = () => {
@@ -430,44 +562,171 @@ const updateItem = (
     const [creditLimit, setCreditLimit] = useState("");
     const [creditPeriod, setCreditPeriod] = useState("");
 
+
+
+    const validateExpenseForm = () => {
+        let newErrors = {};
+
+        if (!expenseTitle?.trim()) {
+            newErrors.expenseTitle = "Please Enter Expense Title";
+        }
+
+        if (!selectedCategory) {
+            newErrors.category = "Please Select Category";
+        }
+
+        if (!selectedSubCategory) {
+            newErrors.subCategory = "Please Select Sub Category";
+        }
+
+        if (!amount || Number(amount) <= 0) {
+            newErrors.amount = "Please Enter Amount";
+        }
+
+        if (!purchaseDate) {
+            newErrors.expenseDate = "Please Select Expense Date";
+        }
+
+        if (linkVendor && !selectedVendor) {
+            newErrors.vendor = "Please Select Vendor";
+        }
+
+        if (linkVendor && !paymentStatus) {
+            newErrors.paymentStatus = "Please Select Payment Status";
+        }
+
+        if (!selectedMode) {
+            newErrors.paymentMethod = "Please Select Payment Method";
+        }
+
+        if (
+            linkVendor &&
+            paymentStatus === "Partially Paid" &&
+            (!paidAmount || Number(paidAmount) <= 0)
+        ) {
+            newErrors.paidAmount = "Please Enter Paid Amount";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async () => {
+        if (!validateExpenseForm()) return;
+
+        const totalAmount = Number(amount || 0);
+
+        const paid =
+            paymentStatus === "Fully Paid"
+                ? totalAmount
+                : Number(paidAmount || 0);
+
+        const balance =
+            paymentStatus === "Fully Paid"
+                ? 0
+                : totalAmount - paid;
+
+        const payload = {
+            categoryId: selectedCategory?.categoryId,
+            subCategory: selectedSubCategory?.subCategoryId,
+            purchaseDate,
+            count: items.length,
+            totalAmount,
+
+            bankId: selectedMode?.id || "",
+
+            description,
+            title: expenseTitle,
+
+            isVendorExpense: linkVendor,
+            vendorId: linkVendor ? vendorId : null,
+
+            paymentStatus:
+                paymentStatus === "Fully Paid"
+                    ? "FULLY_PAID"
+                    : paymentStatus === "Partially Paid"
+                        ? "PARTIALLY_PAID"
+                        : "CREDIT_PENDING",
+
+            paidAmount: paid,
+            balanceAmount: balance,
+
+            paymentMethod: selectedMode?.name || "",
+            note: transactionId,
+
+            expenseItems: items.map((item) => ({
+                item: item.itemDetail,
+                quantity: Number(item.quantity || 0),
+                unitId: selectedUnits?.value,
+                unit: selectedUnits?.label,
+                unitPrice: Number(item.unitPrice || 0),
+                totalAmount: Number(item.amount || 0),
+            })),
+        };
+
+        console.log("EXPENSE PAYLOAD =>", payload);
+
+        const response = await AddExpense(
+            payload,
+            activeHostelId
+        );
+
+        if (response?.success) {
+            setModalType("success");
+            setModalMessage("Expense Added Successfully");
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                navigation.goBack();
+            }, 1500);
+        } else {
+            setModalType("error");
+            setModalMessage(
+                response?.message || "Failed to add expense"
+            );
+            setShowSuccessModal(true);
+        }
+    };
+
     return (
 
+        <>
+            <View style={styles.container}>
 
-        <View style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}
+                        style={styles.backBtn}
+                    >
+                        <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
+                    </TouchableOpacity>
 
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}
-                    style={styles.backBtn}
-                >
-                    <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
-                </TouchableOpacity>
-
-                <Text style={styles.headerTitle}>
-                    Add Expenses
-                </Text>
-            </View>
-
-
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.content}
-            >
-
-                {/* Vendor Information */}
-
-
-                <View style={styles.sectionHeader}>
-                    <View style={styles.blueBar} />
-                    <Text style={styles.sectionTitle}>
-                        Expenses Details
+                    <Text style={styles.headerTitle}>
+                        Add Expenses
                     </Text>
                 </View>
-                <Text style={styles.label}>
-                    Expenses Title <Text style={{ color: "red" }}>*</Text>
-                </Text>
 
-                {/* <ValidatedInput
+
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.content}
+                >
+
+                    {/* Vendor Information */}
+
+
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.blueBar} />
+                        <Text style={styles.sectionTitle}>
+                            Expenses Details
+                        </Text>
+                    </View>
+                    <Text style={styles.label}>
+                        Expenses Title <Text style={{ color: "red" }}>*</Text>
+                    </Text>
+
+                    {/* <ValidatedInput
                     type="name"
                     inputType="text"
                     value={businessName}
@@ -476,597 +735,1164 @@ const updateItem = (
                     placeholderTextColor="#9CA3AF"
                     style={styles.input}
                 /> */}
-                <ValidatedInput
-                    type="name"
-                    inputType="text"
-                    value={expenseTitle}
-                    onChangeText={setExpenseTitle}
-                    placeholder="Vegetables 70 KG"
-                    maxLength={50}
-                    placeholderTextColor="#9CA3AF"
-                    style={styles.input}
-                />
 
-                <Text style={styles.note}>
-                    Note : Max 50 Characters
-                </Text>
 
-                <View style={{
-                    flexDirection: "row",
-                    gap: 10, marginTop: 10, marginBottom: 5
-                }}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>
-                            Category <Text style={{ color: "red" }}>*</Text>
-                        </Text>
+                    <ValidatedInput
+                        type="name"
+                        inputType="text"
+                        value={expenseTitle}
+                        onChangeText={(text) => {
+                            setExpenseTitle(text);
+                            setErrors(prev => ({
+                                ...prev,
+                                expenseTitle: ""
+                            }));
+                        }}
+                        placeholder="Vegetables 70 KG"
+                        maxLength={50}
+                        placeholderTextColor="#9CA3AF"
+                        style={styles.input}
+                    />
 
-                        <TouchableOpacity style={styles.select}>
-                            <Text>
-                                {vendorCategory || "Food & Groceries"}
+                    <Text style={styles.note}>
+                        Note : Max 50 Characters
+                    </Text>
+                    {errors.expenseTitle && (
+                        <ErrorMessage
+                            message={errors.expenseTitle}
+                            type="error"
+                        />
+                    )}
+
+                    <View style={{
+                        flexDirection: "row",
+                        gap: 10, marginTop: 10, marginBottom: 5
+                    }}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.label}>
+                                Category <Text style={{ color: "red" }}>*</Text>
                             </Text>
 
-                            <Image
-                                source={DownArrow}
-                                style={styles.arrow}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>
-                            Sub Category <Text style={{ color: "red" }}>*</Text>
-                        </Text>
+                            <TouchableOpacity
+                                style={styles.expensesDropdownBox}
+                                onPress={() => {
+                                    setCategoryOpen(!categoryOpen)
+                                    setSubCategoryOpen(false);
+                                    setModePaymentOpen(false);
 
-                        <TouchableOpacity style={styles.select}>
-                            <Text>
-                                {subCategory || "Vegetables"}
+                                }}
+                            >
+                                <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
+                                    {selectedCategory?.categoryName || "Select Category"}
+                                </Text>
+                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                            </TouchableOpacity>
+
+                            {categoryOpen && (
+                                <View style={styles.expensesDropdownMenu}>
+                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                        {categoryList?.length === 0 ? (
+                                            <Text style={styles.expensesNoDataText}>
+                                                No category found
+                                            </Text>
+                                        ) : (
+                                            categoryList?.map((item) => {
+                                                const isSelected =
+                                                    selectedCategory?.categoryId === item.categoryId;
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={item.categoryId}
+                                                        style={[
+                                                            styles.expensesOption,
+                                                            isSelected && styles.expensesOptionSelected,
+                                                        ]}
+                                                        onPress={() => {
+                                                            setSelectedCategory(item);
+                                                            setSelectedSubCategory(null);
+                                                            setCategoryErr("");
+                                                            setNochangeErr("");
+                                                            setCategoryOpen(false);
+                                                            setErrors(prev => ({
+                                                                ...prev,
+                                                                category: ""
+                                                            }));
+                                                        }}
+
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.expensesOptionText,
+                                                                isSelected && styles.expensesOptionTextSelected,
+                                                            ]}
+                                                        >
+                                                            {item.categoryName}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                )
+                                            })
+
+
+                                        )}
+                                    </ScrollView>
+                                </View>
+                            )}
+
+                            {errors.category && (
+                                <ErrorMessage
+                                    message={errors.category}
+                                    type="error"
+                                />
+                            )}
+
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.label}>
+                                Sub Category <Text style={{ color: "red" }}>*</Text>
                             </Text>
 
-                            <Image
-                                source={DownArrow}
-                                style={styles.arrow}
-                            />
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[
+                                    styles.expensesDropdownBox,
+                                    subCategoryList.length === 0 && { backgroundColor: "#F3F4F6" },
+                                ]}
+                                disabled={subCategoryList.length === 0}
+                                onPress={() => {
+                                    setSubCategoryOpen(!subCategoryOpen);
+                                    setCategoryOpen(false);
+                                    setModePaymentOpen(false);
+
+
+                                }}
+
+                            >
+                                <Text style={{ color: selectedSubCategory ? "#000" : "#9CA3AF" }}>
+                                    {selectedSubCategory?.subCategoryName || "Select Sub Category"}
+
+                                </Text>
+                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                            </TouchableOpacity>
+
+                            {subCategoryOpen && (
+                                <View style={styles.expensesDropdownMenu}>
+                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                        {subCategoryList.length === 0 ? (
+                                            <Text style={styles.expensesNoDataText}>
+                                                No sub category found
+                                            </Text>
+                                        ) : (
+                                            subCategoryList.map((item) => {
+                                                const isSelected =
+                                                    selectedSubCategory?.subCategoryId === item.subCategoryId;
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={item.subCategoryId}
+                                                        style={[
+                                                            styles.expensesOption,
+                                                            isSelected && styles.expensesOptionSelected,
+                                                        ]}
+                                                        onPress={() => {
+                                                            setSelectedSubCategory(item);
+                                                            setSubCategoryErr("");
+                                                            setNochangeErr("");
+                                                            setSubCategoryOpen(false);
+                                                            setErrors(prev => ({
+                                                                ...prev,
+                                                                subCategory: ""
+                                                            }))
+                                                        }}
+
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.expensesOptionText,
+                                                                isSelected && styles.expensesOptionTextSelected,
+                                                            ]}
+                                                        >
+                                                            {item.subCategoryName}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                )
+                                            })
+
+
+                                        )}
+                                    </ScrollView>
+                                </View>
+                            )}
+                            {errors.subCategory && (
+                                <ErrorMessage
+                                    message={errors.subCategory}
+                                    type="error"
+                                />
+                            )}
+                        </View>
                     </View>
-                </View>
 
 
-                <Text style={styles.label}>
-                    Amount (INR)
-                    <Text style={styles.required}> *</Text>
-                </Text>
-
-                <ValidatedInput
-                    type="amount"
-                    inputType="numeric"
-                    value={amount}
-                    onChangeText={setAmount}
-                    placeholder="₹ 5,500"
-                    placeholderTextColor="#9CA3AF"
-                    style={styles.input}
-                />
-
-
-                <Text style={styles.label}>
-                    Expense Date <Text style={styles.required}>*</Text>
-                </Text>
-
-                <TouchableOpacity
-                    style={{
-                        flexDirection: 'row', justifyContent: 'space-between', height: 56,
-                        borderWidth: 1,
-                        borderColor: "#E5E7EB",
-                        borderRadius: 12,
-                        paddingHorizontal: 16,
-                        backgroundColor: "#FFFFFF",
-                        fontSize: 16,
-                        fontFamily: "Gilroy-Medium", alignItems: 'center',
-                        color: "#111827",
-                    }}
-
-
-                >
-                    <Text>
-                        {expenseDate || "10 July 2026"}
+                    <Text style={styles.label}>
+                        Amount (INR)
+                        <Text style={{ color: "red" }}>*</Text>
                     </Text>
 
-                    <Image
-                        source={CalendarIcon}
-                        style={{ height: 14, width: 14 }}
+                    <ValidatedInput
+                        type="numberOnly"
+                        inputType="numeric"
+                        value={amount}
+                        onChangeText={(text) => {
+                            setAmount(text);
+                            setErrors(prev => ({
+                                ...prev,
+                                amount: ""
+                            }));
+                        }}
+                        placeholder="₹ 5,500"
+                        placeholderTextColor="#9CA3AF"
+                        style={styles.input}
                     />
-                </TouchableOpacity>
+                    {errors.amount && (
+                        <ErrorMessage
+                            message={errors.amount}
+                            type="error"
+                        />
+                    )}
 
-             <View
-  style={{
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
-  }}
->
-  <Text
-    style={{
-      fontSize: 16,
-      fontFamily: "Gilroy-Medium",
-      color: "#1E1E1E",
-      width: "45%",
-      lineHeight: 24,
-    }}
-  >
-    Link this Expense to a Vendor?
-  </Text>
+                    <Text style={styles.label}>
+                        Expense Date <Text style={{ color: "red" }}>*</Text>
+                    </Text>
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        // disabled={isEditMode}
+                        onPress={() => {
+                            // if (!isEditMode)
+                            setOpenPurchaseDate(true);
+                            setNochangeErr("");
+                        }}
+                    >
+                        <View style={styles.dateInputWrapper}>
+                            <TextInput
+                                style={styles.dateInput}
+                                placeholder="DD-MM-YYYY"
+                                value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
+                                editable={false}
+                                pointerEvents="none"
+                            />
 
-  <View
-    style={{
-      width: "30%",
-      height: 48,
-      backgroundColor: "#EEF2FF",
-      borderRadius: 14,
-      padding: 6,
-      flexDirection: "row",
-    }}
-  >
-      <TouchableOpacity
-        onPress={() => setLinkVendor(false)}
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: 10,
-          backgroundColor: !linkVendor
-            ? "#2F54EB"
-            : "transparent",
-        }}
-      >
-        <Text
-          style={{
-            color: !linkVendor ? "#FFF" : "#1E1E1E",
-            fontSize: 13,
-            fontFamily: !linkVendor
-              ? "Gilroy-Bold"
-              : "Gilroy-Medium",
-          }}
-        >
-          No
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => setLinkVendor(true)}
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: 10,
-          backgroundColor: linkVendor
-            ? "#2F54EB"
-            : "transparent",
-        }}
-      >
-        <Text
-          style={{
-            color: linkVendor ? "#FFF" : "#1E1E1E",
-            fontSize: 13,
-            fontFamily: linkVendor
-              ? "Gilroy-Bold"
-              : "Gilroy-Medium",
-          }}
-        >
-          Yes
-        </Text>
-      </TouchableOpacity>
-  </View>
-</View>
+                            <Image
+                                source={require("../../../Assets/Images/calendar.png")}
+                                style={styles.calendarIcon}
+                            />
+                        </View>
+                    </TouchableOpacity>
 
 
-                {!linkVendor && (
-                    <>
-                        <Text style={styles.label}>
-                            Payment method <Text style={styles.required}>*</Text>
+
+                    {errors.expenseDate && (
+                        <ErrorMessage
+                            message={errors.expenseDate}
+                            type="error"
+                        />
+                    )}
+
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginTop: 20,
+                            marginBottom: 10,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 16,
+                                fontFamily: "Gilroy-Medium",
+                                color: "#1E1E1E",
+                                width: "45%",
+                                lineHeight: 24,
+                            }}
+                        >
+                            Link this Expense to a Vendor?
                         </Text>
 
-                        <TouchableOpacity style={styles.select}>
-                            <Text>G Pay UPI (smartstay@oksbi)</Text>
-                            <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
-
-                        <Text style={styles.label}>Transaction ID</Text>
-
-                        <TouchableOpacity style={styles.select}>
-                            <Text>1328H202511</Text>
-                            <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
-                    </>
-                )}
-
-
-                {linkVendor && (
-                    <>
-                        <Text style={styles.label}>
-                            Vendor <Text style={styles.required}>*</Text>
-                        </Text>
-
-                        <TouchableOpacity style={styles.select}>
-                            <Text>Kural Kaikani Angadi</Text>
-                            <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
-
-                        <Text style={styles.label}>
-                            Payment Status <Text style={styles.required}>*</Text>
-                        </Text>
-
-                        <View style={{ marginTop: 10 }}>
-                            {[
-                                "Fully Paid",
-                                "Partially Paid",
-                                "Credit / Pending",
-                            ].map((status) => (
-                                <TouchableOpacity
-                                    key={status}
-                                    style={styles.radioRow}
-                                    onPress={() => setPaymentStatus(status)}
+                        <View
+                            style={{
+                                width: "30%",
+                                height: 42,
+                                backgroundColor: "#EEF2FF",
+                                borderRadius: 14,
+                                padding: 1,
+                                flexDirection: "row",
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => setLinkVendor(false)}
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    borderRadius: 10,
+                                    backgroundColor: !linkVendor
+                                        ? "#2F54EB"
+                                        : "transparent",
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: !linkVendor ? "#FFF" : "#1E1E1E",
+                                        fontSize: 13,
+                                        fontFamily: !linkVendor
+                                            ? "Gilroy-Bold"
+                                            : "Gilroy-Medium",
+                                    }}
                                 >
-                                    <View
-                                        style={[
-                                            styles.radioOuter,
-                                            paymentStatus === status &&
-                                            styles.radioOuterActive,
-                                        ]}
-                                    >
-                                        {paymentStatus === status && (
-                                            <View style={styles.radioInner} />
+                                    No
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => setLinkVendor(true)}
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    borderRadius: 10,
+                                    backgroundColor: linkVendor
+                                        ? "#2F54EB"
+                                        : "transparent",
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: linkVendor ? "#FFF" : "#1E1E1E",
+                                        fontSize: 13,
+                                        fontFamily: linkVendor
+                                            ? "Gilroy-Bold"
+                                            : "Gilroy-Medium",
+                                    }}
+                                >
+                                    Yes
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+
+                    {!linkVendor && (
+                        <>
+                            <Text style={styles.label}>
+                                Payment method <Text style={{ color: "red" }}>*</Text>
+                            </Text>
+
+                            <TouchableOpacity
+                                // style={styles.expensesDropdownBox}
+
+                                style={[
+                                    styles.expensesDropdownBox,
+                                    isEditMode && { opacity: 0.4 }
+                                ]}
+                                disabled={isEditMode}
+                                onPress={() => {
+                                    setModePaymentOpen(!modePaymentOpen);
+                                    setCategoryOpen(false);
+                                    setSubCategoryOpen(false);
+                                }}
+                            >
+                                <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
+                                    {selectedMode?.name || "Select Mode"}
+                                </Text>
+                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                            </TouchableOpacity>
+
+                            {modePaymentOpen && (
+                                <View style={styles.expensesDropdownMenu}>
+                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                        {paymentOptions.length === 0 ? (
+                                            <Text style={styles.expensesNoDataText}>
+                                                No mode found
+                                            </Text>
+                                        ) : (
+                                            paymentOptions.map((item) => {
+                                                const isSelected =
+                                                    selectedMode?.id === item.id;
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={item.id}
+                                                        style={[
+                                                            styles.expensesOption,
+                                                            isSelected && styles.expensesOptionSelected,
+                                                        ]}
+                                                        onPress={() => {
+                                                            setSelectedMode(item)
+                                                            setModeErr("")
+                                                            setNochangeErr("");
+                                                            setModePaymentOpen(false)
+                                                            setErrors(prev => ({
+                                                                ...prev,
+                                                                paymentMethod: ""
+                                                            }))
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.expensesOptionText,
+                                                                isSelected &&
+                                                                styles.expensesOptionTextSelected,
+                                                            ]}
+                                                        >
+                                                            {item.name}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })
                                         )}
+                                    </ScrollView>
+                                </View>
+                            )}
+
+                            {errors.paymentMethod && (
+                                <ErrorMessage
+                                    message={errors.paymentMethod}
+                                    type="error"
+                                />
+                            )}
+
+                            <Text style={styles.label}>Transaction ID</Text>
+
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter Transaction ID"
+                                // keyboardType="numeric"
+                                value={transactionId}
+                                onChangeText={handleTransactionChange}
+
+                            />
+                        </>
+                    )}
+
+
+                    {linkVendor && (
+                        <>
+                            <Text style={styles.label}>
+                                Vendor <Text style={styles.required}>*</Text>
+                            </Text>
+
+                            {/* <TouchableOpacity
+                            style={styles.expensesDropdownBox}
+                            onPress={() => {
+                                setVendorOpen(!vendorOpen)
+                                setSubCategoryOpen(false);
+                                setModePaymentOpen(false);
+                                setCategoryOpen(false)
+                            }}
+                            
+                        >
+                            <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
+                                {selectedCategory?.categoryName || "Select Category"}
+                            </Text>
+                            <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                        </TouchableOpacity>
+
+                        {vendorOpen && (
+                            <View style={styles.expensesDropdownMenu}>
+                                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                    {categoryList?.length === 0 ? (
+                                        <Text style={styles.expensesNoDataText}>
+                                            No category found
+                                        </Text>
+                                    ) : (
+                                        categoryList?.map((item) => {
+                                            const isSelected =
+                                                selectedCategory?.categoryId === item.categoryId;
+
+                                            return (
+                                                <TouchableOpacity
+                                                    key={item.categoryId}
+                                                    style={[
+                                                        styles.expensesOption,
+                                                        isSelected && styles.expensesOptionSelected,
+                                                    ]}
+                                                    onPress={() => {
+                                                        setSelectedCategory(item);
+                                                        setSelectedSubCategory(null);
+                                                        setCategoryErr("");
+                                                        setNochangeErr("");
+                                                        setVendorOpen(false);
+                                                    }}
+
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.expensesOptionText,
+                                                            isSelected && styles.expensesOptionTextSelected,
+                                                        ]}
+                                                    >
+                                                        {item.categoryName}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            )
+                                        })
+
+
+                                    )}
+                                </ScrollView>
+                            </View>
+                        )} */}
+
+
+                            <TouchableOpacity
+                                style={styles.expensesDropdownBox}
+                                onPress={() => {
+                                    setVendorOpen(!vendorOpen);
+                                    setSubCategoryOpen(false);
+                                    setModePaymentOpen(false);
+                                    setCategoryOpen(false);
+                                }}
+                            >
+                                <Text style={{ color: selectedVendor ? "#000" : "#9CA3AF" }}>
+                                    {selectedVendor?.fullName || "Select Vendor"}
+                                </Text>
+
+                                <Image
+                                    source={DownArrow}
+                                    style={styles.expensesArrowIcon}
+                                />
+                            </TouchableOpacity>
+
+                            {vendorOpen && (
+                                <View style={styles.expensesDropdownMenu}>
+                                    <ScrollView
+                                        style={{ maxHeight: 150 }}
+                                        nestedScrollEnabled
+                                    >
+                                        {vendorList?.length === 0 ? (
+                                            <Text style={styles.expensesNoDataText}>
+                                                No Vendors Found
+                                            </Text>
+                                        ) : (
+                                            vendorList?.map((item) => {
+                                                const isSelected = vendorId === item.id;
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={item.id}
+                                                        style={[
+                                                            styles.expensesOption,
+                                                            isSelected &&
+                                                            styles.expensesOptionSelected,
+                                                        ]}
+                                                        onPress={() => {
+                                                            setSelectedVendor(item); // full object
+                                                            setVendorId(item.id);    // only id
+                                                            setVendorOpen(false);
+                                                            setErrors(prev => ({
+                                                                ...prev,
+                                                                vendor: ""
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.expensesOptionText,
+                                                                isSelected &&
+                                                                styles.expensesOptionTextSelected,
+                                                            ]}
+                                                        >
+                                                            {item.fullName}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })
+                                        )}
+                                    </ScrollView>
+                                </View>
+                            )}
+
+
+
+                            {errors.vendor && (
+                                <ErrorMessage
+                                    message={errors.vendor}
+                                    type="error"
+                                />
+                            )}
+
+                            <Text style={styles.label}>
+                                Payment Status <Text style={{ color: "red" }}>*</Text>
+                            </Text>
+
+                            <View style={{ marginTop: 10 }}>
+                                {[
+                                    "Fully Paid",
+                                    "Partially Paid",
+                                    "Credit / Pending",
+                                ].map((status) => (
+                                    <TouchableOpacity
+                                        key={status}
+                                        style={styles.radioRow}
+                                        onPress={() => setPaymentStatus(status)}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.radioOuter,
+                                                paymentStatus === status &&
+                                                styles.radioOuterActive,
+                                            ]}
+                                        >
+                                            {paymentStatus === status && (
+                                                <View style={styles.radioInner} />
+                                            )}
+                                        </View>
+
+                                        <Text style={styles.radioText}>
+                                            {status}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                            {errors.paymentStatus && (
+                                <ErrorMessage
+                                    message={errors.paymentStatus}
+                                    type="error"
+                                />
+                            )}
+
+                            {paymentStatus === "Partially Paid" && (
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        marginTop: 8,
+                                    }}
+                                >
+                                    <View style={{ width: "48%" }}>
+                                        <Text
+                                            style={[
+
+                                                {
+                                                    fontSize: 16,
+                                                    fontFamily: "Gilroy-Medium",
+                                                    color: "#1E1E1E",
+                                                    marginBottom: 8,
+                                                    height: 52,
+                                                    textAlignVertical: "top",
+                                                },
+                                            ]}
+                                        >
+                                            Paid Amount (INR)
+                                            <Text style={{ color: "red" }}> *</Text>
+                                        </Text>
+
+                                        <ValidatedInput
+                                            keyboardType="numeric"
+                                            type="numberOnly"
+                                            inputType="numeric"
+                                            value={paidAmount}
+                                            onChangeText={(text) => {
+                                                setPaidAmount(text);
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    paidAmount: ""
+                                                }));
+                                            }}
+                                            placeholder="₹ 2,500"
+                                            style={styles.input}
+                                        />
+                                        {errors.paidAmount && (
+                                            <ErrorMessage
+                                                message={errors.paidAmount}
+                                                type="error"
+                                            />
+                                        )}
+
+
+
                                     </View>
 
-                                    <Text style={styles.radioText}>
-                                        {status}
+
+                                    <View style={{ width: "48%" }}>
+                                        <Text
+                                            style={[
+
+                                                {
+                                                    fontSize: 16,
+                                                    fontFamily: "Gilroy-Medium",
+                                                    color: "#1E1E1E",
+                                                    marginBottom: 8,
+                                                    height: 52,
+                                                    lineHeight: 24,
+                                                },
+                                            ]}
+                                        >
+                                            Balance Amount{"\n"}(Outstanding)
+                                        </Text>
+
+                                        <ValidatedInput
+                                            editable={false}
+                                            value={balanceAmount}
+                                            placeholder="₹ 3,000"
+                                            style={styles.input}
+                                            keyboardType="numeric"
+                                            type="numberOnly"
+                                            inputType="numeric"
+                                        />
+                                    </View>
+                                </View>
+                            )}
+
+                            <Text style={styles.label}>
+                                Payment method <Text style={{ color: "red" }}>*</Text>
+                            </Text>
+
+
+                            <TouchableOpacity
+                                // style={styles.expensesDropdownBox}
+
+                                style={[
+                                    styles.expensesDropdownBox,
+                                    isEditMode && { opacity: 0.4 }
+                                ]}
+                                disabled={isEditMode}
+                                onPress={() => {
+                                    setModePaymentOpen(!modePaymentOpen);
+                                    setCategoryOpen(false);
+                                    setSubCategoryOpen(false);
+                                }}
+                            >
+                                <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
+                                    {selectedMode?.name || "Select Mode"}
+                                </Text>
+                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                            </TouchableOpacity>
+
+                            {modePaymentOpen && (
+                                <View style={styles.expensesDropdownMenu}>
+                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                        {paymentOptions.length === 0 ? (
+                                            <Text style={styles.expensesNoDataText}>
+                                                No mode found
+                                            </Text>
+                                        ) : (
+                                            paymentOptions.map((item) => {
+                                                const isSelected =
+                                                    selectedMode?.id === item.id;
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={item.id}
+                                                        style={[
+                                                            styles.expensesOption,
+                                                            isSelected && styles.expensesOptionSelected,
+                                                        ]}
+                                                        onPress={() => {
+                                                            setSelectedMode(item)
+                                                            setModeErr("")
+                                                            setNochangeErr("");
+                                                            setModePaymentOpen(false)
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.expensesOptionText,
+                                                                isSelected &&
+                                                                styles.expensesOptionTextSelected,
+                                                            ]}
+                                                        >
+                                                            {item.name}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })
+                                        )}
+                                    </ScrollView>
+                                </View>
+                            )}
+
+                            {errors.paymentMethod && (
+                                <ErrorMessage
+                                    message={errors.paymentMethod}
+                                    type="error"
+                                />
+                            )}
+
+                            <Text style={styles.label}>
+                                Transaction ID
+                            </Text>
+
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter Transaction ID"
+                                // keyboardType="numeric"
+                                value={transactionId}
+                                onChangeText={handleTransactionChange}
+
+                            />
+
+                            <Text style={styles.label}>
+                                Attachments/Proofs (If any)
+                            </Text>
+
+                            <TouchableOpacity style={styles.uploadBox}>
+                                <Text style={styles.uploadText}>
+                                    Choose Image
+                                </Text>
+
+                                <Text style={styles.uploadSub}>
+                                    JPG/JPEG Format
+                                </Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
+
+
+
+
+                    <Text style={styles.label}>
+                        Description
+                    </Text>
+
+                    <TextInput
+                        multiline
+                        numberOfLines={4}
+                        style={styles.textArea}
+                        value={description}
+                        onChangeText={setDescription}
+                        placeholder="Ex : Wifi Bill Paid for May"
+                    />
+
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.blueBar} />
+                        <View>
+                            <Text style={styles.sectionTitle}>
+                                Expense Items
+                            </Text>
+
+                            <Text style={styles.sectionSubTitle}>
+                                Select retainer Balance to adjust with Bills
+                            </Text>
+                        </View>
+                    </View>
+
+                    {items.map((item, index) => (
+                        <View key={index} style={styles.itemCard}>
+
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    marginBottom: 12,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontSize: 18,
+                                        fontFamily: "Gilroy-Bold",
+                                    }}
+                                >
+                                    Item - {String(index + 1).padStart(2, "0")}
+                                </Text>
+
+                                <View style={styles.itemActionRow}>
+                                    <TouchableOpacity
+                                        style={[styles.iconBtn, styles.cloneBtn]}
+                                        onPress={() => handleCloneRow(index)}
+                                    >
+                                        {/* <Text style={styles.cloneIcon}>⧉</Text> */}
+                                        <Image source={RepeatIcon} style={styles.cloneIcon} />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={[styles.iconBtn, styles.deleteBtn]}
+                                        onPress={() => handleDeleteRow(index)}
+                                    >
+                                        <Text style={styles.deleteIcon}>✕</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <Text style={styles.label}>
+                                Item Detail
+                            </Text>
+
+                            <ValidatedInput
+                                type="name"
+                                inputType="text"
+                                value={item.itemDetail}
+                                onChangeText={(text) =>
+                                    updateItem(index, "itemDetail", text)
+                                }
+                                placeholder="LED Tube Light"
+                                placeholderTextColor="#9CA3AF"
+                                style={styles.input}
+                            />
+
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <View style={{ width: "48%" }}>
+                                    <Text style={styles.label}>
+                                        Quantity
                                     </Text>
-                                </TouchableOpacity>
-                            ))}
+
+                                    <ValidatedInput
+                                        keyboardType="numeric"
+                                        type="numberOnly"
+                                        inputType="numeric"
+                                        value={item.quantity}
+                                        onChangeText={(text) =>
+                                            updateItem(index, "quantity", text)
+                                        }
+                                        placeholder="0"
+                                        placeholderTextColor="#9CA3AF"
+                                        style={styles.input}
+                                    />
+                                </View>
+
+                                <View style={{ width: "48%" }}>
+                                    <Text style={styles.label}>
+                                        Unit
+                                    </Text>
+
+                                    <TouchableOpacity
+                                        style={styles.expensesDropdownBox}
+                                        onPress={() => {
+                                            setUnitsOpen(!unitsOpen)
+                                        }}
+                                    >
+                                        <Text style={{ color: selectedUnits ? "#000" : "#9CA3AF" }}>
+                                            {selectedUnits?.label || "Select Category"}
+
+                                        </Text>
+                                        <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                    </TouchableOpacity>
+
+                                    {unitsOpen && (
+                                        <View style={styles.expensesDropdownMenu}>
+                                            <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                                {unitsOptions?.length === 0 ? (
+                                                    <Text style={styles.expensesNoDataText}>
+                                                        No Units found
+                                                    </Text>
+                                                ) : (
+                                                    unitsOptions?.map((item, index) => {
+                                                        const isSelected =
+                                                            selectedUnits?.value === item?.value;
+
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={[
+                                                                    styles.expensesOption,
+                                                                    isSelected && styles.expensesOptionSelected,
+                                                                ]}
+                                                                onPress={() => {
+                                                                    setSelectedUnits(item);
+                                                                    setCategoryErr("");
+                                                                    setNochangeErr("");
+                                                                    setUnitsOpen(false);
+
+                                                                }}
+
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.expensesOptionText,
+                                                                        isSelected && styles.expensesOptionTextSelected,
+                                                                    ]}
+                                                                >
+                                                                    {item?.label}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        )
+                                                    })
+
+
+                                                )}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+
+
+                                </View>
+                            </View>
+
+                            <Text style={styles.label}>
+                                Per Unit price (INR)
+                            </Text>
+
+                            <ValidatedInput
+                                keyboardType="numeric"
+                                type="numberOnly"
+                                inputType="numeric"
+                                value={item.unitPrice}
+                                onChangeText={(text) =>
+                                    updateItem(index, "unitPrice", text)
+                                }
+                                placeholder="₹ 150"
+                                placeholderTextColor="#9CA3AF"
+                                style={styles.input}
+                            />
+
+                            <Text style={styles.label}>
+                                Amount
+                            </Text>
+
+                            <ValidatedInput
+                                editable={false}
+                                value={String(
+                                    (Number(item.quantity) || 0) *
+                                    (Number(item.unitPrice) || 0)
+                                )}
+                                placeholderTextColor="#9CA3AF"
+                                style={styles.input}
+                                keyboardType="numeric"
+                                type="numberOnly"
+                                inputType="numeric"
+                            />
+                        </View>
+                    ))}
+
+
+                    <TouchableOpacity
+                        style={styles.addRowBtn}
+                        onPress={handleAddRow}
+                    >
+                        <Text
+                            style={{
+                                color: "#2952FF",
+                                fontFamily: "Gilroy-Bold",
+                            }}
+                        >
+                            + Add New Row
+                        </Text>
+                    </TouchableOpacity>
+
+
+
+
+
+
+                    <View style={styles.summaryCard}>
+                        <View style={styles.summaryRow}>
+                            <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
+                                Sub Total
+                            </Text>
+
+                            <Text style={{
+                                fontSize: 16,
+                                fontFamily: "Gilroy-Bold",
+                                color: "#111827",
+                            }}>
+                                ₹ 1,600.00
+                            </Text>
                         </View>
 
-                       {paymentStatus === "Partially Paid" && (
-<View
-  style={{
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-  }}
->
-  <View style={{ width: "48%" }}>
-    <Text
-      style={[
-        styles.label,
-        {
-          height: 52,
-          textAlignVertical: "top",
-        },
-      ]}
-    >
-      Paid Amount (INR)
-      <Text style={{ color: "red" }}> *</Text>
-    </Text>
+                        <View style={styles.summaryInputRow}>
 
-    <ValidatedInput
-      value={paidAmount}
-      onChangeText={setPaidAmount}
-      placeholder="₹ 2,500"
-      type="amount"
-      style={styles.input}
-    />
-  </View>
 
-  <View style={{ width: "48%" }}>
-    <Text
-      style={[
-        styles.label,
-        {
-          height: 52,
-          lineHeight: 24,
-        },
-      ]}
-    >
-      Balance Amount{"\n"}(Outstanding)
-    </Text>
+                            <View style={styles.rightInputWrapper}>
+                                <View>
+                                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
+                                        Tax Optional
+                                    </Text>
+                                </View>
+                                <View style={{ alignItems: "flex-end", }}>
+                                    <ValidatedInput
+                                        type="amount"
+                                        placeholder="₹ 0.00"
+                                        style={styles.taxInput}
+                                    />
+                                </View>
 
-    <ValidatedInput
-      editable={false}
-      value={balanceAmount}
-      placeholder="₹ 3,000"
-      style={styles.input}
-    />
-  </View>
-</View>
-)}
+                            </View>
+                        </View>
 
-                        <Text style={styles.label}>
-                            Payment method <Text style={{ color: "red" }}>*</Text>
-                        </Text>
+                        <View style={styles.summaryInputRow}>
 
-                        <TouchableOpacity style={styles.select}>
-                            <Text>G Pay UPI (smartstay@oksbi)</Text>
-                            <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
 
-                        <Text style={styles.label}>
-                            Transaction ID
-                        </Text>
+                            <View style={styles.discountRow}>
 
-                        <TouchableOpacity style={styles.select}>
-                            <Text>1328H202511</Text>
-                            <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
+                                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
+                                    Discount
+                                </Text>
+                                <View style={styles.discountToggle}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.discountBtn,
+                                            styles.discountBtnActive,
+                                        ]}
+                                    >
+                                        <Text style={styles.discountBtnTextActive}>
+                                            ₹
+                                        </Text>
+                                    </TouchableOpacity>
 
-                        <Text style={styles.label}>
-                            Attachments/Proofs (If any)
-                        </Text>
+                                    <TouchableOpacity
+                                        style={styles.discountBtn}
+                                    >
+                                        <Text style={styles.discountBtnText}>
+                                            %
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
 
-                        <TouchableOpacity style={styles.uploadBox}>
-                            <Text style={styles.uploadText}>
-                                Choose Image
+                                <ValidatedInput
+                                    type="amount"
+                                    placeholder="₹ 0.00"
+                                    style={styles.discountInput}
+                                />
+                            </View>
+                        </View>
+
+                        <View style={styles.totalContainer}>
+                            <Text style={styles.totalLabel}>
+                                TOTAL RETAINER AMOUNT
                             </Text>
 
-                            <Text style={styles.uploadSub}>
-                                JPG/JPEG Format
+                            <Text style={styles.totalValue}>
+                                ₹ 1,600.00
                             </Text>
-                        </TouchableOpacity>
-                    </>
-                )}
-
-
-              
-
-                <Text style={styles.label}>
-                    Description
-                </Text>
-
-                <TextInput
-                    multiline
-                    numberOfLines={4}
-                    style={styles.textArea}
-                    value={description}
-                    onChangeText={setDescription}
-                    placeholder="Ex : Wifi Bill Paid for May"
-                />
-
-                <View style={styles.sectionHeader}>
-                    <View style={styles.blueBar} />
-                    <View>
-                        <Text style={styles.sectionTitle}>
-                            Expense Items
-                        </Text>
-
-                        <Text style={styles.sectionSubTitle}>
-                            Select retainer Balance to adjust with Bills
-                        </Text>
+                        </View>
                     </View>
-                </View>
 
-                {items.map((item, index) => (
-  <View key={index} style={styles.itemCard}>
-    
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 12,
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 18,
-          fontFamily: "Gilroy-Bold",
-        }}
-      >
-        Item - {String(index + 1).padStart(2, "0")}
-      </Text>
+                    <View style={styles.footerRow}>
+                        <TouchableOpacity
+                            style={styles.cancelBtn}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    fontFamily: "Gilroy-Medium",
+                                    color: "#1E1E1E",
+                                }}
+                            >
+                                Cancel
+                            </Text>
+                        </TouchableOpacity>
 
-  <View style={styles.itemActionRow}>
-  <TouchableOpacity
-    style={[styles.iconBtn, styles.cloneBtn]}
-    onPress={() => handleCloneRow(index)}
-  >
-    <Text style={styles.cloneIcon}>⧉</Text>
-  </TouchableOpacity>
+                        <TouchableOpacity style={styles.submitBtn}
+                            onPress={handleSubmit}
+                        >
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    fontFamily: "Gilroy-Semibold",
+                                    color: "#FFF",
+                                }}
+                            >
+                                Save & Allocate
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-  <TouchableOpacity
-    style={[styles.iconBtn, styles.deleteBtn]}
-    onPress={() => handleDeleteRow(index)}
-  >
-    <Text style={styles.deleteIcon}>✕</Text>
-  </TouchableOpacity>
-</View>
-    </View>
-
-    <Text style={styles.label}>
-      Item Detail
-    </Text>
-
-    <ValidatedInput
-      value={item.itemDetail}
-      onChangeText={(text) =>
-        updateItem(index, "itemDetail", text)
-      }
-      placeholder="LED Tube Light"
-                          placeholderTextColor="#9CA3AF"
-                    style={styles.input}
-    />
-
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-      }}
-    >
-      <View style={{ width: "48%" }}>
-        <Text style={styles.label}>
-          Quantity
-        </Text>
-
-        <ValidatedInput
-          type="amount"
-          value={item.quantity}
-          onChangeText={(text) =>
-            updateItem(index, "quantity", text)
-          }
-          placeholder="0"
-                              placeholderTextColor="#9CA3AF"
-                    style={styles.input}
-        />
-      </View>
-
-      <View style={{ width: "48%" }}>
-        <Text style={styles.label}>
-          Unit
-        </Text>
-
-        <TouchableOpacity style={styles.select}>
-          <Text>
-            {item.unit || "Nos"}
-          </Text>
-
-          <Image
-            source={DownArrow}
-            style={styles.arrow}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-
-    <Text style={styles.label}>
-      Per Unit price (INR)
-    </Text>
-
-    <ValidatedInput
-      type="amount"
-      value={item.unitPrice}
-      onChangeText={(text) =>
-        updateItem(index, "unitPrice", text)
-      }
-      placeholder="₹ 150"
-                          placeholderTextColor="#9CA3AF"
-                    style={styles.input}
-    />
-
-    <Text style={styles.label}>
-      Amount
-    </Text>
-
-    <ValidatedInput
-      editable={false}
-      value={String(
-        (Number(item.quantity) || 0) *
-        (Number(item.unitPrice) || 0)
-      )}
-                          placeholderTextColor="#9CA3AF"
-                    style={styles.input}
-    />
-  </View>
-))}
-
-
-               <TouchableOpacity
-  style={styles.addRowBtn}
-  onPress={handleAddRow}
->
-  <Text
-    style={{
-      color: "#2952FF",
-      fontFamily: "Gilroy-Bold",
-    }}
-  >
-    + Add New Row
-  </Text>
-</TouchableOpacity>
-
-
-
-
-
-
-<View style={styles.summaryCard}>
-  <View style={styles.summaryRow}>
-    <Text style={styles.summaryLabel}>
-      Sub Total
-    </Text>
-
-    <Text style={styles.summaryValue}>
-      ₹ 1,600.00
-    </Text>
-  </View>
-
-  <View style={styles.summaryInputRow}>
-    <Text style={styles.summaryLabel}>
-      Tax Optional
-    </Text>
-
-    <ValidatedInput
-      type="amount"
-      placeholder="₹ 0.00"
-      style={styles.summaryInput}
-    />
-  </View>
-
-  <View style={styles.summaryInputRow}>
-    <Text style={styles.summaryLabel}>
-      Discount
-    </Text>
-
-    <View style={styles.discountRow}>
-      <View style={styles.discountToggle}>
-        <TouchableOpacity
-          style={[
-            styles.discountBtn,
-            styles.discountBtnActive,
-          ]}
-        >
-          <Text style={styles.discountBtnTextActive}>
-            ₹
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.discountBtn}
-        >
-          <Text style={styles.discountBtnText}>
-            %
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <ValidatedInput
-        type="amount"
-        placeholder="₹ 0.00"
-        style={styles.discountInput}
-      />
-    </View>
-  </View>
-
-  <View style={styles.totalContainer}>
-    <Text style={styles.totalLabel}>
-      TOTAL RETAINER AMOUNT
-    </Text>
-
-    <Text style={styles.totalValue}>
-      ₹ 1,600.00
-    </Text>
-  </View>
-</View>
-
-                <View style={styles.footerRow}>
-                    <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
-                        <Text>Cancel</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.submitBtn}>
-                        <Text style={{ color: "#FFF" }}>
-                            Save & Allocate
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* <View style={styles.footerRow}>
+                    {/* <View style={styles.footerRow}>
                     <TouchableOpacity onPress={() => navigation.goBack()}
                         style={styles.cancelBtn}
                     >
@@ -1087,9 +1913,57 @@ const updateItem = (
                     </TouchableOpacity>
                 </View> */}
 
-            </ScrollView>
+                </ScrollView>
 
-        </View>
+            </View>
+
+            {openPurchaseDate && (
+                <View style={styles.dateOverlay}>
+                    <TouchableWithoutFeedback onPress={() => setOpenPurchaseDate(false)}>
+                        <View style={styles.overlayBg} />
+                    </TouchableWithoutFeedback>
+
+                    <View style={styles.calendarContainer}>
+                        <Calendar
+                            markingType="custom"
+                            markedDates={{
+                                ...markedDates,
+                                ...(purchaseDate && {
+                                    [purchaseDate]: {
+                                        selected: true,
+                                        selectedColor: "#2563EB",
+                                        customStyles: {
+                                            container: {
+                                                backgroundColor: "#2563EB",
+                                                borderRadius: 8,
+                                            },
+                                            text: {
+                                                color: "#FFFFFF",
+                                            },
+                                        },
+                                    },
+                                }),
+                            }}
+                            current={purchaseDate || dayjs().format("YYYY-MM-DD")}
+                            onDayPress={(day) => {
+                                // 🚫 STOP FUTURE DATE CLICK
+                                if (markedDates[day.dateString]?.disabled) return;
+
+                                setPurchaseDate(day.dateString);
+                                setOpenPurchaseDate(false);
+                                setDateErr("");
+                                setErrors(prev => ({ ...prev, expenseDate: "" }))
+                            }}
+                            theme={{
+                                todayTextColor: "#2563EB",
+                                arrowColor: "#111827",
+                                textDisabledColor: "#9CA3AF",
+                            }}
+                        />
+                    </View>
+                </View>
+            )}
+        </>
 
     )
 
@@ -1230,17 +2104,17 @@ const styles = StyleSheet.create({
     //   textAlignVertical: "top",
     //   fontSize: 16,
     // },
-    input: {
-        height: 56,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        backgroundColor: "#FFFFFF",
-        fontSize: 16,
-        fontFamily: "Gilroy-Medium",
-        color: "#111827",
-    },
+    // input: {
+    //     height: 56,
+    //     borderWidth: 1,
+    //     borderColor: "#E5E7EB",
+    //     borderRadius: 12,
+    //     paddingHorizontal: 16,
+    //     backgroundColor: "#FFFFFF",
+    //     fontSize: 16,
+    //     fontFamily: "Gilroy-Medium",
+    //     color: "#111827",
+    // },
 
     textArea: {
         minHeight: 110,
@@ -1283,25 +2157,7 @@ const styles = StyleSheet.create({
     //     marginTop: 30,
     // },
 
-    cancelBtn: {
-        width: 110,
-        height: 52,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 14,
-    },
 
-    submitBtn: {
-        width: 160,
-        height: 52,
-        borderRadius: 12,
-        backgroundColor: "#2457FF",
-        justifyContent: "center",
-        alignItems: "center",
-    },
 
     submitText: {
         color: "#FFF",
@@ -1377,14 +2233,14 @@ const styles = StyleSheet.create({
         height: 20,
 
     },
-    input: {
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#e1e1e1",
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        fontFamily: "Gilroy-Regular"
-    },
+    // input: {
+    //     height: 48,
+    //     borderWidth: 1,
+    //     borderColor: "#e1e1e1",
+    //     borderRadius: 12,
+    //     paddingHorizontal: 12,
+    //     fontFamily: "Gilroy-Regular"
+    // },
 
     select: {
         height: 48,
@@ -1636,114 +2492,118 @@ const styles = StyleSheet.create({
         color: "#FFF",
         fontFamily: "Gilroy-SemiBold"
     },
-  summaryCard: {
-  backgroundColor: "#F8F9FB",
-  borderRadius: 16,
-  overflow: "hidden",
-  marginTop: 20,
-},
 
-summaryRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingTop: 20,
-  paddingBottom: 10,
-},
 
-summaryInputRow: {
-  paddingHorizontal: 16,
-  marginTop: 10,
-},
+    summaryCard: {
+        backgroundColor: "#F7F7F8",
+        borderRadius: 20,
+        marginTop: 20,
+        overflow: "hidden",
+        paddingTop: 10,
+    },
 
-summaryLabel: {
-  fontSize: 16,
-  color: "#1E1E1E",
-  fontFamily: "Gilroy-Medium",
-  marginBottom: 12,
-},
+    summaryRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 18,
+    },
 
-summaryValue: {
-  fontSize: 18,
-  color: "#1E1E1E",
-  fontFamily: "Gilroy-Bold",
-},
+    summaryInputRow: {
+        paddingHorizontal: 18,
+        marginBottom: 20,
+    },
 
-summaryInput: {
-  height: 56,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 12,
-  backgroundColor: "#FFF",
-},
+    rightInputWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
 
-discountRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+    },
 
-discountToggle: {
-  flexDirection: "row",
-  backgroundColor: "#E9EEFF",
-  borderRadius: 10,
-  padding: 4,
-  width: 115,
-  height: 40,
-},
+    taxInput: {
+        width: 150,
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 13,
+        backgroundColor: "#FFF",
+        paddingLeft: 15,
+    },
 
-discountBtn: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  borderRadius: 8,
-},
+    discountInput: {
+        width: 150,
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 13,
+        backgroundColor: "#FFF",
+        paddingLeft: 15
+    },
 
-discountBtnActive: {
-  backgroundColor: "#2952FF",
-},
+    totalContainer: {
+        marginTop: 10,
+        backgroundColor: "#EEF1F5",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 22,
+        paddingVertical: 24,
+    },
 
-discountBtnText: {
-  color: "#1E1E1E",
-  fontFamily: "Gilroy-Bold",
-},
+    totalLabel: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Bold",
+        color: "#475569",
+    },
 
-discountBtnTextActive: {
-  color: "#FFFFFF",
-  fontFamily: "Gilroy-Bold",
-},
+    totalValue: {
+        fontSize: 20,
+        fontFamily: "Gilroy-Bold",
+        color: "#111827",
+    },
 
-discountInput: {
-  width: "58%",
-  height: 56,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 12,
-  backgroundColor: "#FFF",
-},
+    discountRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
 
-totalContainer: {
-  marginTop: 20,
-  backgroundColor: "#EEF1F5",
-  paddingHorizontal: 16,
-  paddingVertical: 20,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
+    discountToggle: {
+        flexDirection: "row",
+        backgroundColor: "#E9EEFF",
+        borderRadius: 10,
+        padding: 4,
+        width: 85,
+        height: 40,
+    },
 
-totalLabel: {
-  fontSize: 16,
-  color: "#475569",
-  fontFamily: "Gilroy-Bold",
-},
+    discountBtn: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 8,
+    },
 
-totalValue: {
-  fontSize: 20,
-  color: "#111827",
-  fontFamily: "Gilroy-Bold",
-},
+    discountBtnActive: {
+        backgroundColor: "#2952FF",
+    },
+
+    discountBtnText: {
+        color: "#1E1E1E",
+        fontFamily: "Gilroy-Bold",
+    },
+
+    discountBtnTextActive: {
+        color: "#FFFFFF",
+        fontFamily: "Gilroy-Bold",
+    },
+
+
+
+
+
 
     totalRow: {
         flexDirection: "row",
@@ -1754,8 +2614,30 @@ totalValue: {
     },
     footerRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 24
+        justifyContent: "flex-end",
+        alignItems: "center",
+        marginTop: 30,
+        marginBottom: 20,
+    },
+
+    cancelBtn: {
+        width: "26%",
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#D9D9D9",
+        borderRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 8
+    },
+
+    submitBtn: {
+        width: "48%",
+        height: 54,
+        backgroundColor: "#2952FF",
+        borderRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
     },
 
     // cancelBtn: {
@@ -1778,12 +2660,12 @@ totalValue: {
     //  color:"#1E1E1E"
     // },
 
-    label: {
-        fontSize: 16,
-        fontFamily: "Gilroy-Medium",
-        color: "#1E1E1E",
-        marginBottom: 8
-    },
+    // label: {
+    //     fontSize: 16,
+    //     fontFamily: "Gilroy-Medium",
+    //     color: "#1E1E1E",
+    //     marginBottom: 8
+    // },
 
     input: {
         height: 54,
@@ -1814,193 +2696,289 @@ totalValue: {
         backgroundColor: "#FFF"
     },
     vendorSection: {
-  marginTop: 18,
-},
+        marginTop: 18,
+    },
 
-vendorLabel: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Medium",
-  marginBottom: 12,
-},
+    vendorLabel: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Medium",
+        marginBottom: 12,
+    },
 
-vendorToggle: {
-  flexDirection: "row",
-  backgroundColor: "#EEF2FF",
-  borderRadius: 12,
-  padding: 4,
-},
+    vendorToggle: {
+        flexDirection: "row",
+        backgroundColor: "#EEF2FF",
+        borderRadius: 12,
+        padding: 4,
+    },
 
-vendorOption: {
-  flex: 1,
-  height: 42,
-  justifyContent: "center",
-  alignItems: "center",
-  borderRadius: 10,
-},
+    vendorOption: {
+        flex: 1,
+        height: 42,
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 10,
+    },
 
-activeVendorOption: {
-  backgroundColor: "#2952FF",
-},
+    activeVendorOption: {
+        backgroundColor: "#2952FF",
+    },
 
-vendorOptionText: {
-  color: "#111827",
-  fontFamily: "Gilroy-Medium",
-},
+    vendorOptionText: {
+        color: "#111827",
+        fontFamily: "Gilroy-Medium",
+    },
 
-activeVendorOptionText: {
-  color: "#FFFFFF",
-  fontFamily: "Gilroy-Bold",
-},
+    activeVendorOptionText: {
+        color: "#FFFFFF",
+        fontFamily: "Gilroy-Bold",
+    },
 
-radioRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 16,
-},
+    radioRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 16,
+    },
 
-radioOuter: {
-  width: 20,
-  height: 20,
-  borderRadius: 10,
-  borderWidth: 1.5,
-  borderColor: "#D1D5DB",
-  justifyContent: "center",
-  alignItems: "center",
-},
+    radioOuter: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 1.5,
+        borderColor: "#D1D5DB",
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
-radioOuterActive: {
-  borderColor: "#2952FF",
-},
+    radioOuterActive: {
+        borderColor: "#2952FF",
+    },
 
-radioInner: {
-  width: 10,
-  height: 10,
-  borderRadius: 5,
-  backgroundColor: "#2952FF",
-},
+    radioInner: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: "#2952FF",
+    },
 
-radioText: {
-  marginLeft: 10,
-  fontSize: 15,
-  color: "#111827",
-},
+    radioText: {
+        marginLeft: 10,
+        fontSize: 15,
+        color: "#111827",
+    },
 
-uploadBox: {
-  height: 90,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 12,
-  justifyContent: "center",
-  alignItems: "center",
-  marginTop: 8,
-},
+    uploadBox: {
+        height: 90,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 12,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 8,
+    },
 
-uploadText: {
-  color: "#2952FF",
-  fontFamily: "Gilroy-SemiBold",
-},
+    uploadText: {
+        color: "#2952FF",
+        fontFamily: "Gilroy-SemiBold",
+    },
 
-uploadSub: {
-  color: "#94A3B8",
-  marginTop: 4,
-  fontSize: 12,
-},
-sectionSubTitle: {
-  fontSize: 14,
-  color: "#64748B",
-  marginTop: 2,
-  fontFamily: "Gilroy-Regular",
-},
+    uploadSub: {
+        color: "#94A3B8",
+        marginTop: 4,
+        fontSize: 12,
+    },
+    sectionSubTitle: {
+        fontSize: 14,
+        color: "#64748B",
+        marginTop: 2,
+        fontFamily: "Gilroy-Regular",
+    },
 
-itemCard: {
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 16,
-  padding: 16,
-  backgroundColor: "#FFFFFF",
-  marginBottom: 16,
-},
+    itemCard: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 16,
+        padding: 16,
+        backgroundColor: "#FFFFFF",
+        marginBottom: 16,
+    },
 
-itemHeader: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 12,
-},
+    itemHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 12,
+    },
 
-itemTitle: {
-  fontSize: 18,
-  fontFamily: "Gilroy-Bold",
-  color: "#111827",
-},
+    itemTitle: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        color: "#111827",
+    },
 
-itemActionRow: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+    itemActionRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
 
-iconBtn: {
-  width: 32,
-  height: 32,
-  borderRadius: 8,
-  justifyContent: "center",
-  alignItems: "center",
-  marginLeft: 8,
-},
+    iconBtn: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+        marginLeft: 8,
+    },
 
-cloneBtn: {
-  backgroundColor: "#F8FAFC",
-},
+    cloneBtn: {
+        backgroundColor: "#fff",
+    },
 
-deleteBtn: {
-  backgroundColor: "#FFF1F2",
-},
+    deleteBtn: {
+        backgroundColor: "#FFF1F2",
+    },
 
-cloneIcon: {
-  fontSize: 18,
-  color: "#111827",
-},
+    cloneIcon: {
+        height: 18, width: 18,
+        color: "#111827",
+    },
 
-deleteIcon: {
-  fontSize: 18,
-  color: "#EF4444",
-},
+    deleteIcon: {
+        fontSize: 18,
+        color: "#EF4444",
+    },
 
-itemRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-},
+    itemRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
 
-halfField: {
-  width: "48%",
-},
+    halfField: {
+        width: "48%",
+    },
 
-amountBox: {
-  marginTop: 12,
-  borderWidth: 1,
-  borderColor: "#BFD0FF",
-  borderRadius: 12,
-  backgroundColor: "#FFFFFF",
-},
+    amountBox: {
+        marginTop: 12,
+        borderWidth: 1,
+        borderColor: "#BFD0FF",
+        borderRadius: 12,
+        backgroundColor: "#FFFFFF",
+    },
 
-amountInput: {
-  color: "#111827",
-  fontFamily: "Gilroy-Bold",
-},
+    amountInput: {
+        color: "#111827",
+        fontFamily: "Gilroy-Bold",
+    },
 
-addRowBtn: {
-  height: 52,
-  borderRadius: 12,
-  backgroundColor: "#EEF2FF",
-  justifyContent: "center",
-  alignItems: "center",
-  marginTop: 8,
-  marginBottom: 20,
-},
+    addRowBtn: {
+        height: 52,
+        borderRadius: 12,
+        backgroundColor: "#EEF2FF",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 8,
+        marginBottom: 20,
+    },
 
-addRowText: {
-  color: "#2952FF",
-  fontSize: 16,
-  fontFamily: "Gilroy-Bold",
-},
+    addRowText: {
+        color: "#2952FF",
+        fontSize: 16,
+        fontFamily: "Gilroy-Bold",
+    },
+
+    expensesDropdownBox: {
+        borderWidth: 1,
+        borderColor: "#D4D4D4",
+        borderRadius: 10,
+        padding: 14,
+        marginTop: 6,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        backgroundColor: "#fff",
+    },
+
+    expensesArrowIcon: {
+        width: 18,
+        height: 18,
+        tintColor: "#6A6A6A",
+    },
+
+    expensesDropdownMenu: {
+        marginTop: 4,
+        borderWidth: 1,
+        borderColor: "#DDDDDD",
+        borderRadius: 10,
+        backgroundColor: "#fff",
+        overflow: "hidden",
+        elevation: 6,
+        zIndex: 999,
+    },
+
+    expensesOption: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+    },
+
+    expensesOptionSelected: {
+        backgroundColor: "#1D5BEE",
+    },
+
+    expensesOptionText: {
+        fontSize: 15,
+        color: "#111",
+    },
+
+    expensesOptionTextSelected: {
+        color: "#fff",
+        fontWeight: "600",
+    },
+
+    expensesNoDataText: {
+        paddingVertical: 14,
+        textAlign: "center",
+        color: "#9CA3AF",
+        fontSize: 14,
+    },
+    calendarIcon: { width: 22, height: 22, tintColor: "#676767" },
+    dateInputWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 12,
+        height: 48,
+        paddingHorizontal: 12,
+        marginTop: 6,
+    },
+
+    dateInput: {
+        flex: 1,
+        fontSize: 14,
+        color: "#111827",
+    },
+
+    dateOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
+    },
+
+    overlayBg: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(0,0,0,0.3)",
+    },
+
+    calendarContainer: {
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        padding: 10,
+        width: "85%",
+        elevation: 10,
+    },
 });

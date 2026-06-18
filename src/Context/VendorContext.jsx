@@ -6,6 +6,7 @@ export const VendorContext = createContext();
 
 export default function VendorProvider({ children }) {
   const [vendorList, setVendorList] = useState([]);
+  const [vendorCategories, setVendorCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getErrorMessage = (err) =>
@@ -36,6 +37,118 @@ export default function VendorProvider({ children }) {
     }
   };
 
+
+  const getVendorCategories = async () => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+    const res = await axios.get("/v2/vendors/categories");
+
+    if (res?.status === 200) {
+      setVendorCategories(res?.data || []);
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log(
+      "Vendor Categories Error:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const addVendorCategory = async (categoryName) => {
+    console.log("ADD CATEGORY", categoryName);
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.post("/v2/vendors/categories", {
+      categoryName,
+    });
+
+    if (res?.status === 200 || res?.status === 201) {
+      await getVendorCategories();
+
+      return {
+        success: true,
+        message: "Vendor Category added successfully",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to add vendor category",
+    };
+  } catch (err) {
+    console.log(
+      "ADD VENDOR CATEGORY ERROR",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const deleteVendorCategory = async (categoryId) => {
+    console.log("delete CATEGORY", categoryId);
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/vendors/categories/${categoryId}/delete`
+    );
+
+    if (res?.status === 200) {
+      await getVendorCategories();
+
+      return {
+        success: true,
+        message: "Vendor Category deleted successfully",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to delete vendor category",
+    };
+  } catch (err) {
+    console.log(
+      "DELETE VENDOR CATEGORY ERROR",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
   // ✅ ADD VENDOR
  const addVendor = async ({ profilePic, payLoads, hostelId }) => {
   setLoading(true);
@@ -60,7 +173,7 @@ export default function VendorProvider({ children }) {
     const axios = getAxios()
     const res = await axios.post("/v2/vendors", formData);
 
-    if (res.status === 200 || res.status === 201) {
+    if (res?.status === 200 || res?.status === 201) {
       await getVendorList(hostelId);
       return { success: true, data: res.data };
     }
@@ -136,11 +249,15 @@ export default function VendorProvider({ children }) {
     <VendorContext.Provider
       value={{
         vendorList,
+        vendorCategories,
         loading,
         getVendorList,
+        getVendorCategories,
         addVendor,
         updateVendor,
         deleteVendor,
+        addVendorCategory,
+        deleteVendorCategory,
       }}
     >
       {children}

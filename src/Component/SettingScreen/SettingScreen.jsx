@@ -49,6 +49,7 @@ export default function SettingsScreen({ navigation }) {
   { icon: BillTemplate, title: "Bill Templates", screen:"BillTemplate" },
   { icon: Expense, title: "Expenses", screen: "ExpensesCategory" },
   { icon: Complaints, title: "Complaints", screen: "ComplaintType" },
+   { icon: Complaints, title: "Vendors", screen: "SettingsVendors" },
   { icon: Amenity, title: "Amenities", screen: "SettingsAmenity" },
   { icon: UserIcon, title: "Staff", screen: "UsersScreen" },
   { icon: RoleIcon, title: "Role", screen:"RolesScreen" },
