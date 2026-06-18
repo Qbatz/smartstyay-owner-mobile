@@ -666,7 +666,7 @@ export default function DiscountInvoiceScreen() {
                 <View style={styles.rowBetween}>
                   <Text style={styles.label}>Invoice date</Text>
                   <Text style={styles.valueText}>
-                    {BillPdfdetails?.invoiceDate || "N/A"}
+                    {BillPdfdetails?.invoiceDate || BillPdfdetails?.invoiceInfo?.invoiceDate }
                   </Text>
                 </View>
                 <View style={styles.rowBetween}>
@@ -680,7 +680,7 @@ export default function DiscountInvoiceScreen() {
                       isOverdue && { color: "#FF3B30" },
                     ]}
                   >
-                    {BillPdfdetails?.dueDate || "N/A"}
+                    {BillPdfdetails?.dueDate || BillPdfdetails?.invoiceInfo?.dueDate || "N/A"}
                   </Text>
                 </View>
 

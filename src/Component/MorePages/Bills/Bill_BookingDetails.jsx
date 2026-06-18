@@ -93,7 +93,7 @@ const BillBookingDetailsSheet = ({
 
   const [showMenu, setShowMenu] = useState(false);
   const [showReceiptMenu, setShowReceiptMenu] = useState(false)
-  const [showPayments, setShowPayments] = useState(false);
+  const [showPayments, setShowPayments] = useState(true);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
   const [showRefundPayement, setShowRefundPayment] = useState(false)
   const detailsSheetY = useRef(new Animated.Value(0)).current;
