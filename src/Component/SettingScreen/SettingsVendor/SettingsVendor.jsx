@@ -1,19 +1,19 @@
-import React, { useState, useRef, useEffect, useContext , useCallback} from "react";
+import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  TextInput,
-  Animated,
-  TouchableWithoutFeedback,
-  PanResponder,
-  Keyboard,
-  Modal,
-  ScrollView,
-  BackHandler,
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    FlatList,
+    TextInput,
+    Animated,
+    TouchableWithoutFeedback,
+    PanResponder,
+    Keyboard,
+    Modal,
+    ScrollView,
+    BackHandler,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { useHasPermission } from "../../../Utils/useHasPermission";
@@ -30,308 +30,319 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import Loader from "../../../Component/Loader/Loader"
 
 export default function vendorSettings({ navigation }) {
-  const { activeHostelId } = useContext(CommonContexts);
-     const { vendorList, loading, getVendorList, deleteVendor } = useContext(CustomerContext);;
-
-  const {
-  
-    complaintTypes,
-      
-    fetchComplaintTypes,
-    addComplaintType,
-    editComplaintType,
-    deleteComplaintType,
-  } = useContext(ComplaintContext);
+    const { activeHostelId } = useContext(CommonContexts);
+    const { vendorList, loading, getVendorList, deleteVendor } = useContext(CustomerContext);;
 
     const {
-      vendorCategories,
-      getVendorCategories,  addVendorCategory,
-  deleteVendorCategory,
+
+        complaintTypes,
+
+        fetchComplaintTypes,
+        addComplaintType,
+        editComplaintType,
+        deleteComplaintType,
+    } = useContext(ComplaintContext);
+
+    const {
+        vendorCategories,
+        getVendorCategories, addVendorCategory,
+        deleteVendorCategory,
     } = useContext(VendorContext);
 
-  const {
-  canWriteModule: canWriteComplaints,
-  canReadModule: canReadComplaints,
-  canUpdateModule: canUpdateComplaints,
-  canDeleteModule: canDeleteComplaints,
-} = useHasPermission("Complaints");
+    const {
+        canWriteModule: canWriteComplaints,
+        canReadModule: canReadComplaints,
+        canUpdateModule: canUpdateComplaints,
+        canDeleteModule: canDeleteComplaints,
+    } = useHasPermission("Complaints");
 
- const {
+    const {
         canReadModule: canReadVendor,
         canWriteModule: canWriteVendor,
-        canUpdateModule : canUpdateVendor,
-        canDeleteModule : canDeleteVendor,
+        canUpdateModule: canUpdateVendor,
+        canDeleteModule: canDeleteVendor,
     } = useHasPermission("Vendor");
 
 
-  const [showSheet, setShowSheet] = useState(false);
-  const [showMenuId, setShowMenuId] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
-  const [complaintText, setComplaintText] = useState("");
-  const [isEdit, setIsEdit] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuComplaintId, setMenuComplaintId] = useState(null);
-  const [originalComplaintName, setOriginalComplaintName] = useState("");
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [showSheet, setShowSheet] = useState(false);
+    const [showMenuId, setShowMenuId] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [complaintText, setComplaintText] = useState("");
+    const [isEdit, setIsEdit] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [showMenu, setShowMenu] = useState(false);
+    const [menuComplaintId, setMenuComplaintId] = useState(null);
+    const [originalComplaintName, setOriginalComplaintName] = useState("");
+    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
 
 
 
-  const sheetY = useRef(new Animated.Value(700)).current;
+    const sheetY = useRef(new Animated.Value(700)).current;
 
-   console.log("complaintTypes",complaintTypes );
- console.log("deleteId",deleteId );
- 
-  // useEffect(() => {
-  //   fetchComplaintTypes(activeHostelId);
-  // }, []);
+    console.log("complaintTypes", complaintTypes);
+    console.log("deleteId", deleteId);
 
-useEffect(() => {
-  async function loadData() {
-    if (!activeHostelId) {
-      return
-    }
+    // useEffect(() => {
+    //   fetchComplaintTypes(activeHostelId);
+    // }, []);
 
-    await fetchComplaintTypes(activeHostelId);
-  }
+    useEffect(() => {
+        async function loadData() {
+            if (!activeHostelId) {
+                return
+            }
 
-  loadData();
-}, [activeHostelId]);
+            await fetchComplaintTypes(activeHostelId);
+        }
+
+        loadData();
+    }, [activeHostelId]);
 
 
- useFocusEffect(
-            useCallback(() => {
-                if (activeHostelId) {
-                    getVendorList(activeHostelId);
-                }
-            }, [activeHostelId])
+    useFocusEffect(
+        useCallback(() => {
+            if (activeHostelId) {
+                getVendorList(activeHostelId);
+            }
+        }, [activeHostelId])
+    );
+
+    useEffect(() => {
+        if (activeHostelId) {
+            getVendorCategories(activeHostelId);
+        }
+    }, [activeHostelId]);
+
+
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            navigation.goBack();
+            return true;
+        });
+        return () => backHandler.remove();
+    }, []);
+
+
+
+    const sheetPan = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+            onPanResponderMove: (_, g) => {
+                if (g.dy > 0) sheetY.setValue(g.dy);
+            },
+            onPanResponderRelease: (_, g) => {
+                if (g.dy > 120) closeSheet();
+                else
+                    Animated.spring(sheetY, {
+                        toValue: 0,
+                        useNativeDriver: true,
+                    }).start();
+            },
+        })
+    ).current;
+
+
+    // const openSheet = (edit = false, item = null) => {
+    //   sheetY.setValue(700);
+    //   setIsEdit(edit);
+
+    //   if (edit && item) {
+    //     setComplaintText(item.title);
+    //     setEditingId(item.id);
+    //   } else {
+    //     setComplaintText("");
+    //     setEditingId(null);
+    //   }
+
+    //   setShowSheet(true);
+
+    //   Animated.timing(sheetY, {
+    //     toValue: 0,
+    //     duration: 240,
+    //     useNativeDriver: true,
+    //   }).start();
+    // };
+    const openSheet = (edit = false, item = null) => {
+
+        if (!activeHostelId) {
+            setModalType("warning");
+            setModalMessage("Please add a hostel first");
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 1500);
+            return;
+        }
+
+        sheetY.setValue(700);
+        setIsEdit(edit);
+
+        if (edit && item) {
+            setComplaintText(item?.categoryName);
+            setOriginalComplaintName(item?.categoryName);
+            setEditingId(item.id);
+        } else {
+            setComplaintText("");
+            setOriginalComplaintName("");
+            setEditingId(null);
+        }
+
+        setShowSheet(true);
+
+        Animated.timing(sheetY, {
+            toValue: 0,
+            duration: 240,
+            useNativeDriver: true,
+        }).start();
+    };
+
+
+    const closeSheet = () => {
+        Animated.timing(sheetY, {
+            toValue: 700,
+            duration: 220,
+            useNativeDriver: true,
+        }).start(() => {
+            setShowSheet(false);
+            setComplaintText("");
+            setEditingId(null);
+            setIsEdit(false);
+        });
+    };
+
+
+    useEffect(() => {
+        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+            Animated.timing(sheetY, {
+                toValue: -e.endCoordinates.height + 60,
+                duration: 180,
+                useNativeDriver: true,
+            }).start();
+        });
+
+        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+            Animated.timing(sheetY, {
+                toValue: 0,
+                duration: 180,
+                useNativeDriver: true,
+            }).start();
+        });
+
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
+
+
+    const handleSave = async () => {
+
+        if (isEdit) {
+            const newValue = complaintText.trim();
+            const oldValue = originalComplaintName.trim();
+
+            if (newValue === oldValue) {
+                setModalType("warning");
+                setModalMessage("No changes detected");
+                setShowSuccessModal(true);
+
+                setTimeout(() => setShowSuccessModal(false), 1500);
+                return;
+            }
+        }
+
+
+        //   let res;
+
+        //   if (isEdit) {
+        //      res = await editComplaintType({
+        //     id: editingId,
+        //     complaintTypeName: complaintText,
+        //     isActive: true,
+        //     hostelId: activeHostelId,
+        //   });
+        //   } else {
+
+        //     let res = await addVendorCategory(complaintText);
+        //   }
+
+        let res = await addVendorCategory(
+            complaintText,
+            activeHostelId
+        );
+        if (!res.success) {
+            setModalType("warning");
+            setModalMessage(res.message);
+            setShowSuccessModal(true);
+
+            setTimeout(() => setShowSuccessModal(false), 1500);
+            return;
+        }
+
+        setModalType("success");
+        setModalMessage(res.message);
+        setShowSuccessModal(true);
+        getVendorCategories(activeHostelId)
+        setTimeout(() => setShowSuccessModal(false), 1500);
+
+        closeSheet();
+    };
+
+
+
+
+
+    const confirmDelete = async () => {
+        //   const res = await deleteComplaintType(deleteId, activeHostelId);
+        const res = await deleteVendorCategory(
+            deleteId,
+            activeHostelId
         );
 
-        useEffect(() => {
-            getVendorCategories();
-          }, []);
-        
+        if (!res?.success) {
+            setModalMessage(res?.message);
+            setModalType("error");
+            setShowSuccessModal(true);
 
- 
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-      navigation.goBack();
-      return true;
-    });
-    return () => backHandler.remove();
-  }, []);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1500);
 
+            return;
+        }
 
+        setShowDeleteConfirm(false);
 
-const sheetPan = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-    onPanResponderMove: (_, g) => {
-      if (g.dy > 0) sheetY.setValue(g.dy);
-    },
-    onPanResponderRelease: (_, g) => {
-      if (g.dy > 120) closeSheet();
-      else
-        Animated.spring(sheetY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-    },
-  })
-).current;
+        setModalMessage(res?.message || "Deleted successfully");
+        setModalType("success");
+        setShowSuccessModal(true);
 
-
-  // const openSheet = (edit = false, item = null) => {
-  //   sheetY.setValue(700);
-  //   setIsEdit(edit);
-
-  //   if (edit && item) {
-  //     setComplaintText(item.title);
-  //     setEditingId(item.id);
-  //   } else {
-  //     setComplaintText("");
-  //     setEditingId(null);
-  //   }
-
-  //   setShowSheet(true);
-
-  //   Animated.timing(sheetY, {
-  //     toValue: 0,
-  //     duration: 240,
-  //     useNativeDriver: true,
-  //   }).start();
-  // };
-const openSheet = (edit = false, item = null) => {
-
-  if (!activeHostelId) {
-    setModalType("warning");
-    setModalMessage("Please add a hostel first");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
-
-  sheetY.setValue(700);
-  setIsEdit(edit);
-
-  if (edit && item) {
-    setComplaintText(item?.categoryName);
-    setOriginalComplaintName(item?.categoryName);
-    setEditingId(item.id);
-  } else {
-    setComplaintText("");
-    setOriginalComplaintName("");
-    setEditingId(null);
-  }
-
-  setShowSheet(true);
-
-  Animated.timing(sheetY, {
-    toValue: 0,
-    duration: 240,
-    useNativeDriver: true,
-  }).start();
-};
-
-
-  const closeSheet = () => {
-    Animated.timing(sheetY, {
-      toValue: 700,
-      duration: 220,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowSheet(false);
-      setComplaintText("");
-      setEditingId(null);
-      setIsEdit(false);
-    });
-  };
-
- 
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      Animated.timing(sheetY, {
-        toValue: -e.endCoordinates.height + 60,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(sheetY, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 1500);
     };
-  }, []);
 
 
- const handleSave = async () => {
- 
-  if (isEdit) {
-    const newValue = complaintText.trim();
-    const oldValue = originalComplaintName.trim();
+    const vendors = vendorCategories || [];
 
-    if (newValue === oldValue) {
-      setModalType("warning");
-      setModalMessage("No changes detected");
-      setShowSuccessModal(true);
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-      return;
-    }
-  }
-
-
-//   let res;
-
-//   if (isEdit) {
-//      res = await editComplaintType({
-//     id: editingId,
-//     complaintTypeName: complaintText,
-//     isActive: true,
-//     hostelId: activeHostelId,
-//   });
-//   } else {
+    console.log("vendorCategories", vendorCategories);
     
-//     let res = await addVendorCategory(complaintText);
-//   }
 
-  let res = await addVendorCategory(complaintText);
-  if (!res.success) {
-    setModalType("warning");
-    setModalMessage(res.message);
-    setShowSuccessModal(true);
+    const renderPopupMenu = (item) => {
+        if (showMenuId !== item.id) return null;
 
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+        return (
+            <View style={styles.popupOverlayArea}>
 
-  setModalType("success");
-  setModalMessage(res.message);
-  setShowSuccessModal(true);
-   getVendorCategories();
-  setTimeout(() => setShowSuccessModal(false), 1500);
+                <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
+                    <View style={styles.menuOutsideArea} />
+                </TouchableWithoutFeedback>
 
-  closeSheet();
-};
-
-
-
-
-
- const confirmDelete = async () => {
-//   const res = await deleteComplaintType(deleteId, activeHostelId);
-  const res = await deleteVendorCategory(deleteId);
-
-  if (!res?.success) {
-    setModalMessage(res?.message);
-    setModalType("error");
-    setShowSuccessModal(true);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 1500);
-
-    return;
-  }
-
-  setShowDeleteConfirm(false);
-
-  setModalMessage(res?.message || "Deleted successfully");
-  setModalType("success");
-  setShowSuccessModal(true);
-
-  setTimeout(() => {
-    setShowSuccessModal(false);
-  }, 1500);
-};
-
-
- const vendors = vendorCategories || [];
-
-  const renderPopupMenu = (item) => {
-    if (showMenuId !== item.id) return null;
-
-    return (
-     <View style={styles.popupOverlayArea}>
-  
-  <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
-    <View style={styles.menuOutsideArea} />
-  </TouchableWithoutFeedback>
-
-  <View style={styles.popupMenu}>
-    {/* <TouchableOpacity
+                <View style={styles.popupMenu}>
+                    {/* <TouchableOpacity
       style={styles.popupItem}
       onPress={() => {
         setShowMenuId(null);
@@ -342,153 +353,153 @@ const openSheet = (edit = false, item = null) => {
       <Text style={styles.popupText}>Edit</Text>
     </TouchableOpacity> */}
 
-    <TouchableOpacity
-      style={styles.popupItem}
-      onPress={() => {
-        setDeleteId(item?.id);
-        setShowMenuId(null);
-        setShowDeleteConfirm(true);
-      }}
-    >
-      <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
-      <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
-    </TouchableOpacity>
-  </View>
+                    <TouchableOpacity
+                        style={styles.popupItem}
+                        onPress={() => {
+                            setDeleteId(item?.id);
+                            setShowMenuId(null);
+                            setShowDeleteConfirm(true);
+                        }}
+                    >
+                        <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
+                        <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
+                    </TouchableOpacity>
+                </View>
 
-</View>
+            </View>
 
-    );
-  };
+        );
+    };
 
 
- const renderComplaint = ({ item }) => (
-  <View style={styles.cardWrapper}>
-    
-    <View style={styles.card}>
-      <View style={styles.cardLeft}>
-        <Image source={ComplaintIcon} style={styles.icon} />
-        <Text style={styles.cardText}>{item?.categoryName}</Text>
-      </View>
+    const renderComplaint = ({ item }) => (
+        <View style={styles.cardWrapper}>
 
-    
-
-      <TouchableOpacity
-  onPress={(e) => {
-    e.target.measure((fx, fy, width, height, px, py) => {
-      setMenuPosition({ x: px, y: py });
-      setMenuComplaintId(item?.id);
-      setShowMenu(true);
-    })
-  }}
->
-  <Image source={Dots} style={styles.dots} />
-</TouchableOpacity>
-
-    </View>
-
-    {renderPopupMenu(item)}
-
-  </View>
-);
+            <View style={styles.card}>
+                <View style={styles.cardLeft}>
+                    <Image source={ComplaintIcon} style={styles.icon} />
+                    <Text style={styles.cardText}>{item?.categoryName}</Text>
+                </View>
 
 
 
-  return (
-    <>
- { loading && <Loader />}
-      <SuccessModal
-        visible={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        message={modalMessage}
-        type={modalType}
-      />
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: showSheet ? "transparent" : "#FFFFFF",
-          padding: 20,
-          paddingTop: 60,
-        }}
-      >
-      
+                <TouchableOpacity
+                    onPress={(e) => {
+                        e.target.measure((fx, fy, width, height, px, py) => {
+                            setMenuPosition({ x: px, y: py });
+                            setMenuComplaintId(item?.id);
+                            setShowMenu(true);
+                        })
+                    }}
+                >
+                    <Image source={Dots} style={styles.dots} />
+                </TouchableOpacity>
 
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image source={ArrowLeft} style={styles.backIcon} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Vendors</Text>
+            </View>
+
+            {renderPopupMenu(item)}
+
         </View>
+    );
 
-        {!canReadVendor && !loading && (
-  <View style={styles.emptyContainer}>
-    <Image source={EmptyComplaint} style={styles.emptyImg} />
-    <Text style={styles.emptyTitle}>
-      You do not have access to view Vendors
-    </Text>
-  </View>
-)}
 
-{canReadVendor && (
-        <View style={{ flex: 1 }}>
-  {!loading && vendorCategories?.length === 0 ? (
-    <View style={styles.emptyContainer}>
-      <Image source={EmptyComplaint} style={styles.emptyImg} />
-      <Text style={styles.emptyTitle}>No Vendors are there!</Text>
 
-      <TouchableOpacity
-        // style={styles.addButtonEmpty}
-          style={[
-    styles.addButtonEmpty,
-    !canWriteVendor && { opacity: 0.4 },
-  ]}
-  disabled={!canWriteVendor}
-        onPress={() =>  canWriteVendor && openSheet(false)}
-      >
-        <Text style={styles.addBtnText}>+ Vendors</Text>
-      </TouchableOpacity>
-    </View>
-  ) : (
-    <FlatList
-      data={vendorCategories}
-      renderItem={renderComplaint}
-      keyExtractor={(i) => i?.id.toString()}
-      contentContainerStyle={{ paddingBottom: 140 }}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    />
-  )}
-</View>
-)}
+    return (
+        <>
+            {loading && <Loader />}
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType}
+            />
+            <View
+                style={{
+                    flex: 1,
+                    backgroundColor: showSheet ? "transparent" : "#FFFFFF",
+                    padding: 20,
+                    paddingTop: 60,
+                }}
+            >
 
-    
 
-        {canReadVendor && !loading && vendorCategories?.length > 0 && (
-          <TouchableOpacity 
-                    style={[
-    styles.addBtn,
-    !canWriteVendor && { opacity: 0.4 },
-  ]}
-  disabled={!canWriteVendor}
-          onPress={() => canWriteVendor && openSheet(false)}>
-            <Image source={AddIcon} style={{ width: 25, height: 25 }} />
-          </TouchableOpacity>
-        )}
-      </View>
+                <View style={styles.headerRow}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Image source={ArrowLeft} style={styles.backIcon} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Vendors</Text>
+                </View>
 
-      {showMenu && (
-  <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-    <View style={styles.menuOverlay}>
+                {!canReadVendor && !loading && (
+                    <View style={styles.emptyContainer}>
+                        <Image source={EmptyComplaint} style={styles.emptyImg} />
+                        <Text style={styles.emptyTitle}>
+                            You do not have access to view Vendors
+                        </Text>
+                    </View>
+                )}
 
-      <View
-        style={[
-          styles.menuBox,
-          {
-            top: menuPosition.y + 20,
-            left: menuPosition.x - 120,
-          },
-        ]}
-      >
-        {/* <TouchableOpacity
+                {canReadVendor && (
+                    <View style={{ flex: 1 }}>
+                        {!loading && vendorCategories?.length === 0 ? (
+                            <View style={styles.emptyContainer}>
+                                <Image source={EmptyComplaint} style={styles.emptyImg} />
+                                <Text style={styles.emptyTitle}>No Vendors are there!</Text>
+
+                                <TouchableOpacity
+                                    // style={styles.addButtonEmpty}
+                                    style={[
+                                        styles.addButtonEmpty,
+                                        !canWriteVendor && { opacity: 0.4 },
+                                    ]}
+                                    disabled={!canWriteVendor}
+                                    onPress={() => canWriteVendor && openSheet(false)}
+                                >
+                                    <Text style={styles.addBtnText}>+ Vendors</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={vendorCategories}
+                                renderItem={renderComplaint}
+                                keyExtractor={(i) => i?.id.toString()}
+                                contentContainerStyle={{ paddingBottom: 140 }}
+                                showsVerticalScrollIndicator={false}
+                                keyboardShouldPersistTaps="handled"
+                            />
+                        )}
+                    </View>
+                )}
+
+
+
+                {canReadVendor && !loading && vendorCategories?.length > 0 && (
+                    <TouchableOpacity
+                        style={[
+                            styles.addBtn,
+                            !canWriteVendor && { opacity: 0.4 },
+                        ]}
+                        disabled={!canWriteVendor}
+                        onPress={() => canWriteVendor && openSheet(false)}>
+                        <Image source={AddIcon} style={{ width: 25, height: 25 }} />
+                    </TouchableOpacity>
+                )}
+            </View>
+
+            {showMenu && (
+                <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+                    <View style={styles.menuOverlay}>
+
+                        <View
+                            style={[
+                                styles.menuBox,
+                                {
+                                    top: menuPosition.y + 20,
+                                    left: menuPosition.x - 120,
+                                },
+                            ]}
+                        >
+                            {/* <TouchableOpacity
           style={[styles.menuItem ,  {opacity: canUpdateVendor ? 1 : 0.4} ]}
           disabled={!canUpdateVendor}
           onPress={() => {
@@ -505,354 +516,354 @@ const openSheet = (edit = false, item = null) => {
 
         <View style={styles.menuDivider} /> */}
 
-        <TouchableOpacity
-          style={[styles.menuItem ,  {opacity: canDeleteVendor ? 1 : 0.4} ]}
-          disabled={!canDeleteVendor}
-          onPress={() => {
-            setShowMenu(false);
-            setDeleteId(menuComplaintId);
-            setShowDeleteConfirm(true);
-          }}
-        >
-          <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
-          <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.menuItem, { opacity: canDeleteVendor ? 1 : 0.4 }]}
+                                disabled={!canDeleteVendor}
+                                onPress={() => {
+                                    setShowMenu(false);
+                                    setDeleteId(menuComplaintId);
+                                    setShowDeleteConfirm(true);
+                                }}
+                            >
+                                <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
+                                <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+                            </TouchableOpacity>
 
-      </View>
-    </View>
-  </TouchableWithoutFeedback>
-)}
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            )}
 
 
-      {showDeleteConfirm && (
-        <Modal visible transparent animationType="fade">
-          <View style={styles.deleteOverlay}>
-            <View style={styles.deleteBox}>
-              <Text style={styles.deleteTitle}>Delete Vendor Category?</Text>
-              <Text style={styles.deleteSub}>
-                Are you sure you want to delete this Vendor Category?
-              </Text>
+            {showDeleteConfirm && (
+                <Modal visible transparent animationType="fade">
+                    <View style={styles.deleteOverlay}>
+                        <View style={styles.deleteBox}>
+                            <Text style={styles.deleteTitle}>Delete Vendor Category?</Text>
+                            <Text style={styles.deleteSub}>
+                                Are you sure you want to delete this Vendor Category?
+                            </Text>
 
-              <View style={styles.deleteBtnRow}>
-                <TouchableOpacity
-                  style={styles.cancelBtn}
-                  onPress={() => setShowDeleteConfirm(false)}
-                >
-                  <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
+                            <View style={styles.deleteBtnRow}>
+                                <TouchableOpacity
+                                    style={styles.cancelBtn}
+                                    onPress={() => setShowDeleteConfirm(false)}
+                                >
+                                    <Text style={styles.cancelText}>Cancel</Text>
+                                </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={confirmDelete}
-                >
-                  <Text style={styles.deleteBtnText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      )}
+                                <TouchableOpacity
+                                    style={styles.deleteBtn}
+                                    onPress={confirmDelete}
+                                >
+                                    <Text style={styles.deleteBtnText}>Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            )}
 
-     {showSheet && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={closeSheet}>
-      <View style={styles.dimLayer} />
-    </TouchableWithoutFeedback>
+            {showSheet && (
+                <View style={styles.sheetOverlay}>
+                    <TouchableWithoutFeedback onPress={closeSheet}>
+                        <View style={styles.dimLayer} />
+                    </TouchableWithoutFeedback>
 
-    <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
-      {/* Drag Handle */}
-      <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
-        <View style={styles.sheetHandle} />
-      </View>
+                    <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+                        {/* Drag Handle */}
+                        <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
+                            <View style={styles.sheetHandle} />
+                        </View>
 
-      {/* Content */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
-        <Text style={styles.sheetTitle}>
-          {isEdit ? "Edit vendor Category" : "Add Vendor Category"}
-        </Text>
+                        {/* Content */}
+                        <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
+                            <Text style={styles.sheetTitle}>
+                                {isEdit ? "Edit vendor Category" : "Add Vendor Category"}
+                            </Text>
 
-        <Text style={styles.inputLabel}>
-          Vendor Category<Text style={{ color: "red" }}>*</Text>
-        </Text>
+                            <Text style={styles.inputLabel}>
+                                Vendor Category<Text style={{ color: "red" }}>*</Text>
+                            </Text>
 
-        <TextInput
-          style={styles.inputBox}
-          placeholder="Enter Vendor Category"
-          value={complaintText}
-             onChangeText={(t) =>  {
-              setComplaintText(t.replace(/[^a-zA-Z\s]/g, ""))
-            }
-            }
-        />
-      </ScrollView>
+                            <TextInput
+                                style={styles.inputBox}
+                                placeholder="Enter Vendor Category"
+                                value={complaintText}
+                                onChangeText={(t) => {
+                                    setComplaintText(t.replace(/[^a-zA-Z\s]/g, ""))
+                                }
+                                }
+                            />
+                        </ScrollView>
 
-      <TouchableOpacity
-        style={[
-          styles.addTypeBtn,
-          { opacity: complaintText.trim() ? 1 : 0.4 },
-        ]}
-        disabled={!complaintText.trim()}
-        onPress={handleSave}
-      >
-        <Text style={styles.addTypeText}>
-          {isEdit ? "Update Vendor Category" : "Add Vendor Category"}
-        </Text>
-      </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.addTypeBtn,
+                                { opacity: complaintText.trim() ? 1 : 0.4 },
+                            ]}
+                            disabled={!complaintText.trim()}
+                            onPress={handleSave}
+                        >
+                            <Text style={styles.addTypeText}>
+                                {isEdit ? "Update Vendor Category" : "Add Vendor Category"}
+                            </Text>
+                        </TouchableOpacity>
 
-      <View style={styles.bottomMask} />
-    </Animated.View>
+                        <View style={styles.bottomMask} />
+                    </Animated.View>
 
-  </View>
-)}
+                </View>
+            )}
 
-    </>
-  );
+        </>
+    );
 }
 
 
 
 
 const styles = StyleSheet.create({
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  backIcon: { width: 20, height: 20, marginRight: 10 },
-  headerTitle: { fontSize: 20, fontWeight: "700" },
+    headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+    backIcon: { width: 20, height: 20, marginRight: 10 },
+    headerTitle: { fontSize: 20, fontWeight: "700" },
 
-  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyImg: { width: 200, height: 160, marginBottom: 10 },
-  emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 },
+    emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+    emptyImg: { width: 200, height: 160, marginBottom: 10 },
+    emptyTitle: { fontSize: 16, color: "#444", marginBottom: 15 },
 
-  addButtonEmpty: {
-    backgroundColor: "#1E45E1",
-    paddingHorizontal: 25,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  addBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+    addButtonEmpty: {
+        backgroundColor: "#1E45E1",
+        paddingHorizontal: 25,
+        paddingVertical: 10,
+        borderRadius: 10,
+    },
+    addBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
-  card: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+    card: {
+        backgroundColor: "#F9FAFB",
+        borderRadius: 12,
+        padding: 15,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        marginBottom: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
 
-  cardLeft: { flexDirection: "row", alignItems: "center" },
-  icon: { width: 20, height: 20, marginRight: 12 },
-  dots: { width: 24, height: 24 },
-  cardText: { fontSize: 15, color: "#111", fontWeight: "600" },
-
-
-popupOverlayArea: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 100,
-},
-
-popupMenu: {
-  position: "absolute",
-  right: 10,
-  top: 50,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  paddingVertical: 8,
-  width: 160,
-  elevation: 20,
-  shadowColor: "#000",
-  shadowOpacity: 0.25,
-  shadowRadius: 6,
-  shadowOffset: { width: 0, height: 3 },
-  zIndex: 200,
-  overflow: "visible",
-},
+    cardLeft: { flexDirection: "row", alignItems: "center" },
+    icon: { width: 20, height: 20, marginRight: 12 },
+    dots: { width: 24, height: 24 },
+    cardText: { fontSize: 15, color: "#111", fontWeight: "600" },
 
 
-  menuOutsideArea: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-},
+    popupOverlayArea: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 100,
+    },
 
-  popupItem: { flexDirection: "row", alignItems: "center", padding: 12 },
-  popupIcon: { width: 18, height: 18, marginRight: 10 },
-  popupText: { color: "#000", fontSize: 15 },
+    popupMenu: {
+        position: "absolute",
+        right: 10,
+        top: 50,
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        paddingVertical: 8,
+        width: 160,
+        elevation: 20,
+        shadowColor: "#000",
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+        zIndex: 200,
+        overflow: "visible",
+    },
 
-  addBtn: {
-    position: "absolute",
-    bottom: 90,
-    right: 40,
-    width: 55,
-    height: 55,
-    borderRadius: 30,
-    backgroundColor: "#1E45E1",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-  },
 
-  deleteOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    menuOutsideArea: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
 
-  deleteBox: {
-    width: "90%",
-    backgroundColor: "#fff",
-    padding: 25,
-    borderRadius: 15,
-    alignItems: "center",
-  },
+    popupItem: { flexDirection: "row", alignItems: "center", padding: 12 },
+    popupIcon: { width: 18, height: 18, marginRight: 10 },
+    popupText: { color: "#000", fontSize: 15 },
 
-  deleteTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
-  deleteSub: { fontSize: 14, color: "#666", marginBottom: 20, textAlign: "center" },
+    addBtn: {
+        position: "absolute",
+        bottom: 90,
+        right: 40,
+        width: 55,
+        height: 55,
+        borderRadius: 30,
+        backgroundColor: "#1E45E1",
+        justifyContent: "center",
+        alignItems: "center",
+        elevation: 8,
+    },
 
-  deleteBtnRow: { flexDirection: "row", width: "100%", justifyContent: "space-between" },
+    deleteOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
-  cancelBtn: {
-    flex: 1,
-    marginRight: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#1E45E1",
-    paddingVertical: 12,
-    alignItems: "center",
-  },
+    deleteBox: {
+        width: "90%",
+        backgroundColor: "#fff",
+        padding: 25,
+        borderRadius: 15,
+        alignItems: "center",
+    },
 
-  cancelText: { fontSize: 16, color: "#1E45E1", fontWeight: "600" },
+    deleteTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
+    deleteSub: { fontSize: 14, color: "#666", marginBottom: 20, textAlign: "center" },
 
-  deleteBtn: {
-    flex: 1,
-    borderRadius: 10,
-    backgroundColor: "#1E45E1",
-    paddingVertical: 12,
-    alignItems: "center",
-  },
+    deleteBtnRow: { flexDirection: "row", width: "100%", justifyContent: "space-between" },
 
-  deleteBtnText: { fontSize: 16, color: "#fff", fontWeight: "600" },
+    cancelBtn: {
+        flex: 1,
+        marginRight: 10,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#1E45E1",
+        paddingVertical: 12,
+        alignItems: "center",
+    },
 
- sheetOverlay: {
-  position: "absolute",
-  top: 0,
-  bottom: 0,
-  left: 0,
-  right: 0,
-  justifyContent: "flex-end",
-  backgroundColor: "rgba(0,0,0,0.45)",
-},
+    cancelText: { fontSize: 16, color: "#1E45E1", fontWeight: "600" },
 
-dimLayer: {
-  flex: 1,
-  backgroundColor: "transparent",
-},
+    deleteBtn: {
+        flex: 1,
+        borderRadius: 10,
+        backgroundColor: "#1E45E1",
+        paddingVertical: 12,
+        alignItems: "center",
+    },
 
-  sheetDim: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
+    deleteBtnText: { fontSize: 16, color: "#fff", fontWeight: "600" },
 
-sheet: {
-  backgroundColor: "#fff",
-  width: "100%",
-  padding: 20,
-  borderTopLeftRadius: 22,
-  borderTopRightRadius: 22,
-  overflow: "hidden",
-},
+    sheetOverlay: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.45)",
+    },
 
- handleWrapper: {
-  alignItems: "center",
-  paddingVertical: 12,
-},
+    dimLayer: {
+        flex: 1,
+        backgroundColor: "transparent",
+    },
 
-sheetHandle: {
-  width: 50,
-  height: 5,
-  backgroundColor: "#ccc",
-  borderRadius: 20,
-  marginBottom: 12,
-},
-bottomMask: {
-  position: "absolute",
-  bottom: -180,
-  left: 0,
-  right: 0,
-  height: 200,
-  backgroundColor: "#fff",
-},
+    sheetDim: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
 
-  sheetTitle: { fontSize: 18, fontWeight: "700", marginBottom: 16 },
+    sheet: {
+        backgroundColor: "#fff",
+        width: "100%",
+        padding: 20,
+        borderTopLeftRadius: 22,
+        borderTopRightRadius: 22,
+        overflow: "hidden",
+    },
 
-  inputLabel: { fontSize: 14, fontWeight: "600", marginBottom: 6 },
+    handleWrapper: {
+        alignItems: "center",
+        paddingVertical: 12,
+    },
 
-  inputBox: {
-    borderWidth: 1,
-    borderColor: "#E4E4E7",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-  },
+    sheetHandle: {
+        width: 50,
+        height: 5,
+        backgroundColor: "#ccc",
+        borderRadius: 20,
+        marginBottom: 12,
+    },
+    bottomMask: {
+        position: "absolute",
+        bottom: -180,
+        left: 0,
+        right: 0,
+        height: 200,
+        backgroundColor: "#fff",
+    },
 
-  addTypeBtn: {
-    backgroundColor: "#1E45E1",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 10,
-  },
+    sheetTitle: { fontSize: 18, fontWeight: "700", marginBottom: 16 },
 
-  addTypeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-  cardWrapper: {
-  position: "relative",
-  zIndex: 10,    
-  overflow: "visible",
-},
+    inputLabel: { fontSize: 14, fontWeight: "600", marginBottom: 6 },
 
-menuOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 9999,
-},
+    inputBox: {
+        borderWidth: 1,
+        borderColor: "#E4E4E7",
+        borderRadius: 12,
+        padding: 12,
+        fontSize: 15,
+    },
 
-menuBox: {
-  position: "absolute",
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  paddingVertical: 4,
-  paddingHorizontal: 4,
-  paddingLeft:0,
-  elevation: 12,
-  shadowColor: "#000",
-  shadowOpacity: 0.2,
-  shadowRadius: 6,
-  shadowOffset: { width: 0, height: 3 },
-},
+    addTypeBtn: {
+        backgroundColor: "#1E45E1",
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: "center",
+        marginBottom: 10,
+    },
 
-menuItem: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 12,
-  paddingHorizontal: 18,
-},
+    addTypeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+    cardWrapper: {
+        position: "relative",
+        zIndex: 10,
+        overflow: "visible",
+    },
 
-popupIcon: { width: 18, height: 18, marginRight: 10 },
+    menuOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+    },
 
-menuText: { fontSize: 16, fontWeight: "600", color: "#000" },
+    menuBox: {
+        position: "absolute",
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        paddingVertical: 4,
+        paddingHorizontal: 4,
+        paddingLeft: 0,
+        elevation: 12,
+        shadowColor: "#000",
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+    },
 
-menuDivider: {
-  height: 1,
-  backgroundColor: "#E5E5E5",
-},
+    menuItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 12,
+        paddingHorizontal: 18,
+    },
+
+    popupIcon: { width: 18, height: 18, marginRight: 10 },
+
+    menuText: { fontSize: 16, fontWeight: "600", color: "#000" },
+
+    menuDivider: {
+        height: 1,
+        backgroundColor: "#E5E5E5",
+    },
 
 
 });

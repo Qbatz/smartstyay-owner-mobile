@@ -25,7 +25,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 
-export default function AddVendorSheet({ vendorData, navigation }) {
+export default function AddVendorSheet({  route, navigation }) {
 
   const { addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
   const { activeHostelId } = useContext(CommonContexts);
@@ -117,6 +117,7 @@ export default function AddVendorSheet({ vendorData, navigation }) {
 
 
 
+const vendorData = route?.params?.vendorData;
 
   const scrollRef = useRef(null);
   const mobileRef = useRef(null);
@@ -145,60 +146,61 @@ export default function AddVendorSheet({ vendorData, navigation }) {
   };
 
   useEffect(() => {
-    getVendorCategories();
+    getVendorCategories(activeHostelId);
   }, []);
 
 
+  console.log("vendorData", vendorData);
+  
+
   useEffect(() => {
     if (!vendorData) return;
+setBusinessName(vendorData.businessName || "");
 
-    const phone = vendorData.mobile || "";
-    const mobileOnly = phone.slice(-10);
+setContactPerson(vendorData.contactPerson || "");
 
-    const snapshot = {
-      firstName: vendorData.firstName || "",
-      lastName: vendorData.lastName || "",
-      mobile: mobileOnly,
-      email: vendorData.emailId || "",
-      businessName: vendorData.businessName || "",
-      houseNo: vendorData.houseNo || "",
-      street: vendorData.area || "",
-      landmark: vendorData.landMark || "",
-      city: vendorData.city || "",
-      stateName: vendorData.state || "",
-      country: vendorData.countryId || "",
-      pinCode: vendorData.pinCode ? String(vendorData.pinCode) : "",
-      countryCode: vendorData.countryCode,
-    };
-    if (vendorData.countryId === 1) {
-      setCountryLabel("India");   // UI
-      setCountryValue(1);         // API
-    }
+setBusinessMobile(vendorData.mobile || "");
 
-    // set form values
-    setFirstName(snapshot.firstName);
-    setLastName(snapshot.lastName);
-    setMobile(snapshot.mobile);
-    setEmail(snapshot.email);
-    setBusinessName(snapshot.businessName);
-    setHouseNo(snapshot.houseNo);
-    setStreet(snapshot.street);
-    setLandmark(snapshot.landmark);
-    setCity(snapshot.city);
-    setStateName(snapshot.stateName);
-    setCountry(snapshot.country);
-    setPinCode(snapshot.pinCode);
-    setSelectedCountry(snapshot?.countryCode)
+setMobile(vendorData.contactPersonMobile || "");
 
+setEmail(vendorData.emailId || "");
 
-    if (vendorData.profilePic) {
-      setSelectedImage({ uri: vendorData.profilePic });
-      setInitialImage(vendorData.profilePic);
-    }
+setStreet(vendorData.houseNo || "");
 
+setCity(vendorData.city || "");
 
-    // save initial snapshot
-    setInitialData(snapshot);
+setStateName(vendorData.state || "");
+
+setPinCode(
+  vendorData.pinCode
+    ? String(vendorData.pinCode)
+    : ""
+);
+
+setDescription(vendorData.description || "");
+
+setGstNumber(vendorData.gst || "");
+
+setPanNumber(vendorData.pan || "");
+
+setAllowCredit(vendorData.allowCredit || false);
+
+setCreditLimit(
+  vendorData.creditLimit
+    ? String(vendorData.creditLimit)
+    : ""
+);
+
+setCreditPeriod(
+  vendorData.creditPeriod
+    ? String(vendorData.creditPeriod)
+    : ""
+);
+
+setSelectedCategory({
+  label: vendorData.vendorCategoryName,
+  value: vendorData.vendorCategoryId,
+});
   }, [vendorData]);
 
   const isImageChanged = () => {
@@ -441,73 +443,127 @@ export default function AddVendorSheet({ vendorData, navigation }) {
   }
 
   const payLoads = {
-  firstName: contactPerson || "",
+    firstName: contactPerson || "",
+    lastName: "",
+
+    countryCode: selectedCountry?.code || "+91",
+
+    mobile: businessmobile,
+
+    mailId: email,
+
+    houseNo: street,
+
+    landmark,
+
+    // area,
+
+    pinCode: Number(pinCode),
+
+    city,
+
+    state: stateName,
+
+    businessName,
+
+    hostelId: activeHostelId,
+
+    vendorCategory: selectedCategory?.value,
+
+    contactPerson,
+
+    contactPersonMobile: mobile,
+
+    description,
+
+    gst: gstNumber,
+
+    pan: panNumber,
+
+    allowCredit,
+
+    creditLimit: allowCredit
+      ? Number(creditLimit)
+      : 0,
+
+    creditPeriod: allowCredit
+      ? Number(creditPeriod)
+      : 0,
+  };
+
+  const updatePayload = {
+  firstName: contactPerson,
   lastName: "",
-
-  countryCode:
-    selectedCountry?.code || "+91",
-
-  mobile,
-
+  countryCode: selectedCountry?.code || "+91",
+  mobile: businessmobile,
   mailId: email,
-
-  houseNo,
-
+  houseNo: street,
   landmark,
-
-  area: street,
-
+  // area: street,
   pinCode: Number(pinCode),
 
+ vendorId: vendorData?.id,
+  country: vendorData?.countryId || 1,
+
   city,
-
   state: stateName,
-
   businessName,
 
-  hostelId: activeHostelId,
-
-  vendorCategory:
-    selectedCategory?.value,
-
+  vendorCategory: selectedCategory?.value,
   contactPerson,
-
   description,
 
-  vendorCode: "VEN006",
+  vendorCode: vendorData?.vendorCode || "",
 
   gst: gstNumber,
-
   pan: panNumber,
 
   allowCredit,
-
-  creditLimit: allowCredit
-    ? Number(creditLimit)
-    : 0,
-
-  creditPeriod: allowCredit
-    ? Number(creditPeriod)
-    : 0,
+  creditLimit: allowCredit ? Number(creditLimit) : 0,
+  creditPeriod: allowCredit ? Number(creditPeriod) : 0,
 };
 
-console.log("payloads", payLoads);
+  console.log("payloads", payLoads);
 
 
- const handleSubmit = async () => {
-  if (!validate()) return;
+  const handleSubmit = async () => {
+    if (!validate()) return;
+console.log(
+  "PAYLOAD =>",
+  JSON.stringify(
+    {
+      profilePic: selectedImage,
+      payLoads,
+    },
+    null,
+    2
+  )
+);
+
+console.log("businessName", businessName);
+console.log("payLoads.businessName", payLoads.businessName);
+
+
+   let response;
+
+if (vendorData?.id) {
+  response = await updateVendor(
+    vendorData?.id,
+    updatePayload,
+    selectedImage
+  );
+} else {
+  response = await addVendor(
+    payLoads,
+    selectedImage
+  );
+}
 
   
 
-  const response = await addVendor({
-    profilePic: selectedImage,
-    payLoads,
-    hostelId: activeHostelId,
-  });
+    console.log("response", response);
 
-  console.log("response", response);
-
-  if (response?.success) {
+    if (response?.success) {
       setModalType("success");
       setModalMessage(vendorData ? "Vendor Updated Successfully" : "Vendor Added Successfully");
       setShowSuccessModal(true);
@@ -515,11 +571,11 @@ console.log("payloads", payLoads);
 
       setTimeout(() => {
         setShowSuccessModal(false);
-         navigation.goBack();
+        navigation.goBack();
       }, 1500);
-   
-  } else {
-    
+
+    } else {
+
       setModalType("error");
       setModalMessage(response?.message || "Something went wrong");
       setShowSuccessModal(true);
@@ -527,8 +583,8 @@ console.log("payloads", payLoads);
       setTimeout(() => {
         setShowSuccessModal(false);
       }, 1500);
-  }
-};
+    }
+  };
 
 
   return (
@@ -544,9 +600,9 @@ console.log("payloads", payLoads);
           <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
-          Add new Vendor
-        </Text>
+     <Text style={styles.headerTitle}>
+  {vendorData ? "Edit Vendor" : "Add New Vendor"}
+</Text>
       </View>
 
 
@@ -1115,19 +1171,19 @@ console.log("payloads", payLoads);
         <Text style={styles.label}>
           PAN Number (Optional)
         </Text>
-  
+
 
         <ValidatedInput
           type="pan"
           inputType="text"
           value={panNumber}
-           onChangeText={(text) => {
-    setPanNumber(text);
-    setErrors(prev => ({
-      ...prev,
-      panNumber: "",
-    }));
-  }}
+          onChangeText={(text) => {
+            setPanNumber(text);
+            setErrors(prev => ({
+              ...prev,
+              panNumber: "",
+            }));
+          }}
           placeholder="Enter PAN Number"
           autoCapitalize="characters"
           style={styles.input}
@@ -1244,9 +1300,9 @@ console.log("payloads", payLoads);
           <TouchableOpacity
             style={styles.submitBtn} onPress={handleSubmit}
           >
-            <Text style={styles.submitText}>
-              Add Vendor
-            </Text>
+           <Text style={styles.submitText}>
+  {vendorData ? "Update Vendor" : "Add Vendor"}
+</Text>
           </TouchableOpacity>
         </View>
 

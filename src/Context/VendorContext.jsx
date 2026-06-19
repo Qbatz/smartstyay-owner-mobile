@@ -7,6 +7,7 @@ export const VendorContext = createContext();
 export default function VendorProvider({ children }) {
   const [vendorList, setVendorList] = useState([]);
   const [vendorCategories, setVendorCategories] = useState([]);
+  const [vendorDetails, setVendorDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const getErrorMessage = (err) =>
@@ -38,12 +39,15 @@ export default function VendorProvider({ children }) {
   };
 
 
-  const getVendorCategories = async () => {
+  const getVendorCategories = async (hostelId) => {
   try {
     setLoading(true);
 
     const axios = getAxios();
-    const res = await axios.get("/v2/vendors/categories");
+
+    const res = await axios.get(
+      `/v2/vendors/categories?hostelId=${hostelId}`
+    );
 
     if (res?.status === 200) {
       setVendorCategories(res?.data || []);
@@ -56,11 +60,6 @@ export default function VendorProvider({ children }) {
 
     return { success: false };
   } catch (err) {
-    console.log(
-      "Vendor Categories Error:",
-      err?.response?.data || err
-    );
-
     return {
       success: false,
       message: getErrorMessage(err),
@@ -70,33 +69,26 @@ export default function VendorProvider({ children }) {
   }
 };
 
-const addVendorCategory = async (categoryName) => {
-    console.log("ADD CATEGORY", categoryName);
+const getVendorDetails = async (vendorId) => {
   try {
     setLoading(true);
 
     const axios = getAxios();
+    const res = await axios.get(`/v2/vendors/${vendorId}`);
 
-    const res = await axios.post("/v2/vendors/categories", {
-      categoryName,
-    });
-
-    if (res?.status === 200 || res?.status === 201) {
-      await getVendorCategories();
+    if (res?.status === 200) {
+      setVendorDetails(res?.data);
 
       return {
         success: true,
-        message: "Vendor Category added successfully",
+        data: res?.data,
       };
     }
 
-    return {
-      success: false,
-      message: "Failed to add vendor category",
-    };
+    return { success: false };
   } catch (err) {
     console.log(
-      "ADD VENDOR CATEGORY ERROR",
+      "GET VENDOR DETAILS ERROR:",
       err?.response?.data || err
     );
 
@@ -109,37 +101,81 @@ const addVendorCategory = async (categoryName) => {
   }
 };
 
-
-const deleteVendorCategory = async (categoryId) => {
-    console.log("delete CATEGORY", categoryId);
+const addVendorCategory = async (
+  categoryName,
+  hostelId
+) => {
   try {
     setLoading(true);
 
     const axios = getAxios();
 
     const res = await axios.post(
-      `/v2/vendors/categories/${categoryId}/delete`
+      "/v2/vendors/categories",
+      {
+        categoryName,
+        hostelId: String(hostelId),
+      }
     );
 
-    if (res?.status === 200) {
-      await getVendorCategories();
+    if (
+      res?.status === 200 ||
+      res?.status === 201
+    ) {
+      await getVendorCategories(hostelId);
 
       return {
         success: true,
-        message: "Vendor Category deleted successfully",
+        message:
+          "Vendor Category added successfully",
       };
     }
 
     return {
       success: false,
-      message: "Failed to delete vendor category",
+      message:
+        "Failed to add vendor category",
     };
   } catch (err) {
-    console.log(
-      "DELETE VENDOR CATEGORY ERROR",
-      err?.response?.data || err
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const deleteVendorCategory = async (
+  categoryId,
+  hostelId
+) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/vendors/categories/${categoryId}/delete?hostelId=${hostelId}`
     );
 
+    if (res?.status === 200) {
+      await getVendorCategories(hostelId);
+
+      return {
+        success: true,
+        message:
+          "Vendor Category deleted successfully",
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        "Failed to delete vendor category",
+    };
+  } catch (err) {
     return {
       success: false,
       message: getErrorMessage(err),
@@ -250,6 +286,7 @@ const deleteVendorCategory = async (categoryId) => {
       value={{
         vendorList,
         vendorCategories,
+        vendorDetails,
         loading,
         getVendorList,
         getVendorCategories,
@@ -258,6 +295,7 @@ const deleteVendorCategory = async (categoryId) => {
         deleteVendor,
         addVendorCategory,
         deleteVendorCategory,
+        getVendorDetails,
       }}
     >
       {children}

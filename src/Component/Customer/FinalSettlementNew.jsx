@@ -80,7 +80,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [collectFullRent, setCollectFullRent] = useState(false);
   const [showRentSheet, setShowRentSheet] = useState(false);
   const [customRentAmount, setCustomRentAmount] = useState(null);
-  const [mode, setMode]=useState("")
+  const [mode, setMode] = useState("")
   console.log("actualcheckoutdate", actualCheckoutDate);
 
   const [finalAmountSetClicked, setFinalAmountSetClicked] =
@@ -464,6 +464,16 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [payableOrRefundableRent, setPayableOrRefundableRent] = useState(0);
 
 
+  useEffect(() => {
+    if (!finalAmountSetClicked) {
+      setCustomRentAmount(
+        settlementDetails?.currentMonthRentInfo?.fullRent || 0
+      );
+    }
+  }, [
+    finalAmountSetClicked,
+    settlementDetails?.currentMonthRentInfo?.fullRent,
+  ]);
 
   useEffect(() => {
     const lastRentPaid = Number(
@@ -529,9 +539,14 @@ export default function FinalSettlementScreen({ navigation, route }) {
           updatedAmountToBePaid +
           Number(rentInfo?.rentDifference || 0);
       } else {
+        // const customRentDiff =
+        //   Number(customRentAmount || 0) -
+        //   Number(settlementDetails?.customerInfo?.rentAmount || 0);
         const customRentDiff =
           Number(customRentAmount || 0) -
-          Number(settlementDetails?.customerInfo?.rentAmount || 0);
+          Number(
+            settlementDetails?.currentMonthRentInfo?.fullRent || 0
+          );
 
         updatedAmountToBePaid =
           updatedAmountToBePaid +
@@ -1007,14 +1022,21 @@ export default function FinalSettlementScreen({ navigation, route }) {
         discountAmount: Number(discountValue) || 0,
         deductions: extraDeductionsPayload,
         shouldCollectFullRent: collectFullRent,
-        // customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
         customRent: collectFullRent
           ? Number(
             finalAmountSetClicked
               ? customRentAmount
-              : settlementDetails?.currentMonthRentInfo?.currentMonthRent
+              : settlementDetails?.currentMonthRentInfo?.fullRent
           )
           : ""
+        // customRent: collectFullRent ? settlementDetails?.currentMonthRentInfo?.currentMonthRent : "",
+        // customRent: collectFullRent
+        //   ? Number(
+        //     finalAmountSetClicked
+        //       ? customRentAmount
+        //       : settlementDetails?.currentMonthRentInfo?.currentMonthRent
+        //   )
+        //   : ""
       }
 
       console.log("generatepayload", payload);
@@ -1345,10 +1367,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       openRefundRent && { transform: [{ rotate: "180deg" }] },
                     ]}
                   />
-                  <Text style={styles.refundTitle}>
-                    {payableOrRefundableRent < 0
-                      ? "Refundable Rent"
-                      : "Payable Rent"}
+                  <Text style={styles.refundTitle}>{payableOrRefundableRent < 0 ? "Refundable Rent" : "Payable Rent"}
                   </Text>
                 </View>
 
@@ -1367,10 +1386,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     ₹ {Math.abs(payableOrRefundableRent)}
                   </Text>
                   {customRentAmount &&
-                    <TouchableOpacity style={ { marginLeft: 4 }}
-                      onPress={()=>{
+                    <TouchableOpacity style={{ marginLeft: 4 }}
+                      onPress={() => {
                         setShowRentSheet(true)
-                        setMode("edit")}}>
+                        setMode("edit")
+                      }}>
                       <Image source={EditIcon} style={styles.editIcon} />
                     </TouchableOpacity>
                   }
@@ -1391,7 +1411,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     onPress={() => {
                       if (collectFullRent) {
                         setCollectFullRent(false);
-                        setCustomRentAmount(null);
+                        // setCustomRentAmount(null);
+                        setCustomRentAmount(settlementDetails?.currentMonthRentInfo?.fullRent || 0)
                         setFinalAmountSetClicked(false);
                       } else {
                         setShowRentSheet(true);
@@ -1666,7 +1687,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                         <Text style={styles.unitText}>
                           ({item.units} Units)
                         </Text>
-                        <Text style={styles.amountText}>₹ {item.amount}</Text>
+                        <Text style={styles.amountText}>₹ {item?.amount}</Text>
                       </View>
 
                     </View>
@@ -2483,7 +2504,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
       <SettlementCustomRentSheet
         visible={showRentSheet}
         rentAmount={
-         customRentAmount ? customRentAmount : settlementDetails?.currentMonthRentInfo?.currentMonthRent
+          customRentAmount ? customRentAmount : settlementDetails?.currentMonthRentInfo?.currentMonthRent
         }
         onClose={() => setShowRentSheet(false)}
         mode={mode}
