@@ -142,6 +142,7 @@ export default function BillsProvider({ children }) {
     return { success: false, message: "Update failed" };
   } catch (error) {
     const msg = getErrorMessage(error);
+    console.log(error)
     setErrorMsg(msg);
     return { success: false, message: msg };
   } finally {
@@ -1006,6 +1007,7 @@ const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
     return { success: false, message: "Invalid data" };
   }
 
+  console.log("soru",hostelId,advanceInvoiceId)
   try {
     setLoading(true);
     setErrorMsg("");
@@ -1033,6 +1035,7 @@ const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
   } catch (error) {
     const msg = getErrorMessage(error);
     setErrorMsg(msg);
+    console.log(msg)
 
     return {
       success: false,

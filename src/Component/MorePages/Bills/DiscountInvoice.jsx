@@ -666,7 +666,7 @@ export default function DiscountInvoiceScreen() {
                 <View style={styles.rowBetween}>
                   <Text style={styles.label}>Invoice date</Text>
                   <Text style={styles.valueText}>
-                    {BillPdfdetails?.invoiceDate || BillPdfdetails?.invoiceInfo?.invoiceDate }
+                    {BillPdfdetails?.invoiceDate || BillPdfdetails?.invoiceInfo?.invoiceDate || "N/A"}
                   </Text>
                 </View>
                 <View style={styles.rowBetween}>

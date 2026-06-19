@@ -409,8 +409,10 @@ export default function MoveNoticeSheet({
               </View>}
 
 
-            <View style={{ marginLeft: 12 }}>
-              <Text style={styles.name}>{customer?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
+            <View style={{ marginLeft: 12,marginRight:20 }}>
+              <Text style={[styles.name,{paddingRight:20}]}
+              numberOfLines={1}
+              >{customer?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
 
               <View style={styles.badgeRow}>
                 <View style={styles.badgeYellow}>
