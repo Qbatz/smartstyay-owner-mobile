@@ -46,7 +46,7 @@ export default function VendorsList({ navigation }) {
   //   deleteVendor,
   // } = useContext(VendorContext);
 
-  const { vendorList, loading, getVendorList, deleteVendor } = useContext(CustomerContext);;
+  const { vendorList, loading, getVendorList, deleteVendor , getVendorDetails  , vendorDetails} = useContext(CustomerContext);;
 
   const { activeHostelId } = useContext(CommonContexts)
 
@@ -55,7 +55,7 @@ export default function VendorsList({ navigation }) {
     canWriteModule: canWriteVendor,
     canUpdateModule,
     canDeleteModule,
-  } = useHasPermission("Vendor");
+  } = useHasPermission("Vendor")
 
   console.log("vendorList", vendorList);
 

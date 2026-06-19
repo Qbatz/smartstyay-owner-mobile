@@ -21,24 +21,24 @@ export default function VendorInfo({ vendor }) {
     >
       <InfoItem
         label="Vendor Name"
-        value={`${vendor?.firstName || ""} ${vendor?.lastName || ""}`}
+        value={vendor?.fullName}
       />
 
       <InfoItem
         label="Category"
-        value={vendor?.businessName || "Electrical"}
+        value={vendor?.businessName}
         icon={CategoryIcon}
       />
 
       <InfoItem
         label="Mobile No"
-        value={`+91 ${vendor?.mobileNo || ""}`}
+        value={`+91 ${vendor?.mobile || ""}`}
         icon={MobileIcon}
       />
 
       <InfoItem
         label="Business Location/Address"
-        value={`${vendor?.area || ""}, ${vendor?.city || ""}`}
+        value={`${vendor?.city || ""}`}
         icon={LocationIcon}
       />
 

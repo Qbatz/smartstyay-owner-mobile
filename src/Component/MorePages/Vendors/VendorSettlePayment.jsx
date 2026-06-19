@@ -11,6 +11,11 @@ import {
 
 import ArrowLeft from "../../../Assets/Images/directionleft.png";
 import * as ImagePicker from "react-native-image-picker";
+import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import Loader from "../../Loader/Loader";
+import ValidatedInput from "../ValidatedInput"
 
 
 
@@ -27,8 +32,17 @@ export default function VendorSettlePayment({
   const [description, setDescription] =
     useState("");
 
+      const [showSuccessModal, setShowSuccessModal] = useState(false);
+        const [modalMessage, setModalMessage] = useState("");
+        const [modalType, setModalType] = useState("success");
+
     const [attachments, setAttachments] = useState([]);
 const [selectedImage, setSelectedImage] = useState(null);
+
+  const [tempValue, setTempValue] = useState("")
+    const [finalValue, setFinalValue] = useState("")
+
+    const [appliedAmounts, setAppliedAmounts] = useState({});
 
   const balance =
     dueAmount -
@@ -72,6 +86,18 @@ const removeImage = (index) => {
 };
 
   return (
+
+
+    <>
+    
+     {/* {loading && <Loader />} */}
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType}
+            />
+   
     <View style={styles.container}>
       {/* Header */}
 
@@ -336,6 +362,165 @@ const removeImage = (index) => {
           }
         />
 
+
+{/* 
+                        <View style={styles.card}>
+                            <Text style={styles.sectionTitle}>Unpaid Expense List</Text>
+
+                            {invoicesList?.length > 0 ? (
+                                invoicesList.map((item, index) => (
+                                    <View key={item?.invoiceId || index} style={styles.innerCard}>
+
+                                        <View style={styles.rowBetween}>
+                                            <Text style={styles.amount}>
+                                                {item?.invoiceType}
+                                            </Text>
+
+                                            <Text style={styles.amount}>
+                                                ₹ {item?.pendingAmount || 0}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                           
+                                            <Text style={styles.smallText}>
+                                                {item?.invoiceNumber}
+                                            </Text>
+                                             <Image
+                                                source={InvoiceLinkIcon}
+                                                style={{ height: 14, width: 14, marginLeft: 5 }}
+                                            />
+                                        </View>
+
+                                        {source === "bill" && (
+                                            <View style={styles.rowBetween}>
+                                                <Text style={styles.label}>Invoice Date</Text>
+                                                <Text style={styles.valueText}>
+                                                    {item?.invoiceDate || "N/A"}
+                                                </Text>
+                                            </View>
+                                        )}
+
+                                        <View style={styles.rowBetween}>
+                                            <Text style={styles.label}>Due Date</Text>
+                                            <Text style={styles.valueText}>
+                                                {item?.dueDate || "N/A"}
+                                            </Text>
+                                        </View>
+
+                                        <View style={styles.rowBetween}>
+                                            <Text style={styles.label}>Mode</Text>
+                                            <Text style={styles.valueText}>N/A</Text>
+                                        </View>
+
+                                        <Text style={styles.inputLabel}>
+                                            Amount to apply
+                                        </Text>
+
+                                        <View style={styles.inputWrapper}>
+                                            <ValidatedInput
+                                                type="numberOnly"
+                                                inputType="numeric"
+                                                style={styles.inputField}
+                                                placeholder="₹ 0.00"
+                                                value={tempValue?.[item.invoiceId] || ""}
+                                                maxLength={7}
+                                                onChangeText={(text) => {
+
+                                                    if (text === "") {
+                                                        setTempValue((prev) => ({
+                                                            ...prev,
+                                                            [item?.invoiceId]: "",
+                                                        }));
+
+                                                        setAppliedAmounts((prev) => ({
+                                                            ...prev,
+                                                            [item?.invoiceId]: 0,
+                                                        }));
+
+                                                        return;
+                                                    }
+
+                                                    let amount = Number(text);
+
+                                                    const bookingAmount =
+                                                        Number(
+                                                            advanceInfo?.availableBalance ||
+                                                            advanceInfo?.advanceBalanceAmount ||
+                                                            0
+                                                        );
+
+                                                    const currentAppliedWithoutThis =
+                                                        Object.entries(appliedAmounts)
+                                                            .filter(([id]) => id !== item?.invoiceId)
+                                                            .reduce(
+                                                                (sum, [, val]) => sum + Number(val || 0),
+                                                                0
+                                                            );
+
+                                                    const remainingBalance =
+                                                        bookingAmount - currentAppliedWithoutThis;
+
+                                                    const pendingAmount =
+                                                        Number(item?.pendingAmount || 0);
+
+                                                    const maxAllowed = Math.min(
+                                                        remainingBalance,
+                                                        pendingAmount
+                                                    );
+
+                                                    if (amount > maxAllowed) {
+
+                                                        setModalType("warning");
+                                                        setModalMessage(
+                                                            `Maximum allowed amount is ₹ ${maxAllowed}`
+                                                        );
+                                                        setShowSuccessModal(true);
+
+                                                        setTimeout(() => {
+                                                            setShowSuccessModal(false);
+                                                        }, 1500);
+
+                                                        text = String(maxAllowed);
+                                                        amount = maxAllowed;
+                                                    }
+
+                                                    setTempValue((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: text,
+                                                    }));
+
+                                                    setAppliedAmounts((prev) => ({
+                                                        ...prev,
+                                                        [item.invoiceId]: amount,
+                                                    }));
+                                                }}
+                                            />
+
+                                            <TouchableOpacity
+                                                style={styles.setBtn}
+                                                onPress={() =>
+                                                    handleSetAmount(
+                                                        item.invoiceId,
+                                                        tempValue?.[item.invoiceId],
+                                                        item.pendingAmount
+                                                    )
+                                                }
+                                            >
+                                                <Text style={{ color: "#1E45E1" }}>Set</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                ))
+                            ) : (
+                                <View style={styles.emptyCard}>
+                                    <Text style={styles.emptyText}>
+                                        No pending invoices found
+                                    </Text>
+                                </View>
+                            )}
+                               </View> */}
+
         {/* Summary */}
 
         <View style={styles.summaryCard}>
@@ -435,6 +620,7 @@ const removeImage = (index) => {
         </View>
       </ScrollView>
     </View>
+     </>
   );
 }
 
@@ -659,5 +845,72 @@ addMore: {
   textAlign: "right",
   fontFamily: "Gilroy-Semibold",
 },
+ card: {
+        paddingHorizontal: 16,
+        marginTop: 10,
+    },
+
+    sectionTitle: {
+        fontSize: 14,
+        marginBottom: 4,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    innerCard: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 8,
+        padding: 12,
+        marginTop: 15
+    },
+
+    rowBetween: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginVertical: 5,
+    },
+ 
+    label: {
+        fontSize: 13,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Regular",
+        marginLeft:15,
+        marginBottom:5,
+        marginTop:5
+
+    },
+
+    valueText: {
+        fontSize: 13,
+        fontFamily: "Gilroy-Medium"
+    },
+
+    amount: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    smallText: {
+        fontSize: 12,
+        color: "#9CA3AF",
+        marginBottom: 8,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    inputLabel: {
+        fontSize: 12,
+        color: "#9CA3AF",
+        marginTop: 10,
+        fontFamily: "Gilroy-Medium"
+    },
+
+    // input: {
+    //     borderWidth: 1,
+    //     borderColor: "#4F46E5",
+    //     borderRadius: 8,
+    //     padding: 12,
+    //     marginTop: 6,
+    //     fontFamily: "Gilroy-Regular"
+    // },
 
 });

@@ -1,29 +1,99 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
-  ScrollView,
+  ScrollView,Modal , TouchableWithoutFeedback
 } from "react-native";
-
+import { VendorContext } from "../../../Context/VendorContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ThreeDots from "../../../Assets/Images/3dots.png";
-
+import DotsIcon from "../../../Assets/Images/3dots.png";
 import VendorInfo from "./VendorInfo";
 import VendorTransactions from "./VendorTransactions";
 import VendorExpenses from "./VendorExpenses";
 import VendorComments from "./VendorComments";
 import VendorExpenseDetailsSheet from "./VendorExpenseDetails"
+import { useHasPermission } from "../../../Utils/useHasPermission"
+import { CustomerContext } from "../../../Context/CustomerContext"
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
+
 
 export default function VendorDetails({ route, navigation }) {
   const { vendor } = route.params;
 
+  const { getVendorDetails, vendorDetails } = useContext(VendorContext);
+
+  const { vendorList, loading, getVendorList, deleteVendor, } = useContext(CustomerContext)
+    const { activeHostelId } = useContext(CommonContexts)
+
+  const {
+    canReadModule: canReadVendor,
+    canWriteModule: canWriteVendor,
+    canUpdateModule,
+    canDeleteModule,
+  } = useHasPermission("Vendor")
+
   const [activeTab, setActiveTab] = useState("Info");
 
   const [showExpenseSheet, setShowExpenseSheet] = useState(false);
-const [selectedExpense, setSelectedExpense] = useState(null);
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [editVendor, setEditVendor] = useState(null);
+  const [deleteVendordata, setDeleteVendorData] = useState(null);
+  const [deletePopup, setDeletePopup] = useState(false)
+
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+
+  console.log("vendorDetails", vendorDetails);
+
+  const handleEdit = (vendor) => {
+    console.log("vendor", vendor);
+    
+    if (!canUpdateModule) return;
+    navigation.navigate("AddVendorPage", {
+      vendorData: vendor,
+    });
+  }
+
+  const handleDelete = async () => {
+    if (!canDeleteModule) {
+      setModalType("warning");
+      setModalMessage("You do not have permission to delete vendor");
+      setShowSuccessModal(true);
+      return;
+    }
+    const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
+    setDeletePopup(false)
+    if (res?.success) {
+      setModalType("success");
+      setModalMessage(res.message);
+      setShowSuccessModal(true);
+     
+      setTimeout(() => {
+       navigation.goBack()
+        setShowSuccessModal(false);
+        setDeletePopup(false)
+      }, 1500)
+    }
+
+
+    else {
+      setModalType("error");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => setShowSuccessModal(false), 2000);
+    }
+
+  }
+
 
   const tabs = [
     "Info",
@@ -34,168 +104,265 @@ const [selectedExpense, setSelectedExpense] = useState(null);
 
   const renderContent = () => {
     switch (activeTab) {
-    case "Info":
-  return <VendorInfo vendor={vendor} />;
+      case "Info":
+        return <VendorInfo vendor={vendor} />;
 
-case "Transactions":
-  return <VendorTransactions />;
+      case "Transactions":
+        return <VendorTransactions />;
 
-case "Expenses":
-  return (
-    <VendorExpenses
-      onExpensePress={(expense) => {
-        setSelectedExpense(expense);
-        setShowExpenseSheet(true);
-      }}
-    />
-  );
+      case "Expenses":
+        return (
+          <VendorExpenses
+            onExpensePress={(expense) => {
+              setSelectedExpense(expense);
+              setShowExpenseSheet(true);
+            }}
+          />
+        );
 
-case "Comments":
-  return <VendorComments />;
+      case "Comments":
+        return <VendorComments />;
 
       default:
         return null;
     }
   };
 
+  console.log("DELETE DATA", deleteVendordata);
+
   return (
     <>
-   
-    <View style={styles.container}>
+ {loading && <Loader />}
 
-      {/* Header */}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType} />
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image source={ArrowLeft} style={styles.backIcon} />
-        </TouchableOpacity>
+      <View style={styles.container}>
+        
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
+          </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
-          {vendor?.firstName || "Vendor"}
-        </Text>
-
-        <TouchableOpacity>
-          <Image source={ThreeDots} style={styles.dotsIcon} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Summary Card */}
-
-      <View style={styles.summaryCard}>
-
-        <View style={styles.badgeRow}>
-          <View style={styles.vendorCode}>
-            <Text style={styles.vendorCodeText}>
-              VEN {vendor?.id}
-            </Text>
-          </View>
-
-          <View style={styles.activeBadge}>
-            <Text style={styles.activeText}>
-              Active
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.statsRow}>
-
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>
-              Total Paid
-            </Text>
-
-            <Text style={styles.statValue}>
-              ₹83,000
-            </Text>
-          </View>
-
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>
-              Total Expenses
-            </Text>
-
-            <Text style={styles.statValue}>
-              ₹85,000
-            </Text>
-          </View>
-
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>
-              Outstanding
-            </Text>
-
-            <Text
-              style={[
-                styles.statValue,
-                { color: "#F97316" },
-              ]}
-            >
-              ₹2,000
-            </Text>
-          </View>
-
-        </View>
-
-        <TouchableOpacity style={styles.settleBtn}  
-         onPress={() => navigation.navigate("VendorSettlePayment", {
-      vendor,
-    })
-  }
-  >
-          <Text style={styles.settleText}>
-            Settle Payment →
+          <Text style={styles.headerTitle}>
+            {vendorDetails?.fullName ||
+              vendor?.fullName ||
+              vendor?.firstName ||
+              "Vendor"}
           </Text>
-        </TouchableOpacity>
 
-      </View>
+    
+          <TouchableOpacity
+            onPress={() =>
+              setActiveMenu(
+                activeMenu === vendor.id ? null : vendor.id
+              )
+            }
+          >
+            <Image
+              source={DotsIcon}
+              style={styles.dotsIcon}
+            />
+          </TouchableOpacity>
+        </View>
 
-      {/* Tabs */}
 
-      <View style={styles.tabWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={styles.tabItem}
-              onPress={() => setActiveTab(tab)}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === tab &&
-                    styles.activeTabText,
-                ]}
-              >
-                {tab}
+        <View style={styles.summaryCard}>
+
+          <View style={styles.badgeRow}>
+            <View style={styles.vendorCode}>
+              <Text style={styles.vendorCodeText}>
+                VEN {vendor?.vendorCode}
+              </Text>
+            </View>
+
+            <View style={styles.activeBadge}>
+              <Text style={styles.activeText}>
+                Active
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.statsRow}>
+
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>
+                Total Paid
               </Text>
 
-              {activeTab === tab && (
-                <View
-                  style={styles.activeIndicator}
-                />
-              )}
+              <Text style={styles.statValue}>
+                ₹{vendor?.totalPaidAmount || 0}
+              </Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>
+                Total Expenses
+              </Text>
+
+              <Text style={styles.statValue}>
+               ₹{vendor?.totalExpenseAmount || 0}
+              </Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>
+                Outstanding
+              </Text>
+
+              <Text
+                style={[
+                  styles.statValue,
+                  { color: "#F97316" },
+                ]}
+              >
+               ₹{vendor?.totalBalance || 0}
+              </Text>
+            </View>
+
+          </View>
+
+          <TouchableOpacity style={styles.settleBtn}
+            onPress={() => navigation.navigate("VendorSettlePayment", {
+              vendor,
+            })
+            }
+          >
+            <Text style={styles.settleText}>
+              Settle Payment →
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+
+        {/* Tabs */}
+
+        <View style={styles.tabWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {tabs.map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                style={styles.tabItem}
+                onPress={() => setActiveTab(tab)}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === tab &&
+                    styles.activeTabText,
+                  ]}
+                >
+                  {tab}
+                </Text>
+
+                {activeTab === tab && (
+                  <View
+                    style={styles.activeIndicator}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Content */}
+
+        <View style={{ flex: 1 }}>
+          {renderContent()}
+        </View>
+
+      </View>
+
+      {activeMenu === vendor?.id && (
+        <>
+          <TouchableWithoutFeedback
+            onPress={() => setActiveMenu(null)}
+          >
+            <View style={styles.menuOverlay} />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.menuBox}>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => {
+                setActiveMenu(null);
+                handleEdit(vendor);
+              }}
+            >
+              <Image
+                source={require("../../../Assets/Images/editIcon.png")}
+                style={styles.menuIcon}
+              />
+              <Text style={styles.menuText}>Edit</Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
 
-      {/* Content */}
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => {
+                setDeleteVendorData(vendor);
+                setDeletePopup(true);
+                setActiveMenu(null);
+              }}
+            >
+              <Image
+                source={require("../../../Assets/Images/trash.png")}
+                style={styles.menuIcon}
+              />
+              <Text style={[styles.menuText, { color: "red" }]}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
-      <View style={{ flex: 1 }}>
-        {renderContent()}
-      </View>
+      <Modal
+        transparent
+        animationType="fade"
+        visible={deletePopup}
+        onRequestClose={() => setDeletePopup(false)}
+      >
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteBox}>
+            <Text style={styles.deleteTitle}>
+              Delete Vendor?
+            </Text>
 
-    </View>
+            <Text style={styles.deleteSub}>
+              Are you sure you want to delete this vendor?
+            </Text>
 
- <VendorExpenseDetailsSheet
-  visible={showExpenseSheet}
-  expense={selectedExpense}
-  onClose={() => setShowExpenseSheet(false)}
-/>
- </>
+            <View style={styles.deleteBtnRow}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setDeletePopup(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={handleDelete}
+              >
+                <Text style={styles.deleteBtnText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <VendorExpenseDetailsSheet
+        visible={showExpenseSheet}
+        expense={selectedExpense}
+        onClose={() => setShowExpenseSheet(false)}
+      />
+    </>
   );
 }
 
@@ -211,7 +378,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
-      backgroundColor: "#F8F9FF",
+    backgroundColor: "#F8F9FF",
   },
 
   headerTitle: {
@@ -329,4 +496,109 @@ const styles = StyleSheet.create({
     backgroundColor: "#2D5BFF",
     marginTop: 8,
   },
+  menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+
+  menuBox: {
+    position: "absolute",
+    top: 90,
+    right: 15,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 8,
+    paddingVertical: 5,
+    minWidth: 130,
+  },
+
+  menuRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+
+  menuIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
+  },
+
+  menuText: {
+    fontSize: 14,
+    color: "#111",
+  },
+    deleteOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBox: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+  },
+
+  deleteTitle: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: '#111',
+    textAlign: 'center',
+  },
+
+  deleteSub: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  deleteBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 22,
+  },
+
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginRight: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  cancelText: {
+    color: '#444',
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  deleteBtnText: {
+    color: '#fff',
+    fontSize: 16,
+   fontFamily: "Gilroy-Bold"
+  },
+
 });

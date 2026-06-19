@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
-// import { VendorContext } from "../../../Context/VendorContext";
+import { VendorContext } from "../../../Context/VendorContext";
 import { CustomerContext } from "../../../Context/CustomerContext";
 import Loader from "../../../Component/Loader/Loader"
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -47,16 +47,11 @@ const CARD_WIDTH = width * 0.44
 
 export default function Vendors({ navigation }) {
 
-    // const {
-    //   vendorList,
-    //   loading,
-    //   getVendorList,
-    //   addVendor,
-    //   updateVendor,
-    //   deleteVendor,
-    // } = useContext(VendorContext);
+    const {
+      getVendorDetails  , vendorDetails
+    } = useContext(VendorContext);
 
-    const { vendorList, loading, getVendorList, deleteVendor } = useContext(CustomerContext);;
+    const { vendorList, loading, getVendorList, deleteVendor , } = useContext(CustomerContext);;
 
     const { activeHostelId } = useContext(CommonContexts)
 
@@ -69,9 +64,11 @@ export default function Vendors({ navigation }) {
 
 
 
+ console.log("vendorList", vendorList);
+    console.log("vendorList", vendorList?.vendors);
 
-    console.log("vendorList", vendorList);
 
+    
     const horizontalRef = useRef(null);
 
     const [showAddVendor, setShowAddVendor] = useState(false);
@@ -99,7 +96,7 @@ export default function Vendors({ navigation }) {
 
     const [searchText, setSearchText] = useState("");
 
-    const filteredVendors = vendorList?.filter((item) => {
+    const filteredVendors = vendorList?.vendors?.length > 0 &&  vendorList?.vendors?.filter((item) => {
         const fullName =
             `${item.firstName || ""} ${item.lastName || ""}`.toLowerCase();
 
@@ -306,6 +303,16 @@ export default function Vendors({ navigation }) {
         return <Text>{displayValue}</Text>;
     };
 
+    const handlevendorDetails = async (item) => {
+        console.log("item", item);
+        
+   const res = await getVendorDetails(item?.id)
+         navigation.navigate("VendorDetails", {
+      vendor: item,
+    })
+
+    }
+
 
     const renderVendor = ({ item }) => {
         const fullName =
@@ -326,11 +333,7 @@ export default function Vendors({ navigation }) {
             <>
             <TouchableOpacity
   activeOpacity={0.8}
-  onPress={() =>
-    navigation.navigate("VendorDetails", {
-      vendor: item,
-    })
-  }
+  onPress={()=> handlevendorDetails(item)}
 >
                 <View style={styles.vendorCard}>
                     <View style={styles.vendorLeft}>
@@ -357,7 +360,7 @@ export default function Vendors({ navigation }) {
 
                     <View style={styles.amountContainer}>
                         <Text style={styles.amountText}>
-                            ₹ {item.balanceAmount || "0.00"}
+                          ₹ {item?.totalBalance || "0.00"}
                         </Text>
 
                         <Text style={styles.outstandingText}>
@@ -475,7 +478,7 @@ export default function Vendors({ navigation }) {
 
 
 
-                {!loading && vendorList?.length === 0 ? (
+                {!loading && vendorList?.vendors?.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Image
                             source={EmptyState}
@@ -496,7 +499,7 @@ export default function Vendors({ navigation }) {
                 ) : (
 
                     <>
-                        {!loading && vendorList?.length > 0 &&
+                        {!loading && vendorList?.vendors?.length > 0 &&
                             (
                                 <>
                                     {/* <View style={styles.searchWrapper}>
@@ -566,7 +569,7 @@ export default function Vendors({ navigation }) {
 
 
 <FlatList
-  data={filteredVendors}
+  data={filteredVendors  || []}
   keyExtractor={(item) => item?.id.toString()}
   renderItem={renderVendor}
   ListHeaderComponent={() => (
@@ -580,13 +583,13 @@ export default function Vendors({ navigation }) {
         <SummaryCard
           icon={PeopleIcon}
           title="Total Vendors"
-          value={42}
+         value={vendorList?.vendorSummary?.totalVendors || 0}
         />
 
         <SummaryCard
           icon={GreenRupees}
           title="Total Purchase"
-          value={142300}
+            value={vendorList?.vendorSummary?.totalPurchase || 0}
           prefix="₹ "
            valueColor="#16A34A" 
         />
@@ -594,7 +597,7 @@ export default function Vendors({ navigation }) {
         <SummaryCard
           icon={OutstandingIcon}
           title="Outstanding"
-          value={7600}
+           value={vendorList?.vendorSummary?.outstandingAmount || 0}
           prefix="₹ "
         />
       </ScrollView>
@@ -635,15 +638,9 @@ export default function Vendors({ navigation }) {
                 )}
 
 
-                {!loading && vendorList?.length > 0 && (
+                {/* {!loading && vendorList?.length > 0 && ( */}
                     <>
-                        {/* <TouchableOpacity style={[
-              styles.filterFab,
-              !canReadVendor && { opacity: 0.4 }
-            ]}
-              disabled={!canReadVendor} onPress={() => setShowFilter(true)}>
-              <Image source={FilterIcon} style={styles.filterIcon} />
-            </TouchableOpacity> */}
+           
 
                         <TouchableOpacity
                             style={[
@@ -656,7 +653,7 @@ export default function Vendors({ navigation }) {
                             <Image source={AddIcon} style={styles.addIcon} />
                         </TouchableOpacity>
                     </>
-                )}
+                {/* )} */}
 
 
             </View>
