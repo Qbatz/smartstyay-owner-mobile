@@ -51,6 +51,7 @@ export default function RoomDetails({ route, navigation }) {
 
   console.log("particular_EbRoomReading", particular_EbRoomReading);
   console.log("EbRoomReading", EbRoomReading);
+ 
 
 
   const {
@@ -122,6 +123,7 @@ export default function RoomDetails({ route, navigation }) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
   const today = dayjs();
+  
 
   const isDisabledReadingDate = (d) => {
     if (!d) return false;
@@ -163,6 +165,8 @@ export default function RoomDetails({ route, navigation }) {
   useEffect(() => {
     if (particular_EbRoomReading?.readings?.length > 0) {
       setReadings(particular_EbRoomReading?.readings)
+    }else{
+      setReadings("")
     }
   }, [particular_EbRoomReading])
 

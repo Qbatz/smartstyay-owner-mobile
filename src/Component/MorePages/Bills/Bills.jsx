@@ -290,6 +290,7 @@ export default function BillsDesign({ route }) {
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
   );
+  const [isRefundClicked,setIsRefundClicked]=useState(false);
 
 
   const isSettlementBill =
@@ -2137,6 +2138,8 @@ export default function BillsDesign({ route }) {
     }
 
     if (!valid) return;
+    if(isRefundClicked) return;
+    setIsRefundClicked(true);
 
     const payload = {
       refundAmount: String(refundAmount),
@@ -2150,6 +2153,7 @@ export default function BillsDesign({ route }) {
     console.log("payload", payload);
 
 
+    try{
 
     const res = await CreateRefund({
       hostelId: activeHostelId,
@@ -2171,6 +2175,9 @@ export default function BillsDesign({ route }) {
       setRefundDate(null);
       setRefundFrom("");
       setTransactionId("");
+      setTimeout(() => {
+        setIsRefundClicked(false)
+      }, 1500);
     }
     else if (res?.refundableError) {
       setModalType("warning");
@@ -2182,6 +2189,10 @@ export default function BillsDesign({ route }) {
       setModalMessage(res?.message);
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
+    }
+    }catch(error){
+      console.log(error)
+      setIsRefundClicked(false);
     }
   };
 
@@ -3325,32 +3336,33 @@ export default function BillsDesign({ route }) {
                                     Last Rent Paid ({BillPdfdetails?.currentMonthRentInfo?.currentMonthStayDays} days)
                                   </Text>
 
-                                  <Image
+                                  {/* <Image
                                     source={DownArrow}
                                     style={[
                                       styles.arrowSmall,
                                       showLastRentDetails && { transform: [{ rotate: "180deg" }] },
                                     ]}
-                                  />
+                                  /> */}
                                 </View>
 
                                 <Text style={styles.amountText}>
-                                  0
-                                  {/* ₹ {Number(
-                                            settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
-                                          ).toLocaleString("en-IN")} */}
+                                  
+                                  ₹ {Number(
+                                            BillPdfdetails?.currentMonthRentInfo?.currentMonthPaidAmount || 0
+                                          ).toLocaleString("en-IN")}
                                 </Text>
                               </TouchableOpacity>
 
-                              {showLastRentDetails && (
+                              {/* {showLastRentDetails && (
                                 <View style={styles.detailCard}>
-                                  <Text style={styles.sectionLabel}>Actual Rent</Text>
+                                  <Text style={styles.sectionLabel}>
+                                    Actual Stay Days(Rent)-{BillPdfdetails?.currentMonthRentInfo?.currentMonthStayDays}</Text>
                                   <Text style={styles.amountText}>
                                     0
-                                    {/* ₹ {settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0} */}
+                                    ₹ {settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0}
                                   </Text>
                                 </View>
-                              )}
+                              )} */}
 
                               {/* {showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
                                         <View style={styles.detailCard}>
@@ -3368,7 +3380,7 @@ export default function BillsDesign({ route }) {
                               >
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                   <Text style={styles.descText}>
-                                    {/* Actual Stay Days (Rent) ({settlementDetails?.currentMonthRentInfo?.stayDays} days) */}
+                                    Actual Stay Days (Rent) - {BillPdfdetails?.currentMonthRentInfo?.currentMonthStayDays}
                                   </Text>
 
                                   <Image
@@ -3381,10 +3393,10 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                                 <Text style={styles.amountText}>
-                                  {/* ₹{" "}
+                                  ₹{" "}
                                           {Number(
-                                            settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
-                                          ).toLocaleString("en-IN")} */}
+                                            BillPdfdetails?.currentMonthRentInfo?.listBreakup[0]?.rentPerDay * BillPdfdetails?.currentMonthRentInfo?.listBreakup[0]?.noOfDays || 0
+                                          ).toLocaleString("en-IN")}
                                 </Text>
                               </TouchableOpacity>
 
@@ -3392,7 +3404,8 @@ export default function BillsDesign({ route }) {
                                 BillPdfdetails?.currentMonthRentInfo?.listBreakup?.map(
                                   (item, index) => (
 
-                                    <View key={index} style={styles.detailCard}>
+                                    <View key={index} style={{flexDirection:'row',backgroundColor:'#F9F9F9',alignItems:'center',
+                                                              padding:8,borderRadius:8}}>
                                       <Text style={styles.linkText}>
                                         {item?.floorName} | {item?.roomName} - {item?.bedName}
                                       </Text>
@@ -3401,8 +3414,8 @@ export default function BillsDesign({ route }) {
                                         style={styles.rightMuted}
                                         numberOfLines={0}
                                       >
-                                        ({item?.noOfDays} {item?.noOfDays === 1 ? "day" : "days"} × {item?.rentPerDay} = {item?.currentMonthPayableAmount})
-                                      </Text>
+                                        ({item?.noOfDays} {item?.noOfDays === 1 ? "day" : "days"} × {item?.rentPerDay})
+                                      </Text>                                   
                                     </View>
 
                                   )
@@ -3979,7 +3992,7 @@ export default function BillsDesign({ route }) {
 
 
 
-                  <View style={styles.fixedBottomBar}>
+                  <View style={styles.fixedRefundBottomBar}>
 
                     {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
                       <>
@@ -4541,6 +4554,9 @@ export default function BillsDesign({ route }) {
                     <View style={styles.menuDivider} />
                   </>
                 )}
+
+            
+                    <View style={styles.menuDivider} />
 
                 {/*  */}
 
@@ -5599,8 +5615,9 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={styles.saveBtn}
+                      style={[styles.saveBtn,isRefundClicked && {opacity:0.4}]}
                       onPress={handleSaveRefund}
+                      disabled={isRefundClicked}
                     >
                       <Text style={styles.saveText}>Refund</Text>
                     </TouchableOpacity>
@@ -7516,6 +7533,16 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
   },
+  fixedRefundBottomBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff"
+  },
 
   /* PAID BUTTON */
   paidBtn: {
@@ -8374,6 +8401,8 @@ const styles = StyleSheet.create({
   accordionBody: {
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
+     padding: 14,
+    paddingHorizontal:10
   },
 
   walletRow: {
