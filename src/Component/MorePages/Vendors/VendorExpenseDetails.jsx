@@ -12,11 +12,16 @@ import {
     TouchableOpacity,
     Image,
 } from "react-native";
-
+import { useHasPermission } from "../../../Utils/useHasPermission"
+import { CustomerContext } from "../../../Context/CustomerContext"
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
 import ThreeDots from "../../../Assets/Images/3dots.png";
 // import ArrowUp from "../../../Assets/Images/up_arrow.png";
 // import ArrowDown from "../../../Assets/Images/down_arrow.png";
 import Arrow from "../../../Assets/Images/right_direction.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 export default function VendorExpenseDetailsSheet({
     visible,
@@ -92,17 +97,18 @@ export default function VendorExpenseDetailsSheet({
 
                         <View>
                             <Text style={styles.amount}>
-                                {expense.amount}
+                                ₹ {Number(expense?.amount || 0).toLocaleString()}
                             </Text>
 
                             <Text
                                 style={{
+
                                     color:
-                                        expense.status === "Paid"
+                                        expense.status === "Full"
                                             ? "#16A34A"
                                             : "#F59E0B",
-                                    marginTop: 4,fontFamily: "Gilroy-Semibold"
-                                    
+                                    marginTop: 4, fontFamily: "Gilroy-Semibold"
+
                                 }}
                             >
                                 ✓ {expense.status}
@@ -112,14 +118,18 @@ export default function VendorExpenseDetailsSheet({
 
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Expense ID</Text>
-                        <Text style={{  fontSize: 15,
-         fontFamily: "Gilroy-Semibold"}}>{expense.code}</Text>
+                        <Text style={{
+                            fontSize: 15,
+                            fontFamily: "Gilroy-Semibold"
+                        }}>{expense.code}</Text>
                     </View>
 
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Date</Text>
-                        <Text style={{  fontSize: 15,
-         fontFamily: "Gilroy-Semibold"}}>{expense.date}</Text>
+                        <Text style={{
+                            fontSize: 15,
+                            fontFamily: "Gilroy-Semibold"
+                        }}>{expense.date}</Text>
                     </View>
 
                     <View style={styles.sectionHeader}>
@@ -134,14 +144,24 @@ export default function VendorExpenseDetailsSheet({
                         >
                             <Image
                                 source={Arrow}
-                                style={{  width: 18,
-        height: 18,transform:showItems   ? 'rotate(270deg)' : 'rotate(90deg)'}}
+                                style={{
+                                    width: 18,
+                                    height: 18,
+                                    transform: [
+                                        {
+                                            rotate: showItems
+                                                ? "270deg"
+                                                : "90deg",
+                                        },
+                                    ],
+                                }}
                             />
                         </TouchableOpacity>
                     </View>
 
                     {showItems &&
-                        expense.items?.map(
+                    
+                      expense?.length> 0 ? (  expense?.items?.map(
                             (item, index) => (
                                 <View
                                     key={index}
@@ -208,7 +228,28 @@ export default function VendorExpenseDetailsSheet({
                                     </View>
                                 </View>
                             )
-                        )}
+                        )): (
+                            <View style={styles.emptyContainer}>
+                                <Image
+                                  source={EmptyState}
+                                  style={styles.emptyIcon}
+                                  resizeMode="contain"
+                                />
+                            
+                                <Text style={styles.emptyTitle}>
+                                  No Expenses Item
+                                </Text>
+                            
+                                {/* <Text style={styles.emptySubTitle}>
+                                  No Expenses Item have been added yet.
+                                </Text> */}
+                              </View>
+                        )
+                    
+                    
+                    }
+
+                        
                 </ScrollView>
             </Animated.View>
         </Modal>
@@ -244,7 +285,7 @@ const styles = StyleSheet.create({
 
     title: {
         fontSize: 20,
-           fontFamily: "Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
     },
 
     headerRow: {
@@ -280,13 +321,13 @@ const styles = StyleSheet.create({
     label: {
         color: "#8A8A8A",
         fontSize: 15,
-         fontFamily: "Gilroy-Semibold"
+        fontFamily: "Gilroy-Semibold"
     },
 
     value: {
         color: "#222",
         fontSize: 15,
-       fontFamily: "Gilroy-Regular"
+        fontFamily: "Gilroy-Regular"
     },
 
     amountLabel: {
@@ -297,7 +338,7 @@ const styles = StyleSheet.create({
 
     amountValue: {
         fontSize: 18,
-            fontFamily: "Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
         color: "#111",
     },
 
@@ -315,12 +356,12 @@ const styles = StyleSheet.create({
 
     heading: {
         fontSize: 15,
-            fontFamily: "Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
     },
 
     amount: {
         fontSize: 15,
-           fontFamily: "Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
     },
 
     infoRow: {
@@ -332,7 +373,7 @@ const styles = StyleSheet.create({
 
     sectionTitle: {
         fontSize: 18,
-           fontFamily: "Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
         marginTop: 25,
         marginBottom: 15,
     },
@@ -347,7 +388,7 @@ const styles = StyleSheet.create({
 
     itemTitle: {
         fontSize: 16,
-            fontFamily: "Gilroy-Bold",
+        fontFamily: "Gilroy-Bold",
         padding: 15,
     },
 
@@ -365,6 +406,33 @@ const styles = StyleSheet.create({
         justifyContent:
             "space-between",
         padding: 15,
-        
+
     },
+     emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+  marginTop: 20,
+},
+
+emptyIcon: {
+  width: 200,
+  height: 100,
+  // opacity: 0.5,
+},
+
+emptyTitle: {
+  marginTop: 4,
+  fontSize: 18,
+  color: "#111827",
+  fontFamily: "Gilroy-Bold",
+},
+
+emptySubTitle: {
+  marginTop: 6,
+  fontSize: 14,
+  color: "#6B7280",
+  textAlign: "center",
+},
 });

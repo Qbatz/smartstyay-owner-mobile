@@ -8,6 +8,11 @@ export default function VendorProvider({ children }) {
   const [vendorList, setVendorList] = useState([]);
   const [vendorCategories, setVendorCategories] = useState([]);
   const [vendorDetails, setVendorDetails] = useState(null);
+  const [vendorExpenses, setVendorExpenses] = useState([]);
+const [vendorExpensePayments, setVendorExpensePayments] = useState([]);
+const [vendorSettlementInitialize, setVendorSettlementInitialize] = useState(null);
+
+
   const [loading, setLoading] = useState(false);
 
   const getErrorMessage = (err) =>
@@ -15,6 +20,10 @@ export default function VendorProvider({ children }) {
     err?.response?.data ||
     err?.message ||
     "Something went wrong";
+
+    const clearVendorDetails = () => {
+  setVendorDetails(null);
+};
 
   const getVendorList = async (hostelId) => {
     setLoading(true);
@@ -89,6 +98,106 @@ const getVendorDetails = async (vendorId) => {
   } catch (err) {
     console.log(
       "GET VENDOR DETAILS ERROR:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const getVendorExpenses = async (
+  vendorId,
+  search = "",
+  startDate = "",
+  endDate = "",
+  page = 1,
+  size = 10
+) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/vendors/expenses/${vendorId}`,
+      {
+        params: {
+          search,
+          startDate,
+          endDate,
+          page,
+          size,
+        },
+      }
+    );
+
+    if (res?.status === 200) {
+      setVendorExpenses(res?.data || []);
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log(
+      "GET VENDOR EXPENSES ERROR:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const getVendorExpensePayments = async (
+  vendorId,
+  startDate = "",
+  endDate = "",
+  page = 1,
+  size = 10
+) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/vendors/expense-payments/${vendorId}`,
+      {
+        params: {
+          startDate,
+          endDate,
+          page,
+          size,
+        },
+      }
+    );
+
+    if (res?.status === 200) {
+      setVendorExpensePayments(res?.data || []);
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log(
+      "GET VENDOR EXPENSE PAYMENTS ERROR:",
       err?.response?.data || err
     );
 
@@ -279,7 +388,89 @@ const deleteVendorCategory = async (
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  const getVendorSettlementInitialize = async (
+  hostelId,
+  vendorId
+) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/vendors/initialize/${hostelId}/${vendorId}`
+    );
+
+    if (res?.status === 200) {
+      setVendorSettlementInitialize(res?.data);
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log(
+      "GET VENDOR SETTLEMENT INITIALIZE ERROR:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const settleVendorPayment = async (
+  vendorId,
+  payload
+) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/vendors/settle/${vendorId}`,
+      payload
+    );
+
+    if (
+      res?.status === 200 ||
+      res?.status === 201
+    ) {
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to settle payment",
+    };
+  } catch (err) {
+    console.log(
+      "SETTLE VENDOR PAYMENT ERROR:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <VendorContext.Provider
@@ -287,6 +478,9 @@ const deleteVendorCategory = async (
         vendorList,
         vendorCategories,
         vendorDetails,
+        vendorExpenses ,
+        vendorExpensePayments,
+        vendorSettlementInitialize,
         loading,
         getVendorList,
         getVendorCategories,
@@ -296,6 +490,11 @@ const deleteVendorCategory = async (
         addVendorCategory,
         deleteVendorCategory,
         getVendorDetails,
+        getVendorExpenses,
+        getVendorExpensePayments,
+        getVendorSettlementInitialize,
+        settleVendorPayment,
+        clearVendorDetails
       }}
     >
       {children}

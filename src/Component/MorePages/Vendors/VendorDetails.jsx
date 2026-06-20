@@ -26,7 +26,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function VendorDetails({ route, navigation }) {
   const { vendor } = route.params;
 
-  const { getVendorDetails, vendorDetails } = useContext(VendorContext);
+  const { getVendorDetails, vendorDetails , getVendorSettlementInitialize } = useContext(VendorContext);
 
   const { vendorList, loading, getVendorList, deleteVendor, } = useContext(CustomerContext)
     const { activeHostelId } = useContext(CommonContexts)
@@ -53,8 +53,10 @@ export default function VendorDetails({ route, navigation }) {
 
   console.log("vendorDetails", vendorDetails);
 
-  const handleEdit = (vendor) => {
+  const handleEdit = async (vendor) => {
     console.log("vendor", vendor);
+
+     const res = await getVendorDetails(vendor?.id)
     
     if (!canUpdateModule) return;
     navigation.navigate("AddVendorPage", {
@@ -94,6 +96,14 @@ export default function VendorDetails({ route, navigation }) {
 
   }
 
+   const handlesettlePayment = async () => {
+     const res = await   getVendorSettlementInitialize(activeHostelId, vendor?.id)
+    navigation.navigate("VendorSettlePayment", {
+              vendorDetails,    
+            })
+  
+   }
+
 
   const tabs = [
     "Info",
@@ -105,14 +115,15 @@ export default function VendorDetails({ route, navigation }) {
   const renderContent = () => {
     switch (activeTab) {
       case "Info":
-        return <VendorInfo vendor={vendor} />;
+        return <VendorInfo vendor={vendorDetails} />;
 
       case "Transactions":
-        return <VendorTransactions />;
+        return <VendorTransactions  vendor={vendorDetails} />;
 
       case "Expenses":
         return (
           <VendorExpenses
+            vendor={vendorDetails} 
             onExpensePress={(expense) => {
               setSelectedExpense(expense);
               setShowExpenseSheet(true);
@@ -121,7 +132,7 @@ export default function VendorDetails({ route, navigation }) {
         );
 
       case "Comments":
-        return <VendorComments />;
+        return <VendorComments  vendor={vendorDetails} />;
 
       default:
         return null;
@@ -149,8 +160,8 @@ export default function VendorDetails({ route, navigation }) {
 
           <Text style={styles.headerTitle}>
             {vendorDetails?.fullName ||
-              vendor?.fullName ||
-              vendor?.firstName ||
+              vendorDetails?.fullName ||
+              vendorDetails?.firstName ||
               "Vendor"}
           </Text>
 
@@ -175,13 +186,13 @@ export default function VendorDetails({ route, navigation }) {
           <View style={styles.badgeRow}>
             <View style={styles.vendorCode}>
               <Text style={styles.vendorCodeText}>
-                VEN {vendor?.vendorCode}
+                {vendor?.vendorCode}
               </Text>
             </View>
 
             <View style={styles.activeBadge}>
               <Text style={styles.activeText}>
-                Active
+                 {vendor?.paymentStatus}
               </Text>
             </View>
           </View>
@@ -226,10 +237,7 @@ export default function VendorDetails({ route, navigation }) {
           </View>
 
           <TouchableOpacity style={styles.settleBtn}
-            onPress={() => navigation.navigate("VendorSettlePayment", {
-              vendor,
-            })
-            }
+            onPress={handlesettlePayment}
           >
             <Text style={styles.settleText}>
               Settle Payment →

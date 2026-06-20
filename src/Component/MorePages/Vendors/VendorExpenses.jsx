@@ -1,11 +1,19 @@
-import React from "react";
+import React , {useState , useEffect , useContext} from "react";
 import {
   FlatList,
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  TouchableOpacity,Image
 } from "react-native";
+
+import { VendorContext } from "../../../Context/VendorContext";
+import { useHasPermission } from "../../../Utils/useHasPermission"
+import { CustomerContext } from "../../../Context/CustomerContext"
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 const DATA = [
   {
@@ -98,60 +106,126 @@ const DATA = [
   },
 ];
 
-export default function VendorExpenses({
+
+
+export default function VendorExpenses({vendor ,
   onExpensePress = () => {},
 }) {
+
+   const {loading ,
+  getVendorExpenses,
+  vendorExpenses,
+  getVendorExpensePayments,
+  vendorExpensePayments,
+} = useContext(VendorContext);
+
+useEffect(() => {
+  getVendorExpenses(vendor?.id);
+  // getVendorExpensePayments(vendor?.id);
+}, []);
+
+
+
+console.log("vendorExpenses", vendorExpenses);
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={() => onExpensePress(item)}
-      style={styles.expenseCard}
-    >
-      <View style={styles.leftSection}>
-        <Text style={styles.expenseTitle}>
-          {item.title}
+  <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() =>
+     onExpensePress({
+  id: item.expenseId,
+  title: item.categoryName,
+  amount: item.totalAmount,
+  date: item.transactionDate,
+  code: item.referenceNumber,
+  status: item.paymentStatus,
+  items: (item.expenseItems || []).map(
+    (expenseItem) => ({
+      name: expenseItem.item,
+      quantity: expenseItem.quantity,
+      unit: expenseItem.unit,
+      rate: expenseItem.unitPrice,
+      amount: expenseItem.totalAmount,
+    })
+  ),
+  payments: item.expensePayments || [],
+})
+    }
+    style={styles.expenseCard}
+  >
+    <View style={styles.leftSection}>
+      <Text style={styles.expenseTitle}>
+        {item?.categoryName || "Expense"}
+      </Text>
+
+      <View style={styles.metaRow}>
+        <Text style={styles.expenseCode}>
+          {item?.referenceNumber}
         </Text>
 
-        <View style={styles.metaRow}>
-          <Text style={styles.expenseCode}>
-            {item.code}
-          </Text>
+        <Text style={styles.dot}>•</Text>
 
-          <Text style={styles.dot}>•</Text>
-
-          <Text
-            style={[
-              styles.statusText,
-              item.status === "Paid"
-                ? styles.paidText
-                : styles.partialText,
-            ]}
-          >
-            ✓ {item.status}
-          </Text>
-        </View>
+        <Text
+          style={[
+            styles.statusText,
+            item?.paymentStatus === "Full"
+              ? styles.paidText
+              : styles.partialText,
+          ]}
+        >
+          ✓ {item?.paymentStatus}
+        </Text>
       </View>
+    </View>
 
-      <View style={styles.rightSection}>
-        <Text style={styles.amountText}>
-          {item.amount}
-        </Text>
+    <View style={styles.rightSection}>
+      <Text style={styles.amountText}>
+        ₹ {Number(item?.totalAmount || 0).toLocaleString()}
+      </Text>
 
-        <Text style={styles.dateText}>
-          {item.date}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+      <Text style={styles.dateText}>
+        {item?.transactionDate}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
 
   return (
+    // <FlatList
+    //   data={vendorExpenses?.expenses || []}
+    //   keyExtractor={(item) => item.id}
+    //   renderItem={renderItem}
+    //   showsVerticalScrollIndicator={false}
+    //   contentContainerStyle={styles.listContainer}
+    // />
+<>
+     {/* {loading && <Loader />} */}
+
     <FlatList
-      data={DATA}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.listContainer}
-    />
+  data={vendorExpenses?.expenses || []}
+  keyExtractor={(item) => item?.expenseId}
+  renderItem={renderItem}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={styles.listContainer}
+  ListEmptyComponent={
+    <View style={styles.emptyContainer}>
+       <Image
+         source={EmptyState}
+         style={styles.emptyIcon}
+         resizeMode="contain"
+       />
+   
+       <Text style={styles.emptyTitle}>
+         No Expenses
+       </Text>
+   
+       <Text style={styles.emptySubTitle}>
+         No Expenses have been added yet.
+       </Text>
+     </View>
+  }
+/>
+</>
   );
 }
 
@@ -233,4 +307,31 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontFamily: "Gilroy-Medium",
   },
+   emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+  marginTop: 20,
+},
+
+emptyIcon: {
+  width: 200,
+  height: 100,
+  // opacity: 0.5,
+},
+
+emptyTitle: {
+  marginTop: 4,
+  fontSize: 18,
+  color: "#111827",
+  fontFamily: "Gilroy-Bold",
+},
+
+emptySubTitle: {
+  marginTop: 6,
+  fontSize: 14,
+  color: "#6B7280",
+  textAlign: "center",
+},
 });

@@ -84,7 +84,11 @@ export default function ExpensesList({ navigation }) {
         }, [activeHostelId])
     );
 
-    console.log("expenses", expensesList);
+    
+
+   const Expensesdata =
+  expensesList?.expenses || [];
+    console.log("expenses", Expensesdata);
 
     const horizontalRef = useRef(null);
 
@@ -289,13 +293,13 @@ export default function ExpensesList({ navigation }) {
     };
 
     const totalExpense =
-        expensesList?.reduce(
+        Expensesdata?.reduce(
             (sum, item) => sum + Number(item.totalAmount || 0),
             0
         ) || 0;
 
     const paidAmount =
-        expensesList
+        Expensesdata
             ?.filter(
                 (item) =>
                     item?.paymentStatus?.toLowerCase() === "full"
@@ -564,7 +568,7 @@ export default function ExpensesList({ navigation }) {
 
 
 
-                {!loading && expensesList?.length === 0 ? (
+                {!loading && Expensesdata?.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Image
                             source={EmptyState}
@@ -585,7 +589,7 @@ export default function ExpensesList({ navigation }) {
                 ) : (
 
                     <>
-                        {!loading && expensesList?.length > 0 &&
+                        {!loading && Expensesdata?.length > 0 &&
                             (
                                 <>
                                     {/* <View style={styles.searchWrapper}>
@@ -655,7 +659,7 @@ export default function ExpensesList({ navigation }) {
 
 
                         <FlatList
-                            data={expensesList || []}
+                            data={Expensesdata || []}
                             keyExtractor={(item) => item.expenseId}
                             renderItem={renderExpensesItem}
                             ListHeaderComponent={() => (
@@ -716,7 +720,7 @@ export default function ExpensesList({ navigation }) {
                 )}
 
 
-                {!loading && expensesList?.length > 0 && (
+                {!loading && Expensesdata?.length > 0 && (
                     <>
                         {/* <TouchableOpacity style={[
               styles.filterFab,

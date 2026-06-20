@@ -5,7 +5,7 @@ export const ExpensesContext = createContext();
 
 export default function ExpensesProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
-  const [expensesList, setExpensesList] = useState([])
+  const [expensesList, setExpensesList] = useState(null)
   const [IntializeexpensesList, setIntializeExpensesList] = useState(null)
   const [rolePermission, setRolePermission] = useState(null);
    const [profileDetails, setProfileDetails] = useState(null);
@@ -122,29 +122,26 @@ export default function ExpensesProvider({ children }) {
   };
 
 const GetExpenseList = async (hostelId) => {
-  if (!hostelId) {
-    setExpensesList([]);
-    return { success: true, empty: true };
-  }
-
   try {
     setLoading(true);
-    setError(null);
+
     const axios = getAxios();
     const res = await axios.get(`/v2/expense/${hostelId}`);
 
-    const data = Array.isArray(res?.data) ? res?.data : [];
+    console.log("Expense API", res.data);
 
-    if (data.length === 0) {
-      setExpensesList([]);
-      return { success: true, empty: true };
+    if (res?.status === 200) {
+      setExpensesList(res.data);
+      return {
+        success: true,
+        data: res.data,
+      };
     }
 
-    setExpensesList(data);
-    return { success: true };
+    return { success: false };
   } catch (err) {
-    setError("Failed to load expenses");
-    setExpensesList([]);
+    console.log(err);
+    setExpensesList(null);
     return { success: false };
   } finally {
     setLoading(false);
@@ -432,6 +429,48 @@ const DeleteExpense = async (hostelId, expenseId) => {
   }
 };
 
+const SettleExpense = async (expenseId, payload) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/expense/settle/${expenseId}`,
+      payload
+    );
+
+    if (
+      res?.status === 200 ||
+      res?.status === 201
+    ) {
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to settle expense",
+    };
+  } catch (err) {
+    console.log(
+      "SETTLE EXPENSE ERROR:",
+      err?.response?.data || err
+    );
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
 
@@ -460,6 +499,7 @@ const DeleteExpense = async (hostelId, expenseId) => {
         UpdateExpense,
         DeleteExpense,
         GetExpenseUnits,
+        SettleExpense,
       }}
     >
       {children}
