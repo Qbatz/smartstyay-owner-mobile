@@ -110,14 +110,14 @@ export default function AddVendorSheet({  route, navigation }) {
 
   const {
     vendorCategories,
-    getVendorCategories,
+    getVendorCategories, getVendorDetails, vendorDetails 
   } = useContext(VendorContext);
 
   console.log("vendorCategories", vendorCategories);
 
 
 
-const vendorData = route?.params?.vendorData;
+const vendorData = vendorDetails
 
   const scrollRef = useRef(null);
   const mobileRef = useRef(null);
@@ -202,6 +202,61 @@ setSelectedCategory({
   value: vendorData.vendorCategoryId,
 });
   }, [vendorData]);
+
+
+  useEffect(() => {
+  if (!vendorData) return;
+
+  const snapshot = {
+    businessName: vendorData.businessName || "",
+    contactPerson: vendorData.contactPerson || "",
+    businessmobile: vendorData.mobile || "",
+    mobile: vendorData.contactPersonMobile || "",
+    email: vendorData.emailId || "",
+    street: vendorData.houseNo || "",
+    city: vendorData.city || "",
+    stateName: vendorData.state || "",
+    pinCode: vendorData.pinCode
+      ? String(vendorData.pinCode)
+      : "",
+    description: vendorData.description || "",
+    gstNumber: vendorData.gst || "",
+    panNumber: vendorData.pan || "",
+    allowCredit: vendorData.allowCredit || false,
+    creditLimit: vendorData.creditLimit
+      ? String(vendorData.creditLimit)
+      : "",
+    creditPeriod: vendorData.creditPeriod
+      ? String(vendorData.creditPeriod)
+      : "",
+    categoryId: vendorData.vendorCategoryId,
+  };
+
+  setInitialData(snapshot);
+}, [vendorData]);
+
+const getCurrentData = () => ({
+  businessName,
+  contactPerson,
+  businessmobile,
+  mobile,
+  email,
+  street,
+  city,
+  stateName,
+  pinCode,
+  description,
+  gstNumber,
+  panNumber,
+  allowCredit,
+  creditLimit,
+  creditPeriod,
+  categoryId: selectedCategory?.value,
+});
+
+const isSameData = (a, b) => {
+  return JSON.stringify(a) === JSON.stringify(b);
+};
 
   const isImageChanged = () => {
     if (!initialImage && selectedImage) return true;
@@ -527,21 +582,30 @@ setSelectedCategory({
 
 
   const handleSubmit = async () => {
-    if (!validate()) return;
-console.log(
-  "PAYLOAD =>",
-  JSON.stringify(
-    {
-      profilePic: selectedImage,
-      payLoads,
-    },
-    null,
-    2
-  )
-);
 
-console.log("businessName", businessName);
-console.log("payLoads.businessName", payLoads.businessName);
+
+    if (!validate()) return;
+
+    if (vendorData && initialData) {
+  const currentData = getCurrentData();
+
+  const dataSame =
+    JSON.stringify(initialData) ===
+    JSON.stringify(currentData);
+
+  if (dataSame) {
+    setModalType("error");
+    setModalMessage("No Changes Detected");
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500);
+
+    return;
+  }
+}
+
 
 
    let response;
@@ -570,6 +634,7 @@ if (vendorData?.id) {
       // await getVendorList(activeHostelId);
 
       setTimeout(() => {
+           const res =  getVendorDetails(vendorData?.id)
         setShowSuccessModal(false);
         navigation.goBack();
       }, 1500);
@@ -588,7 +653,14 @@ if (vendorData?.id) {
 
 
   return (
+<>
 
+
+ <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType} />
 
     <View style={styles.container}>
 
@@ -1189,18 +1261,22 @@ if (vendorData?.id) {
           style={styles.input}
         />
 
-        <Text style={styles.label}>
-          Vendor Code
-        </Text>
+       {vendorData && (
+  <>
+    <Text style={styles.label}>
+      Vendor Code
+    </Text>
 
-        <TextInput
-          editable={false}
-          value="VEN 006"
-          style={[
-            styles.input,
-            { backgroundColor: "#F8F9FA" }
-          ]}
-        />
+    <TextInput
+      editable={false}
+      value={vendorData?.vendorCode || ""}
+      style={[
+        styles.input,
+        { backgroundColor: "#F8F9FA" }
+      ]}
+    />
+  </>
+)}
 
         <TouchableOpacity
           style={styles.creditRow}
@@ -1309,6 +1385,8 @@ if (vendorData?.id) {
       </ScrollView>
 
     </View>
+
+    </>
 
   )
 

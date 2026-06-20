@@ -12,6 +12,7 @@ import {
     PanResponder,
     Dimensions, BackHandler, Keyboard
 } from "react-native";
+import * as ImagePicker from "react-native-image-picker";
 import { useFocusEffect } from '@react-navigation/native';
 import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -142,7 +143,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const [amountErr, setAmountErr] = useState("");
     const [unitcountErr, setUnitCountErr] = useState("")
     const [modeErr, setModeErr] = useState("");
-    const [nochangeErr, setNochangeErr] = useState("");
+    const [nochangeErr, setNochangeErr] = useState("")
+
+    const [tax, setTax] = useState("");
+    const [discount, setDiscount] = useState("");
+    const [discountType, setDiscountType] = useState("amount"); // amount | percentage
 
     const categoryList = IntializeexpensesList?.listExpenses || [];
 
@@ -417,10 +422,27 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const stateList = vendors; // reuse your vendors array
 
-    const unitsOptions = expenseUnits?.map(item => ({
-        label: item?.unitName,
-        value: item?.id,
-    }));
+    // const unitsOptions = expenseUnits?.map(item => ({
+    //     label: item?.unitName,
+    //     value: item?.id,
+    // }));
+
+    const unitsOptions = [
+  { value: "Nos", label: "Nos" },
+  { value: "Kg", label: "Kg" },
+  { value: "Litre", label: "Litre" },
+  { value: "Packet", label: "Packet" },
+  { value: "Box", label: "Box" },
+  { value: "Bottle", label: "Bottle" },
+  { value: "Can", label: "Can" },
+  { value: "Bundle", label: "Bundle" },
+  { value: "Meter", label: "Meter" },
+  { value: "Piece", label: "Piece" },
+  { value: "Set", label: "Set" },
+  { value: "Day", label: "Day" },
+  { value: "Month", label: "Month" },
+  { value: "Hour Wage", label: "Hour Wage" },
+];
 
     const paymentOptions =
         IntializeexpensesList?.banks?.map((b) => ({
@@ -560,7 +582,47 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const [allowCredit, setAllowCredit] = useState(false);
     const [creditLimit, setCreditLimit] = useState("");
-    const [creditPeriod, setCreditPeriod] = useState("");
+    const [creditPeriod, setCreditPeriod] = useState("")
+
+    const [attachments, setAttachments] = useState([]);
+
+    const pickImage = () => {
+        ImagePicker.launchImageLibrary(
+            {
+                mediaType: "photo",
+                selectionLimit: 0, // multiple images
+            },
+            (response) => {
+                if (response.didCancel) return;
+
+                if (response.assets?.length) {
+                    const newFiles = response.assets;
+
+                    setAttachments((prev) => [
+                        ...prev,
+                        ...newFiles,
+                    ]);
+
+                    if (!selectedImage) {
+                        setSelectedImage(newFiles[0]);
+                    }
+                }
+            }
+        );
+    };
+
+    const removeImage = (index) => {
+        const updated = attachments.filter(
+            (_, i) => i !== index
+        );
+
+        setAttachments(updated);
+
+        if (selectedImage?.uri === attachments[index]?.uri) {
+            setSelectedImage(updated[0] || null);
+        }
+    };
+
 
 
 
@@ -579,38 +641,187 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             newErrors.subCategory = "Please Select Sub Category";
         }
 
-        if (!amount || Number(amount) <= 0) {
+        if (!amount?.trim()) {
             newErrors.amount = "Please Enter Amount";
+        } else if (Number(amount) <= 0) {
+            newErrors.amount = "Amount should be greater than 0";
         }
 
         if (!purchaseDate) {
             newErrors.expenseDate = "Please Select Expense Date";
         }
 
+        // Vendor Validation
         if (linkVendor && !selectedVendor) {
             newErrors.vendor = "Please Select Vendor";
         }
 
-        if (linkVendor && !paymentStatus) {
-            newErrors.paymentStatus = "Please Select Payment Status";
+        // Payment Method
+        // if (!selectedMode) {
+        //     newErrors.paymentMethod = "Please Select Payment Method";
+        // }
+        if (linkVendor) {
+
+    if (!selectedVendor) {
+        newErrors.vendor = "Please Select Vendor";
+    }
+
+    if (!paymentStatus) {
+        newErrors.paymentStatus =
+            "Please Select Payment Status";
+    }
+
+    if (!selectedMode) {
+        newErrors.paymentMethod =
+            "Please Select Payment Method";
+    }
+
+    if (paymentStatus === "Partially Paid") {
+
+        if (!paidAmount?.trim()) {
+            newErrors.paidAmount =
+                "Please Enter Paid Amount";
+        } else if (Number(paidAmount) <= 0) {
+            newErrors.paidAmount =
+                "Paid Amount should be greater than 0";
+        } else if (
+            Number(paidAmount) > Number(amount)
+        ) {
+            newErrors.paidAmount =
+                "Paid Amount cannot exceed Total Amount";
+        }
+    }
+}
+        // Partial Payment Validation
+        if (linkVendor && paymentStatus === "Partially Paid") {
+            if (!paidAmount?.trim()) {
+                newErrors.paidAmount = "Please Enter Paid Amount";
+            } else if (Number(paidAmount) <= 0) {
+                newErrors.paidAmount = "Paid Amount should be greater than 0";
+            } else if (Number(paidAmount) > Number(amount)) {
+                newErrors.paidAmount =
+                    "Paid Amount cannot exceed Total Amount";
+            }
         }
 
         if (!selectedMode) {
-            newErrors.paymentMethod = "Please Select Payment Method";
-        }
+   newErrors.paymentMethod =
+      "Please Select Payment Method";
+}
+        const hasItems = items.some(
+            item =>
+                item.itemDetail?.trim() ||
+                item.quantity ||
+                item.unitPrice ||
+                selectedUnits
+        );
 
-        if (
-            linkVendor &&
-            paymentStatus === "Partially Paid" &&
-            (!paidAmount || Number(paidAmount) <= 0)
-        ) {
-            newErrors.paidAmount = "Please Enter Paid Amount";
+        if (hasItems) {
+            items.forEach((item, index) => {
+                if (!item.itemDetail?.trim()) {
+                    newErrors[`itemDetail_${index}`] =
+                        `Please Enter Item Detail for Item ${index + 1}`;
+                }
+
+                if (!item.quantity || Number(item.quantity) <= 0) {
+                    newErrors[`quantity_${index}`] =
+                        `Please Enter Quantity for Item ${index + 1}`;
+                }
+
+                if (!selectedUnits) {
+                    newErrors.units = "Please Select Unit";
+                }
+
+                if (!item.unitPrice || Number(item.unitPrice) <= 0) {
+                    newErrors[`unitPrice_${index}`] =
+                        `Please Enter Unit Price for Item ${index + 1}`;
+                }
+            });
         }
+        // const itemTotal = items.reduce(
+        //     (sum, item) => sum + Number(item.amount || 0),
+        //     0
+        // );
+
+        // if (Number(amount) !== itemTotal) {
+        //     newErrors.amount =
+        //         `Amount (${amount}) should match Item Total (${itemTotal})`;
+        // }
+
+        const itemTotal = items.reduce(
+  (sum, item) => sum + Number(item.amount || 0),
+  0
+);
+
+if (hasItems && Number(amount) !== itemTotal) {
+  newErrors.amount =
+    `Amount (${amount}) should match Item Total (${itemTotal})`;
+}
+
+        if (tax && Number(tax) < 0) {
+  newErrors.tax = "Invalid Tax Amount";
+}
+
+if (discount && Number(discount) < 0) {
+  newErrors.discount = "Invalid Discount";
+}
+
+if (
+  discountType === "amount" &&
+  Number(discount) > itemTotal
+) {
+  newErrors.discount =
+    "Discount cannot exceed Item Total";
+}
+
+if (Number(tax) > itemTotal) {
+  newErrors.tax =
+    "Tax cannot exceed Item Total";
+}
+
+if (
+  discountType === "percentage" &&
+  Number(discount) > 100
+) {
+  newErrors.discount =
+    "Discount percentage cannot exceed 100";
+}
 
         setErrors(newErrors);
 
         return Object.keys(newErrors).length === 0;
-    };
+    }
+
+    useEffect(() => {
+        if (paymentStatus === "Partially Paid") {
+            const total = Number(amount || 0);
+            const paid = Number(paidAmount || 0);
+
+            setBalanceAmount(
+                paid > total ? "0" : String(total - paid)
+            );
+        } else {
+            setBalanceAmount("0");
+        }
+    }, [amount, paidAmount, paymentStatus])
+
+    const itemTotal = items.reduce(
+  (sum, item) => sum + Number(item.amount || 0),
+  0
+);
+
+const taxAmount = Number(tax || 0);
+
+const discountAmount =
+  discountType === "percentage"
+    ? (itemTotal * Number(discount || 0)) / 100
+    : Number(discount || 0);
+
+const grandTotal =
+  itemTotal + taxAmount - discountAmount;
+
+  
+
 
     const handleSubmit = async () => {
         if (!validateExpenseForm()) return;
@@ -628,49 +839,60 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 : totalAmount - paid;
 
         const payload = {
-            categoryId: selectedCategory?.categoryId,
-            subCategory: selectedSubCategory?.subCategoryId,
-            purchaseDate,
-            count: items.length,
-            totalAmount,
+  images: attachments || [],
 
-            bankId: selectedMode?.id || "",
+  expense: {
+    categoryId: selectedCategory?.categoryId,
+    subCategory: selectedSubCategory?.subCategoryId,
+    purchaseDate,
+    count: items.length,
+    totalAmount,
 
-            description,
-            title: expenseTitle,
+    bankId: selectedMode?.id || "",
 
-            isVendorExpense: linkVendor,
-            vendorId: linkVendor ? vendorId : null,
+    description,
+    title: expenseTitle,
 
-            paymentStatus:
-                paymentStatus === "Fully Paid"
-                    ? "FULLY_PAID"
-                    : paymentStatus === "Partially Paid"
-                        ? "PARTIALLY_PAID"
-                        : "CREDIT_PENDING",
+    isVendorExpense: linkVendor,
+    vendorId: linkVendor ? vendorId : null,
 
-            paidAmount: paid,
-            balanceAmount: balance,
+    paymentStatus:
+      paymentStatus === "Fully Paid"
+        ? "FULLY_PAID"
+        : paymentStatus === "Partially Paid"
+        ? "PARTIALLY_PAID"
+        : "CREDIT_PENDING",
 
-            paymentMethod: selectedMode?.name || "",
-            note: transactionId,
+    paidAmount: paid,
+    balanceAmount: balance,
 
-            expenseItems: items.map((item) => ({
-                item: item.itemDetail,
-                quantity: Number(item.quantity || 0),
-                unitId: selectedUnits?.value,
-                unit: selectedUnits?.label,
-                unitPrice: Number(item.unitPrice || 0),
-                totalAmount: Number(item.amount || 0),
-            })),
-        };
+    paymentMethod: selectedMode?.name || "",
+
+    note: description || "",
+    transactionId: transactionId || "",
+
+    tax: Number(tax || 0),
+    discount: Number(discount || 0),
+
+    expenseItems: items.map((item) => ({
+      item: item.itemDetail,
+      quantity: Number(item.quantity || 0),
+      unit: selectedUnits?.label,
+      unitPrice: Number(item.unitPrice || 0),
+      totalAmount: Number(item.amount || 0),
+    })),
+  },
+};
 
         console.log("EXPENSE PAYLOAD =>", payload);
 
         const response = await AddExpense(
             payload,
             activeHostelId
-        );
+        )
+
+        console.log("response", response);
+        
 
         if (response?.success) {
             setModalType("success");
@@ -1179,67 +1401,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 Vendor <Text style={styles.required}>*</Text>
                             </Text>
 
-                            {/* <TouchableOpacity
-                            style={styles.expensesDropdownBox}
-                            onPress={() => {
-                                setVendorOpen(!vendorOpen)
-                                setSubCategoryOpen(false);
-                                setModePaymentOpen(false);
-                                setCategoryOpen(false)
-                            }}
-                            
-                        >
-                            <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
-                                {selectedCategory?.categoryName || "Select Category"}
-                            </Text>
-                            <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                        </TouchableOpacity>
 
-                        {vendorOpen && (
-                            <View style={styles.expensesDropdownMenu}>
-                                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                    {categoryList?.length === 0 ? (
-                                        <Text style={styles.expensesNoDataText}>
-                                            No category found
-                                        </Text>
-                                    ) : (
-                                        categoryList?.map((item) => {
-                                            const isSelected =
-                                                selectedCategory?.categoryId === item.categoryId;
-
-                                            return (
-                                                <TouchableOpacity
-                                                    key={item.categoryId}
-                                                    style={[
-                                                        styles.expensesOption,
-                                                        isSelected && styles.expensesOptionSelected,
-                                                    ]}
-                                                    onPress={() => {
-                                                        setSelectedCategory(item);
-                                                        setSelectedSubCategory(null);
-                                                        setCategoryErr("");
-                                                        setNochangeErr("");
-                                                        setVendorOpen(false);
-                                                    }}
-
-                                                >
-                                                    <Text
-                                                        style={[
-                                                            styles.expensesOptionText,
-                                                            isSelected && styles.expensesOptionTextSelected,
-                                                        ]}
-                                                    >
-                                                        {item.categoryName}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            )
-                                        })
-
-
-                                    )}
-                                </ScrollView>
-                            </View>
-                        )} */}
 
 
                             <TouchableOpacity
@@ -1261,23 +1423,24 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 />
                             </TouchableOpacity>
 
+
                             {vendorOpen && (
                                 <View style={styles.expensesDropdownMenu}>
                                     <ScrollView
                                         style={{ maxHeight: 150 }}
                                         nestedScrollEnabled
                                     >
-                                        {vendorList?.length === 0 ? (
+                                        {vendorList?.vendors?.length === 0 ? (
                                             <Text style={styles.expensesNoDataText}>
                                                 No Vendors Found
                                             </Text>
                                         ) : (
-                                            vendorList?.map((item) => {
-                                                const isSelected = vendorId === item.id;
+                                            vendorList?.vendors?.map((item) => {
+                                                const isSelected = vendorId === item?.id;
 
                                                 return (
                                                     <TouchableOpacity
-                                                        key={item.id}
+                                                        key={item?.id}
                                                         style={[
                                                             styles.expensesOption,
                                                             isSelected &&
@@ -1285,7 +1448,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                         ]}
                                                         onPress={() => {
                                                             setSelectedVendor(item); // full object
-                                                            setVendorId(item.id);    // only id
+                                                            setVendorId(item?.id);    // only id
                                                             setVendorOpen(false);
                                                             setErrors(prev => ({
                                                                 ...prev,
@@ -1328,6 +1491,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     "Fully Paid",
                                     "Partially Paid",
                                     "Credit / Pending",
+                                    // "Overdue",
                                 ].map((status) => (
                                     <TouchableOpacity
                                         key={status}
@@ -1530,19 +1694,118 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
                             />
 
+
+
+
                             <Text style={styles.label}>
-                                Attachments/Proofs (If any)
+                                Attachments / Proofs
                             </Text>
 
-                            <TouchableOpacity style={styles.uploadBox}>
-                                <Text style={styles.uploadText}>
-                                    Choose Image
-                                </Text>
+                            {attachments.length === 0 ? (
+                                <TouchableOpacity
+                                    style={styles.uploadBox}
+                                    onPress={pickImage}
+                                >
+                                    <Text style={styles.uploadText}>
+                                        Choose Image to Upload
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <>
+                                    {/* Main Preview */}
 
-                                <Text style={styles.uploadSub}>
-                                    JPG/JPEG Format
-                                </Text>
-                            </TouchableOpacity>
+                                    <View style={styles.previewCard}>
+                                        <Image
+                                            source={{ uri: selectedImage?.uri }}
+                                            style={styles.previewImage}
+                                        />
+
+                                        <View style={styles.fileInfoRow}>
+                                            <View>
+                                                <Text style={styles.fileName}>
+                                                    {selectedImage?.fileName}
+                                                </Text>
+
+                                                <Text style={styles.fileSize}>
+                                                    {(
+                                                        (selectedImage?.fileSize || 0) /
+                                                        1024
+                                                    ).toFixed(0)}{" "}
+                                                    KB
+                                                </Text>
+                                            </View>
+
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    const index =
+                                                        attachments.findIndex(
+                                                            (item) =>
+                                                                item.uri ===
+                                                                selectedImage.uri
+                                                        );
+
+                                                    removeImage(index);
+                                                }}
+                                                style={styles.deleteBtn}
+                                            >
+                                                <Text
+                                                    style={{
+                                                        color: "#FF4D4F",
+                                                        fontSize: 20,
+                                                    }}
+                                                >
+                                                    ✕
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+                                    {/* Thumbnail List */}
+
+                                    <View style={styles.thumbnailRow}>
+                                        <ScrollView
+                                            horizontal
+                                            showsHorizontalScrollIndicator={
+                                                false
+                                            }
+                                        >
+                                            {attachments.map(
+                                                (item, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        onPress={() =>
+                                                            setSelectedImage(item)
+                                                        }
+                                                    >
+                                                        <Image
+                                                            source={{
+                                                                uri: item.uri,
+                                                            }}
+                                                            style={[
+                                                                styles.thumbImage,
+                                                                selectedImage?.uri ===
+                                                                item.uri && {
+                                                                    borderColor:
+                                                                        "#2D5BFF",
+                                                                    borderWidth: 2,
+                                                                },
+                                                            ]}
+                                                        />
+                                                    </TouchableOpacity>
+                                                )
+                                            )}
+                                        </ScrollView>
+
+                                        <TouchableOpacity
+                                            onPress={pickImage}
+                                        >
+                                            <Text style={styles.addMore}>
+                                                + Add more Files
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
                         </>
                     )}
 
@@ -1600,7 +1863,6 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                         style={[styles.iconBtn, styles.cloneBtn]}
                                         onPress={() => handleCloneRow(index)}
                                     >
-                                        {/* <Text style={styles.cloneIcon}>⧉</Text> */}
                                         <Image source={RepeatIcon} style={styles.cloneIcon} />
                                     </TouchableOpacity>
 
@@ -1629,6 +1891,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 style={styles.input}
                             />
 
+                            {errors[`itemDetail_${index}`] && (
+                                <ErrorMessage
+                                    message={errors[`itemDetail_${index}`]}
+                                    type="error"
+                                />
+                            )}
+
                             <View
                                 style={{
                                     flexDirection: "row",
@@ -1652,6 +1921,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                         placeholderTextColor="#9CA3AF"
                                         style={styles.input}
                                     />
+                                    {errors[`quantity_${index}`] && (
+                                        <ErrorMessage
+                                            message={errors[`quantity_${index}`]}
+                                            type="error"
+                                        />
+                                    )}
                                 </View>
 
                                 <View style={{ width: "48%" }}>
@@ -1671,6 +1946,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                         </Text>
                                         <Image source={DownArrow} style={styles.expensesArrowIcon} />
                                     </TouchableOpacity>
+
+
+                                    {errors.units && (
+                                        <ErrorMessage
+                                            message={errors.units}
+                                            type="error"
+                                        />
+                                    )}
 
                                     {unitsOpen && (
                                         <View style={styles.expensesDropdownMenu}>
@@ -1739,6 +2022,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 style={styles.input}
                             />
 
+                            {errors[`unitPrice_${index}`] && (
+                                <ErrorMessage
+                                    message={errors[`unitPrice_${index}`]}
+                                    type="error"
+                                />
+                            )}
+
                             <Text style={styles.label}>
                                 Amount
                             </Text>
@@ -1789,7 +2079,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 fontFamily: "Gilroy-Bold",
                                 color: "#111827",
                             }}>
-                                ₹ 1,600.00
+                                 ₹ {itemTotal.toFixed(2)}
                             </Text>
                         </View>
 
@@ -1803,8 +2093,16 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     </Text>
                                 </View>
                                 <View style={{ alignItems: "flex-end", }}>
-                                    <ValidatedInput
+                                    {/* <ValidatedInput
                                         type="amount"
+                                        placeholder="₹ 0.00"
+                                        style={styles.taxInput}
+                                    /> */}
+                                    <ValidatedInput
+                                        type="numberOnly"
+                                        inputType="numeric"
+                                        value={tax}
+                                        onChangeText={setTax}
                                         placeholder="₹ 0.00"
                                         style={styles.taxInput}
                                     />
@@ -1825,25 +2123,36 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.discountBtn,
+                                            discountType === "amount" &&
                                             styles.discountBtnActive,
                                         ]}
+                                        onPress={() => setDiscountType("amount")}
                                     >
-                                        <Text style={styles.discountBtnTextActive}>
-                                            ₹
-                                        </Text>
+                                        <Text  style={{color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
-                                        style={styles.discountBtn}
+                                        style={[
+                                            styles.discountBtn,
+                                            discountType === "percentage" &&
+                                            styles.discountBtnActive,
+                                        ]}
+                                        onPress={() => setDiscountType("percentage")}
                                     >
-                                        <Text style={styles.discountBtnText}>
-                                            %
-                                        </Text>
+                                        <Text style={{color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
                                     </TouchableOpacity>
                                 </View>
 
-                                <ValidatedInput
+                                {/* <ValidatedInput
                                     type="amount"
+                                    placeholder="₹ 0.00"
+                                    style={styles.discountInput}
+                                /> */}
+                                <ValidatedInput
+                                    type="numberOnly"
+                                    inputType="numeric"
+                                    value={discount}
+                                    onChangeText={setDiscount}
                                     placeholder="₹ 0.00"
                                     style={styles.discountInput}
                                 />
@@ -1854,9 +2163,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                             <Text style={styles.totalLabel}>
                                 TOTAL RETAINER AMOUNT
                             </Text>
-
                             <Text style={styles.totalValue}>
-                                ₹ 1,600.00
+                                 ₹ {grandTotal.toFixed(2)}
                             </Text>
                         </View>
                     </View>
@@ -2981,4 +3289,64 @@ const styles = StyleSheet.create({
         width: "85%",
         elevation: 10,
     },
+    previewCard: {
+        marginHorizontal: 16,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 14,
+        overflow: "hidden",
+        backgroundColor: "#FFF",
+    },
+
+    previewImage: {
+        width: "100%",
+        height: 220,
+        resizeMode: "cover",
+    },
+
+    fileInfoRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 12,
+    },
+
+    fileName: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    fileSize: {
+        color: "#6B7280",
+        marginTop: 4,
+    },
+
+    deleteBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 8,
+        backgroundColor: "#FFF1F0",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    thumbnailRow: {
+        marginTop: 12,
+        marginHorizontal: 16,
+    },
+
+    thumbImage: {
+        width: 90,
+        height: 70,
+        borderRadius: 8,
+        marginRight: 10,
+    },
+
+    addMore: {
+        color: "#2D5BFF",
+        marginTop: 10,
+        textAlign: "right",
+        fontFamily: "Gilroy-Semibold",
+    },
+
 });
