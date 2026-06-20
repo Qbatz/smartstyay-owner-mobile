@@ -3309,7 +3309,7 @@ export default function BillsDesign({ route }) {
                                   openRefundRent && { transform: [{ rotate: "180deg" }] },
                                 ]}
                               />
-                              <Text style={styles.refundTitle}>Refundable Rent</Text>
+                              <Text style={styles.refundTitle}>Payable Rent</Text>
                             </View>
 
                             <Text style={styles.refundAmount}>
@@ -4555,6 +4555,19 @@ export default function BillsDesign({ route }) {
                   </>
                 )}
 
+    <TouchableOpacity
+                      style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                      // disabled={!canUpdateInvoice}
+                      // style={styles.popupRow} 
+                      onPress={()=>{
+                        console.log("raatu")
+                        navigation.navigate("NewRetainerInvoiceSheet")}} >
+                      <Image
+                        source={require("../../../Assets/Images/Union.png")}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Adjust With Retainer</Text>
+                    </TouchableOpacity>
             
                     <View style={styles.menuDivider} />
 

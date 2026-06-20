@@ -90,6 +90,7 @@ import EditProfileSheet from "./Component/SettingScreen/GeneralPages/EditProfile
 import ExpensesList from "../src/Component/MorePages/Expenses/ExpensesList";
 import ExpensesDetails from "../src/Component/MorePages/Expenses/ExpensesDetails";
 import AddExpensesPage from "../src/Component/MorePages/Expenses/AddExpensesPage";
+import NewRecordPayment from "../src/Component/MorePages/Bills/NewRecordPayment"
 
 const SuccessFlow = (props) => {
 
@@ -158,6 +159,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="CreateBills" component={CreateBill} />
                     <Navigation.Screen name="BillsPdf" component={BillsPdfDesign} />
                     <Navigation.Screen name="NewRetainerInvoiceSheet" component={NewRetainerInvoiceSheet}/>
+                    <Navigation.Screen name="NewRecordPayment" component={NewRecordPayment}/>
 
                     <Navigation.Screen name="AssignTenant" component={AssignTenant} />
 

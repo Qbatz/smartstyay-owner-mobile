@@ -74,7 +74,7 @@ export default function AddBookingScreen({ navigation, route }) {
   const [datePickerPos, setDatePickerPos] = useState({ top: 0 });
   const [datePickerTop, setDatePickerTop] = useState(0);
 
-  const [isSubmitClicked,setIsSubmitClicked]=useState(false)
+  const [isSubmitClicked, setIsSubmitClicked] = useState(false)
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -151,8 +151,8 @@ export default function AddBookingScreen({ navigation, route }) {
       bed.floorId === selectedFloor.id &&
       bed.roomId === selectedRoom.id &&
       // bed.currentStatus === "VACANT"
-        (bed?.currentStatus === "VACANT" ||
-      bed?.currentStatus === "NOTICE")
+      (bed?.currentStatus === "VACANT" ||
+        bed?.currentStatus === "NOTICE")
     );
   });
   console.log("filteredBeds", filteredBeds)
@@ -219,7 +219,7 @@ export default function AddBookingScreen({ navigation, route }) {
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    if(isSubmitClicked) return;
+    if (isSubmitClicked) return;
 
     const payload = {
       bookingDate: bookingDate.format("DD-MM-YYYY"),
@@ -233,32 +233,32 @@ export default function AddBookingScreen({ navigation, route }) {
       referenceNumber: referenceNumber || "",
     };
 
-    try{
+    try {
 
       setIsSubmitClicked(true)
-    const res = await bookCustomer(activeHostelId, payload);
+      const res = await bookCustomer(activeHostelId, payload);
 
-    if (res?.success) {
+      if (res?.success) {
 
-      setModalType("success");
-      setMessage(res?.data);
-      setShowSuccess(true);
-   
-      setTimeout(() => {
-        navigation.goBack();
-        setShowSuccess(false);
-        setIsSubmitClicked(false)
-      }, 1500);
-    } else {
-      setModalType("error");
-      setMessage(res?.message || "Booking failed");
-      setShowSuccess(true);
-       setTimeout(() => {
-        setShowSuccess(false);
-        setIsSubmitClicked(false)
-      }, 1500);
-    }
-    }catch(error){
+        setModalType("success");
+        setMessage(res?.data);
+        setShowSuccess(true);
+
+        setTimeout(() => {
+          navigation.goBack();
+          setShowSuccess(false);
+          setIsSubmitClicked(false)
+        }, 1500);
+      } else {
+        setModalType("error");
+        setMessage(res?.message || "Booking failed");
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsSubmitClicked(false)
+        }, 1500);
+      }
+    } catch (error) {
       console.log(error)
       setIsSubmitClicked(false)
     }
@@ -302,15 +302,15 @@ export default function AddBookingScreen({ navigation, route }) {
 
             <View>
               <Text style={styles.userName}>
-              {selectedItem?.fullName}
-            </Text>
+                {selectedItem?.fullName}
+              </Text>
 
-            <Text style={{marginTop:4,fontFamily:'Gilroy-Medium',fontSize:14,color:'#4B4B4B'}}>
-              +{selectedItem?.countryCode}  {selectedItem?.mobile}
-            </Text>
+              <Text style={{ marginTop: 4, fontFamily: 'Gilroy-Medium', fontSize: 14, color: '#4B4B4B' }}>
+                +{selectedItem?.countryCode}  {selectedItem?.mobile}
+              </Text>
 
             </View>
-            
+
           </View>
 
 
@@ -421,11 +421,11 @@ export default function AddBookingScreen({ navigation, route }) {
                 style={styles.select}
                 // onPress={() => setFloorOpen(!floorOpen)}
                 onPress={() => {
-  setFloorOpen(!floorOpen);
-  setRoomOpen(false);
-  setBedOpen(false);
-  setAccountopen(false); 
-}}
+                  setFloorOpen(!floorOpen);
+                  setRoomOpen(false);
+                  setBedOpen(false);
+                  setAccountopen(false);
+                }}
                 activeOpacity={0.9}
               >
                 <Text style={styles.selectText}>
@@ -436,34 +436,34 @@ export default function AddBookingScreen({ navigation, route }) {
 
               {floorOpen && (
                 <View style={styles.dropdownMenu}>
-                  <ScrollView style={{ maxHeight: 160 }}   nestedScrollEnabled={true}
-  showsVerticalScrollIndicator={true}>
+                  <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}>
 
-{floors?.length === 0 ? (
-  <View style={{ padding: 12 }}>
-    <Text style={{ color: "#999", textAlign: "center" }}>
-      No Floors Available
-    </Text>
-  </View>
-) : 
-                  (floors.map((v) => (
+                    {floors?.length === 0 ? (
+                      <View style={{ padding: 12 }}>
+                        <Text style={{ color: "#999", textAlign: "center" }}>
+                          No Floors Available
+                        </Text>
+                      </View>
+                    ) :
+                      (floors.map((v) => (
 
-                      <TouchableOpacity
-                        key={v.id}
-                        style={[styles.option, selectedFloor?.id === v.id && { backgroundColor: "#E6F0FF" }]}
-                        onPress={() => {
-                          setSelectedFloor(v);
-                          setFloorOpen(false);
-                          setSelectedRoom(null);
-                          setSelectedBed(null);
-                          setRooms([]);
-                          loadRooms(v.id);
-                          setFloorError("")
-                        }}
-                      >
-                        <Text style={styles.optionText}>{v.name}</Text>
-                      </TouchableOpacity>
-                    )))}
+                        <TouchableOpacity
+                          key={v.id}
+                          style={[styles.option, selectedFloor?.id === v.id && { backgroundColor: "#E6F0FF" }]}
+                          onPress={() => {
+                            setSelectedFloor(v);
+                            setFloorOpen(false);
+                            setSelectedRoom(null);
+                            setSelectedBed(null);
+                            setRooms([]);
+                            loadRooms(v.id);
+                            setFloorError("")
+                          }}
+                        >
+                          <Text style={styles.optionText}>{v.name}</Text>
+                        </TouchableOpacity>
+                      )))}
                   </ScrollView>
                 </View>
               )}
@@ -477,82 +477,82 @@ export default function AddBookingScreen({ navigation, route }) {
                 style={styles.select}
                 // onPress={() => setRoomOpen(!roomOpen)}
                 onPress={() => {
-  setFloorOpen(false);
-  setRoomOpen(!roomOpen);
-  setBedOpen(false);
-  setAccountopen(false);
-}}
+                  setFloorOpen(false);
+                  setRoomOpen(!roomOpen);
+                  setBedOpen(false);
+                  setAccountopen(false);
+                }}
                 activeOpacity={0.9}
-                // disabled={!rooms.length}
+              // disabled={!rooms.length}
               >
                 <Text style={styles.selectText}>
                   {selectedRoom ? selectedRoom.name : "Select a Room"}
                 </Text>
                 <Image source={DownArrow} style={styles.arrow} />
               </TouchableOpacity>
-{roomOpen && (
-  <View style={styles.dropdownMenu}>
-    <ScrollView style={{ maxHeight: 160 }}   nestedScrollEnabled={true}
-  showsVerticalScrollIndicator={true}>
-      {rooms.length === 0 ? (
-        <View style={{ padding: 12 }}>
-          <Text style={{ color: "#999", textAlign: "center" }}>
-            No Rooms Available
-          </Text>
-        </View>
+              {roomOpen && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}>
+                    {rooms.length === 0 ? (
+                      <View style={{ padding: 12 }}>
+                        <Text style={{ color: "#999", textAlign: "center" }}>
+                          No Rooms Available
+                        </Text>
+                      </View>
 
-      ) : (
-        rooms.map((r) => (
-          <TouchableOpacity
-            key={r.id}
-            style={[
-              styles.option,
-              selectedRoom?.id === r.id && { backgroundColor: "#E6F0FF" }
-            ]}
-            onPress={() => {
-              setSelectedRoom(r);
-              setRoomOpen(false);
-              setRoomError("");
-            }}
-          >
-            {/* <Text style={styles.optionText}>{r.name}</Text> */}
-            <View
-  style={{
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  }}
->
-  <Text style={styles.optionText}>
-    {r.name}
-  </Text>
+                    ) : (
+                      rooms.map((r) => (
+                        <TouchableOpacity
+                          key={r.id}
+                          style={[
+                            styles.option,
+                            selectedRoom?.id === r.id && { backgroundColor: "#E6F0FF" }
+                          ]}
+                          onPress={() => {
+                            setSelectedRoom(r);
+                            setRoomOpen(false);
+                            setRoomError("");
+                          }}
+                        >
+                          {/* <Text style={styles.optionText}>{r.name}</Text> */}
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={styles.optionText}>
+                              {r.name}
+                            </Text>
 
-  <View
-    style={{
-      backgroundColor: "#dee3f2",
-      borderRadius: 10,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-    }}
-  >
-    <Text style={styles.optionText}>
-      {r?.sharingType}
-    </Text>
-  </View>
-</View>
-          </TouchableOpacity>
-        ))
-      )}
-    </ScrollView>
-  </View>
-)}
-              </View>
+                            <View
+                              style={{
+                                backgroundColor: "#dee3f2",
+                                borderRadius: 10,
+                                paddingHorizontal: 8,
+                                paddingVertical: 3,
+                              }}
+                            >
+                              <Text style={styles.optionText}>
+                                {r?.sharingType}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
 
 
-            
-          
-              
-            
+
+
+
+
             {roomError && <ErrorMessage message={roomError} type="error" />}
             <Text style={styles.label}>Bed <Text style={styles.star}>*</Text></Text>
 
@@ -561,13 +561,13 @@ export default function AddBookingScreen({ navigation, route }) {
                 style={styles.select}
                 // onPress={() => setBedOpen(!bedOpen)}
                 onPress={() => {
-  setFloorOpen(false);
-  setRoomOpen(false);
-  setBedOpen(!bedOpen);
-  setAccountopen(false);
-}}
+                  setFloorOpen(false);
+                  setRoomOpen(false);
+                  setBedOpen(!bedOpen);
+                  setAccountopen(false);
+                }}
                 activeOpacity={0.9}
-                // disabled={!filteredBeds.length}
+              // disabled={!filteredBeds.length}
               >
                 <Text style={styles.selectText}>
                   {selectedBed ? selectedBed.bedName : "Select a Bed"}
@@ -576,54 +576,54 @@ export default function AddBookingScreen({ navigation, route }) {
                 <Image source={DownArrow} style={styles.arrow} />
               </TouchableOpacity>
 
-            {bedOpen && (
-  <View style={styles.dropdownMenu}>
-    <ScrollView style={{ maxHeight: 160 }}   nestedScrollEnabled={true}
-  showsVerticalScrollIndicator={true}>
-      {filteredBeds.length === 0 ? (
-        <View style={{ padding: 12 }}>
-          <Text style={{ color: "#999", textAlign: "center" }}>
-            No Beds Available
-          </Text>
-        </View>
-      ) : (
-                    filteredBeds.map((b) => (
-                      <TouchableOpacity
-                        key={b.bedId}
-                        style={[styles.option,selectedBed?.bedId === b.bedId && { backgroundColor: "#E6F0FF" }]}
-                        onPress={() => {
-                          setSelectedBed(b);
-                          setBedOpen(false);
-                          setBedError("")
-
-                        }}
-                      >
-                        <Text style={styles.optionText}>
-                          {b.bedName}
+              {bedOpen && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}>
+                    {filteredBeds.length === 0 ? (
+                      <View style={{ padding: 12 }}>
+                        <Text style={{ color: "#999", textAlign: "center" }}>
+                          No Beds Available
                         </Text>
-                      </TouchableOpacity>
-                    )))}
+                      </View>
+                    ) : (
+                      filteredBeds.map((b) => (
+                        <TouchableOpacity
+                          key={b.bedId}
+                          style={[styles.option, selectedBed?.bedId === b.bedId && { backgroundColor: "#E6F0FF" }]}
+                          onPress={() => {
+                            setSelectedBed(b);
+                            setBedOpen(false);
+                            setBedError("")
+
+                          }}
+                        >
+                          <Text style={styles.optionText}>
+                            {b.bedName}
+                          </Text>
+                        </TouchableOpacity>
+                      )))}
                   </ScrollView>
                 </View>
               )}
             </View>
             {bedError && <ErrorMessage message={bedError} type="error" />}
-                            {selectedBed?.shouldShowError && (
-  <ErrorMessage
-    message={selectedBed.errorMessage}
-    type="error"
-  />
-)}
+            {selectedBed?.shouldShowError && (
+              <ErrorMessage
+                message={selectedBed.errorMessage}
+                type="error"
+              />
+            )}
             <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
             <View style={{ position: "relative" }}>
               <TouchableOpacity
                 // onPress={() => setAccountopen(!accountOpen)}
                 onPress={() => {
-  setAccountopen(!accountOpen);
-  setFloorOpen(false);
-  setRoomOpen(false);
-  setBedOpen(false);
-}}
+                  setAccountopen(!accountOpen);
+                  setFloorOpen(false);
+                  setRoomOpen(false);
+                  setBedOpen(false);
+                }}
                 style={styles.inputBox}
               >
 
@@ -660,7 +660,10 @@ export default function AddBookingScreen({ navigation, route }) {
             <TextInput
               placeholder="Enter Transaction Id"
               placeholderTextColor="#999"
-              onChangeText={setReferenceNumber}
+              onChangeText={(text) => {
+                const filtered = text.replace(/[^A-Za-z0-9./#@!^&*() ]/g, "");
+                setReferenceNumber(text)
+              }}
               value={referenceNumber}
               style={styles.inputBox}
             />
@@ -772,7 +775,7 @@ const styles = StyleSheet.create({
     // textAlign: "center",
     marginLeft: 10,
     fontSize: 18,
-   fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
@@ -783,9 +786,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   userImg: { width: 50, height: 50, borderRadius: 25 },
-  userName: { marginLeft: 12, fontSize: 16, fontFamily: "Gilroy-Semibold"  },
+  userName: { marginLeft: 12, fontSize: 16, fontFamily: "Gilroy-Semibold" },
 
-  label: { fontSize: 14,fontFamily: "Gilroy-Semibold" , marginBottom: 6, marginTop: 12 },
+  label: { fontSize: 14, fontFamily: "Gilroy-Semibold", marginBottom: 6, marginTop: 12 },
 
   inputBox: {
     borderColor: "#e1e1e1",
@@ -839,7 +842,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E45E1",
     marginLeft: 10,
   },
-  bookText: { color: "#fff", fontSize: 15,fontFamily: "Gilroy-Semibold"  },
+  bookText: { color: "#fff", fontSize: 15, fontFamily: "Gilroy-Semibold" },
   star: {
     color: "red",
   },
@@ -945,7 +948,7 @@ const styles = StyleSheet.create({
   initialText: {
     color: "#374151",
     fontSize: 18,
-  fontFamily: "Gilroy-Bold"
+    fontFamily: "Gilroy-Bold"
   },
 
 
