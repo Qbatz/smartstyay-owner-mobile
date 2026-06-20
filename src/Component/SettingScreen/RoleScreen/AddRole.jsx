@@ -283,6 +283,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
       hostelId: activeHostelId,
       roleName: selectedRole,
       permissionList,
+      description: description,
     };
 
     console.log(payload)
@@ -369,7 +370,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
               multiline
               value={description}
               onChangeText={(text) => {
-                const filtered = text.replace(/[^A-Za-z0-9./#@!^&*()]/g, "");
+                const filtered = text.replace(/[^A-Za-z0-9./#@!^&*() ]/g, "");
                 setDescription(filtered);
                 // if (text.trim()) {
                 //   setRoleError("");

@@ -91,6 +91,8 @@ export default function BillsApplyInvoices() {
 
     const [appliedAmounts, setAppliedAmounts] = useState({});
 
+    const [showAmountField, setShowAmountField]=useState(false)
+
     const bookingData = InitializebookingBills?.data;
 
     // const customer = InitializebookingBills?.customerInfo || {};
@@ -521,7 +523,8 @@ export default function BillsApplyInvoices() {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Apply Booking to Invoice</Text>
+                    {/* <Text style={styles.headerTitle}>Apply Booking to Invoice</Text> */}
+                    <Text style={styles.headerTitle}>Adjust with Retainer Invoice</Text>
                 </View>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
@@ -574,10 +577,19 @@ export default function BillsApplyInvoices() {
 
                             {/* BOOKING AMOUNT */}
                             <View style={styles.bookingRowInside}>
-                                <Text style={styles.bookingLabel}>Booking Amount</Text>
+                                <Text style={styles.bookingLabel}>Invoice Amount</Text>
                                 <Text style={styles.bookingAmount}>
                                     ₹ {advanceInfo?.availableBalance || 0}
                                 </Text>
+                            </View>
+
+                            <View style={{flexDirection:'row',alignItems:'center',alignSelf:'flex-end',marginTop:5}}>
+                                <Text style={{backgroundColor:'#FFEFCF',fontSize:12,fontFamily:'Gilroy-Medium',borderRadius:8,
+                                                paddingHorizontal:8,paddingVertical:4,marginRight:5}}>
+                                    Rental Inv</Text>
+
+                                <Text style={{fontSize:13,fontFamily:'Gilroy-Medium',color:'#1E45E1',marginLeft:4}}>
+                                    {advanceInfo?.invoiceNumber}</Text>
                             </View>
 
                         </View>
@@ -586,7 +598,10 @@ export default function BillsApplyInvoices() {
 
                         {/* Invoice Card */}
                         <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>Unpaid Invoices</Text>
+                            <Text style={styles.sectionTitle}>Retainer Invoices</Text>
+
+                            <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#4B4B4B',marginTop:4}}>
+                                Select Retainer Balance to adjust with Bills</Text>
 
                             {invoicesList.map((item, index) => (
                                 <View key={item?.invoiceId || index} style={styles.innerCard}>
@@ -609,7 +624,7 @@ export default function BillsApplyInvoices() {
                                         </Text>
                                     </View>
 
-                                    <View style={styles.rowBetween}>
+                                    {/* <View style={styles.rowBetween}>
                                         <Text style={styles.label}>Due Date</Text>
                                         <Text style={styles.valueText}>
                                             {item?.dueDate || "--"}
@@ -621,9 +636,14 @@ export default function BillsApplyInvoices() {
                                         <Text style={styles.valueText}>
                                             {"--"}
                                         </Text>
-                                    </View>
+                                    </View> */}
+
+                                    <View style={{borderWidth:0.8,borderColor:'#F2F2F2',marginVertical:8}}/>
 
                                     {/* Input */}
+
+                                    {showAmountField ? ( 
+                                        <>
                                     <Text style={styles.inputLabel}>
                                         Amount to apply
                                     </Text>
@@ -714,6 +734,12 @@ export default function BillsApplyInvoices() {
                                             <Text style={{ color: "#1E45E1" }}>Set</Text>
                                         </TouchableOpacity>
                                     </View>
+                                    </>
+                                    ) : <TouchableOpacity onPress={()=>setShowAmountField(true)}>
+                                        <Text>Retain</Text>
+                                    </TouchableOpacity>}
+
+                                    
 
                                 </View>
                             ))}
@@ -728,7 +754,7 @@ export default function BillsApplyInvoices() {
                         {/* Summary */}
                         <View style={styles.summary}>
                             <View style={styles.rowBetween}>
-                                <Text style={{ fontFamily: "Gilroy-Medium" }}>Amount Applied ({BillPdfdetails?.invoiceNumber})</Text>
+                                <Text style={{ fontFamily: "Gilroy-Medium" }}>Amount Applied </Text>
                                 <Text style={{ fontFamily: "Gilroy-Bold" }}> ₹ {totalApplied.toFixed(2)}</Text>
                             </View>
 

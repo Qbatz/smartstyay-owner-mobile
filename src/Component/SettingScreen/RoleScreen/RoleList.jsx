@@ -232,7 +232,7 @@ const getPermissionCount = (role) => {
   {getPermissionCount(item)} Permissions Selected
 </Text>
 
-      <Text style={styles.desc}>{item.desc}</Text>
+      <Text style={styles.desc}>{item.description}</Text>
     </View>
 
    
