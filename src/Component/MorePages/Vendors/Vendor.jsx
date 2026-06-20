@@ -48,7 +48,7 @@ const CARD_WIDTH = width * 0.44
 export default function Vendors({ navigation }) {
 
     const {
-      getVendorDetails  , vendorDetails
+      getVendorDetails  , vendorDetails , clearVendorDetails
     } = useContext(VendorContext);
 
     const { vendorList, loading, getVendorList, deleteVendor , } = useContext(CustomerContext);;
@@ -245,6 +245,7 @@ export default function Vendors({ navigation }) {
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
+        clearVendorDetails(); 
          navigation.navigate("AddVendorPage", {
     //   vendor: item,
     })

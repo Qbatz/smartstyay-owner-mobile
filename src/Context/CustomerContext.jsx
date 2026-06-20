@@ -919,7 +919,7 @@ const addVendor = async (payloads, profilePic = null) => {
     setLoading(false);
   }
 };
-const updateVendor = async (vendorId, payloads, profilePic = null) => {
+const updateVendor = async (vendorId, updateVendor, profilePic = null) => {
   try {
     setLoading(true);
     setErrorMsg("");
@@ -931,7 +931,7 @@ const updateVendor = async (vendorId, payloads, profilePic = null) => {
 
     // ✅ payload JSON
     formData.append("updateVendor", {
-      string: JSON.stringify(payloads),
+      string: JSON.stringify(updateVendor),
       type: "application/json",
       name: "blob",
     });

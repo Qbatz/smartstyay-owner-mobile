@@ -1,13 +1,19 @@
-import React from "react";
+import React , {useState , useEffect , useContext} from "react";
 import {
   FlatList,
   View,
   Text,
   StyleSheet,Image
 } from "react-native";
-
+import { VendorContext } from "../../../Context/VendorContext";
+import { useHasPermission } from "../../../Utils/useHasPermission"
+import { CustomerContext } from "../../../Context/CustomerContext"
+import { CommonContexts } from "../../../Context/CommonContext";
+import Loader from "../../../Component/Loader/Loader"
+import SuccessModal from "../../../ToastFile/ToastPage";
 // import MobileIcon from "../../../Assets/Images/mobile.png";
 import ExpensesIcon from "../../../Assets/Images/direct-right.png";
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
 const DATA = [
   {
@@ -35,40 +41,109 @@ const DATA = [
   },
 ];
 
-export default function VendorTransactions() {
+export default function VendorTransactions({vendor ,}) {
+  
+   
+
+
+     const {
+    getVendorExpenses,
+    vendorExpenses,
+    getVendorExpensePayments,
+    vendorExpensePayments,loading
+  } = useContext(VendorContext);
+  
+  useEffect(() => {
+    // getVendorExpenses(vendor?.id);
+    getVendorExpensePayments(vendor?.id);
+  }, [])
+
+  console.log("vendorExpensePayments", vendorExpensePayments);
+
   return (
-    <FlatList
-      data={DATA}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <View style={styles.card}>
-           <View style={styles.iconCircle}>
-                   <Image source={ExpensesIcon} style={{ height: 24, width: 24 }} />
-                 </View>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>
-              {item.type}
-            </Text>
+    <>
+ {/* {loading && <Loader />} */}
 
-            <Text style={styles.status}>
-              ✓ {item.status}
-              {item.txn ? ` • ${item.txn}` : ""}
-            </Text>
-          </View>
+   <FlatList
+  data={vendorExpensePayments?.payments || []}
+  keyExtractor={(item) => item.id?.toString()}
+  renderItem={({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.iconCircle}>
+        <Image
+          source={ExpensesIcon}
+          style={{ height: 24, width: 24 }}
+        />
+      </View>
 
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.amount}>
-              {item.amount}
-            </Text>
+      <View
+        style={{
+          flex: 1,
+          marginLeft: 12,
+        }}
+      >
+        <Text style={styles.title}>
+          {item?.paymentMethod || "Payment"}
+        </Text>
 
-            <Text style={styles.date}>
-              {item.date}
-            </Text>
-          </View>
-        </View>
-      )}
+        <Text style={styles.status}>
+          ✓ Paid
+          {item?.transactionId
+            ? ` • ${item.transactionId}`
+            : ""}
+        </Text>
+
+        {!!item?.notes && (
+          <Text
+            style={{
+              color: "#6B7280",
+              marginTop: 4,
+              fontSize: 12,
+            }}
+          >
+            {item.notes}
+          </Text>
+        )}
+      </View>
+
+      <View
+        style={{
+          alignItems: "flex-end",
+        }}
+      >
+        <Text style={styles.amount}>
+          ₹{" "}
+          {Number(
+            item?.paidAmount || 0
+          ).toLocaleString()}
+        </Text>
+
+        <Text style={styles.date}>
+          {item?.paymentDate}
+        </Text>
+      </View>
+    </View>
+  )}
+  ListEmptyComponent={
+<View style={styles.emptyContainer}>
+    <Image
+      source={EmptyState}
+      style={styles.emptyIcon}
+      resizeMode="contain"
     />
+
+    <Text style={styles.emptyTitle}>
+      No Transaction
+    </Text>
+
+    <Text style={styles.emptySubTitle}>
+      No Transaction have been added yet.
+    </Text>
+  </View>
+  }
+/>
+</>
   );
 }
 
@@ -119,4 +194,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+   emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+  marginTop: 20,
+},
+
+emptyIcon: {
+  width: 200,
+  height: 100,
+  // opacity: 0.5,
+},
+
+emptyTitle: {
+  marginTop: 4,
+  fontSize: 18,
+  color: "#111827",
+  fontFamily: "Gilroy-Bold",
+},
+
+emptySubTitle: {
+  marginTop: 6,
+  fontSize: 14,
+  color: "#6B7280",
+  textAlign: "center",
+},
 });

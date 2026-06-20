@@ -10,39 +10,41 @@ import {
 
 
 import CommentIcon from "../../../Assets/Images/chat-notification.png"
+import EmptyState from "../../../Assets/Images/Empty_state.png"
 
-
-const COMMENTS = [
-  {
-    id: "1",
-    title: "Payment Follow-up",
-    description:
-      "Vendor informed that payment will be cleared next week.",
-    date: "24 Oct 2025, 11:00 AM",
-  },
-  {
-    id: "2",
-    title: "Purchase Discussion",
-    description:
-      "Discussed electrical material requirements for next month.",
-    date: "24 Oct 2025, 10:00 AM",
-  },
-  {
-    id: "3",
-    title: "Vendor Added",
-    description:
-      "Vendor profile created successfully.",
-    date: "24 Oct 2025, 08:00 AM",
-  },
-];
+// const COMMENTS = [
+//   {
+//     id: "1",
+//     title: "Payment Follow-up",
+//     description:
+//       "Vendor informed that payment will be cleared next week.",
+//     date: "24 Oct 2025, 11:00 AM",
+//   },
+//   {
+//     id: "2",
+//     title: "Purchase Discussion",
+//     description:
+//       "Discussed electrical material requirements for next month.",
+//     date: "24 Oct 2025, 10:00 AM",
+//   },
+//   {
+//     id: "3",
+//     title: "Vendor Added",
+//     description:
+//       "Vendor profile created successfully.",
+//     date: "24 Oct 2025, 08:00 AM",
+//   },
+// ];
 
 export default function VendorComments() {
   const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
 
   const renderItem = ({ item, index }) => (
     <View style={styles.timelineRow}>
       <View style={styles.leftSection}>
         <View style={styles.iconCircle}>
+
         <Image
   source={CommentIcon}
   style={{ height: 20, width: 20 }}
@@ -50,7 +52,7 @@ export default function VendorComments() {
 />
         </View>
 
-        {index !== COMMENTS.length - 1 && (
+        {index !== comments.length - 1 && (
           <View style={styles.line} />
         )}
       </View>
@@ -106,17 +108,34 @@ export default function VendorComments() {
       </View>
 
       {/* Timeline */}
+{comments?.length > 0 ? (
+  <FlatList
+    data={comments}
+    keyExtractor={(item) => item.id}
+    renderItem={renderItem}
+    contentContainerStyle={{
+      paddingHorizontal: 16,
+      paddingBottom: 80,
+    }}
+    showsVerticalScrollIndicator={false}
+  />
+) : (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={EmptyState}
+      style={styles.emptyIcon}
+      resizeMode="contain"
+    />
 
-      <FlatList
-        data={COMMENTS}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 80,
-        }}
-        showsVerticalScrollIndicator={false}
-      />
+    <Text style={styles.emptyTitle}>
+      No Comments
+    </Text>
+
+    <Text style={styles.emptySubTitle}>
+      No comments have been added yet.
+    </Text>
+  </View>
+)}
     </View>
   );
 }
@@ -233,4 +252,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+  marginTop: 20,
+},
+
+emptyIcon: {
+  width: 200,
+  height: 100,
+  // opacity: 0.5,
+},
+
+emptyTitle: {
+  marginTop: 4,
+  fontSize: 18,
+  color: "#111827",
+  fontFamily: "Gilroy-Bold",
+},
+
+emptySubTitle: {
+  marginTop: 6,
+  fontSize: 14,
+  color: "#6B7280",
+  textAlign: "center",
+},
 });
