@@ -4057,8 +4057,7 @@ export default function BillsDesign({ route }) {
                         <View style={styles.bottomActionItem}>
                           <TouchableOpacity
                             style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
-                            // onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
-                            onPress={()=>navigation.navigate("NewRecordPayment")}
+                            onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
                           >
                             <Image source={PlusIcon} style={styles.iconWhite} />
                           </TouchableOpacity>
