@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext , useEffect} from "react";
 import {
   View,
   Text,
@@ -53,6 +53,16 @@ export default function VendorDetails({ route, navigation }) {
 
   console.log("vendorDetails", vendorDetails);
 
+  useEffect(() => {
+  const unsubscribe = navigation.addListener("focus", () => {
+    if (vendor?.id) {
+      getVendorDetails(vendor?.id);
+    }
+  });
+
+  return unsubscribe; // cleanup
+}, [navigation, vendor?.id]);
+
   const handleEdit = async (vendor) => {
     console.log("vendor", vendor);
 
@@ -72,10 +82,13 @@ export default function VendorDetails({ route, navigation }) {
       return;
     }
     const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
+
+    console.log("vendordelete", res);
+    
     setDeletePopup(false)
     if (res?.success) {
       setModalType("success");
-      setModalMessage(res.message);
+      setModalMessage(res?.message);
       setShowSuccessModal(true);
      
       setTimeout(() => {
@@ -97,9 +110,12 @@ export default function VendorDetails({ route, navigation }) {
   }
 
    const handlesettlePayment = async () => {
+    console.log("vendordetails", vendorDetails);
+    
      const res = await   getVendorSettlementInitialize(activeHostelId, vendor?.id)
     navigation.navigate("VendorSettlePayment", {
-              vendorDetails,    
+              type: "vendor",
+              vendor : vendorDetails,    
             })
   
    }
@@ -205,7 +221,7 @@ export default function VendorDetails({ route, navigation }) {
               </Text>
 
               <Text style={styles.statValue}>
-                ₹{vendor?.totalPaidAmount || 0}
+                ₹{vendorDetails?.summary?.totalPaid || 0}
               </Text>
             </View>
 
@@ -215,7 +231,7 @@ export default function VendorDetails({ route, navigation }) {
               </Text>
 
               <Text style={styles.statValue}>
-               ₹{vendor?.totalExpenseAmount || 0}
+               ₹{vendorDetails?.summary?.expenseCount || 0}
               </Text>
             </View>
 
@@ -230,7 +246,7 @@ export default function VendorDetails({ route, navigation }) {
                   { color: "#F97316" },
                 ]}
               >
-               ₹{vendor?.totalBalance || 0}
+               ₹{vendorDetails?.summary?.outstanding || 0}
               </Text>
             </View>
 

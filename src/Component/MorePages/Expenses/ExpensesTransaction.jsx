@@ -10,71 +10,52 @@ import { useNavigation } from "@react-navigation/native";
 import ExpensesIcon from "../../../Assets/Images/direct-right.png";
 import SettleIcon from "../../../Assets/Images/SettleIcon.png";
 
-const DATA = [
-  {
-    id: "1",
-    type: "CASH",
-    amount: "₹12,530",
-    status: "Paid",
-    date: "17 Feb 2025",
-  },
-  {
-    id: "2",
-    type: "UPI",
-    amount: "₹330",
-    status: "Paid",
-    date: "30 Dec 2025",
-    txn: "TNX897554",
-  },
-  {
-    id: "3",
-    type: "UPI",
-    amount: "₹330",
-    status: "Paid",
-    date: "17 Nov 2025",
-    txn: "TNX898794",
-  },
-];
 
-export default function ExpensesTransactions() {
+export default function ExpensesTransactions({expense}) {
 
     const navigation = useNavigation();
+     const payments = expense?.expensePayments || [];
   return (
-   <FlatList
-  data={DATA}
-  keyExtractor={(item) => item.id}
-  ListHeaderComponent={() => (
-    <View style={styles.settlementCard}>
-     <View style={styles.settlementHeader}>
-  <Image
-    source={SettleIcon}
-    style={styles.settlementIcon}
-  />
+  <FlatList
+  data={payments}
+  keyExtractor={(item) => item?.id?.toString()}
+  ListHeaderComponent={
+    expense?.balanceAmount > 0 ? (
+      <View style={styles.settlementCard}>
+        <View style={styles.settlementHeader}>
+          <Image
+            source={SettleIcon}
+            style={styles.settlementIcon}
+          />
 
-  <Text style={styles.settlementTitle}>
-    Complete Settlement
-  </Text>
-</View>
+          <Text style={styles.settlementTitle}>
+            Complete Settlement
+          </Text>
+        </View>
 
-<Text style={styles.settlementSubTitle}>
-  Remain the payment settlement Due ₹ 1,200
-</Text>
-
-      <TouchableOpacity
-        style={styles.settlementBtn}
-               onPress={() => navigation.navigate("VendorSettlePayment", {
-      // vendor,
-    })
-  }
-      >
-        <Text style={styles.settlementBtnText}>
-          Settle Payment
+        <Text style={styles.settlementSubTitle}>
+          Remaining payment settlement Due ₹{" "}
+          {Number(expense?.balanceAmount || 0).toLocaleString("en-IN")}
         </Text>
 
-        <Text style={styles.arrowText}>→</Text>
-      </TouchableOpacity>
-    </View>
-  )}
+        <TouchableOpacity
+          style={styles.settlementBtn}
+          onPress={() =>
+            navigation.navigate("VendorSettlePayment", {
+              type: "expense",
+              expense,
+            })
+          }
+        >
+          <Text style={styles.settlementBtnText}>
+            Settle Payment
+          </Text>
+
+          <Text style={styles.arrowText}>→</Text>
+        </TouchableOpacity>
+      </View>
+    ) : null
+  }
   renderItem={({ item }) => (
     <View style={styles.card}>
       <View style={styles.iconCircle}>
@@ -86,22 +67,24 @@ export default function ExpensesTransactions() {
 
       <View style={{ flex: 1, marginLeft: 14 }}>
         <Text style={styles.title}>
-          {item.type}
+          {item.paymentMethodName || "Payment"}
         </Text>
 
         <Text style={styles.status}>
-          ✓ {item.status}
-          {item.txn ? ` • ${item.txn}` : ""}
+          ✓ Paid
+          {item.transactionId
+            ? ` • ${item.transactionId}`
+            : ""}
         </Text>
       </View>
 
       <View style={{ alignItems: "flex-end" }}>
         <Text style={styles.amount}>
-          {item.amount}
+          ₹{Number(item.paidAmount || 0).toLocaleString("en-IN")}
         </Text>
 
         <Text style={styles.date}>
-          {item.date}
+          {item.paymentDate}
         </Text>
       </View>
     </View>

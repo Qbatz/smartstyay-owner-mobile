@@ -10,6 +10,7 @@ export default function ExpensesProvider({ children }) {
   const [rolePermission, setRolePermission] = useState(null);
    const [profileDetails, setProfileDetails] = useState(null);
    const [expenseUnits, setExpensesUnits] = useState([]);
+     const [expenseoverviewDetails, setExpenseOverviewDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -148,37 +149,72 @@ const GetExpenseList = async (hostelId) => {
   }
 };
 
-const AddExpense = async (payload,hostelId) => {
+const AddExpense = async (payload, hostelId) => {
   try {
     setLoading(true);
-    setError(null);
+
     const axios = getAxios();
-    const res = await axios.post(
-      `/v2/expense/${hostelId}`,
-      payload
-    );
-   console.log("response", res.status);
-   console.log("Addresponse",res)
-   
-    if (res?.status === 201) {
-      return { success: true, data: res.data };
+
+    const formData = new FormData();
+
+    
+
+    if (payload.images?.length) {
+      payload.images.forEach((img, index) => {
+        formData.append("images", {
+          uri: img.uri,
+          name: img.fileName || `image_${index}.jpg`,
+          type: img.type || "image/jpeg",
+        });
+      });
     }
 
-    return { success: false, message: "Something went wrong" };
+   formData.append(
+  "expense",
+  {
+    string: JSON.stringify(payload.expense),
+    type: "application/json",
+    name: "expense.json",
+  }
+);
+
+    const res = await axios.post(
+  `/v2/expense/${hostelId}`,
+  formData,
+  {
+    headers: {
+      Accept: "application/json",
+    },
+  }
+);
+
+    return {
+      success: true,
+      data: res.data,
+    };
   } catch (err) {
-    if (err?.response?.status === 400 || err?.response?.status === 403) {
-      console.log("error", err?.response?.status , err.response.data);
-      
-      return {
-        success: false,
-        message: err.response.data || "Insufficient fund",
-      };
-    }
-    return { success: false, message: "Network error" };
-  } finally {
+  console.log(
+    "STATUS =>",
+    err?.response?.status
+  );
+
+  console.log(
+    "DATA =>",
+    JSON.stringify(
+      err?.response?.data,
+      null,
+      2
+    )
+  );
+
+  console.log(
+    "HEADERS =>",
+    err?.response?.headers
+  );
+} finally {
     setLoading(false);
   }
-}
+};
 
 const GetInitializeExpense = async (hostelId) => {
   if (!hostelId) {
@@ -398,36 +434,7 @@ const DeleteExpense = async (hostelId, expenseId) => {
   }
 };
 
- const GetExpenseUnits = async () => {
-  try {
-    setLoading(true);
 
-    const axios = getAxios();
-    const res = await axios.get("/v2/expense/units");
-
-    if (res?.status === 200) {
-      setExpensesUnits(res?.data || []);
-      return {
-        success: true,
-        data: res?.data,
-      };
-    }
-
-    return { success: false };
-  } catch (err) {
-    console.log(
-      "Expense units Error:",
-      err?.response?.data || err
-    );
-
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
 
 const SettleExpense = async (expenseId, payload) => {
   try {
@@ -470,7 +477,37 @@ const SettleExpense = async (expenseId, payload) => {
   }
 };
 
+const GetExpenseById = async (hostelId, expenseId) => {
+  if (!hostelId || !expenseId) {
+    return { success: false, message: "hostelId or expenseId missing" };
+  }
 
+  try {
+    setLoading(true);
+    setError(null);
+
+    const axios = getAxios();
+    const res = await axios.get(`/v2/expense/${hostelId}/${expenseId}`);
+
+    if (res?.status === 200) {
+      setExpenseOverviewDetails(res?.data )
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Failed to fetch expense details" };
+  } catch (err) {
+    console.log("GET EXPENSE BY ID ERROR =>", err?.response?.data || err);
+    return {
+      success: false,
+      message:
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -483,6 +520,7 @@ const SettleExpense = async (expenseId, payload) => {
         rolePermission,
         profileDetails,
         expenseUnits,
+        expenseoverviewDetails,
         loading,
         error,
         fetchExpenses,
@@ -498,8 +536,9 @@ const SettleExpense = async (expenseId, payload) => {
         GetProfileDetails,
         UpdateExpense,
         DeleteExpense,
-        GetExpenseUnits,
+        
         SettleExpense,
+        GetExpenseById,
       }}
     >
       {children}
