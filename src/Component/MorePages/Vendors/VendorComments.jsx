@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect, useContext} from "react";
 import {
   View,
   Text,
@@ -8,11 +8,17 @@ import {
   FlatList,Image
 } from "react-native"
 
-
+import { VendorContext } from "../../../Context/VendorContext";
 import CommentIcon from "../../../Assets/Images/chat-notification.png"
 import EmptyState from "../../../Assets/Images/Empty_state.png"
+import { useHasPermission } from "../../../Utils/useHasPermission"
+import { CustomerContext } from "../../../Context/CustomerContext"
+import { CommonContexts } from "../../../Context/CommonContext";
+import AddCommentIcon from "../../../Assets/Images/CommentAddIcon.png"
 
 // const COMMENTS = [
+
+
 //   {
 //     id: "1",
 //     title: "Payment Follow-up",
@@ -36,42 +42,134 @@ import EmptyState from "../../../Assets/Images/Empty_state.png"
 //   },
 // ];
 
-export default function VendorComments() {
-  const [comment, setComment] = useState("");
+export default function VendorComments({vendor}) {
+
+
+  const [comment, setComment] = useState("")
   const [comments, setComments] = useState([]);
+   const { getVendorDetails, vendorDetails , getVendorSettlementInitialize ,
+    vendorComments, getVendorComments , updateVendorComment , 
+    addVendorComment , deleteVendorComment} = useContext(VendorContext);
+
+
+  const [editingCommentId, setEditingCommentId] = useState(null)
+
+
+  useEffect(() => {
+  if (vendor?.id) {
+    loadComments();
+  }
+}, [vendor?.id]);
+
+const loadComments = async () => {
+  const res = await getVendorComments(vendor?.id)
+  console.log(res);
+  
+
+  if (res?.success) {
+    console.log("comments loaded");
+  }
+};
+
+const handleDeleteComment = async (commentId) => {
+  const res = await deleteVendorComment(commentId);
+
+  if (res?.success) {
+    if (editingCommentId === commentId) {
+      setComment("");
+      setEditingCommentId(null);
+    }
+
+    await loadComments();
+  }
+};
+
+const handleSubmit = async () => {
+  if (!comment?.trim()) return;
+
+  let res;
+
+  if (editingCommentId) {
+    res = await updateVendorComment(
+      editingCommentId,
+      {
+        comment,
+      }
+    );
+  } else {
+    res = await addVendorComment({
+      vendorId: vendor?.id,
+      comment,
+    });
+  }
+
+  if (res?.success) {
+    setComment("");
+    setEditingCommentId(null);
+
+    await loadComments();
+  }
+};
 
   const renderItem = ({ item, index }) => (
-    <View style={styles.timelineRow}>
-      <View style={styles.leftSection}>
-        <View style={styles.iconCircle}>
-
+  <View style={styles.timelineRow}>
+    <View style={styles.leftSection}>
+      <View style={styles.iconCircle}>
         <Image
-  source={CommentIcon}
-  style={{ height: 20, width: 20 }}
-  resizeMode="contain"
-/>
-        </View>
-
-        {index !== comments.length - 1 && (
-          <View style={styles.line} />
-        )}
+          source={CommentIcon}
+          style={{
+            height: 20,
+            width: 20,
+          }}
+        />
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>
-          {item.title}
-        </Text>
-
-        <Text style={styles.description}>
-          {item.description}
-        </Text>
-
-        <Text style={styles.date}>
-          Added at {item.date}
-        </Text>
-      </View>
+      {index !== vendorComments?.length - 1 && (
+        <View style={styles.line} />
+      )}
     </View>
-  );
+
+    <View style={styles.content}>
+      <Text style={styles.description}>
+        {item.comment}
+      </Text>
+
+      <Text style={styles.date}>
+        Added at {item.createdAt}
+      </Text>
+
+ <View
+  style={{
+    flexDirection: "row",
+    marginTop: 10,
+  }}
+>
+  <TouchableOpacity
+    onPress={() => {
+      setComment(item.comment);
+      setEditingCommentId(item.id);
+    }}
+  >
+   <Image
+                  source={require("../../../Assets/Images/editIcon.png")}
+                  style={styles.menuIcon}
+                />
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={() =>
+      handleDeleteComment(item.id)
+    }
+  >
+   <Image
+                   source={require("../../../Assets/Images/trash.png")}
+                   style={styles.menuIcon}
+                 />
+  </TouchableOpacity>
+</View>
+    </View>
+  </View>
+);
 
   return (
     <View style={{ flex: 1 }}>
@@ -100,25 +198,30 @@ export default function VendorComments() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.addBtn}>
-          <Text style={styles.addText}>
-            ✈ Add
-          </Text>
+      <TouchableOpacity
+  style={styles.addBtn}
+  onPress={handleSubmit}
+>
+          <Image source={AddCommentIcon}   style={{ height: 16, width: 16 , marginRight:10 , marginTop:2}}
+    resizeMode="contain"/>
+         <Text style={styles.addText}>
+  {editingCommentId ? "Update" : "Add"}
+</Text>
         </TouchableOpacity>
       </View>
 
       {/* Timeline */}
-{comments?.length > 0 ? (
-  <FlatList
-    data={comments}
-    keyExtractor={(item) => item.id}
-    renderItem={renderItem}
-    contentContainerStyle={{
-      paddingHorizontal: 16,
-      paddingBottom: 80,
-    }}
-    showsVerticalScrollIndicator={false}
-  />
+{vendorComments?.length > 0 ? (
+<FlatList
+  data={vendorComments || []}
+  keyExtractor={(item) => String(item.id)}
+  renderItem={renderItem}
+  contentContainerStyle={{
+    paddingHorizontal: 16,
+    paddingBottom: 80,
+  }}
+  showsVerticalScrollIndicator={false}
+/>
 ) : (
   <View style={styles.emptyContainer}>
     <Image
@@ -182,6 +285,7 @@ const styles = StyleSheet.create({
   },
 
   addBtn: {
+  flexDirection:'row',
     marginTop: 14,
     alignSelf: "flex-end",
     backgroundColor: "#2D5BFF",
@@ -279,4 +383,9 @@ emptySubTitle: {
   color: "#6B7280",
   textAlign: "center",
 },
+menuIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
+  },
 });

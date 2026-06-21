@@ -8,7 +8,6 @@ import {
   TextInput,
   Image, TouchableWithoutFeedback
 } from "react-native";
-
 import ArrowLeft from "../../../Assets/Images/directionleft.png";
 import * as ImagePicker from "react-native-image-picker";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
@@ -23,21 +22,42 @@ import { useHasPermission } from "../../../Utils/useHasPermission"
 import { CustomerContext } from "../../../Context/CustomerContext"
 import { CommonContexts } from "../../../Context/CommonContext";
 import { VendorContext } from "../../../Context/VendorContext";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
 
 export default function VendorSettlePayment({
   navigation,
   route,
 }) {
-  const { vendor } = route.params;
+  // const { vendor } = route.params;
+  const { type, vendor, expense } = route.params;
 
-  const { getVendorDetails, vendorDetails, getVendorSettlementInitialize, vendorSettlementInitialize } = useContext(VendorContext)
+  const isVendorSettlement = type === "vendor";
+  const isExpenseSettlement = type === "expense";
+
+
+  const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
+  const { getVendorDetails, vendorDetails, getVendorSettlementInitialize, vendorSettlementInitialize, } = useContext(VendorContext)
   const { activeHostelId } = useContext(CommonContexts)
 
+  const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
+    DeleteExpense, expenseoverviewDetails, GetExpenseById,
+  } = useContext(ExpensesContext);
+
+
   console.log("vendor", vendor);
+  console.log("vendorSettlementInitialize", vendorSettlementInitialize);
+
+  // 1️⃣ State add பண்ணுங்க (top-ல் மற்ற states-உடன்)
+  const [vendorAppliedAmounts, setVendorAppliedAmounts] = useState({});
+
+  // 2️⃣ vendorExpensesPayload - handleSubmit-க்கு முன்னால் build பண்ணுங்க
+  const vendorExpensesPayload = vendorSettlementInitialize?.expenses?.map((exp) => ({
+    expenseId: String(exp.expenseId),
+    paidAmount: Number(vendorAppliedAmounts[exp.expenseId] || 0),
+  })) || [];
 
 
-
-  const dueAmount = vendorDetails?.summary?.outstanding
+  // const dueAmount = vendorDetails?.summary?.outstanding
 
   const [transactionId, setTransactionId] = useState("");
   const [paidAmount, setPaidAmount] = useState("");
@@ -67,11 +87,45 @@ export default function VendorSettlePayment({
   const [purchaseDate, setPurchaseDate] = useState(null);
   const [dateErr, setDateErr] = useState("");
 
+
+  useEffect(() => {
+
+    if (isVendorSettlement) {
+      getVendorSettlementInitialize(
+        activeHostelId,
+        vendor?.id
+      );
+    }
+
+    if (isExpenseSettlement) {
+      GetInitializeExpense(activeHostelId);
+    }
+
+  }, []);
+
+  // const paymentOptions =
+  //   vendorSettlementInitialize?.banks?.map((b) => ({
+  //     id: b?.bankId,
+  //     name: `${b?.holderName} - ${b?.bankName}`,
+  //   })) || [];
+
+
+  const initializeData = isVendorSettlement
+    ? vendorSettlementInitialize
+    : IntializeexpensesList;
+
   const paymentOptions =
-    vendorSettlementInitialize?.banks?.map((b) => ({
-      id: b?.bankId,
-      name: `${b?.holderName} - ${b?.bankName}`,
+    initializeData?.banks?.map((b) => ({
+      id: b.bankId,
+      name: `${b.holderName} - ${b.bankName}`,
     })) || [];
+
+
+  const dueAmount = Number(
+    isVendorSettlement
+      ? vendor?.summary?.outstanding
+      : expense?.balanceAmount
+  ) || 0;
 
   const today = dayjs();
 
@@ -192,44 +246,158 @@ export default function VendorSettlePayment({
     return Object.keys(newErrors).length === 0;
   };
 
-  const payload = {
-    images: attachments?.map(
-      (item) => item?.uri
-    ) || [],
-    payLoads: {
-      paymentDate: purchaseDate,
-      bankId: String(selectedMode?.id),
-      paymentMethod: "BANK_TRANSFER",
-      transactionId,
-      notes: description,
-      expenses: [
-        {
-          expenseId: "1",
-          paidAmount: 1000,
-        },
-        {
-          expenseId: "2",
-          paidAmount: 500,
-        },
-      ],
-    },
+
+
+  // const handleSubmit = async () => {
+
+  //   if (!validateForm()) {
+  //     return
+  //   }
+  //   const res = await settleVendorPayment(
+  //     vendor?.id,
+  //     payload
+  //   )
+
+  //   if (res?.success) {
+  //     setModalType("success");
+  //     setModalMessage("Created Succesfully");
+  //     setShowSuccessModal(true)
+
+  //       setTimeout(() => {
+  //       setShowSuccessModal(false)
+  //       navigation.goBack()
+  //     }, 1500);
+  //   }
+  //   else {
+
+  //     setModalType("error")
+  //     setModalMessage(res?.message || "Something went wrong")
+  //     setShowSuccessModal(true)
+
+  //     setTimeout(() => {
+  //       setShowSuccessModal(false)
+  //     }, 1500);
+  //   }
+
+  // }
+
+  const autoDistributeAmount = (totalPaid) => {
+    if (!isVendorSettlement) return;
+
+    const expenses = vendorSettlementInitialize?.expenses || [];
+    let remaining = Number(totalPaid) || 0;
+    const newAmounts = {};
+
+    expenses.forEach((exp) => {
+      const maxAllowed = Number(exp.totalBalance || 0);
+      const toApply = Math.min(remaining, maxAllowed);
+      newAmounts[exp.expenseId] = toApply > 0 ? String(toApply) : "";
+      remaining -= toApply;
+    });
+
+    setVendorAppliedAmounts(newAmounts);
   };
 
   const handleSubmit = async () => {
 
-    if (!validateForm()) {
-      return
-    }
-    const res = await settleVendorPayment(
-      vendor?.id,
-      payload
-    )
+    if (!validateForm()) return;
 
-    if (res?.success) {
-      navigation.goBack()
-    }
-  }
+    let response;
 
+
+
+    if (isVendorSettlement) {
+      const payload = {
+        images: attachments?.map(item => item?.uri) || [],
+        payLoads: {
+          paymentDate: purchaseDate,
+          bankId: String(selectedMode?.id),
+          paymentMethod: String(selectedMode?.id),
+          transactionId,
+          notes: description,
+          expenses: vendorExpensesPayload,
+        },
+      };
+
+      response = await settleVendorPayment(
+        vendor?.id,
+        payload,
+        // attachments  
+      );
+
+      if (response?.success) {
+        setModalType("success");
+        setModalMessage("Created Succesfully");
+        setShowSuccessModal(true)
+
+        const res = await getVendorDetails(vendor?.id)
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+          navigation.goBack()
+        }, 1500);
+      }
+      else {
+
+        setModalType("error")
+        setModalMessage(response?.message || "Something went wrong")
+        setShowSuccessModal(true)
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1500);
+      }
+
+    } else {
+
+      const payload = {
+        images: attachments?.map(item => item?.uri) || [],
+        payLoads: {
+          paymentDate: purchaseDate,
+          bankId: String(selectedMode?.id),
+          paymentMethod: String(selectedMode?.id),
+          transactionId,
+          notes: description,
+          paidAmount: Number(paidAmount),
+        },
+      };
+
+      console.log(
+        "EXPENSE SETTLE PAYLOAD",
+        JSON.stringify(payload, null, 2)
+      );
+
+      response = await settleExpense(
+        expense?.expenseId,
+        payload
+      );
+
+      if (response?.success) {
+        setModalType("success");
+        setModalMessage("Created Succesfully");
+        setShowSuccessModal(true)
+
+        const result = await GetExpenseById(activeHostelId, expense?.expenseId);
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+          navigation.goBack()
+        }, 1500);
+      }
+      else {
+
+        setModalType("error")
+        setModalMessage(response?.message || "Something went wrong")
+        setShowSuccessModal(true)
+
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 1500);
+      }
+    }
+  };
+
+  console.log("vendor", vendor)
 
 
   return (
@@ -273,13 +441,16 @@ export default function VendorSettlePayment({
           {/* Vendor */}
 
           <Text style={styles.label}>
-            Vendor / Business Name  <Text style={{ color: "red" }}>*</Text>
+            {isVendorSettlement
+              ? "Vendor / Business Name *"
+              : "Expense Name *"}
           </Text>
 
           <View style={styles.inputBox}>
             <Text>
-              {vendor?.firstName}
-              {/* Please Enter Name */}
+              {isVendorSettlement
+                ? vendor?.fullName
+                : expense?.title}
             </Text>
           </View>
 
@@ -290,7 +461,7 @@ export default function VendorSettlePayment({
           </Text>
 
           <View style={styles.amountRow}>
-            <TextInput
+            {/* <TextInput
               placeholder="Enter Amount"
               keyboardType="numeric"
               value={paidAmount}
@@ -303,22 +474,35 @@ export default function VendorSettlePayment({
                 }));
               }}
               style={styles.amountInput}
+            /> */}
+
+            <ValidatedInput
+              placeholder="Enter Amount"
+              keyboardType="numeric"
+              type="numberOnly"
+              inputType="numeric"
+              value={paidAmount}
+              onChangeText={(text) => {
+                setPaidAmount(text);
+                autoDistributeAmount(text)
+                setErrors((prev) => ({
+                  ...prev,
+                  paidAmount: "",
+                }));
+              }}
+              style={styles.amountInput}
             />
 
             <TouchableOpacity
               style={styles.setBtn}
-              onPress={() =>
-                setPaidAmount(
-                  String(dueAmount)
-                )
-              }
+              onPress={() => {
+                setPaidAmount(String(dueAmount))
+                autoDistributeAmount(dueAmount)
+              }}
             >
-              <Text
-                style={styles.setBtnText}
-              >
-                Set
-              </Text>
+              <Text style={styles.setBtnText}>Set</Text>
             </TouchableOpacity>
+
           </View>
 
           {errors.paidAmount && (
@@ -605,7 +789,9 @@ export default function VendorSettlePayment({
             Description
           </Text>
 
-          <TextInput
+          <ValidatedInput
+            type="description"
+            inputType="text"
             multiline
             value={description}
             onChangeText={
@@ -617,164 +803,115 @@ export default function VendorSettlePayment({
             }
           />
 
+          {isVendorSettlement && vendorSettlementInitialize?.expenses?.length > 0 && (
 
-          {/* 
-                        <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>Unpaid Expense List</Text>
+            <View style={styles.card}>
+              <View style={styles.cardheadingsection}>
+                <Text style={styles.sectionTitle}>Unpaid Expense List</Text>
+              </View>
 
-                            {invoicesList?.length > 0 ? (
-                                invoicesList.map((item, index) => (
-                                    <View key={item?.invoiceId || index} style={styles.innerCard}>
 
-                                        <View style={styles.rowBetween}>
-                                            <Text style={styles.amount}>
-                                                {item?.invoiceType}
-                                            </Text>
+              {vendorSettlementInitialize?.expenses?.length > 0 ? (
+                vendorSettlementInitialize?.expenses.map((item, index) => (
+                  <View key={item?.expenseId || index} style={styles.innerCard}>
 
-                                            <Text style={styles.amount}>
-                                                ₹ {item?.pendingAmount || 0}
-                                            </Text>
-                                        </View>
+                    {/* Top row - Name + Amount */}
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.amount}>
+                        {item?.expenseNo || "N/A"}
+                      </Text>
+                      <Text style={styles.amount}>
+                        ₹ {item?.totalAmount || 0}
+                      </Text>
+                    </View>
 
-                                        <View style={{ display: 'flex', flexDirection: 'row' }}>
-                                           
-                                            <Text style={styles.smallText}>
-                                                {item?.invoiceNumber}
-                                            </Text>
-                                             <Image
-                                                source={InvoiceLinkIcon}
-                                                style={{ height: 14, width: 14, marginLeft: 5 }}
-                                            />
-                                        </View>
+                    {/* Ref No */}
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                      <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginRight: 4 }} />
+                      <Text style={styles.smallText}>{item?.referenceNo}</Text>
+                    </View>
 
-                                        {source === "bill" && (
-                                            <View style={styles.rowBetween}>
-                                                <Text style={styles.label}>Invoice Date</Text>
-                                                <Text style={styles.valueText}>
-                                                    {item?.invoiceDate || "N/A"}
-                                                </Text>
-                                            </View>
-                                        )}
+                    {/* Divider */}
+                    <View style={{ height: 1, backgroundColor: "#F3F4F6", marginBottom: 8 }} />
 
-                                        <View style={styles.rowBetween}>
-                                            <Text style={styles.label}>Due Date</Text>
-                                            <Text style={styles.valueText}>
-                                                {item?.dueDate || "N/A"}
-                                            </Text>
-                                        </View>
+                    {/* Due row */}
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.dueLabel}>Due</Text>
+                      <Text style={styles.dueValue}>₹{Number(item?.totalBalance || 0).toFixed(2)}</Text>
+                    </View>
 
-                                        <View style={styles.rowBetween}>
-                                            <Text style={styles.label}>Mode</Text>
-                                            <Text style={styles.valueText}>N/A</Text>
-                                        </View>
+                    {/* Amount to apply */}
+                    <Text style={styles.applyLabel}>Amount to apply</Text>
 
-                                        <Text style={styles.inputLabel}>
-                                            Amount to apply
-                                        </Text>
+                    <View style={styles.applyInputBox}>
+                      <Text style={styles.rupeeSymbol}>₹</Text>
+                      <ValidatedInput
+                        style={styles.applyInput}
+                        placeholder="0.00"
 
-                                        <View style={styles.inputWrapper}>
-                                            <ValidatedInput
-                                                type="numberOnly"
-                                                inputType="numeric"
-                                                style={styles.inputField}
-                                                placeholder="₹ 0.00"
-                                                value={tempValue?.[item.invoiceId] || ""}
-                                                maxLength={7}
-                                                onChangeText={(text) => {
+                        keyboardType="numeric"
+                        type="numberOnly"
+                        inputType="numeric"
+                        value={String(vendorAppliedAmounts[item.expenseId] || "")}
+                        // onChangeText={(text) => {
+                        //   let amount = Number(text);
+                        //   const maxAllowed = Number(item.totalBalance || 0);
 
-                                                    if (text === "") {
-                                                        setTempValue((prev) => ({
-                                                            ...prev,
-                                                            [item?.invoiceId]: "",
-                                                        }));
+                        //   if (amount > maxAllowed) {
+                        //     setModalType("warning");
+                        //     setModalMessage(`Maximum allowed is ₹ ${maxAllowed}`);
+                        //     setShowSuccessModal(true);
+                        //     setTimeout(() => setShowSuccessModal(false), 1500);
+                        //     amount = maxAllowed;
+                        //     text = String(maxAllowed);
+                        //   }
 
-                                                        setAppliedAmounts((prev) => ({
-                                                            ...prev,
-                                                            [item?.invoiceId]: 0,
-                                                        }));
+                        //   setVendorAppliedAmounts((prev) => ({
+                        //     ...prev,
+                        //     [item.expenseId]: text,
+                        //   }));
+                        // }}
 
-                                                        return;
-                                                    }
+                        onChangeText={(text) => {
+                          let amount = Number(text);
+                          const maxAllowed = Number(item?.totalBalance || 0);
 
-                                                    let amount = Number(text);
+                          if (amount > maxAllowed) {
+                            setModalType("warning");
+                            setModalMessage(`Maximum allowed is ₹ ${maxAllowed}`);
+                            setShowSuccessModal(true);
+                            setTimeout(() => setShowSuccessModal(false), 1500);
+                            amount = maxAllowed;
+                            text = String(maxAllowed);
+                          }
 
-                                                    const bookingAmount =
-                                                        Number(
-                                                            advanceInfo?.availableBalance ||
-                                                            advanceInfo?.advanceBalanceAmount ||
-                                                            0
-                                                        );
+                          const newAmounts = {
+                            ...vendorAppliedAmounts,
+                            [item.expenseId]: text,
+                          };
 
-                                                    const currentAppliedWithoutThis =
-                                                        Object.entries(appliedAmounts)
-                                                            .filter(([id]) => id !== item?.invoiceId)
-                                                            .reduce(
-                                                                (sum, [, val]) => sum + Number(val || 0),
-                                                                0
-                                                            );
+                          setVendorAppliedAmounts(newAmounts);
 
-                                                    const remainingBalance =
-                                                        bookingAmount - currentAppliedWithoutThis;
+                          const total = Object.values(newAmounts).reduce(
+                            (sum, val) => sum + (Number(val) || 0), 0
+                          );
+                          setPaidAmount(String(total));
+                        }}
+                      />
+                    </View>
 
-                                                    const pendingAmount =
-                                                        Number(item?.pendingAmount || 0);
+                  </View>
+                ))
+              ) : (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyText}>
+                    No pending invoices found
+                  </Text>
+                </View>
+              )}
+            </View>
 
-                                                    const maxAllowed = Math.min(
-                                                        remainingBalance,
-                                                        pendingAmount
-                                                    );
-
-                                                    if (amount > maxAllowed) {
-
-                                                        setModalType("warning");
-                                                        setModalMessage(
-                                                            `Maximum allowed amount is ₹ ${maxAllowed}`
-                                                        );
-                                                        setShowSuccessModal(true);
-
-                                                        setTimeout(() => {
-                                                            setShowSuccessModal(false);
-                                                        }, 1500);
-
-                                                        text = String(maxAllowed);
-                                                        amount = maxAllowed;
-                                                    }
-
-                                                    setTempValue((prev) => ({
-                                                        ...prev,
-                                                        [item.invoiceId]: text,
-                                                    }));
-
-                                                    setAppliedAmounts((prev) => ({
-                                                        ...prev,
-                                                        [item.invoiceId]: amount,
-                                                    }));
-                                                }}
-                                            />
-
-                                            <TouchableOpacity
-                                                style={styles.setBtn}
-                                                onPress={() =>
-                                                    handleSetAmount(
-                                                        item.invoiceId,
-                                                        tempValue?.[item.invoiceId],
-                                                        item.pendingAmount
-                                                    )
-                                                }
-                                            >
-                                                <Text style={{ color: "#1E45E1" }}>Set</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-                                ))
-                            ) : (
-                                <View style={styles.emptyCard}>
-                                    <Text style={styles.emptyText}>
-                                        No pending invoices found
-                                    </Text>
-                                </View>
-                            )}
-                               </View> */}
+          )}
 
           {/* Summary */}
 
@@ -1163,7 +1300,56 @@ const styles = StyleSheet.create({
   },
   card: {
     paddingHorizontal: 16,
+    marginTop: 20,
+
+  },
+  cardheadingsection: {
+    borderLeftWidth: 3,          // 👈 blue border
+    borderLeftColor: "#2D5BFF",
+    paddingLeft: 12,
+  },
+  dueLabel: {
+    fontSize: 13,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  dueValue: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Semibold",
+    color: "#111827",
+  },
+
+  applyLabel: {
+    fontSize: 13,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Regular",
     marginTop: 10,
+    marginBottom: 6,
+  },
+
+  applyInputBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#2D5BFF",   // focused blue border
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 52,
+  },
+
+  rupeeSymbol: {
+    fontSize: 15,
+    color: "#111827",
+    fontFamily: "Gilroy-Semibold",
+    marginRight: 4,
+  },
+
+  applyInput: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#111827",
   },
 
   sectionTitle: {

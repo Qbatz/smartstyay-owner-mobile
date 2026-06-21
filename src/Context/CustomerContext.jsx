@@ -863,7 +863,65 @@ const editBasicDetails = async (customerId, payloads, profilePic = null) => {
       }
     };
   
+const addExpense = async (hostelId, payload, images = []) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
 
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    // ✅ Expense JSON payload
+    formData.append("expense", {
+      string: JSON.stringify(payload),
+      type: "application/json",
+    });
+
+    // ✅ Optional images
+    images.forEach((image, index) => {
+      if (image?.uri) {
+        formData.append("images", {
+          uri: image.uri,
+          type: image.type || "image/jpeg",
+          name: image.fileName || `expense_${index}.jpg`,
+        });
+      }
+    });
+
+    const res = await axios.post(
+      `/v2/expense/${hostelId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Expense creation failed" };
+  } catch (error) {
+    console.log("ADD EXPENSE ERROR 👉", error?.response?.data || error);
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 const addVendor = async (payloads, profilePic = null) => {
   try {
@@ -918,7 +976,7 @@ const addVendor = async (payloads, profilePic = null) => {
   } finally {
     setLoading(false);
   }
-};
+}
 const updateVendor = async (vendorId, updateVendor, profilePic = null) => {
   try {
     setLoading(true);
@@ -1373,6 +1431,122 @@ const AddAdditionalContacts = async (hostelId, customerId, payload) => {
   } finally {
     setLoading(false);
   }
+}
+
+const settleExpense = async (expenseId, payload, images = []) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    formData.append("payLoads", {
+      string: JSON.stringify(payload.payLoads),  
+      type: "application/json",
+    });
+
+    const imageList = images.length > 0 ? images : [];
+    imageList.forEach((image, index) => {
+      if (image?.uri) {
+        formData.append("images", {
+          uri: image.uri,
+          type: image.type || "image/jpeg",
+          name: image.fileName || `settle_${index}.jpg`,
+        });
+      }
+    });
+
+    const res = await axios.post(
+      `/v2/expense/settle/${expenseId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Expense settlement failed" };
+  } catch (error) {
+    console.log("SETTLE EXPENSE ERROR ", error?.response?.data || error);
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const settleVendorPayment = async (vendorId, payload, images = []) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    formData.append("payLoads", {
+      string: JSON.stringify(payload.payLoads),
+      type: "application/json",
+    });
+
+    images.forEach((image, index) => {
+      if (image?.uri) {
+        formData.append("images", {
+          uri: image.uri,
+          type: image.type || "image/jpeg",
+          name: image.fileName || `vendor_settle_${index}.jpg`,
+        });
+      }
+    });
+
+    const res = await axios.post(
+      `/v2/vendors/settle/${vendorId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      return { success: true, data: res.data };
+    }
+
+    return { success: false, message: "Vendor settlement failed" };
+  } catch (error) {
+    console.log("SETTLE VENDOR ERROR ", error?.response?.data || error);
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
 };
 
 
@@ -1397,7 +1571,7 @@ const AddAdditionalContacts = async (hostelId, customerId, payload) => {
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
-        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts
+        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment
       }}
     >
       {children}

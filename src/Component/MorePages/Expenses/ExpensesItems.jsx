@@ -8,33 +8,8 @@ import {
   StyleSheet,
 } from "react-native";
 
-export default function ExpenseItems() {
-  const expenseItems = [
-    {
-      id: 1,
-      name: "Beetroot",
-      quantity: 20,
-      unit: "Kgs",
-      price: 80,
-      amount: 1600,
-    },
-    {
-      id: 2,
-      name: "Tomato",
-      quantity: 30,
-      unit: "Kgs",
-      price: 60,
-      amount: 1800,
-    },
-    {
-      id: 3,
-      name: "Brinjal",
-      quantity: 20,
-      unit: "Kgs",
-      price: 75,
-      amount: 1500,
-    },
-  ];
+export default function ExpenseItems({expense}) {
+   const expenseItems = expense?.expenseItems || [];
 
   return (
     <ScrollView
@@ -47,13 +22,13 @@ export default function ExpenseItems() {
       {/* Expense Items */}
       {expenseItems.map((item) => (
         <View key={item.id} style={styles.itemCard}>
-          <Text style={styles.itemTitle}>{item.name}</Text>
+          <Text style={styles.itemTitle}>{item?.item}</Text>
 
           <View style={styles.line} />
 
           <View style={styles.row}>
             <Text style={styles.label}>Quantity</Text>
-            <Text style={styles.value}>{item.quantity}</Text>
+            <Text style={styles.value}>{item?.quantity}</Text>
           </View>
 
           <View style={styles.row}>
@@ -63,13 +38,13 @@ export default function ExpenseItems() {
 
           <View style={styles.row}>
             <Text style={styles.label}>Per Unit price</Text>
-            <Text style={styles.value}>₹ {item.price}.00</Text>
+            <Text style={styles.value}> ₹ {Number(item.unitPrice || 0).toLocaleString("en-IN")}</Text>
           </View>
 
           <View style={styles.amountSection}>
             <Text style={styles.amountLabel}>Amount</Text>
             <Text style={styles.amountValue}>
-              ₹{item.amount.toLocaleString("en-IN")}
+              ₹ {Number(item.totalAmount || 0).toLocaleString("en-IN")}
             </Text>
           </View>
         </View>
