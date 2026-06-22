@@ -33,7 +33,7 @@ import dayjs from "dayjs";
 
 export default function AddExpensesPage({ route, vendorData, navigation }) {
 
-    const { vendorList, addVendor, updateVendor, getVendorList , addExpense} = useContext(CustomerContext);;
+    const { vendorList, addVendor, updateVendor, getVendorList, addExpense } = useContext(CustomerContext);;
     const { activeHostelId } = useContext(CommonContexts);
     const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense, AddExpense,
         DeleteExpense, expenseUnits
@@ -272,12 +272,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const isEditMode = !!editData;
 
 
-   const closeAll = () => {
-    setCategoryOpen(false);
-    setUnitsOpen(false);
-    setModePaymentOpen(false);
-    setOpenPurchaseDate(false); 
-};
+    const closeAll = () => {
+        setCategoryOpen(false);
+        setUnitsOpen(false);
+        setModePaymentOpen(false);
+        setOpenPurchaseDate(false);
+    };
 
 
     const today = dayjs();
@@ -641,8 +641,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             newErrors.category = "Please Select Category";
         }
 
-        if (!selectedSubCategory) {
-            newErrors.subCategory = "Please Select Sub Category";
+        if (
+            selectedCategory?.subCategories?.length > 0 &&
+            !selectedSubCategory
+        ) {
+            newErrors.subCategory =
+                "Please Select Sub Category";
         }
 
         if (!amount?.trim()) {
@@ -831,7 +835,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const grandTotal =
         itemTotal + taxAmount - discountAmount;
 
-
+    const datevalid = dayjs(purchaseDate).format("DD-MM-YYYY")
+    console.log("purchaseDate", datevalid);
 
 
     const handleSubmit = async () => {
@@ -855,7 +860,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             expense: {
                 categoryId: selectedCategory?.categoryId,
                 subCategory: selectedSubCategory?.subCategoryId,
-                purchaseDate,
+                purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
                 count: items.length,
                 totalAmount,
 
@@ -881,11 +886,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     paymentStatus === "Credit / Pending"
                         ? ""
                         : selectedMode?.id,
-                        
-    //                       creditType:
-    // paymentStatus === "Credit / Pending"
-    //   ? creditType
-    //   : "",
+
+                //                       creditType:
+                // paymentStatus === "Credit / Pending"
+                //   ? creditType
+                //   : "",
 
                 note: description || "",
                 transactionId: transactionId || "",
@@ -905,9 +910,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
         console.log("EXPENSE PAYLOAD =>", payload);
 
-        const  hostelId = activeHostelId
+        const hostelId = activeHostelId
 
-       const response = await addExpense(hostelId, payload.expense, attachments);
+        const response = await addExpense(hostelId, payload.expense, attachments);
 
         console.log("response", response);
 
@@ -1096,7 +1101,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={styles.label}>
-                                Sub Category <Text style={{ color: "red" }}>*</Text>
+                                Sub Category
+                                {selectedCategory?.subCategories?.length > 0 && (
+                                    <Text style={{ color: "red" }}> *</Text>
+                                )}
                             </Text>
 
                             <TouchableOpacity

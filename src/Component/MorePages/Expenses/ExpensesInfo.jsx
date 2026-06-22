@@ -21,19 +21,19 @@ export default function ExpenseInfo({ expense }) {
     >
       <InfoItem
         label="Expenses Title"
-        value={expense?.title} 
+        value={expense?.title || "N/A"} 
       />
 
       <InfoItem
         label="Category"
-        value={expense?.categoryName}
+        value={expense?.categoryName || "N/A"}
         icon={CategoryIcon}
       />
 
 
       <InfoItem
         label="sub catgeory"
-        value={expense?.subCategoryName}
+        value={expense?.subCategoryName || "N/A"}
         icon={MobileIcon}
       />
 

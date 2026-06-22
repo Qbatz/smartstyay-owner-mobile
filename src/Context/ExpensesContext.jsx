@@ -122,28 +122,68 @@ export default function ExpensesProvider({ children }) {
     }
   };
 
-const GetExpenseList = async (hostelId) => {
+// const GetExpenseList = async (hostelId) => {
+//   try {
+//     setLoading(true);
+
+//     const axios = getAxios();
+//     const res = await axios.get(`/v2/expense/${hostelId}`);
+
+//     console.log("Expense API", res.data);
+
+//     if (res?.status === 200) {
+//       setExpensesList(res.data);
+//       return {
+//         success: true,
+//         data: res.data,
+//       };
+//     }
+
+//     return { success: false };
+//   } catch (err) {
+//     console.log(err);
+//     setExpensesList(null);
+//     return { success: false };
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+const GetExpenseList = async (
+  hostelId,
+  filters = {}
+) => {
   try {
     setLoading(true);
 
     const axios = getAxios();
-    const res = await axios.get(`/v2/expense/${hostelId}`);
 
-    console.log("Expense API", res.data);
+    const res = await axios.get(
+      `/v2/expense/${hostelId}`,
+      {
+        params: {
+          name: filters.name,
+          categoryId: filters.categoryId,
+          page: filters.page,
+          size: filters.size,
+        },
+      }
+    );
 
-    if (res?.status === 200) {
+    if (res.status === 200) {
+      console.log("response", res.data);
+      
       setExpensesList(res.data);
       return {
         success: true,
         data: res.data,
       };
     }
-
-    return { success: false };
-  } catch (err) {
-    console.log(err);
-    setExpensesList(null);
-    return { success: false };
+  } catch (error) {
+    return {
+      success: false,
+      message: getErrorMessage(error),
+    };
   } finally {
     setLoading(false);
   }

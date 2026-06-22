@@ -124,7 +124,7 @@ export default function ExpensesDetails({ route, navigation }) {
     "Info",
     "Transactions",
     "Expenses",
-    "Comments",
+    // "Comments",
   ];
 
   const renderContent = () => {
@@ -146,8 +146,8 @@ export default function ExpensesDetails({ route, navigation }) {
           />
         );
 
-      case "Comments":
-        return <ExpensesComments  expense={expenseoverviewDetails} />;
+      // case "Comments":
+      //   return <ExpensesComments  expense={expenseoverviewDetails} />;
 
       default:
         return null;
