@@ -84,10 +84,29 @@ export default function ExpensesList({ navigation }) {
         }, [activeHostelId])
     );
 
-    
+const handleSearch = async (text) => {
+  if (!text?.trim()) {
+    return GetExpenseList(activeHostelId);
+  }
 
-   const Expensesdata =
-  expensesList?.expenses || [];
+  return GetExpenseList(activeHostelId, {
+    name: text,
+    categoryId: selectedCategoryId || null,
+    page: 1,
+    size: 10,
+  });
+};
+
+    const handleClearSearch = async () => {
+  setSearchText("");
+  setSearchOpen(false);
+
+  await GetExpenseList(activeHostelId);
+};
+
+
+    const Expensesdata =
+        expensesList?.expenses || [];
     console.log("expenses", Expensesdata);
 
     const horizontalRef = useRef(null);
@@ -114,6 +133,10 @@ export default function ExpensesList({ navigation }) {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
+
+    const [selectedCategoryId, setSelectedCategoryId] = useState("");
+    const [page, setPage] = useState(1);
+    const [size, setSize] = useState(10);
 
     const [searchText, setSearchText] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
@@ -273,7 +296,7 @@ export default function ExpensesList({ navigation }) {
 
     }
 
-
+console.log("Search =>", searchText);
 
 
 
@@ -451,7 +474,7 @@ export default function ExpensesList({ navigation }) {
                 <View style={styles.expenseCard}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.expenseTitle}>
-                            {item?.categoryName || "-"}
+                            {item?.title || "-"}
                         </Text>
 
                         <Text style={styles.expenseMeta}>
@@ -548,17 +571,17 @@ export default function ExpensesList({ navigation }) {
                             <TextInput
                                 placeholder="Search Expenses"
                                 value={searchText}
-                                onChangeText={setSearchText}
+                                onChangeText={(text) => {
+                                    setSearchText(text);
+                                    handleSearch(text);
+                                }}
                                 style={styles.searchInput}
                                 placeholderTextColor="#9CA3AF"
                                 autoFocus
                             />
 
                             <TouchableOpacity
-                                onPress={() => {
-                                    setSearchText("");
-                                    setSearchOpen(false);
-                                }}
+                                onPress={handleClearSearch}
                             >
                                 <Text style={styles.closeIcon}>✕</Text>
                             </TouchableOpacity>
@@ -660,7 +683,7 @@ export default function ExpensesList({ navigation }) {
 
                         <FlatList
                             data={Expensesdata || []}
-                            keyExtractor={(item) => item.expenseId}
+                            keyExtractor={(item) => item?.expenseId}
                             renderItem={renderExpensesItem}
                             ListHeaderComponent={() => (
                                 <>

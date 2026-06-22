@@ -12,7 +12,7 @@ export default function VendorProvider({ children }) {
   const [vendorExpensePayments, setVendorExpensePayments] = useState([]);
   const [vendorSettlementInitialize, setVendorSettlementInitialize] = useState(null);
   const [vendorComments, setVendorComments] = useState([]);
-  
+
 
 
   const [loading, setLoading] = useState(false);
@@ -27,28 +27,70 @@ export default function VendorProvider({ children }) {
     setVendorDetails(null);
   };
 
-  const getVendorList = async (hostelId) => {
+  // const getVendorList = async (hostelId) => {
+  //   setLoading(true);
+  //   setVendorList([]);
+
+  //   try {
+  //     const axios = getAxios();
+  //     const res = await axios.get(`/v2/vendors/all-vendors/${hostelId}`);
+
+  //     if (res.status === 200) {
+  //       setVendorList(res.data || []);
+  //       return { success: true, data: res.data };
+  //     }
+
+  //     return { success: false };
+  //   } catch (err) {
+  //     console.log("Vendor list error:", err?.response?.data || err);
+  //     return { success: false, message: getErrorMessage(err) };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  const getVendorList = async (
+    hostelId,
+    filters = {}
+  ) => {
     setLoading(true);
     setVendorList([]);
 
     try {
       const axios = getAxios();
-      const res = await axios.get(`/v2/vendors/all-vendors/${hostelId}`);
+
+      const res = await axios.get(
+        `/v2/vendors/all-vendors/${hostelId}`,
+        {
+          params: {
+            name: filters?.name,
+            categoryId: filters?.categoryId,
+            paymentStatus: filters?.paymentStatus,
+            page: filters?.page || 1,
+            size: filters?.size || 10,
+          },
+        }
+      );
 
       if (res.status === 200) {
         setVendorList(res.data || []);
-        return { success: true, data: res.data };
+        return {
+          success: true,
+          data: res.data,
+        };
       }
 
       return { success: false };
     } catch (err) {
-      console.log("Vendor list error:", err?.response?.data || err);
-      return { success: false, message: getErrorMessage(err) };
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
     } finally {
       setLoading(false);
     }
   };
-
 
   const getVendorCategories = async (hostelId) => {
     try {
@@ -473,158 +515,158 @@ export default function VendorProvider({ children }) {
       setLoading(false);
     }
   }
-const getVendorComments = async (
-  vendorId
-) => {
-  try {
-    setLoading(true);
+  const getVendorComments = async (
+    vendorId
+  ) => {
+    try {
+      setLoading(true);
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.get(
-      `/v2/vendors/comments/${vendorId}`
-    )
+      const res = await axios.get(
+        `/v2/vendors/comments/${vendorId}`
+      )
 
-    console.log("res", res)
-    
+      console.log("res", res)
 
-    if (res?.status === 200) {
-      setVendorComments(res?.data?.comments || []);
 
+      if (res?.status === 200) {
+        setVendorComments(res?.data?.comments || []);
+
+        return {
+          success: true,
+          data: res?.data,
+        };
+      }
+
+      return { success: false };
+    } catch (err) {
       return {
-        success: true,
-        data: res?.data,
+        success: false,
+        message: getErrorMessage(err),
       };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return { success: false };
-  } catch (err) {
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-  
 
   const addVendorComment = async (payload) => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.post(
-      "/v2/vendors/comments",
-      payload
-    );
+      const res = await axios.post(
+        "/v2/vendors/comments",
+        payload
+      );
 
-    if (res?.status === 200 || res?.status === 201) {
+      if (res?.status === 200 || res?.status === 201) {
+        return {
+          success: true,
+          data: res?.data,
+          message: "Comment Added Successfully",
+        };
+      }
+
       return {
-        success: true,
-        data: res?.data,
-        message: "Comment Added Successfully",
+        success: false,
+        message: "Failed to add comment",
       };
-    }
+    } catch (err) {
+      console.log(
+        "ADD VENDOR COMMENT ERROR:",
+        err?.response?.data || err
+      );
 
-    return {
-      success: false,
-      message: "Failed to add comment",
-    };
-  } catch (err) {
-    console.log(
-      "ADD VENDOR COMMENT ERROR:",
-      err?.response?.data || err
-    );
-
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-}
-
-const updateVendorComment = async (
-  commentId,
-  payload
-) => {
-  try {
-    setLoading(true);
-
-    const axios = getAxios();
-
-    const res = await axios.put(
-      `/v2/vendors/comments/${commentId}`,
-      payload
-    );
-
-    if (res?.status === 200) {
       return {
-        success: true,
-        data: res?.data,
-        message: "Comment Updated Successfully",
+        success: false,
+        message: getErrorMessage(err),
       };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message: "Failed to update comment",
-    };
-  } catch (err) {
-    console.log(
-      "UPDATE VENDOR COMMENT ERROR:",
-      err?.response?.data || err
-    );
-
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
   }
-}
 
-const deleteVendorComment = async (
-  commentId
-) => {
-  try {
-    setLoading(true);
+  const updateVendorComment = async (
+    commentId,
+    payload
+  ) => {
+    try {
+      setLoading(true);
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.delete(
-      `/v2/vendors/comments/${commentId}`
-    );
+      const res = await axios.put(
+        `/v2/vendors/comments/${commentId}`,
+        payload
+      );
 
-    if (res?.status === 200) {
+      if (res?.status === 200) {
+        return {
+          success: true,
+          data: res?.data,
+          message: "Comment Updated Successfully",
+        };
+      }
+
       return {
-        success: true,
-        message: "Comment Deleted Successfully",
+        success: false,
+        message: "Failed to update comment",
       };
+    } catch (err) {
+      console.log(
+        "UPDATE VENDOR COMMENT ERROR:",
+        err?.response?.data || err
+      );
+
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message: "Failed to delete comment",
-    };
-  } catch (err) {
-    console.log(
-      "DELETE VENDOR COMMENT ERROR:",
-      err?.response?.data || err
-    );
-
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
   }
-};
+
+  const deleteVendorComment = async (
+    commentId
+  ) => {
+    try {
+      setLoading(true);
+
+      const axios = getAxios();
+
+      const res = await axios.delete(
+        `/v2/vendors/comments/${commentId}`
+      );
+
+      if (res?.status === 200) {
+        return {
+          success: true,
+          message: "Comment Deleted Successfully",
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to delete comment",
+      };
+    } catch (err) {
+      console.log(
+        "DELETE VENDOR COMMENT ERROR:",
+        err?.response?.data || err
+      );
+
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <VendorContext.Provider
@@ -651,9 +693,9 @@ const deleteVendorComment = async (
         settleVendorPayment,
         clearVendorDetails,
         getVendorComments,
-         addVendorComment,
-  updateVendorComment,
-  deleteVendorComment,
+        addVendorComment,
+        updateVendorComment,
+        deleteVendorComment,
       }}
     >
       {children}

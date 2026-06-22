@@ -310,7 +310,7 @@ export default function VendorSettlePayment({
       const payload = {
         images: attachments?.map(item => item?.uri) || [],
         payLoads: {
-          paymentDate: purchaseDate,
+          paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
           bankId: String(selectedMode?.id),
           paymentMethod: String(selectedMode?.id),
           transactionId,
@@ -353,7 +353,7 @@ export default function VendorSettlePayment({
       const payload = {
         images: attachments?.map(item => item?.uri) || [],
         payLoads: {
-          paymentDate: purchaseDate,
+          paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
           bankId: String(selectedMode?.id),
           paymentMethod: String(selectedMode?.id),
           transactionId,
