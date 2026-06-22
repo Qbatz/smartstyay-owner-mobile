@@ -418,7 +418,7 @@ export default function BookingToInvoice() {
                     <Text style={styles.headerTitle}>
                         {source === "bill"
                             ? "Adjust invoice from advance"
-                            : "Apply Booking to Invoice"}
+                            : "Apply Retainer to Invoice"}
                     </Text>
                 </View>
                 <KeyboardAvoidingView
@@ -475,7 +475,7 @@ export default function BookingToInvoice() {
                                 <Text style={styles.bookingLabel}>
                                     {source === "bill"
                                         ? "Balance advance Amount"
-                                        : "Booking Amount"}
+                                        : "Retainer Amount of"}
                                 </Text>
                                 <View style={{ display: 'flex', flexDirection: 'column' }}>
                                     <Text style={styles.bookingAmount}>
@@ -507,7 +507,7 @@ export default function BookingToInvoice() {
 
 
                         <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>Unpaid Invoices</Text>
+                            <Text style={styles.sectionTitle}>All Unpaid Invoices</Text>
 
                             {invoicesList?.length > 0 ? (
                                 invoicesList.map((item, index) => (
@@ -519,7 +519,7 @@ export default function BookingToInvoice() {
                                             </Text>
 
                                             <Text style={styles.amount}>
-                                                ₹ {item?.pendingAmount || 0}
+                                                ₹ {item?.invoiceAmount || 0}
                                             </Text>
                                         </View>
 
@@ -551,8 +551,8 @@ export default function BookingToInvoice() {
                                         </View>
 
                                         <View style={styles.rowBetween}>
-                                            <Text style={styles.label}>Mode</Text>
-                                            <Text style={styles.valueText}>N/A</Text>
+                                            <Text style={styles.label}>Due</Text>
+                                            <Text style={styles.valueText}>{item?.pendingAmount ? item?.pendingAmount : "N/A"}</Text>
                                         </View>
 
                                         <Text style={styles.inputLabel}>

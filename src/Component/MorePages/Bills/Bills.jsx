@@ -478,10 +478,10 @@ export default function BillsDesign({ route }) {
       }
 
       if (activeTab === "RecurringBills") {
-        setActiveTab("Bookings");
+        setActiveTab("Retainer");
         return true;
       }
-      if (activeTab === "Bookings") {
+      if (activeTab === "Retainer") {
         setActiveTab("Invoices");
         return true;
       }
@@ -1116,7 +1116,7 @@ export default function BillsDesign({ route }) {
 
   const tabs = [
     { key: "Invoices", active: Profile, inactive: InProfile },
-    { key: "Bookings", active: ActiveWalkin, inactive: WalkinIcon },
+    { key: "Retainer", active: ActiveWalkin, inactive: WalkinIcon },
     { key: "RecurringBills", active: ActiveCheckout, inactive: CheckoutIcon },
     { key: "Receipt", active: ActiveWalkin, inactive: WalkinIcon },
   ];
@@ -2664,7 +2664,7 @@ export default function BillsDesign({ route }) {
 
             </View>
           )}
-          {activeTab === "Bookings" && (
+          {activeTab === "Retainer" && (
             <BillBookings onBookingDetailsShow={handleBillsBookingDetails} />
           )}
 
@@ -4057,6 +4057,7 @@ export default function BillsDesign({ route }) {
                         <View style={styles.bottomActionItem}>
                           <TouchableOpacity
                             style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                              // onPress={()=>navigation.navigate("NewRecordPayment")}
                             onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
                           >
                             <Image source={PlusIcon} style={styles.iconWhite} />
@@ -4558,10 +4559,8 @@ export default function BillsDesign({ route }) {
     <TouchableOpacity
                       style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                       // disabled={!canUpdateInvoice}
-                      // style={styles.popupRow} 
-                      onPress={()=>{
-                        console.log("raatu")
-                        navigation.navigate("NewRetainerInvoiceSheet")}} >
+                      
+                      onPress={handleBookingApplyInvoices} >
                       <Image
                         source={require("../../../Assets/Images/Union.png")}
                         style={styles.popupIcon}

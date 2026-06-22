@@ -173,6 +173,8 @@ export default function RoomDetails({ route, navigation }) {
   useEffect(() => {
     if (particular_EbRoomReading?.customers?.length > 0) {
       setOccupants(particular_EbRoomReading?.customers)
+    }else{
+      setOccupants("")
     }
   }, [particular_EbRoomReading])
 

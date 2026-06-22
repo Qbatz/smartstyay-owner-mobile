@@ -456,6 +456,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
           </Text>
         </View>
       </TouchableOpacity>
+
     );
   };
 
@@ -525,8 +526,28 @@ const BillBookings = ({ onBookingDetailsShow }) => {
       !loading && <EmptyReceiptState />
     }
   />
+  
 )}
-
+   {!loading && BillDetails?.listInvoices?.length > 0 && (
+                  <>
+                  
+  
+                    <TouchableOpacity
+                      style={[
+                        styles.addButton,
+                        
+                      ]}
+                      // disabled={!canWriteInvoice}
+                      onPress={()=>{
+                        
+                        navigation.navigate("NewRetainerInvoiceSheet")}}
+                      >
+                      <Image source={AddIcon}
+                        style={{ width: 25, height: 25 }} />
+                    </TouchableOpacity>
+                  </>
+                )
+                }
 
 
 
@@ -1367,6 +1388,18 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: "#777",
+  },
+  addButton:{
+    position: "absolute",
+    bottom: 60,
+    right: 10,
+    backgroundColor: "#1D5DFF",
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
   },
 
 
