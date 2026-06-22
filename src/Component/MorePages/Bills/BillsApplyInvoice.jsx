@@ -91,7 +91,7 @@ export default function BillsApplyInvoices() {
 
     const [appliedAmounts, setAppliedAmounts] = useState({});
 
-    const [showAmountField, setShowAmountField]=useState(false)
+    const [showAmountField, setShowAmountField]=useState({})
 
     const bookingData = InitializebookingBills?.data;
 
@@ -501,6 +501,16 @@ export default function BillsApplyInvoices() {
         // }
     };
 
+    const invoicesLists =[{id:0,invoiceId:'I2223',invoiceType:'Booking',pendingAmount:'200',invoiceNumber:"INV-009"},
+        {id:1,invoiceId:'I2224',invoiceType:'Rent',pendingAmount:'300',invoiceNumber:"INV-010"},
+        {id:2,invoiceId:'I2225',invoiceType:'Advance',pendingAmount:'400',invoiceNumber:"INV-011"}
+    ]
+
+
+    const clickedRetainAmntField=(invoiceId)=>{
+        setShowAmountField(prev=> ({...prev, [invoiceId]: !prev[invoiceId],}))
+    }
+
 
 
 
@@ -642,7 +652,7 @@ export default function BillsApplyInvoices() {
 
                                     {/* Input */}
 
-                                    {showAmountField ? ( 
+                                    {showAmountField[item.invoiceId] ? ( 
                                         <>
                                     <Text style={styles.inputLabel}>
                                         Amount to apply
@@ -735,8 +745,13 @@ export default function BillsApplyInvoices() {
                                         </TouchableOpacity>
                                     </View>
                                     </>
-                                    ) : <TouchableOpacity onPress={()=>setShowAmountField(true)}>
-                                        <Text>Retain</Text>
+                                    ) : <TouchableOpacity style={{alignSelf:'flex-end',backgroundColor:'#1E45E1',paddingHorizontal:14,
+                                                                paddingVertical:6,borderRadius:28,marginTop:3,marginRight:4,flexDirection:'row',alignItems:'center'}}
+                                     onPress={()=>clickedRetainAmntField(item.invoiceId)}>
+                                        <Text style={{fontSize:13,fontFamily:'Gilroy-Medium',color:'#FFFFFF',marginRight:5}}>
+                                            Retain</Text>
+
+                                            <Image source={ArrowLeft} style={{width:18,height:18,tintColor:'#FFFFFF', transform: [{ rotate: "180deg" }],}}/>
                                     </TouchableOpacity>}
 
                                     

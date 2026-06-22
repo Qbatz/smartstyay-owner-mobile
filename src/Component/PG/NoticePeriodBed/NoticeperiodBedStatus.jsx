@@ -393,16 +393,16 @@ export default function NoticePeriodBedSheet({
                     </View>
                   )}
 
-                  <View style={{marginRight:20}}>
+                  <View style={{marginRight:40}}>
                     {console.log("haha", selectedBed)}
                     <TouchableOpacity onPress={() =>
                       navigation.navigate("CustomerOverviewScreen", {
                         customerId: tenant.tenetId,
                         customer: tenant,
                       })
-                    }>
-                      <Text style={styles.tenantName} numberOfLines={1}>
-                        {tenant?.tenantFullName}dfdfdffdsdadasdasdsadsadsdsdsdsadsa</Text>
+                    }  styles={{marginRight:20}}>
+                      <Text style={styles.tenantName} numberOfLines={1} >
+                        {tenant?.tenantFullName}</Text>
                     </TouchableOpacity>
 
                     <Text style={styles.tenantPhone}>+91{tenant?.mobile}</Text>
