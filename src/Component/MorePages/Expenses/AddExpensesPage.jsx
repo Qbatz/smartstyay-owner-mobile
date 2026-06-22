@@ -33,10 +33,10 @@ import dayjs from "dayjs";
 
 export default function AddExpensesPage({ route, vendorData, navigation }) {
 
-    const { vendorList, addVendor, updateVendor, getVendorList } = useContext(CustomerContext);;
+    const { vendorList, addVendor, updateVendor, getVendorList, addExpense } = useContext(CustomerContext);;
     const { activeHostelId } = useContext(CommonContexts);
     const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense, AddExpense,
-        DeleteExpense, GetExpenseUnits, expenseUnits
+        DeleteExpense, expenseUnits
     } = useContext(ExpensesContext)
 
     const translateY = useRef(new Animated.Value(0)).current;
@@ -118,6 +118,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const [paymentStatus, setPaymentStatus] =
         useState("Partially Paid");
 
+    const [creditType, setCreditType] = useState("");
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [subCategoryOpen, setSubCategoryOpen] = useState(false);
     const [vendorOpen, setVendorOpen] = useState(false);
@@ -182,9 +183,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         ]);
     }
 
-    useEffect(() => {
-        GetExpenseUnits();
-    }, []);
+
 
     useEffect(() => {
         if (activeHostelId) {
@@ -277,7 +276,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         setCategoryOpen(false);
         setUnitsOpen(false);
         setModePaymentOpen(false);
-        setOpenDatePicker(false);
+        setOpenPurchaseDate(false);
     };
 
 
@@ -428,27 +427,30 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     // }));
 
     const unitsOptions = [
-  { value: "Nos", label: "Nos" },
-  { value: "Kg", label: "Kg" },
-  { value: "Litre", label: "Litre" },
-  { value: "Packet", label: "Packet" },
-  { value: "Box", label: "Box" },
-  { value: "Bottle", label: "Bottle" },
-  { value: "Can", label: "Can" },
-  { value: "Bundle", label: "Bundle" },
-  { value: "Meter", label: "Meter" },
-  { value: "Piece", label: "Piece" },
-  { value: "Set", label: "Set" },
-  { value: "Day", label: "Day" },
-  { value: "Month", label: "Month" },
-  { value: "Hour Wage", label: "Hour Wage" },
-];
+        { value: "Nos", label: "Nos" },
+        { value: "Kg", label: "Kg" },
+        { value: "Litre", label: "Litre" },
+        { value: "Packet", label: "Packet" },
+        { value: "Box", label: "Box" },
+        { value: "Bottle", label: "Bottle" },
+        { value: "Can", label: "Can" },
+        { value: "Bundle", label: "Bundle" },
+        { value: "Meter", label: "Meter" },
+        { value: "Piece", label: "Piece" },
+        { value: "Set", label: "Set" },
+        { value: "Day", label: "Day" },
+        { value: "Month", label: "Month" },
+        { value: "Hour Wage", label: "Hour Wage" },
+    ];
 
     const paymentOptions =
         IntializeexpensesList?.banks?.map((b) => ({
             id: b?.bankId,
             name: `${b?.holderName} - ${b?.bankName}`,
         })) || [];
+
+
+    console.log("paymentOptions", paymentOptions);
 
     const filteredStateList = stateList?.filter((s) =>
         s.label.toLowerCase().includes(stateQuery.toLowerCase())
@@ -586,6 +588,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const [attachments, setAttachments] = useState([]);
 
+    const [minDate, setMinDate] = useState(null); // add this
+
     const pickImage = () => {
         ImagePicker.launchImageLibrary(
             {
@@ -637,8 +641,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             newErrors.category = "Please Select Category";
         }
 
-        if (!selectedSubCategory) {
-            newErrors.subCategory = "Please Select Sub Category";
+        if (
+            selectedCategory?.subCategories?.length > 0 &&
+            !selectedSubCategory
+        ) {
+            newErrors.subCategory =
+                "Please Select Sub Category";
         }
 
         if (!amount?.trim()) {
@@ -662,36 +670,36 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         // }
         if (linkVendor) {
 
-    if (!selectedVendor) {
-        newErrors.vendor = "Please Select Vendor";
-    }
+            if (!selectedVendor) {
+                newErrors.vendor = "Please Select Vendor";
+            }
 
-    if (!paymentStatus) {
-        newErrors.paymentStatus =
-            "Please Select Payment Status";
-    }
+            if (!paymentStatus) {
+                newErrors.paymentStatus =
+                    "Please Select Payment Status";
+            }
 
-    if (!selectedMode) {
-        newErrors.paymentMethod =
-            "Please Select Payment Method";
-    }
+            if (!selectedMode) {
+                newErrors.paymentMethod =
+                    "Please Select Payment Method";
+            }
 
-    if (paymentStatus === "Partially Paid") {
+            if (paymentStatus === "Partially Paid") {
 
-        if (!paidAmount?.trim()) {
-            newErrors.paidAmount =
-                "Please Enter Paid Amount";
-        } else if (Number(paidAmount) <= 0) {
-            newErrors.paidAmount =
-                "Paid Amount should be greater than 0";
-        } else if (
-            Number(paidAmount) > Number(amount)
-        ) {
-            newErrors.paidAmount =
-                "Paid Amount cannot exceed Total Amount";
+                if (!paidAmount?.trim()) {
+                    newErrors.paidAmount =
+                        "Please Enter Paid Amount";
+                } else if (Number(paidAmount) <= 0) {
+                    newErrors.paidAmount =
+                        "Paid Amount should be greater than 0";
+                } else if (
+                    Number(paidAmount) > Number(amount)
+                ) {
+                    newErrors.paidAmount =
+                        "Paid Amount cannot exceed Total Amount";
+                }
+            }
         }
-    }
-}
         // Partial Payment Validation
         if (linkVendor && paymentStatus === "Partially Paid") {
             if (!paidAmount?.trim()) {
@@ -704,10 +712,17 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             }
         }
 
-        if (!selectedMode) {
-   newErrors.paymentMethod =
-      "Please Select Payment Method";
-}
+        if (paymentStatus === "Credit / Pending") {
+            if (!creditType?.trim()) {
+                newErrors.creditType =
+                    "Please Enter Credit Type"
+            }
+        } else {
+            if (!selectedMode) {
+                newErrors.paymentMethod =
+                    "Please Select Payment Method";
+            }
+        }
         const hasItems = items.some(
             item =>
                 item.itemDetail?.trim() ||
@@ -749,43 +764,43 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         // }
 
         const itemTotal = items.reduce(
-  (sum, item) => sum + Number(item.amount || 0),
-  0
-);
+            (sum, item) => sum + Number(item.amount || 0),
+            0
+        );
 
-if (hasItems && Number(amount) !== itemTotal) {
-  newErrors.amount =
-    `Amount (${amount}) should match Item Total (${itemTotal})`;
-}
+        if (hasItems && Number(amount) !== itemTotal) {
+            newErrors.amount =
+                `Amount (${amount}) should match Item Total (${itemTotal})`;
+        }
 
         if (tax && Number(tax) < 0) {
-  newErrors.tax = "Invalid Tax Amount";
-}
+            newErrors.tax = "Invalid Tax Amount";
+        }
 
-if (discount && Number(discount) < 0) {
-  newErrors.discount = "Invalid Discount";
-}
+        if (discount && Number(discount) < 0) {
+            newErrors.discount = "Invalid Discount";
+        }
 
-if (
-  discountType === "amount" &&
-  Number(discount) > itemTotal
-) {
-  newErrors.discount =
-    "Discount cannot exceed Item Total";
-}
+        if (
+            discountType === "amount" &&
+            Number(discount) > itemTotal
+        ) {
+            newErrors.discount =
+                "Discount cannot exceed Item Total";
+        }
 
-if (Number(tax) > itemTotal) {
-  newErrors.tax =
-    "Tax cannot exceed Item Total";
-}
+        if (Number(tax) > itemTotal) {
+            newErrors.tax =
+                "Tax cannot exceed Item Total";
+        }
 
-if (
-  discountType === "percentage" &&
-  Number(discount) > 100
-) {
-  newErrors.discount =
-    "Discount percentage cannot exceed 100";
-}
+        if (
+            discountType === "percentage" &&
+            Number(discount) > 100
+        ) {
+            newErrors.discount =
+                "Discount percentage cannot exceed 100";
+        }
 
         setErrors(newErrors);
 
@@ -806,21 +821,22 @@ if (
     }, [amount, paidAmount, paymentStatus])
 
     const itemTotal = items.reduce(
-  (sum, item) => sum + Number(item.amount || 0),
-  0
-);
+        (sum, item) => sum + Number(item.amount || 0),
+        0
+    );
 
-const taxAmount = Number(tax || 0);
+    const taxAmount = Number(tax || 0);
 
-const discountAmount =
-  discountType === "percentage"
-    ? (itemTotal * Number(discount || 0)) / 100
-    : Number(discount || 0);
+    const discountAmount =
+        discountType === "percentage"
+            ? (itemTotal * Number(discount || 0)) / 100
+            : Number(discount || 0);
 
-const grandTotal =
-  itemTotal + taxAmount - discountAmount;
+    const grandTotal =
+        itemTotal + taxAmount - discountAmount;
 
-  
+    const datevalid = dayjs(purchaseDate).format("DD-MM-YYYY")
+    console.log("purchaseDate", datevalid);
 
 
     const handleSubmit = async () => {
@@ -839,60 +855,67 @@ const grandTotal =
                 : totalAmount - paid;
 
         const payload = {
-  images: attachments || [],
+            images: attachments || [],
 
-  expense: {
-    categoryId: selectedCategory?.categoryId,
-    subCategory: selectedSubCategory?.subCategoryId,
-    purchaseDate,
-    count: items.length,
-    totalAmount,
+            expense: {
+                categoryId: selectedCategory?.categoryId,
+                subCategory: selectedSubCategory?.subCategoryId,
+                purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+                count: items.length,
+                totalAmount,
 
-    bankId: selectedMode?.id || "",
+                bankId: selectedMode?.id || "",
 
-    description,
-    title: expenseTitle,
+                description,
+                title: expenseTitle,
 
-    isVendorExpense: linkVendor,
-    vendorId: linkVendor ? vendorId : null,
+                isVendorExpense: linkVendor,
+                vendorId: linkVendor ? vendorId : null,
 
-    paymentStatus:
-      paymentStatus === "Fully Paid"
-        ? "FULLY_PAID"
-        : paymentStatus === "Partially Paid"
-        ? "PARTIALLY_PAID"
-        : "CREDIT_PENDING",
+                paymentStatus:
+                    paymentStatus === "Fully Paid"
+                        ? "Full"
+                        : paymentStatus === "Partially Paid"
+                            ? "Partial"
+                            : "Pending",
 
-    paidAmount: paid,
-    balanceAmount: balance,
+                paidAmount: paid,
+                balanceAmount: balance,
 
-    paymentMethod: selectedMode?.name || "",
+                paymentMethod:
+                    paymentStatus === "Credit / Pending"
+                        ? ""
+                        : selectedMode?.id,
 
-    note: description || "",
-    transactionId: transactionId || "",
+                //                       creditType:
+                // paymentStatus === "Credit / Pending"
+                //   ? creditType
+                //   : "",
 
-    tax: Number(tax || 0),
-    discount: Number(discount || 0),
+                note: description || "",
+                transactionId: transactionId || "",
 
-    expenseItems: items.map((item) => ({
-      item: item.itemDetail,
-      quantity: Number(item.quantity || 0),
-      unit: selectedUnits?.label,
-      unitPrice: Number(item.unitPrice || 0),
-      totalAmount: Number(item.amount || 0),
-    })),
-  },
-};
+                tax: Number(tax || 0),
+                discount: Number(discount || 0),
+
+                expenseItems: items.map((item) => ({
+                    item: item.itemDetail,
+                    quantity: Number(item.quantity || 0),
+                    unit: selectedUnits?.label,
+                    unitPrice: Number(item.unitPrice || 0),
+                    totalAmount: Number(item.amount || 0),
+                })),
+            },
+        };
 
         console.log("EXPENSE PAYLOAD =>", payload);
 
-        const response = await AddExpense(
-            payload,
-            activeHostelId
-        )
+        const hostelId = activeHostelId
+
+        const response = await addExpense(hostelId, payload.expense, attachments);
 
         console.log("response", response);
-        
+
 
         if (response?.success) {
             setModalType("success");
@@ -908,12 +931,20 @@ const grandTotal =
                 response?.message || "Failed to add expense"
             );
             setShowSuccessModal(true);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1500);
         }
     };
 
     return (
 
         <>
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType} />
             <View style={styles.container}>
 
                 {/* Header */}
@@ -1070,7 +1101,10 @@ const grandTotal =
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={styles.label}>
-                                Sub Category <Text style={{ color: "red" }}>*</Text>
+                                Sub Category
+                                {selectedCategory?.subCategories?.length > 0 && (
+                                    <Text style={{ color: "red" }}> *</Text>
+                                )}
                             </Text>
 
                             <TouchableOpacity
@@ -1606,79 +1640,104 @@ const grandTotal =
                                 </View>
                             )}
 
-                            <Text style={styles.label}>
-                                Payment method <Text style={{ color: "red" }}>*</Text>
-                            </Text>
+                            {paymentStatus !== "Credit / Pending" && (
+                                <>
+                                    <Text style={styles.label}>
+                                        Payment method <Text style={{ color: "red" }}>*</Text>
+                                    </Text>
 
 
-                            <TouchableOpacity
-                                // style={styles.expensesDropdownBox}
+                                    <TouchableOpacity
+                                        // style={styles.expensesDropdownBox}
 
-                                style={[
-                                    styles.expensesDropdownBox,
-                                    isEditMode && { opacity: 0.4 }
-                                ]}
-                                disabled={isEditMode}
-                                onPress={() => {
-                                    setModePaymentOpen(!modePaymentOpen);
-                                    setCategoryOpen(false);
-                                    setSubCategoryOpen(false);
-                                }}
-                            >
-                                <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
-                                    {selectedMode?.name || "Select Mode"}
-                                </Text>
-                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                            </TouchableOpacity>
+                                        style={[
+                                            styles.expensesDropdownBox,
+                                            isEditMode && { opacity: 0.4 }
+                                        ]}
+                                        disabled={isEditMode}
+                                        onPress={() => {
+                                            setModePaymentOpen(!modePaymentOpen);
+                                            setCategoryOpen(false);
+                                            setSubCategoryOpen(false);
+                                        }}
+                                    >
+                                        <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
+                                            {selectedMode?.name || "Select Mode"}
+                                        </Text>
+                                        <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                    </TouchableOpacity>
 
-                            {modePaymentOpen && (
-                                <View style={styles.expensesDropdownMenu}>
-                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                        {paymentOptions.length === 0 ? (
-                                            <Text style={styles.expensesNoDataText}>
-                                                No mode found
-                                            </Text>
-                                        ) : (
-                                            paymentOptions.map((item) => {
-                                                const isSelected =
-                                                    selectedMode?.id === item.id;
+                                    {modePaymentOpen && (
+                                        <View style={styles.expensesDropdownMenu}>
+                                            <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                                {paymentOptions.length === 0 ? (
+                                                    <Text style={styles.expensesNoDataText}>
+                                                        No mode found
+                                                    </Text>
+                                                ) : (
+                                                    paymentOptions.map((item) => {
+                                                        const isSelected =
+                                                            selectedMode?.id === item.id;
 
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={item.id}
-                                                        style={[
-                                                            styles.expensesOption,
-                                                            isSelected && styles.expensesOptionSelected,
-                                                        ]}
-                                                        onPress={() => {
-                                                            setSelectedMode(item)
-                                                            setModeErr("")
-                                                            setNochangeErr("");
-                                                            setModePaymentOpen(false)
-                                                        }}
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.expensesOptionText,
-                                                                isSelected &&
-                                                                styles.expensesOptionTextSelected,
-                                                            ]}
-                                                        >
-                                                            {item.name}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                );
-                                            })
-                                        )}
-                                    </ScrollView>
-                                </View>
-                            )}
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={item.id}
+                                                                style={[
+                                                                    styles.expensesOption,
+                                                                    isSelected && styles.expensesOptionSelected,
+                                                                ]}
+                                                                onPress={() => {
+                                                                    setSelectedMode(item)
+                                                                    setModeErr("")
+                                                                    setNochangeErr("");
+                                                                    setModePaymentOpen(false)
+                                                                }}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.expensesOptionText,
+                                                                        isSelected &&
+                                                                        styles.expensesOptionTextSelected,
+                                                                    ]}
+                                                                >
+                                                                    {item.name}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        );
+                                                    })
+                                                )}
+                                            </ScrollView>
+                                        </View>
+                                    )}
 
-                            {errors.paymentMethod && (
-                                <ErrorMessage
-                                    message={errors.paymentMethod}
-                                    type="error"
-                                />
+                                    {errors.paymentMethod && (
+                                        <ErrorMessage
+                                            message={errors.paymentMethod}
+                                            type="error"
+                                        />
+                                    )}
+                                </>)}
+
+                            {paymentStatus === "Credit / Pending" && (
+                                <>
+                                    <Text style={styles.label}>
+                                        Credit Period <Text style={{ color: "red" }}>*</Text>
+                                    </Text>
+
+                                    <ValidatedInput
+                                        value={creditType}
+                                        onChangeText={setCreditType}
+                                        placeholder="Enter Credit Period"
+                                        style={styles.input}
+                                    />
+
+                                    {errors.creditType && (
+                                        <ErrorMessage
+                                            message={errors.creditType}
+                                            type="error"
+                                        />
+                                    )}
+                                </>
                             )}
 
                             <Text style={styles.label}>
@@ -2079,7 +2138,7 @@ const grandTotal =
                                 fontFamily: "Gilroy-Bold",
                                 color: "#111827",
                             }}>
-                                 ₹ {itemTotal.toFixed(2)}
+                                ₹ {itemTotal.toFixed(2)}
                             </Text>
                         </View>
 
@@ -2128,7 +2187,7 @@ const grandTotal =
                                         ]}
                                         onPress={() => setDiscountType("amount")}
                                     >
-                                        <Text  style={{color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
+                                        <Text style={{ color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
@@ -2139,7 +2198,7 @@ const grandTotal =
                                         ]}
                                         onPress={() => setDiscountType("percentage")}
                                     >
-                                        <Text style={{color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
+                                        <Text style={{ color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -2164,7 +2223,7 @@ const grandTotal =
                                 TOTAL RETAINER AMOUNT
                             </Text>
                             <Text style={styles.totalValue}>
-                                 ₹ {grandTotal.toFixed(2)}
+                                ₹ {grandTotal.toFixed(2)}
                             </Text>
                         </View>
                     </View>

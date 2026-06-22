@@ -21,36 +21,40 @@ export default function ExpenseInfo({ expense }) {
     >
       <InfoItem
         label="Expenses Title"
-        value={`${"Vegetables"}`}
+        value={expense?.title || "N/A"} 
       />
 
       <InfoItem
         label="Category"
-        value={expense?.businessName || "Electrical"}
+        value={expense?.categoryName || "N/A"}
         icon={CategoryIcon}
       />
 
+
       <InfoItem
-        label="Mobile No"
-        value={`+91 ${expense?.mobileNo || "9876543210"}`}
+        label="sub catgeory"
+        value={expense?.subCategoryName || "N/A"}
         icon={MobileIcon}
+      />
+
+       <InfoItem
+        label="Vendor"
+        value={"N/A"}
+       icon={LocationIcon}
       />
 
       <InfoItem
         label="Business Location/Address"
-        value={`${expense?.area || ""}, ${expense?.city || "4 , main road t nagar chennai"}`}
+        value={"N/A"}
         icon={LocationIcon}
       />
 
-      <InfoItem
-        label="Last Transaction"
-        value="18 July 2025"
-        icon={CalendarIcon}
-      />
+
+     
 
       <InfoItem
-        label="Credit Limit"
-        value="₹ 15,000.00"
+        label="Description"
+        value={expense?.note || "N/A"}
         icon={CalendarIcon}
       />
     </ScrollView>

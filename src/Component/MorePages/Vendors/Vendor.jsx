@@ -48,10 +48,10 @@ const CARD_WIDTH = width * 0.44
 export default function Vendors({ navigation }) {
 
     const {
-      getVendorDetails  , vendorDetails , clearVendorDetails
+        getVendorDetails, vendorDetails, clearVendorDetails
     } = useContext(VendorContext);
 
-    const { vendorList, loading, getVendorList, deleteVendor , } = useContext(CustomerContext);;
+    const { vendorList, loading, getVendorList, deleteVendor, } = useContext(CustomerContext);;
 
     const { activeHostelId } = useContext(CommonContexts)
 
@@ -64,11 +64,11 @@ export default function Vendors({ navigation }) {
 
 
 
- console.log("vendorList", vendorList);
+    console.log("vendorList", vendorList);
     console.log("vendorList", vendorList?.vendors);
 
 
-    
+
     const horizontalRef = useRef(null);
 
     const [showAddVendor, setShowAddVendor] = useState(false);
@@ -96,7 +96,7 @@ export default function Vendors({ navigation }) {
 
     const [searchText, setSearchText] = useState("");
 
-    const filteredVendors = vendorList?.vendors?.length > 0 &&  vendorList?.vendors?.filter((item) => {
+    const filteredVendors = vendorList?.vendors?.length > 0 && vendorList?.vendors?.filter((item) => {
         const fullName =
             `${item.firstName || ""} ${item.lastName || ""}`.toLowerCase();
 
@@ -146,6 +146,15 @@ export default function Vendors({ navigation }) {
         "Newest First",
         "Oldest First",
     ];
+
+    const handleSearch = async (text) => {
+        await getVendorList(activeHostelId, {
+            name: text || null,
+            page: 1,
+            size: 10,
+        });
+    };
+
     const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
     const translateY = useRef(new Animated.Value(0)).current;
     const panResponder = useRef(
@@ -245,39 +254,39 @@ export default function Vendors({ navigation }) {
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
-        clearVendorDetails(); 
-         navigation.navigate("AddVendorPage", {
-    //   vendor: item,
-    })
-   
+        clearVendorDetails();
+        navigation.navigate("AddVendorPage", {
+            //   vendor: item,
+        })
+
     };
 
-   const SummaryCard = ({
-  icon,
-  title,
-  value,
-  prefix,
-  suffix,
-  valueColor = "#111827",
-}) => (
-  <View style={styles.summaryCard}>
-    <View style={styles.cardTopRow}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle}>{title}</Text>
+    const SummaryCard = ({
+        icon,
+        title,
+        value,
+        prefix,
+        suffix,
+        valueColor = "#111827",
+    }) => (
+        <View style={styles.summaryCard}>
+            <View style={styles.cardTopRow}>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.cardTitle}>{title}</Text>
 
-        <Text style={[styles.cardValue, { color: valueColor }]}>
-          {prefix && <Text>{prefix}</Text>}
-          <AnimatedNumber value={value} />
-          {suffix && <Text>{suffix}</Text>}
-        </Text>
-      </View>
+                    <Text style={[styles.cardValue, { color: valueColor }]}>
+                        {prefix && <Text>{prefix}</Text>}
+                        <AnimatedNumber value={value} />
+                        {suffix && <Text>{suffix}</Text>}
+                    </Text>
+                </View>
 
-      <View style={styles.iconBox}>
-        <Image source={icon} style={styles.cardIcon} />
-      </View>
-    </View>
-  </View>
-);
+                <View style={styles.iconBox}>
+                    <Image source={icon} style={styles.cardIcon} />
+                </View>
+            </View>
+        </View>
+    );
 
     const AnimatedNumber = ({ value, duration = 800 }) => {
         const animatedValue = useRef(new Animated.Value(0)).current;
@@ -306,11 +315,11 @@ export default function Vendors({ navigation }) {
 
     const handlevendorDetails = async (item) => {
         console.log("item", item);
-        
-   const res = await getVendorDetails(item?.id)
-         navigation.navigate("VendorDetails", {
-      vendor: item,
-    })
+
+        const res = await getVendorDetails(item?.id)
+        navigation.navigate("VendorDetails", {
+            vendor: item,
+        })
 
     }
 
@@ -332,45 +341,45 @@ export default function Vendors({ navigation }) {
 
         return (
             <>
-            <TouchableOpacity
-  activeOpacity={0.8}
-  onPress={()=> handlevendorDetails(item)}
->
-                <View style={styles.vendorCard}>
-                    <View style={styles.vendorLeft}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.vendorTitle}>
-                                {fullName || "--"}
-                            </Text>
-
-                            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.vendorCode}>
-                                    VEN-{item.id}
+                <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => handlevendorDetails(item)}
+                >
+                    <View style={styles.vendorCard}>
+                        <View style={styles.vendorLeft}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.vendorTitle}>
+                                    {fullName || "--"}
                                 </Text>
 
-                                {!!item.businessName && (
-                                    <View style={styles.tag}>
-                                        <Text style={styles.tagText}>
-                                            {item.businessName}
-                                        </Text>
-                                    </View>
-                                )}
+                                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                    <Text style={styles.vendorCode}>
+                                        VEN-{item.id}
+                                    </Text>
+
+                                    {!!item.businessName && (
+                                        <View style={styles.tag}>
+                                            <Text style={styles.tagText}>
+                                                {item.businessName}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
                             </View>
                         </View>
-                    </View>
 
-                    <View style={styles.amountContainer}>
-                        <Text style={styles.amountText}>
-                          ₹ {item?.totalBalance || "0.00"}
-                        </Text>
+                        <View style={styles.amountContainer}>
+                            <Text style={styles.amountText}>
+                                ₹ {item?.totalBalance || "0.00"}
+                            </Text>
 
-                        <Text style={styles.outstandingText}>
-                            Outstanding
-                        </Text>
-                    </View>
+                            <Text style={styles.outstandingText}>
+                                Outstanding
+                            </Text>
+                        </View>
 
 
-                    {/* <TouchableOpacity
+                        {/* <TouchableOpacity
         onPress={() =>
           setActiveMenu(
             activeMenu === item.id ? null : item.id
@@ -382,7 +391,7 @@ export default function Vendors({ navigation }) {
           style={styles.dotsIcon}
         />
       </TouchableOpacity> */}
-                </View>
+                    </View>
                 </TouchableOpacity>
 
                 {/* {activeMenu === item.id && (
@@ -470,7 +479,10 @@ export default function Vendors({ navigation }) {
                         <TextInput
                             placeholder="Search Vendors"
                             value={searchText}
-                            onChangeText={setSearchText}
+                            onChangeText={(text) => {
+                                setSearchText(text);
+                                handleSearch(text);
+                            }}
                             style={styles.searchInput}
                             placeholderTextColor="#9CA3AF"
                         />
@@ -513,7 +525,7 @@ export default function Vendors({ navigation }) {
     style={styles.searchInput}
   />
 </View> */}
-{/* 
+                                    {/* 
                                     <ScrollView
                                         horizontal
                                         ref={horizontalRef}
@@ -566,94 +578,94 @@ export default function Vendors({ navigation }) {
                             showsVerticalScrollIndicator={false}
                         /> */}
 
-                
 
 
-<FlatList
-  data={filteredVendors  || []}
-  keyExtractor={(item) => item?.id.toString()}
-  renderItem={renderVendor}
-  ListHeaderComponent={() => (
-    <>
-      {/* Cards */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.cardRow}
-      >
-        <SummaryCard
-          icon={PeopleIcon}
-          title="Total Vendors"
-         value={vendorList?.vendorSummary?.totalVendors || 0}
-        />
 
-        <SummaryCard
-          icon={GreenRupees}
-          title="Total Purchase"
-            value={vendorList?.vendorSummary?.totalPurchase || 0}
-          prefix="₹ "
-           valueColor="#16A34A" 
-        />
+                        <FlatList
+                            data={filteredVendors || []}
+                            keyExtractor={(item) => item?.id.toString()}
+                            renderItem={renderVendor}
+                            ListHeaderComponent={() => (
+                                <>
+                                    {/* Cards */}
+                                    <ScrollView
+                                        horizontal
+                                        showsHorizontalScrollIndicator={false}
+                                        contentContainerStyle={styles.cardRow}
+                                    >
+                                        <SummaryCard
+                                            icon={PeopleIcon}
+                                            title="Total Vendors"
+                                            value={vendorList?.vendorSummary?.totalVendors || 0}
+                                        />
 
-        <SummaryCard
-          icon={OutstandingIcon}
-          title="Outstanding"
-           value={vendorList?.vendorSummary?.outstandingAmount || 0}
-          prefix="₹ "
-        />
-      </ScrollView>
+                                        <SummaryCard
+                                            icon={GreenRupees}
+                                            title="Total Purchase"
+                                            value={vendorList?.vendorSummary?.totalPurchase || 0}
+                                            prefix="₹ "
+                                            valueColor="#16A34A"
+                                        />
 
-      {/* Filter Row */}
-      <View style={styles.filterRow}>
-        <TouchableOpacity style={styles.filterChipActive}>
-          <Text style={styles.filterChipTextActive}>All</Text>
-          <Image source={DirectionImage} style={styles.chipArrow} />
-        </TouchableOpacity>
+                                        <SummaryCard
+                                            icon={OutstandingIcon}
+                                            title="Outstanding"
+                                            value={vendorList?.vendorSummary?.outstandingAmount || 0}
+                                            prefix="₹ "
+                                        />
+                                    </ScrollView>
 
-        <TouchableOpacity style={styles.filterChip}>
-          <Text style={styles.filterChipText}>Category</Text>
-          <Image source={DirectionImage} style={styles.chipArrow} />
-        </TouchableOpacity>
+                                    {/* Filter Row */}
+                                    <View style={styles.filterRow}>
+                                        <TouchableOpacity style={styles.filterChipActive}>
+                                            <Text style={styles.filterChipTextActive}>All</Text>
+                                            <Image source={DirectionImage} style={styles.chipArrow} />
+                                        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.filterChip}>
-          <Text style={styles.filterChipText}>Status</Text>
-          <Image source={DirectionImage} style={styles.chipArrow} />
-        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.filterChip}>
+                                            <Text style={styles.filterChipText}>Category</Text>
+                                            <Image source={DirectionImage} style={styles.chipArrow} />
+                                        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.filterIconBtn}
-          onPress={() => setShowFilter(true)}
-        >
-          <Image source={Filter} style={{ width: 18, height: 18 }} />
-        </TouchableOpacity>
-      </View>
-    </>
-  )}
-  contentContainerStyle={{
-    paddingHorizontal: 16,
-    paddingBottom: 200,
-  }}
-/>
+                                        <TouchableOpacity style={styles.filterChip}>
+                                            <Text style={styles.filterChipText}>Status</Text>
+                                            <Image source={DirectionImage} style={styles.chipArrow} />
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={styles.filterIconBtn}
+                                            onPress={() => setShowFilter(true)}
+                                        >
+                                            <Image source={Filter} style={{ width: 18, height: 18 }} />
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
+                            contentContainerStyle={{
+                                paddingHorizontal: 16,
+                                paddingBottom: 200,
+                            }}
+                        />
 
                     </>
                 )}
 
 
                 {/* {!loading && vendorList?.length > 0 && ( */}
-                    <>
-           
+                <>
 
-                        <TouchableOpacity
-                            style={[
-                                styles.addFab,
-                                !canWriteVendor && { opacity: 0.7 }
-                            ]}
-                            disabled={!canWriteVendor}
-                           onPress={handleAddVendorClick}
-                        >
-                            <Image source={AddIcon} style={styles.addIcon} />
-                        </TouchableOpacity>
-                    </>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.addFab,
+                            !canWriteVendor && { opacity: 0.7 }
+                        ]}
+                        disabled={!canWriteVendor}
+                        onPress={handleAddVendorClick}
+                    >
+                        <Image source={AddIcon} style={styles.addIcon} />
+                    </TouchableOpacity>
+                </>
                 {/* )} */}
 
 
@@ -1387,123 +1399,123 @@ const styles = StyleSheet.create({
 
     // },
     summaryCard: {
-  width: CARD_WIDTH,
-  height: 90,
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  paddingHorizontal: 14,
-  paddingVertical: 12,
+        width: CARD_WIDTH,
+        height: 90,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
 
-  borderWidth: 1,
-  borderColor: "#EEF2F6",
+        borderWidth: 1,
+        borderColor: "#EEF2F6",
 
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.04,
-  shadowRadius: 4,
-  elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 2,
 
-  marginRight: 12,
-  marginBottom:10,marginTop:5
-},
-cardTopRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  flex: 1,
-},
+        marginRight: 12,
+        marginBottom: 10, marginTop: 5
+    },
+    cardTopRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flex: 1,
+    },
 
-   iconBox: {
-  width: 42,
-  height: 42,
-  borderRadius: 12,
-  backgroundColor: "#fff",
+    iconBox: {
+        width: 42,
+        height: 42,
+        borderRadius: 12,
+        backgroundColor: "#fff",
 
-  justifyContent: "center",
-  alignItems: "center",
+        justifyContent: "center",
+        alignItems: "center",
 
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
 
-  shadowColor: "#000",
-  shadowOpacity: 0.05,
-  shadowRadius: 4,
-  elevation: 2,
-},
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
     cardIcon: { width: 20, height: 20 },
 
-  cardTitle: {
-  fontSize: 13,
-  color: "#64748B",
-  fontFamily: "Gilroy-Medium",
-},
+    cardTitle: {
+        fontSize: 13,
+        color: "#64748B",
+        fontFamily: "Gilroy-Medium",
+    },
 
-cardValue: {
-  marginTop: 12,
-  fontSize: 18,
-  color: "#111827",
-  fontFamily: "Gilroy-Bold",
-},
- filterRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginTop: 10,
-  marginBottom: 14,
-  paddingHorizontal: 2,
-},
+    cardValue: {
+        marginTop: 12,
+        fontSize: 18,
+        color: "#111827",
+        fontFamily: "Gilroy-Bold",
+    },
+    filterRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: 10,
+        marginBottom: 14,
+        paddingHorizontal: 2,
+    },
 
-filterChip: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 22,
-  paddingHorizontal: 18,
-  paddingVertical: 10,
-},
+    filterChip: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+    },
 
-filterChipActive: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#EAF2FF",
-  borderRadius: 22,
-  paddingHorizontal: 18,
-  paddingVertical: 10,
-},
+    filterChipActive: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#EAF2FF",
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+    },
 
-  filterChipText: {
-    fontSize: 13,
-    color: "#374151",
-  },
+    filterChipText: {
+        fontSize: 13,
+        color: "#374151",
+    },
 
-  filterChipTextActive: {
-    fontSize: 13,
-    color: "#2D6CDF",
-    fontFamily: "Gilroy-Semibold",
-  },
+    filterChipTextActive: {
+        fontSize: 13,
+        color: "#2D6CDF",
+        fontFamily: "Gilroy-Semibold",
+    },
 
-  filterIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    // backgroundColor: "#F3F4F6",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-  },
-  chipContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+    filterIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        // backgroundColor: "#F3F4F6",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#F3F4F6",
+    },
+    chipContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
 
-  chipArrow: {
-    width: 14,
-    height: 14,
-    marginLeft: 6,
-  },
+    chipArrow: {
+        width: 14,
+        height: 14,
+        marginLeft: 6,
+    },
 })
 
 

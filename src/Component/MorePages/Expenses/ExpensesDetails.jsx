@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -16,6 +16,9 @@ import ExpensesInfo from "./ExpensesInfo";
 import ExpensesTransactions from "./ExpensesTransaction";
 import ExpensesItems from "./ExpensesItems";
 import ExpensesComments from "./ExpensesComments";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 // import VendorExpenseDetailsSheet from "./VendorExpenseDetails"
 
 export default function ExpensesDetails({ route, navigation }) {
@@ -30,9 +33,18 @@ export default function ExpensesDetails({ route, navigation }) {
       canUpdateModule: canUpdateExpense,
       canDeleteModule: canDeleteExpense,
     } = useHasPermission("Expense");
+
+        const [showSuccessModal, setShowSuccessModal] = useState(false);
+        const [modalMessage, setModalMessage] = useState("");
+        const [modalType, setModalType] = useState("success");
   
 
   const [activeTab, setActiveTab] = useState("Info")
+
+      const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
+          DeleteExpense ,  expenseoverviewDetails , GetExpenseById
+      } = useContext(ExpensesContext);
+        const { activeHostelId } = useContext(CommonContexts);
 
 
   const [showExpenseSheet, setShowExpenseSheet] = useState(false);
@@ -42,35 +54,53 @@ export default function ExpensesDetails({ route, navigation }) {
   const [deleteVendordata, setDeleteVendorData] = useState(null);
   const [deletePopup, setDeletePopup] = useState(false)
 
+  console.log("deleteVendordata", deleteVendordata);
+    console.log("expenseoverviewDetails", expenseoverviewDetails);
+
+  useEffect(() => {
+  const fetchDetails = async () => {
+    const result = await GetExpenseById(activeHostelId, expense?.expenseId);
+    if (result.success) {
+      console.log("Expense Details =>", result.data);
+      // setExpenseDetail(result.data)
+    }
+  };
+  fetchDetails();
+}, [activeHostelId, expense?.expenseId]);
 
     const handleDelete = async () => {
-        // if (!canDeleteModule) {
-        //     setModalType("warning");
-        //     setModalMessage("You do not have permission to delete vendor");
-        //     setShowSuccessModal(true);
-        //     return;
-        // }
-        // const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
-        // setDeletePopup(false)
-        // if (res?.success) {
-        //     setModalType("success");
-        //     setModalMessage(res.message);
-        //     setShowSuccessModal(true);
+        if (!canDeleteExpense) {
+            setModalType("warning");
+            setModalMessage("You do not have permission to delete expenses");
+            setShowSuccessModal(true);
+            return;
+        }
+  const res = await DeleteExpense(
+  activeHostelId,
+  expense?.expenseId
+);
+        console.log("deleteexpenses", res);
+        
+        setDeletePopup(false)
+        if (res?.success) {
+            setModalType("success");
+            setModalMessage(res.message);
+            setShowSuccessModal(true);
 
-        //     setTimeout(() => {
-        //         setShowSuccessModal(false);
-        //         setDeletePopup(false)
-        //     }, 1500)
-        // }
+            setTimeout(() => {
+                setShowSuccessModal(false);
+                setDeletePopup(false)
+            }, 1500)
+        }
 
 
-        // else {
-        //     setModalType("error");
-        //     setModalMessage(res?.message || "Something went wrong");
-        //     setShowSuccessModal(true);
+        else {
+            setModalType("error");
+            setModalMessage(res?.message || "Something went wrong");
+            setShowSuccessModal(true);
 
-        //     setTimeout(() => setShowSuccessModal(false), 2000);
-        // }
+            setTimeout(() => setShowSuccessModal(false), 2000);
+        }
 
     }
 
@@ -94,20 +124,21 @@ export default function ExpensesDetails({ route, navigation }) {
     "Info",
     "Transactions",
     "Expenses",
-    "Comments",
+    // "Comments",
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case "Info":
-        return <ExpensesInfo expense={expense} />;
+        return <ExpensesInfo expense={expenseoverviewDetails} />;
 
       case "Transactions":
-        return <ExpensesTransactions />;
+        return <ExpensesTransactions  expense={expenseoverviewDetails} />;
 
       case "Expenses":
         return (
           <ExpensesItems
+          expense={expenseoverviewDetails} 
           //   onExpensePress={(expense) => {
           //     setSelectedExpense(expense);
           //     setShowExpenseSheet(true);
@@ -115,8 +146,8 @@ export default function ExpensesDetails({ route, navigation }) {
           />
         );
 
-      case "Comments":
-        return <ExpensesComments />;
+      // case "Comments":
+      //   return <ExpensesComments  expense={expenseoverviewDetails} />;
 
       default:
         return null;
@@ -125,6 +156,13 @@ export default function ExpensesDetails({ route, navigation }) {
 
   return (
     <>
+
+     <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType} />
+
 
       <View style={styles.container}>
 
@@ -363,6 +401,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingTop: 50,
   },
+
 
   header: {
     height: 55,

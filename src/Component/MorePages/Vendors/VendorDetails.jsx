@@ -1,11 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
-  ScrollView,Modal , TouchableWithoutFeedback
+  ScrollView, Modal, TouchableWithoutFeedback
 } from "react-native";
 import { VendorContext } from "../../../Context/VendorContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -26,10 +26,10 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 export default function VendorDetails({ route, navigation }) {
   const { vendor } = route.params;
 
-  const { getVendorDetails, vendorDetails , getVendorSettlementInitialize } = useContext(VendorContext);
+  const { getVendorDetails, vendorDetails, getVendorSettlementInitialize } = useContext(VendorContext);
 
   const { vendorList, loading, getVendorList, deleteVendor, } = useContext(CustomerContext)
-    const { activeHostelId } = useContext(CommonContexts)
+  const { activeHostelId } = useContext(CommonContexts)
 
   const {
     canReadModule: canReadVendor,
@@ -47,17 +47,27 @@ export default function VendorDetails({ route, navigation }) {
   const [deleteVendordata, setDeleteVendorData] = useState(null);
   const [deletePopup, setDeletePopup] = useState(false)
 
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [modalMessage, setModalMessage] = useState("");
-    const [modalType, setModalType] = useState("success");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
   console.log("vendorDetails", vendorDetails);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      if (vendor?.id) {
+        getVendorDetails(vendor?.id);
+      }
+    });
+
+    return unsubscribe; // cleanup
+  }, [navigation, vendor?.id]);
 
   const handleEdit = async (vendor) => {
     console.log("vendor", vendor);
 
-     const res = await getVendorDetails(vendor?.id)
-    
+    const res = await getVendorDetails(vendor?.id)
+
     if (!canUpdateModule) return;
     navigation.navigate("AddVendorPage", {
       vendorData: vendor,
@@ -72,14 +82,17 @@ export default function VendorDetails({ route, navigation }) {
       return;
     }
     const res = await deleteVendor(deleteVendordata?.id, activeHostelId)
+
+    console.log("vendordelete", res);
+
     setDeletePopup(false)
     if (res?.success) {
       setModalType("success");
-      setModalMessage(res.message);
+      setModalMessage(res?.message);
       setShowSuccessModal(true);
-     
+
       setTimeout(() => {
-       navigation.goBack()
+        navigation.goBack()
         setShowSuccessModal(false);
         setDeletePopup(false)
       }, 1500)
@@ -96,13 +109,16 @@ export default function VendorDetails({ route, navigation }) {
 
   }
 
-   const handlesettlePayment = async () => {
-     const res = await   getVendorSettlementInitialize(activeHostelId, vendor?.id)
+  const handlesettlePayment = async () => {
+    console.log("vendordetails", vendorDetails);
+
+    const res = await getVendorSettlementInitialize(activeHostelId, vendor?.id)
     navigation.navigate("VendorSettlePayment", {
-              vendorDetails,    
-            })
-  
-   }
+      type: "vendor",
+      vendor: vendorDetails,
+    })
+
+  }
 
 
   const tabs = [
@@ -118,12 +134,12 @@ export default function VendorDetails({ route, navigation }) {
         return <VendorInfo vendor={vendorDetails} />;
 
       case "Transactions":
-        return <VendorTransactions  vendor={vendorDetails} />;
+        return <VendorTransactions vendor={vendorDetails} />;
 
       case "Expenses":
         return (
           <VendorExpenses
-            vendor={vendorDetails} 
+            vendor={vendorDetails}
             onExpensePress={(expense) => {
               setSelectedExpense(expense);
               setShowExpenseSheet(true);
@@ -132,7 +148,7 @@ export default function VendorDetails({ route, navigation }) {
         );
 
       case "Comments":
-        return <VendorComments  vendor={vendorDetails} />;
+        return <VendorComments vendor={vendorDetails} />;
 
       default:
         return null;
@@ -143,7 +159,7 @@ export default function VendorDetails({ route, navigation }) {
 
   return (
     <>
- {loading && <Loader />}
+      {loading && <Loader />}
 
       <SuccessModal
         visible={showSuccessModal}
@@ -152,7 +168,7 @@ export default function VendorDetails({ route, navigation }) {
         type={modalType} />
 
       <View style={styles.container}>
-        
+
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backIcon} />
@@ -165,7 +181,7 @@ export default function VendorDetails({ route, navigation }) {
               "Vendor"}
           </Text>
 
-    
+
           <TouchableOpacity
             onPress={() =>
               setActiveMenu(
@@ -192,7 +208,7 @@ export default function VendorDetails({ route, navigation }) {
 
             <View style={styles.activeBadge}>
               <Text style={styles.activeText}>
-                 {vendor?.paymentStatus}
+                {vendor?.paymentStatus}
               </Text>
             </View>
           </View>
@@ -205,7 +221,7 @@ export default function VendorDetails({ route, navigation }) {
               </Text>
 
               <Text style={styles.statValue}>
-                ₹{vendor?.totalPaidAmount || 0}
+                ₹{vendorDetails?.summary?.totalPaid || 0}
               </Text>
             </View>
 
@@ -215,7 +231,7 @@ export default function VendorDetails({ route, navigation }) {
               </Text>
 
               <Text style={styles.statValue}>
-               ₹{vendor?.totalExpenseAmount || 0}
+                ₹{vendorDetails?.summary?.expenseCount || 0}
               </Text>
             </View>
 
@@ -230,19 +246,30 @@ export default function VendorDetails({ route, navigation }) {
                   { color: "#F97316" },
                 ]}
               >
-               ₹{vendor?.totalBalance || 0}
+                ₹{vendorDetails?.summary?.outstanding || 0}
               </Text>
             </View>
 
           </View>
 
-          <TouchableOpacity style={styles.settleBtn}
+          {Number(vendorDetails?.summary?.outstanding) > 0 && (
+            <TouchableOpacity
+              style={styles.settleBtn}
+              onPress={handlesettlePayment}
+            >
+              <Text style={styles.settleText}>
+                Settle Payment →
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* <TouchableOpacity style={styles.settleBtn}
             onPress={handlesettlePayment}
           >
             <Text style={styles.settleText}>
               Settle Payment →
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
         </View>
 
@@ -540,7 +567,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111",
   },
-    deleteOverlay: {
+  deleteOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
@@ -606,7 +633,7 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#fff',
     fontSize: 16,
-   fontFamily: "Gilroy-Bold"
+    fontFamily: "Gilroy-Bold"
   },
 
 });
