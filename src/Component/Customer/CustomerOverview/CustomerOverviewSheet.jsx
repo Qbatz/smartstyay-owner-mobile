@@ -13,6 +13,7 @@ import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { BillContext } from "../../../Context/BillsContext";
 import { PGContext } from "../../../Context/PGContext";
 import EditBasicDetailsSheet from "./EditBasicDetails";
 import EditManualAddressSheet from "./EditAdressDetails";
@@ -72,6 +73,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+    const { BillDetails, GetAllBillDetails,
+      RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
+      , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+      downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
@@ -445,6 +450,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       y: pageY + 8,
     });
 
+      const res = getBillsPdfDetails(item?.hostelId, item?.invoiceId);
+
     setMenuVisible(true);
   };
 
@@ -700,7 +707,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return <EBReadingTab customerDetails={customerDetails} />;
 
       case "Bill":
-        return <BillTab customerDetails={customerDetails} ShowBillsDetails={() => setBillDetailsShow(true)} />;
+        return <BillTab customerDetails={customerDetails} ShowBillsDetails={(bill) => {
+          selectedBill={bill}
+          setBillDetailsShow(true)
+        }
+        } />;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;

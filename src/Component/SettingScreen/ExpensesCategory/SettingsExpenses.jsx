@@ -603,7 +603,7 @@ const saveSubcategory = async () => {
   const renderExpense = ({ item }) => (
     <View style={{ position: "relative" }}>
       <TouchableOpacity activeOpacity={0.9} onPress={() => openSubSheet(item.id)}>
-        <View style={styles.card}>
+        {/* <View style={styles.card}>
           <Text style={styles.cardText}>{item.title}</Text>
 
         <TouchableOpacity
@@ -621,7 +621,32 @@ const saveSubcategory = async () => {
   <Image source={Dots} style={styles.dots} />
 </TouchableOpacity>
 
-        </View>
+        </View> */}
+
+
+        <View style={styles.card}>
+  <Text
+    style={styles.cardText}
+    numberOfLines={2}
+  >
+    {item.title}
+  </Text>
+
+  <TouchableOpacity ref={(ref) => (dotsRefs.current[item.id] = ref)}
+  onPress={() => {
+    dotsRefs.current[item.id]?.measureInWindow((x, y, width, height) => {
+      setPopupPos({
+        x: x - 160,   
+        y: y + height + 8, 
+      });
+    });
+    setShowMenuId(item.id);
+  }}
+    style={styles.menuBtn}
+  >
+    <Image source={Dots} style={styles.dots} />
+  </TouchableOpacity>
+</View>
       </TouchableOpacity>
 
     </View>
@@ -768,7 +793,7 @@ const saveSubcategory = async () => {
                 <View style={styles.sheetHandle} />
               </View>
 
-              <View style={styles.subHeaderRow}>
+              {/* <View style={styles.subHeaderRow}>
                 <View>
                   <Text style={styles.subHeading}>Sub Categories</Text>
                   <Text style={styles.subParentTitle}>{subSheetTitle}</Text>
@@ -786,7 +811,24 @@ const saveSubcategory = async () => {
                 </TouchableOpacity>
 }
 
-              </View>
+              </View> */}
+
+              <View style={styles.subHeaderRow}>
+  <View style={{ flex: 1, paddingRight: 12 }}>
+    <Text style={styles.subHeading}>Sub Categories</Text>
+
+    <Text
+      style={styles.subParentTitle}
+      numberOfLines={2}
+    >
+      {subSheetTitle}
+    </Text>
+  </View>
+
+  <TouchableOpacity style={styles.subAddBtn}>
+    <Text style={styles.subAddText}>Add +</Text>
+  </TouchableOpacity>
+</View>
 
              {getSelectedExpense()?.subcategories?.length > 0 ? (
   <FlatList
@@ -1051,7 +1093,20 @@ const styles = StyleSheet.create({
     elevation: 1,
     position:'relative'
   },
-  cardText: { fontSize: 15, color: "#111", fontWeight: "600" },
+  cardText: {
+  flex: 1,
+  fontSize: 15,
+  color: "#111",
+  fontWeight: "600",
+  marginRight: 12,
+},
+menuBtn: {
+  width: 32,
+  height: 32,
+  justifyContent: "center",
+  alignItems: "center",
+  flexShrink: 0,
+},
   dots: { width: 24, height: 24 },
 
 
@@ -1161,11 +1216,32 @@ const styles = StyleSheet.create({
   },
 
   /* Sub sheet header */
-  subHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+subHeaderRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  marginBottom: 12,
+},
+
+subAddBtn: {
+  backgroundColor: "#1D5DFF",
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 8,
+  marginLeft: 10,
+},
+
+subParentTitle: {
+  fontSize: 14,
+  color: "#1D5DFF",
+  marginTop: 4,
+  fontWeight: "700",
+  flexShrink: 1,
+},
   subHeading: { fontSize: 16, fontWeight: "700" },
-  subParentTitle: { fontSize: 14, color: "#1D5DFF", marginTop: 4 , fontWeight:700},
-  subAddBtn: { backgroundColor: "#1D5DFF", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   subAddText: { color: "#fff", fontWeight: "700" },
+
+  
 
   subCard: {
     backgroundColor: "#fff",
@@ -1178,7 +1254,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  subText: { fontSize: 14, fontWeight: "600" },
+  subText: { fontSize: 14, fontWeight: "600" ,  flex: 1,
+  marginRight: 12,},
 
   subEmpty: { alignItems: "center", paddingVertical: 20 },
 

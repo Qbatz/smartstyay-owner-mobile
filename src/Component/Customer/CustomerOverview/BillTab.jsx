@@ -65,14 +65,14 @@ export default function BillTab({ customerDetails, ShowBillsDetails }) {
     status === "VACATED" ||
     (status === "NOTICE" && isAfterLeavingDate);
 
-  const handleOpenBillDetails = (bill) => {
+  const handleOpenBillDetails = async (bill) => {
     console.log("bill", bill);
 
-    ShowBillsDetails()
+    ShowBillsDetails(bill)
 
-    // setSelectedBill(bill);
+    setSelectedBill(bill);
     // setBillDetailsShow(true);
-    const res = getBillsPdfDetails(activeHostelId, bill?.invoiceId);
+    const res = await getBillsPdfDetails(activeHostelId, bill?.invoiceId);
   };
 
   const handleCreateBill = () => {

@@ -1,4 +1,4 @@
-import React, { useState,useRef ,  useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import {
     View,
     Text,
@@ -53,7 +53,7 @@ export default function BookingToInvoice() {
 
     const bill = route?.params?.bill
 
-    
+
 
     console.log("BillPdfdetails", BillPdfdetails);
 
@@ -286,108 +286,108 @@ export default function BookingToInvoice() {
 
     const handleApply = async () => {
 
-         if (isApplyTriggeredRef.current) return;
-    isApplyTriggeredRef.current = true;
+        if (isApplyTriggeredRef.current) return
+        isApplyTriggeredRef.current = true
 
-    try {
-        const bookingAmount =
-            Number(
-                advanceInfo?.availableBalance ||
-                advanceInfo?.advanceBalanceAmount ||
+        try {
+            const bookingAmount =
+                Number(
+                    advanceInfo?.availableBalance ||
+                    advanceInfo?.advanceBalanceAmount ||
+                    0
+                );
+
+            const totalApplied = Object.values(appliedAmounts).reduce(
+                (sum, val) => sum + Number(val || 0),
                 0
             );
 
-        const totalApplied = Object.values(appliedAmounts).reduce(
-            (sum, val) => sum + Number(val || 0),
-            0
-        );
+            if (totalApplied <= 0) {
+                setModalType("warning");
+                setModalMessage("Please Enter valid Amount");
+                setShowSuccessModal(true);
 
-        if (totalApplied <= 0) {
-            setModalType("warning");
-            setModalMessage("Please Enter valid Amount");
-            setShowSuccessModal(true);
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2000);
 
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2000);
+                //    isApplyTriggeredRef.current = false;
+                return
+            }
 
-            //    isApplyTriggeredRef.current = false;
-    return
+            if (totalApplied > bookingAmount) {
+                setModalType("warning");
+                setModalMessage("Applied amount exceeds booking amount");
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2000);
+                // isApplyTriggeredRef.current = false;
+                return;
+            }
+
+            const listItems = Object.entries(appliedAmounts).map(
+                ([invoiceId, amount]) => ({
+                    invoiceId,
+                    amount: Number(amount),
+                })
+            )
+
+            console.log("listitems", listItems);
+
+
+            const payload = {
+                // reason: "Advance Applied",
+                // date: new Date().toISOString(),
+                listItems,
+            }
+
+            console.log("payload", payload);
+            console.log("ID", activeHostelId, advanceInfo?.advanceInvoiceId,);
+
+
+
+            const res = await ApplyAdvanceToInvoices({
+                hostelId: activeHostelId,
+                invoiceId: advanceInfo?.advanceInvoiceId,
+                listItems,
+            });
+
+            console.log("res", res);
+
+
+            if (res?.success) {
+                await GetAllBillDetails(activeHostelId);
+                await GetAdvanceBookingBills(activeHostelId);
+                await getBillsPdfDetails(activeHostelId, advanceInfo?.advanceInvoiceId)
+                setModalType("success");
+                setModalMessage("Applied successfully");
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    navigation.goBack();
+                    setShowSuccessModal(false);
+                }, 1500);
+
+            } else {
+
+                setModalType("warning");
+                setModalMessage(res?.message || "Something went wrong");
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2500);
+            }
         }
+        catch {
+            console.log("error");
 
-        if (totalApplied > bookingAmount) {
-            setModalType("warning");
-            setModalMessage("Applied amount exceeds booking amount");
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2000);
-// isApplyTriggeredRef.current = false;
-            return;
         }
-
-        const listItems = Object.entries(appliedAmounts).map(
-            ([invoiceId, amount]) => ({
-                invoiceId,
-                amount: Number(amount),
-            })
-        )
-
-        console.log("listitems", listItems);
-
-
-        const payload = {
-            // reason: "Advance Applied",
-            // date: new Date().toISOString(),
-            listItems,
+        finally {
+            isApplyTriggeredRef.current = false;
         }
-
-        console.log("payload", payload);
-        console.log("ID", activeHostelId, advanceInfo?.advanceInvoiceId,);
-
-
-
-        const res = await ApplyAdvanceToInvoices({
-            hostelId: activeHostelId,
-            invoiceId: advanceInfo?.advanceInvoiceId,
-            listItems,
-        });
-
-        console.log("res", res);
-
-
-        if (res?.success) {
-            await GetAllBillDetails(activeHostelId);
-            await GetAdvanceBookingBills(activeHostelId);
-            await getBillsPdfDetails(activeHostelId, advanceInfo?.advanceInvoiceId)
-            setModalType("success");
-            setModalMessage("Applied successfully");
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                navigation.goBack();
-                setShowSuccessModal(false);
-            }, 1500);
-
-        } else {
-
-            setModalType("warning");
-            setModalMessage(res?.message || "Something went wrong");
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 2500);
-        }
-    }
-    catch {
-        console.log("error");
-        
-    }
-    finally {
-        isApplyTriggeredRef.current = false;
-    }
     };
 
 
@@ -488,12 +488,12 @@ export default function BookingToInvoice() {
                                     </Text>
                                     {source === "bill" &&
                                         (
-                                            <View style={{ display: 'flex', flexDirection: 'row' , marginTop:3}}>
-                                              
+                                            <View style={{ display: 'flex', flexDirection: 'row', marginTop: 3 }}>
+
                                                 <Text style={styles.smallText}>
                                                     {advanceInfo?.advanceInvoiceNumber}
                                                 </Text>
-                                                  <Image
+                                                <Image
                                                     source={InvoiceLinkIcon}
                                                     style={{ height: 14, width: 14, marginLeft: 3 }}
                                                 />
@@ -524,11 +524,11 @@ export default function BookingToInvoice() {
                                         </View>
 
                                         <View style={{ display: 'flex', flexDirection: 'row' }}>
-                                           
+
                                             <Text style={styles.smallText}>
                                                 {item?.invoiceNumber}
                                             </Text>
-                                             <Image
+                                            <Image
                                                 source={InvoiceLinkIcon}
                                                 style={{ height: 14, width: 14, marginLeft: 5 }}
                                             />
@@ -854,12 +854,12 @@ export default function BookingToInvoice() {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                   style={[
-        styles.applyBtn,
-        isApplyTriggeredRef.current && { opacity: 0.6 }
-    ]}
-    onPress={handleApply}
-    disabled={isApplyTriggeredRef.current}
+                                style={[
+                                    styles.applyBtn,
+                                    isApplyTriggeredRef.current && { opacity: 0.6 }
+                                ]}
+                                onPress={handleApply}
+                                disabled={isApplyTriggeredRef.current}
                             >
                                 <Text style={{ color: "#fff", fontFamily: "Gilroy-Medium" }}>Apply →</Text>
                             </TouchableOpacity>

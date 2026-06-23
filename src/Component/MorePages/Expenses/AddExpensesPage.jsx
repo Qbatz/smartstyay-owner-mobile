@@ -41,6 +41,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const translateY = useRef(new Animated.Value(0)).current;
 
+     const isApplyTriggeredRef = useRef(false);
+
     const [selectedImage, setSelectedImage] = useState(null);
     const [initialImage, setInitialImage] = useState(null);
 
@@ -842,6 +844,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const handleSubmit = async () => {
         if (!validateExpenseForm()) return;
 
+              if (isApplyTriggeredRef.current) return
+        isApplyTriggeredRef.current = true
+
         const totalAmount = Number(amount || 0);
 
         const paid =
@@ -935,6 +940,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 setShowSuccessModal(false);
             }, 1500);
         }
+
+         isApplyTriggeredRef.current = false
     };
 
     return (
@@ -2244,7 +2251,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                             </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.submitBtn}
+                        <TouchableOpacity
+                          style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                          disabled={isApplyTriggeredRef.current}
                             onPress={handleSubmit}
                         >
                             <Text

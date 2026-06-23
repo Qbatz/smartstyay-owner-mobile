@@ -31,6 +31,7 @@ export default function AddVendorSheet({  route, navigation }) {
   const { activeHostelId } = useContext(CommonContexts);
 
   const translateY = useRef(new Animated.Value(0)).current;
+  const isApplyTriggeredRef = useRef(false);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [initialImage, setInitialImage] = useState(null);
@@ -586,6 +587,9 @@ const isSameData = (a, b) => {
 
     if (!validate()) return;
 
+        if (isApplyTriggeredRef.current) return
+        isApplyTriggeredRef.current = true
+
     if (vendorData && initialData) {
   const currentData = getCurrentData();
 
@@ -649,6 +653,8 @@ if (vendorData?.id) {
         setShowSuccessModal(false);
       }, 1500);
     }
+
+    isApplyTriggeredRef.current = false
   };
 
 
@@ -1374,7 +1380,9 @@ if (vendorData?.id) {
 
 
           <TouchableOpacity
-            style={styles.submitBtn} onPress={handleSubmit}
+            style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                          disabled={isApplyTriggeredRef.current}
+            onPress={handleSubmit}
           >
            <Text style={styles.submitText}>
   {vendorData ? "Update Vendor" : "Add Vendor"}
