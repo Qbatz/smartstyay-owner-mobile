@@ -242,7 +242,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
     return () => handler.remove();
   }, [onClose]);
 
-  const vendorOptions = (vendorList || [])?.map((v) => ({
+  const vendorOptions = (vendorList?.vendors || [])?.map((v) => ({
     label: v?.fullName,
     value: v?.id,
   }));

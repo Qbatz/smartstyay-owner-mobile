@@ -401,6 +401,7 @@ const isSameData = (a, b) => {
   const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/;
 
   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  
 
 
   const validate = () => {
@@ -422,17 +423,22 @@ const isSameData = (a, b) => {
       newErrors.businessmobile = "Mobile number cannot start with 0";
     }
 
-    if (!contactPerson.trim()) {
-      newErrors.contactPerson = "Please enter contact person name";
-    }
+   if (mobile) {
+  if (mobile.length !== 10) {
+    newErrors.mobile ="Mobile number must be 10 digits";
+  } else if (mobile[0] === "0") {
+    newErrors.mobile =
+      "Mobile number cannot start with 0";
+  }
+}
 
-    if (!mobile) {
-      newErrors.mobile = "Please enter mobile number";
-    } else if (mobile.length !== 10) {
-      newErrors.mobile = "Mobile number must be 10 digits";
-    } else if (mobile[0] === "0") {
-      newErrors.mobile = "Mobile number cannot start with 0";
-    }
+    // if (!mobile) {
+    //   newErrors.mobile = "Please enter mobile number";
+    // } else if (mobile.length !== 10) {
+    //   newErrors.mobile = "Mobile number must be 10 digits";
+    // } else if (mobile[0] === "0") {
+    //   newErrors.mobile = "Mobile number cannot start with 0";
+    // }
 
     if (email && !emailRegex.test(email)) {
       newErrors.email = "Please enter valid email address";
@@ -455,13 +461,25 @@ const isSameData = (a, b) => {
       newErrors.pinCode = pinError;
     }
 
-    if (gstNumber && !gstRegex.test(gstNumber)) {
-      newErrors.gstNumber = "Please enter valid GST number";
-    }
+   if (
+  gstNumber &&
+  !gstRegex.test(
+    gstNumber.trim().toUpperCase()
+  )
+) {
+  newErrors.gstNumber =
+    "Please enter valid GST number";
+}
 
-    if (panNumber && !panRegex.test(panNumber)) {
-      newErrors.panNumber = "Please enter valid PAN number";
-    }
+    if (
+  panNumber &&
+  !panRegex.test(
+    panNumber.trim().toUpperCase()
+  )
+) {
+  newErrors.panNumber =
+    "Please enter valid PAN number";
+}
 
     // if (allowCredit) {
     //   if (!creditLimit) {
@@ -498,85 +516,197 @@ const isSameData = (a, b) => {
     return Object.keys(newErrors).length === 0;
   }
 
+  // const payLoads = {
+  //   firstName: contactPerson || "",
+  //   lastName: "",
+
+  //   countryCode: selectedCountry?.code || "+91",
+
+  //   mobile: businessmobile,
+
+  //   mailId: email,
+
+  //   houseNo: street,
+
+  //   landmark,
+
+
+  //   pinCode: Number(pinCode),
+
+  //   city,
+
+  //   state: stateName,
+
+  //   businessName,
+
+  //   hostelId: activeHostelId,
+
+  //   vendorCategory: selectedCategory?.value,
+
+  //   contactPerson,
+
+  //   contactPersonMobile: mobile,
+
+  //   description,
+
+  //   gst: gstNumber,
+
+  //   pan: panNumber,
+
+  //   allowCredit,
+
+  //   creditLimit: allowCredit
+  //     ? Number(creditLimit)
+  //     : 0,
+
+  //   creditPeriod: allowCredit
+  //     ? Number(creditPeriod)
+  //     : 0,
+  // };
+
   const payLoads = {
-    firstName: contactPerson || "",
-    lastName: "",
-
-    countryCode: selectedCountry?.code || "+91",
-
-    mobile: businessmobile,
-
-    mailId: email,
-
-    houseNo: street,
-
-    landmark,
-
-    // area,
-
-    pinCode: Number(pinCode),
-
-    city,
-
-    state: stateName,
-
-    businessName,
-
-    hostelId: activeHostelId,
-
-    vendorCategory: selectedCategory?.value,
-
-    contactPerson,
-
-    contactPersonMobile: mobile,
-
-    description,
-
-    gst: gstNumber,
-
-    pan: panNumber,
-
-    allowCredit,
-
-    creditLimit: allowCredit
-      ? Number(creditLimit)
-      : 0,
-
-    creditPeriod: allowCredit
-      ? Number(creditPeriod)
-      : 0,
-  };
-
-  const updatePayload = {
-  firstName: contactPerson,
+  firstName: contactPerson || "",
   lastName: "",
+
   countryCode: selectedCountry?.code || "+91",
+
+  businessMobileCode: selectedCountry?.code || "+91",
   mobile: businessmobile,
+
   mailId: email,
+
   houseNo: street,
   landmark,
-  // area: street,
-  pinCode: Number(pinCode),
+  area: "",
 
- vendorId: vendorData?.id,
-  country: vendorData?.countryId || 1,
+  pinCode: Number(pinCode),
 
   city,
   state: stateName,
+
   businessName,
+  hostelId: activeHostelId,
 
   vendorCategory: selectedCategory?.value,
-  contactPerson,
-  description,
 
-  vendorCode: vendorData?.vendorCode || "",
+  contactPerson: contactPerson || "",
+
+  contactPersonMobileCode:
+    selectedCountry?.code || "+91",
+
+  contactPersonMobile: mobile || "",
+
+  description,
 
   gst: gstNumber,
   pan: panNumber,
 
   allowCredit,
-  creditLimit: allowCredit ? Number(creditLimit) : 0,
-  creditPeriod: allowCredit ? Number(creditPeriod) : 0,
+
+  creditLimit: allowCredit
+    ? Number(creditLimit)
+    : 0,
+
+  creditPeriod: allowCredit
+    ? Number(creditPeriod)
+    : 0,
+};
+
+//   const updatePayload = {
+//   firstName: contactPerson,
+//   lastName: "",
+//   countryCode: selectedCountry?.code || "+91",
+//   mobile: businessmobile,
+//   mailId: email,
+//   houseNo: street,
+//   landmark,
+//   pinCode: Number(pinCode),
+
+//  vendorId: vendorData?.id,
+//   country: vendorData?.countryId || 1,
+
+//   city,
+//   state: stateName,
+//   businessName,
+
+//   vendorCategory: selectedCategory?.value,
+//   contactPerson,
+//   description,
+
+//   vendorCode: vendorData?.vendorCode || "",
+
+//   gst: gstNumber,
+//   pan: panNumber,
+
+//   allowCredit,
+//   creditLimit: allowCredit ? Number(creditLimit) : 0,
+//   creditPeriod: allowCredit ? Number(creditPeriod) : 0,
+// };
+
+const updatePayload = {
+  firstName: contactPerson || "",
+  lastName: "",
+
+  countryCode:
+    selectedCountry?.code || "+91",
+
+  mobile: businessmobile || "",
+
+  businessMobileCode:
+    selectedCountry?.code || "+91",
+
+  contactPersonMobile:
+    mobile || "",
+
+  contactPersonMobileCode:
+    selectedCountry?.code || "+91",
+
+  mailId: email || "",
+
+  houseNo: street || "",
+
+  landmark: landmark || "",
+
+  area: "",
+
+  pinCode: Number(pinCode),
+
+  vendorId: vendorData?.id,
+
+  country:
+    vendorData?.countryId || 1,
+
+  city: city || "",
+
+  state: stateName || "",
+
+  businessName: businessName || "",
+
+  vendorCategory:
+    selectedCategory?.value,
+
+  contactPerson:
+    contactPerson || "",
+
+  description:
+    description || "",
+
+  vendorCode:
+    vendorData?.vendorCode || "",
+
+  gst: gstNumber || "",
+
+  pan: panNumber || "",
+
+  allowCredit,
+
+  creditLimit: allowCredit
+    ? Number(creditLimit)
+    : 0,
+
+  creditPeriod: allowCredit
+    ? Number(creditPeriod)
+    : 0,
 };
 
   console.log("payloads", payLoads);
@@ -1243,7 +1373,12 @@ if (vendorData?.id) {
           autoCapitalize="characters"
           style={styles.input}
         />
-
+{errors.gstNumber && (
+  <ErrorMessage
+    message={errors.gstNumber}
+    type="error"
+  />
+)}
 
 
         <Text style={styles.label}>
@@ -1266,6 +1401,12 @@ if (vendorData?.id) {
           autoCapitalize="characters"
           style={styles.input}
         />
+        {errors.panNumber && (
+  <ErrorMessage
+    message={errors.panNumber}
+    type="error"
+  />
+)}
 
        {vendorData && (
   <>
