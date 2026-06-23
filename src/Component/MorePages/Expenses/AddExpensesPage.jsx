@@ -868,7 +868,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
                 count: items.length,
                 totalAmount,
-
+                 creditPeriod: creditType || "",
                 bankId: selectedMode?.id || "",
 
                 description,

@@ -740,12 +740,10 @@ export default function AddVendorSheet({ onClose, vendorData }) {
   { label: "United Kingdom", code: "+44" },
   { label: "Australia", code: "+61" },
   { label: "Singapore", code: "+65" },
-];
-
-
-
+]
 
   return (
+
 
     <>
 
