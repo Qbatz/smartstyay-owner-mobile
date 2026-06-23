@@ -76,6 +76,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
+  const [ openWallet , setOpenWallet] = useState(false)
 
   const [collectFullRent, setCollectFullRent] = useState(false);
   const [showRentSheet, setShowRentSheet] = useState(false);
@@ -281,14 +282,21 @@ export default function FinalSettlementScreen({ navigation, route }) {
     outputRange: ["0deg", "180deg"],
   });
 
-  // ✅ API CALL (Same as your code)
-
   const userEnteredDeductionsTotal = extraCharges
-    .filter(item => !item.isDefault)
-    .reduce((sum, item) => {
-      const amt = Number(item.amount);
-      return sum + (isNaN(amt) ? 0 : amt);
-    }, 0);
+  .filter(item => !item.isDefault)
+  .reduce((sum, item) => {
+    const amt = Number(item.amount);
+    return sum + (isNaN(amt) ? 0 : amt);
+  }, 0);
+
+ 
+
+  // const userEnteredDeductionsTotal = extraCharges
+  //   .filter(item => !item.isDefault)
+  //   .reduce((sum, item) => {
+  //     const amt = Number(item.amount);
+  //     return sum + (isNaN(amt) ? 0 : amt);
+  //   }, 0);
 
 
   // useEffect(() => {
@@ -473,7 +481,12 @@ export default function FinalSettlementScreen({ navigation, route }) {
   }, [
     finalAmountSetClicked,
     settlementDetails?.currentMonthRentInfo?.fullRent,
-  ]);
+  ])
+
+    const totalDeduction = extraCharges.reduce((sum, item) => {
+  const amt = Number(item.amount);
+  return sum + (isNaN(amt) ? 0 : amt);
+}, 0);
 
   useEffect(() => {
     const lastRentPaid = Number(
@@ -557,19 +570,29 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
     let finalAmount = 0;
 
+    // if (updatedAmountToBePaid < 0) {
+    //   finalAmount = isRefundable
+    //     ? updatedAmountToBePaid +
+    //     userEnteredDeductionsTotal
+    //     : updatedAmountToBePaid -
+    //     userEnteredDeductionsTotal;
+    // } else {
+    //   finalAmount = isRefundable
+    //     ? updatedAmountToBePaid -
+    //     userEnteredDeductionsTotal
+    //     : updatedAmountToBePaid +
+    //     userEnteredDeductionsTotal;
+    // }
+
     if (updatedAmountToBePaid < 0) {
-      finalAmount = isRefundable
-        ? updatedAmountToBePaid +
-        userEnteredDeductionsTotal
-        : updatedAmountToBePaid -
-        userEnteredDeductionsTotal;
-    } else {
-      finalAmount = isRefundable
-        ? updatedAmountToBePaid -
-        userEnteredDeductionsTotal
-        : updatedAmountToBePaid +
-        userEnteredDeductionsTotal;
-    }
+  finalAmount = isRefundable
+    ? updatedAmountToBePaid + totalDeduction
+    : updatedAmountToBePaid - totalDeduction;
+} else {
+  finalAmount = isRefundable
+    ? updatedAmountToBePaid - totalDeduction
+    : updatedAmountToBePaid + totalDeduction;
+}
 
     finalAmount -= Number(appliedDiscount || 0);
 
@@ -581,11 +604,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
     setReturnAmount(normalizedAmount);
   }, [
     settlementDetails,
-    userEnteredDeductionsTotal,
     appliedDiscount,
     collectFullRent,
     customRentAmount,
     finalAmountSetClicked,
+    totalDeduction
   ]);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -806,9 +829,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
     );
   };
 
-  const totalDeduction = extraCharges.reduce((sum, item) => {
-    return sum + Number(item.amount || 0);
-  }, 0);
+  // const totalDeduction = extraCharges.reduce((sum, item) => {
+  //   return sum + Number(item.amount || 0);
+  // }, 0)
+
+
 
   const removeCharge = (id) => {
     setExtraCharges((prev) => prev.filter((i) => i.id !== id));
@@ -1993,6 +2018,46 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 </View>
               )}
             </View>
+
+ {/* <View style={styles.accordionCard}>
+            <TouchableOpacity
+  style={styles.accordionHeader}
+  onPress={() => setOpenWallet(!openWallet)}
+>
+  <Image source={DownArrow} />
+  <Text style={styles.cardTitle}>
+    Refundable Wallet Amount
+  </Text>
+
+  <Text style={styles.amountText}>
+    ₹ {settlementDetails?.walletInfo?.totalWalletAmount || 0}
+  </Text>
+</TouchableOpacity>
+
+{settlementDetails?.walletInfo?.transactions?.map(
+  (item, index) => (
+    <View key={index}>
+      <View style={styles.rowBetween}>
+        <Text>{item.label}</Text>
+        <Text>₹ {item.amount}</Text>
+      </View>
+
+      {item?.breakup?.map((row, idx) => (
+        <View key={idx} style={styles.detailCard}>
+          <Text>
+            {row?.floorName} | {row?.roomName} - {row?.bedName}
+          </Text>
+
+          <Text>
+            ({row?.days} days × {row?.amountPerDay})
+          </Text>
+        </View>
+      ))}
+    </View>
+  )
+)}
+
+</View> */}
 
             <View style={styles.nonRefund}>
               <View style={styles.extraHeader}>
