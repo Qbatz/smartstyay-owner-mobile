@@ -827,8 +827,8 @@ export default function VendorSettlePayment({
 
                     {/* Ref No */}
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                      <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginRight: 4 }} />
-                      <Text style={styles.smallText}>{item?.referenceNo}</Text>
+                      <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginRight: 4 ,}} />
+                      <Text style={styles.smallText}>{item?.referenceNo || "N/A"}</Text>
                     </View>
 
                     {/* Divider */}
@@ -1395,7 +1395,7 @@ const styles = StyleSheet.create({
   smallText: {
     fontSize: 12,
     color: "#9CA3AF",
-    marginBottom: 8,
+    // marginBottom: 8,
     fontFamily: "Gilroy-Semibold"
   },
 

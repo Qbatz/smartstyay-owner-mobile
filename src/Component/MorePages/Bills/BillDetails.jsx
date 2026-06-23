@@ -50,7 +50,7 @@ import BillIcon from "../../../Assets/Images/bill.png";
 const BillDetailsSheet = ({
   visible,
   onClose,
-  selectedBill,
+  selectedBill
   // BillPdfdetails,
   // isExportAllow,
   // canWriteInvoice,
@@ -64,6 +64,9 @@ const BillDetailsSheet = ({
 
   const { CommonModule } = NativeModules;
   const navigation = useNavigation();
+
+  console.log('selectedBill', selectedBill);
+  
 
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
@@ -109,7 +112,6 @@ const BillDetailsSheet = ({
 
 
   const recordSheetY = useRef(new Animated.Value(0)).current;
-  console.log(selectedBill, "bills")
 
   // useEffect(() => {
   //   if (visible) {
@@ -129,6 +131,9 @@ const BillDetailsSheet = ({
   const invoice = BillPdfdetails?.invoiceInfo;
   const customer = BillPdfdetails?.customerInfo;
   const stay = BillPdfdetails?.stayInfo;
+
+  console.log("invoice_details", invoice);
+  
 
   // const normalizedBill = {
   //   invoiceId: selectedBill?.invoiceId,

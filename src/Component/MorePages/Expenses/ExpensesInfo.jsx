@@ -39,7 +39,7 @@ export default function ExpenseInfo({ expense }) {
 
        <InfoItem
         label="Vendor"
-        value={"N/A"}
+        value={ expense?.vendorAddress || "N/A"}
        icon={LocationIcon}
       />
 

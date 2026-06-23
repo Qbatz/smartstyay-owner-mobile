@@ -2900,11 +2900,12 @@ export default function BillsDesign({ route }) {
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
-                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Rent</Text>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Payable Rent</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-                              ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount}
+                              
+                              ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -4162,7 +4163,7 @@ export default function BillsDesign({ route }) {
                           {selectedReceipt?.paymentStatus}
                         </Text>
                         {console.log("resc", selectedReceipt)}
-                        {console.log(selectedReceiptFullDetail)}
+                        {console.log("selectedReceiptFullDetail", selectedReceiptFullDetail)}
                       </View>
 
                       <TouchableOpacity ref={(el) => {
@@ -4212,7 +4213,7 @@ export default function BillsDesign({ route }) {
                           width: 12,
                           height: 12, marginTop: 5, marginRight: 5
                         }} />
-                        <Text style={styles.billNumber}>{selectedReceiptFullDetail?.receiptInfo?.receiptNumber}</Text>
+                        <Text style={styles.billNumber}>{selectedReceiptFullDetail?.invoiceNumber}</Text>
                       </View>
                     </View>
                   </View>
@@ -4247,7 +4248,7 @@ export default function BillsDesign({ route }) {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom: 9 }}>
                     <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#3C3C4399' }}>Transaction Id</Text>
-                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceipt?.transactionNumber || "--"}</Text>
+                    <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{selectedReceipt?.referenceNumber || "N/A"}</Text>
                   </View>
 
 
