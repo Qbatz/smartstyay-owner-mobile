@@ -10,6 +10,7 @@ import AddCircle from "../../../Assets/Images/add-circle.png"
 import SearchIcon from "../../../Assets/Images/SearchIcon.png"
 import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 
 
@@ -35,6 +36,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const [stateQuery, setStateQuery] = useState("");
     const [showPaymentMode, setShowPaymentMode] = useState(false);
     const [selectedMode, setSelectedMode] = useState("");
+    const [errors,setErrors]=useState("")
 
 
 
@@ -150,6 +152,31 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
     console.log("filterl", filterList)
 
+
+    const savegenerate=()=>{
+
+
+        let newErrors={};
+
+        if(!selectedName.trim()){
+            newErrors.name="Please Select Name"
+        }
+        if(!paidDate){
+            newErrors.paidDate="Please Select Date"
+        }
+        if(!selectedMode){
+            newErrors.payMode="Please Select Mode"
+        }
+
+        setErrors(newErrors)
+
+        if(newErrors.length>0){
+            return;
+        }
+
+
+    }
+
     return (
         <>
 
@@ -166,7 +193,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
 
                     <Text style={styles.tntNameTxt}>
-                        Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                        Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>             
 
                     <View style={styles.container}>
                         <TextInput
@@ -174,9 +201,12 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             style={styles.input}
                             value={showTenantName ? stateQuery || selectedName : selectedName}
                             placeholderTextColor="#B5B5B5"
-                            onPressIn={() => setShowTenantName(!showTenantName)}
+                            onPressIn={() => {setShowTenantName(!showTenantName)
+                                setErrors("name","")
+                            }}
                             onChangeText={(text) => {
                                 setStateQuery(text)
+                                setErrors("name","")
                             }}
                         />
 
@@ -196,6 +226,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             />
                         </TouchableOpacity>
                     </View>
+
+                     {errors.name && <ErrorMessage message={errors.name} type="error"/>}
 
 
                     {showTenantName && (
@@ -265,6 +297,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             style={{ width: 22, height: 22, tintColor: "#444" }}
                         />
                     </TouchableOpacity>
+
+                     {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error"/>}
 
                     <Text style={styles.headerTxt}>Reference No</Text>
 
@@ -362,6 +396,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} />
                     </TouchableOpacity>
 
+                     {errors.payMode && <ErrorMessage message={errors.payMode} type="error"/>}
+
                     {showPaymentMode && (
                         <>
                             <TouchableWithoutFeedback onPress={() => setShowPaymentMode(false)}>
@@ -409,7 +445,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 Cancel</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8 }}>
+                        <TouchableOpacity onPress={savegenerate}
+                        style={{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8 }}>
                             <Text style={{ color: '#ffffff', fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
                                 Save & Generate</Text>
                         </TouchableOpacity>
