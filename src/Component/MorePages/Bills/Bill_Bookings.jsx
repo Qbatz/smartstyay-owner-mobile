@@ -426,9 +426,10 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
 
 
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1,marginRight:5 }}>
           {/* <TouchableOpacity  > */}
-          <Text style={styles.name}>{item.fullName}</Text>
+          <Text style={styles.name} numberOfLines={1}
+          >{item.fullName}</Text>
           {/* </TouchableOpacity> */}
 
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>

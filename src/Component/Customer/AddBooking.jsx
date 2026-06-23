@@ -662,7 +662,7 @@ export default function AddBookingScreen({ navigation, route }) {
               placeholderTextColor="#999"
               onChangeText={(text) => {
                 const filtered = text.replace(/[^A-Za-z0-9./#@!^&*() ]/g, "");
-                setReferenceNumber(text)
+                setReferenceNumber(filtered)
               }}
               value={referenceNumber}
               style={styles.inputBox}

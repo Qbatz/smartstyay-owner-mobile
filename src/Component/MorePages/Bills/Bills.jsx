@@ -4057,8 +4057,9 @@ export default function BillsDesign({ route }) {
                         <View style={styles.bottomActionItem}>
                           <TouchableOpacity
                             style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
-                              // onPress={()=>navigation.navigate("NewRecordPayment")}
-                            onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
+                              onPress={()=>navigation.navigate("NewRecordPayment",
+                                {selectedBill,BillPdfdetails})}
+                            // onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
                           >
                             <Image source={PlusIcon} style={styles.iconWhite} />
                           </TouchableOpacity>
@@ -4879,7 +4880,7 @@ export default function BillsDesign({ route }) {
 
                   {/* Header */}
                   <Text style={{ fontSize: 20, fontFamily: "Gilroy-Bold", marginBottom: 20 }}>
-                    Record Payment
+                    Record Payments
                   </Text>
 
                   {/* USER INFO */}
