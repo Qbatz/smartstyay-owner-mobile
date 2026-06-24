@@ -44,7 +44,7 @@ import ReactNativeBlobUtil from "react-native-blob-util";
 
 
 
-const Receipt = ({ onSelectReceipt }) => {
+const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails,
@@ -495,14 +495,14 @@ const Receipt = ({ onSelectReceipt }) => {
 
 
 
-        {/* {!loading && receiptsList?.length > 0 && (
+        {!loading && receiptsList?.length > 0 && (
           <TouchableOpacity
             style={[styles.filterButton, !canReadReceipt && { opacity: 0.4 }]}
             disabled={!canReadReceipt}
-            onPress={() => setShowFilter(true)} >
+            onPress={showReceiptFiltersheet} >
             <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
-        )} */}
+        )}
 
 
 
