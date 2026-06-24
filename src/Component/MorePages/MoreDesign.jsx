@@ -83,32 +83,34 @@ export default function MoreDesign({ navigation }) {
   { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
   { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
   { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
-  { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
+  // { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
 
-  ...(environment !== "PROD"
-    ? [
+  // ...(environment !== "PROD"
+  //   ? [
         {
-          title: "ExpensesList",
+          title: "Expenses",
           icon: Expensesimage,
           bg: "#16C25B",
           screen: "ExpensesList",
         },
-      ]
-    : []),
+    //   ]
+    // : [])
+    ,
 
   { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
-  { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
+  // { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
 
-  ...(environment !== "PROD"
-    ? [
+  // ...(environment !== "PROD"
+  //   ? [
         {
-          title: "Vendor New",
+          title: "Vendor",
           icon: Vendorimage,
           bg: "#FF7A00",
           screen: "Vendor",
         },
-      ]
-    : []),
+    //   ]
+    // : [])
+    ,
 
   {
     title: "Settings",

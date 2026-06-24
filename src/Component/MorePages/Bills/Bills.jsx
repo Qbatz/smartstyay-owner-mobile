@@ -95,7 +95,7 @@ import BillBookings from "./Bill_Bookings";
 import { s, vs } from "../../../Utils/rnScale";
 import DiscountActionSheet from "./DiscountActionSheet"
 import BillBookingDetails from "./Bill_BookingDetails"
-
+import ReceiptFilterSheet from "./ReceiptFilterSheet"
 
 
 
@@ -210,7 +210,7 @@ export default function BillsDesign({ route }) {
   const [selectedReceiptFullDetail, setSelectedReceiptFull] = useState(null)
 
   const [showAdjustments, setShowAdjustments] = useState(false);
-
+  const [showReceiptFilter, setShowReceiptFilter] = useState(false);
 
 
   const [showRecordPayment, setShowRecordPayment] = useState(false);
@@ -2672,7 +2672,7 @@ export default function BillsDesign({ route }) {
             <RecurringBills onSelectRecurringBill={handleRecurringBill} />
           )}
           {activeTab === "Receipt" && (
-            <Receipt onSelectReceipt={handleOpenReceiptSheet} />
+            <Receipt onSelectReceipt={handleOpenReceiptSheet} showReceiptFiltersheet={() => setShowReceiptFilter(true)} />
           )}
 
 
@@ -4095,6 +4095,15 @@ export default function BillsDesign({ route }) {
                 </Animated.View>
               </View>
             )}
+
+
+            <ReceiptFilterSheet
+  visible={showReceiptFilter}
+  onClose={() => setShowReceiptFilter(false)}
+  onApply={(filters) => {
+    console.log(filters);
+  }}
+/>
 
             <DiscountActionSheet
               visible={showDiscountSheet}
