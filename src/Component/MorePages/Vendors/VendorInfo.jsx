@@ -26,7 +26,7 @@ export default function VendorInfo({ vendor }) {
 
       <InfoItem
         label="Category"
-        value={vendor?.businessName}
+        value={vendor?.vendorCategoryName}
         icon={CategoryIcon}
       />
 
@@ -42,15 +42,15 @@ export default function VendorInfo({ vendor }) {
         icon={LocationIcon}
       />
 
-      <InfoItem
+      {/* <InfoItem
         label="Last Transaction"
-        value="18 July 2025"
+        value="N/A"
         icon={CalendarIcon}
-      />
+      /> */}
 
       <InfoItem
         label="Credit Limit"
-        value="₹ 15,000.00"
+        value={vendor?.creditLimit || 0}
         icon={CalendarIcon}
       />
     </ScrollView>
