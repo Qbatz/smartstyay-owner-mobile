@@ -11,6 +11,11 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
 import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
+import Loader from "../../Loader/Loader";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import EditConfigure from "../../../Assets/Images/Edit_Configure.png"
+import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
+
 
 
 
@@ -19,7 +24,7 @@ const NewRecordPayment = ({ route }) => {
 
     const navigation = useNavigation();
     const isTriggeredRef = useRef(false)
-    const { selectedBill, BillPdfdetails } = route?.params
+    const { selectedBill, BillPdfdetails, onPaymentSuccess } = route?.params
     const [paidDate, setPaidDate] = useState("");
     const [openPaidDate, setOpenPaidDate] = useState(false);
     const [tenantName, setTenantName] = useState("");
@@ -30,12 +35,17 @@ const NewRecordPayment = ({ route }) => {
     const [selectedMode, setSelectedMode] = useState("");
     const [showTransferAcnt, setShowTransferAcnt] = useState(false);
     const [selectedTransferAcnt, setSelectedTransferAcnt] = useState("")
-    const { GetAdvanceCreditDetails, RecordPayment, GetAllBillDetails } = useContext(BillContext);
+    const { GetAdvanceCreditDetails, RecordPayment, GetAllBillDetails, loading } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
     const { bankList, getBankListByHostel } = useContext(BankingContext);
     const [amountError, setAmountError] = useState("");
     const [dateError, setDateError] = useState("");
     const [modeError, setModeError] = useState("");
+    const [balanceAmount, setBalanceAmount] = useState(0);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+    const [recordLoading, setRecordLoading] = useState(false)
 
     console.log(selectedBill)
     console.log("Thata", route)
@@ -43,7 +53,7 @@ const NewRecordPayment = ({ route }) => {
 
     const totalAmount = 15000;
 
-    const balanceAmount = totalAmount - paidAmount;
+    // const balanceAmount = totalAmount - paidAmount;
 
     const paymentModeTypes = [{ id: 0, lable: "Gpayf" }, { id: 1, lable: "phonepay" }, { id: 2, lable: "Cash" }]
 
@@ -65,6 +75,32 @@ const NewRecordPayment = ({ route }) => {
         // setShowBillDetails(false)
 
     }
+
+    const handlePaidAmountChange = (text) => {
+        setAmountError("");
+
+        let cleaned = text.replace(/[^0-9.]/g, "");
+
+        const parts = cleaned.split(".");
+        if (parts.length > 2) {
+            cleaned = parts[0] + "." + parts[1];
+        }
+
+        if (parts[1]?.length > 2) {
+            cleaned = parts[0] + "." + parts[1].slice(0, 2);
+        }
+
+        let num = parseFloat(cleaned);
+        if (isNaN(num)) num = 0;
+
+        if (num > (selectedBill?.dueAmount || 0)) {
+            num = selectedBill?.dueAmount || 0;
+            cleaned = String(num);
+        }
+
+        setPaidAmount(cleaned);
+        setBalanceAmount((selectedBill?.dueAmount || 0) - num);
+    };
 
     const transactionOptions = (bankList || []).map((item) => ({
         label: `${item.accountHolderName || "Account"} - ${item.accountType}`,
@@ -172,6 +208,9 @@ const NewRecordPayment = ({ route }) => {
                 await GetAllBillDetails(activeHostelId);
                 //   setShowBillDetails(false)
                 //   setShowRecordPayment(false);
+                if (onPaymentSuccess) {
+                    onPaymentSuccess();
+                }
                 navigation.goBack();
 
                 setModalType("success");
@@ -199,6 +238,13 @@ const NewRecordPayment = ({ route }) => {
 
     return (
         <>
+            {(loading || recordLoading) && <Loader />}
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType}
+            />
             <View style={styles.mainheadPage}>
 
 
@@ -207,7 +253,7 @@ const NewRecordPayment = ({ route }) => {
                         onPress={() => navigation.goBack()} >
                         <Image source={ArrowLeft} style={{ width: 22, height: 22 }} />
                     </TouchableOpacity>
-                    <Text style={styles.pageHead}>Record Payment</Text>
+                    <Text style={styles.pageHead}>Payment for {BillPdfdetails?.invoiceNumber || selectedBill?.invoiceNumber}</Text>
                 </View>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
                     <Text style={styles.tntNameTxt}>Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
@@ -249,21 +295,24 @@ const NewRecordPayment = ({ route }) => {
                                 </View>
                             </View>
 
-                            <Image source={ArrowLeft} style={{ width: 20, height: 20 }} />
+                            <Image source={ActiveIcon} style={{ width: 20, height: 20,marginRight:4 }} />
                         </View>
 
-                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 14 }}>Build To</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14 }}>
+                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', }}>Build to</Text>
+                            <Image source={EditConfigure}   style={{ width: 15, height: 15, marginLeft: 5 }} />
+                        </View>
 
                         <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 12 }}>
                             Plot No
                         </Text>
 
-                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 5 }}>
-                            Ramsay Nager, 4th nager, chennai
+                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 5, lineHeight: 20 }}>
+                            {BillPdfdetails?.customerInfo?.fullAddress || "N/A"}
                         </Text>
 
-                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 4 }}>
-                            Chennai -60007</Text>
+                        {/* <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 4 }}>
+                            Chennai -60007</Text> */}
 
                         <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Semibold', color: '#5E6470', marginTop: 10 }}>
                             {BillPdfdetails?.customerInfo?.countryCode} {BillPdfdetails?.customerInfo?.customerMobileNo}</Text>
@@ -276,10 +325,12 @@ const NewRecordPayment = ({ route }) => {
                         style={styles.txtInputBox}
                         placeholder="₹ 1700"
                         value={paidAmount}
-                        onChangeText={(text) => {
-                            if (text > totalAmount) return;
-                            setPaidAmount(text)
-                        }} />
+                        // onChangeText={(text) => {
+                        //     if (text > totalAmount) return;
+                        //     setPaidAmount(text)
+                        // }} 
+                        onChangeText={handlePaidAmountChange}
+                    />
 
                     {amountError && <ErrorMessage message={amountError} type="error" />}
 
@@ -461,7 +512,7 @@ const NewRecordPayment = ({ route }) => {
                     <View style={styles.sumryBox}>
                         <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Bold', color: '#FFFFFF99' }}>SUMMARY</Text>
 
-                        <Text style={styles.amntTxt}>₹ {totalAmount}</Text>
+                        <Text style={styles.amntTxt}>₹ {selectedBill?.dueAmount || "0.00"}</Text>
 
                         <View style={{ borderColor: '#FFFFFF1A', marginVertical: 14, borderWidth: 0.8 }} />
 

@@ -33,7 +33,8 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [description, setDescription] = useState("")
+  const [description, setDescription] = useState("");
+  const [initialDescription,setInitialDescription]=useState("");
   const toggleAll = () => {
     const newValue = !selectAll;
 
@@ -89,6 +90,8 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
 
     setSelectedRole(editData.name);
     setInitialRoleName(editData.name);
+    setDescription(editData?.description);
+    setInitialDescription(editData?.description)
 
     const updatedPermState = permissions.map((module) => {
       const found = editData.rolesPermissionDetails?.find(
@@ -260,7 +263,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
 
     if (
       editData &&
-      selectedRole === initialRoleName &&
+      selectedRole === initialRoleName && description === initialDescription &&
       isSamePermission(permState, initialPermState)
     ) {
 
