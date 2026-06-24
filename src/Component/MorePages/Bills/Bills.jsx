@@ -290,7 +290,7 @@ export default function BillsDesign({ route }) {
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
   );
-  const [isRefundClicked,setIsRefundClicked]=useState(false);
+  const [isRefundClicked, setIsRefundClicked] = useState(false);
 
 
   const isSettlementBill =
@@ -2138,7 +2138,7 @@ export default function BillsDesign({ route }) {
     }
 
     if (!valid) return;
-    if(isRefundClicked) return;
+    if (isRefundClicked) return;
     setIsRefundClicked(true);
 
     const payload = {
@@ -2153,44 +2153,44 @@ export default function BillsDesign({ route }) {
     console.log("payload", payload);
 
 
-    try{
+    try {
 
-    const res = await CreateRefund({
-      hostelId: activeHostelId,
-      invoiceId: selectedBill?.invoiceId,
-      payload,
-    });
+      const res = await CreateRefund({
+        hostelId: activeHostelId,
+        invoiceId: selectedBill?.invoiceId,
+        payload,
+      });
 
-    if (res?.success) {
-      setModalType("success");
-      setModalMessage("Refund successfully");
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
+      if (res?.success) {
+        setModalType("success");
+        setModalMessage("Refund successfully");
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 1500);
 
-      setShowBillDetails(false)
-      GetAllBillDetails(activeHostelId);
-      setShowRefundPayment(false);
-      resetRefundForm();
-      setRefundAmount("");
-      setRefundDate(null);
-      setRefundFrom("");
-      setTransactionId("");
-      setTimeout(() => {
-        setIsRefundClicked(false)
-      }, 1500);
-    }
-    else if (res?.refundableError) {
-      setModalType("warning");
-      setModalMessage(res?.refundableError);
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
-    } else {
-      setModalType("warning");
-      setModalMessage(res?.message);
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 1500);
-    }
-    }catch(error){
+        setShowBillDetails(false)
+        GetAllBillDetails(activeHostelId);
+        setShowRefundPayment(false);
+        resetRefundForm();
+        setRefundAmount("");
+        setRefundDate(null);
+        setRefundFrom("");
+        setTransactionId("");
+        setTimeout(() => {
+          setIsRefundClicked(false)
+        }, 1500);
+      }
+      else if (res?.refundableError) {
+        setModalType("warning");
+        setModalMessage(res?.refundableError);
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 1500);
+      } else {
+        setModalType("warning");
+        setModalMessage(res?.message);
+        setShowSuccessModal(true);
+        setTimeout(() => setShowSuccessModal(false), 1500);
+      }
+    } catch (error) {
       console.log(error)
       setIsRefundClicked(false);
     }
@@ -2904,7 +2904,7 @@ export default function BillsDesign({ route }) {
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-                              
+
                               ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
@@ -3271,10 +3271,10 @@ export default function BillsDesign({ route }) {
                                 </>
                               ) : (
                                 <View style={styles.emptyWallet}>
-                                <View style={styles.emptyState}>
-                                  <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                                  <View style={styles.emptyState}>
+                                    <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                                  </View>
                                 </View>
-                                 </View>
                               )}
 
                               <View style={styles.totalInvoiceRow}>
@@ -3347,10 +3347,10 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                                 <Text style={styles.amountText}>
-                                  
+
                                   ₹ {Number(
-                                            BillPdfdetails?.currentMonthRentInfo?.currentMonthPaidAmount || 0
-                                          ).toLocaleString("en-IN")}
+                                    BillPdfdetails?.currentMonthRentInfo?.currentMonthPaidAmount || 0
+                                  ).toLocaleString("en-IN")}
                                 </Text>
                               </TouchableOpacity>
 
@@ -3395,9 +3395,9 @@ export default function BillsDesign({ route }) {
 
                                 <Text style={styles.amountText}>
                                   ₹{" "}
-                                          {Number(
-                                            BillPdfdetails?.currentMonthRentInfo?.listBreakup[0]?.rentPerDay * BillPdfdetails?.currentMonthRentInfo?.listBreakup[0]?.noOfDays || 0
-                                          ).toLocaleString("en-IN")}
+                                  {Number(
+                                    BillPdfdetails?.currentMonthRentInfo?.listBreakup[0]?.rentPerDay * BillPdfdetails?.currentMonthRentInfo?.listBreakup[0]?.noOfDays || 0
+                                  ).toLocaleString("en-IN")}
                                 </Text>
                               </TouchableOpacity>
 
@@ -3405,8 +3405,10 @@ export default function BillsDesign({ route }) {
                                 BillPdfdetails?.currentMonthRentInfo?.listBreakup?.map(
                                   (item, index) => (
 
-                                    <View key={index} style={{flexDirection:'row',backgroundColor:'#F9F9F9',alignItems:'center',
-                                                              padding:8,borderRadius:8}}>
+                                    <View key={index} style={{
+                                      flexDirection: 'row', backgroundColor: '#F9F9F9', alignItems: 'center',
+                                      padding: 8, borderRadius: 8
+                                    }}>
                                       <Text style={styles.linkText}>
                                         {item?.floorName} | {item?.roomName} - {item?.bedName}
                                       </Text>
@@ -3416,7 +3418,7 @@ export default function BillsDesign({ route }) {
                                         numberOfLines={0}
                                       >
                                         ({item?.noOfDays} {item?.noOfDays === 1 ? "day" : "days"} × {item?.rentPerDay})
-                                      </Text>                                   
+                                      </Text>
                                     </View>
 
                                   )
@@ -3604,11 +3606,11 @@ export default function BillsDesign({ route }) {
                                     </Text>
                                   </View>
                                 ) : (
-                                    <View style={styles.emptyWallet}>
-                                  <View style={styles.emptyState}>
-                                    <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                                  <View style={styles.emptyWallet}>
+                                    <View style={styles.emptyState}>
+                                      <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                                    </View>
                                   </View>
-                                   </View>
                                 )}
 
                                 {/* )} */}
@@ -3691,11 +3693,11 @@ export default function BillsDesign({ route }) {
                                     </View>
                                   ))
                                 ) : (
-                                    <View style={styles.emptyWallet}>
-                                  <View style={styles.emptyState}>
-                                    <Text style={styles.emptyWalletText}>No Pending Bookings</Text>
+                                  <View style={styles.emptyWallet}>
+                                    <View style={styles.emptyState}>
+                                      <Text style={styles.emptyWalletText}>No Pending Bookings</Text>
+                                    </View>
                                   </View>
-                                   </View>
                                 )}
 
                                 <View style={styles.totalInvoiceRow}>
@@ -3831,6 +3833,21 @@ export default function BillsDesign({ route }) {
                       </View>
                     )}
 
+                    {BillPdfdetails?.invoiceInfo?.isCancelled && (
+                      <View
+                        style={{
+                          marginTop: 10, flexDirection: "row",
+                          justifyContent: "space-between", alignItems: "flex-start",marginBottom:5
+                        }}>
+                        <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Cancelled on</Text>
+
+
+                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                          {BillPdfdetails?.invoiceInfo?.cancelledOn ?? "--"}
+                        </Text>
+                      </View>
+                    )}
+
 
                     {showAdjustmentsAccordion && (
                       <View style={styles.paymentWrapper}>
@@ -3854,7 +3871,7 @@ export default function BillsDesign({ route }) {
 
                         {/* BODY */}
                         {showAdjustments && (
-                          <View style={{ marginTop: 8}}>
+                          <View style={{ marginTop: 8 }}>
 
                             {redeemedList.map((item, index) => (
                               <View
@@ -4058,9 +4075,12 @@ export default function BillsDesign({ route }) {
                         <View style={styles.bottomActionItem}>
                           <TouchableOpacity
                             style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
-                              onPress={()=>navigation.navigate("NewRecordPayment",
-                                {selectedBill,BillPdfdetails})}
-                            // onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
+                            onPress={() => navigation.navigate("NewRecordPayment",
+                              {
+                                selectedBill, BillPdfdetails,
+                                onPaymentSuccess: setShowBillDetails(false),
+                              })}
+                          // onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
                           >
                             <Image source={PlusIcon} style={styles.iconWhite} />
                           </TouchableOpacity>
@@ -4558,19 +4578,19 @@ export default function BillsDesign({ route }) {
                   </>
                 )}
 
-    <TouchableOpacity
-                      style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                      // disabled={!canUpdateInvoice}
-                      
-                      onPress={handleBookingApplyInvoices} >
-                      <Image
-                        source={require("../../../Assets/Images/Union.png")}
-                        style={styles.popupIcon}
-                      />
-                      <Text style={styles.popupText}>Adjust With Retainer</Text>
-                    </TouchableOpacity>
-            
-                    <View style={styles.menuDivider} />
+                <TouchableOpacity
+                  style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                  // disabled={!canUpdateInvoice}
+
+                  onPress={handleBookingApplyInvoices} >
+                  <Image
+                    source={require("../../../Assets/Images/Union.png")}
+                    style={styles.popupIcon}
+                  />
+                  <Text style={styles.popupText}>Adjust With Retainer</Text>
+                </TouchableOpacity>
+
+                <View style={styles.menuDivider} />
 
                 {/*  */}
 
@@ -5629,7 +5649,7 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.saveBtn,isRefundClicked && {opacity:0.4}]}
+                      style={[styles.saveBtn, isRefundClicked && { opacity: 0.4 }]}
                       onPress={handleSaveRefund}
                       disabled={isRefundClicked}
                     >
@@ -7993,12 +8013,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
     padding: 14,
-    paddingHorizontal:10
+    paddingHorizontal: 10
   },
 
 
   th: { fontSize: 12, fontFamily: "Gilroy-Bold", color: "#6B7280" },
-  invoiceRow: { flexDirection: "row", paddingVertical: 10 , paddingHorizontal:10},
+  invoiceRow: { flexDirection: "row", paddingVertical: 10, paddingHorizontal: 10 },
   invText: { fontSize: 13, color: "#111" },
 
   sectionLabel: { fontSize: 13, fontFamily: "Gilroy-Bold", marginBottom: 8 },
@@ -8122,8 +8142,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
-    paddingHorizontal:10, 
-    paddingVertical:10
+    paddingHorizontal: 10,
+    paddingVertical: 10
   },
 
   totalText: {
@@ -8153,7 +8173,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",        // ✅ IMPORTANT
     paddingVertical: 10,
     backgroundColor: "#FBFDFF",
-    paddingHorizontal:10
+    paddingHorizontal: 10
   },
 
   arrow: { width: 18, height: 18, tintColor: "#444" },
@@ -8415,8 +8435,8 @@ const styles = StyleSheet.create({
   accordionBody: {
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
-     padding: 14,
-    paddingHorizontal:10
+    padding: 14,
+    paddingHorizontal: 10
   },
 
   walletRow: {
