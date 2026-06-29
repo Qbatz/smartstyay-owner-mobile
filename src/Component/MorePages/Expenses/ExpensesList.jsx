@@ -109,6 +109,9 @@ const handleSearch = async (text) => {
         expensesList?.expenses || [];
     console.log("expenses", Expensesdata);
 
+    console.log("expenses" , expensesList);
+    
+
     const horizontalRef = useRef(null);
 
     const [showAddVendor, setShowAddVendor] = useState(false);
@@ -694,20 +697,20 @@ console.log("Search =>", searchText);
                                     >
                                         <SummaryCard
                                             title="Total Expense Amount"
-                                            value={totalExpense}
+                                            value={expensesList?.expenseSummary?.totalExpenseAmount}
                                             icon={GreenRupees}
                                         />
 
                                         <SummaryCard
                                             title="Paid"
-                                            value={paidAmount}
+                                             value={expensesList?.expenseSummary?.totalPaidAmount}
                                             icon={TickIcon}
                                             valueColor="#00A651"
                                         />
 
                                         <SummaryCard
                                             title="UnPaid"
-                                            value={unpaidAmount}
+                                             value={expensesList?.expenseSummary?.totalUnPaidAmount}
                                             icon={RupeeIcon}
                                         />
 

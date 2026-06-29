@@ -41,7 +41,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const translateY = useRef(new Animated.Value(0)).current;
 
-     const isApplyTriggeredRef = useRef(false);
+    const isApplyTriggeredRef = useRef(false);
 
     const [selectedImage, setSelectedImage] = useState(null);
     const [initialImage, setInitialImage] = useState(null);
@@ -629,8 +629,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }
     };
 
+       const itemTotal = items.reduce(
+            (sum, item) => sum + Number(item.amount || 0),
+            0
+        );
 
-
+    const taxAmount =
+        (itemTotal * Number(tax || 0)) / 100
 
     const validateExpenseForm = () => {
         let newErrors = {};
@@ -765,19 +770,36 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         //         `Amount (${amount}) should match Item Total (${itemTotal})`;
         // }
 
-        const itemTotal = items.reduce(
-            (sum, item) => sum + Number(item.amount || 0),
-            0
-        );
+     
 
-        if (hasItems && Number(amount) !== itemTotal) {
-            newErrors.amount =
-                `Amount (${amount}) should match Item Total (${itemTotal})`;
-        }
+        // if (hasItems && Number(amount) !== itemTotal) {
+        //     newErrors.amount =
+        //         `Amount (${amount}) should match Item Total (${itemTotal})`;
+        // }
+
+//         const expectedAmount = Number(
+//   (itemTotal + taxAmount - discountAmount).toFixed(2)
+// );
+
+// if (hasItems && Number(amount) !== expectedAmount) {
+//   newErrors.amount =
+//     `Amount (${amount}) should match Total Retainer Amount (₹${expectedAmount})`;
+// }
+
+const expectedAmount = Number(
+  (itemTotal + taxAmount - discountAmount).toFixed(2)
+);
+
+if (hasItems && Number(amount) !== expectedAmount) {
+  newErrors.amount =
+    `Amount should match Total Retainer Amount (₹${expectedAmount.toLocaleString("en-IN")})`;
+}
 
         if (tax && Number(tax) < 0) {
             newErrors.tax = "Invalid Tax Amount";
         }
+
+        
 
         if (discount && Number(discount) < 0) {
             newErrors.discount = "Invalid Discount";
@@ -791,10 +813,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 "Discount cannot exceed Item Total";
         }
 
-        if (Number(tax) > itemTotal) {
-            newErrors.tax =
-                "Tax cannot exceed Item Total";
-        }
+       if (Number(tax) > 100) {
+    newErrors.tax = "Tax percentage cannot exceed 100";
+}
 
         if (
             discountType === "percentage" &&
@@ -805,6 +826,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }
 
         setErrors(newErrors);
+
+        console.log("discountType", discountType);
+console.log("taxAmount", taxAmount);
+console.log("discountAmount", discountAmount);
+console.log("grandTotal", grandTotal);
 
         return Object.keys(newErrors).length === 0;
     }
@@ -822,12 +848,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }
     }, [amount, paidAmount, paymentStatus])
 
-    const itemTotal = items.reduce(
-        (sum, item) => sum + Number(item.amount || 0),
-        0
-    );
+    // const itemTotal = items.reduce(
+    //     (sum, item) => sum + Number(item.amount || 0),
+    //     0
+    // );
 
-    const taxAmount = Number(tax || 0);
+    // const taxAmount = Number(tax || 0)
+
+
 
     const discountAmount =
         discountType === "percentage"
@@ -837,6 +865,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const grandTotal =
         itemTotal + taxAmount - discountAmount;
 
+
+
     const datevalid = dayjs(purchaseDate).format("DD-MM-YYYY")
     console.log("purchaseDate", datevalid);
 
@@ -844,7 +874,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const handleSubmit = async () => {
         if (!validateExpenseForm()) return;
 
-              if (isApplyTriggeredRef.current) return
+        if (isApplyTriggeredRef.current) return
         isApplyTriggeredRef.current = true
 
         const totalAmount = Number(amount || 0);
@@ -868,7 +898,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
                 count: items.length,
                 totalAmount,
-                 creditPeriod: creditType || "",
+                creditPeriod: creditType || "",
                 bankId: selectedMode?.id || "",
 
                 description,
@@ -941,7 +971,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             }, 1500);
         }
 
-         isApplyTriggeredRef.current = false
+        isApplyTriggeredRef.current = false
     };
 
     return (
@@ -1195,7 +1225,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
                     <Text style={styles.label}>
-                        Amount (INR)
+                       Total Amount (INR)
                         <Text style={{ color: "red" }}>*</Text>
                     </Text>
 
@@ -1439,7 +1469,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     {linkVendor && (
                         <>
                             <Text style={styles.label}>
-                                Vendor <Text style={styles.required}>*</Text>
+                                Vendor <Text style={{ color: "red" }}>*</Text>
                             </Text>
 
 
@@ -1564,7 +1594,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 />
                             )}
 
-                            {paymentStatus === "Partially Paid" && (
+                            {(paymentStatus === "Partially Paid" || paymentStatus ===  "Fully Paid" )&& (
                                 <View
                                     style={{
                                         flexDirection: "row",
@@ -1728,10 +1758,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                             {paymentStatus === "Credit / Pending" && (
                                 <>
                                     <Text style={styles.label}>
-                                        Credit Period <Text style={{ color: "red" }}>*</Text>
+                                        Credit Period (for this expense only) <Text style={{ color: "red" }}>*</Text>
                                     </Text>
 
                                     <ValidatedInput
+                                        keyboardType="numeric"
+                                        type="numberOnly"
+                                        inputType="numeric"
                                         value={creditType}
                                         onChangeText={setCreditType}
                                         placeholder="Enter Credit Period"
@@ -2252,8 +2285,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-                          disabled={isApplyTriggeredRef.current}
+                            style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                            disabled={isApplyTriggeredRef.current}
                             onPress={handleSubmit}
                         >
                             <Text

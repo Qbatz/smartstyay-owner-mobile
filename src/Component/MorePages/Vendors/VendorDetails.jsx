@@ -231,7 +231,7 @@ export default function VendorDetails({ route, navigation }) {
               </Text>
 
               <Text style={styles.statValue}>
-                ₹{vendorDetails?.summary?.expenseCount || 0}
+                ₹{vendorDetails?.summary?.totalExpense || 0}
               </Text>
             </View>
 
