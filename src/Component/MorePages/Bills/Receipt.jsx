@@ -44,11 +44,14 @@ import ReactNativeBlobUtil from "react-native-blob-util";
 
 
 
-const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
+const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
+  handleResetFilters,}) => {
+
+ 
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails,
-    downloadReceipt , shareReceiptOnWhatsapp } = useContext(BillContext);
+    downloadReceipt , shareReceiptOnWhatsapp , ReceiptFilter} = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("receiptsList", receiptsList);
@@ -110,11 +113,26 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
 
 
 
+  // useEffect(() => {
+  //   if (activeHostelId && canReadReceipt) {
+  //     GetReceiptsList(activeHostelId);
+  //   }
+  // }, [activeHostelId, canReadReceipt])
+
   useEffect(() => {
-    if (activeHostelId && canReadReceipt) {
-      GetReceiptsList(activeHostelId);
-    }
-  }, [activeHostelId, canReadReceipt]);
+  if (activeHostelId && canReadReceipt) {
+    ReceiptFilter({
+      hostelId: activeHostelId,
+    });
+  }
+}, [activeHostelId, canReadReceipt]);
+
+// ReceiptFilter({
+//   hostelId: activeHostelId,
+//   keyword: searchText,
+// });
+
+  
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -341,6 +359,8 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
 
   const renderItem = ({ item }) => {
     return (
+
+      
       <View style={styles.row}>
         {/* <TouchableOpacity
         onPress={() => {handleViewReceiptDetails(item)}}
@@ -479,8 +499,66 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
             </Text>
           </View>
         ) : (
+          <>
+          {appliedFilters &&
+ (
+   appliedFilters.period ||
+   appliedFilters.type?.length ||
+   appliedFilters.paymentmode?.length ||
+   appliedFilters.collectedBy?.length
+ ) && (
+  <View style={{ marginBottom: 10 }}>
+   <View style={{flexDirection:'row', justifyContent:'space-between'}}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+    >
+   
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+
+        {appliedFilters.period ? (
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>
+              Period : {appliedFilters.period}
+            </Text>
+          </View>
+        ) : null}
+
+        {appliedFilters.type?.map((item) => (
+          <View key={item} style={styles.chip}>
+            <Text style={styles.chipText}>Type : {item}</Text>
+          </View>
+        ))}
+
+        {appliedFilters.paymentmode?.map((item) => (
+          <View key={item} style={styles.chip}>
+            <Text style={styles.chipText}>Payment : {item}</Text>
+          </View>
+        ))}
+
+        {appliedFilters.collectedBy?.map((item) => (
+          <View key={item} style={styles.chip}>
+            <Text style={styles.chipText}>Collected By : {item}</Text>
+          </View>
+        ))}
+
+      </View>
+    </ScrollView>
+
+    <TouchableOpacity
+      onPress={handleResetFilters}
+      style={{ alignSelf: "flex-end", marginTop: 6 }}
+    >
+      <Text style={styles.resetTextSmall}>Reset</Text>
+    </TouchableOpacity>
+
+    </View>
+
+  </View>
+)}
+         
           <FlatList
-            data={receiptsList || []}
+            data={receiptsList?.listReceipts || []}
             renderItem={renderItem}
             keyExtractor={(item) => item.transactionId}
             showsVerticalScrollIndicator={false}
@@ -490,12 +568,13 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
             }}
             ListEmptyComponent={!loading && <EmptyReceiptState />}
           />
+           </>
         )}
 
 
 
 
-        {!loading && receiptsList?.length > 0 && (
+        {!loading && receiptsList?.listReceipts?.length > 0 && (
           <TouchableOpacity
             style={[styles.filterButton, !canReadReceipt && { opacity: 0.4 }]}
             disabled={!canReadReceipt}
@@ -503,6 +582,7 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet}) => {
             <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
         )}
+
 
 
 
@@ -1354,6 +1434,18 @@ fontFamily: "Gilroy-Bold" ,
     fontSize: 14,
     color: "#777",
   },
+chip: {
+  backgroundColor: "#EEF4FF",
+  borderRadius: 18,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  marginRight: 8,
+},
 
+chipText: {
+  color: "#2D6CDF",
+  fontSize: 12,
+  fontFamily: "Gilroy-Semibold",
+},
 
 });

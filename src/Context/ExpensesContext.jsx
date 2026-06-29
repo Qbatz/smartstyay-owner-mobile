@@ -452,13 +452,19 @@ const DeleteExpense = async (hostelId, expenseId) => {
 
     const res = await axios.delete(
       `/v2/expense/${hostelId}/${expenseId}`
-    );
+    )
 
-    if (res?.status === 200 || res?.status === 204) {
+    console.log("res", res);
+    
+
+    if ( res?.status === 204 || res?.status === 200 ) {
       // refresh expense list
       await GetExpenseList(hostelId);
 
-      return { success: true };
+      return {
+  success: true,
+  "message": "Expense deleted successfully"
+}
     }
 
     return { success: false, message: "Failed to delete expense" };

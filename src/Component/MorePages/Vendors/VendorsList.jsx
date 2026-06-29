@@ -47,7 +47,10 @@ export default function VendorsList({ navigation }) {
   // } = useContext(VendorContext);
 
   const { vendorList, loading, getVendorList, deleteVendor , getVendorDetails  , vendorDetails} = useContext(CustomerContext);;
-
+  const {
+    vendorCategories,
+    getVendorCategories,
+  } = useContext(VendorContext);
   const { activeHostelId } = useContext(CommonContexts)
 
   const {
@@ -91,6 +94,12 @@ export default function VendorsList({ navigation }) {
       }
     }, [activeHostelId])
   );
+
+   useEffect(() => {
+      if(activeHostelId){
+    getVendorCategories(activeHostelId);
+      }
+    }, [activeHostelId]);
 
 
 
@@ -223,6 +232,14 @@ export default function VendorsList({ navigation }) {
       setTimeout(() => setShowSuccessModal(false), 1500);
       return;
     }
+
+      if (vendorCategories?.length === 0 ) {
+    setModalType("warning");
+    setModalMessage("Please add a Vendor Category option in Settings");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
 
     setShowAddVendor(true);
   };

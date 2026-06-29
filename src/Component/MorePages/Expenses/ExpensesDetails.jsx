@@ -1,11 +1,11 @@
-import React, { useState , useEffect , useContext} from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
-  ScrollView,Modal , TouchableWithoutFeedback
+  ScrollView, Modal, TouchableWithoutFeedback
 } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import DotsIcon from "../../../Assets/Images/3dots.png";
@@ -27,24 +27,24 @@ export default function ExpensesDetails({ route, navigation }) {
   console.log("expense", expense);
 
 
-    const {
-      canWriteModule: canWriteExpense,
-      canReadModule: canReadExpense,
-      canUpdateModule: canUpdateExpense,
-      canDeleteModule: canDeleteExpense,
-    } = useHasPermission("Expense");
+  const {
+    canWriteModule: canWriteExpense,
+    canReadModule: canReadExpense,
+    canUpdateModule: canUpdateExpense,
+    canDeleteModule: canDeleteExpense,
+  } = useHasPermission("Expense");
 
-        const [showSuccessModal, setShowSuccessModal] = useState(false);
-        const [modalMessage, setModalMessage] = useState("");
-        const [modalType, setModalType] = useState("success");
-  
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+
 
   const [activeTab, setActiveTab] = useState("Info")
 
-      const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
-          DeleteExpense ,  expenseoverviewDetails , GetExpenseById
-      } = useContext(ExpensesContext);
-        const { activeHostelId } = useContext(CommonContexts);
+  const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
+    DeleteExpense, expenseoverviewDetails, GetExpenseById
+  } = useContext(ExpensesContext);
+  const { activeHostelId } = useContext(CommonContexts);
 
 
   const [showExpenseSheet, setShowExpenseSheet] = useState(false);
@@ -55,54 +55,63 @@ export default function ExpensesDetails({ route, navigation }) {
   const [deletePopup, setDeletePopup] = useState(false)
 
   console.log("deleteVendordata", deleteVendordata);
-    console.log("expenseoverviewDetails", expenseoverviewDetails);
+  console.log("expenseoverviewDetails", expenseoverviewDetails);
 
   useEffect(() => {
-  const fetchDetails = async () => {
-    const result = await GetExpenseById(activeHostelId, expense?.expenseId);
-    if (result.success) {
-      console.log("Expense Details =>", result.data);
-      // setExpenseDetail(result.data)
+    const fetchDetails = async () => {
+      const result = await GetExpenseById(activeHostelId, expense?.expenseId);
+      if (result.success) {
+        console.log("Expense Details =>", result.data);
+        // setExpenseDetail(result.data)
+      }
+    };
+    fetchDetails();
+  }, [activeHostelId, expense?.expenseId])
+
+
+
+  const handleDelete = async () => {
+    if (!canDeleteExpense) {
+      setModalType("warning");
+      setModalMessage("You do not have permission to delete expenses");
+      setShowSuccessModal(true);
+      return;
+    }
+
+    if (!expense?.expenseId) {
+      setModalType("error");
+      setModalMessage("Invalid expense id");
+      setShowSuccessModal(true);
+      return;
+    }
+
+    const res = await DeleteExpense(activeHostelId, expense.expenseId);
+
+   if (res?.success) {
+  setDeletePopup(false);  
+
+  setTimeout(() => {
+    setModalType("success");
+    setModalMessage("Expense deleted successfully");
+    setShowSuccessModal(true);
+  }, 200);
+
+  setTimeout(async () => {
+    setShowSuccessModal(false);
+    await GetExpenseList(activeHostelId);
+    navigation.goBack();
+  }, 1700);
+} 
+    else {
+      setModalType("error");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
     }
   };
-  fetchDetails();
-}, [activeHostelId, expense?.expenseId]);
-
-    const handleDelete = async () => {
-        if (!canDeleteExpense) {
-            setModalType("warning");
-            setModalMessage("You do not have permission to delete expenses");
-            setShowSuccessModal(true);
-            return;
-        }
-  const res = await DeleteExpense(
-  activeHostelId,
-  expense?.expenseId
-);
-        console.log("deleteexpenses", res);
-        
-        setDeletePopup(false)
-        if (res?.success) {
-            setModalType("success");
-            setModalMessage(res.message);
-            setShowSuccessModal(true);
-
-            setTimeout(() => {
-                setShowSuccessModal(false);
-                setDeletePopup(false)
-            }, 1500)
-        }
-
-
-        else {
-            setModalType("error");
-            setModalMessage(res?.message || "Something went wrong");
-            setShowSuccessModal(true);
-
-            setTimeout(() => setShowSuccessModal(false), 2000);
-        }
-
-    }
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -133,12 +142,12 @@ export default function ExpensesDetails({ route, navigation }) {
         return <ExpensesInfo expense={expenseoverviewDetails} />;
 
       case "Transactions":
-        return <ExpensesTransactions  expense={expenseoverviewDetails} />;
+        return <ExpensesTransactions expense={expenseoverviewDetails} />;
 
       case "Expenses":
         return (
           <ExpensesItems
-          expense={expenseoverviewDetails} 
+            expense={expenseoverviewDetails}
           //   onExpensePress={(expense) => {
           //     setSelectedExpense(expense);
           //     setShowExpenseSheet(true);
@@ -157,11 +166,11 @@ export default function ExpensesDetails({ route, navigation }) {
   return (
     <>
 
-     <SuccessModal
-                visible={showSuccessModal}
-                onClose={() => setShowSuccessModal(false)}
-                message={modalMessage}
-                type={modalType} />
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType} />
 
 
       <View style={styles.container}>
@@ -178,11 +187,11 @@ export default function ExpensesDetails({ route, navigation }) {
 </Text> */}
 
           <TouchableOpacity
-           onPress={() =>
-             setActiveMenu(
-               activeMenu === expense?.expenseId ? null : expense?.expenseId
-             )
-           }
+            onPress={() =>
+              setActiveMenu(
+                activeMenu === expense?.expenseId ? null : expense?.expenseId
+              )
+            }
 
           >
             <Image
@@ -308,7 +317,7 @@ export default function ExpensesDetails({ route, navigation }) {
 
       </View>
 
-       {activeMenu === expense?.expenseId && (
+      {activeMenu === expense?.expenseId && (
         <>
           <TouchableWithoutFeedback
             onPress={() => setActiveMenu(null)}
@@ -384,7 +393,7 @@ export default function ExpensesDetails({ route, navigation }) {
             </View>
           </View>
         </View>
-      </Modal> 
+      </Modal>
 
       {/* <VendorExpenseDetailsSheet
   visible={showExpenseSheet}
@@ -604,7 +613,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Gilroy-Semibold",
   },
-   menuOverlay: {
+  menuOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -640,7 +649,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111",
   },
-    deleteOverlay: {
+  deleteOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
@@ -706,6 +715,6 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     color: '#fff',
     fontSize: 16,
-   fontFamily: "Gilroy-Bold"
+    fontFamily: "Gilroy-Bold"
   },
 });
