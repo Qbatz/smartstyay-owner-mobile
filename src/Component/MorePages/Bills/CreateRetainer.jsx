@@ -152,6 +152,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
     console.log("filterl", filterList)
 
+    console.log(errors)
+
 
     const savegenerate=()=>{
 
@@ -202,11 +204,11 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             value={showTenantName ? stateQuery || selectedName : selectedName}
                             placeholderTextColor="#B5B5B5"
                             onPressIn={() => {setShowTenantName(!showTenantName)
-                                setErrors("name","")
+                                setErrors(prev=>({...prev, name:""}))
                             }}
                             onChangeText={(text) => {
                                 setStateQuery(text)
-                                setErrors("name","")
+                               setErrors(prev=>({...prev, name:""}))
                             }}
                         />
 
@@ -285,6 +287,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                     <TouchableOpacity onPress={()=>{
                         setOpenPaidDate(true)
+                        setErrors(prev=>({...prev, paidDate:""}))
                     }}
                     style={[styles.inputBox, { marginTop: 10 }]}>
 
@@ -387,7 +390,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 18 }}>
                         Payment Method <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <TouchableOpacity onPress={()=>setShowPaymentMode(!showPaymentMode)}
+                    <TouchableOpacity onPress={()=>{
+                        setShowPaymentMode(!showPaymentMode)
+                         setErrors(prev=>({...prev, payMode:""}))}}
                      style={[styles.inputBox, { marginTop: 10 }]}>
                         <Text style={styles.pymentMthdTxt}>
                             {selectedMode ? selectedMode : "Enter Payment Method"}

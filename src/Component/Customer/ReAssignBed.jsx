@@ -383,6 +383,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     );
 
   });
+  console.log(filteredBeds)
 
 
   const handleSubmit = async () => {
@@ -441,6 +442,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
         customerId,
         payload
       )
+      console.log(res)
 
       if (res.success) {
 
@@ -459,6 +461,12 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
       }
       else {
         console.log(res.message || "Change bed failed")
+         setModalType("error");
+          setMessage(res.data || res?.message);
+         setShowSuccess(true);
+          setTimeout(() => {
+          setShowSuccess(false);
+        }, 800);
       }
     }
     catch (error) {
