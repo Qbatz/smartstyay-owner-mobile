@@ -113,7 +113,7 @@ export default function BillsDesign({ route }) {
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
-    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
+    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -259,9 +259,11 @@ export default function BillsDesign({ route }) {
   const [mode, setMode] = useState([]);
   const [createdBy, setCreatedBy] = useState([]);
   const [appliedFilters, setAppliedFilters] = useState(null);
+  const [receiptAppliedFilters, setReceiptAppliedFilters] = useState(null);
   const [filterError, setFilterError] = useState("");
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null);
+  
 
   const [showRecuringBillDetail, setShowRecuringBillDetail] = useState(false)
   const [selectedRecurringBill, setSelectedRecurringBill] = useState("")
@@ -1558,6 +1560,23 @@ export default function BillsDesign({ route }) {
     await GetAllBillDetails(activeHostelId, filters);
   };
 
+  console.log("text", searchText);
+  
+
+  const handleReceiptSearch = async (text) => {
+    console.log("text", text);
+    
+    setSearchText(text);
+
+    if (!canReadReceipt) return;
+
+    await ReceiptFilter({
+      hostelId: activeHostelId,
+      keyword: text || null,
+      page: 1,
+      size: 10,
+    });
+  };
 
 
 
@@ -1667,6 +1686,18 @@ export default function BillsDesign({ route }) {
 
     await GetAllBillDetails(activeHostelId);
   };
+
+   const handleReceiptResetFilters = async () => {
+  if (!canReadReceipt) return;
+
+  setReceiptAppliedFilters(null);
+
+  await ReceiptFilter({
+    hostelId: activeHostelId,
+  });
+};
+
+ 
 
   const resetRefundForm = () => {
     setRefundAmount("");
@@ -2237,6 +2268,20 @@ export default function BillsDesign({ route }) {
   //   },
   // ];
 
+  useEffect(() => {
+  setSearchText("");
+
+  if (activeTab === "Receipt") {
+    ReceiptFilter({
+      hostelId: activeHostelId,
+      keyword: "",
+      page: 1,
+      size: 10,
+    });
+  }
+}, [activeTab])
+
+
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -2415,7 +2460,7 @@ export default function BillsDesign({ route }) {
               <View style={styles.searchContainer}>
                 <Image source={SearchIcon} style={styles.searchIcon} />
 
-                <TextInput
+                {/* <TextInput
                   style={styles.searchInput}
                   placeholder="Search Invoices"
                   placeholderTextColor="#9CA3AF"
@@ -2425,6 +2470,26 @@ export default function BillsDesign({ route }) {
                     handleSearch(text);
                   }}
                   editable={canReadInvoice}
+                /> */}
+                <TextInput
+                  style={styles.searchInput}
+                  value={searchText}
+                  placeholder={
+                    activeTab === "Receipt"
+                      ? "Search Receipt"
+                      : "Search Invoice"
+                  }
+                  onChangeText={(text) => {
+                    if (activeTab === "Receipt") {
+                      setSearchText(text);
+                      handleReceiptSearch(text);
+                    } else {
+                      setSearchText(text);
+                      handleSearch(text);
+                    }
+                  }}
+                  placeholderTextColor="#9CA3AF"
+                  editable={canReadInvoice || canReadReceipt}
                 />
               </View>
             </View>
@@ -2488,28 +2553,28 @@ export default function BillsDesign({ route }) {
                           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                             <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-                              {/* STATUS */}
+                            
                               {appliedFilters.paymentStatus?.map((s) => (
                                 <View key={s} style={styles.chip}>
                                   <Text style={styles.chipText}>Status is : {s}</Text>
                                 </View>
                               ))}
 
-                              {/* TYPE */}
+                             
                               {appliedFilters.type?.map((t) => (
                                 <View key={t} style={styles.chip}>
                                   <Text style={styles.chipText}>Type is : {t}</Text>
                                 </View>
                               ))}
 
-                              {/* MODE */}
+                           
                               {appliedFilters.modes?.map((m) => (
                                 <View key={m} style={styles.chip}>
                                   <Text style={styles.chipText}>Mode is : {m}</Text>
                                 </View>
                               ))}
 
-                              {/* DATE RANGE */}
+                            
                               {appliedFilters.startDate && appliedFilters.endDate && (
                                 <View style={styles.chip}>
                                   <Text style={styles.chipText}>
@@ -2521,7 +2586,7 @@ export default function BillsDesign({ route }) {
                             </View>
                           </ScrollView>
 
-                          {/* RESET */}
+                         
                           <TouchableOpacity onPress={handleResetFilters}>
                             <Text style={styles.resetTextSmall}>Reset</Text>
                           </TouchableOpacity>
@@ -2672,8 +2737,13 @@ export default function BillsDesign({ route }) {
             <RecurringBills onSelectRecurringBill={handleRecurringBill} />
           )}
           {activeTab === "Receipt" && (
-            <Receipt onSelectReceipt={handleOpenReceiptSheet} showReceiptFiltersheet={() => setShowReceiptFilter(true)} />
+            <Receipt onSelectReceipt={handleOpenReceiptSheet} 
+            showReceiptFiltersheet={() => setShowReceiptFilter(true)} 
+            appliedFilters={receiptAppliedFilters}
+            handleResetFilters={handleReceiptResetFilters}
+            />
           )}
+
 
 
           <>
@@ -3837,7 +3907,7 @@ export default function BillsDesign({ route }) {
                       <View
                         style={{
                           marginTop: 10, flexDirection: "row",
-                          justifyContent: "space-between", alignItems: "flex-start",marginBottom:5
+                          justifyContent: "space-between", alignItems: "flex-start", marginBottom: 5
                         }}>
                         <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Cancelled on</Text>
 
@@ -4098,12 +4168,14 @@ export default function BillsDesign({ route }) {
 
 
             <ReceiptFilterSheet
-  visible={showReceiptFilter}
-  onClose={() => setShowReceiptFilter(false)}
-  onApply={(filters) => {
-    console.log(filters);
-  }}
-/>
+             visible={showReceiptFilter}
+              onClose={() => setShowReceiptFilter(false)}
+              onApply={(filters) => {
+                console.log(filters);
+              }}
+                setAppliedFilters={setReceiptAppliedFilters}
+               onResetFilter={handleReceiptResetFilters}
+            /> 
 
             <DiscountActionSheet
               visible={showDiscountSheet}

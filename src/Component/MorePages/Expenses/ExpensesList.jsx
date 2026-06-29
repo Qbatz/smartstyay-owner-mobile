@@ -84,6 +84,14 @@ export default function ExpensesList({ navigation }) {
         }, [activeHostelId])
     );
 
+        useEffect(() => {
+            if (activeHostelId) {
+                GetInitializeExpense(activeHostelId)
+            }
+    
+        }, [activeHostelId])
+
+        
 const handleSearch = async (text) => {
   if (!text?.trim()) {
     return GetExpenseList(activeHostelId);
@@ -104,6 +112,7 @@ const handleSearch = async (text) => {
   await GetExpenseList(activeHostelId);
 };
 
+ const categoryList = IntializeexpensesList?.listExpenses || [];
 
     const Expensesdata =
         expensesList?.expenses || [];
@@ -312,6 +321,14 @@ console.log("Search =>", searchText);
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
+
+           if (categoryList?.length === 0 ) {
+    setModalType("warning");
+    setModalMessage("Please add a Expense Category option in Settings");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
         navigation.navigate("AddExpensesPage", {
             //   vendor: item,
         })

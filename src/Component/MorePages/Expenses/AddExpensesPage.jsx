@@ -982,6 +982,7 @@ console.log("grandTotal", grandTotal);
                 onClose={() => setShowSuccessModal(false)}
                 message={modalMessage}
                 type={modalType} />
+                
             <View style={styles.container}>
 
                 {/* Header */}

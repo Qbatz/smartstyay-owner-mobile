@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, {useRef, useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -33,6 +33,8 @@ export default function VendorSettlePayment({
 
   const isVendorSettlement = type === "vendor";
   const isExpenseSettlement = type === "expense";
+
+    const isApplyTriggeredRef = useRef(false);
 
 
   const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
@@ -302,6 +304,11 @@ export default function VendorSettlePayment({
 
     if (!validateForm()) return;
 
+      if (isApplyTriggeredRef.current) return
+    isApplyTriggeredRef.current = true
+
+     try {
+
     let response;
 
 
@@ -395,7 +402,15 @@ export default function VendorSettlePayment({
         }, 1500);
       }
     }
-  };
+  }
+   catch (error) {
+    console.log(error);
+  } finally {
+    isApplyTriggeredRef.current = false;
+  }
+
+
+  }
 
   console.log("vendor", vendor)
 
@@ -505,12 +520,14 @@ export default function VendorSettlePayment({
 
           </View>
 
+<View style={styles.errorWrapper}>
           {errors.paidAmount && (
             <ErrorMessage
               message={errors.paidAmount}
               type="error"
             />
           )}
+          </View>
 
           <Text style={styles.dueText}>
             Due Amount is ₹
@@ -562,12 +579,14 @@ export default function VendorSettlePayment({
             </View>
           </TouchableOpacity>
 
+<View style={styles.errorWrapper}>
           {errors.purchaseDate && (
             <ErrorMessage
               message={errors.purchaseDate}
               type="error"
             />
           )}
+          </View>
           {/* 
                     {errors.expenseDate && (
                         <ErrorMessage
@@ -649,12 +668,14 @@ export default function VendorSettlePayment({
             </View>
           )}
 
+<View style={styles.errorWrapper}>
           {errors.paymentMethod && (
             <ErrorMessage
               message={errors.paymentMethod}
               type="error"
             />
           )}
+          </View>
 
           {/* Transaction */}
 
@@ -993,8 +1014,11 @@ export default function VendorSettlePayment({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.submitBtn}
+              // style={styles.submitBtn}
               onPress={handleSubmit}
+
+                  style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+              disabled={isApplyTriggeredRef.current}
             >
               <Text
                 style={{
@@ -1093,14 +1117,14 @@ const styles = StyleSheet.create({
     height: 25,
   },
 
-  label: {
-    fontSize: 14,
-    marginHorizontal: 16,
-    marginTop: 18,
-    marginBottom: 8,
-    color: "#111827",
-    fontFamily: "Gilroy-Semibold"
-  },
+  // label: {
+  //   fontSize: 14,
+  //   marginHorizontal: 16,
+  //   marginTop: 18,
+  //   marginBottom: 8,
+  //   color: "#111827",
+  //   fontFamily: "Gilroy-Semibold"
+  // },
 
   inputBox: {
     height: 56,
@@ -1147,7 +1171,7 @@ const styles = StyleSheet.create({
 
   dueText: {
     textAlign: "right",
-    marginRight: 18,
+    marginRight: 16,
     marginTop: 10,
     fontSize: 16,
     fontFamily: "Gilroy-Semibold"
@@ -1372,15 +1396,15 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
 
-  label: {
-    fontSize: 13,
-    color: "#6B7280",
-    fontFamily: "Gilroy-Regular",
-    marginLeft: 15,
-    marginBottom: 5,
-    marginTop: 5
+  // label: {
+  //   fontSize: 13,
+  //   color: "#6B7280",
+  //   fontFamily: "Gilroy-Regular",
+  //   marginLeft: 15,
+  //   marginBottom: 5,
+  //   marginTop: 5
 
-  },
+  // },
 
   valueText: {
     fontSize: 13,
@@ -1399,14 +1423,14 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold"
   },
 
-  label: {
-    fontSize: 15,
-    fontFamily: "Gilroy-Medium",
-    color: "#111827",
-    marginBottom: 8,
-    marginTop: 16,
-    marginLeft: 15
-  },
+label: {
+  marginHorizontal: 16,
+  marginBottom: 8,
+  marginTop: 16,
+  fontSize: 15,
+  fontFamily: "Gilroy-Medium",
+  color: "#111827",
+},
   expensesDropdownBox: {
     borderWidth: 1,
     borderColor: "#D4D4D4",
@@ -1506,6 +1530,11 @@ const styles = StyleSheet.create({
     width: "85%",
     elevation: 10,
   },
+  errorWrapper: {
+  marginHorizontal: 16,
+  marginTop: 6,
+  alignItems: "flex-start",
+},
   // input: {
   //     borderWidth: 1,
   //     borderColor: "#4F46E5",
