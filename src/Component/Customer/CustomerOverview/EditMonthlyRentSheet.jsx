@@ -88,6 +88,7 @@ export default function EditRentalAmountSheet({
   const billDueDate = Number(billingData?.billDueDate) || 1;
 
   console.log("billingdata", billingData);
+  console.log(customerDetails)
 
   const today = dayjs();
 
@@ -141,6 +142,19 @@ export default function EditRentalAmountSheet({
   }
 
   console.log(isMonthDisabled)
+
+ const isMonthAllowed = (year, monthIndex) => {
+  return customerDetails?.effectiveFromMonth?.some(item => {
+    const date = dayjs(item.type, "MM-YYYY");
+
+    return (
+      date.year() === year &&
+      date.month() === monthIndex
+    );
+  });
+};
+
+  console.log(isMonthAllowed)
 
 
 
@@ -543,7 +557,8 @@ export default function EditRentalAmountSheet({
                 {dayjs.monthsShort().map((m, index) => {
                   console.log("vety",m,index)
 
-                  const disabled = isMonthDisabled(selectedYear, index);
+                  // const disabled = isMonthDisabled(selectedYear, index);
+                  const disabled= !isMonthAllowed(selectedYear,index)
                   console.log(disabled)
 
                   return (
