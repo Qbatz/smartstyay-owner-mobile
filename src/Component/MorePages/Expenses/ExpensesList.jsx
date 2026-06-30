@@ -520,7 +520,7 @@ console.log("Search =>", searchText);
                     </View>
                 </View>
 
-                {item?.vendorId && (
+                {/* {item?.vendorId && (
                     <View style={styles.vendorBadge}>
                         <Image
                             source={LocationIcon}
@@ -531,7 +531,7 @@ console.log("Search =>", searchText);
                             Vendor Expense
                         </Text>
                     </View>
-                )}
+                )} */}
             </View>
         </TouchableOpacity>
     );

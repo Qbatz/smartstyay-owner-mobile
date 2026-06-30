@@ -738,6 +738,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 selectedUnits
         );
 
+  
+
+if (!hasItems) {
+  newErrors.expenseItems =
+    "Please add at least one expense item.";
+}
+
         if (hasItems) {
             items.forEach((item, index) => {
                 if (!item.itemDetail?.trim()) {
@@ -1938,6 +1945,7 @@ console.log("grandTotal", grandTotal);
                         </View>
                     </View>
 
+
                     {items.map((item, index) => (
                         <View key={index} style={styles.itemCard}>
 
@@ -2148,6 +2156,12 @@ console.log("grandTotal", grandTotal);
                         </View>
                     ))}
 
+{errors.expenseItems && (
+  <ErrorMessage
+    message={errors.expenseItems}
+    type="error"
+  />
+)}
 
                     <TouchableOpacity
                         style={styles.addRowBtn}
