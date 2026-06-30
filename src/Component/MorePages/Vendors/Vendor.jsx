@@ -48,8 +48,14 @@ const CARD_WIDTH = width * 0.44
 export default function Vendors({ navigation }) {
 
     const {
-        getVendorDetails, vendorDetails, clearVendorDetails
+        getVendorDetails, vendorDetails, clearVendorDetails ,  vendorCategories,
+        getVendorCategories,
     } = useContext(VendorContext);
+
+    //   const {
+    //     vendorCategories,
+    //     getVendorCategories,
+    //   } = useContext(VendorContext);
 
     const { vendorList, loading, getVendorList, deleteVendor, } = useContext(CustomerContext);;
 
@@ -113,6 +119,12 @@ export default function Vendors({ navigation }) {
             }
         }, [activeHostelId])
     );
+
+     useEffect(() => {
+      if(activeHostelId){
+    getVendorCategories(activeHostelId);
+      }
+    }, [activeHostelId]);
 
 
 
@@ -254,10 +266,19 @@ export default function Vendors({ navigation }) {
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
+
+             if (vendorCategories?.length === 0 ) {
+    setModalType("warning");
+    setModalMessage("Please add a Vendor Category option in Settings");
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
         clearVendorDetails();
         navigation.navigate("AddVendorPage", {
             //   vendor: item,
         })
+
 
     };
 
@@ -345,7 +366,7 @@ export default function Vendors({ navigation }) {
                     activeOpacity={0.8}
                     onPress={() => handlevendorDetails(item)}
                 >
-                    <View style={styles.vendorCard}>
+                   {/*   <View style={styles.vendorCard}>
                         <View style={styles.vendorLeft}>
                             <View style={{ flex: 1 }}>
                                 <Text style={styles.vendorTitle}>
@@ -379,19 +400,34 @@ export default function Vendors({ navigation }) {
                         </View>
 
 
-                        {/* <TouchableOpacity
-        onPress={() =>
-          setActiveMenu(
-            activeMenu === item.id ? null : item.id
-          )
-        }
-      >
-        <Image
-          source={DotsIcon}
-          style={styles.dotsIcon}
-        />
-      </TouchableOpacity> */}
-                    </View>
+                    </View>*/}
+                    <View style={styles.vendorCard}>
+  <View style={styles.vendorLeft}>
+    <Text style={styles.vendorTitle}>{fullName}</Text>
+
+    <View style={styles.infoRow}>
+      <Text style={styles.vendorCode}>VEN-{item.id}</Text>
+
+      {!!item.businessName && (
+        <View style={styles.tag}>
+          <Text
+            style={styles.tagText}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {item.businessName}
+          </Text>
+        </View>
+      )}
+    </View>
+  </View>
+
+  <View style={styles.amountContainer}>
+    <Text style={styles.amountText}>₹ {item.totalBalance}</Text>
+    <Text style={styles.outstandingText}>Outstanding</Text>
+  </View>
+</View>
+
                 </TouchableOpacity>
 
                 {/* {activeMenu === item.id && (
@@ -973,7 +1009,7 @@ const styles = StyleSheet.create({
     dotsTouchable: { padding: 6, marginLeft: 8 },
     dotsIcon: { width: 25, height: 25, },
 
-    infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 14 },
+    // infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 14 },
     infoCol: { flex: 1 },
     infoLabel: { color: "#9CA3AF", fontSize: 12, },
     infoValue: { color: "#111", fontSize: 14, },
@@ -1289,10 +1325,35 @@ const styles = StyleSheet.create({
     },
 
     vendorLeft: {
-        flexDirection: "row",
-        alignItems: "center",
-        flex: 1,
-    },
+  flex: 1,
+  marginRight: 12,
+},
+
+infoRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  flex: 1,
+},
+
+tag: {
+  marginLeft: 8,
+  backgroundColor: "#FEF3C7",
+  borderRadius: 20,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  maxWidth: "65%",
+},
+
+tagText: {
+  color: "#B45309",
+  fontSize: 12,
+},
+
+amountContainer: {
+  width: 90,
+  alignItems: "flex-end",
+  flexShrink: 0,
+},
 
     vendorAvatar: {
         width: 54,
@@ -1329,23 +1390,23 @@ const styles = StyleSheet.create({
         fontSize: 12,
     },
 
-    tag: {
-        marginTop: 6,
-        alignSelf: "flex-start",
-        backgroundColor: "#FEF3C7",
-        borderRadius: 20,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        marginLeft: 8
-    },
+    // tag: {
+    //     marginTop: 6,
+    //     alignSelf: "flex-start",
+    //     backgroundColor: "#FEF3C7",
+    //     borderRadius: 20,
+    //     paddingHorizontal: 10,
+    //     paddingVertical: 4,
+    //     marginLeft: 8
+    // },
 
-    tagText: {
-        color: "#B45309",
-        fontSize: 12,
-    },
-    amountContainer: {
-        alignItems: "flex-end",
-    },
+    // tagText: {
+    //     color: "#B45309",
+    //     fontSize: 12,
+    // },
+    // amountContainer: {
+    //     alignItems: "flex-end",
+    // },
 
     amountText: {
         fontSize: 18,

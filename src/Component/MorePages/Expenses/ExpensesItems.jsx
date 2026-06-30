@@ -16,7 +16,22 @@ export default function ExpenseItems({expense}) {
       style={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      {/* Summary Card */}
+     {/* Summary Card */}
+<View style={styles.summaryCard}>
+  <View style={styles.summaryRow}>
+    <Text style={styles.summaryLabel}>Subtotal</Text>
+    <Text style={styles.summaryValue}>
+      ₹ {Number(expense?.subTotal || 0).toLocaleString("en-IN")}
+    </Text>
+  </View>
+
+  <View style={styles.summaryRow}>
+    <Text style={styles.summaryLabel}>Discount</Text>
+    <Text style={styles.discountValue}>
+      -₹ {Number(expense?.discount || 0).toLocaleString("en-IN")}
+    </Text>
+  </View>
+</View>
     
 
       {/* Expense Items */}
@@ -61,37 +76,46 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
 
-  summaryCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
-  },
+summaryCard: {
+   backgroundColor: "#F8F8F8",
+  borderRadius: 14,
+  paddingVertical: 14,
+  paddingHorizontal: 16,
+  marginBottom: 16,
+  borderWidth: 1,
+  borderColor: "#ECECEC",
 
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 4,
-  },
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 6,
+  elevation: 1,
+},
 
-  summaryLabel: {
-    fontSize: 16,
-    color: "#60646C",
-    fontWeight: "500",
-  },
+summaryRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginVertical: 4,
+},
 
-  summaryValue: {
-    fontSize: 18,
-    color: "#1A1D29",
-    fontWeight: "700",
-  },
+summaryLabel: {
+  fontSize: 15,
+  color: "#60646C",
+  fontFamily: "Gilroy-Medium",
+},
 
-  discountValue: {
-    fontSize: 18,
-    color: "#FF3B30",
-    fontWeight: "700",
-  },
+summaryValue: {
+  fontSize: 18,
+  color: "#20242D",
+  fontFamily: "Gilroy-Bold",
+},
+
+discountValue: {
+  fontSize: 18,
+  color: "#FF3B30",
+  fontFamily: "Gilroy-Bold",
+},
 
   itemCard: {
     backgroundColor: "#FFFFFF",

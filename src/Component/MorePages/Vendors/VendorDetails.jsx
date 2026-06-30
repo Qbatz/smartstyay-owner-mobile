@@ -174,12 +174,16 @@ export default function VendorDetails({ route, navigation }) {
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>
-            {vendorDetails?.fullName ||
-              vendorDetails?.fullName ||
-              vendorDetails?.firstName ||
-              "Vendor"}
-          </Text>
+         <Text
+  style={styles.headerTitle}
+  numberOfLines={2}
+  ellipsizeMode="tail"
+>
+  {vendorDetails?.businessName ||
+    vendorDetails?.fullName ||
+    vendorDetails?.firstName ||
+    "Vendor"}
+</Text>
 
 
           <TouchableOpacity
@@ -408,20 +412,22 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
 
-  header: {
-    height: 55,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F8F9FF",
-  },
+ header: {
+  minHeight: 60,
+  paddingHorizontal: 16,
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#F8F9FF",
+},
+headerTitle: {
+  flex: 1,
+  marginHorizontal: 12,
+  fontSize: 18,
+  fontFamily: "Gilroy-Semibold",
+  color: "#111827",
 
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 18,
-    fontFamily: "Gilroy-Semibold",
-  },
+  textAlign: "left",  
+},
 
   backIcon: {
     width: 22,

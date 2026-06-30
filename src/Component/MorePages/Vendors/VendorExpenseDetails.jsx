@@ -161,7 +161,7 @@ export default function VendorExpenseDetailsSheet({
 
                     {showItems &&
                     
-                      expense?.length> 0 ? (  expense?.items?.map(
+                      expense?.items.length> 0 ? (  expense?.items?.map(
                             (item, index) => (
                                 <View
                                     key={index}

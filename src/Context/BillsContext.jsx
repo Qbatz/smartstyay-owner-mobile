@@ -395,6 +395,8 @@ export default function BillsProvider({ children }) {
       );
 
       if (res.status === 200) {
+        console.log("receiptlist", res);
+        
         setReceiptsList(res.data || []);
 
         return {
@@ -429,6 +431,95 @@ export default function BillsProvider({ children }) {
       setLoading(false);
     }
   };
+
+  const ReceiptFilter = async ({
+  hostelId,
+  keyword = "",
+  page = 1,
+  size = 10,
+  period,
+  bankIds = [],
+  invoiceType,
+  collectedBy = [],
+  minAmount,
+  maxAmount,
+}) => {
+  if (!hostelId) {
+    return { success: false, message: "Invalid hostelId" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(`/v2/transaction/${hostelId}`, {
+      params: {
+        keyword,
+        page,
+        size,
+        period,
+        bankIds,
+        invoiceType,
+        collectedBy,
+        minAmount,
+        maxAmount,
+      },
+      paramsSerializer: (params) =>
+        Object.keys(params)
+          .map((key) => {
+            const value = params[key];
+
+            if (Array.isArray(value)) {
+              if (!value.length) return null;
+              return value
+                .map((v) => `${key}=${encodeURIComponent(v)}`)
+                .join("&");
+            }
+
+            if (
+              value !== undefined &&
+              value !== null &&
+              value !== ""
+            ) {
+              return `${key}=${encodeURIComponent(value)}`;
+            }
+
+            return null;
+          })
+          .filter(Boolean)
+          .join("&"),
+    });
+
+    if (res?.status === 200) {
+
+      console.log("receiptfilter", res);
+      
+      setReceiptsList(res?.data || []);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch receipts",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   const DeleteReceipt = async ({ hostelId, receiptId }) => {
@@ -1188,6 +1279,7 @@ const GetAdvanceCreditDetails = async ({
          GetInitializeAdvanceRedeem,
          ApplyAdvanceToInvoices,
          GetAdvanceCreditDetails,
+         ReceiptFilter,
       }}
     >
       {children}

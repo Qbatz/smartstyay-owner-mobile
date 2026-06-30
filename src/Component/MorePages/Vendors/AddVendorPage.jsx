@@ -169,6 +169,7 @@ export default function AddVendorSheet({ route, navigation }) {
     setEmail(vendorData.emailId || "");
 
     setStreet(vendorData.houseNo || "");
+    setLandmark(vendorData?.landMark || "")
 
     setCity(vendorData.city || "");
 
@@ -218,6 +219,7 @@ export default function AddVendorSheet({ route, navigation }) {
       mobile: vendorData.contactPersonMobile || "",
       email: vendorData.emailId || "",
       street: vendorData.houseNo || "",
+      landmark : vendorData?.landMark || "",
       city: vendorData.city || "",
       stateName: vendorData.state || "",
       pinCode: vendorData.pinCode
@@ -248,6 +250,7 @@ export default function AddVendorSheet({ route, navigation }) {
     email,
     street,
     city,
+    landmark,
     stateName,
     pinCode,
     description,
@@ -793,7 +796,8 @@ export default function AddVendorSheet({ route, navigation }) {
         setShowSuccessModal(false);
       }, 1500);
     }
-  } catch (error) {
+  } 
+  catch (error) {
     console.log(error);
   } finally {
     isApplyTriggeredRef.current = false;

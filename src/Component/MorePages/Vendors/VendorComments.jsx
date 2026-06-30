@@ -1,11 +1,11 @@
-import React, { useState , useEffect, useContext} from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  FlatList,Image
+  FlatList, Image
 } from "react-native"
 
 import { VendorContext } from "../../../Context/VendorContext";
@@ -15,232 +15,305 @@ import { useHasPermission } from "../../../Utils/useHasPermission"
 import { CustomerContext } from "../../../Context/CustomerContext"
 import { CommonContexts } from "../../../Context/CommonContext";
 import AddCommentIcon from "../../../Assets/Images/CommentAddIcon.png"
+import SuccessModal from "../../../ToastFile/ToastPage";
 
-// const COMMENTS = [
 
-
-//   {
-//     id: "1",
-//     title: "Payment Follow-up",
-//     description:
-//       "Vendor informed that payment will be cleared next week.",
-//     date: "24 Oct 2025, 11:00 AM",
-//   },
-//   {
-//     id: "2",
-//     title: "Purchase Discussion",
-//     description:
-//       "Discussed electrical material requirements for next month.",
-//     date: "24 Oct 2025, 10:00 AM",
-//   },
-//   {
-//     id: "3",
-//     title: "Vendor Added",
-//     description:
-//       "Vendor profile created successfully.",
-//     date: "24 Oct 2025, 08:00 AM",
-//   },
-// ];
-
-export default function VendorComments({vendor}) {
+export default function VendorComments({ vendor }) {
 
 
   const [comment, setComment] = useState("")
   const [comments, setComments] = useState([]);
-   const { getVendorDetails, vendorDetails , getVendorSettlementInitialize ,
-    vendorComments, getVendorComments , updateVendorComment , 
-    addVendorComment , deleteVendorComment} = useContext(VendorContext);
+  const { getVendorDetails, vendorDetails, getVendorSettlementInitialize,
+    vendorComments, getVendorComments, updateVendorComment,
+    addVendorComment, deleteVendorComment } = useContext(VendorContext);
 
 
   const [editingCommentId, setEditingCommentId] = useState(null)
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+
 
   useEffect(() => {
-  if (vendor?.id) {
-    loadComments();
-  }
-}, [vendor?.id]);
+    if (vendor?.id) {
+      loadComments();
+    }
+  }, [vendor?.id]);
 
-const loadComments = async () => {
-  const res = await getVendorComments(vendor?.id)
-  console.log(res);
-  
+  const loadComments = async () => {
+    const res = await getVendorComments(vendor?.id)
+    console.log(res);
 
-  if (res?.success) {
-    console.log("comments loaded");
-  }
-};
 
-const handleDeleteComment = async (commentId) => {
-  const res = await deleteVendorComment(commentId);
+    if (res?.success) {
+      console.log("comments loaded");
+    }
+  };
 
-  if (res?.success) {
-    if (editingCommentId === commentId) {
+  const handleDeleteComment = async (commentId) => {
+    const res = await deleteVendorComment(commentId);
+
+    if (res?.success) {
+      if (editingCommentId === commentId) {
+        setComment("");
+        setEditingCommentId(null);
+      }
+
+      await loadComments();
+    }
+  };
+
+  // const handleSubmit = async () => {
+  //   if (!comment?.trim()) return;
+
+  //   let res;
+
+  //   if (editingCommentId) {
+  //     res = await updateVendorComment(
+  //       editingCommentId,
+  //       {
+  //         comment,
+  //       }
+  //     );
+  //   } else {
+  //     res = await addVendorComment({
+  //       vendorId: vendor?.id,
+  //       comment,
+  //     });
+  //   }
+
+  //   if (res?.success) {
+  //     setComment("");
+  //     setEditingCommentId(null);
+
+  //     await loadComments();
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    const trimmedComment = comment.trim();
+
+    // Empty validation
+    if (!trimmedComment) {
+      setModalType("error");
+      setModalMessage("Please Enter a Comment");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
+
+      return;
+    }
+
+    let res;
+
+    if (editingCommentId) {
+      // Find existing comment
+      const existingComment = vendorComments?.find(
+        (item) => item.id === editingCommentId
+      );
+
+      // No changes validation
+      if (
+        existingComment &&
+        existingComment.comment.trim() === trimmedComment
+      ) {
+        setModalType("warning");
+        setModalMessage("No Changes Detected");
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 2000);
+
+        return;
+      }
+
+      res = await updateVendorComment(editingCommentId, {
+        comment: trimmedComment,
+      });
+    } else {
+      res = await addVendorComment({
+        vendorId: vendor?.id,
+        comment: trimmedComment,
+      });
+    }
+
+    if (res?.success) {
       setComment("");
       setEditingCommentId(null);
+
+      setModalType("success");
+      setModalMessage(
+        editingCommentId
+          ? "Comment updated successfully"
+          : "Comment added successfully"
+      );
+      setShowSuccessModal(true);
+
+      await loadComments();
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
+    } else {
+      setModalType("error");
+      setModalMessage(res?.message || "Something went wrong");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
     }
-
-    await loadComments();
-  }
-};
-
-const handleSubmit = async () => {
-  if (!comment?.trim()) return;
-
-  let res;
-
-  if (editingCommentId) {
-    res = await updateVendorComment(
-      editingCommentId,
-      {
-        comment,
-      }
-    );
-  } else {
-    res = await addVendorComment({
-      vendorId: vendor?.id,
-      comment,
-    });
-  }
-
-  if (res?.success) {
-    setComment("");
-    setEditingCommentId(null);
-
-    await loadComments();
-  }
-};
+  };
 
   const renderItem = ({ item, index }) => (
-  <View style={styles.timelineRow}>
-    <View style={styles.leftSection}>
-      <View style={styles.iconCircle}>
-        <Image
-          source={CommentIcon}
-          style={{
-            height: 20,
-            width: 20,
-          }}
-        />
-      </View>
-
-      {index !== vendorComments?.length - 1 && (
-        <View style={styles.line} />
-      )}
-    </View>
-
-    <View style={styles.content}>
-      <Text style={styles.description}>
-        {item.comment}
-      </Text>
-
-      <Text style={styles.date}>
-        Added at {item.createdAt}
-      </Text>
-
- <View
-  style={{
-    flexDirection: "row",
-    marginTop: 10,
-  }}
->
-  <TouchableOpacity
-    onPress={() => {
-      setComment(item.comment);
-      setEditingCommentId(item.id);
-    }}
-  >
-   <Image
-                  source={require("../../../Assets/Images/editIcon.png")}
-                  style={styles.menuIcon}
-                />
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    onPress={() =>
-      handleDeleteComment(item.id)
-    }
-  >
-   <Image
-                   source={require("../../../Assets/Images/trash.png")}
-                   style={styles.menuIcon}
-                 />
-  </TouchableOpacity>
-</View>
-    </View>
-  </View>
-);
-
-  return (
-    <View style={{ flex: 1 }}>
-      {/* Comment Box */}
-
-      <View style={styles.topContainer}>
-        <Text style={styles.label}>
-          Additional Comments
-          <Text style={{ color: "red" }}> *</Text>
-        </Text>
-
-        <View style={styles.inputBox}>
-          <TextInput
-            value={comment}
-            onChangeText={setComment}
-            placeholder="Comment here...."
-            multiline
-            textAlignVertical="top"
-            style={styles.input}
+    <View style={styles.timelineRow}>
+      <View style={styles.leftSection}>
+        <View style={styles.iconCircle}>
+          <Image
+            source={CommentIcon}
+            style={{
+              height: 20,
+              width: 20,
+            }}
           />
-
-          <View style={styles.editorTools}>
-            <Text style={styles.tool}>B</Text>
-            <Text style={styles.tool}>I</Text>
-            <Text style={styles.tool}>U</Text>
-          </View>
         </View>
 
-      <TouchableOpacity
-  style={styles.addBtn}
-  onPress={handleSubmit}
->
-          <Image source={AddCommentIcon}   style={{ height: 16, width: 16 , marginRight:10 , marginTop:2}}
-    resizeMode="contain"/>
-         <Text style={styles.addText}>
-  {editingCommentId ? "Update" : "Add"}
-</Text>
-        </TouchableOpacity>
+        {index !== vendorComments?.length - 1 && (
+          <View style={styles.line} />
+        )}
       </View>
 
-      {/* Timeline */}
-{vendorComments?.length > 0 ? (
-<FlatList
-  data={vendorComments || []}
-  keyExtractor={(item) => String(item.id)}
-  renderItem={renderItem}
-  contentContainerStyle={{
-    paddingHorizontal: 16,
-    paddingBottom: 80,
-  }}
-  showsVerticalScrollIndicator={false}
-/>
-) : (
-  <View style={styles.emptyContainer}>
-    <Image
-      source={EmptyState}
-      style={styles.emptyIcon}
-      resizeMode="contain"
-    />
+      <View style={styles.content}>
+        <Text style={styles.description}>
+          {item.comment}
+        </Text>
 
-    <Text style={styles.emptyTitle}>
-      No Comments
-    </Text>
+        <Text style={styles.date}>
+          Added at {item.createdAt}
+        </Text>
 
-    <Text style={styles.emptySubTitle}>
-      No comments have been added yet.
-    </Text>
-  </View>
-)}
+        <View
+          style={{
+            flexDirection: "row",
+            marginTop: 10,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              setComment(item.comment);
+              setEditingCommentId(item.id);
+            }}
+          >
+            <Image
+              source={require("../../../Assets/Images/editIcon.png")}
+              style={styles.menuIcon}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() =>
+              handleDeleteComment(item.id)
+            }
+          >
+            <Image
+              source={require("../../../Assets/Images/trash.png")}
+              style={styles.menuIcon}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
+
+  return (
+
+    <>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType} />
+
+      <View style={{ flex: 1 }}>
+        {/* Comment Box */}
+
+        <View style={styles.topContainer}>
+          <Text style={styles.label}>
+            Additional Comments
+            <Text style={{ color: "red" }}> *</Text>
+          </Text>
+
+          <View style={styles.inputBox}>
+            <TextInput
+              value={comment}
+              onChangeText={(text) => {
+                setComment(text);
+
+                if (editingCommentId && text.trim().length === 0) {
+                  setEditingCommentId(null);
+                }
+              }}
+              placeholder="Comment here...."
+              multiline
+              textAlignVertical="top"
+              style={styles.input}
+            />
+
+            <View style={styles.editorTools}>
+              <Text style={styles.tool}>B</Text>
+              <Text style={styles.tool}>I</Text>
+              <Text style={styles.tool}>U</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={handleSubmit}
+          >
+            <Image source={AddCommentIcon} style={{ height: 16, width: 16, marginRight: 10, marginTop: 2 }}
+              resizeMode="contain" />
+            <Text style={styles.addText}>
+              {editingCommentId ? "Update" : "Add"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Timeline */}
+        {vendorComments?.length > 0 ? (
+          <FlatList
+            data={vendorComments || []}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderItem}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingBottom: 80,
+            }}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Image
+              source={EmptyState}
+              style={styles.emptyIcon}
+              resizeMode="contain"
+            />
+
+            <Text style={styles.emptyTitle}>
+              No Comments
+            </Text>
+
+            <Text style={styles.emptySubTitle}>
+              No comments have been added yet.
+            </Text>
+          </View>
+        )}
+      </View>
+    </>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -263,7 +336,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    minHeight: 120,
+    minHeight: 100,
     padding: 12,
     fontSize: 14,
   },
@@ -285,7 +358,7 @@ const styles = StyleSheet.create({
   },
 
   addBtn: {
-  flexDirection:'row',
+    flexDirection: 'row',
     marginTop: 14,
     alignSelf: "flex-end",
     backgroundColor: "#2D5BFF",
@@ -309,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
- 
+
 
 
   iconText: {
@@ -326,7 +399,7 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    paddingBottom: 30,
+    paddingBottom: 20,
     paddingLeft: 8,
   },
 
@@ -348,7 +421,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#9CA3AF",
   },
-    iconCircle: {
+  iconCircle: {
     height: 40,
     width: 40,
     borderRadius: 20,
@@ -357,33 +430,33 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emptyContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 20,
-  marginTop: 20,
-},
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
 
-emptyIcon: {
-  width: 200,
-  height: 100,
-  // opacity: 0.5,
-},
+  emptyIcon: {
+    width: 200,
+    height: 100,
+    // opacity: 0.5,
+  },
 
-emptyTitle: {
-  marginTop: 4,
-  fontSize: 18,
-  color: "#111827",
-  fontFamily: "Gilroy-Bold",
-},
+  emptyTitle: {
+    marginTop: 4,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
 
-emptySubTitle: {
-  marginTop: 6,
-  fontSize: 14,
-  color: "#6B7280",
-  textAlign: "center",
-},
-menuIcon: {
+  emptySubTitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+  },
+  menuIcon: {
     width: 18,
     height: 18,
     marginRight: 10,
