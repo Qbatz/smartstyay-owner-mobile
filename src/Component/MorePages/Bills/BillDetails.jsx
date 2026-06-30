@@ -873,6 +873,14 @@ const BillDetailsSheet = ({
 
             )}
 
+            {BillPdfdetails?.invoiceInfo?.isCancelled && (
+              <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+                  <Text style={{fontSize: 14, fontFamily: "Gilroy-Semibold",color: "#777", }}>
+                    Cancelled on</Text>
+                  <Text style={{fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceInfo?.cancelledOn}</Text>
+              </View>
+            )}
+
 
 
 
