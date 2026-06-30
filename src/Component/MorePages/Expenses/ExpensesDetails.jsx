@@ -207,7 +207,7 @@ export default function ExpensesDetails({ route, navigation }) {
 
 
           <Text style={styles.expenseMainTitle}>
-            {expense?.categoryName || "-"}
+            {expense?.title || "-"}
           </Text>
 
           <View style={styles.badgeRow}>
@@ -221,17 +221,20 @@ export default function ExpensesDetails({ route, navigation }) {
 
 
 
-            {expense?.vendorId && (
+            {expenseoverviewDetails?.vendorId && (
               <View style={styles.vendorBadge}>
                 <Image
                   source={LocationIcon}
                   style={styles.locationIcon}
                 />
 
-                <Text style={styles.vendorBadgeText}>
-                  {expense?.vendor ||
-                    "Kural kaikai Angadi- Salem"}
-                </Text>
+              <Text
+  style={styles.vendorBadgeText}
+  numberOfLines={1}
+  ellipsizeMode="tail"
+>
+  {expenseoverviewDetails?.vendorAddress || "N/A"}
+</Text>
               </View>
             )}
 
@@ -444,12 +447,21 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
 
-  badgeRow: {
-    flexDirection: "row",
-    // justifyContent: "center",
-    // alignItems: "center",
-    marginBottom: 20,
-  },
+ badgeRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 20,
+},
+
+expCodeBadge: {
+  backgroundColor: "#EEF2FF",
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 4,
+  justifyContent: "center",
+  marginRight: 10,
+  flexShrink: 0,
+},
 
   vendorCode: {
     backgroundColor: "#fff",
@@ -543,13 +555,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  expCodeBadge: {
-    backgroundColor: "#EEF2FF",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 4,
-    justifyContent: 'center'
-  },
+  // expCodeBadge: {
+  //   backgroundColor: "#EEF2FF",
+  //   paddingHorizontal: 10,
+  //   paddingVertical: 6,
+  //   borderRadius: 4,
+  //   justifyContent: 'center'
+  // },
 
   expCodeText: {
     color: "#0D1B8E",
@@ -557,15 +569,16 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold",
   },
 
-  vendorBadge: {
-    marginLeft: 10,
-    backgroundColor: "#141497",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    flexDirection: "row",
-    alignItems: "center",
-  },
+ vendorBadge: {
+  flex: 1,
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#141497",
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  minWidth: 0, 
+},
 
   locationIcon: {
     width: 22,
@@ -575,10 +588,11 @@ const styles = StyleSheet.create({
   },
 
   vendorBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontFamily: "Gilroy-Medium",
-  },
+  flex: 1,
+  color: "#FFFFFF",
+  fontSize: 14,
+  fontFamily: "Gilroy-Medium",
+},
 
 
   amountRow: {

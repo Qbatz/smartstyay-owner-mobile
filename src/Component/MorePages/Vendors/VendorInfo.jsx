@@ -49,10 +49,10 @@ export default function VendorInfo({ vendor }) {
       /> */}
 
       <InfoItem
-        label="Credit Limit"
-        value={vendor?.creditLimit || 0}
-        icon={CalendarIcon}
-      />
+  label="Credit Limit"
+  value={`₹ ${(vendor?.creditLimit || 0).toLocaleString("en-IN")}`}
+  icon={CalendarIcon}
+/>
     </ScrollView>
   );
 }

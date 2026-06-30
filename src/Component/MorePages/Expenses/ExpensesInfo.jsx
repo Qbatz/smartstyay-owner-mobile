@@ -68,7 +68,14 @@ const InfoItem = ({ label, value, icon }) => (
     {icon ? (
       <View style={styles.valueRow}>
         <Image source={icon} style={styles.icon} />
-        <Text style={styles.value}>{value}</Text>
+
+        <Text
+          style={styles.value}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {value}
+        </Text>
       </View>
     ) : (
       <Text style={styles.value}>{value}</Text>
@@ -94,20 +101,24 @@ const styles = StyleSheet.create({
   },
 
   valueRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  flexDirection: "row",
+  alignItems: "flex-start",
+},
 
-  icon: {
-    width: 18,
-    height: 18,
-    marginRight: 10,
-    tintColor: "#64748B",
-  },
+icon: {
+  width: 18,
+  height: 18,
+  marginRight: 10,
+  tintColor: "#64748B",
+  marginTop: 2,
+  flexShrink: 0,
+},
 
-  value: {
-    fontSize: 16,
-    color: "#111827",
-    fontFamily: "Gilroy-Medium",
-  },
+value: {
+  flex: 1,
+  fontSize: 16,
+  color: "#111827",
+  fontFamily: "Gilroy-Medium",
+  flexWrap: "wrap",
+},
 });
