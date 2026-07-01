@@ -81,6 +81,8 @@ export default function MoreDesign({ navigation }) {
   const menuItems = [
   { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
   { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
+ { title: "New Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "NewBankingScreen" },
+  
   { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
   { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
   // { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },

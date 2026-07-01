@@ -1547,6 +1547,59 @@ const settleVendorPayment = async (vendorId, payload, images = []) => {
   } finally {
     setLoading(false);
   }
+}
+
+const RequestKYC = async (customerId) => {
+  if (!customerId) {
+    return { success: false, message: "CustomerId missing" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/kyc/request/${customerId}`,
+      {}, 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "KYC request failed",
+    };
+  } catch (error) {
+    console.log("KYC REQUEST ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Unable to send KYC request",
+    };
+  } finally {
+    setLoading(false);
+  }
 };
 
 
@@ -1571,7 +1624,7 @@ const settleVendorPayment = async (vendorId, payload, images = []) => {
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
-        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment
+        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC
       }}
     >
       {children}

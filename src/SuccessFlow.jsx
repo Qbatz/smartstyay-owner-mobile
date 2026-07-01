@@ -17,6 +17,7 @@ import AddComplaint from "../src/Component/Complaints/AddComplaints";
 import MoreDesign from "../src/Component/MorePages/MoreDesign";
 import Assets from "../src/Component/MorePages/Assets/Assets";
 import BankingScreen from "../src/Component/MorePages/Banking/BankingList";
+import NewBankingScreen from "../src/Component/MorePages/Banking/NewBankingList";
 import AddTransaction from "../src/Component/MorePages/Banking/AddTransaction";
 import Electricity from "../src/Component/MorePages/Electricity/ElectricityList";
 import RoomDetails from "../src/Component/MorePages/Electricity/RoomDetails";
@@ -131,6 +132,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="MoreDesign" component={MoreDesign} />
                     <Navigation.Screen name="Assets" component={Assets} />
                     <Navigation.Screen name="Banking" component={BankingScreen} />
+                     <Navigation.Screen name="NewBankingScreen" component={NewBankingScreen} />     
                     <Navigation.Screen name="AddTransaction" component={AddTransaction} />
                     <Navigation.Screen name="Electricity" component={Electricity} />
                     <Navigation.Screen name="RoomDetails" component={RoomDetails} />
