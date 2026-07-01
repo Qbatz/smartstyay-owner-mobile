@@ -137,6 +137,9 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   } = useHasPermission("Paying Guests");
 
 
+  const disableCheckin= selectedBed?.isOccupied
+
+
   const handleOpenWhatsapp = (item) => {
     console.log("mobile", item);
     if (!item) return;
@@ -488,8 +491,8 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
                             <View style={styles.inlineMenu}>
                               <TouchableOpacity
                                 // style={styles.menuItem}
-                                disabled={!canWriteCustomers}
-                                style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                                disabled={!canWriteCustomers || disableCheckin}
+                                style={[styles.menuItem, !canWriteCustomers || disableCheckin && { opacity: 0.4 }]}
                                 onPress={handleBookToCheckin}
 
                               >

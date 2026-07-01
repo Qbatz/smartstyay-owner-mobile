@@ -206,6 +206,7 @@ const BillDetailsSheet = ({
 
   console.log("invoiceDetail", BillDetails);
    console.log("invoiceDetail", BillPdfdetails);
+   console.log(invoiceDetail)
 
 
   const billDetailsPan = useRef(
@@ -455,6 +456,20 @@ const BillDetailsSheet = ({
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadInvoice;
 
+  const showDotsbtn =
+    !cancelled &&
+    !pendingRefund &&
+    !partiallyRefund &&
+    !FullyRefund &&
+    (
+      !isPaid ||
+      (
+        isPaid &&
+        selectedBill?.invoiceMode === "Manual" &&
+        selectedBill?.invoiceType !== "Settlement"
+      )
+    );
+
 
 
   const showApplyToInvoices = BillPdfdetails?.invoiceInfo?.canApplyToOtherInvoice
@@ -678,13 +693,18 @@ const BillDetailsSheet = ({
                   ((!isPaid) ||
                     (isPaid && invoiceDetail?.invoiceMode === "Manual" && bill?.configurations?.invoiceType !== "Settlement")) && ( */}
 {
-  !cancelled &&
-  (
-    (!isPaid) ||
-    (isPaid &&
-      invoiceDetail?.invoiceMode === "Manual" &&
-      bill?.configurations?.invoiceType !== "Settlement")
-  ) && (
+  // !cancelled && !pendingRefund &&
+  //   !partiallyRefund &&
+  //   !FullyRefund &&
+  // (
+  //   (!isPaid) ||
+  //   (isPaid &&
+  //     invoiceDetail?.invoiceMode === "Manual" &&
+  //     bill?.configurations?.invoiceType !== "Settlement")
+  // )
+
+  showDotsbtn
+   && (
                     <TouchableOpacity
                       ref={(ref) => (dotsRefs.current[bill?.invoiceId] = ref)}
                       onPress={() => openMenu(bill)}
