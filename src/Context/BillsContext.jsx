@@ -435,8 +435,8 @@ export default function BillsProvider({ children }) {
   const ReceiptFilter = async ({
   hostelId,
   keyword = "",
-  page = 1,
-  size = 10,
+  // page = 1,
+  // size = 10,
   period,
   bankIds = [],
   invoiceType,
@@ -457,8 +457,8 @@ export default function BillsProvider({ children }) {
     const res = await axios.get(`/v2/transaction/${hostelId}`, {
       params: {
         keyword,
-        page,
-        size,
+        // page,
+        // size,
         period,
         bankIds,
         invoiceType,

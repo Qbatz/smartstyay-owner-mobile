@@ -2648,7 +2648,7 @@ export default function BillsDesign({ route }) {
                             </View>
 
                             {(
-                              ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
+                              ["Partially Paid", "Partial Payment","Partially Refunded"].includes(item.paymentStatus) ||
                               (item.paymentStatus === "Pending" && item.isDiscounted)
                             ) && (
                                 <Text style={styles.dueLabel}>Outstanding</Text>
@@ -2666,7 +2666,7 @@ export default function BillsDesign({ route }) {
                             <Text style={{ fontSize: 10, color: "#6B7280", fontFamily: "Gilroy-Regular", marginTop: 4 }}>
                               {item.invoiceDate}</Text>
                             {(
-                              ["Partially Paid", "Partial Payment"].includes(item.paymentStatus) ||
+                              ["Partially Paid", "Partial Payment","Partially Refunded"].includes(item.paymentStatus) ||
                               (item.paymentStatus === "Pending" && item.isDiscounted)
                             ) && (
                                 <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
