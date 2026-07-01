@@ -64,7 +64,7 @@ import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
 import Loader from "../../Loader/Loader"
 import TransactionDetailSheet from "../../../Component/Customer/CustomerOverview/TransactionDetailSheet"
-
+import KYCPendingSheet from "./KYCPendingSheet"
 
 
 
@@ -111,6 +111,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [BillDetailshow, setBillDetailsShow] = useState(false)
   const[transactionDetailShow,setTransactionDetailsShow]=useState(false);
   const[transactionDetail,setTransactionDetail]=useState("")
+
+    const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
 
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -191,6 +193,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const closeEditMonthlyRent = () => {
     setShowEditRent(false);
   };
+
+  const handleshowKYCPendingSheet = () => {
+    setShowKYCPendingSheet(true)
+  }
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId || customerId);
@@ -731,6 +737,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleEditAdvance={handleEditAdvance}
             handleShowAmenities={handleShowAmenities}
             openAdditionalContact={() => setShowContactSheet(true)}
+            handleshowKYCPendingSheet={handleshowKYCPendingSheet}
           />
         );
     }
@@ -1417,6 +1424,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         visible={transactionDetailShow}
         onClose={()=>{setTransactionDetailsShow(false)}}
         selectedTransaction={transactionDetail}/>
+
+
+            <KYCPendingSheet
+    visible={showkycPendingSheet}
+    onClose={() => setShowKYCPendingSheet(false)}
+    customerDetails={customerDetails}
+/>
       </View>
     </>
   );
