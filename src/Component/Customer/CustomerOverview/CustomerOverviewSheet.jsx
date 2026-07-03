@@ -113,6 +113,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [BillDetailshow, setBillDetailsShow] = useState(false)
   const[transactionDetailShow,setTransactionDetailsShow]=useState(false);
   const[transactionDetail,setTransactionDetail]=useState("")
+  const [showPendingAction,setShowPendingAction]=useState(false)
 
     const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
 

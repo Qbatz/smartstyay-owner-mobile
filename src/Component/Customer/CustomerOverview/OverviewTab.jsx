@@ -37,6 +37,7 @@ import RequestAmenitiesIcon from "../../../Assets/Images/requestAmenitiesIcon.pn
 import Loader from "../../Loader/Loader";
 import KYCPendingSheet from "./KYCPendingSheet"
 // import RNFS from "react-native-fs";
+import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 
 
 
@@ -1666,6 +1667,14 @@ const styles = StyleSheet.create({
   },
   detailBlock: {
     marginBottom: 12,
+  },
+  pndngActionBox:{backgroundColor:'#FFF9EC',borderRadius:8,paddingVertical:13,
+                  paddingHorizontal:16,
+  },
+  pendingActTitl:{
+    backgroundColor:'#EB6617',borderRadius:8,
+    paddingVertical:10,paddingHorizontal:12,alignItems:'center',
+    marginTop:14
   },
   sectionBox: {
     backgroundColor: "#fff",
