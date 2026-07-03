@@ -35,6 +35,7 @@ import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 import AmenitiesClipPath from "../../../Assets/Images/amenitiesClipPath.png";
 import RequestAmenitiesIcon from "../../../Assets/Images/requestAmenitiesIcon.png"
 import Loader from "../../Loader/Loader";
+import KYCPendingSheet from "./KYCPendingSheet"
 // import RNFS from "react-native-fs";
 import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 
@@ -42,7 +43,7 @@ import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact,handlePendingActionSheet }) {
+  , openAdditionalContact , handleshowKYCPendingSheet}) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -59,6 +60,7 @@ export default function OverviewTab({ customerDetails,
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
 
+  // const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
 
   console.log("customerDetails", customerDetails);
 
@@ -212,7 +214,9 @@ export default function OverviewTab({ customerDetails,
     openAdditionalContact();
   };
 
-
+  const handleshowkycsheet = () => {
+    handleshowKYCPendingSheet()
+  }
 
 
 
@@ -283,30 +287,31 @@ export default function OverviewTab({ customerDetails,
       >
         <View style={{ paddingBottom: 30, padding: 5 }}>
 
-          <View style={styles.pndngActionBox}>
+      <View style={styles.pendingCard}>
+  <View style={styles.pendingTopRow}>
+    <View style={styles.pendingLeft}>
+      <Image
+        source={RequestAmenitiesIcon} // document icon
+        style={styles.pendingIcon}
+      />
 
-            <View style={{flexDirection:'row',alignItems:'center',justifyContent:"space-between"}}>
-                <View style={{flexDirection:'row',alignItems:'center'}}>
-                  <Image source={EditIcon} style={{width:21,height:21,tintColor:"black"}}/>
-                  <Text style={{fontSize:16,fontFamily:'Gilroy-Medium',marginLeft:8}}>
-                    2 Pending action</Text>
-                </View>
+      <Text style={styles.pendingText}>
+        <Text style={styles.pendingCount}>2</Text> Pending action(s)
+      </Text>
+    </View>
 
-                <View style={{flexDirection:'row',alignItems:'center',backgroundColor:'#FFFFFF',
-                              borderRadius:12,paddingVertical:2,paddingHorizontal:5}}>
-                  <Image source={LeftArrow} style={{width:11.5,height:11.5,marginRight:5,transform: [{ rotate: '90deg' }],}} />
-                  <Text>30</Text>
-                </View>
-            </View>
+    <View style={styles.progressBadge}>
+      <Text style={styles.progressArrow}>↑</Text>
+      <Text style={styles.progressText}>30%</Text>
+    </View>
+  </View>
 
-            <TouchableOpacity onPress={handlePendingActionSheet}
-            style={styles.pendingActTitl}>
-              <Text style={{fontFamily:'Gilroy-Medium',fontSize:14,color:'#FFFFFF'}}>
-                See Pending Action</Text>
-            </TouchableOpacity>
-
-          </View>
-
+  <TouchableOpacity style={styles.pendingBtn} onPress={handleshowkycsheet}>
+    <Text style={styles.pendingBtnText}>
+      See Pending Actions
+    </Text>
+  </TouchableOpacity>
+</View>
 
           <View style={styles.sectionBox}>
 
@@ -1477,13 +1482,16 @@ export default function OverviewTab({ customerDetails,
         </TouchableWithoutFeedback>
       </Modal>
 
+  
+
       {/* <AdditionalContactBottomSheet
   visible={showSheet}
   onClose={() => setShowSheet(false)}
 /> */}
 
     </>
-  );
+  )
+
 }
 
 
@@ -2125,5 +2133,77 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Gilroy-Semibold"
   },
+pendingCard: {
+  backgroundColor: "#FFF9EC",
+  borderRadius: 16,
+  padding: 16,
+  marginTop: 14,
+},
 
+pendingTopRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 18,
+},
+
+pendingLeft: {
+  flexDirection: "row",
+  alignItems: "center",
+  flex: 1,
+},
+
+pendingIcon: {
+  width: 24,
+  height: 24,
+  resizeMode: "contain",
+  tintColor: "#2F2F2F",
+  marginRight: 12,
+},
+
+pendingText: {
+  fontSize: 16,
+  color: "#1F2937",
+  fontFamily: "Gilroy-Medium",
+},
+
+pendingCount: {
+  fontFamily: "Gilroy-Bold",
+},
+
+progressBadge: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#FFFFFF",
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
+progressArrow: {
+  color: "#16A34A",
+  fontSize: 14,
+  fontFamily: "Gilroy-Bold",
+  marginRight: 4,
+},
+
+progressText: {
+  color: "#16A34A",
+  fontSize: 15,
+  fontFamily: "Gilroy-Bold",
+},
+
+pendingBtn: {
+  backgroundColor: "#EB6617",
+  borderRadius: 12,
+  height: 46,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+pendingBtnText: {
+  color: "#FFFFFF",
+  fontSize: 18,
+  fontFamily: "Gilroy-Semibold",
+},
 });

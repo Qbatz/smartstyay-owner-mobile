@@ -73,6 +73,9 @@ export default function BillTab({ customerDetails, ShowBillsDetails }) {
     setSelectedBill(bill);
     // setBillDetailsShow(true);
     const res = await getBillsPdfDetails(activeHostelId, bill?.invoiceId);
+
+    console.log("settlementresponse", res);
+    
   };
 
   const handleCreateBill = () => {

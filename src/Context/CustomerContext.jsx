@@ -1531,53 +1531,25 @@ export const CustomerProvider = ({ children }) => {
         return { success: true, data: res.data };
       }
 
-      return { success: false, message: "Vendor settlement failed" };
-    } catch (error) {
-      console.log("SETTLE VENDOR ERROR ", error?.response?.data || error);
-      if (error?.response?.status === 401) {
-        await AutoLogout(loginContext);
-      }
-      return {
-        success: false,
-        message:
-          error?.response?.data?.message ||
-          JSON.stringify(error?.response?.data) ||
-          "Something went wrong",
-      };
-    } finally {
-      setLoading(false);
+    return { success: false, message: "Vendor settlement failed" };
+  } catch (error) {
+    console.log("SETTLE VENDOR ERROR ", error?.response?.data || error);
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
     }
-  };
-
-  const requestKyc = async (customerId) => {
-
-    try {
-      setLoading(true)
-
-      const token = await retriveData("token");
-      const axios = getAxios();
-
-      const res = await axios.post(`/v2/kyc/request/${customerId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      })
-      console.log(res)
-
-        return { success: true, message: res?.data };
-    } catch (error) {
-      console.log(error)
-       return {
-        success: false,
-        message:
-          error?.response?.data?.message ||
-          JSON.stringify(error?.response?.data) ||
-          "Something went wrong",
-      }; 
-    }finally{
-      setLoading(false)
-    }
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
   }
+};
+
+  
 
 
 
@@ -1595,13 +1567,13 @@ export const CustomerProvider = ({ children }) => {
         addCustomer,
         getBedsByHostelAndDate,
         checkInCustomer, deleteCustomer,
-        changeBedCustomer,
-        getCustomerDetails,
-        moveToNoticePeriod,
-        bookCustomer, cancelCheckout, getSettlementByCustomerId, submitSettlement, initializeCheckout, confirmCheckout,
-        initializeCheckIn, bookedCheckInCustomer, initializeCancelBooking, cancelBooking, getCheckoutCustomersByHostel, editBasicDetails, editJoiningDate, editRentalAmount, editAdvanceAmount, assignAmenitiesForTenant, initializeCancelCheckout,
-        addVendor, updateVendor, vendorList,
-        getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment,requestKyc
+         changeBedCustomer, 
+         getCustomerDetails,
+         moveToNoticePeriod,
+         bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
+         initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
+        addVendor, updateVendor , vendorList,
+        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC
       }}
     >
       {children}

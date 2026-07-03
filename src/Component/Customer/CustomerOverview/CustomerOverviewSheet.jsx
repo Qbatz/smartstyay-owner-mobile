@@ -64,8 +64,7 @@ import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
 import Loader from "../../Loader/Loader"
 import TransactionDetailSheet from "../../../Component/Customer/CustomerOverview/TransactionDetailSheet"
-import PendingActionBottomSheet from "../../../Component/Customer/CustomerOverview/PendingActionBottomSheet"
-
+import KYCPendingSheet from "./KYCPendingSheet"
 
 
 
@@ -100,6 +99,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showReAssignbed, setShowReAssignBed] = useState(false)
   const [reassignCustomer, setReassignCustomer] = useState(null);
 
+  const [selectedBill, setSelectedBill] = useState(null);
+
   const [showNotice, setShowNotice] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [reason, setReason] = useState("");
@@ -113,6 +114,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const[transactionDetailShow,setTransactionDetailsShow]=useState(false);
   const[transactionDetail,setTransactionDetail]=useState("")
   const [showPendingAction,setShowPendingAction]=useState(false)
+
+    const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
 
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -193,6 +196,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const closeEditMonthlyRent = () => {
     setShowEditRent(false);
   };
+
+  const handleshowKYCPendingSheet = () => {
+    setShowKYCPendingSheet(true)
+  }
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId || customerId);
@@ -709,11 +716,17 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return <EBReadingTab customerDetails={customerDetails} />;
 
       case "Bill":
-        return <BillTab customerDetails={customerDetails} ShowBillsDetails={(bill) => {
-          selectedBill={bill}
-          setBillDetailsShow(true)
-        }
-        } />;
+        return <BillTab customerDetails={customerDetails}
+         ShowBillsDetails={(bill) => {
+    setSelectedBill(bill);
+    setBillDetailsShow(true);
+  }}
+        // ShowBillsDetails={(bill) => {
+        //   selectedBill={bill}
+        //   setBillDetailsShow(true)
+        // }
+        // }
+         />;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;
@@ -733,7 +746,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleEditAdvance={handleEditAdvance}
             handleShowAmenities={handleShowAmenities}
             openAdditionalContact={() => setShowContactSheet(true)}
-            handlePendingActionSheet={()=>setShowPendingAction(true)}
+            handleshowKYCPendingSheet={handleshowKYCPendingSheet}
           />
         );
     }
@@ -1413,6 +1426,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             fetchCustomerDetails();
             setBillDetailsShow(false)
           }}
+          selectedBill={selectedBill}
         // bill={selectedBill}
         />
 
@@ -1421,10 +1435,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         onClose={()=>{setTransactionDetailsShow(false)}}
         selectedTransaction={transactionDetail}/>
 
-        <PendingActionBottomSheet
-        visible={showPendingAction}
-        onClose={()=>{setShowPendingAction(false)}}
-        customerDetails={customerDetails}/>
+
+            <KYCPendingSheet
+    visible={showkycPendingSheet}
+    onClose={() => setShowKYCPendingSheet(false)}
+    customerDetails={customerDetails}
+/>
       </View>
     </>
   );

@@ -17,6 +17,16 @@ import AddComplaint from "../src/Component/Complaints/AddComplaints";
 import MoreDesign from "../src/Component/MorePages/MoreDesign";
 import Assets from "../src/Component/MorePages/Assets/Assets";
 import BankingScreen from "../src/Component/MorePages/Banking/BankingList";
+import NewBankingScreen from "../src/Component/MorePages/Banking/NewBankingList";
+import BankingDetails from "../src/Component/MorePages/Banking/BankDetails";
+import AddBankAccount from "../src/Component/MorePages/Banking/AddBankAccount";
+import TransactionSheet from "../src/Component/MorePages/Banking/TransactionSheet";
+import TenantPayment from "../src/Component/MorePages/Banking/TenantPayment";
+import VendorPayment from "../src/Component/MorePages/Banking/VendorPayment";
+import CreditCardPayment from "../src/Component/MorePages/Banking/CreditCardPayment";
+import Investment from "../src/Component/MorePages/Banking/Investment";
+import BankTransfer from "../src/Component/MorePages/Banking/Transfer";
+import AddPaymentMethod from "../src/Component/MorePages/Banking/AddPaymentMethod";
 import AddTransaction from "../src/Component/MorePages/Banking/AddTransaction";
 import Electricity from "../src/Component/MorePages/Electricity/ElectricityList";
 import RoomDetails from "../src/Component/MorePages/Electricity/RoomDetails";
@@ -84,8 +94,8 @@ import ReceiptRegister from "../src/Component/MorePages/Reports/ReceiptRegister"
 import HistoryAndComments from "../src/Component/Dashboard/HistoryAndComments"
 import ComplaintUpdates from "../src/Component/Complaints/ComplaintCommentUpdates"
 import BillsDiscount from "../src/Component/MorePages/Bills/DiscountInvoice"
-import BookingtoDiscount from  "../src/Component/MorePages/Bills/BookingtoInvoice"
-import BillsApplyInvoices from  "../src/Component/MorePages/Bills/BillsApplyInvoice"
+import BookingtoDiscount from "../src/Component/MorePages/Bills/BookingtoInvoice"
+import BillsApplyInvoices from "../src/Component/MorePages/Bills/BillsApplyInvoice"
 import EditProfileSheet from "./Component/SettingScreen/GeneralPages/EditProfileSheet";
 import ExpensesList from "../src/Component/MorePages/Expenses/ExpensesList";
 import ExpensesDetails from "../src/Component/MorePages/Expenses/ExpensesDetails";
@@ -131,14 +141,24 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="MoreDesign" component={MoreDesign} />
                     <Navigation.Screen name="Assets" component={Assets} />
                     <Navigation.Screen name="Banking" component={BankingScreen} />
+                    <Navigation.Screen name="NewBankingScreen" component={NewBankingScreen} />
+                    <Navigation.Screen name="BankingDetails" component={BankingDetails} />
+                    <Navigation.Screen name="AddBankAccount" component={AddBankAccount} />
+                    <Navigation.Screen name="TransactionSheet" component={TransactionSheet} />
+                    <Navigation.Screen name="TenantPayment" component={TenantPayment} />
+                    <Navigation.Screen name="VendorPayment" component={VendorPayment} />
+                    <Navigation.Screen name="CreditCardPayment" component={CreditCardPayment} />
+                    <Navigation.Screen name="Investment" component={Investment} />
+                     <Navigation.Screen name="BankTransfer" component={BankTransfer} />
+                     <Navigation.Screen name="AddPaymentMethod" component={AddPaymentMethod} />
                     <Navigation.Screen name="AddTransaction" component={AddTransaction} />
                     <Navigation.Screen name="Electricity" component={Electricity} />
                     <Navigation.Screen name="RoomDetails" component={RoomDetails} />
                     <Navigation.Screen name="Expenses" component={ExpensesScreen} />
                     <Navigation.Screen name="AddExpenses" component={AddExpenses} />
                     <Navigation.Screen name="ExpensesList" component={ExpensesList} />
-                     <Navigation.Screen name="ExpensesDetails" component={ExpensesDetails} />
-                       <Navigation.Screen name="AddExpensesPage" component={AddExpensesPage} />
+                    <Navigation.Screen name="ExpensesDetails" component={ExpensesDetails} />
+                    <Navigation.Screen name="AddExpensesPage" component={AddExpensesPage} />
                     <Navigation.Screen name="TenantsList" component={TenantsList} />
                     <Navigation.Screen name="CustomerReading" component={CustomerReading} />
                     <Navigation.Screen name="VendorsList" component={VendorsList} />
@@ -149,7 +169,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="CancelNotice" component={CancelNotice} />
                     <Navigation.Screen name="SettingsScreen" component={SettingsScreen} />
                     <Navigation.Screen name="GeneralDetailsScreen" component={GeneralDetailsScreen} />
-                    <Navigation.Screen name="EditProfileSheet" component={EditProfileSheet}/>
+                    <Navigation.Screen name="EditProfileSheet" component={EditProfileSheet} />
                     <Navigation.Screen name="Bills" component={BillsDesign} />
                     <Navigation.Screen name="AddGeneralScreen" component={AddGeneralScreen} />
                     <Navigation.Screen name="NotificationDetails" component={NotificationDetails} />
@@ -158,8 +178,8 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
                     <Navigation.Screen name="CreateBills" component={CreateBill} />
                     <Navigation.Screen name="BillsPdf" component={BillsPdfDesign} />
-                    <Navigation.Screen name="NewRetainerInvoiceSheet" component={NewRetainerInvoiceSheet}/>
-                    <Navigation.Screen name="NewRecordPayment" component={NewRecordPayment}/>
+                    <Navigation.Screen name="NewRetainerInvoiceSheet" component={NewRetainerInvoiceSheet} />
+                    <Navigation.Screen name="NewRecordPayment" component={NewRecordPayment} />
 
                     <Navigation.Screen name="AssignTenant" component={AssignTenant} />
 
@@ -171,7 +191,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="SettingsElectricity" component={ElectricitySettings} />
                     <Navigation.Screen name="ReserveToCheckin" component={ReserveToCheckin} />
                     <Navigation.Screen name="ComplaintType" component={ComplaintsSettings} />
-                     <Navigation.Screen name="SettingsVendors" component={SettingsVendors} />
+                    <Navigation.Screen name="SettingsVendors" component={SettingsVendors} />
                     <Navigation.Screen name="ReassignBedScreen" component={ReassignBedScreen} />
                     <Navigation.Screen name="ExpensesCategory" component={ExpensesSettings} />
                     <Navigation.Screen name="Integration" component={Integration} />
@@ -202,7 +222,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ComplaintUpdates" component={ComplaintUpdates} />
                     <Navigation.Screen name="DiscountInvoice" component={BillsDiscount} />
                     <Navigation.Screen name="BookingtoDiscount" component={BookingtoDiscount} />
-                     <Navigation.Screen name="BillsApplyInvoices" component={BillsApplyInvoices} />
+                    <Navigation.Screen name="BillsApplyInvoices" component={BillsApplyInvoices} />
                 </Navigation.Navigator>
             </NavigationContainer>
 
