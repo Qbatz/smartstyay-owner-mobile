@@ -371,7 +371,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   };
 
 
-
+console.log(beds)
 
   const filteredBeds = beds.filter(bed => {
     if (!floorSelected || !roomSelected) return false;
@@ -829,6 +829,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                       <View style={styles.dropdownOverlay} />
                     </TouchableWithoutFeedback>
                   )}
+                  {console.log("ballu",filteredBeds)}
 
                   <ScrollView
                     style={{ maxHeight: 160 }}
@@ -842,6 +843,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                         <Text style={styles.emptyText}>No bed available</Text>
                       </View>
                     ) : (
+                      
                       filteredBeds.map((b) => (
                         <TouchableOpacity
                           key={b.bedId}

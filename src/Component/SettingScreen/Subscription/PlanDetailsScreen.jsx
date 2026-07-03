@@ -211,7 +211,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
 
           <Text style={styles.billingHeader}>Billing History</Text>
 
-          {currentPlan?.billingHistory.length > 0 ?
+          {!currentPlan.isTrial && currentPlan?.billingHistory.length > 0 ?
             currentPlan?.billingHistory.map((item, idx) => (
               <View key={idx} style={styles.billCard}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>

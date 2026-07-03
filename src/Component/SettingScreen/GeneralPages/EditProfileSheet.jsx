@@ -254,6 +254,7 @@ export default function EditProfileSheet({ route, navigation }) {
 
 
     const handleUpdateProfile = async () => {
+     
         let valid = true;
 
         setNameError("");
@@ -284,6 +285,8 @@ export default function EditProfileSheet({ route, navigation }) {
         }
 
         if (!valid) return;
+
+        console.log("nochange",isNoChangeDetected)
 
         if (isNoChangeDetected()) {
 
@@ -325,6 +328,7 @@ export default function EditProfileSheet({ route, navigation }) {
         console.log(formData)
 
         const res = await updateProfile(formData);
+        console.log("profileta",res)
 
         if (res.success) {
             setModalType("success");

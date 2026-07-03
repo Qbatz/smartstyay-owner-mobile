@@ -36,12 +36,13 @@ import AmenitiesClipPath from "../../../Assets/Images/amenitiesClipPath.png";
 import RequestAmenitiesIcon from "../../../Assets/Images/requestAmenitiesIcon.png"
 import Loader from "../../Loader/Loader";
 // import RNFS from "react-native-fs";
+import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 
 
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact }) {
+  , openAdditionalContact,handlePendingActionSheet }) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -57,6 +58,7 @@ export default function OverviewTab({ customerDetails,
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+
 
   console.log("customerDetails", customerDetails);
 
@@ -280,6 +282,30 @@ export default function OverviewTab({ customerDetails,
         contentContainerStyle={{ paddingBottom: 30 }}
       >
         <View style={{ paddingBottom: 30, padding: 5 }}>
+
+          <View style={styles.pndngActionBox}>
+
+            <View style={{flexDirection:'row',alignItems:'center',justifyContent:"space-between"}}>
+                <View style={{flexDirection:'row',alignItems:'center'}}>
+                  <Image source={EditIcon} style={{width:21,height:21,tintColor:"black"}}/>
+                  <Text style={{fontSize:16,fontFamily:'Gilroy-Medium',marginLeft:8}}>
+                    2 Pending action</Text>
+                </View>
+
+                <View style={{flexDirection:'row',alignItems:'center',backgroundColor:'#FFFFFF',
+                              borderRadius:12,paddingVertical:2,paddingHorizontal:5}}>
+                  <Image source={LeftArrow} style={{width:11.5,height:11.5,marginRight:5,transform: [{ rotate: '90deg' }],}} />
+                  <Text>30</Text>
+                </View>
+            </View>
+
+            <TouchableOpacity onPress={handlePendingActionSheet}
+            style={styles.pendingActTitl}>
+              <Text style={{fontFamily:'Gilroy-Medium',fontSize:14,color:'#FFFFFF'}}>
+                See Pending Action</Text>
+            </TouchableOpacity>
+
+          </View>
 
 
           <View style={styles.sectionBox}>
@@ -1633,6 +1659,14 @@ const styles = StyleSheet.create({
   },
   detailBlock: {
     marginBottom: 12,
+  },
+  pndngActionBox:{backgroundColor:'#FFF9EC',borderRadius:8,paddingVertical:13,
+                  paddingHorizontal:16,
+  },
+  pendingActTitl:{
+    backgroundColor:'#EB6617',borderRadius:8,
+    paddingVertical:10,paddingHorizontal:12,alignItems:'center',
+    marginTop:14
   },
   sectionBox: {
     backgroundColor: "#fff",

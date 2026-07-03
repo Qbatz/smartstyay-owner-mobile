@@ -64,6 +64,7 @@ import Bed_NewIcon from "../../../Assets/Images/bed_NewIcon.png"
 import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
 import Loader from "../../Loader/Loader"
 import TransactionDetailSheet from "../../../Component/Customer/CustomerOverview/TransactionDetailSheet"
+import PendingActionBottomSheet from "../../../Component/Customer/CustomerOverview/PendingActionBottomSheet"
 
 
 
@@ -111,6 +112,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [BillDetailshow, setBillDetailsShow] = useState(false)
   const[transactionDetailShow,setTransactionDetailsShow]=useState(false);
   const[transactionDetail,setTransactionDetail]=useState("")
+  const [showPendingAction,setShowPendingAction]=useState(false)
 
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -731,6 +733,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleEditAdvance={handleEditAdvance}
             handleShowAmenities={handleShowAmenities}
             openAdditionalContact={() => setShowContactSheet(true)}
+            handlePendingActionSheet={()=>setShowPendingAction(true)}
           />
         );
     }
@@ -1417,6 +1420,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         visible={transactionDetailShow}
         onClose={()=>{setTransactionDetailsShow(false)}}
         selectedTransaction={transactionDetail}/>
+
+        <PendingActionBottomSheet
+        visible={showPendingAction}
+        onClose={()=>{setShowPendingAction(false)}}
+        customerDetails={customerDetails}/>
       </View>
     </>
   );
