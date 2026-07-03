@@ -32,15 +32,17 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
+import AddBankIcon from "../../../Assets/Images/plusIcon.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
-import BankIcon from "../../../Assets/Images/bank.png";
+import BankIcon from "../../../Assets/Images/Expensebank.png";
 import UpiIcon from "../../../Assets/Images/Upi_Icon.png";
-import CardIcon from "../../../Assets/Images/Card_Icon.png";
+import CardIcon from "../../../Assets/Images/card.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
-
+import GooglePayIcon from "../../../Assets/Images/GpayIcon.png";
 import DeleteIcon from "../../../Assets/Images/trash.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import SelfTransIcon from "../../../Assets/Images/arrow-transfer.png";
+import InvestmentIcon from "../../../Assets/Images/Investment.png";
 import ThreeDotsIcon from "../../../Assets/Images/3dots.png";
 
 import MoneyPlus from "../../../Assets/Images/money_plus.png";
@@ -154,19 +156,19 @@ export default function NewBankingList() {
   //   },
   // ];
 
-  const transactions = [
-    { id: 1, type: "income", title: "Record Payment", ArrowImage: ArrowUp, icon: MoneyPlus, category: "Rent Income", amount: "+ ₹7,500.00", date: "12 May 2025", },
-    { id: 2, type: "expense", title: "Asset Purchase", ArrowImage: ArrowDown, icon: MoneyMinus, category: "Capital Expenditure", amount: "- ₹12,500.00", date: "12 May 2025" },
-    { id: 3, type: "selftransfer", title: "self transfer", ArrowImage: SelfTransIcon, icon: MoneyMinus, category: "Checkout", amount: "- ₹1,250.00", date: "12 May 2025" },
-    { id: 4, type: "income", title: "Bills", category: "Income", ArrowImage: ArrowUp, icon: MoneyPlus, amount: "+ ₹1,250.00", date: "12 May 2025" },
-    { id: 5, type: "expense", title: "Checkout", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,200.00", date: "12 May 2025" },
-    { id: 6, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
-    { id: 7, type: "income", title: "Checkout", category: "Checkout", ArrowImage: ArrowUp, icon: MoneyPlus, amount: "- ₹1,200.00", date: "12 May 2025" },
-    { id: 8, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
-    { id: 9, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
-    { id: 10, type: "expense", title: "Checkout", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,200.00", date: "12 May 2025" },
-    { id: 11, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
-  ];
+  // const transactions = [
+  //   { id: 1, type: "income", title: "Record Payment", ArrowImage: ArrowUp, icon: MoneyPlus, category: "Rent Income", amount: "+ ₹7,500.00", date: "12 May 2025", },
+  //   { id: 2, type: "expense", title: "Asset Purchase", ArrowImage: ArrowDown, icon: MoneyMinus, category: "Capital Expenditure", amount: "- ₹12,500.00", date: "12 May 2025" },
+  //   { id: 3, type: "selftransfer", title: "self transfer", ArrowImage: SelfTransIcon, icon: MoneyMinus, category: "Checkout", amount: "- ₹1,250.00", date: "12 May 2025" },
+  //   { id: 4, type: "income", title: "Bills", category: "Income", ArrowImage: ArrowUp, icon: MoneyPlus, amount: "+ ₹1,250.00", date: "12 May 2025" },
+  //   { id: 5, type: "expense", title: "Checkout", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,200.00", date: "12 May 2025" },
+  //   { id: 6, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
+  //   { id: 7, type: "income", title: "Checkout", category: "Checkout", ArrowImage: ArrowUp, icon: MoneyPlus, amount: "- ₹1,200.00", date: "12 May 2025" },
+  //   { id: 8, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
+  //   { id: 9, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
+  //   { id: 10, type: "expense", title: "Checkout", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,200.00", date: "12 May 2025" },
+  //   { id: 11, type: "expense", title: "Assest", category: "Checkout", ArrowImage: ArrowDown, icon: MoneyMinus, amount: "- ₹1,100.00", date: "12 May 2025" },
+  // ];
 
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
@@ -324,6 +326,46 @@ export default function NewBankingList() {
 
     return Array.from(map.values());
   };
+
+  const transactions = [
+  {
+    id: 1,
+    type: "expense",
+    title: "Expense",
+    amount: "₹ 12,500.00",
+    date: "18 July 2026, 10:30 AM",
+    icon: ArrowDown,
+    account: BankIcon,
+  },
+  {
+    id: 2,
+    type: "transfer",
+    title: "Self transfer",
+    amount: "₹ 2,700.00",
+    date: "18 July 2026, 10:30 AM",
+    icon: SelfTransIcon,
+    from: GooglePayIcon,
+    to: CardIcon,
+  },
+  {
+    id: 3,
+    type: "income",
+    title: "Income",
+    amount: "₹ 2,700.00",
+    date: "18 July 2026, 10:30 AM",
+    icon: ArrowUp,
+    account: GooglePayIcon,
+  },
+  {
+    id: 4,
+    type: "investment",
+    title: "Investment",
+    amount: "₹ 27,000.00",
+    date: "18 July 2026, 10:30 AM",
+    icon: InvestmentIcon,
+    account: GooglePayIcon,
+  },
+];
 
 
   const mappedBankList = (bankList || []).map((b) => {
@@ -685,8 +727,9 @@ const bankOpacity = scrollY.interpolate({
 
 
   const handleAddBanking = () => {
-    setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
-    setAddBankingShow(true);
+    navigation.navigate("AddBankAccount")
+    // setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
+    // setAddBankingShow(true);
   };
 
   const handleCloseAddBanking = () => {
@@ -859,173 +902,270 @@ const bankOpacity = scrollY.interpolate({
 
               <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity , }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item, index) => (
-                 <View
-  style={[
-    styles.bankCard,
-    item.isDeleted && {
-      opacity: 0.5,
-      backgroundColor: "#F3F4F6",
-    },
-  ]}
->
-  {/* Header */}
-  <View style={styles.cardHeader}>
-    <View style={styles.headerLeft}>
-      <View style={styles.iconCircle}>
-        <Image source={item.Icon} style={styles.bankIcon} />
-      </View>
+                 {mappedBankList.map((item, index) => {
 
-      <View style={{ flex: 1 }}>
-        <Text style={styles.bankName}>{item.title}</Text>
-        <Text style={styles.bankType}>{item.subtitle}</Text>
-      </View>
-    </View>
+  const type = item.raw?.accountType;
+
+  return (
 
     <TouchableOpacity
-      disabled={item.isDeleted}
-      ref={(ref) => (dotsRef.current[item.id] = ref)}
-      onPress={() => openMenu(item)}
+      key={item.id}
+        onPress={() =>
+        navigation.navigate("BankingDetails", {
+          bankDetails: item?.raw,  
+          bankId: item?.id,
+        })
+      }
+      style={[
+        styles.bankCard,
+
+        type === "CASH" && styles.cashCard,
+
+        type === "CARD" && styles.creditCard,
+
+        type === "BANK" && styles.bankAccountCard,
+      ]}
     >
-      <Image source={ThreeDotsIcon} style={styles.moreIcon} />
-    </TouchableOpacity>
-  </View>
 
-  {/* Balance */}
-  <View style={{ marginTop: 22 }}>
-    <Text style={{  fontSize: 22,
-  color: "#333",
-  fontFamily: "Gilroy-Bold",}}>
-      ₹{Number(item.balance || 0).toLocaleString("en-IN")}
-    </Text>
+      {/* HEADER */}
 
-    <Text style={styles.balanceLabel}>Balance</Text>
+      <View style={styles.cardHeader}>
 
-    <TouchableOpacity style={styles.infoIcon}>
-      <Text style={{ color: "#7C8DB5", fontSize: 15 }}>ⓘ</Text>
-    </TouchableOpacity>
-  </View>
+        <View style={styles.headerLeft}>
 
-  {/* Chips */}
-  <View style={styles.tagRow}>
-    <View style={styles.locationChip}>
-      <Text style={styles.locationText}>📍 Navalur</Text>
-    </View>
+          <View
+            style={[
+              styles.iconCircle,
 
-    <View style={styles.upiChip}>
-      <Text style={styles.upiText}>
-        {item.acc || "UPI : imman@oksbi"}
+              type === "BANK" && {
+                backgroundColor:"#EEF2FF"
+              },
+
+              type === "CASH" && {
+                backgroundColor:"#E9FFF1"
+              },
+
+              type === "CARD" && {
+                backgroundColor:"#FFF3E8"
+              }
+
+            ]}
+          >
+
+            <Image
+              source={
+                type === "BANK"
+                  ? BankIcon
+                  : type === "CASH"
+                  ? CashIcon
+                  : CardIcon
+              }
+              style={styles.bankIcon}
+            />
+
+          </View>
+
+          <View>
+
+            <Text style={styles.bankName}>
+              {type === "CASH"
+                ? "Petty Cash"
+                : item.title}
+            </Text>
+
+            <Text style={styles.bankType}>
+              {type === "BANK"
+                ? "Bank Account"
+                : type === "CASH"
+                ? "Cash Account"
+                : "Credit Card"}
+            </Text>
+
+          </View>
+
+        </View>
+
+        <TouchableOpacity>
+          <Image source={ThreeDotsIcon} style={styles.moreIcon}/>
+        </TouchableOpacity>
+
+      </View>
+
+      {/* BALANCE */}
+
+      <Text style={styles.balanceAmount}>
+        ₹{Number(item.balance).toLocaleString("en-IN")}
       </Text>
-    </View>
 
-    <View style={styles.defaultChip}>
-      <Text style={styles.defaultChipText}>
-        Default A/C
+      <Text style={styles.balanceLabel}>
+        Balance
       </Text>
-    </View>
-  </View>
 
-  {/* Last Transaction */}
-  <Text style={styles.lastTxn}>
-    Last Txn : Today, 10:30 AM
-  </Text>
+      {/* CHIPS */}
+
+      <View style={styles.tagRow}>
+
+        {
+          type !== "CASH" && (
+            <View style={styles.locationChip}>
+              <Text>📍 Navalur</Text>
+            </View>
+          )
+        }
+
+        {
+          type === "BANK" && (
+            <View style={styles.upiChip}>
+              <Text numberOfLines={1}>
+                UPI : {item.acc}
+              </Text>
+            </View>
+          )
+        }
+
+        {
+          type === "CARD" && (
+            <View style={styles.upiChip}>
+              <Text numberOfLines={1}>
+                **** **** {item.acc?.slice(-4)}
+              </Text>
+            </View>
+          )
+        }
+
+        <View style={styles.defaultChip}>
+          <Text>Default A/C</Text>
+        </View>
+
+      </View>
+
+      <Text style={styles.lastTxn}>
+        {
+          type === "CARD"
+            ? "Due Date : 10 Jun 2026"
+            : "Last Txn : Today, 10:30 AM"
+        }
+      </Text>
+
+    </TouchableOpacity>
+
+  );
+
+})}
+
+{/* ADD CARD */}
+
+<TouchableOpacity
+style={styles.addNewCard}
+onPress={handleAddBanking}
+>
+
+<View style={{height:50, width:50}}>
+<Image source={AddBankIcon} style={styles.addIcon}/>
 </View>
 
-                  ))}
+<Text style={styles.addText}>
+Add New
+</Text>
+
+<Text style={styles.addText}>
+Bank / Card
+</Text>
+
+</TouchableOpacity>
                 </ScrollView>
               </Animated.View>
 
+                          
 
-              <View style={[styles.rowBetween, { marginBottom: 15, marginTop: 20 }]}>
+
+              {/* <View style={[styles.rowBetween, { marginBottom: 15, marginTop: 20 }]}>
                 <Text style={styles.sectionTitle}>All Transactions</Text>
-              </View>
+              </View> */}
+
+              <View style={styles.filterRow}>
+                                                      <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                                          <TouchableOpacity style={styles.filterChipActive}>
+                                                              <Text style={styles.filterChipTextActive}>All</Text>
+                                                          </TouchableOpacity>
+              
+                                                          <TouchableOpacity style={styles.filterChip}>
+                                                              <Text style={styles.filterChipText}>Category</Text>
+                                                          </TouchableOpacity>
+                                                      </View>
+              
+                                                      <TouchableOpacity
+                                                          style={styles.filterIconBtn}
+                                                          onPress={() => setShowFilter(true)}
+                                                      >
+                                                          <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+                                                      </TouchableOpacity>
+                                                  </View>
 
 
-              {mappedTransactions && mappedTransactions.length > 0 && mappedTransactions?.map((t) => (
-                <TouchableOpacity key={t.id} onPress={() => handleshowTransaction(t)}>
-                  {/* <View style={styles.transCard}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View
-                style={[
-                  styles.iconArrow,
-                 {
-  backgroundColor:
-    t.type === "income"
-      ? "#E4FFE8"          
-      : t.type === "selftransfer"
-      ? "rgb(232,236,252)" 
-      : "#FFE8E8"    
-}
-,
-                ]}
-              >
+             <View style={{paddingHorizontal:20}}>
+    <Text style={styles.todayText}>Today</Text>
 
-                <Image source={t.ArrowImage}  style={{height:19 , width:19}}/>
-               
-             
-              </View>
+    {transactions?.map((item) => (
+        <TouchableOpacity
+            key={item.id}
+            style={styles.transactionCard}
+        >
 
-              <View>
-                <Text style={styles.transTitle}>{t.Accountholder}</Text>
-                <Text style={styles.category}>{t.category}</Text>
-              </View>
+            <View style={styles.leftSection}>
+
+               <View
+  style={[
+    styles.iconContainer,
+    item.type === "expense" && { backgroundColor: "#EB2D2D" },
+    item.type === "income" && { backgroundColor: "#05964B" },
+    item.type === "transfer" && { backgroundColor: "#2F4DE0" },
+    item.type === "investment" && { backgroundColor: "#5A2EA6" },
+  ]}
+>
+  <Image source={item.icon} style={styles.transactionIcon} />
+</View>
+
+                <View style={{marginLeft:18}}>
+                    <Text style={styles.transactionTitle}>
+                        {item.title}
+                    </Text>
+
+                    <Text style={styles.transactionDate}>
+                        {item.date}
+                    </Text>
+                </View>
+
             </View>
-         
 
-            <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.date}>{t?.date}</Text>
-              <Text
-                style={[
-                  styles.amount,
-                  { color: t.type === "income" ? "green" : "red" },
-                ]}
-              >
-                {t.amount}
-              </Text>
-            </View>
-          </View> */}
+            <View style={styles.rightSection}>
 
-                  <View style={styles.transCard}>
-                    {/* LEFT SIDE */}
-                    <View style={styles.transLeft}>
-                      <View
-                        style={[
-                          styles.iconArrow,
-                          {
-                            backgroundColor:
-                              t.type === "income"
-                                ? "#E4FFE8"
-                                : "#FFE8E8",
-                          },
-                        ]}
-                      >
-                        <Image source={t.ArrowImage} style={{ height: 19, width: 19 }} />
-                      </View>
+                <Text style={styles.transactionAmount}>
+                    {item.amount}
+                </Text>
 
-                      <View style={styles.transTextWrap}>
-                        <Text style={styles.transTitle} numberOfLines={0}>
-                          {t.Accountholder}
-                        </Text>
-                        <Text style={styles.category}>{t.category}</Text>
-                      </View>
+                {item.type === "transfer" ? (
+
+                    <View style={styles.transferRow}>
+                        <Image source={item.from} style={styles.smallIcon}/>
+                        <Text style={styles.arrow}>→</Text>
+                        <Image source={item.to} style={styles.smallIcon}/>
                     </View>
 
-                    {/* RIGHT SIDE */}
-                    <View style={styles.transRight}>
-                      <Text style={styles.date}>{t.date}</Text>
-                      <Text
-                        style={[
-                          styles.amount,
-                          { color: t.type === "income" ? "green" : "red" },
-                        ]}
-                      >
-                        {t.amount}
-                      </Text>
-                    </View>
-                  </View>
+                ) : (
 
-                </TouchableOpacity>
-              ))}
+                    <Image
+                        source={item.account}
+                        style={styles.smallIcon}
+                    />
+
+                )}
+
+            </View>
+
+        </TouchableOpacity>
+    ))}
+</View>
 
 
 
@@ -1654,8 +1794,8 @@ iconCircle: {
 },
 
 bankIcon: {
-  width: 26,
-  height: 26,
+  width: 22,
+  height: 22,
   resizeMode: "contain",
 },
 
@@ -2404,4 +2544,174 @@ lastTxn: {
         color: "#6B7280",
         fontWeight: "600",
     },
+    addNewCard:{
+    width:120,
+    height:265,
+    borderWidth:2,
+    borderStyle:"dashed",
+    borderColor:"#3D6DFF",
+    borderRadius:24,
+    justifyContent:"center",
+    alignItems:"center",
+    marginRight:16,
+},
+
+addIcon:{
+    width:24,
+    height:24,
+    margin:10
+},
+
+addText:{
+    fontSize:16,
+    color:"#2E5BFF",
+    fontFamily:"Gilroy-Semibold",
+    textAlign:"center",
+},
+cashCard:{
+    backgroundColor:"#FFFFFF",
+},
+creditCard:{
+    backgroundColor:"#FFFFFF",
+},
+bankAccountCard:{
+    backgroundColor:"#FFFFFF",
+},
+   filterRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: 10,
+        marginBottom: 14,
+        paddingHorizontal: 2,
+    },
+
+    filterChip: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+        marginLeft: 8
+    },
+
+    filterChipActive: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#EAF2FF",
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+    },
+
+    filterChipText: {
+        fontSize: 13,
+        color: "#374151",
+    },
+
+    filterChipTextActive: {
+        fontSize: 13,
+        color: "#2D6CDF",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    filterIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        // backgroundColor: "#F3F4F6",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#F3F4F6",
+    },
+    chipContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    chipArrow: {
+        width: 14,
+        height: 14,
+        marginLeft: 6,
+    },
+    todayText:{
+    fontSize:18,
+    fontFamily:"Gilroy-SemiBold",
+    color:"#1A1A1A",
+    marginBottom:18,
+},
+
+transactionCard:{
+    flexDirection:"row",
+    justifyContent:"space-between",
+    alignItems:"center",
+    paddingVertical:18,
+    borderBottomWidth:1,
+    borderBottomColor:"#ECECEC",
+},
+
+leftSection:{
+    flexDirection:"row",
+    flex:1,
+},
+
+iconContainer: {
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+transactionIcon: {
+  width: 26,
+  height: 26,
+  resizeMode: "contain",
+  tintColor: "#FFFFFF", // white icon
+},
+
+transactionTitle:{
+    fontSize:18,
+    color:"#222",
+    fontFamily:"Gilroy-SemiBold",
+},
+
+transactionDate:{
+    fontSize:14,
+    color:"#777",
+    marginTop:8,
+    fontFamily:"Gilroy-Regular",
+},
+
+rightSection:{
+    alignItems:"flex-end",
+},
+
+transactionAmount:{
+    fontSize:18,
+    color:"#222",
+    fontFamily:"Gilroy-Bold",
+},
+
+transferRow:{
+    flexDirection:"row",
+    alignItems:"center",
+    marginTop:10,
+},
+
+smallIcon:{
+    width:26,
+    height:26,
+    resizeMode:"contain",
+},
+
+arrow:{
+    marginHorizontal:8,
+    fontSize:18,
+    color:"#777",
+},
 });

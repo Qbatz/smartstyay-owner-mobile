@@ -1,3 +1,4 @@
+//this is old design 
 import React, { useRef, useEffect, useState } from "react";
 import {
     View,
