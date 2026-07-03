@@ -1,3 +1,4 @@
+//this is old design 
 import React, { useState, useEffect } from "react";
 import {
   View,

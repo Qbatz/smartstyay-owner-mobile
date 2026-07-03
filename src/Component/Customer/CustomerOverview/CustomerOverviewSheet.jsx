@@ -99,6 +99,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showReAssignbed, setShowReAssignBed] = useState(false)
   const [reassignCustomer, setReassignCustomer] = useState(null);
 
+  const [selectedBill, setSelectedBill] = useState(null);
+
   const [showNotice, setShowNotice] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [reason, setReason] = useState("");
@@ -713,11 +715,17 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return <EBReadingTab customerDetails={customerDetails} />;
 
       case "Bill":
-        return <BillTab customerDetails={customerDetails} ShowBillsDetails={(bill) => {
-          selectedBill={bill}
-          setBillDetailsShow(true)
-        }
-        } />;
+        return <BillTab customerDetails={customerDetails}
+         ShowBillsDetails={(bill) => {
+    setSelectedBill(bill);
+    setBillDetailsShow(true);
+  }}
+        // ShowBillsDetails={(bill) => {
+        //   selectedBill={bill}
+        //   setBillDetailsShow(true)
+        // }
+        // }
+         />;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;
@@ -1417,6 +1425,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             fetchCustomerDetails();
             setBillDetailsShow(false)
           }}
+          selectedBill={selectedBill}
         // bill={selectedBill}
         />
 

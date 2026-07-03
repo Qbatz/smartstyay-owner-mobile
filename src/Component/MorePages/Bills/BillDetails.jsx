@@ -65,7 +65,8 @@ const BillDetailsSheet = ({
   const { CommonModule } = NativeModules;
   const navigation = useNavigation();
 
-  console.log('selectedBill', selectedBill);
+
+
   
 
   const { BillDetails, loading, GetAllBillDetails,
@@ -167,6 +168,17 @@ const BillDetailsSheet = ({
     }
   }, [activeHostelId])
 
+   useEffect(() => {
+    if (activeHostelId) {
+      const res =  getBillsPdfDetails(activeHostelId, selectedBill?.invoiceId);
+      console.log("res", res);
+      
+    }
+  }, [activeHostelId])
+
+
+  
+
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -204,9 +216,6 @@ const BillDetailsSheet = ({
 
   const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
 
-  console.log("invoiceDetail", BillDetails);
-   console.log("invoiceDetail", BillPdfdetails);
-   console.log(invoiceDetail)
 
 
   const billDetailsPan = useRef(
@@ -433,14 +442,27 @@ const BillDetailsSheet = ({
   //   text: "#374151",
   // };
 
-  const BillsStatusStyle = getStatusStyle(invoice?.paymentStatus)
-  console.log("bill", bill);
+  const paymentStatus = invoice?.paymentStatus ?? invoice?.status;
+
+  const BillsStatusStyle = getStatusStyle(paymentStatus)
+  // console.log("bill", bill);
 
 
-  const isPaid = invoice?.paymentStatus === "Paid";
-  const isPartial =
-    invoice?.paymentStatus === "Partially Paid" ||
-    invoice?.paymentStatus === "Partial Payment";
+  const isPaid = paymentStatus === "Paid";
+  // const isPartial =
+  //   invoice?.paymentStatus === "Partially Paid" ||
+  //   invoice?.paymentStatus === "Partial Payment";
+
+    const invoiceType = selectedBill?.invoiceType ?? bill?.configurations?.invoiceType;
+
+
+console.log("paymentStatus", paymentStatus);
+
+
+    const isPartial =
+  paymentStatus === "Partially Paid" ||
+  paymentStatus === "Partial Payment" ||
+  paymentStatus === "PARTIAL_PAYMENT";
 
   const isPending = invoice?.paymentStatus === "Pending";
   const partiallyRefund = invoice?.paymentStatus === "Partially Refunded";
@@ -448,8 +470,11 @@ const BillDetailsSheet = ({
   const cancelled = invoice?.paymentStatus === "Cancelled";
   const FullyRefund = invoice?.paymentStatus === "Refunded";
 
-  const invoiceType = bill?.configurations?.invoiceType;
-  const paymentStatus = invoice?.paymentStatus;
+  // const invoiceType = bill?.configurations?.invoiceType;
+
+
+
+  // const paymentStatus = invoice?.paymentStatus;
   const isDiscounted = invoice?.isDiscounted;
   const invoiceMode = bill?.invoiceMode; // fallback if exists
 
@@ -532,7 +557,7 @@ const BillDetailsSheet = ({
 
     invoiceType: bill?.configurations?.invoiceType,
 
-    invoiceNumber: bill?.invoiceNumber,
+    invoiceNumber: bill?.invoiceNumber || bill?.invoiceInfo?.invoiceNo,
 
     profilePic: customer?.profilePic,
 
@@ -612,7 +637,14 @@ const BillDetailsSheet = ({
   // }
 
 
+  console.log("BillPdfdetails", BillPdfdetails);
+console.log("selectedBill", selectedBill);
 
+console.log(invoice);
+console.log(invoice?.paymentStatus);
+console.log(invoice?.status);
+console.log(bill?.configurations);
+console.log(selectedBill?.invoiceType);
 
 
   if (!visible) return null;
@@ -660,7 +692,7 @@ const BillDetailsSheet = ({
           <ScrollView showsVerticalScrollIndicator={false}>
 
             <View style={styles.billHeaderRow}>
-              <Text style={styles.billHeaderText}>{bill?.invoiceNumber || "--"}</Text>
+              <Text style={styles.billHeaderText}>{(bill?.invoiceNumber || bill?.invoiceInfo?.invoiceNo)|| "N/A"}</Text>
 
 
               <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -684,7 +716,7 @@ const BillDetailsSheet = ({
                       { color: BillsStatusStyle.text },
                     ]}
                   >
-                    {invoice?.paymentStatus}
+                    {paymentStatus}
                   </Text>
                 </View>
 
@@ -787,7 +819,7 @@ const BillDetailsSheet = ({
                 <View style={{ display: 'flex', flexDirection: 'column' }}>
                   <Text style={styles.amountValue}>
                     {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
-                    ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ? Number(BillPdfdetails?.invoiceInfo?.totalAmount).toFixed(2) : "0.00"}
+                    ₹ {(BillPdfdetails?.invoiceInfo?.totalAmount || BillPdfdetails?.invoiceInfo?.finalAmount )? Number(BillPdfdetails?.invoiceInfo?.totalAmount || BillPdfdetails?.invoiceInfo?.finalAmount).toFixed(2) : "0.00"}
                   </Text>
                   {isPaid && (
                     <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>

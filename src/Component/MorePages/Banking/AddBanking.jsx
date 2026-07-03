@@ -1,3 +1,6 @@
+
+
+//this is old design 
 import React, { useState, useEffect, useContext , useCallback , useRef } from "react";
 import {
   View,
