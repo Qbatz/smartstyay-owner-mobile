@@ -953,12 +953,12 @@ export default function OverviewTab({ customerDetails,
                                 source={require("../../../Assets/Images/Eye.png")}
                                 style={[
                                   styles.actionIcon,
-                                  !isSubscriptionAllow && { opacity: 0.4 },
+                                  !isSubscriptionAllow &&  { opacity: 0.4 },
                                 ]}
                               />
                             </TouchableOpacity>
                             <TouchableOpacity
-                              disabled={!isSubscriptionAllow}
+                              disabled={!isSubscriptionAllow || !doc?.canDelete}
                               onPress={() => {
                                 setDeleteDocumentId(doc.documentId);
                                 setDeletePopup(true);
@@ -967,7 +967,7 @@ export default function OverviewTab({ customerDetails,
                                 source={require("../../../Assets/Images/trash.png")}
                                 style={[
                                   styles.actionIcon,
-                                  (!isSubscriptionAllow) && { opacity: 0.4 }
+                                    (!isSubscriptionAllow || !doc?.canDelete) && { opacity: 0.4 }
                                 ]}
                               />
                             </TouchableOpacity>
