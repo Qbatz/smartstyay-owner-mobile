@@ -78,7 +78,7 @@ const DATA = [
   },
   {
     title: "Tenant Payment",
-    icon: require("../../../Assets/Images/user-circle-add.png"),
+    icon: require("../../../Assets/Images/TenantPayment.png"),
     screen: "TenantPayment",
   },
   {
@@ -88,17 +88,17 @@ const DATA = [
   },
   {
     title: "Vendor Payment",
-    icon: require("../../../Assets/Images/triangle.png"),
+    icon: require("../../../Assets/Images/VendorPaymentIcon.png"),
     screen: "VendorPayment",
   },
   {
     title: "Credit Card Payment",
-    icon: require("../../../Assets/Images/triangle.png"),
+    icon: require("../../../Assets/Images/CreditCardIcon.png"),
     screen: "CreditCardPayment",
   },
   {
     title: "Investment",
-    icon: require("../../../Assets/Images/Investment.png"),
+    icon: require("../../../Assets/Images/InvestmentBlue.png"),
     screen: "Investment",
   },
 ];
@@ -271,14 +271,15 @@ sheet: {
   },
 
   icon: {
-    width: 30,
-    height: 30,
+    width: 26,
+    height: 26,
     resizeMode: "contain",
+    tintColor:'#1E45E1'
   },
 
   label: {
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Gilroy-Semibold",
     color: "#00000",
   },

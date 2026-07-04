@@ -37,6 +37,10 @@ import FinalSettlementIcon from "../../../Assets/Images/Rupees.png";
 import BankIcon from "../../../Assets/Images/Bank_Transaction.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import DirectionImage from "../../../Assets/Images/direction-down.png"
+import AccountIcon from "../../../Assets/Images/AccountIcon.png"
+import InfoIcon from "../../../Assets/Images/InfoIcon.png"
+
+
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.42;
@@ -139,13 +143,13 @@ export default function BankOverview({ expense }) {
       <InfoItem
         label="Account No"
         value={"65784195214"}
-        icon={MobileIcon}
+        icon={AccountIcon}
       />
 
        <InfoItem
         label="IFSC Code"
         value={"CAN45789"}
-       icon={LocationIcon}
+       icon={InfoIcon}
       />
 
       <InfoItem

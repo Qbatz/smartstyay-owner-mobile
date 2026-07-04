@@ -15,7 +15,7 @@ export default function PendingActionBottomSheet({ visible, onClose, customerDet
 
 
     const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
-    const { requestKyc } = useCustomer();
+    const { RequestKYC } = useCustomer();
     const customerId = customerDetails?.customerId;
     console.log(customerId)
 
@@ -62,9 +62,7 @@ export default function PendingActionBottomSheet({ visible, onClose, customerDet
 
     const handleKycReminder = async () => {
 
-        const res = await requestKyc(customerId)
-        
-
+        const res = await RequestKYC(customerId)
     }
 
     if (!visible) return null;

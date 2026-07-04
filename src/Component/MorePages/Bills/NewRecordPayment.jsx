@@ -585,7 +585,8 @@ const styles = StyleSheet.create({
     mainheadPage: {
         backgroundColor: '#ffffff',
         flex: 1,
-        padding: 20
+        padding: 20,
+        paddingTop:40
     },
     pageHead: {
         fontSize: 20,
