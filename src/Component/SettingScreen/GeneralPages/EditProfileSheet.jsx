@@ -300,6 +300,8 @@ export default function EditProfileSheet({ route, navigation }) {
 
         }
 
+        console.log("saathanam")
+
         const payload = {
             firstName: name.trim(),
             lastName: lastName.trim(),
@@ -307,6 +309,7 @@ export default function EditProfileSheet({ route, navigation }) {
             mobile: String(mobile),
 
         };
+        console.log(payload)
 
         const formData = new FormData();
 
@@ -326,6 +329,7 @@ export default function EditProfileSheet({ route, navigation }) {
             });
         }
         console.log(formData)
+        
 
         const res = await updateProfile(formData);
         console.log("profileta",res)
@@ -343,7 +347,7 @@ export default function EditProfileSheet({ route, navigation }) {
             }, 1500);
         } else {
             setModalType("warning");
-            setMessage(res.data.message || res.data);
+            setMessage(res.data.emailStatus || res.data.mobileStatus || res.data.message || res.data);
             setShowSuccess(true);
             setTimeout(() => {
                 setShowSuccess(false)
