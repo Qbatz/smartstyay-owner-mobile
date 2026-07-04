@@ -925,6 +925,12 @@ console.log(selectedBill?.invoiceType);
 
             )}
 
+            <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:10}}>
+                  <Text style={{fontSize: 14, fontFamily: "Gilroy-Semibold",color: "#777", }}>
+                    Invoice Date</Text>
+                  <Text style={{fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceDate}</Text>
+              </View>
+
             {BillPdfdetails?.invoiceInfo?.isCancelled && (
               <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
                   <Text style={{fontSize: 14, fontFamily: "Gilroy-Semibold",color: "#777", }}>
@@ -932,6 +938,21 @@ console.log(selectedBill?.invoiceType);
                   <Text style={{fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceInfo?.cancelledOn}</Text>
               </View>
             )}
+
+
+              {selectedBill?.paymentStatus === "Cancelled" && (
+                                  <View style={styles.cancelInfoCard}>
+            
+                                    <View style={styles.cancelIconWrapper}>
+                                      <Text style={styles.cancelIconText}>i</Text>
+                                    </View>
+            
+                                    <Text style={styles.cancelInfoText}>
+                                      Invoice cancelled due to Final Settlement
+                                    </Text>
+            
+                                  </View>
+                                )}
 
 
 
@@ -2207,5 +2228,42 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Gilroy-SemiBold",
   },
+  cancelInfoCard: {
+      marginTop: 22,
+      borderWidth: 1,
+      borderColor: "#EAEAEA",
+      borderRadius: 16,
+      paddingVertical: 10,
+      // paddingHorizontal: 10,
+      paddingLeft: 10,
+      backgroundColor: "#FFFFFF",
+      flexDirection: "row",
+      alignItems: "center",
+    },
+  
+    cancelIconWrapper: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: "#E57A1F",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
+    },
+  
+    cancelIconText: {
+      color: "#FFFFFF",
+      fontSize: 10,
+      fontFamily: "Gilroy-Semibold",
+      marginTop: Platform.OS === "ios" ? 1 : -1,
+    },
+  
+    cancelInfoText: {
+      flex: 1,
+      fontSize: 14,
+      lineHeight: 24,
+      color: "#222222",
+      fontFamily: "Gilroy-Medium",
+    },
 
 })

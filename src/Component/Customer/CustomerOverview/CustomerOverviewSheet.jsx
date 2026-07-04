@@ -73,10 +73,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-    const { BillDetails, GetAllBillDetails,
-      RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
-      , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-      downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
+  const { BillDetails, GetAllBillDetails,
+    RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
+    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
@@ -111,11 +111,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
   const [BillDetailshow, setBillDetailsShow] = useState(false)
-  const[transactionDetailShow,setTransactionDetailsShow]=useState(false);
-  const[transactionDetail,setTransactionDetail]=useState("")
-  const [showPendingAction,setShowPendingAction]=useState(false)
+  const [transactionDetailShow, setTransactionDetailsShow] = useState(false);
+  const [transactionDetail, setTransactionDetail] = useState("")
+  const [showPendingAction, setShowPendingAction] = useState(false)
 
-    const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
+  const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
 
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -162,7 +162,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
 
-  console.log("custosus",customerId)
+  console.log("custosus", customerId)
 
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
@@ -459,7 +459,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       y: pageY + 8,
     });
 
-      const res = getBillsPdfDetails(item?.hostelId, item?.invoiceId);
+    const res = getBillsPdfDetails(item?.hostelId, item?.invoiceId);
 
     setMenuVisible(true);
   };
@@ -717,23 +717,23 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
       case "Bill":
         return <BillTab customerDetails={customerDetails}
-         ShowBillsDetails={(bill) => {
-    setSelectedBill(bill);
-    setBillDetailsShow(true);
-  }}
+          ShowBillsDetails={(bill) => {
+            setSelectedBill(bill);
+            setBillDetailsShow(true);
+          }}
         // ShowBillsDetails={(bill) => {
         //   selectedBill={bill}
         //   setBillDetailsShow(true)
         // }
         // }
-         />;
+        />;
 
       // case "Complaints":
       //   return <ComplaintsTab customerDetails={customerDetails} />;
 
       case "Transactions":
-        return <CustomerTransaction customerDetails={customerDetails} 
-        showTransactionDetails={()=>setTransactionDetailsShow(true)} selectedTransaction={setTransactionDetail}/>;
+        return <CustomerTransaction customerDetails={customerDetails}
+          showTransactionDetails={() => setTransactionDetailsShow(true)} selectedTransaction={setTransactionDetail} />;
 
       default:
         return (
@@ -872,7 +872,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               >
                 <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
                   <TouchableOpacity onPress={handleProfilePress}
-                  disabled={(customerDetails?.customerCurrentStatus == "VACATED" || customerDetails?.customerCurrentStatus == "CANCELLED_BOOKING")}>
+                    disabled={(customerDetails?.customerCurrentStatus == "VACATED" || customerDetails?.customerCurrentStatus == "CANCELLED_BOOKING")}>
                     <View style={{ width: 95, height: 95 }}>
                       {profileImage?.uri || customerDetails?.profilePic ? (
                         <Image
@@ -941,11 +941,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 {/* <Text style={styles.verified}>✔</Text> */}
               </View>
 
-              {customerDetails?.customerCurrentStatus == "VACATED" && 
-              <View style={{paddingHorizontal:8,backgroundColor:'#ffcfd3',paddingVertical:5,flexDirection:'row',
-                          alignItems:'center',marginBottom:8,borderRadius:5,marginLeft:5}}>
-                <View style={{width:8,height:8,borderRadius:4,backgroundColor:'#da252a',marginRight:5}}/>
-                  <Text style={{fontSize:14, fontFamily:'Gilroy-Medium',color:'#da252a'}}>
+              {customerDetails?.customerCurrentStatus == "VACATED" &&
+                <View style={{
+                  paddingHorizontal: 8, backgroundColor: '#ffcfd3', paddingVertical: 5, flexDirection: 'row',
+                  alignItems: 'center', marginBottom: 8, borderRadius: 5, marginLeft: 5
+                }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#da252a', marginRight: 5 }} />
+                  <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#da252a' }}>
                     {customerDetails?.customerCurrentStatus}</Text>
                 </View>}
 
@@ -1431,16 +1433,16 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         />
 
         <TransactionDetailSheet
-        visible={transactionDetailShow}
-        onClose={()=>{setTransactionDetailsShow(false)}}
-        selectedTransaction={transactionDetail}/>
+          visible={transactionDetailShow}
+          onClose={() => { setTransactionDetailsShow(false) }}
+          selectedTransaction={transactionDetail} />
 
 
-            <KYCPendingSheet
-    visible={showkycPendingSheet}
-    onClose={() => setShowKYCPendingSheet(false)}
-    customerDetails={customerDetails}
-/>
+        <KYCPendingSheet
+          visible={showkycPendingSheet}
+          onClose={() => setShowKYCPendingSheet(false)}
+          customerDetails={customerDetails}
+        />
       </View>
     </>
   );

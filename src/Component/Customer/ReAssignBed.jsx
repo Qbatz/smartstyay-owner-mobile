@@ -379,7 +379,7 @@ console.log(beds)
     return (
       bed.floorId === floorSelected.id &&
       bed.roomId === roomSelected.id &&
-      bed.currentStatus === "VACANT"
+      bed.currentStatus === "VACANT" || "NOTICE"
     );
 
   });
