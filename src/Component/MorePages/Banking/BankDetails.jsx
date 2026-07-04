@@ -14,6 +14,7 @@ import DotsIcon from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import ThreeDots from "../../../Assets/Images/3dots.png";
 import LocationIcon from "../../../Assets/Images/LocatIcon.png";
+import TransferIcon from "../../../Assets/Images/arrow-transfer.png"
 import BankOverview from "./BankOverview";
 import BankLinkedMethods from "./BankLinkedMethods"
 import BankLedger from "./BankLedger"
@@ -25,6 +26,7 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
+import Location from "../../../Assets/Images/Locations.png";
 import TransactionSheet from "./TransactionSheet"
 
 
@@ -198,7 +200,7 @@ export default function BankDetails({  }) {
         <Text style={styles.accountType}>Bank Account</Text>
 
         <Image
-          source={LocationIcon}
+          source={Location}
           style={styles.smallLocation}
         />
 
@@ -225,8 +227,9 @@ export default function BankDetails({  }) {
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.transferBtn} onPress={()=> navigation.navigate("BankTransfer")}>
+                            <Image source={TransferIcon} style={{height:18, width:18, marginRight:10}} />
                             <Text style={styles.transferText}>
-                                ⇅ Transfer
+                                 Transfer
                             </Text>
                         </TouchableOpacity>
 
@@ -679,7 +682,7 @@ tabItem:{
     locationRow: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 6
+        marginTop: 6,
     },
 
     accountType: {
@@ -691,7 +694,7 @@ tabItem:{
         width: 14,
         height: 14,
         marginHorizontal: 6,
-        tintColor: "#B8860B"
+        tintColor: "#B8860B", 
     },
 
     locationText: {
@@ -772,11 +775,11 @@ locationText:{
   fontFamily:"Gilroy-Semibold",
 },
 
-smallLocation:{
-  width:18,
-  height:18,
-  marginHorizontal:8,
-},
+// smallLocation:{
+//   width:18,
+//   height:18,
+//   marginHorizontal:8,
+// },
 
 menuIcon:{
   width:34,
@@ -807,5 +810,6 @@ transferBtn:{
   justifyContent:"center",
   alignItems:"center",
   backgroundColor:"#fff",
+  flexDirection:'row'
 },
 });

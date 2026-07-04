@@ -198,6 +198,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
 
   const handleshowKYCPendingSheet = () => {
+     console.log("Pendingbuttonclicked");
     setShowKYCPendingSheet(true)
   }
 
@@ -698,6 +699,14 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
   const status = customerDetails?.customerCurrentStatus;
+  
+const displayImage =
+  customerDetails?.kycInfo?.status === "VERIFIED" &&
+  customerDetails?.kycInfo?.aadhaarImage
+    ? customerDetails.kycInfo.aadhaarImage
+    : profileImage?.uri ||
+      customerDetails?.profilePic ||
+      null;
 
   const disableFinancialEdit =
     status === "BOOKED" ||
@@ -873,7 +882,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
                   <TouchableOpacity onPress={handleProfilePress}
                   disabled={(customerDetails?.customerCurrentStatus == "VACATED" || customerDetails?.customerCurrentStatus == "CANCELLED_BOOKING")}>
-                    <View style={{ width: 95, height: 95 }}>
+                    {/* <View style={{ width: 95, height: 95 }}>
                       {profileImage?.uri || customerDetails?.profilePic ? (
                         <Image
                           source={{
@@ -893,7 +902,37 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                           </Text>
                         </View>
                       )}
-                    </View>
+                    </View> */}
+
+                    <View style={{ width: 95, height: 95 }}>
+  {displayImage ? (
+    <Image
+      source={{ uri: displayImage }}
+      style={styles.avatar}
+    />
+  ) : (
+    <View
+      style={{
+        width: 95,
+        height: 95,
+        borderRadius: 17.08,
+        backgroundColor: "#E5E7EB",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: "600",
+          color: "#374151",
+        }}
+      >
+        {customerDetails?.initials}
+      </Text>
+    </View>
+  )}
+</View>
 
                     {/* <Image
                   source={
@@ -1436,12 +1475,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         selectedTransaction={transactionDetail}/>
 
 
-            <KYCPendingSheet
+ 
+      </View>
+                 <KYCPendingSheet
     visible={showkycPendingSheet}
     onClose={() => setShowKYCPendingSheet(false)}
     customerDetails={customerDetails}
 />
-      </View>
     </>
   );
 }
