@@ -30,14 +30,14 @@ export default function BankLinkedMethods() {
             title: "Phonepe UPI",
             value: "smartstay@oksbi",
             type: "UPI",
-            icon: require("../../../Assets/Images/GpayIcon.png"),
+            icon: require("../../../Assets/Images/PhonepeSymbol.png"),
         },
         {
             id: 3,
             title: "SBI Debit Card",
             value: "3247 **** **** 9878",
             type: "Debit Card",
-            icon: require("../../../Assets/Images/GpayIcon.png"),
+            icon: require("../../../Assets/Images/Cardblue.png"),
         },
         {
             id: 4,
@@ -45,7 +45,7 @@ export default function BankLinkedMethods() {
             value: "6487 **** **** 5476",
             type: "Credit Card",
             payable: "₹18,160",
-            icon: require("../../../Assets/Images/GpayIcon.png"),
+            icon: require("../../../Assets/Images/Cardorange.png"),
         },
     ];
 
@@ -207,8 +207,8 @@ const styles = StyleSheet.create({
     },
 
     icon: {
-        width: 34,
-        height: 34,
+        width: 24,
+        height: 24,
         resizeMode: "contain",
     },
 

@@ -8,8 +8,19 @@ import {
   TextInput,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import SuccessModal from "../../../ToastFile/ToastPage";
+
+
 
 export default function AddPaymentMethod() {
+
+   const { activeHostelId } = useContext(CommonContexts);
+    const { bankList, addBanking,  editBanking, errorMsg, getBankListByHostel } =
+      useContext(BankingContext);
+  
     
   const [type, setType] = useState("upi");
     const navigation = useNavigation()
