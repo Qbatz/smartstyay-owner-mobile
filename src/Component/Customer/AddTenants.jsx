@@ -308,10 +308,11 @@ export default function AddTenant() {
 
         if (res?.data) {
             setModalType("success");
-            setMessage(res.data);
+            setMessage(res.data?.message);
             setShowSuccess(true);
-            navigation.goBack();
+           
             setTimeout(() => {
+                 navigation.goBack();
                 setShowSuccess(false);
                 setIsSubmitClicked(false)
             }, 800);
