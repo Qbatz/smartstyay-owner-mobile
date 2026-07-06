@@ -189,6 +189,12 @@ export default function TenantsScreen({ route }) {
       getParticularHostelDetails(activeHostelId);
     }
   }, [activeHostelId])
+  
+ useFocusEffect(
+  useCallback(() => {
+    setSearchText("");
+  }, [])
+);
 
 
   const handleOpenWhatsapp = (item) => {
