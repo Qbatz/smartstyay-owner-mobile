@@ -701,12 +701,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const status = customerDetails?.customerCurrentStatus;
   
 const displayImage =
-  customerDetails?.kycInfo?.status === "VERIFIED" &&
-  customerDetails?.kycInfo?.aadhaarImage
-    ? customerDetails.kycInfo.aadhaarImage
-    : profileImage?.uri ||
-      customerDetails?.profilePic ||
-      null;
+  profileImage?.uri ||
+  customerDetails?.profilePic ||
+  (customerDetails?.kycInfo?.status === "VERIFIED"
+    ? customerDetails?.kycInfo?.aadhaarImage
+    : null);
 
   const disableFinancialEdit =
     status === "BOOKED" ||

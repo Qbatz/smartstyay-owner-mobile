@@ -372,7 +372,7 @@ export default function CreditCardPayment({
           </TouchableOpacity>
 
           <Text style={styles.title}>
-            Settle Payment
+            Credit Card Payment
           </Text>
 
           <View style={{ width: 24 }} />
@@ -384,7 +384,7 @@ export default function CreditCardPayment({
           {/* Vendor */}
 
           <Text style={styles.label}>
-            Tenant Name
+            Credit Card Account
             {/* {isVendorSettlement
               ? "Vendor / Business Name *"
               : "Expense Name *"} */}
@@ -402,7 +402,7 @@ export default function CreditCardPayment({
           {/* Paid Amount */}
 
           <Text style={styles.label}>
-            Paid Amount (INR)  <Text style={{ color: "red" }}>*</Text>
+             Amount (INR)  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
           <View style={styles.amountRow}>
@@ -425,7 +425,7 @@ export default function CreditCardPayment({
               style={styles.amountInput}
             />
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.setBtn}
               onPress={() => {
                 setPaidAmount(String(dueAmount))
@@ -433,7 +433,7 @@ export default function CreditCardPayment({
               }}
             >
               <Text style={styles.setBtnText}>Set</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
           </View>
 
@@ -446,13 +446,13 @@ export default function CreditCardPayment({
           )}
           </View>
 
-          <Text style={styles.dueText}>
+          {/* <Text style={styles.dueText}>
             Due Amount is ₹
             {dueAmount.toFixed(2)}
-          </Text>
+          </Text> */}
 
 
-          <Text style={styles.label}>
+          {/* <Text style={styles.label}>
             Balance Payable If
           </Text>
 
@@ -463,11 +463,11 @@ export default function CreditCardPayment({
                 ? balance.toFixed(2)
                 : "0.00"}
             </Text>
-          </View>
+          </View> */}
 
 
           <Text style={styles.label}>
-            Paid Date  <Text style={{ color: "red" }}>*</Text>
+            Settlement Date  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
           <TouchableOpacity
@@ -506,7 +506,7 @@ export default function CreditCardPayment({
 
 
           <Text style={styles.label}>
-            Transferring Account  <Text style={{ color: "red" }}>*</Text>
+            Payment Method  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
           <TouchableOpacity
@@ -584,18 +584,17 @@ export default function CreditCardPayment({
           </View>
 
 
-          <Text style={styles.label}>
+          {/* <Text style={styles.label}>
             Transaction ID
           </Text>
 
           <TextInput
             style={styles.inputBox}
             placeholder="Enter Transaction ID"
-            // keyboardType="numeric"
             value={transactionId}
             onChangeText={handleTransactionChange}
 
-          />
+          /> */}
 
           {/* Upload */}
 
@@ -818,7 +817,7 @@ export default function CreditCardPayment({
           )} */}
 
 
-          <View style={styles.summaryCard}>
+          {/* <View style={styles.summaryCard}>
             <Text
               style={styles.summaryTitle}
             >
@@ -880,7 +879,7 @@ export default function CreditCardPayment({
                   : "0.00"}
               </Text>
             </View>
-          </View>
+          </View> */}
 
 
           <View
