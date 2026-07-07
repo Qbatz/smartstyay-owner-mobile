@@ -44,17 +44,18 @@ import ReactNativeBlobUtil from "react-native-blob-util";
 
 
 
-const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
-  handleResetFilters,}) => {
+const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
+  handleResetFilters, }) => {
 
- 
+
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails,
-    downloadReceipt , shareReceiptOnWhatsapp , ReceiptFilter} = useContext(BillContext);
+    downloadReceipt, shareReceiptOnWhatsapp, ReceiptFilter } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("receiptsList", receiptsList);
+  console.log("appli", appliedFilters)
 
   const dotsRefs = useRef({});
   const navigation = useNavigation();
@@ -120,19 +121,19 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
   // }, [activeHostelId, canReadReceipt])
 
   useEffect(() => {
-  if (activeHostelId && canReadReceipt) {
-    ReceiptFilter({
-      hostelId: activeHostelId,
-    });
-  }
-}, [activeHostelId, canReadReceipt]);
+    if (activeHostelId && canReadReceipt) {
+      ReceiptFilter({
+        hostelId: activeHostelId,
+      });
+    }
+  }, [activeHostelId, canReadReceipt]);
 
-// ReceiptFilter({
-//   hostelId: activeHostelId,
-//   keyword: searchText,
-// });
+  // ReceiptFilter({
+  //   hostelId: activeHostelId,
+  //   keyword: searchText,
+  // });
 
-  
+
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -360,7 +361,7 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
   const renderItem = ({ item }) => {
     return (
 
-      
+
       <View style={styles.row}>
         {/* <TouchableOpacity
         onPress={() => {handleViewReceiptDetails(item)}}
@@ -386,7 +387,7 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
   )}
 </TouchableOpacity> */}
 
-        <TouchableOpacity onPress={() => handleViewReceiptDetails(item)} style={{flex:1,flexDirection:'row',alignItems:'center'}}>
+        <TouchableOpacity onPress={() => handleViewReceiptDetails(item)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <View style={styles.avatarWrapper}>
             {item?.profilePic ? (
               <Image source={{ uri: item.profilePic }} style={styles.avatar} />
@@ -403,12 +404,12 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
               <Image source={TickIcon} style={styles.tickIcon} />
             </View>
           </View>
-        
 
 
-        <View style={{ flex: 1 }}>
-          {/* <Text style={styles.name}>{item.fullName}</Text> */}
-          {/* <TouchableOpacity
+
+          <View style={{ flex: 1 }}>
+            {/* <Text style={styles.name}>{item.fullName}</Text> */}
+            {/* <TouchableOpacity
             onPress={() =>
               navigation.navigate("CustomerOverviewScreen", {
                 customerId: item.customerId,
@@ -417,24 +418,24 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
             }
           > */}
             <Text style={styles.name}>{item.fullName}</Text>
-          {/* </TouchableOpacity> */}
+            {/* </TouchableOpacity> */}
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-            <View style={styles.tagBox}>
-              <Text style={styles.tag}>{item.invoiceType}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
+              <View style={styles.tagBox}>
+                <Text style={styles.tag}>{item.invoiceType}</Text>
+              </View>
+
+              <Image
+                source={Bills_Black_Icon}
+                style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
+              />
+
+              <Text style={styles.bill}>{item.invoiceNumber}</Text>
             </View>
-
-            <Image
-              source={Bills_Black_Icon}
-              style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
-            />
-
-            <Text style={styles.bill}>{item.invoiceNumber}</Text>
           </View>
-        </View>
 
-        <View style={styles.rightSection}>
-          {/* <TouchableOpacity
+          <View style={styles.rightSection}>
+            {/* <TouchableOpacity
             ref={(r) => (dotsRefs.current[item.transactionId] = r)}
             onPress={() => openMenu(item, item.transactionId)}
           >
@@ -443,17 +444,47 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
               style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }} 
             /> 
           </TouchableOpacity>  */}
-          <Text style={[styles.name,{marginTop:2}]}>₹{item?.paidAmount}</Text>
+            <Text style={[styles.name, { marginTop: 2 }]}>₹{item?.paidAmount}</Text>
 
-          <Text style={[styles.dateText,{marginTop:10}]}>
-            {/* {formatApiDate(item.paidAt)} */}
-            {item?.paidAt}
-          </Text>
-        </View>
+            <Text style={[styles.dateText, { marginTop: 10 }]}>
+              {/* {formatApiDate(item.paidAt)} */}
+              {item?.paidAt}
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
     );
   };
+
+  const collectedByLabels =
+    appliedFilters?.collectedBy
+      ?.map(value => {
+        const user = receiptsList?.filterOptions?.collectedBy?.find(
+          x => x.userId === value
+        );
+
+        return user?.name;
+      })
+      .filter(Boolean)
+      .join(", ");
+
+
+
+  const collectedByPaymentType =
+    appliedFilters?.modes
+      ?.map(value => {
+        const user = receiptsList?.filterOptions?.paymentMethod?.find(
+          x => x.type === value
+        );
+
+        return user?.name;
+      })
+      .filter(Boolean)
+      .join(", ");
+
+
+
+
 
 
 
@@ -500,75 +531,90 @@ const Receipt = ({ onSelectReceipt , showReceiptFiltersheet,   appliedFilters,
           </View>
         ) : (
           <>
-          {appliedFilters &&
- (
-   appliedFilters.period ||
-   appliedFilters.type?.length ||
-   appliedFilters.paymentmode?.length ||
-   appliedFilters.collectedBy?.length
- ) && (
-  <View style={{ marginBottom: 10 }}>
-   <View style={{flexDirection:'row', justifyContent:'space-between'}}>
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-    >
-   
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {appliedFilters &&
+              (
+                appliedFilters.period ||
+                appliedFilters.type?.length ||
+                appliedFilters.modes?.length ||
+                appliedFilters.collectedBy?.length
+              ) && (
+                <View style={{ marginBottom: 10 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                    >
 
-        {appliedFilters.period ? (
-          <View style={styles.chip}>
-            <Text style={styles.chipText}>
-              Period : {appliedFilters.period}
-            </Text>
-          </View>
-        ) : null}
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-        {appliedFilters.type?.map((item) => (
-          <View key={item} style={styles.chip}>
-            <Text style={styles.chipText}>Type : {item}</Text>
-          </View>
-        ))}
+                        {appliedFilters.period ? (
+                          <View style={styles.chip}>
+                            <Text style={styles.chipText}>
+                              Period : {appliedFilters.period}
+                            </Text>
+                          </View>
+                        ) : null}
 
-        {appliedFilters.paymentmode?.map((item) => (
+                        {appliedFilters.type?.map((item) => (
+                          <View key={item} style={styles.chip}>
+                            <Text style={styles.chipText}>Type : {item}</Text>
+                          </View>
+                        ))}
+
+                        {/* {appliedFilters.modes?.map((item) => (
+          
           <View key={item} style={styles.chip}>
             <Text style={styles.chipText}>Payment : {item}</Text>
           </View>
-        ))}
+        ))} */}
+                        {collectedByPaymentType ? (
+                          <View style={styles.chip}>
+                            <Text style={styles.chipText}>
+                              Payment : {collectedByPaymentType}
+                            </Text>
+                          </View>
+                        ) : null}
 
-        {appliedFilters.collectedBy?.map((item) => (
+                        {/* {appliedFilters.collectedBy?.map((item) => (
           <View key={item} style={styles.chip}>
             <Text style={styles.chipText}>Collected By : {item}</Text>
           </View>
-        ))}
+        ))} */}
+                        {collectedByLabels ? (
+                          <View style={styles.chip}>
+                            <Text style={styles.chipText}>
+                              Collected By : {collectedByLabels}
+                            </Text>
+                          </View>
+                        ) : null}
 
-      </View>
-    </ScrollView>
+                      </View>
+                    </ScrollView>
 
-    <TouchableOpacity
-      onPress={handleResetFilters}
-      style={{ alignSelf: "flex-end", marginTop: 6 }}
-    >
-      <Text style={styles.resetTextSmall}>Reset</Text>
-    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleResetFilters}
+                      style={{ alignSelf: "flex-end", marginTop: 6 }}
+                    >
+                      <Text style={styles.resetTextSmall}>Reset</Text>
+                    </TouchableOpacity>
 
-    </View>
+                  </View>
 
-  </View>
-)}
-         
-          <FlatList
-            data={receiptsList?.listReceipts || []}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.transactionId}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: 120,
-            }}
-            ListEmptyComponent={!loading && <EmptyReceiptState />}
-          />
-           </>
+                </View>
+              )}
+
+            <FlatList
+              data={receiptsList?.listReceipts || []}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.transactionId}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                flexGrow: 1,
+                paddingBottom: 120,
+              }}
+              ListEmptyComponent={!loading && <EmptyReceiptState />}
+            />
+          </>
         )}
 
 
@@ -1026,7 +1072,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
 
-  name: { fontSize: 16, fontFamily: "Gilroy-Bold" , color: "#000" },
+  name: { fontSize: 16, fontFamily: "Gilroy-Bold", color: "#000" },
 
   tagBox: {
     backgroundColor: "#FFE69C",
@@ -1110,7 +1156,7 @@ const styles = StyleSheet.create({
 
   billHeaderText: {
     fontSize: 20,
-fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
@@ -1123,7 +1169,7 @@ fontFamily: "Gilroy-Bold" ,
 
   statusText: {
     color: "black",
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     fontSize: 13,
   },
 
@@ -1141,7 +1187,7 @@ fontFamily: "Gilroy-Bold" ,
 
   userName: {
     fontSize: 17,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
@@ -1194,19 +1240,19 @@ fontFamily: "Gilroy-Bold" ,
 
   value: {
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
   amountValue: {
     fontSize: 16,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#000",
   },
 
   dueValue: {
     fontSize: 16,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "red",
   },
 
@@ -1221,7 +1267,7 @@ fontFamily: "Gilroy-Bold" ,
   previewText: {
     color: "#fff",
     fontSize: 16,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   filterHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
@@ -1251,12 +1297,12 @@ fontFamily: "Gilroy-Bold" ,
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
-  quickText: { color: "#111", fontFamily: "Gilroy-Semibold"},
+  quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
   resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold"  },
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" },
   downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
   dropdownMenu: {
     position: "absolute",
@@ -1356,7 +1402,7 @@ fontFamily: "Gilroy-Bold" ,
 
   deleteTitle: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#111",
     marginBottom: 10,
   },
@@ -1386,7 +1432,7 @@ fontFamily: "Gilroy-Bold" ,
 
   cancelText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -1400,7 +1446,7 @@ fontFamily: "Gilroy-Bold" ,
 
   deleteBtnText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#fff",
   },
   initialCircle: {
@@ -1415,7 +1461,7 @@ fontFamily: "Gilroy-Bold" ,
 
   initialText: {
     fontSize: 13,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#374151",  // dark grey
   },
   emptyContainer: {
@@ -1434,18 +1480,18 @@ fontFamily: "Gilroy-Bold" ,
     fontSize: 14,
     color: "#777",
   },
-chip: {
-  backgroundColor: "#EEF4FF",
-  borderRadius: 18,
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  marginRight: 8,
-},
+  chip: {
+    backgroundColor: "#EEF4FF",
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
 
-chipText: {
-  color: "#2D6CDF",
-  fontSize: 12,
-  fontFamily: "Gilroy-Semibold",
-},
+  chipText: {
+    color: "#2D6CDF",
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
 
 });
