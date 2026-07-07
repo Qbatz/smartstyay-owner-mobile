@@ -4082,7 +4082,7 @@ export default function BillsDesign({ route }) {
 
                   <View style={styles.fixedRefundBottomBar}>
 
-                    {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
+                    {(isPaid || cancelled ) && (
                       <>
                         <TouchableOpacity
                           style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -4100,7 +4100,37 @@ export default function BillsDesign({ route }) {
                           <Image source={DownloadIcon} style={styles.iconDark} />
                           <Text style={styles.paidText}>Download</Text>
                         </TouchableOpacity>
+
+                      </>
+                    )}
+
+
+                    {(pendingRefund || partiallyRefund || FullyRefund) && (
+                      <>
+                      <View style={styles.bottomRefundActionItem}>
+                        <TouchableOpacity
+                          style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
+                          disabled={!isExportAllow}
+                          onPress={handleshareBill}
+                        >
+                          <Image source={ShareIcon} style={styles.iconDark} />
+                          
+                        </TouchableOpacity>
+                        <Text style={styles.refundActionTxt}>Share</Text>
+                        </View>
+
+                      <View style={styles.bottomRefundActionItem}>
+                        <TouchableOpacity
+                          style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
+                          disabled={!isExportAllow}
+                          onPress={handleDownloadBillsPdf}>
+                          <Image source={DownloadIcon} style={styles.iconDark} />
+                          
+                        </TouchableOpacity>
+                        <Text style={styles.refundActionTxt}>Download</Text>
+                        </View>
                         {showRefundButton && (
+                          <View style={styles.bottomRefundActionItem}>
                           <TouchableOpacity
                             style={styles.refundBtn}
                             onPress={handleShowRefundPayment}
@@ -4109,10 +4139,12 @@ export default function BillsDesign({ route }) {
                               source={RefundedIcon}
                               style={styles.refundIcon}
                             />
-                            <Text style={styles.refundText}>
+                            
+                          </TouchableOpacity>
+                          <Text style={styles.refundText}>
                               Refund
                             </Text>
-                          </TouchableOpacity>
+                          </View>
                         )}
 
 
@@ -7652,7 +7684,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 14,
     borderTopWidth: 1,
     borderColor: "#E5E7EB",
@@ -7681,6 +7713,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     marginRight: 15
+  },
+  bottomRefundActionItem: {
+    alignItems: "center",
+    flex: 1,
+    // marginRight: 15
+  },
+  refundiIconBtn: {
+    backgroundColor: "#F3F4F6",
+    // padding:14,
+    paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10,
+    // marginRight: 20
+  },
+  refundActionTxt:{
+    fontFamily: "Gilroy-Semibold"
   },
 
   iconBtn: {
@@ -8443,14 +8491,21 @@ const styles = StyleSheet.create({
   refundBtn: {
 
 
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    // flex: 1,
+    // flexDirection: "row",
+    // alignItems: "center",
+    // justifyContent: "center",
     backgroundColor: "#E67E22",
-    paddingVertical: 10,
+     paddingVertical: 14,
+    paddingHorizontal: 37,
     borderRadius: 10,
-    marginHorizontal: 6
+    paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10,
+    // marginRight: 20
+    // paddingVertical: 10,
+    // borderRadius: 10,
+    // marginHorizontal: 6
   },
 
   refundIcon: {
@@ -8461,8 +8516,8 @@ const styles = StyleSheet.create({
 
   refundText: {
     marginLeft: 7,
-    color: "#FFFFFF",
-    marginTop: 4,
+    // color: "#FFFFFF",
+    // marginTop: 4,
     // fontSize: 12,
     fontFamily: "Gilroy-Semibold",
   },
