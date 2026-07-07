@@ -24,6 +24,9 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
 
+
+
+
 export default function Investment({
   navigation,
   route,

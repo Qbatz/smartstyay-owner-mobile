@@ -5,6 +5,7 @@ import { View } from "react-native";
 
 import MyTabs from '../src/Component/Tabs/BottomTabs'
 import AddTenant from "../src/Component/Customer/AddTenants";
+import AddTenantNew from "../src/Component/Customer/AddTenantNew";
 import TenantCheckIn from "../src/Component/Customer/TenantCheckIn";
 import AddWalkin from "../src/Component/Customer/AddWalkin";
 import FinalSettlement from "../src/Component/Customer/FinalSettlement";
@@ -127,6 +128,7 @@ const SuccessFlow = (props) => {
 
                     <Navigation.Screen name="MyTabs" component={MyTabs} />
                     <Navigation.Screen name="AddTenant" component={AddTenant} />
+                     <Navigation.Screen name="AddTenantNew" component={AddTenantNew} />
                     <Navigation.Screen name="TenantCheckin" component={TenantCheckIn} />
                     <Navigation.Screen name="AddBooking" component={AddBookingScreen} />
                     <Navigation.Screen name="AddWalkin" component={AddWalkin} />

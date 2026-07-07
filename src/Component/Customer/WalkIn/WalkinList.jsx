@@ -224,7 +224,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
       return;
     }
 
-    navigation.navigate("AddTenant", {
+    navigation.navigate("AddTenantNew", {
       refreshWalkins: walkinCustomers,
     });
   };
