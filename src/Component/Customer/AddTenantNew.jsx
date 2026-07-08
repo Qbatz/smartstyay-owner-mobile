@@ -9,6 +9,8 @@ import {
     ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
+// import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFloor } from "../../Context/PayingGuestContext";
 import Delete from "../../Assets/Images/remove.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
@@ -28,16 +30,29 @@ import SearchIcon from "../../Assets/Images/Asset_search.png";
 import ProfileImage from "../../Assets/Images/User.png";
 import BedIcon from "../../Assets/Images/bed_NewIcon.png";
 import UplodIcon from "../../Assets/Images/upload.png";
+import Profile from "../../Assets/Images/Tenant_inactive.png";
+import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
+import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+
 
 export default function AddTenantNew({ navigation, route }) {
     const { selectedBed, onBedAdded } = route.params || {};
+    const insets = useSafeAreaInsets();
 
-    const { getCustomersByHostel, checkInCustomer, bookCustomer, getBedsByHostelAndDate, changeBedCustomer, getCustomerDetails } = useCustomer();
+    const { AddTenantDraft, TenantCheckIn, getCustomersByHostel, checkInCustomer, bookCustomer, getBedsByHostelAndDate, changeBedCustomer, getCustomerDetails } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
 
+    const [draftCustomerId, setDraftCustomerId] = useState(null);
+
     const { getBankListByHostel } = useContext(BankingContext);
+
+    const customer = route.params?.customer;
+    const isEdit = route.params?.isEdit;
+
+    // const tabBarHeight = useBottomTabBarHeight();
 
     const [currentStep, setCurrentStep] = useState(1);
     const [activeTab, setActiveTab] = useState("Booking");
@@ -47,11 +62,12 @@ export default function AddTenantNew({ navigation, route }) {
     const [openJoinDatePic, setOpenJoinDatePic] = useState("");
     const [joiningDate, setJoiningDate] = useState(null);
     const [openCheckJoinDatePic, setOpenCheckJoinDatePic] = useState("");
-    const [checkJoiningDate, setcheckJoiningDate] = useState(dayjs());
+    const [checkJoiningDate, setcheckJoiningDate] = useState(null);
     const [bookingAmount, setBookingAmount] = useState("");
     const [rentalAmount, setRentalAmount] = useState("");
     const [advanceAmount, setAdvanceAmount] = useState("");
     const [extraCharges, setExtraCharges] = useState([]);
+    const [onetimepaymentcharges, setOneTimePaymentCharges] = useState([]);
     const [openDropdownId, setOpenDropdownId] = useState(null);
     const [CheckinTenants, setCheckinTenants] = useState([])
     const [checkinTenantsOpen, setCheckinTenantsopen] = useState(false);
@@ -60,6 +76,7 @@ export default function AddTenantNew({ navigation, route }) {
     const [StayTypeOpen, setStayTypeOpen] = useState(false);
     const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
     const maintenanceAlreadyUsed = extraCharges?.some(c => c?.type === "Maintenance");
+    const onetimepaymentmaintenanceAlreadyUsed = onetimepaymentcharges?.some(c => c?.type === "Maintenance");
     const [tenentsError, setTenantsError] = useState("")
     const [rentalError, setRentalError] = useState("")
     const [advanceError, setAdvanceError] = useState("")
@@ -83,12 +100,18 @@ export default function AddTenantNew({ navigation, route }) {
     const scrollRef = useRef(null);
     const transactionRef = useRef(null);
     const [isCheckingIn, setIsCheckingIn] = useState(false);
+    const [showProfileSheet, setShowProfileSheet] = useState(false);
+
+    const [searchText, setSearchText] = useState("");
+    const [showTenantList, setShowTenantList] = useState(false);
 
     const [nameError, setNameError] = useState("")
     const [mobileError, setMobileError] = useState("")
     const [emailError, setEmailError] = useState("")
     const [pincodeError, setPincodeError] = useState("");
-
+    const [doItLater, setDoItLater] = useState(false);
+    const [proceedbook, setProceedBook] = useState(false);
+    const [proceedcheckin, setProceedCheckin] = useState(false);
     const [countryOpen, setCountryOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
 
@@ -114,22 +137,74 @@ export default function AddTenantNew({ navigation, route }) {
     const [disableSheetScroll, setDisableSheetScroll] = useState(false);
     const [rentAmount, setRentAmount] = useState("")
     //   const isFloorDisabled = !date;
-    const isRoomDisabled = !date || !floorSelected;
-    const isBedDisabled = !date || !floorSelected || !roomSelected;
+    const isRoomDisabled = !floorSelected;
+    const isBedDisabled = !floorSelected || !roomSelected;
     const [currentFloorName, setCurrentFloorName] = useState("")
     const [currentRoomName, setCurrentRoomName] = useState("")
     const [currentBedName, setCurrentBedName] = useState("")
 
-    const [attachments, setAttachments] = useState([]);
+    const [aadhaarattachments, setAadhaarAttachments] = useState([]);
+    const [pancardattachments, setPanCardAttachments] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [aadhaarImage, setAadhaarImage] = useState(null);
+    const [pancardImage, setPanCardImage] = useState(null);
+    const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
+
+    const [guardians, setGuardians] = useState([]);
+
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const [startTime, setStartTime] = useState("");
-const [endTime, setEndTime] = useState("");
+    const [endTime, setEndTime] = useState("");
 
-const [openStartTime, setOpenStartTime] = useState(false);
-const [openEndTime, setOpenEndTime] = useState(false);
+    const [openStartTime, setOpenStartTime] = useState(false);
+    const [openEndTime, setOpenEndTime] = useState(false);
+
+    const dummyTenants = [
+        {
+            id: 1,
+            name: "Charles C",
+            mobile: "7604921098",
+            email: "charles@example.com",
+            image: ProfileImage,
+        },
+        {
+            id: 2,
+            name: "Rajesh K",
+            mobile: "9876547604",
+            email: "",
+            image: null,
+        },
+    ];
+
+    const highlightText = (text, keyword) => {
+        if (!keyword) return <Text>{text}</Text>;
+
+        const index = text.indexOf(keyword);
+
+        if (index === -1) {
+            return <Text>{text}</Text>;
+        }
+
+        return (
+            <Text style={styles.info}>
+                {text.substring(0, index)}
+                <Text
+                    style={{
+                        backgroundColor: "#F4F59C",
+                        fontFamily: "Gilroy-SemiBold",
+                    }}>
+                    {keyword}
+                </Text>
+                {text.substring(index + keyword.length)}
+            </Text>
+        );
+    };
+
+    const filteredTenants = dummyTenants.filter(item =>
+        item.mobile.includes(searchText)
+    );
 
     const [hasVehicle, setHasVehicle] = useState(true);
 
@@ -145,7 +220,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
     const [vehicleNumber, setVehicleNumber] = useState("");
     const [vehicleModel, setVehicleModel] = useState("");
 
-    
+
 
     useEffect(() => {
         const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -360,11 +435,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
 
     const [basicDetails, setBasicDetails] = useState({
-        firstName: "",
-        lastName: "",
-        mobile: "",
-        email: "",
+        firstName: customer?.firstName || "",
+        lastName: customer?.lastName || "",
+        mobile: customer?.mobileNo || "",
+        email: customer?.emailId || "",
     });
+
+    const [countryCode, setCountryCode] = useState(customer?.countryCode || "91");
 
     const [addressDetails, setAddressDetails] = useState({
         flat: "",
@@ -469,6 +546,55 @@ const [openEndTime, setOpenEndTime] = useState(false);
         setExtraCharges(prev => prev.filter(i => i.id !== id));
 
     };
+
+    const AddOnetimeCharge = () => {
+        setOneTimePaymentCharges(prev => [
+            ...prev,
+            { id: Date.now(), type: "", title: "", amount: "" }
+        ]);
+    };
+
+    const removeOnetimeCharge = (id) => {
+        setOneTimePaymentCharges(prev => prev.filter(i => i.id !== id));
+
+    };
+
+
+    const openCamera = () => {
+        launchCamera(
+            {
+                mediaType: "photo",
+                quality: 0.7,
+            },
+            (response) => {
+                if (response.didCancel) return;
+                if (response.assets && response.assets.length > 0) {
+                    //   setProfileImage(response.assets[0]);
+                    const source = { uri: response.assets[0].uri };
+                    setSelectedImage(source);
+                }
+            }
+        );
+    };
+    const openGallery = () => {
+        console.log("Gallery Pressed");
+        launchImageLibrary(
+            { mediaType: "photo", quality: 0.7 },
+            async (response) => {
+                if (response.didCancel) return;
+
+                if (response.assets?.length > 0) {
+                    //   const image = response.assets[0];
+                    //   setProfileImage(image); // UI update
+                    const source = { uri: response.assets[0].uri };
+                    setSelectedImage(source);
+
+                }
+            }
+        );
+    };
+
+
     useFocusEffect(
         useCallback(() => {
             fetchWalkinCustomers();
@@ -495,12 +621,74 @@ const [openEndTime, setOpenEndTime] = useState(false);
         // };
     }
     console.log("setCheckinTenants", CheckinTenants)
+
+    const loadRooms = async (floorId) => {
+        const res = await getAllRoomsByFloor(floorId);
+        if (res.success) {
+            console.log("RoomData", res.data);
+
+            setRooms(res.data);
+        } else {
+            setRooms([]);
+        }
+    };
+
+    useEffect(() => {
+        if (!activeHostelId || !joiningDate) return;
+
+        loadBeds(joiningDate);
+    }, [activeHostelId, joiningDate]);
+
+    //   useEffect(() => {
+    //     if (!activeHostelId || !checkJoiningDate) return;
+
+    //     loadBeds(checkJoiningDate);
+    // }, [activeHostelId, checkJoiningDate]);
+
+    useEffect(() => {
+        if (!activeHostelId || !checkJoiningDate) return;
+
+        loadBeds(checkJoiningDate);
+    }, [activeHostelId, checkJoiningDate]);
+
+
+    const loadBeds = async (date) => {
+        if (!activeHostelId) return;
+
+        const formattedDate = dayjs(date).format("DD-MM-YYYY");
+
+        const res = await getBedsByHostelAndDate(
+            activeHostelId,
+            formattedDate
+        );
+        console.log("beds", res);
+
+
+        if (res.success) {
+            setBeds(res?.data?.listBeds);
+        } else {
+            setBeds([]);
+        }
+    };
+
     const selectType = (id, type) => {
 
 
         if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
         setExtraCharges(prev =>
+            prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
+        );
+
+        setOpenDropdownId(null);
+    };
+
+    const selectOntimeType = (id, type) => {
+
+
+        if (type === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed) return;
+
+        setOneTimePaymentCharges(prev =>
             prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
         );
 
@@ -533,11 +721,26 @@ const [openEndTime, setOpenEndTime] = useState(false);
         );
     };
 
+    const OneTimeupdateTitle = (id, title) => {
+        // setExtraCharges(prev =>
+        //   prev.map(i => (i.id === id ? { ...i, title } : i))
+        // );
+        setOneTimePaymentCharges(prev =>
+            prev.map(i =>
+                i.id === id
+                    ? { ...i, title, titleError: "" }
+                    : i
+            )
+        );
+    };
+
     // const updateAmount = (id, amount) => {
     //   setExtraCharges(prev =>
     //     prev.map(i => (i.id === id ? { ...i, amount } : i))
     //   );
     // };
+
+
     const updateAmount = (id, amount) => {
         const onlyNum = amount.replace(/[^0-9]/g, "");
 
@@ -547,23 +750,214 @@ const [openEndTime, setOpenEndTime] = useState(false);
                     ? { ...i, amount: onlyNum, amountError: "" }
                     : i
             )
+        )
+    }
+
+    const OneTimeupdateAmount = (id, amount) => {
+        const onlyNum = amount.replace(/[^0-9]/g, "");
+
+        setOneTimePaymentCharges((prev) =>
+            prev.map((i) =>
+                i.id === id
+                    ? { ...i, amount: onlyNum, amountError: "" }
+                    : i
+            )
+        )
+    }
+
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(prev => prev - 1);
+        }
+        else {
+            navigation.goBack();
+        }
+    }
+
+
+
+    const validateStepOne = () => {
+        let valid = true;
+
+        setNameError("");
+        setMobileError("");
+        setEmailError("");
+        setPincodeError("");
+
+        // First Name
+        if (!basicDetails.firstName.trim()) {
+            setNameError("Please Enter First Name");
+            valid = false;
+        }
+
+        // Mobile
+        if (!/^[6-9]\d{9}$/.test(basicDetails.mobile)) {
+            setMobileError("Enter Valid Mobile Number");
+            valid = false;
+        }
+
+        // Email (optional)
+        if (
+            basicDetails.email.trim() &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(basicDetails.email)
+        ) {
+            setEmailError("Enter Valid Email");
+            valid = false;
+        }
+
+        // Pincode (optional)
+        if (addressDetails.pincode.trim() !== "") {
+            if (!/^[1-9][0-9]{5}$/.test(addressDetails.pincode)) {
+                setPincodeError("Enter Valid Pincode");
+                valid = false;
+            }
+        }
+
+        return valid;
+    };
+
+    const isStepOneValid = () => {
+        const mobileValid = /^[6-9]\d{9}$/.test(basicDetails.mobile);
+
+        const emailValid =
+            !basicDetails.email ||
+            /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(basicDetails.email);
+
+        const pincodeValid =
+            !addressDetails.pincode ||
+            /^[1-9][0-9]{5}$/.test(addressDetails.pincode);
+
+        return (
+            basicDetails.firstName.trim() &&
+            mobileValid &&
+            emailValid &&
+            pincodeValid
         );
     };
 
-    const handleBack = () => {
 
-        if (currentStep > 1) {
+    const handleBasicNext = async () => {
 
-            setCurrentStep(prev => prev - 1);
-
-        } else {
-
-            navigation.goBack();
-
+        if (!validateStepOne()) {
+            return;
         }
 
-    }
+        const payload = {
+            request: {
+                firstName: basicDetails.firstName,
+                lastName: basicDetails.lastName,
+                mobile: basicDetails.mobile,
+                emailId: basicDetails.email,
 
+                // joiningDate: "",
+                // bookingDate: "",
+                // bookingAmount: 0,
+
+                // floorId: null,
+                // roomId: null,
+                // bedId: null,
+
+                // bankId: "",
+                // referenceNumber: "",
+
+                // advanceAmount: 0,
+                // rentalAmount: 0,
+
+                // stayType: "",
+
+                // deductions: [],
+
+                // proRate: false,
+
+                // idProof: {
+                //   type: "",
+                //   number: "",
+                // },
+
+                address: {
+                    flat: addressDetails.flat,
+                    house: "",
+                    building: "",
+                    company: "",
+                    apartment: "",
+                    area: addressDetails.area,
+                    street: "",
+                    sector: "",
+                    village: "",
+                    landmark: addressDetails.landmark,
+                    pincode: addressDetails.pincode,
+                    city: addressDetails.city,
+                    state: selectedState,
+                },
+
+                // booking: {
+                //   joiningDateTentative: "",
+                //   refuseAdvanceAmount: false,
+                // },
+
+                jobDetails: {
+                    employmentStatus: "",
+                    companyName: "",
+                    collegeName: "",
+                    jobRole: "",
+                    workLocation: "",
+                    shiftType: "",
+                    shiftFrom: "",
+                    shiftTo: "",
+                },
+
+                guardians: [],
+
+                vehicleDetails: {
+                    vehicleType: "",
+                    vehicleNumber: "",
+                    isParkingSpaceRequired: false,
+                },
+            },
+        };
+
+        const profileImage = selectedImage
+
+        const res = await AddTenantDraft(
+            activeHostelId,
+            payload,
+            profileImage,
+            aadhaarImage,
+            pancardImage
+        );
+
+        console.log("addtenantdraftresponse", res);
+
+
+        if (res?.success) {
+            setModalType("success");
+            setMessage(res?.data?.message);
+            setShowSuccess(true);
+
+            setDraftCustomerId(res?.data?.customerId)
+
+            setTimeout(() => {
+                setCurrentStep(2);
+                setShowSuccess(false);
+                setIsSubmitClicked(false)
+            }, 800);
+        }
+        else {
+            const mobileMsg = res?.message?.mobileStatus || "";
+            const emailMsg = res?.message?.emailStatus || "";
+
+            setMobileError(mobileMsg);
+            setEmailError(emailMsg);
+            setIsSubmitClicked(false)
+
+            // 🔥 IMPORTANT: Go back to step 1 if basic error
+            if (mobileMsg || emailMsg) {
+                setStep(1);
+            }
+        }
+
+
+    };
 
     const validateBooking = () => {
         let valid = true;
@@ -593,6 +987,20 @@ const [openEndTime, setOpenEndTime] = useState(false);
             setBookingAmountError("Enter Valid Booking Amount");
             valid = false;
         }
+        if (!floorSelected) {
+            setFloorError("Please Select Floor");
+            valid = false;
+        }
+
+        if (!roomSelected) {
+            setRoomError("Please Select Room");
+            valid = false;
+        }
+
+        if (!bedSelected) {
+            setBedError("Please Select Bed");
+            valid = false;
+        }
 
         if (!accountSelected) {
             setBankError("Please Select Mode Of Transaction");
@@ -601,39 +1009,49 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
         return valid;
     };
+    console.log("selectedbed", floorSelected);
+    console.log("selectedbed", roomSelected);
+    console.log("selectedbed", bedSelected);
+
+
     const handleBookingSubmit = async () => {
         if (!validateBooking()) return;
-        if (isCheckingIn) return;
+        // if (isCheckingIn) return;
 
-        if (!selectedBed) {
-            setModalType("error");
-            setMessage("Bed data missing");
-            setShowSuccess(true);
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 800);
-            // alert("Bed data missing");
-            return;
-        }
+
 
         try {
             setIsCheckingIn(true)
 
+
+
             const payload = {
-                customerId: CheckinTenantSelected?.customerId,
+                customerId: draftCustomerId,
+
                 bookingDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
                 joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+
                 bookingAmount: Number(bookingAmount),
 
-                floorId: selectedBed.floorId,
-                roomId: selectedBed.roomId,
-                bedId: selectedBed.bedId,
+                floorId: floorSelected?.id,
+                roomId: roomSelected?.id,
+                bedId: bedSelected?.bedId,
 
-                bankId: accountSelected.bankingId,
-                referenceNumber: referenceNumber || "",
+                // rentalAmount: Number(
+                //     rentalAmount || bedSelected?.rentAmount || 0
+                // ),
+
+                bankId: accountSelected?.bankingId,
+                referenceNumber: referenceNumber?.trim() || "",
             };
 
+            console.log("BookingPayload", payload);
+
+
             const res = await bookCustomer(activeHostelId, payload);
+
+            console.log("Bookingresponse", res);
+
 
             if (res.success) {
                 setModalType("success");
@@ -658,6 +1076,143 @@ const [openEndTime, setOpenEndTime] = useState(false);
             setIsCheckingIn(false)
         }
     };
+
+    const hideBookingSaveDraft = !!accountSelected;
+    const hideCheckInSaveDraft = rentalAmount?.trim()?.length > 0;
+
+    const renderFooterButtons = () => {
+
+        // STEP 1
+        if (currentStep === 1) {
+            return (
+
+                <View style={styles.row}>
+                    <View style={{ flex: 1, }}></View>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.primaryBtn,
+                            // !isStepOneValid() && styles.disabledBtn,
+                        ]}
+                        // disabled={!isStepOneValid()}
+                        onPress={handleBasicNext}
+                    >
+                        <Text style={styles.primaryText}>
+                            Save & Next
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+            );
+        }
+
+        // STEP 2 BOOKING
+        if (currentStep === 2 && activeTab === "Booking") {
+            return (
+                <View style={styles.row}>
+
+                    {!hideBookingSaveDraft && (
+                        <TouchableOpacity style={styles.secondaryBtn}>
+                            <Text>Save Draft</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                        style={[
+                            styles.primaryBtn,
+                            hideBookingSaveDraft && { flex: 1 },
+                            !proceedbook && styles.disabledBtn,
+                        ]}
+                        disabled={!proceedbook}
+                        onPress={handleBookingSubmit}
+                    >
+                        <Text style={styles.primaryText}>Book</Text>
+                    </TouchableOpacity>
+
+                </View>
+            );
+        }
+
+        // STEP 2 CHECKIN
+        if (currentStep === 2 && activeTab === "CheckIn") {
+            return (
+                <View style={styles.row}>
+
+                    {!hideCheckInSaveDraft && (
+                        <TouchableOpacity style={styles.secondaryBtn}>
+                            <Text>Save Draft</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                        style={[
+                            styles.primaryBtn,
+                            hideCheckInSaveDraft && { flex: 1 },
+                            !proceedcheckin && styles.disabledBtn,
+                        ]}
+                        disabled={!proceedcheckin}
+                        onPress={handleNextThird}
+                    >
+                        <Text style={styles.primaryText}>Next</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.primaryBtn,
+                            hideCheckInSaveDraft && { flex: 1 },
+                            !proceedcheckin && styles.disabledBtn,
+                        ]}
+                        disabled={!proceedcheckin}
+                        onPress={handleCheckIn}
+                    >
+                        <Text style={styles.primaryText}>Check In</Text>
+                    </TouchableOpacity>
+
+                </View>
+            );
+        }
+
+        // STEP 3
+        return (
+            <>
+                <TouchableOpacity
+                    style={styles.checkboxRow}
+                    activeOpacity={0.8}
+                >
+                    {/* <CheckBox
+                    value={doLater}
+                    onValueChange={setDoLater}
+                /> */}
+
+                    <Text style={styles.checkboxText}>
+                        Do it Later
+                    </Text>
+                </TouchableOpacity>
+
+                <View style={styles.row}>
+                    <TouchableOpacity style={styles.secondaryBtn}>
+                        <Text>Save Draft</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.primaryBtn,
+                            // !canSave && styles.disabledBtn,
+                        ]}
+                    // disabled={!canSave}
+                    
+
+                    >
+                        <Text style={styles.primaryText}>
+                            Save
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </>
+        );
+    };
+
+
     const validateExtraCharges = () => {
         let valid = true;
 
@@ -726,128 +1281,321 @@ const [openEndTime, setOpenEndTime] = useState(false);
         return valid;
     };
 
+    const validateOneTimeCharges = () => {
+        let valid = true;
+
+        const updated = onetimepaymentcharges.map((e) => {
+            let titleError = "";
+            let amountError = "";
+            let typeError = "";
+
+            const titleFilled = e.title?.trim()?.length > 0;
+            const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+            const amt = Number(e.amount);
+
+
+            if (!e.type) {
+                typeError = "Please select type";
+                valid = false;
+                return { ...e, typeError, titleError: "", amountError: "" };
+            }
+
+
+            if (e.type === "Maintenance") {
+                if (!amountFilled) {
+                    amountError = "Please enter amount";
+                    valid = false;
+                } else if (isNaN(amt) || amt <= 0) {
+                    amountError = "Amount must be greater than 0";
+                    valid = false;
+                }
+
+                return { ...e, typeError: "", titleError: "", amountError };
+            }
+
+            // ✅ CASE 3: Others -> reason + amount both mandatory
+            if (e.type === "Others") {
+                // both empty -> ok (optional row)
+                // if (!titleFilled && !amountFilled) {
+                //   return { ...e, titleError: "", amountError: "" };
+                // }
+
+                if (!titleFilled && !amountFilled) {
+                    titleError = "Please enter reason";
+                    valid = false;
+                }
+
+                else if (!titleFilled) {
+                    titleError = "Please enter reason";
+                    valid = false;
+                }
+
+                else if (!amountFilled) {
+                    amountError = "Please enter amount";
+                    valid = false;
+                } else if (isNaN(amt) || amt <= 0) {
+                    amountError = "Amount must be greater than 0";
+                    valid = false;
+                }
+
+                return { ...e, typeError, titleError, amountError };
+            }
+
+            return { ...e, typeError: "", titleError: "", amountError: "" };
+        });
+
+        setOneTimePaymentCharges(updated);
+        return valid;
+    };
+
     const totalFixedCharges = extraCharges.reduce((total, item) => {
         const amount = Number(item.amount || 0);
         return total + amount;
     }, 0);
 
-    const handleCheckIn = async () => {
+    const handleNextThird = () => {
+        if (isCheckingIn) return;
+        const chargeValid = validateExtraCharges();
+        const onetimechargevalid = validateOneTimeCharges()
+        if (!chargeValid || !onetimechargevalid) return;
+        const customerId = CheckinTenantSelected?.customerId;
 
 
-        setCurrentStep(3)
-        // if (isCheckingIn) return;
-        // const chargeValid = validateExtraCharges();
-        // if (!chargeValid) return;
-        // const customerId = CheckinTenantSelected?.customerId;
+        let hasError = false;
 
+        setFloorError("");
+        setRoomError("");
+        setBedError("");
+        setRentalError("");
+        setAdvanceError("");
+        setCheckJoinDateError("");
+        setStayTypeError("");
 
-        // let hasError = false;
+        // Joining Date
+        if (!checkJoiningDate) {
+            setCheckJoinDateError("Please Select Joining Date");
+            hasError = true;
+        }
 
+        // Floor
+        if (!floorSelected) {
+            setFloorError("Please Select Floor");
+            hasError = true;
+        }
 
-        // setTenantsError("");
-        // setRentalError("");
-        // setAdvanceError("");
-        // setCheckJoinDateError("");
-        // setStayTypeError("")
+        // Room
+        if (!roomSelected) {
+            setRoomError("Please Select Room");
+            hasError = true;
+        }
 
+        // Bed
+        if (!bedSelected) {
+            setBedError("Please Select Bed");
+            hasError = true;
+        }
 
-        // if (!CheckinTenantSelected) {
-        //     setTenantsError("Please Select Tenant");
-        //     hasError = true;
-        // }
-
-
-        // if (!rentalAmount || Number(rentalAmount) <= 0) {
-        //     setRentalError("Enter Valid Rental Amount");
-        //     hasError = true;
-        // }
+        // Stay Type
         // if (!StayTypeSelected || StayTypeSelected === "Stay Type") {
         //     setStayTypeError("Please Select Stay Type");
         //     hasError = true;
         // }
 
-        // if (!advanceAmount || Number(advanceAmount) < 0) {
-        //     setAdvanceError("Enter Valid Advance Amount");
+        // Rental
+        if (!rentalAmount || Number(rentalAmount) <= 0) {
+            setRentalError("Please Enter Rental Amount");
+            hasError = true;
+        }
+
+        // Advance
+        if (!refuseAdvanceAmount) {
+            if (!advanceAmount || Number(advanceAmount) <= 0) {
+                setAdvanceError("Please Enter Advance Amount");
+                hasError = true;
+            }
+        }
+
+        if (hasError) return;
+
+        setCurrentStep(3);
+    }
+
+
+
+    const handleCheckIn = async () => {
+
+
+
+        if (isCheckingIn) return;
+        const chargeValid = validateExtraCharges();
+        const onetimechargevalid = validateOneTimeCharges()
+        if (!chargeValid || !onetimechargevalid) return;
+        const customerId = CheckinTenantSelected?.customerId;
+
+
+        let hasError = false;
+
+        setFloorError("");
+        setRoomError("");
+        setBedError("");
+        setRentalError("");
+        setAdvanceError("");
+        setCheckJoinDateError("");
+        setStayTypeError("");
+
+        // Joining Date
+        if (!checkJoiningDate) {
+            setCheckJoinDateError("Please Select Joining Date");
+            hasError = true;
+        }
+
+        // Floor
+        if (!floorSelected) {
+            setFloorError("Please Select Floor");
+            hasError = true;
+        }
+
+        // Room
+        if (!roomSelected) {
+            setRoomError("Please Select Room");
+            hasError = true;
+        }
+
+        // Bed
+        if (!bedSelected) {
+            setBedError("Please Select Bed");
+            hasError = true;
+        }
+
+        // Stay Type
+        // if (!StayTypeSelected || StayTypeSelected === "Stay Type") {
+        //     setStayTypeError("Please Select Stay Type");
         //     hasError = true;
         // }
 
+        // Rental
+        if (!rentalAmount || Number(rentalAmount) <= 0) {
+            setRentalError("Please Enter Rental Amount");
+            hasError = true;
+        }
 
-        // if (!checkJoiningDate) {
-        //     setCheckJoinDateError("Please Select Joining Date");
-        //     hasError = true;
-        // }
+        // Advance
+        if (!refuseAdvanceAmount) {
+            if (!advanceAmount || Number(advanceAmount) <= 0) {
+                setAdvanceError("Please Enter Advance Amount");
+                hasError = true;
+            }
+        }
 
-        // if (hasError) return;
+        if (hasError) return;
 
-        // if (!selectedBed) {
-        //     setModalType("error");
-        //     setMessage("Bed data missing");
-        //     setShowSuccess(true);
-        //     setTimeout(() => {
-        //         setShowSuccess(false);
-        //     }, 800)
-        //     return;
-        // }
+        if (!bedSelected) {
+            setModalType("error");
+            setMessage("Bed data missing");
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 800)
+            return;
+        }
 
-        // try {
-        //     setIsCheckingIn(true)
-        //     const payload = {
-        //         floorId: selectedBed.floorId,
-        //         roomId: selectedBed.roomId,
-        //         bedId: selectedBed.bedId,
+        try {
+            setIsCheckingIn(true)
+            // const payload = {
+            //     floorId: selectedBed.floorId,
+            //     roomId: selectedBed.roomId,
+            //     bedId: selectedBed.bedId,
 
-        //         joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
+            //     joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
 
-        //         advanceAmount: Number(advanceAmount),
-        //         rentalAmount: Number(rentalAmount),
+            //     advanceAmount: Number(advanceAmount),
+            //     rentalAmount: Number(rentalAmount),
 
-        //         stayType: "SHORT",
-
-
-        //         deductions: extraCharges.map((e) => ({
-        //             type:
-        //                 e.type === "Others"
-        //                     ? e.title.trim().toLowerCase()
-        //                     : e.type.toLowerCase(),
-        //             amount: Number(e.amount),
-        //         })),
-        //     };
+            //     stayType: "SHORT",
 
 
-        //     const res = await checkInCustomer(
-        //         customerId,
-        //         payload
-        //     );
+            //     deductions: extraCharges.map((e) => ({
+            //         type:
+            //             e.type === "Others"
+            //                 ? e.title.trim().toLowerCase()
+            //                 : e.type.toLowerCase(),
+            //         amount: Number(e.amount),
+            //     })),
+            // }
 
-        //     console.log("checkined", res)
+            const payload = {
+                floorId: bedSelected?.floorId,
+                roomId: bedSelected?.roomId,
+                bedId: bedSelected?.bedId,
 
-        //     if (res.success) {
-        //         setModalType("success");
-        //         setMessage(res.data);
-        //         setShowSuccess(true);
-        //         setTimeout(() => {
-        //             setShowSuccess(false);
-        //             onBedAdded && onBedAdded(selectedBed.roomId)
-        //             navigation.goBack();
-        //         }, 800);
+                joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
+
+                refundableAmount: Number(advanceAmount),
+
+                rentalAmount: Number(rentalAmount),
+
+                stayType: "long",
+                // StayTypeSelected === "LongStay" ? "long" : "short",
+
+                deductions: extraCharges.map((item) => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title.trim()
+                            : item.type,
+                    amount: Number(item.amount),
+                })),
+
+                shouldCollectFullRent: false,
+
+                customRent: Number(rentalAmount || 0),
+
+                oneTimeDeduction: onetimepaymentcharges.map((item) => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title.trim()
+                            : item.type,
+                    amount: Number(item.amount),
+                })),
+            };
+
+            console.log("checkinpayload", payload);
+
+            const res = await TenantCheckIn(
+                activeHostelId,
+                draftCustomerId,
+                payload
+            );
+
+            console.log("checkined", res)
+
+            if (res.success) {
+                setModalType("success");
+                setMessage(res.data);
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    onBedAdded && onBedAdded(selectedBed.roomId)
+                    navigation.goBack();
+                }, 800);
 
 
-        //     } else {
-        //         setModalType("error");
-        //         setMessage(res?.message);
-        //         setShowSuccess(true);
-        //         setTimeout(() => {
-        //             setShowSuccess(false);
-        //         }, 800)
-        //     }
-        // } catch (error) {
-        //     console.log(error)
-        //     setIsCheckingIn(false)
-        // }
+            } else {
+                setModalType("error");
+                setMessage(res?.message);
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 800)
+            }
+        } catch (error) {
+            console.log(error)
+            setIsCheckingIn(false)
+        }
 
     }
 
-    const pickImage = () => {
+    const pickAadhaarImage = () => {
         ImagePicker.launchImageLibrary(
             {
                 mediaType: "photo",
@@ -859,28 +1607,66 @@ const [openEndTime, setOpenEndTime] = useState(false);
                 if (response.assets?.length) {
                     const newFiles = response.assets;
 
-                    setAttachments((prev) => [
+                    setAadhaarAttachments((prev) => [
                         ...prev,
                         ...newFiles,
                     ]);
 
                     if (!selectedImage) {
-                        setSelectedImage(newFiles[0]);
+                        setAadhaarImage(newFiles[0]);
+                    }
+                }
+            }
+        );
+    }
+
+
+    const pickPancardImage = () => {
+        ImagePicker.launchImageLibrary(
+            {
+                mediaType: "photo",
+                selectionLimit: 0, // multiple images
+            },
+            (response) => {
+                if (response.didCancel) return;
+
+                if (response.assets?.length) {
+                    const newFiles = response.assets;
+
+                    setPanCardAttachments((prev) => [
+                        ...prev,
+                        ...newFiles,
+                    ]);
+
+                    if (!selectedImage) {
+                        setPanCardImage(newFiles[0]);
                     }
                 }
             }
         );
     };
 
-    const removeImage = (index) => {
-        const updated = attachments.filter(
+    const removeAadhaarImage = (index) => {
+        const updated = aadhaarattachments.filter(
             (_, i) => i !== index
         );
 
-        setAttachments(updated);
+        setAadhaarAttachments(updated);
 
-        if (selectedImage?.uri === attachments[index]?.uri) {
-            setSelectedImage(updated[0] || null);
+        if (selectedImage?.uri === aadhaarattachments[index]?.uri) {
+            setAadhaarImage(updated[0] || null);
+        }
+    }
+
+    const removePancardImage = (index) => {
+        const updated = pancardattachments.filter(
+            (_, i) => i !== index
+        );
+
+        setPanCardAttachments(updated);
+
+        if (selectedImage?.uri === pancardattachments[index]?.uri) {
+            setPanCardImage(updated[0] || null);
         }
     }
 
@@ -1016,6 +1802,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
         setAdvanceAmount("");
         setStayTypeSelected("Stay Type");
         setExtraCharges([]);
+        setOneTimePaymentCharges([])
 
         setCheckinTenantSelected(null);
         setCheckinTenantsopen(false);
@@ -1024,10 +1811,15 @@ const [openEndTime, setOpenEndTime] = useState(false);
         setOpenDropdownId(null);
     };
 
-    const handleBasicNext = () => {
-        setCurrentStep(2)
 
-    }
+    const summaryAdvanceAmount = Number(advanceAmount || 0);
+
+    const deductionTotal = [...extraCharges].reduce(
+        (total, item) => total + Number(item.amount || 0), 0)
+
+    const summaryRent = Number(rentalAmount || 0)
+
+    const summaryAmount = summaryAdvanceAmount + deductionTotal + summaryRent;
 
 
     return (
@@ -1141,12 +1933,100 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                         </Text>
 
                                         <TextInput
-                                            placeholder="98765 43210"
-                                            style={styles.searchInput}
-                                            keyboardType="phone-pad"
+                                            placeholder="9876543210"
+                                            keyboardType="number-pad"
+                                            value={searchText}
+                                            onFocus={() => setShowTenantList(true)}
+                                            onChangeText={(text) => {
+                                                const value = text.replace(/[^0-9]/g, "");
+
+                                                setSearchText(value);
+
+                                                if (value.length === 0) {
+                                                    setShowTenantList(false);
+                                                    return;
+                                                }
+
+                                                setShowTenantList(true);
+                                            }}
                                         />
 
                                     </View>
+                                    {showTenantList && (
+                                        <View style={styles.searchResultCard}>
+
+                                            {filteredTenants.length > 0 ? (
+
+                                                filteredTenants.map((item, index) => (
+
+                                                    <View key={item.id}>
+                                                        <TouchableOpacity
+                                                            style={styles.tenantRow}
+                                                            activeOpacity={0.8}
+                                                            onPress={() => {
+                                                                setShowTenantList(false);
+                                                                setSearchText("");
+
+                                                                setBasicDetails(prev => ({
+                                                                    ...prev,
+                                                                    firstName: item.name,
+                                                                    mobile: item.mobile,
+                                                                    email: item.email,
+                                                                }));
+                                                            }}>
+                                                            {item.image ? (
+                                                                <Image
+                                                                    source={item.image}
+                                                                    style={styles.avatar}
+                                                                />
+                                                            ) : (
+                                                                <View style={styles.avatarPlaceholder}>
+                                                                    <Text style={styles.avatarLetter}>
+                                                                        {item.name[0]}
+                                                                    </Text>
+                                                                </View>
+                                                            )}
+
+                                                            <View style={{ flex: 1 }}>
+
+                                                                <Text style={styles.name}>
+                                                                    {item.name}
+                                                                </Text>
+
+                                                                <View style={{ marginTop: 6 }}>
+                                                                    {highlightText(`+91 ${item.mobile}`, searchText)}
+                                                                </View>
+
+                                                                <Text
+                                                                    style={styles.info}
+                                                                    numberOfLines={1}
+                                                                >
+                                                                    {item.email || "---"}
+                                                                </Text>
+
+                                                            </View>
+
+                                                            {index !== filteredTenants.length - 1 && (
+                                                                <View style={styles.divider} />
+                                                            )}
+                                                        </TouchableOpacity>
+                                                    </View>
+
+                                                ))
+
+                                            ) : (
+
+                                                <View style={styles.emptyContainer}>
+                                                    <Text style={styles.emptyText}>
+                                                        No Tenants are Exists using this Mobile Number
+                                                    </Text>
+                                                </View>
+
+                                            )}
+
+                                        </View>
+                                    )}
+
 
                                     <Text style={{ fontSize: 13, color: '#747686', fontFamily: "Gilroy-Regular", marginTop: 10 }}>
                                         Search existing tenants in the Property flow ecosystem to auto-fill details.
@@ -1156,31 +2036,37 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                         <View style={styles.blueBar} />
 
-                                        <Text style={styles.sectionTitle}>
+                                        <Text style={styles.headerTitle}>
                                             Tenant Information
                                         </Text>
 
                                     </View>
 
-                                    <View style={styles.profileRow}>
+                                    <View style={styles.profileSection}>
 
-                                        <Image
-                                            source={ProfileImage}
-                                            style={styles.avatar}
-                                        />
 
-                                        <View>
+                                        <View style={styles.profileWrapper}>
+                                            <Image
+                                                source={selectedImage ? selectedImage : Profile}
+                                                style={styles.profileImage}
+                                            />
 
-                                            <Text style={{ fontSize: 15 }}>
-                                                Profile Photo
+                                            <TouchableOpacity style={styles.editIconWrapper} onPress={() => setShowProfileSheet(true)}>
+                                                <Image
+                                                    source={require("../../Assets/Images/edit.png")}
+                                                    style={styles.editIcon}
+                                                />
+                                            </TouchableOpacity>
+
+                                        </View>
+
+                                        {/* RIGHT SIDE - TEXT */}
+                                        <View style={styles.profileTextBox}>
+                                            <Text style={styles.profileTitle}>Profile Photo</Text>
+                                            <Text style={styles.profileSub}>
+                                                Add Profile Image of Vendor/Business.{"\n"}
+                                                Max size of image 2 MB
                                             </Text>
-
-                                            <Text style={{ fontSize: 10 }}>
-                                                Recommended size 400x400px.
-
-                                                JPG or PNG allowed.
-                                            </Text>
-
                                         </View>
 
                                     </View>
@@ -1303,28 +2189,42 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                     />
 
 
-                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30 }}>
-
-                                        <View style={{ flexDirection: 'row', }}>
-
+                                    <View
+                                        style={{
+                                            flexDirection: "row",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            marginTop: 30,
+                                        }}
+                                    >
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
                                             <View style={styles.blueBar} />
 
-                                            <Text style={styles.sectionTitle}>
+                                            <Text style={styles.headerTitle}>
                                                 Address Details
                                             </Text>
-
                                         </View>
 
-                                        <View style={styles.checkboxRow}>
-
-                                            {/* <CheckBox /> */}
+                                        <TouchableOpacity
+                                            style={styles.doLaterContainer}
+                                            activeOpacity={0.8}
+                                            onPress={() => setDoItLater(!doItLater)}
+                                        >
+                                            <View
+                                                style={[
+                                                    styles.checkbox,
+                                                    doItLater && styles.checkboxSelected,
+                                                ]}
+                                            >
+                                                {doItLater && (
+                                                    <Text style={styles.tick}>✓</Text>
+                                                )}
+                                            </View>
 
                                             <Text style={styles.doLater}>
                                                 Do it Later
                                             </Text>
-
-                                        </View>
-
+                                        </TouchableOpacity>
                                     </View>
 
 
@@ -1375,23 +2275,40 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                             value={addressDetails.pincode}
                                             onChangeText={(t) => {
                                                 const value = t.replace(/[^0-9]/g, "");
-
                                                 setAddressDetails({
                                                     ...addressDetails,
                                                     pincode: value,
                                                 });
 
-
                                                 if (!value) {
                                                     setPincodeError("");
                                                 } else if (value.startsWith("0")) {
                                                     setPincodeError("Pincode should not start with 0");
-                                                } else if (value.length < 6) {
+                                                } else if (value.length !== 6) {
                                                     setPincodeError("Pincode must be 6 digits");
                                                 } else {
                                                     setPincodeError("");
                                                 }
                                             }}
+                                        // onChangeText={(t) => {
+                                        //     const value = t.replace(/[^0-9]/g, "");
+
+                                        //     setAddressDetails({
+                                        //         ...addressDetails,
+                                        //         pincode: value,
+                                        //     });
+
+
+                                        //     if (!value) {
+                                        //         setPincodeError("");
+                                        //     } else if (value.startsWith("0")) {
+                                        //         setPincodeError("Pincode should not start with 0");
+                                        //     } else if (value.length < 6) {
+                                        //         setPincodeError("Pincode must be 6 digits");
+                                        //     } else {
+                                        //         setPincodeError("");
+                                        //     }
+                                        // }}
 
                                         />
                                         {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
@@ -1513,6 +2430,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                     </View>
 
 
+
                                     {/* <View style={styles.btnRow}>
                                             <TouchableOpacity
                                                 style={styles.secondaryBtn}
@@ -1538,20 +2456,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                             </TouchableOpacity>
                                         </View> */}
 
-                                    <View style={styles.footer}>
 
-                                        <TouchableOpacity
-                                            style={styles.nextBtn}
-                                            onPress={handleBasicNext}
-                                        >
-
-                                            <Text style={{ color: '#fff' }}>
-                                                Save & Next
-                                            </Text>
-
-                                        </TouchableOpacity>
-
-                                    </View>
 
                                 </ScrollView>
 
@@ -1571,9 +2476,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 setCheckinTenantSelected(null);
                                                 setCheckinTenantsopen(false);
                                                 setTenantsError("")
+                                                setcheckJoiningDate(null)
+                                                setRentalAmount("")
+                                                setAdvanceAmount("");
                                                 clearAllErrors();
                                                 resetCheckInState();
                                                 clearAllErrors();
+
                                             }}
 
                                         >
@@ -1589,6 +2498,9 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 setActiveTab("CheckIn");
                                                 setCheckinTenantSelected(null);
                                                 setCheckinTenantsopen(false);
+                                                setJoiningDate(null)
+                                                setRentalAmount("")
+                                                setAdvanceAmount("");
                                                 setTenantsError("")
                                                 clearAllErrors();
                                                 resetBookingState();
@@ -1702,6 +2614,35 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 <ErrorMessage message={bookingAmountError} type="error" />
                                             )}
 
+                                            <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
+                                            <View ref={joiningDateRef} collapsable={false}>
+                                                <TouchableOpacity
+                                                    style={styles.dateBox}
+                                                    onPress={() => {
+                                                        Keyboard.dismiss();        // 🔥 keyboard close
+                                                        setOpenDropdownId(null);
+                                                        setCheckinTenantsopen(false);
+
+                                                        setTimeout(() => {
+                                                            joiningDateRef.current.measureInWindow((x, y, w, h) => {
+                                                                setDatePickerTop(getSafeCalendarTop(y, h));
+                                                                setActiveDateField("joining");
+                                                                setShowCalendar(true);
+                                                            });
+                                                        }, 150);                  // 🔥 wait for keyboard animation
+                                                    }}
+                                                >
+                                                    <Text style={styles.placeholder}>
+                                                        {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                                                    </Text>
+                                                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+                                                </TouchableOpacity>
+                                            </View>
+
+                                            {joiningDateError && (
+                                                <ErrorMessage message={joiningDateError} type="error" />
+                                            )}
+
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
                                                 <View style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}>
@@ -1757,6 +2698,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                                                         setFloorError("")
                                                                         loadRoomsByFloor(f?.id);
+                                                                        loadRooms(f?.id);
                                                                     }}
 
 
@@ -1925,34 +2867,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 <ErrorMessage message={rentalError} type="error" />
                                             )}
 
-                                            <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-                                            <View ref={joiningDateRef} collapsable={false}>
-                                                <TouchableOpacity
-                                                    style={styles.dateBox}
-                                                    onPress={() => {
-                                                        Keyboard.dismiss();        // 🔥 keyboard close
-                                                        setOpenDropdownId(null);
-                                                        setCheckinTenantsopen(false);
 
-                                                        setTimeout(() => {
-                                                            joiningDateRef.current.measureInWindow((x, y, w, h) => {
-                                                                setDatePickerTop(getSafeCalendarTop(y, h));
-                                                                setActiveDateField("joining");
-                                                                setShowCalendar(true);
-                                                            });
-                                                        }, 150);                  // 🔥 wait for keyboard animation
-                                                    }}
-                                                >
-                                                    <Text style={styles.placeholder}>
-                                                        {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                                                    </Text>
-                                                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            {joiningDateError && (
-                                                <ErrorMessage message={joiningDateError} type="error" />
-                                            )}
 
 
 
@@ -1997,8 +2912,8 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 )}
 
 
-                                                {/* <Text style={styles.label}>Transaction Id</Text>
-  
+                                                <Text style={styles.label}>Transaction Id</Text>
+
                                                 <TextInput
                                                     ref={transactionRef}
                                                     style={styles.inputBox}
@@ -2011,7 +2926,32 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                         const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
                                                         setReferenceNumber(noEmojis);
                                                     }}
-                                                /> */}
+                                                />
+
+
+                                                <TouchableOpacity
+                                                    style={{
+                                                        flexDirection: "row",
+                                                        alignItems: "center", marginTop: 10
+                                                    }}
+                                                    activeOpacity={0.8}
+                                                    onPress={() => setProceedBook(prev => !prev)}
+                                                >
+                                                    <View
+                                                        style={[
+                                                            styles.checkbox,
+                                                            proceedbook && styles.checkboxSelected,
+                                                        ]}
+                                                    >
+                                                        {proceedbook && (
+                                                            <Text style={styles.tick}>✓</Text>
+                                                        )}
+                                                    </View>
+
+                                                    <Text style={styles.doLater}>
+                                                        Everything is Correct – Proceed to Book
+                                                    </Text>
+                                                </TouchableOpacity>
 
 
                                             </View>
@@ -2137,6 +3077,12 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     }}
 
                                                 >
+                                                    {/* <Text style={styles.placeholder}>
+                                                        {checkJoiningDate
+                                                            ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
+                                                            : "DD-MM-YYYY"}
+                                                    </Text> */}
+
                                                     <Text style={styles.placeholder}>
                                                         {checkJoiningDate
                                                             ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
@@ -2207,6 +3153,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                                                         setFloorError("")
                                                                         loadRoomsByFloor(f?.id);
+                                                                        loadRooms(f?.id);
                                                                     }}
 
 
@@ -2355,9 +3302,44 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
 
 
+                                            <View style={styles.switchRow}>
+                                                <Text style={styles.switchLabel}>
+                                                    Do you want to refuse advance amount?
+                                                </Text>
 
+                                                <Switch
+                                                    value={refuseAdvanceAmount}
+                                                    onValueChange={(value) => {
+                                                        setRefuseAdvanceAmount(value);
+
+                                                        // Optional: refuse ON na amount clear pannalam
+                                                        if (value) {
+                                                            setAdvanceAmount("");
+                                                            setAdvanceError("");
+                                                        }
+                                                    }}
+                                                />
+                                            </View>
                                             <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
+
                                             <TextInput
+                                                style={[
+                                                    styles.input,
+                                                    refuseAdvanceAmount && styles.disabledInput,
+                                                ]}
+                                                placeholder="Enter Amount"
+                                                keyboardType="numeric"
+                                                value={advanceAmount}
+                                                editable={!refuseAdvanceAmount}
+                                                selectTextOnFocus={!refuseAdvanceAmount}
+                                                placeholderTextColor="#9CA3AF"
+                                                onChangeText={(text) => {
+                                                    const onlyNum = text.replace(/[^0-9]/g, "");
+                                                    setAdvanceAmount(onlyNum);
+                                                    setAdvanceError("");
+                                                }}
+                                            />
+                                            {/* <TextInput
                                                 style={styles.input}
                                                 placeholder="Enter Amount"
                                                 placeholderTextColor="#9CA3AF"
@@ -2368,7 +3350,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     setAdvanceAmount(onlyNum);
                                                     setAdvanceError("");
                                                 }}
-                                            />
+                                            /> */}
                                             {advanceError && (
                                                 <ErrorMessage message={advanceError} type="error" />
                                             )}
@@ -2577,11 +3559,148 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                             )}
 
                                             <View style={styles.nonRefund}>
+                                                <View style={styles.extraHeader}>
+                                                    <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
 
-                                                <Text>Add Onetime Payment</Text>
+                                                    {/* <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
+                                                        <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
+                                                    </TouchableOpacity> */}
+                                                </View>
+
+                                                {onetimepaymentcharges.map((item) => (
+                                                    <View key={item.id} style={styles.figmaRowWrapper}>
+
+                                                        {/* CLOSE BTN */}
+                                                        <TouchableOpacity
+                                                            onPress={() => removeOnetimeCharge(item.id, item.type)}
+                                                            style={styles.figmaCloseBtn}
+                                                        >
+
+                                                            <Image
+                                                                source={Delete}
+                                                                style={styles.figmaCloseText}
+                                                            />
+                                                        </TouchableOpacity>
+
+
+                                                        <View style={styles.figmaRow}>
+
+
+                                                            {item.type === "" ? (
+                                                                <TouchableOpacity
+                                                                    style={styles.figmaLeftBox}
+                                                                    onPress={() =>
+                                                                        setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                                                                    }
+                                                                >
+                                                                    <Text style={{ color: "#777" }}>Select...</Text>
+                                                                    <Image source={DownArrow} style={styles.arrow} />
+                                                                </TouchableOpacity>
+                                                            ) : item.type === "Others" ? (
+                                                                <TextInput
+                                                                    ref={(r) => {
+                                                                        inputRefs.current[`reason-${item.id}`] = r;
+                                                                    }}
+                                                                    style={styles.figmaLeftBox}
+                                                                    placeholder="Enter reason"
+
+                                                                    value={item.title}
+                                                                    onFocus={() => {
+                                                                        setOpenDropdownId(null);
+                                                                        scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                                                                    }}
+
+                                                                    // onChangeText={(t) => updateTitle(item.id, t)}
+                                                                    onChangeText={(t) => {
+                                                                        const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                                                        OneTimeupdateTitle(item.id, onlyLetters);
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                                                                    <Text>Maintenance</Text>
+                                                                </View>
+                                                            )}
+
+                                                            {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                                                            {item.type === "" ? (
+                                                                <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                                                                    <Text style={{ color: "#999" }}>Enter amount</Text>
+                                                                </View>
+                                                            ) : (
+                                                                <TextInput
+                                                                    ref={(r) => {
+                                                                        inputRefs.current[`amount-${item.id}`] = r;
+                                                                    }}
+                                                                    style={styles.figmaRightBox}
+                                                                    placeholder="Enter amount"
+                                                                    keyboardType="numeric"
+                                                                    value={item.amount}
+                                                                    onFocus={() => {
+                                                                        setOpenDropdownId(null);
+                                                                        scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                                                                    }}
+
+                                                                    onChangeText={(t) => {
+
+                                                                        let cleaned = t.replace(/[^0-9.]/g, "");
+
+                                                                        const parts = cleaned.split(".");
+
+                                                                        if (parts.length > 2) {
+                                                                            cleaned = parts[0] + "." + parts[1];
+                                                                        }
+
+                                                                        if (parts[1]?.length > 2) {
+                                                                            cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                                        }
+
+                                                                        OneTimeupdateAmount(item.id, cleaned)
+                                                                    }
+
+                                                                    }
+                                                                />
+                                                            )}
+
+                                                        </View>
+
+                                                        {item.titleError && (
+                                                            <ErrorMessage message={item.titleError} type="error" />
+                                                        )}
+
+                                                        {item.typeError && (
+                                                            <ErrorMessage message={item.typeError} type="error" />
+                                                        )}
+
+                                                        {item.amountError && (
+                                                            <ErrorMessage message={item.amountError} type="error" />
+                                                        )}
+                                                        {openDropdownId === item.id && item.type === "" && (
+                                                            <View style={styles.nonRefundDropdown}>
+                                                                {TYPE_OPTIONS.map((t) => {
+
+                                                                    const disabled = t === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed;
+
+                                                                    return (
+                                                                        <TouchableOpacity
+                                                                            key={t}
+                                                                            disabled={disabled}
+                                                                            onPress={() => !disabled && selectOntimeType(item.id, t)}
+                                                                            style={{ opacity: disabled ? 0.3 : 1 }}
+                                                                        >
+                                                                            <Text style={styles.dropdownItem}>{t}</Text>
+                                                                        </TouchableOpacity>
+                                                                    );
+                                                                })}
+                                                            </View>
+                                                        )}
+
+                                                    </View>
+                                                ))}
 
                                                 <TouchableOpacity
                                                     style={styles.addNewButton}
+                                                    onPress={AddOnetimeCharge}
                                                 >
                                                     <View style={styles.addNewContent}>
                                                         <View style={styles.plusCircle}>
@@ -2593,6 +3712,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
+
+
+
+
+
+
+
                                             </View>
 
                                             <View style={styles.summaryCard}>
@@ -2605,7 +3731,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 <Text
                                                     style={styles.summaryAmount}
                                                 >
-                                                    ₹ 2500
+                                                    ₹ {summaryAmount.toLocaleString("en-IN")}
                                                     {/* {(
                                 Number(paidAmount) ||
                                 0
@@ -2628,7 +3754,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     <Text
                                                         style={styles.summaryText}
                                                     >
-                                                        ₹ 12500
+                                                        ₹ {summaryAdvanceAmount.toLocaleString("en-IN")}
                                                         {/* {(
                                   Number(
                                     paidAmount
@@ -2652,7 +3778,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     <Text
                                                         style={styles.summaryText}
                                                     >
-                                                        - ₹ 2800
+                                                        - ₹ {deductionTotal.toLocaleString("en-IN")}
                                                         {/* {balance > 0
                                   ? balance.toFixed(
                                     2
@@ -2672,7 +3798,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     <Text
                                                         style={styles.summaryText}
                                                     >
-                                                        ₹ 7500
+                                                        - ₹ {summaryRent.toLocaleString("en-IN")}
                                                         {/* {balance > 0
                                   ? balance.toFixed(
                                     2
@@ -2684,13 +3810,38 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                             <Text style={styles.note}>
                                                 Note: System automatically generates a separate invoices for Advance & Base Rent
                                             </Text>
+                                            <TouchableOpacity
+                                                style={{
+                                                    flexDirection: "row",
+                                                    alignItems: "center", marginTop: 10
+                                                }}
+                                                activeOpacity={0.8}
+                                                onPress={() => setProceedCheckin(prev => !prev)}
+                                            >
+                                                <View
+                                                    style={[
+                                                        styles.checkbox,
+                                                        proceedcheckin && styles.checkboxSelected,
+                                                    ]}
+                                                >
+                                                    {proceedcheckin && (
+                                                        <Text style={styles.tick}>✓</Text>
+                                                    )}
+                                                </View>
+
+                                                <Text style={styles.doLater}>
+                                                    Everything is Correct – Proceed to Check-In
+                                                </Text>
+                                            </TouchableOpacity>
 
                                         </>
                                     )}
 
 
 
-                                    <View style={styles.footer}>
+
+
+                                    {/* <View style={styles.footer}>
                                         <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
                                             <Text style={styles.cancelText}>Cancel</Text>
                                         </TouchableOpacity>
@@ -2705,7 +3856,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                 {activeTab === "Booking" ? "Book" : "Check-In"}
                                             </Text>
                                         </TouchableOpacity>
-                                    </View>
+                                    </View> */}
 
                                 </>
                             )
@@ -2717,13 +3868,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                     <View>
                                         <View style={styles.sectionHeader}>
                                             <View style={styles.blueBar} />
-                                            <Text style={styles.sectionTitle}>
+                                            <Text style={styles.headerTitle}>
                                                 Upload Documents
                                             </Text>
                                         </View>
 
 
-                                        {attachments.length === 0 ? (
+                                        {aadhaarattachments.length === 0 ? (
                                             // <TouchableOpacity
                                             //   style={styles.uploadBox}
                                             //   onPress={pickImage}
@@ -2739,7 +3890,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                             <TouchableOpacity
                                                 style={styles.uploadCard}
                                                 activeOpacity={0.8}
-                                                onPress={pickImage}
+                                                onPress={pickAadhaarImage}
                                             >
 
                                                 <View style={styles.uploadIconBox}>
@@ -2764,19 +3915,19 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                                 <View style={styles.previewCard}>
                                                     <Image
-                                                        source={{ uri: selectedImage?.uri }}
+                                                        source={{ uri: aadhaarImage?.uri }}
                                                         style={styles.previewImage}
                                                     />
 
                                                     <View style={styles.fileInfoRow}>
                                                         <View>
                                                             <Text style={styles.fileName}>
-                                                                {selectedImage?.fileName}
+                                                                {aadhaarImage?.fileName}
                                                             </Text>
 
                                                             <Text style={styles.fileSize}>
                                                                 {(
-                                                                    (selectedImage?.fileSize || 0) /
+                                                                    (aadhaarImage?.fileSize || 0) /
                                                                     1024
                                                                 ).toFixed(0)}{" "}
                                                                 KB
@@ -2786,13 +3937,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 const index =
-                                                                    attachments.findIndex(
+                                                                    aadhaarattachments.findIndex(
                                                                         (item) =>
                                                                             item.uri ===
-                                                                            selectedImage.uri
+                                                                            aadhaarImage.uri
                                                                     );
 
-                                                                removeImage(index);
+                                                                removeAadhaarImage(index);
                                                             }}
                                                             style={styles.deleteBtn}
                                                         >
@@ -2810,19 +3961,19 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                                 {/* Thumbnail List */}
 
-                                                <View style={styles.thumbnailRow}>
+                                                {/* <View style={styles.thumbnailRow}>
                                                     <ScrollView
                                                         horizontal
                                                         showsHorizontalScrollIndicator={
                                                             false
                                                         }
                                                     >
-                                                        {attachments.map(
+                                                        {aadhaarattachments.map(
                                                             (item, index) => (
                                                                 <TouchableOpacity
                                                                     key={index}
                                                                     onPress={() =>
-                                                                        setSelectedImage(item)
+                                                                        setAadhaarImage(item)
                                                                     }
                                                                 >
                                                                     <Image
@@ -2831,7 +3982,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                                         }}
                                                                         style={[
                                                                             styles.thumbImage,
-                                                                            selectedImage?.uri ===
+                                                                            aadhaarImage?.uri ===
                                                                             item.uri && {
                                                                                 borderColor:
                                                                                     "#2D5BFF",
@@ -2845,21 +3996,21 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     </ScrollView>
 
                                                     <TouchableOpacity
-                                                        onPress={pickImage}
+                                                        onPress={pickAadhaarImage}
                                                     >
                                                         <Text style={styles.addMore}>
                                                             + Add more Files
                                                         </Text>
                                                     </TouchableOpacity>
-                                                </View>
+                                                </View> */}
                                             </>
                                         )}
 
-                                        {attachments.length === 0 ? (
+                                        {pancardattachments.length === 0 ? (
                                             <TouchableOpacity
                                                 style={styles.uploadCard}
                                                 activeOpacity={0.8}
-                                                onPress={pickImage}
+                                                onPress={pickPancardImage}
                                             >
 
                                                 <View style={styles.uploadIconBox}>
@@ -2884,19 +4035,19 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                                 <View style={styles.previewCard}>
                                                     <Image
-                                                        source={{ uri: selectedImage?.uri }}
+                                                        source={{ uri: pancardImage?.uri }}
                                                         style={styles.previewImage}
                                                     />
 
                                                     <View style={styles.fileInfoRow}>
                                                         <View>
                                                             <Text style={styles.fileName}>
-                                                                {selectedImage?.fileName}
+                                                                {pancardImage?.fileName}
                                                             </Text>
 
                                                             <Text style={styles.fileSize}>
                                                                 {(
-                                                                    (selectedImage?.fileSize || 0) /
+                                                                    (pancardImage?.fileSize || 0) /
                                                                     1024
                                                                 ).toFixed(0)}{" "}
                                                                 KB
@@ -2906,13 +4057,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 const index =
-                                                                    attachments.findIndex(
+                                                                    pancardattachments.findIndex(
                                                                         (item) =>
                                                                             item.uri ===
-                                                                            selectedImage.uri
+                                                                            pancardImage.uri
                                                                     );
 
-                                                                removeImage(index);
+                                                                removePancardImage(index);
                                                             }}
                                                             style={styles.deleteBtn}
                                                         >
@@ -2930,19 +4081,19 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                                 {/* Thumbnail List */}
 
-                                                <View style={styles.thumbnailRow}>
+                                                {/* <View style={styles.thumbnailRow}>
                                                     <ScrollView
                                                         horizontal
                                                         showsHorizontalScrollIndicator={
                                                             false
                                                         }
                                                     >
-                                                        {attachments.map(
+                                                        {pancardattachments.map(
                                                             (item, index) => (
                                                                 <TouchableOpacity
                                                                     key={index}
                                                                     onPress={() =>
-                                                                        setSelectedImage(item)
+                                                                        setPanCardImage(item)
                                                                     }
                                                                 >
                                                                     <Image
@@ -2951,7 +4102,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                                         }}
                                                                         style={[
                                                                             styles.thumbImage,
-                                                                            selectedImage?.uri ===
+                                                                            pancardImage?.uri ===
                                                                             item.uri && {
                                                                                 borderColor:
                                                                                     "#2D5BFF",
@@ -2965,13 +4116,13 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     </ScrollView>
 
                                                     <TouchableOpacity
-                                                        onPress={pickImage}
+                                                        onPress={pickPancardImage}
                                                     >
                                                         <Text style={styles.addMore}>
                                                             + Add more Files
                                                         </Text>
                                                     </TouchableOpacity>
-                                                </View>
+                                                </View> */}
                                             </>
                                         )}
 
@@ -2999,218 +4150,284 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                                         <View style={styles.sectionHeader}>
                                             <View style={styles.blueBar} />
-                                            <Text style={styles.sectionTitle}>
+                                            <Text style={styles.headerTitle}>
                                                 Parent/Guardian Details
                                             </Text>
                                         </View>
 
 
-                                        <Text style={styles.label}>Guardian Full Name <Text style={{ color: "red" }}>*</Text></Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Enter name"
-                                            value={fullName}
-                                            onChangeText={(t) => {
 
-                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+                                        {guardians.map((item, index) => (
+                                            <View
+                                                key={item.id}
+                                                style={styles.guardianCard}
+                                            >
+                                                {/* Header */}
 
-                                                setFullName(cleaned);
-                                                setNameErr("")
-                                                setFormErr("")
-                                            }}
+                                                <View style={styles.cardHeader}>
+                                                    <Text style={styles.cardTitle}>
+                                                        Item {String(index + 1).padStart(2, "0")}
+                                                    </Text>
 
-                                        />
+                                                    <TouchableOpacity
+                                                        onPress={() =>
+                                                            setGuardians(prev =>
+                                                                prev.filter(x => x.id !== item.id)
+                                                            )
+                                                        }
+                                                    >
+                                                        <Image
+                                                            source={require("../../Assets/Images/DeleteIcon.png")}
+                                                            style={{ width: 18, height: 18 }}
+                                                        />
+                                                    </TouchableOpacity>
+                                                </View>
 
-                                        {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
 
-                                        <Text style={styles.label}>Relationship </Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setShowRelationDropdown(!showRelationDropdown);
-                                                setShowOccupationDropdown(false);
-                                            }}
-                                        >
-                                            <View style={{
-                                                borderWidth: 1,
-                                                borderColor: "#E5E7EB",
-                                                borderRadius: 10,
-                                                paddingHorizontal: 12,
-                                                height: 50,
-                                                flexDirection: "row",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                fontFamily: "Gilroy-Regular"
-                                            }}>
+                                                <Text style={styles.label}>Guardian Full Name <Text style={{ color: "red" }}>*</Text></Text>
                                                 <TextInput
-                                                    placeholder="Select Relationship"
-                                                    value={relationship}
-                                                    editable={isRelationOther}
-                                                    onChangeText={(t) => {
-                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                                                            .replace(/\s+/g, " ");
-
-                                                        setRelationship(cleaned);
-                                                        setRelationErr("")
-                                                        setFormErr("");
-                                                    }}
-
-                                                    style={{ flex: 1 }}
-                                                />
-                                                <Image
-                                                    source={DownArrow}
-                                                    style={[
-                                                        styles.arrowIcon,
-                                                        showRelationDropdown && { transform: [{ rotate: "180deg" }] }
-                                                    ]}
-                                                />
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        {relationErr ? <ErrorMessage message={relationErr} type="error" /> : null}
-
-                                        {showRelationDropdown && (
-                                            <View style={styles.additinaldropdown}>
-                                                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                                    {relationshipOptions.map((item) => (
-                                                        <TouchableOpacity
-                                                            key={item}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                if (item === "Other") {
-                                                                    setIsRelationOther(true);
-                                                                    setRelationship(""); // empty for typing
-                                                                    setRelationErr("")
-                                                                } else {
-                                                                    setIsRelationOther(false);
-                                                                    setRelationship(item);
-                                                                    setRelationErr("")
-                                                                }
-                                                                setShowRelationDropdown(false);
-                                                            }}
-                                                        >
-                                                            <Text>{item}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
-
-                                        <Text style={styles.label}>Guardian Occupation </Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setShowOccupationDropdown(!showOccupationDropdown);
-                                                setShowRelationDropdown(false);
-                                            }}
-                                        >
-                                            <View style={{
-                                                borderWidth: 1,
-                                                borderColor: "#E5E7EB",
-                                                borderRadius: 10,
-                                                paddingHorizontal: 12,
-                                                height: 50,
-                                                flexDirection: "row",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                fontFamily: "Gilroy-Regular"
-                                            }}>
-                                                <TextInput
-                                                    placeholder="Select Occupation"
-                                                    value={occupation}
-                                                    editable={isOccupationOther}
+                                                    style={styles.input}
+                                                    placeholder="Enter name"
+                                                    value={fullName}
                                                     onChangeText={(t) => {
 
-                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                                                            .replace(/\s+/g, " ");
+                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "");
 
-                                                        setOccupation(cleaned);
-                                                        // setOccupation(t);
-                                                        setOccupationErr("");
-                                                        setFormErr("");
+                                                        setFullName(cleaned);
+                                                        setNameErr("")
+                                                        setFormErr("")
                                                     }}
-                                                    style={{ flex: 1 }}
+
                                                 />
 
+                                                {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
 
-                                                <Image
-                                                    source={DownArrow}
-                                                    style={[
-                                                        styles.arrowIcon,
-                                                        showOccupationDropdown && { transform: [{ rotate: "180deg" }] }
-                                                    ]}
-                                                />
+                                                <Text style={styles.label}>Relationship </Text>
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setShowRelationDropdown(!showRelationDropdown);
+                                                        setShowOccupationDropdown(false);
+                                                    }}
+                                                >
+                                                    <View style={{
+                                                        borderWidth: 1,
+                                                        borderColor: "#E5E7EB",
+                                                        borderRadius: 10,
+                                                        paddingHorizontal: 12,
+                                                        height: 50,
+                                                        flexDirection: "row",
+                                                        alignItems: "center",
+                                                        justifyContent: "space-between",
+                                                        fontFamily: "Gilroy-Regular"
+                                                    }}>
+                                                        <TextInput
+                                                            placeholder="Select Relationship"
+                                                            value={relationship}
+                                                            editable={isRelationOther}
+                                                            onChangeText={(t) => {
+                                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                                                                    .replace(/\s+/g, " ");
 
-                                            </View>
-                                        </TouchableOpacity>
-                                        {occupationErr ? <ErrorMessage message={occupationErr} type="error" /> : null}
-
-                                        {showOccupationDropdown && (
-                                            <View style={styles.additinaldropdown}>
-                                                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                                    {occupationOptions.map((item) => (
-                                                        <TouchableOpacity
-                                                            key={item}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                if (item === "Other") {
-                                                                    setIsOccupationOther(true);
-                                                                    setOccupation("");
-                                                                    setOccupationErr("")
-                                                                } else {
-                                                                    setIsOccupationOther(false);
-                                                                    setOccupation(item);
-                                                                    setOccupationErr("")
-                                                                }
-                                                                setShowOccupationDropdown(false);
+                                                                setRelationship(cleaned);
+                                                                setRelationErr("")
+                                                                setFormErr("");
                                                             }}
-                                                        >
-                                                            <Text>{item}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
 
-                                        {/* Mobile */}
-                                        <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
+                                                            style={{ flex: 1 }}
+                                                        />
+                                                        <Image
+                                                            source={DownArrow}
+                                                            style={[
+                                                                styles.arrowIcon,
+                                                                showRelationDropdown && { transform: [{ rotate: "180deg" }] }
+                                                            ]}
+                                                        />
+                                                    </View>
+                                                </TouchableOpacity>
+
+                                                {relationErr ? <ErrorMessage message={relationErr} type="error" /> : null}
+
+                                                {showRelationDropdown && (
+                                                    <View style={styles.additinaldropdown}>
+                                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                                            {relationshipOptions.map((item) => (
+                                                                <TouchableOpacity
+                                                                    key={item}
+                                                                    style={styles.dropdownItem}
+                                                                    onPress={() => {
+                                                                        if (item === "Other") {
+                                                                            setIsRelationOther(true);
+                                                                            setRelationship(""); // empty for typing
+                                                                            setRelationErr("")
+                                                                        } else {
+                                                                            setIsRelationOther(false);
+                                                                            setRelationship(item);
+                                                                            setRelationErr("")
+                                                                        }
+                                                                        setShowRelationDropdown(false);
+                                                                    }}
+                                                                >
+                                                                    <Text>{item}</Text>
+                                                                </TouchableOpacity>
+                                                            ))}
+                                                        </ScrollView>
+                                                    </View>
+                                                )}
+
+                                                <Text style={styles.label}>Guardian Occupation </Text>
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setShowOccupationDropdown(!showOccupationDropdown);
+                                                        setShowRelationDropdown(false);
+                                                    }}
+                                                >
+                                                    <View style={{
+                                                        borderWidth: 1,
+                                                        borderColor: "#E5E7EB",
+                                                        borderRadius: 10,
+                                                        paddingHorizontal: 12,
+                                                        height: 50,
+                                                        flexDirection: "row",
+                                                        alignItems: "center",
+                                                        justifyContent: "space-between",
+                                                        fontFamily: "Gilroy-Regular"
+                                                    }}>
+                                                        <TextInput
+                                                            placeholder="Select Occupation"
+                                                            value={occupation}
+                                                            editable={isOccupationOther}
+                                                            onChangeText={(t) => {
+
+                                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                                                                    .replace(/\s+/g, " ");
+
+                                                                setOccupation(cleaned);
+                                                                // setOccupation(t);
+                                                                setOccupationErr("");
+                                                                setFormErr("");
+                                                            }}
+                                                            style={{ flex: 1 }}
+                                                        />
+
+
+                                                        <Image
+                                                            source={DownArrow}
+                                                            style={[
+                                                                styles.arrowIcon,
+                                                                showOccupationDropdown && { transform: [{ rotate: "180deg" }] }
+                                                            ]}
+                                                        />
+
+                                                    </View>
+                                                </TouchableOpacity>
+                                                {occupationErr ? <ErrorMessage message={occupationErr} type="error" /> : null}
+
+                                                {showOccupationDropdown && (
+                                                    <View style={styles.additinaldropdown}>
+                                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                                            {occupationOptions.map((item) => (
+                                                                <TouchableOpacity
+                                                                    key={item}
+                                                                    style={styles.dropdownItem}
+                                                                    onPress={() => {
+                                                                        if (item === "Other") {
+                                                                            setIsOccupationOther(true);
+                                                                            setOccupation("");
+                                                                            setOccupationErr("")
+                                                                        } else {
+                                                                            setIsOccupationOther(false);
+                                                                            setOccupation(item);
+                                                                            setOccupationErr("")
+                                                                        }
+                                                                        setShowOccupationDropdown(false);
+                                                                    }}
+                                                                >
+                                                                    <Text>{item}</Text>
+                                                                </TouchableOpacity>
+                                                            ))}
+                                                        </ScrollView>
+                                                    </View>
+                                                )}
+
+                                                {/* Mobile */}
+                                                <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
+                                                <View style={{
+                                                    borderWidth: 1,
+                                                    borderColor: "#E5E7EB",
+                                                    borderRadius: 10,
+                                                    paddingHorizontal: 12,
+                                                    height: 50,
+                                                    flexDirection: "row",
+                                                    alignItems: "center",
+                                                    justifyContent: "space-between",
+                                                    fontFamily: "Gilroy-Regular"
+                                                }}>
+                                                    {/* Country Code */}
+                                                    <Text style={{ marginRight: 8, fontSize: 14 }}>+91</Text>
+                                                    <View style={styles.divider} />
+                                                    {/* Mobile Input */}
+                                                    <TextInput
+                                                        placeholder="Enter Mobile Number"
+                                                        keyboardType="number-pad"
+                                                        maxLength={10}
+                                                        value={mobile}
+                                                        onChangeText={(t) => {
+                                                            const validmobile = t.replace(/[^0-9]/g, "");
+                                                            setMobile(validmobile);
+                                                            setMobileErr("");
+                                                            setFormErr("");
+                                                        }}
+                                                        style={{ flex: 1 }}
+                                                    />
+                                                </View>
+
+
+                                                {mobileErr ? <ErrorMessage message={mobileErr} type="error" /> : null}
+                                                {formErr ? <ErrorMessage message={formErr} type="error" /> : null}
+
+                                            </View>
+                                        ))}
+
+
                                         <View style={{
-                                            borderWidth: 1,
-                                            borderColor: "#E5E7EB",
-                                            borderRadius: 10,
-                                            paddingHorizontal: 12,
-                                            height: 50,
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                            fontFamily: "Gilroy-Regular"
+                                            flexDirection: 'row',
+                                            justifyContent: 'flex-end', marginTop: 10
                                         }}>
-                                            {/* Country Code */}
-                                            <Text style={{ marginRight: 8, fontSize: 14 }}>+91</Text>
-                                            <View style={styles.divider} />
-                                            {/* Mobile Input */}
-                                            <TextInput
-                                                placeholder="Enter Mobile Number"
-                                                keyboardType="number-pad"
-                                                maxLength={10}
-                                                value={mobile}
-                                                onChangeText={(t) => {
-                                                    const validmobile = t.replace(/[^0-9]/g, "");
-                                                    setMobile(validmobile);
-                                                    setMobileErr("");
-                                                    setFormErr("");
+                                            <View></View>
+
+                                            <TouchableOpacity
+                                                style={{
+                                                    flexDirection: 'row',
+                                                    backgroundColor: "#2D6CDF",
+                                                    paddingHorizontal: 18,
+                                                    paddingVertical: 8,
+                                                    borderRadius: 8,
+                                                    alignItems: 'center'
                                                 }}
-                                                style={{ flex: 1 }}
-                                            />
+                                                onPress={() => {
+                                                    setGuardians(prev => [
+                                                        ...prev,
+                                                        {
+                                                            id: Date.now(),
+                                                            fullName: "",
+                                                            relationship: "",
+                                                            occupation: "",
+                                                            mobile: "",
+                                                        },
+                                                    ]);
+                                                }}
+                                            >
+                                                <Image source={PlusIcon} style={{ width: 20, height: 20, marginRight: 5 }} />
+
+                                                <Text style={{ color: '#fff', fontSize: 12, fontFamily: "Gilroy-Semibold", }}>
+                                                    Additional
+                                                </Text>
+                                            </TouchableOpacity>
                                         </View>
-
-
-                                        {mobileErr ? <ErrorMessage message={mobileErr} type="error" /> : null}
-                                        {formErr ? <ErrorMessage message={formErr} type="error" /> : null}
-
-
 
                                         <View style={styles.sectionHeader}>
                                             <View style={styles.blueBar} />
-                                            <Text style={styles.sectionTitle}>
+                                            <Text style={styles.headerTitle}>
                                                 Job Details
                                             </Text>
                                         </View>
@@ -3435,7 +4652,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
 
 
-                                        <Text style={styles.label}>Have a Vehicle ?</Text>
+                                        {/* <Text style={styles.label}>Have a Vehicle ?</Text>
 
                                         <View style={styles.switchRow}>
                                             <Text style={styles.subText}>
@@ -3522,7 +4739,7 @@ const [openEndTime, setOpenEndTime] = useState(false);
                                                     onChangeText={setVehicleModel}
                                                 />
                                             </>
-                                        )}
+                                        )} */}
 
                                     </View>
                                 </>
@@ -3606,6 +4823,32 @@ const [openEndTime, setOpenEndTime] = useState(false);
                         </View>
                     </View>
                 )}
+
+                <ImagePickerSheet
+                    visible={showProfileSheet}
+                    onClose={() => setShowProfileSheet(false)}
+                    title="Change Profile Picture"
+                    options={[
+                        {
+                            label: "Take Picture",
+                            icon: require("../../Assets/Images/CameraIcon.png"),
+                            showArrow: true,
+                            onPress: openCamera,
+                        },
+                        {
+                            label: "Select from Gallery",
+                            icon: require("../../Assets/Images/GalleryIcon.png"),
+                            showArrow: true,
+                            onPress: openGallery,
+                        },
+                        {
+                            label: "Remove Picture",
+                            icon: require("../../Assets/Images/DeleteIcon.png"),
+                            showArrow: false,
+                            onPress: () => console.log("remove"),
+                        },
+                    ]}
+                />
 
 
                 {openJoinDatePic && (
@@ -3697,6 +4940,20 @@ const [openEndTime, setOpenEndTime] = useState(false);
 
                 )}
 
+                <View
+                    style={[
+                        styles.bottomFooter,
+                        {
+                            bottom: insets.bottom > 0 ? insets.bottom : 0,
+                        },
+                    ]}
+                >
+                    {renderFooterButtons()}
+                </View>
+
+
+
+
             </View>
         </>
     );
@@ -3759,7 +5016,7 @@ const styles = StyleSheet.create({
     label: {
         marginTop: 18,
         marginBottom: 5,
-         fontFamily: "Gilroy-Semibold",
+        fontFamily: "Gilroy-Semibold",
         color: "#444",
     },
 
@@ -3894,6 +5151,11 @@ const styles = StyleSheet.create({
     //     padding: 12,
     //     marginTop: 4,
     // },
+    disabledInput: {
+        backgroundColor: "#F5F5F5",
+        color: "#9CA3AF",
+        opacity: 0.7,
+    },
 
     icon: { width: 20, height: 20 },
 
@@ -4154,6 +5416,72 @@ const styles = StyleSheet.create({
         height: 18,
         marginRight: 8,
     },
+    searchResultCard: {
+        marginTop: 18,
+        backgroundColor: "#FFFFFF",
+        borderRadius: 22,
+        borderWidth: 1,
+        borderColor: "#ECECEC",
+        overflow: "hidden",
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+    },
+
+    tenantRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 18,
+        paddingVertical: 20,
+    },
+
+    avatar: {
+        width: 58,
+        height: 58,
+        borderRadius: 29,
+    },
+
+    avatarPlaceholder: {
+        width: 58,
+        height: 58,
+        borderRadius: 29,
+        backgroundColor: "#DCE4F5",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    name: {
+        fontSize: 18,
+        fontFamily: "Gilroy-SemiBold",
+        color: "#222",
+    },
+
+    info: {
+        fontSize: 15,
+        color: "#676767",
+        marginTop: 6,
+        fontFamily: "Gilroy-Regular",
+    },
+
+    divider: {
+        height: 1,
+        backgroundColor: "#ECECEC",
+        marginLeft: 92,
+    },
+
+    emptyContainer: {
+        paddingVertical: 30,
+        alignItems: "center",
+    },
+
+    emptyText: {
+        fontSize: 14,
+        textAlign: "center",
+        color: "#444",
+        fontFamily: "Gilroy-SemiBold",
+    },
+
 
     mobileWrapper: {
         flexDirection: "row",
@@ -4242,16 +5570,23 @@ const styles = StyleSheet.create({
         height: 18,
         tintColor: "#777",
     },
+    // dropdownOverlay: {
+    //     position: "absolute",
+    //     top: -1000,
+    //     left: -1000,
+    //     right: -1000,
+    //     bottom: -1000,
+    //     backgroundColor: "transparent",
+    //     zIndex: 999,
+    // },
+
     dropdownOverlay: {
         position: "absolute",
-        top: -1000,
-        left: -1000,
-        right: -1000,
-        bottom: -1000,
-        backgroundColor: "transparent",
-        zIndex: 999,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
     },
-
     addNewButton: {
         marginTop: 12,
         backgroundColor: "#EEF2FF",
@@ -4462,7 +5797,7 @@ const styles = StyleSheet.create({
     },
 
     fileName: {
-        fontSize: 15,
+        fontSize: 10,
         fontFamily: "Gilroy-Semibold",
     },
 
@@ -4472,12 +5807,13 @@ const styles = StyleSheet.create({
     },
 
     deleteBtn: {
-        width: 36,
-        height: 36,
+        width: 30,
+        height: 30,
         borderRadius: 8,
         backgroundColor: "#FFF1F0",
         justifyContent: "center",
         alignItems: "center",
+        marginRight: 30
     },
 
     thumbnailRow: {
@@ -4508,8 +5844,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: 6,
-        marginBottom: 20,
+        marginTop: 16,
+        marginBottom: 5,
     },
 
     subText: {
@@ -4570,46 +5906,227 @@ const styles = StyleSheet.create({
     //     color: "#222",
     //     backgroundColor: "#fff",
     // },
-//     label: {
-//   fontSize: 16,
-//   color: "#202020",
-//   fontFamily: "Gilroy-Semibold",
-//   marginBottom: 10,
-// },
+    //     label: {
+    //   fontSize: 16,
+    //   color: "#202020",
+    //   fontFamily: "Gilroy-Semibold",
+    //   marginBottom: 10,
+    // },
 
-shiftRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-},
+    shiftRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
 
-shiftInput: {
-  width: "48%",
-  height: 54,
-  borderWidth: 1,
-  borderColor: "#DADADA",
-  borderRadius: 14,
-  paddingHorizontal: 14,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  backgroundColor: "#FFF",
-},
+    shiftInput: {
+        width: "48%",
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#DADADA",
+        borderRadius: 14,
+        paddingHorizontal: 14,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "#FFF",
+    },
 
-shiftText: {
-  fontSize: 18,
-  color: "#202020",
-  fontFamily: "Gilroy-Medium",
-},
+    shiftText: {
+        fontSize: 18,
+        color: "#202020",
+        fontFamily: "Gilroy-Medium",
+    },
 
-placeholderText: {
-  color: "#A3A3A3",
-},
+    placeholderText: {
+        color: "#A3A3A3",
+    },
 
-calendarIcon: {
-  width: 24,
-  height: 24,
-  resizeMode: "contain",
-},
+    calendarIcon: {
+        width: 24,
+        height: 24,
+        resizeMode: "contain",
+    },
+    bottomFooter: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 16,
+        borderTopWidth: 1,
+        borderColor: "#ECECEC",
 
+        shadowColor: "#000",
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        elevation: 10,
+    },
+    row: {
+        flexDirection: "row",
+        gap: 10,
+    },
+
+    primaryBtn: {
+        flex: 1,
+        height: 48,
+        backgroundColor: "#2F54EB",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    secondaryBtn: {
+        flex: 1,
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#D9D9D9",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+    },
+
+    primaryText: {
+        color: "#fff",
+        fontSize: 15,
+        fontFamily: "Gilroy-SemiBold",
+    },
+
+    disabledBtn: {
+        backgroundColor: "#B7C4F7",
+        opacity: 0.6,
+    },
+
+    checkboxRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 14,
+    },
+
+    checkboxText: {
+        marginLeft: 8,
+        fontSize: 15,
+        color: "#4B5563",
+    },
+    // disabledBtn: {
+    //     backgroundColor: "#B7C4F7",
+    // },
+    doLaterContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        borderColor: "#D1D5DB",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#FFF",
+        marginRight: 8,
+    },
+
+    checkboxSelected: {
+        backgroundColor: "#1E45E1",
+        borderColor: "#1E45E1",
+    },
+
+    tick: {
+        color: "#FFF",
+        fontSize: 13,
+        fontWeight: "700",
+    },
+
+    doLater: {
+        fontSize: 14,
+        color: "#111827",
+        fontFamily: "Gilroy-Medium",
+    },
+    profileSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 15,
+        marginBottom: 25,
+    },
+
+    profileWrapper: {
+        width: 75,
+        height: 75,
+        borderRadius: 75 / 2,
+        position: "relative",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 20,
+    },
+
+    profileImage: {
+        width: "100%",
+        height: "100%",
+        borderRadius: 75 / 2,
+    },
+
+    editIconWrapper: {
+        position: "absolute",
+        alignSelf: "center",
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.12,
+        shadowRadius: 3,
+        elevation: 3,
+        opacity: 6
+
+    },
+
+    editIcon: {
+        width: 24,
+        height: 24,
+
+    },
+
+    profileTitle: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#111827",
+    },
+    profileSub: {
+        fontSize: 12,
+        color: "#6B7280",
+        lineHeight: 16,
+        width: 220,
+        marginTop: 4,
+        fontFamily: "Gilroy-Regular"
+    },
+    guardianCard: {
+        marginTop: 18,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 16,
+        backgroundColor: "#fff",
+        padding: 16,
+    },
+
+    cardHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 18,
+    },
+
+    cardTitle: {
+        fontSize: 17,
+        fontFamily: "Gilroy-SemiBold",
+        color: "#111827",
+    },
 });
 

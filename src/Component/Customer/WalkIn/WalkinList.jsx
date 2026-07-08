@@ -389,7 +389,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
               style={[styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
               disabled={!canWriteTenant}
               onPress={() =>
-                navigation.navigate("AddTenant", {
+                navigation.navigate("AddTenantNew", {
                   refreshWalkins: walkinCustomers,
                 })
               }>
